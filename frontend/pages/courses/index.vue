@@ -3,31 +3,29 @@
      <div class="bg-gradient-to-r from-blue-600 to-indigo-700 py-6 rounded-lg mt-4 shadow-sm ">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div class="text-white">
-          <h1 class="text-3xl font-bold flex items-center">
+        <div class="text-white">          <h1 class="text-3xl font-bold flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
-            eLearning
+            {{ $t('elearning') }}
           </h1>
-          <p class="mt-1 text-blue-100">Interactive education for SSC and HSC students</p>
+          <p class="mt-1 text-blue-100">{{ $t('interactive_education') }}</p>
           <div class="mt-3 flex items-center">
             <span class="bg-white bg-opacity-20 text-xs uppercase tracking-wider font-semibold py-1 px-2 rounded-md">
-              Video lessons
+              {{ $t('video_lessons') }}
             </span>
             <span class="mx-2 text-blue-200">•</span>
-            <span class="text-sm text-blue-100">Learn at your own pace</span>
+            <span class="text-sm text-blue-100">{{ $t('learn_at_your_pace') }}</span>
           </div>
         </div>
         
         <!-- Progress Indicator Pills -->
-        <div class="bg-white py-2 px-3 rounded-lg shadow-md mt-4 md:mt-0 flex items-center space-x-1.5">
-          <div class="flex items-center">
+        <div class="bg-white py-2 px-3 rounded-lg shadow-md mt-4 md:mt-0 flex items-center space-x-1.5">          <div class="flex items-center">
             <div :class="[
               'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
               selectedBatch ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'
             ]">1</div>
-            <span class="ml-1 text-xs font-medium" :class="selectedBatch ? 'text-blue-600' : 'text-gray-500'">Batch</span>
+            <span class="ml-1 text-xs font-medium" :class="selectedBatch ? 'text-blue-600' : 'text-gray-500'">{{ $t('batch') }}</span>
           </div>
           
           <svg class="h-3 w-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,7 +37,7 @@
               'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
               selectedDivision ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'
             ]">2</div>
-            <span class="ml-1 text-xs font-medium" :class="selectedDivision ? 'text-blue-600' : 'text-gray-500'">Division</span>
+            <span class="ml-1 text-xs font-medium" :class="selectedDivision ? 'text-blue-600' : 'text-gray-500'">{{ $t('division') }}</span>
           </div>
           
           <svg class="h-3 w-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -51,7 +49,7 @@
               'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
               selectedSubject ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'
             ]">3</div>
-            <span class="ml-1 text-xs font-medium" :class="selectedSubject ? 'text-blue-600' : 'text-gray-500'">Subject</span>
+            <span class="ml-1 text-xs font-medium" :class="selectedSubject ? 'text-blue-600' : 'text-gray-500'">{{ $t('subject') }}</span>
           </div>
           
           <svg class="h-3 w-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -63,7 +61,7 @@
               'w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium',
               selectedSubject ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'
             ]">4</div>
-            <span class="ml-1 text-xs font-medium" :class="selectedSubject ? 'text-blue-600' : 'text-gray-500'">Videos</span>
+            <span class="ml-1 text-xs font-medium" :class="selectedSubject ? 'text-blue-600' : 'text-gray-500'">{{ $t('videos') }}</span>
           </div>
         </div>
       </div>
@@ -107,15 +105,14 @@
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
             </svg>
           </div>
-          <div class="ml-3">
-            <h3 class="text-sm font-medium text-gray-900">Getting Started</h3>
+          <div class="ml-3">            <h3 class="text-sm font-medium text-gray-900">{{ $t('getting_started') }}</h3>
             <div class="mt-2 text-sm text-gray-600">
-              <p>Start by selecting your batch (SSC or HSC) from above. Then follow the steps to find your subject and video lessons.</p>
+              <p>{{ $t('getting_started_desc') }}</p>
               <ul class="mt-2 space-y-1 list-disc list-inside text-xs text-gray-500">
-                <li>Step 1: Select your batch (SSC/HSC)</li>
-                <li>Step 2: Choose your division (Science/Commerce/Humanities)</li>
-                <li>Step 3: Pick a subject</li>
-                <li>Step 4: Browse and watch video lessons</li>
+                <li>{{ $t('step_1_of_4') }}: {{ $t('select_your_batch') }} ({{ $t('ssc') }}/{{ $t('hsc') }})</li>
+                <li>{{ $t('step_2_of_4') }}: {{ $t('select_your_division') }} ({{ $t('science') }}/{{ $t('commerce') }}/{{ $t('humanities') }})</li>
+                <li>{{ $t('step_3_of_4') }}: {{ $t('select_your_subject') }}</li>
+                <li>{{ $t('step_4_of_4') }}: {{ $t('videos') }}</li>
               </ul>
             </div>
           </div>

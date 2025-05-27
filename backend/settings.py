@@ -44,11 +44,11 @@ INSTALLED_APPS = [
     'base',
     'tinymce',
     'rest_framework',
-    'rest_framework.authtoken',
-    'cities',
+    'rest_framework.authtoken',    'cities',
     'cities_light',
     'mobile_recharge',
     'subscription',    'business_network',
+    'elearning',
     'news',
     'sale',  # Add the sale app here
     'support',  # Support ticket system

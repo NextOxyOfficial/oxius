@@ -6,7 +6,7 @@
         class="section-header sm:mb-8 mb-5 flex justify-between items-center"
       >
         <div class="flex items-center gap-3">
-          <h2 class="text-xl md:text-xl font-semibold">For Sale</h2>
+          <h2 class="text-xl md:text-xl font-medium text-gray-700">{{$t("sale_listing")}}</h2>
         </div>
         <div v-if="user" class="flex gap-2 sm:gap-3">
           <button

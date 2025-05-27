@@ -1,10 +1,21 @@
-<template>
-  <div v-if="batch" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-3">
+<template>  <div v-if="batch" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-3">
     <div class="flex items-center justify-between mb-3">
-      <h2 class="text-lg font-semibold text-gray-800">Select Your Division</h2>
-      <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">Step 2 of 4</span>
+      <h2 class="text-lg font-semibold text-gray-800">{{ $t('select_your_division') }}</h2>
+      <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">{{ $t('step_2_of_4') }}</span>
     </div>
-    <div class="grid grid-cols-3 gap-3">
+    
+    <!-- Loading state -->
+    <div v-if="loading" class="flex justify-center items-center py-8">
+      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+      <!-- Error state -->
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-md p-4 text-center">
+      <p class="text-sm text-red-600">{{ error }}</p>
+      <button @click="loadDivisions" class="mt-2 text-xs text-blue-600 hover:underline">{{ $t('try_again') }}</button>
+    </div>
+    
+    <!-- Division grid -->
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
       <div 
         v-for="division in divisions" 
         :key="division.id"
@@ -25,7 +36,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
+import { fetchDivisionsForBatch } from '~/services/elearningApi';
 
 const props = defineProps({
   batch: {
@@ -40,6 +52,7 @@ const props = defineProps({
 
 defineEmits(['select-division']);
 
+// Default icons
 const ScienceIcon = {
   template: `
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -64,30 +77,100 @@ const CommerceIcon = {
   `
 };
 
-const divisions = computed(() => [
-  {
-    id: 'science',
-    name: 'Science',
-    description: 'Physics, Chemistry, Biology, etc.',
-    icon: ScienceIcon,
-    bgColor: 'bg-green-100',
-    iconColor: 'text-green-600'
-  },
-  {
-    id: 'humanities',
-    name: 'Humanities',
-    description: 'History, Geography, Literature, etc.',
-    icon: HumanitiesIcon,
-    bgColor: 'bg-blue-100',
-    iconColor: 'text-blue-600'
-  },
-  {
-    id: 'commerce',
-    name: 'Commerce',
-    description: 'Accounting, Business Studies, etc.',
-    icon: CommerceIcon,
-    bgColor: 'bg-amber-100',
-    iconColor: 'text-amber-600'
+// Default icon map
+const iconComponents = {
+  'science': ScienceIcon,
+  'humanities': HumanitiesIcon,
+  'commerce': CommerceIcon
+};
+
+// Default colors
+const colorMap = {
+  'science': { bg: 'bg-green-100', text: 'text-green-600' },
+  'humanities': { bg: 'bg-blue-100', text: 'text-blue-600' },
+  'commerce': { bg: 'bg-amber-100', text: 'text-amber-600' }
+};
+
+// State variables
+const apiDivisions = ref([]);
+const loading = ref(false);
+const error = ref(null);
+
+// Computed divisions with styling
+const divisions = computed(() => {
+  // If we have API divisions, use them
+  if (apiDivisions.value.length > 0) {
+    return apiDivisions.value.map(div => {
+      const defaultColor = colorMap[div.code.toLowerCase()] || { bg: 'bg-gray-100', text: 'text-gray-600' };
+      
+      return {
+        id: div.code,
+        name: div.name,
+        description: div.description || `${div.name} division courses`,
+        icon: div.icon ? { template: div.icon } : iconComponents[div.code.toLowerCase()] || HumanitiesIcon,
+        bgColor: defaultColor.bg,
+        iconColor: defaultColor.text
+      };
+    });
   }
-]);
+  
+  // Fallback to default divisions
+  return [
+    {
+      id: 'science',
+      name: 'Science',
+      description: 'Physics, Chemistry, Biology, etc.',
+      icon: ScienceIcon,
+      bgColor: 'bg-green-100',
+      iconColor: 'text-green-600'
+    },
+    {
+      id: 'humanities',
+      name: 'Humanities',
+      description: 'History, Geography, Literature, etc.',
+      icon: HumanitiesIcon,
+      bgColor: 'bg-blue-100',
+      iconColor: 'text-blue-600'
+    },
+    {
+      id: 'commerce',
+      name: 'Commerce',
+      description: 'Accounting, Business Studies, etc.',
+      icon: CommerceIcon,
+      bgColor: 'bg-amber-100',
+      iconColor: 'text-amber-600'
+    }
+  ];
+});
+
+// Function to load divisions from API
+async function loadDivisions() {
+  if (!props.batch) return;
+  
+  try {
+    loading.value = true;
+    error.value = null;
+    apiDivisions.value = await fetchDivisionsForBatch(props.batch);
+  } catch (err) {
+    console.error(`Error loading divisions for batch ${props.batch}:`, err);
+    error.value = 'Failed to load divisions. Please try again.';
+    apiDivisions.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Watch for batch changes
+watch(() => props.batch, (newBatch) => {
+  if (newBatch) {
+    loadDivisions();
+  }
+});
+
+// Initial load if batch is already available
+onMounted(() => {
+  if (props.batch) {
+    loadDivisions();
+  }
+});
 </script>

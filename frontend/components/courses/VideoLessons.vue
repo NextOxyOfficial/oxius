@@ -19,15 +19,13 @@
             d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
           />
         </svg>
-      </div>
-      <div>
-        <h2 class="text-lg font-bold">Video Lessons</h2>
+      </div>      <div>
+        <h2 class="text-lg font-bold">{{ $t('video_lessons') }}</h2>
         <p class="text-xs text-gray-500 hidden sm:block">
-          Interactive educational content for your selected subject
+          {{ $t('video_lessons_desc') }}
         </p>
       </div>
-
-      <!-- Total videos count badge -->
+    <!-- Total videos count badge -->
       <span
         class="ml-auto text-xs bg-gray-50 text-gray-700 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm flex items-center"
       >
@@ -43,7 +41,7 @@
             clip-rule="evenodd"
           />
         </svg>
-        <span>{{ subjectVideos.length }} videos</span>
+        <span v-if="loading">Loading...</span>            <span v-else>{{ subjectVideos.length }} {{ $t('videos') }}</span>
       </span>
     </div>
 
@@ -64,41 +62,38 @@
             d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
             clip-rule="evenodd"
           />
-        </svg>
-        <h3 class="text-sm font-semibold text-gray-700">
-          Filter & Search Options
+        </svg>          <h3 class="text-sm font-semibold text-gray-700">
+          {{ $t('filter_and_search') }}
         </h3>
       </div>
 
       <!-- Search and filter controls - redesigned layout -->
       <div class="space-y-4 md:space-y-0 md:grid md:grid-cols-12 md:gap-4">
         <!-- Lesson filter - styled select with icon -->
-        <div class="md:col-span-5">
-          <label
-            class="block text-xs font-medium text-gray-700 mb-1.5 flex items-center"
+        <div class="md:col-span-5">        <label
+          class="block text-xs font-medium text-gray-700 mb-1.5 flex items-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-3.5 w-3.5 text-gray-500 mr-1"
+            viewBox="0 0 20 20"
+            fill="currentColor"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-3.5 w-3.5 text-gray-500 mr-1"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-              <path
-                fill-rule="evenodd"
-                d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                clip-rule="evenodd"
-              />
-            </svg>
-            {{ isBanglaSearch ? "পাঠ অনুসারে ফিল্টার:" : "Filter by Lesson:" }}
+            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+            <path
+              fill-rule="evenodd"
+              d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          {{ $t('elearning_filter_by') }} {{ $t('elearning_lesson') }}:
           </label>
           <div class="relative">
             <select
               v-model="selectedLesson"
               class="appearance-none block w-full bg-white border border-gray-200 rounded-md py-2 pl-3.5 pr-8 text-sm text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">
-                {{ isBanglaSearch ? "সমস্ত পাঠ" : "All Lessons" }}
+            >              <option value="all">
+                {{ $t('all_lessons') }}
               </option>
               <option v-for="lesson in lessons" :key="lesson" :value="lesson">
                 {{ lesson }}
@@ -140,7 +135,7 @@
                 clip-rule="evenodd"
               />
             </svg>
-            {{ isBanglaSearch ? "অনুসন্ধান করুন:" : "Search Content:" }}
+            {{ $t('search') }}:
             <span
               v-if="selectedLesson !== 'all'"
               class="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-md font-medium"
@@ -209,7 +204,7 @@
             v-if="selectedLesson !== 'all'"
             class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-green-50 text-green-700 border border-green-100"
           >
-            <span>{{ isBanglaSearch ? "পাঠ:" : "Lesson:" }}</span>
+            <span>{{ $t('lesson') }}:</span>
             <span class="font-medium ml-1">{{ selectedLesson }}</span>
             <button
               @click="selectedLesson = 'all'"
@@ -234,7 +229,7 @@
             v-if="searchKeyword.trim()"
             class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-blue-50 text-blue-700 border border-blue-100"
           >
-            <span>{{ isBanglaSearch ? "কীওয়ার্ড:" : "Keyword:" }}</span>
+            <span>{{ isBengaliLocale ? "কীওয়ার্ড:" : "Keyword:" }}</span>
             <span class="font-medium ml-1">"{{ searchKeyword }}"</span>
             <button
               @click="searchKeyword = ''"
@@ -283,8 +278,7 @@
                 stroke-width="2"
                 d="M6 18L18 6M6 6l12 12"
               />
-            </svg>
-            {{ isBanglaSearch ? "ফিল্টার মুছুন" : "Clear All" }}
+            </svg>            {{ $t('clear_filters') }}
           </button>
         </div>
       </div>
@@ -312,17 +306,13 @@
             d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
           />
         </svg>
-      </div>
-      <h3 class="text-sm font-semibold text-gray-700">No Videos Found</h3>
+      </div>      <h3 class="text-sm font-semibold text-gray-700">{{ $t('no_videos_found') }}</h3>
       <p class="mt-2 text-xs text-gray-500 max-w-sm mx-auto">
         {{
           searchKeyword.trim()
-            ? "No videos match your search criteria. Try different keywords or clear filters."
-            : "No videos available for this lesson yet."
+            ? $t('no_search_results')
+            : $t('no_videos_found')
         }}
-        <span v-if="isBanglaSearch" class="block mt-1 text-gray-500">
-          কোন ভিডিও আপনার অনুসন্ধান মানদণ্ড মেলে না
-        </span>
       </p>
       <button
         v-if="searchKeyword.trim() || selectedLesson !== 'all'"
@@ -340,8 +330,7 @@
             d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
             clip-rule="evenodd"
           />
-        </svg>
-        Reset Search
+        </svg>        {{ $t('clear_filters') }}
       </button>
     </div>
 
@@ -358,27 +347,25 @@
         </div>
 
         <!-- Video metadata -->
-        <div class="p-3">
-          <h3
+        <div class="p-3">          <h3
             class="font-medium text-gray-900 text-sm"
-            v-html="highlightText(video.title)"
+            v-html="highlightText(isBengaliLocale && video.title_bn ? video.title_bn : video.title)"
           ></h3>
           <p class="text-xs text-gray-600 mt-1">
-            Lesson: <span v-html="highlightText(video.lesson)"></span>
+            {{ $t('lesson') }}: <span v-html="highlightText(isBengaliLocale && video.lesson_bn ? video.lesson_bn : video.lesson)"></span>
           </p>
           <!-- Description with enhanced View More button -->
           <div class="relative mt-1">
             <p
               class="text-xs text-gray-600 line-clamp-2"
-              v-html="highlightText(video.description)"
-            ></p>
-            <button
+              v-html="highlightText(isBengaliLocale && video.description_bn ? video.description_bn : video.description)"
+            ></p>            <button
               @click="openDescriptionModal(video)"
               class="text-xs text-blue-600 hover:text-blue-800 font-medium mt-1.5 flex items-center transition-all duration-200 hover:translate-x-0.5"
             >
               <span
                 class="border-b border-blue-300 hover:border-blue-600 pb-0.5"
-                >View more</span
+                >{{ $t('view_more') }}</span
               >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -401,19 +388,19 @@
               v-if="hasMatch(video.title)"
               class="text-xs px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200"
             >
-              {{ isBanglaSearch ? "শিরোনাম মিল" : "Title match" }}
+              {{ isBengaliLocale ? "শিরোনাম মিল" : "Title match" }}
             </span>
             <span
               v-if="hasMatch(video.description)"
               class="text-xs px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200"
             >
-              {{ isBanglaSearch ? "বিবরণে মিল" : "Description match" }}
+              {{ isBengaliLocale ? "বিবরণে মিল" : "Description match" }}
             </span>
             <span
               v-if="hasMatch(video.lesson)"
               class="text-xs px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200"
             >
-              {{ isBanglaSearch ? "পাঠ মিল" : "Lesson match" }}
+              {{ isBengaliLocale ? "পাঠ মিল" : "Lesson match" }}
             </span>
           </div>
 
@@ -424,8 +411,7 @@
             >
               {{ video.duration }}
             </span>
-            <span class="ml-2 text-xs text-gray-500">
-              {{ video.views }} views
+            <span class="ml-2 text-xs text-gray-500">              {{ video.views }} {{ $t('videos_count') }}
             </span>
           </div>
         </div>
@@ -457,12 +443,11 @@
           >
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <!-- Modal header with video title -->
-              <div class="flex items-start justify-between mb-3">
-                <h3
+              <div class="flex items-start justify-between mb-3">                <h3
                   class="text-lg leading-6 font-medium text-gray-900 pr-6"
                   id="modal-title"
                 >
-                  {{ activeVideo?.title }}
+                  {{ isBengaliLocale && activeVideo?.title_bn ? activeVideo?.title_bn : activeVideo?.title }}
                 </h3>
                 <!-- Close button (X) in top-right corner -->
                 <button
@@ -491,8 +476,7 @@
                 <div>
                   <span
                     class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
-                  >
-                    {{ activeVideo?.lesson }}
+                  >                    {{ isBengaliLocale && activeVideo?.lesson_bn ? activeVideo?.lesson_bn : activeVideo?.lesson }}
                   </span>
                 </div>
                 <div
@@ -534,7 +518,7 @@
                       d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                     />
                   </svg>
-                  <span>{{ activeVideo?.views }} views</span>
+                  <span>{{ activeVideo?.views }} {{ $t('videos_count') }}</span>
                 </div>
               </div>
 
@@ -556,13 +540,12 @@
                       stroke-width="2"
                       d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
-                  </svg>
-                  Description:
+                  </svg>                  {{ $t('description') }}:
                 </h4>
                 <div class="max-h-60 overflow-y-auto pr-1">
                   <p
                     class="text-sm text-gray-600"
-                    v-html="highlightText(activeVideo?.description)"
+                    v-html="highlightText(isBengaliLocale && activeVideo?.description_bn ? activeVideo?.description_bn : activeVideo?.description)"
                   ></p>
                 </div>
               </div>
@@ -576,8 +559,7 @@
                 @click="closeDescriptionModal"
                 type="button"
                 class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
-              >
-                Close
+              >                {{ isBengaliLocale ? "বন্ধ করুন" : "Close" }}
               </button>
             </div>
           </div>
@@ -588,8 +570,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import YoutubePlayer from "~/components/courses/YoutubePlayer.vue";
+import { fetchVideoLessonsForSubject, incrementVideoViews, fetchVideoById } from '~/services/elearningApi';
 
 const props = defineProps({
   subject: {
@@ -598,8 +582,115 @@ const props = defineProps({
   },
 });
 
-// Example video data - in a real application, this would be fetched from an API
-const videos = [
+// State variables
+const apiVideos = ref([]);
+const loading = ref(false);
+const error = ref(null);
+
+// Function to load videos from API with improved error handling
+async function loadVideos() {
+  if (!props.subject) return;
+  
+  try {
+    loading.value = true;
+    error.value = null;
+    apiVideos.value = await fetchVideoLessonsForSubject(props.subject);
+    console.log('Loaded videos:', apiVideos.value);
+  } catch (err) {
+    console.error(`Error loading videos for subject ${props.subject}:`, err);
+    error.value = $t('no_videos_found'); // Use translated error message
+    apiVideos.value = [];
+    
+    // Retry loading after a delay if the error might be temporary
+    setTimeout(() => {
+      if (error.value && props.subject) {
+        loadVideos();
+      }
+    }, 5000);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Watch for subject changes
+watch(() => props.subject, (newSubject) => {
+  if (newSubject) {
+    loadVideos();
+  }
+});
+
+// Initial load if subject is already available
+onMounted(() => {
+  if (props.subject) {
+    loadVideos();
+  }
+});
+
+// Function to track video views with enhanced error handling
+async function trackVideoView(videoId) {
+  try {
+    const response = await incrementVideoViews(videoId);
+    
+    if (response && response.success) {
+      // Update the local view count if the API returns the updated count
+      if (response.views && activeVideo.value && activeVideo.value.id === videoId) {
+        activeVideo.value.views = response.views.toString();
+        
+        // Also update the view count in the list of videos
+        const videoIndex = subjectVideos.value.findIndex(v => v.id === videoId);
+        if (videoIndex >= 0) {
+          subjectVideos.value[videoIndex].views = response.views.toString();
+        }
+      }
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.error(`Error tracking view for video ${videoId}:`, err);
+    return false;
+  }
+}
+
+// Preload video details for better user experience when opening videos
+async function preloadVideoDetails(videoId) {
+  try {
+    // Check if the video details are already in the cache or loaded videos
+    const existingVideo = subjectVideos.value.find(v => v.id === videoId);
+    if (existingVideo) {
+      return existingVideo;
+    }
+    
+    // Fetch the video details if not available in the component state
+    const videoDetails = await fetchVideoById(videoId);
+    
+    if (videoDetails) {
+      // Format the video data to match the expected structure
+      return {
+        id: videoDetails.id,
+        subjectId: videoDetails.subject,
+        title: videoDetails.title,
+        title_bn: videoDetails.title_bn,
+        lesson: videoDetails.lesson_name,
+        lesson_bn: videoDetails.lesson_name_bn,
+        description: videoDetails.description,
+        description_bn: videoDetails.description_bn,
+        url: videoDetails.youtube_url,
+        youtube_id: videoDetails.youtube_id,
+        duration: videoDetails.duration,
+        views: videoDetails.views_count ? `${videoDetails.views_count}` : '0',
+        thumbnail_url: videoDetails.thumbnail_url
+      };
+    }
+    
+    return null;
+  } catch (err) {
+    console.error(`Error preloading video details for ${videoId}:`, err);
+    return null;
+  }
+}
+
+// Fallback video data for development and testing
+const staticVideos = [
   // Physics SSC
   {
     id: "phys-ssc-1",
@@ -731,26 +822,45 @@ function clearFilters() {
 // Dynamic placeholder text based on selected lesson
 const searchPlaceholder = computed(() => {
   if (selectedLesson.value === "all") {
-    return isBanglaSearch.value
-      ? "সমস্ত পাঠের মধ্যে অনুসন্ধান করুন..."
-      : "Search in all lessons...";
+    return $t('search_placeholder') || "Search in all lessons...";
   } else {
-    return isBanglaSearch.value
-      ? `"${selectedLesson.value}" পাঠে অনুসন্ধান করুন...`
-      : `Search in "${selectedLesson.value}" lesson...`;
+    return `${$t('search')} "${selectedLesson.value}" ${$t('lesson')}...`;
   }
 });
 
-// Detect if the search text is in Bangla
-const isBanglaSearch = computed(() => {
-  const banglaPattern = /[\u0980-\u09FF]/;
-  return banglaPattern.test(searchKeyword.value);
+// Get the current locale
+const { locale } = useI18n();
+
+// Check if the current locale is Bengali
+const isBengaliLocale = computed(() => {
+  return locale.value === 'bn';
 });
 
 // Filter videos based on selected subject
 const subjectVideos = computed(() => {
   if (!props.subject) return [];
-  return videos.filter((video) => video.subjectId === props.subject);
+  
+  // Use API data if available
+  if (apiVideos.value.length > 0) {
+    return apiVideos.value.map(video => ({
+      id: video.id,
+      subjectId: props.subject,
+      title: video.title,
+      title_bn: video.title_bn,
+      lesson: video.lesson_name,
+      lesson_bn: video.lesson_name_bn,
+      description: video.description,
+      description_bn: video.description_bn,
+      url: video.youtube_url,
+      youtube_id: video.youtube_id,
+      duration: video.duration,
+      views: video.views_count ? `${video.views_count}` : '0',
+      thumbnail_url: video.thumbnail_url
+    }));
+  }
+  
+  // Fallback to static data
+  return staticVideos.filter((video) => video.subjectId === props.subject);
 });
 
 // Get all lessons for the selected subject
@@ -772,17 +882,15 @@ const filteredVideos = computed(() => {
   // Filter by search keyword if provided with Unicode support
   if (searchKeyword.value.trim()) {
     // Normalize the search term for better Unicode handling (especially for Bangla)
-    const keyword = searchKeyword.value.trim().normalize("NFC").toLowerCase();
-
-    result = result.filter((video) => {
+    const keyword = searchKeyword.value.trim().normalize("NFC").toLowerCase();    result = result.filter((video) => {
       // Normalize all text fields for consistent Unicode comparison
-      const normalizedTitle = (video.title || "")
+      const normalizedTitle = ((isBengaliLocale.value && video.title_bn) ? video.title_bn : (video.title || ""))
         .normalize("NFC")
         .toLowerCase();
-      const normalizedDescription = (video.description || "")
+      const normalizedDescription = ((isBengaliLocale.value && video.description_bn) ? video.description_bn : (video.description || ""))
         .normalize("NFC")
         .toLowerCase();
-      const normalizedLesson = (video.lesson || "")
+      const normalizedLesson = ((isBengaliLocale.value && video.lesson_bn) ? video.lesson_bn : (video.lesson || ""))
         .normalize("NFC")
         .toLowerCase();
 
@@ -801,10 +909,26 @@ const filteredVideos = computed(() => {
 const showDescriptionModal = ref(false);
 const activeVideo = ref(null);
 
-// Function to open the description modal
-function openDescriptionModal(video) {
+// Function to open the description modal with preloading
+async function openDescriptionModal(video) {
+  // Show the modal immediately with current video data
   activeVideo.value = video;
   showDescriptionModal.value = true;
+  
+  // Try to get the latest video data (including up-to-date view count)
+  // This provides a smoother UX since the modal is shown immediately
+  if (video.id) {
+    try {
+      const updatedVideoDetails = await preloadVideoDetails(video.id);
+      if (updatedVideoDetails && showDescriptionModal.value) {
+        // Only update if the modal is still open and for the same video
+        activeVideo.value = updatedVideoDetails;
+      }
+    } catch (err) {
+      // Silently fail - we already have the basic video data showing
+      console.warn('Could not fetch updated video details:', err);
+    }
+  }
 }
 
 // Function to close the description modal
@@ -862,8 +986,14 @@ function highlightText(text) {
 /* Line clamp utility for truncating text at 2 lines */
 .line-clamp-2 {
   display: -webkit-box;
+  display: -moz-box;
+  display: box;
   -webkit-line-clamp: 2;
+  -moz-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+  box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
   max-height: 2.5rem; /* Fallback for browsers that don't support line-clamp */

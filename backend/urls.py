@@ -35,6 +35,7 @@ urlpatterns = urlpatterns + [
     path('api/bn/', include('business_network.urls')),
     path('api/news/', include('news.urls')),
     path('api/', include('support.urls')),  # Support ticket system URLs
+    path('api/elearning/', include('elearning.urls')),  # eLearning system URLs
     # for frontend
     path('', index, name='index'),
     path('<str:param>', index, name='index2'),
