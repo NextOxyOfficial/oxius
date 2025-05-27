@@ -122,8 +122,7 @@
                 "
                 class="text-xs text-slate-400 line-through -mt-0.5 flex items-center"
               >
-                <span class="text-xs mr-0.5">৳</span
-                >{{ product.regular_price }}
+                <span class="text-xs mr-0.5">৳</span>{{ product.regular_price }}
               </span>
             </div>
 

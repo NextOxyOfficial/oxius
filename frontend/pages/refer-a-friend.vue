@@ -1,801 +1,283 @@
 <template>
   <div>
-    <div v-if="user?.user" class="py-12 px-4 relative">
-      <!-- Subtle background effect -->
-      <div class="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-        <div
-          class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary-200/20 blur-3xl animate-float"
-        ></div>
-        <div
-          class="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-blue-200/20 blur-3xl animate-float-reverse"
-        ></div>
-      </div>
-
-      <div class="container mx-auto max-w-4xl">
-        <!-- Centered Header -->
-        <div class="text-center mb-12 animate-fade-in">
-          <h1
-            class="text-2xl md:text-2xl font-semibold text-gray-700 dark:text-white mb-2"
-          >
-            {{ $t("refer_friend") }}
-          </h1>
-          <div
-            class="h-1 w-24 bg-primary-500 mx-auto rounded-full mb-3 animate-width"
-          ></div>
-          <p class="text-xl text-gray-500 dark:text-gray-400">
-            {{ $t("refer") }}
-          </p>
-        </div>
-
-        <!-- Referral Link Box -->
-        <div
-          class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-10 shadow-sm border border-gray-100 dark:border-gray-700 animate-fade-in-up"
-        >
-          <p class="text-center text-gray-500 dark:text-gray-500 mb-3">
-            {{ $t("refer_text") }}
-          </p>
-
-          <div class="flex flex-col sm:flex-row gap-3">
-            <UButtonGroup class="mx-auto">
-              <input
-                type="text"
-                class="text-xs py-1 px-0.5 w-40 sm:w-72"
-                :value="`https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`"
-              />
-              <UButton
-                size="xs"
-                color="primary"
-                icon="i-iconamoon-copy-light"
-                variant="solid"
-                class="py-1 px-1.5 ml-2"
-                @click="
-                  CopyToClip(
-                    `https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`
-                  )
-                "
-                label="Copy"
-              />
-            </UButtonGroup>
-          </div>
-
-          <!-- Simple Social Share Icons -->
-          <div class="flex justify-center items-center gap-4 mt-4">
-            <UButton
-              color="white"
-              variant="ghost"
-              class="social-btn h-10 w-10 flex items-center justify-center rounded-full transition-all duration-300"
-              @click="shareOnSocial('facebook')"
-            >
-              <UIcon name="i-mdi:facebook" class="text-xl text-blue-600" />
-            </UButton>
-
-            <UButton
-              color="white"
-              variant="ghost"
-              class="social-btn h-10 w-10 flex items-center justify-center rounded-full transition-all duration-300"
-              @click="shareOnSocial('twitter')"
-            >
-              <UIcon name="i-mdi:twitter" class="text-xl text-blue-400" />
-            </UButton>
-
-            <UButton
-              color="white"
-              variant="ghost"
-              class="social-btn h-10 w-10 flex items-center justify-center rounded-full transition-all duration-300"
-              @click="shareOnSocial('whatsapp')"
-            >
-              <UIcon name="i-mdi:whatsapp" class="text-xl text-green-500" />
-            </UButton>
-          </div>
-        </div>
-
-        <!-- The Two Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Total Referred Users Card -->
-          <div
-            class="stat-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm flex items-center gap-4 border border-gray-100 dark:border-gray-700 transform transition-all duration-300 users-card"
-          >
-            <div
-              class="stat-icon-wrapper h-14 w-14 rounded-full flex items-center justify-center bg-primary-100 dark:bg-primary-900/40"
-            >
-              <UIcon
-                name="i-heroicons-users"
-                class="text-xl text-primary-600 dark:text-primary-400"
-              />
-            </div>
-            <div class="flex-1">
-              <h3
-                class="text-sm text-gray-500 dark:text-gray-500 font-medium mb-1"
-              >
-                Total Referred Users
-              </h3>
-              <div
-                class="text-2xl font-semibold text-gray-700 dark:text-white flex items-center"
-              >
-                <span class="counter-animate" data-value="87">
-                  {{ user.user.refer_count }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Total Earnings Card -->
-          <div
-            class="stat-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm flex items-center gap-4 border border-gray-100 dark:border-gray-700 transform transition-all duration-300 hover:shadow-sm hover:transform hover:-translate-y-1 earnings-card"
-          >
-            <div
-              class="stat-icon-wrapper h-14 w-14 rounded-full flex items-center justify-center bg-primary-100 dark:bg-primary-900/40"
-            >
-              <UIcon
-                name="i-heroicons-banknotes"
-                class="text-xl text-green-600 dark:text-green-400"
-              />
-            </div>
-            <div class="flex-1">
-              <h3
-                class="text-sm text-gray-500 dark:text-gray-500 font-medium mb-1"
-              >
-                Total Earnings
-              </h3>
-              <div
-                class="text-2xl font-semibold text-gray-700 dark:text-white flex items-center"
-              >
-                <UIcon name="i-mdi:currency-bdt" class="mr-0.5" />
-                <span class="counter-animate" data-value="2450">
-                  {{ user.user.commission_earned }}
-                </span>
-              </div>
-              <div class="text-xs mt-1">
-                <span class="text-green-500 flex items-center">
-                  <UIcon name="i-heroicons-arrow-trending-up" class="mr-1" />
-                  8% from last month
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Replace both history sections with this single tabbed component -->
-        <div class="mt-12">
-          <div
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden animate-fade-in-up"
-            style="animation-delay: 0.2s"
-          >
-            <div class="tab-navigation overflow-hidden relative">
-              <div class="flex border-b border-gray-100 dark:border-gray-700">
-                <button
-                  v-for="(tab, index) in tabs"
-                  :key="index"
-                  class="tab-button relative py-4 px-6 font-medium text-sm transition-all duration-300"
-                  :class="
-                    activeTab === index
-                      ? 'text-primary-600 dark:text-primary-400 border-b-2 border-green-500'
-                      : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-400 border-b-2 border-white'
-                  "
-                  @click="setActiveTab(index)"
-                >
-                  <div class="flex items-center">
-                    <UIcon
-                      :name="tab.icon"
-                      class="mr-2 transition-transform duration-300"
-                    />
-                    {{ tab.name }}
-                    <span
-                      v-if="tab.count"
-                      class="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400"
-                    >
-                      {{ tab.count }}
-                    </span>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <div
-              class="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center"
-            >
-              <div class="text-xs text-gray-500 dark:text-gray-500">
-                {{
-                  activeTab === 0
-                    ? "Track your earning commissions"
-                    : "View your referred users"
-                }}
-              </div>
-
-              <div class="flex items-center gap-2">
-                <USelect
-                  v-if="activeTab === 0"
-                  v-model="filterPeriod"
-                  :options="['All Time', 'This Month', 'Last Month']"
-                  placeholder="Period"
-                  size="sm"
-                  class="w-32"
-                />
-              </div>
-            </div>
-
-            <div class="min-h-[300px] relative overflow-hidden">
-              <div
-                class="tab-pane transition-all duration-500"
-                :class="
-                  activeTab === 0
-                    ? 'opacity-100 translate-x-0'
-                    : 'opacity-0 absolute top-0 translate-x-full'
-                "
-              >
-                <div class="overflow-x-auto">
-                  <table
-                    class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-                  >
-                    <thead class="bg-gray-50 dark:bg-gray-800/50">
-                      <tr>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
-                        >
-                          Date
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
-                        >
-                          Referred User
-                        </th>
-
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
-                        >
-                          Amount
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody
-                      class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-                    >
-                      <tr
-                        v-for="(earning, index) in filteredEarnings"
-                        :key="index"
-                        class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all table-row-animate"
-                        :style="`--delay: ${index * 0.05}s`"
-                      >
-                        <td
-                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500"
-                        >
-                          {{ formatDate(earning.date) }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="flex items-center">
-                            <div
-                              class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center text-primary-700 dark:text-primary-300 font-medium user-avatar"
-                            >
-                              {{ earning.userName.charAt(0) }}
-                            </div>
-                            <div
-                              class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-200"
-                            >
-                              {{ earning.userName }}
-                            </div>
-                          </div>
-                        </td>
-
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div
-                            class="text-sm font-medium text-green-600 dark:text-green-400 flex items-center"
-                          >
-                            <UIcon name="i-mdi:currency-bdt" class="mr-0.5" />
-                            {{ earning.amount.toFixed(2) }}
-                          </div>
-                        </td>
-                      </tr>
-
-                      <tr v-if="filteredEarnings.length === 0">
-                        <td
-                          colspan="4"
-                          class="px-6 py-8 text-center text-gray-500 dark:text-gray-500"
-                        >
-                          <div class="py-6">
-                            <div
-                              class="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4"
-                            >
-                              <UIcon
-                                name="i-heroicons-banknotes"
-                                class="text-2xl text-gray-500 dark:text-gray-500"
-                              />
-                            </div>
-                            <p>No earnings history to display yet.</p>
-                            <UButton class="mt-3" color="primary" size="sm"
-                              >Invite Friends</UButton
-                            >
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <!-- Referred Users Tab -->
-              <div
-                class="tab-pane transition-all duration-500"
-                :class="
-                  activeTab === 1
-                    ? 'opacity-100 translate-x-0'
-                    : 'opacity-0 absolute top-0 translate-x-full'
-                "
-              >
-                <div class="overflow-x-auto">
-                  <table
-                    class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-                  >
-                    <thead class="bg-gray-50 dark:bg-gray-800/50">
-                      <tr>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
-                        >
-                          User
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
-                        >
-                          Email
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
-                        >
-                          Date Joined
-                        </th>
-                        <th
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
-                        >
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody
-                      class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-                    >
-                      <tr
-                        v-for="(user, index) in referredUsers"
-                        :key="user.id"
-                        class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all table-row-animate"
-                        :style="`--delay: ${index * 0.05}s`"
-                      >
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="flex items-center">
-                            <div
-                              v-if="!user.image"
-                              class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center text-primary-700 dark:text-primary-300 font-medium user-avatar"
-                            >
-                              {{
-                                (
-                                  user.first_name ||
-                                  user.username ||
-                                  "User"
-                                ).charAt(0)
-                              }}
-                            </div>
-                            <UAvatar
-                              v-else
-                              :src="user.image || '/static/frontend/avatar.png'"
-                              size="sm"
-                              class="user-avatar"
-                            />
-                            <div
-                              class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-200"
-                            >
-                              <div>
-                                {{ user.first_name }} {{ user.last_name }}
-                              </div>
-                              <div class="text-xs text-gray-500">
-                                @{{ user.username }}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td
-                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500"
-                        >
-                          {{ user.email }}
-                        </td>
-                        <td
-                          class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500"
-                        >
-                          {{
-                            user.date_joined_formatted ||
-                            formatDate(user.date_joined)
-                          }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <UBadge
-                            :color="user.is_active ? 'green' : 'gray'"
-                            variant="soft"
-                            size="sm"
-                          >
-                            {{ user.is_active ? "Active" : "Inactive" }}
-                          </UBadge>
-                        </td>
-                      </tr>
-
-                      <tr v-if="referredUsers.length === 0">
-                        <td
-                          colspan="4"
-                          class="px-6 py-8 text-center text-gray-500 dark:text-gray-500"
-                        >
-                          <div class="py-6">
-                            <div
-                              class="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4"
-                            >
-                              <UIcon
-                                name="i-heroicons-users"
-                                class="text-2xl text-gray-500 dark:text-gray-500"
-                              />
-                            </div>
-                            <p>You haven't referred any users yet.</p>
-                            <UButton
-                              class="mt-3"
-                              color="primary"
-                              size="sm"
-                              @click="shareOnSocial('whatsapp')"
-                            >
-                              Invite Friends
-                            </UButton>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="px-6 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center"
-            >
-              <div class="text-xs text-gray-500 dark:text-gray-500">
-                {{
-                  activeTab === 0
-                    ? `Showing ${filteredEarnings.length} transactions`
-                    : `Showing ${referredUsers.length} referred users`
-                }}
-              </div>
-
-              <UPagination
-                v-if="
-                  (activeTab === 0 && filteredEarnings.length > 5) ||
-                  (activeTab === 1 && referredUsers.length > 5)
-                "
-                v-model="currentPage"
-                :page-count="2"
-                :total="
-                  activeTab === 0
-                    ? filteredEarnings.length
-                    : referredUsers.length
-                "
-                size="xs"
-                class="pagination-control"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- public component -->
-    <div v-else class="relative">
-      <!-- Animated Background -->
-      <div class="absolute inset-0 -z-10 overflow-hidden">
-        <div
-          class="absolute top-0 -left-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-primary-100/30 to-primary-300/20 blur-3xl animate-float-slow"
-        ></div>
-        <div
-          class="absolute bottom-0 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-blue-100/30 to-green-200/20 blur-3xl animate-float-reverse"
-        ></div>
-        <div
-          class="absolute inset-0 bg-[url('/noise-pattern.svg')] opacity-[0.02] pointer-events-none"
-        ></div>
-      </div>
-
-      <div class="container mx-auto px-4 py-16 md:py-24">
-        <!-- Hero Section -->
-        <div class="max-w-4xl mx-auto text-center mb-20">
-          <div
-            class="inline-block mb-4 px-6 py-2 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-medium text-sm"
-          >
-            Invite Friends & Earn Together
-          </div>
-          <h1
-            class="text-2xl md:text-2xl lg:text-6xl font-semibold mb-6 text-gray-700 dark:text-white tracking-tight animate-fade-in"
-          >
-            Get
-            <span class="text-primary-600 dark:text-primary-400"
-              >5% Commission</span
-            >
-            on Every Referral
-          </h1>
-          <p
-            class="text-xl text-gray-500 dark:text-gray-400 mb-10 max-w-2xl mx-auto animate-fade-in-delayed"
-          >
-            Share your unique link with friends, and earn rewards when they
-            complete tasks or make purchases. The more friends you refer, the
-            more you earn!
-          </p>
-          <div class="flex flex-wrap justify-center gap-4">
-            <UButton
-              size="xl"
-              color="primary"
-              to="/auth/register"
-              class="cta-button"
-            >
-              Sign Up & Start Earning
-              <template #trailing>
-                <UIcon name="i-heroicons-arrow-right" />
-              </template>
-            </UButton>
-            <UButton
-              size="xl"
-              color="gray"
-              variant="soft"
-              to="#how-it-works"
-              class="cta-button-secondary"
-            >
-              Learn More
-              <template #trailing>
-                <UIcon name="i-heroicons-arrow-down" />
-              </template>
-            </UButton>
-          </div>
-        </div>
-
-        <!-- How It Works Section -->
-        <div id="how-it-works" class="max-w-6xl mx-auto mb-20 scroll-mt-20">
-          <div class="text-center mb-12">
-            <h2
-              class="text-2xl md:text-2xl font-semibold text-gray-700 dark:text-white mb-4"
-            >
-              How It Works
-            </h2>
-            <div
-              class="h-1 w-20 bg-primary-500 mx-auto mb-6 rounded-full animate-expand"
-            ></div>
-            <p
-              class="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto"
-            >
-              Our referral program is simple, transparent, and rewarding. Just
-              follow these easy steps:
-            </p>
-          </div>
-
-          <div class="grid md:grid-cols-3 gap-8">
-            <!-- Step 1 -->
-            <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center step-card"
-            >
-              <div
-                class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
-              >
-                <span
-                  class="text-xl font-semibold text-primary-600 dark:text-primary-400"
-                  >1</span
-                >
-              </div>
-              <h3
-                class="text-xl font-semibold mb-3 text-gray-700 dark:text-white"
-              >
-                Create Account
-              </h3>
-              <p class="text-gray-500 dark:text-gray-500">
-                Sign up for a free account and get your unique referral link
-                instantly.
-              </p>
-            </div>
-
-            <!-- Step 2 -->
-            <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center step-card"
-            >
-              <div
-                class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
-              >
-                <span
-                  class="text-xl font-semibold text-primary-600 dark:text-primary-400"
-                  >2</span
-                >
-              </div>
-              <h3
-                class="text-xl font-semibold mb-3 text-gray-700 dark:text-white"
-              >
-                Share Your Link
-              </h3>
-              <p class="text-gray-500 dark:text-gray-500">
-                Share your referral link with friends via email, social media,
-                or messaging apps.
-              </p>
-            </div>
-
-            <!-- Step 3 -->
-            <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center step-card"
-            >
-              <div
-                class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
-              >
-                <span
-                  class="text-xl font-semibold text-primary-600 dark:text-primary-400"
-                  >3</span
-                >
-              </div>
-              <h3
-                class="text-xl font-semibold mb-3 text-gray-700 dark:text-white"
-              >
-                Earn Commissions
-              </h3>
-              <p class="text-gray-500 dark:text-gray-500">
-                Earn 5% commission when your friends complete tasks or make
-                purchases.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Stats Section -->
-        <div class="max-w-6xl mx-auto mb-20">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-            <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
-            >
-              <div
-                class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
-              >
-                5%
-              </div>
-              <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
-                Commission Rate
-              </p>
-            </div>
-
-            <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
-            >
-              <div
-                class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
-              >
-                500+
-              </div>
-              <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
-                Active Referrers
-              </p>
-            </div>
-
-            <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
-            >
-              <div
-                class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
-              >
-                ৳ 10,000
-              </div>
-              <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
-                Top Earner
-              </p>
-            </div>
-
-            <div
-              class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
-            >
-              <div
-                class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
-              >
-                24hr
-              </div>
-              <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
-                Quick Payouts
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- CTA Section -->
-        <div class="max-w-4xl mx-auto text-center">
-          <div
-            class="bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl p-8 md:p-12 shadow-sm cta-section"
-          >
-            <h2 class="text-xl md:text-2xl font-semibold text-white mb-4">
-              Ready to Start Earning?
-            </h2>
-            <p class="text-white/90 mb-8 max-w-2xl mx-auto">
-              Join our referral program today and turn your connections into
-              cash. It's free to join and only takes a minute to get started.
-            </p>
-            <UButton
-              size="xl"
-              color="white"
-              variant="solid"
-              to="/auth/register"
-              class="cta-button-final"
-            >
-              Create Your Account
-              <template #trailing>
-                <UIcon name="i-heroicons-arrow-right" />
-              </template>
-            </UButton>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Logged-in User Component -->
+    <LoggedInUserView
+      v-if="user?.user"
+      :user="user"
+      :show-share-modal="showShareModal"
+      :custom-message="customMessage"
+      :is-loading-commissions="isLoadingCommissions"
+      :is-loading-users="isLoadingUsers"
+      :commission-error="commissionError"
+      :users-error="usersError"
+      :commission-breakdown="commissionBreakdown"
+      :commission-data="commissionData"
+      :referred-users="referredUsers"
+      :earnings="earnings"
+      :tabs="tabs"
+      :active-tab="activeTab"
+      :current-page="currentPage"
+      :filter-period="filterPeriod"
+      :filtered-earnings="filteredEarnings"
+      :average-commission="averageCommission"
+      :best-performing-service="bestPerformingService"
+      :this-month-earnings="thisMonthEarnings"
+      :growth-rate="growthRate"
+      @update:show-share-modal="showShareModal = $event"
+      @update:custom-message="customMessage = $event"
+      @update:filter-period="filterPeriod = $event"
+      @update:current-page="currentPage = $event"
+      @copy-to-clip="CopyToClip"
+      @share-on-social="shareOnSocial"
+      @share-custom-message="shareCustomMessage"
+      @get-commission-history="getCommissionHistory"
+      @get-referred-users="getReferredUsers"
+      @set-active-tab="setActiveTab"
+      @export-commissions="exportCommissions"
+      @format-date="formatDate"
+      @get-service-type-color="getServiceTypeColor"
+      @get-commission-rate="getCommissionRate"
+    />
+    
+    <!-- Public User Component -->
+    <PublicUserView
+      v-else
+      :platform-stats="platformStats"
+      :is-loading-platform-stats="isLoadingPlatformStats"
+      @get-platform-stats="getPlatformStats"    />
   </div>
 </template>
 
 <script setup>
+import LoggedInUserView from '~/components/refer-friend/LoggedInUserView.vue'
+import PublicUserView from '~/components/refer-friend/PublicUserView.vue'
+
 definePageMeta({
-  layout: "dashboard",
+  layout: "default",
 });
 
 const { user } = useAuth();
 const { get } = useApi();
+const toast = useToast();
+
 const filterPeriod = ref("All Time");
 const currentPage = ref(1);
 const activeTab = ref(0);
 const indicatorLeft = ref(0);
 const indicatorWidth = ref(0);
 const referredUsers = ref([]);
+const isLoadingCommissions = ref(false);
+const isLoadingUsers = ref(false);
+const commissionError = ref(null);
+const usersError = ref(null);
+const showShareModal = ref(false);
+const customMessage = ref("Join me on AdSyClub and start earning! Use my referral link to get started: ");
+const platformStats = ref({
+  active_referrers: 500,
+  top_earner_amount: 10000,
+  quick_payout_time: "24hr",
+  commission_rates: {
+    gig_completion: '5%',
+    pro_subscription: '20%',
+    gold_sponsor: '20%'
+  }
+});
+const isLoadingPlatformStats = ref(false);
+const commissionData = ref({
+  total_commissions: 0,
+  total_earned: 0,
+  commission_breakdown: {
+    gig_completion: { count: 0, total_amount: 0, rate: '5%', transactions: [] },
+    pro_subscription: { count: 0, total_amount: 0, rate: '20%', transactions: [] },
+    gold_sponsor: { count: 0, total_amount: 0, rate: '20%', transactions: [] }
+  },
+  recent_transactions: []
+});
+
+// Update custom message with referral link when modal opens
+watch(showShareModal, (newValue) => {
+  if (newValue === true && user.value?.user?.referral_code) {
+    const referralUrl = `https://adsyclub.com/auth/register/?ref=${user.value.user.referral_code}`;
+    customMessage.value = `Join me on AdSyClub and start earning! Use my referral link to get started: ${referralUrl}`;
+  }
+});
+
+async function getPlatformStats() {
+  isLoadingPlatformStats.value = true;
+  
+  try {
+    const res = await get("/platform-referral-stats/");
+    if (res?.data) {
+      platformStats.value = {
+        active_referrers: res.data.active_referrers || 0,
+        top_earner_amount: res.data.top_earner_amount || 0,
+        quick_payout_time: res.data.quick_payout_time || "24hr",
+        commission_rates: res.data.commission_rates || {
+          gig_completion: '5%',
+          pro_subscription: '20%',
+          gold_sponsor: '20%'
+        }
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching platform stats:", error);
+    // Keep default values if API fails
+  } finally {
+    isLoadingPlatformStats.value = false;
+  }
+}
 
 async function getReferredUsers() {
+  isLoadingUsers.value = true;
+  usersError.value = null;
+  
   try {
     const res = await get("/referred-users/");
-    console.log(res);
 
     if (res?.data?.referred_users) {
-      // If API returns data in the expected format with referred_users array
       referredUsers.value = res.data.referred_users;
-      // Update the tab count
       tabs.value[1].count = referredUsers.value.length;
     } else if (Array.isArray(res?.data)) {
-      // If API directly returns an array
       referredUsers.value = res.data;
-      // Update the tab count
       tabs.value[1].count = referredUsers.value.length;
     } else {
       console.error("Unexpected data format:", res);
       referredUsers.value = [];
+      usersError.value = "Unexpected data format received";
     }
   } catch (error) {
     console.error("Error fetching referred users:", error);
     referredUsers.value = [];
+    usersError.value = "Failed to load referred users. Please try again.";
+    toast.add({ 
+      title: "Error", 
+      description: "Failed to load referred users", 
+      color: "red" 
+    });
+  } finally {
+    isLoadingUsers.value = false;
   }
 }
 
-// Sample data for earnings history
-const earnings = ref([
-  {
-    date: "2025-03-12T15:30:00",
-    userName: "Mohammad Rahman",
-    task: "Product Purchase",
-    amount: 45.5,
-  },
-  {
-    date: "2025-03-10T09:15:00",
-    userName: "Sakib Khan",
-    task: "Subscription",
-    amount: 25.0,
-  },
-  {
-    date: "2025-03-05T14:20:00",
-    userName: "Mohammad Rahman",
-    task: "Mobile App Download",
-    amount: 15.0,
-  },
-  {
-    date: "2025-02-28T10:45:00",
-    userName: "Nusrat Jahan",
-    task: "Website Sign Up",
-    amount: 10.0,
-  },
-]);
+async function getCommissionHistory() {
+  isLoadingCommissions.value = true;
+  commissionError.value = null;
+  
+  try {
+    const res = await get("/commission-history/");
+
+    if (res?.data) {
+      commissionData.value = res.data;
+      // Update earnings with real data
+      earnings.value = res.data.recent_transactions.map(transaction => ({
+        date: transaction.date,
+        userName: transaction.referred_user?.name || 'Unknown User',
+        task: transaction.type,
+        type_code: transaction.type_code,
+        amount: transaction.amount,
+        commission_rate: transaction.commission_rate
+      }));
+      
+      // Update tab count
+      tabs.value[0].count = res.data.recent_transactions.length;
+    }
+  } catch (error) {
+    console.error("Error fetching commission history:", error);
+    commissionError.value = "Failed to load commission history. Please try again.";
+    toast.add({ 
+      title: "Error", 
+      description: "Failed to load commission history", 
+      color: "red" 
+    });
+  } finally {
+    isLoadingCommissions.value = false;
+  }
+}
+
+// Computed properties for commission breakdown
+const commissionBreakdown = computed(() => {
+  return [
+    {
+      name: 'Gig Completions',
+      type: 'gig_completion',
+      rate: '5%',
+      count: commissionData.value.commission_breakdown.gig_completion.count,
+      amount: commissionData.value.commission_breakdown.gig_completion.total_amount,
+      color: 'blue',
+      icon: 'i-heroicons-briefcase'
+    },
+    {
+      name: 'Pro Subscriptions',
+      type: 'pro_subscription', 
+      rate: '20%',
+      count: commissionData.value.commission_breakdown.pro_subscription.count,
+      amount: commissionData.value.commission_breakdown.pro_subscription.total_amount,
+      color: 'purple',
+      icon: 'i-heroicons-star'
+    },
+    {
+      name: 'Gold Sponsors',
+      type: 'gold_sponsor',
+      rate: '20%',
+      count: commissionData.value.commission_breakdown.gold_sponsor.count,
+      amount: commissionData.value.commission_breakdown.gold_sponsor.total_amount,
+      color: 'yellow',
+      icon: 'i-heroicons-trophy'
+    }
+  ];
+});
+
+// Analytics computed properties
+const averageCommission = computed(() => {
+  if (earnings.value.length === 0) return 0;
+  const total = earnings.value.reduce((sum, earning) => sum + earning.amount, 0);
+  return total / earnings.value.length;
+});
+
+const bestPerformingService = computed(() => {
+  const breakdown = commissionBreakdown.value;
+  if (breakdown.length === 0) return 'No Data';
+  const best = breakdown.reduce((max, service) => 
+    service.amount > max.amount ? service : max, breakdown[0]);
+  return best.name;
+});
+
+const thisMonthEarnings = computed(() => {
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  return earnings.value
+    .filter(earning => new Date(earning.date) >= startOfMonth)
+    .reduce((sum, earning) => sum + earning.amount, 0);
+});
+
+const lastMonthEarnings = computed(() => {
+  const now = new Date();
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  return earnings.value
+    .filter(earning => {
+      const date = new Date(earning.date);
+      return date >= startOfLastMonth && date < startOfThisMonth;
+    })
+    .reduce((sum, earning) => sum + earning.amount, 0);
+});
+
+const growthRate = computed(() => {
+  const thisMonth = thisMonthEarnings.value;
+  const lastMonth = lastMonthEarnings.value;
+  if (lastMonth === 0) return thisMonth > 0 ? 100 : 0;
+  return ((thisMonth - lastMonth) / lastMonth) * 100;
+});
+
+// Initialize earnings as empty array - will be populated from API
+const earnings = ref([]);
 
 // Define tabs with counts from actual data
 const tabs = ref([
   {
     name: "Earnings History",
     icon: "i-heroicons-banknotes",
-    count: earnings.value.length,
+    count: 0, // This will be updated after data is fetched
   },
   {
     name: "Referred Users",
@@ -805,40 +287,96 @@ const tabs = ref([
 ]);
 
 function CopyToClip(text) {
-  //Copy text to clipboard
-  console.log(text);
   navigator.clipboard.writeText(text);
-  toast.add({ title: "Link copied" });
+  toast.add({ 
+    title: "Link copied", 
+    description: "Referral link copied to clipboard",
+    color: "green",
+    icon: "i-heroicons-check-circle"
+  });
+}
+
+// Export commission data to CSV
+function exportCommissions() {
+  const csvData = [
+    ['Date', 'Referred User', 'Service Type', 'Commission Rate', 'Amount (BDT)'],
+    ...filteredEarnings.value.map(earning => [
+      formatDate(earning.date),
+      earning.userName,
+      earning.task,
+      getCommissionRate(earning.type_code || 'gig_completion'),
+      earning.amount.toFixed(2)
+    ])
+  ];
+
+  const csvContent = csvData.map(row => row.join(',')).join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `commission_history_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+
+  toast.add({ 
+    title: "Export complete", 
+    description: "Commission data exported successfully",
+    color: "green",
+    icon: "i-heroicons-check-circle"
+  });
 }
 
 // Share on social media
 function shareOnSocial(platform) {
   let url = "";
-  const text = "Join me and earn rewards! Use my referral link:";
+  const text = customMessage.value || "Join me and earn rewards! Use my referral link:";
+  const referralLink = `https://adsyclub.com/auth/register/?ref=${user?.user?.referral_code}`;
 
   switch (platform) {
     case "facebook":
-      url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-        `https://adsyclub.com/auth/register/?ref=${user?.user?.referral_code}`
-      )}`;
+      url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`;
       break;
     case "twitter":
-      url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-        `https://adsyclub.com/auth/register/?ref=${user?.user?.referral_code}`
-      )}&text=${encodeURIComponent(text)}`;
+      url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent(text)}`;
       break;
     case "whatsapp":
-      url = `https://wa.me/?text=${encodeURIComponent(
-        text +
-          " " +
-          `https://adsyclub.com/auth/register/?ref=${user?.user?.referral_code}`
-      )}`;
+      url = `https://wa.me/?text=${encodeURIComponent(text + " " + referralLink)}`;
+      break;
+    case "linkedin":
+      url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(referralLink)}`;
       break;
   }
 
   if (url) {
     window.open(url, "_blank");
+    showShareModal.value = false;
   }
+}
+
+// Share with custom message
+function shareCustomMessage() {
+  const text = customMessage.value || "Join me and earn rewards! Use my referral link:";
+  const referralLink = `https://adsyclub.com/auth/register/?ref=${user?.user?.referral_code}`;
+  
+  if (navigator.share) {
+    navigator.share({
+      title: 'Join AdSyClub',
+      text: text,
+      url: referralLink
+    });
+  } else {
+    // Fallback to copying the full message
+    const fullMessage = `${text} ${referralLink}`;
+    navigator.clipboard.writeText(fullMessage);
+    toast.add({ 
+      title: "Message copied", 
+      description: "Full message with link copied to clipboard",
+      color: "green"
+    });
+  }
+  showShareModal.value = false;
 }
 
 // Format date function
@@ -848,6 +386,26 @@ function formatDate(dateString) {
     month: "short",
     day: "numeric",
   });
+}
+
+// Get service type color for badges
+function getServiceTypeColor(typeCode) {
+  const colorMap = {
+    'gig_completion': 'blue',
+    'pro_subscription': 'purple',
+    'gold_sponsor': 'yellow'
+  };
+  return colorMap[typeCode] || 'gray';
+}
+
+// Get commission rate for display
+function getCommissionRate(typeCode) {
+  const rateMap = {
+    'gig_completion': '5%',
+    'pro_subscription': '20%',
+    'gold_sponsor': '20%'
+  };
+  return rateMap[typeCode] || '5%';
 }
 
 // Set active tab and animate the indicator
@@ -899,6 +457,14 @@ onMounted(() => {
   nextTick(() => {
     updateIndicator();
   });
+  // Fetch initial data
+  if (user?.value?.user) {
+    getReferredUsers();
+    getCommissionHistory();
+  }
+  
+  // Always fetch platform stats (public data)
+  getPlatformStats();
 
   // Update indicator on window resize
   window.addEventListener("resize", updateIndicator);
@@ -910,422 +476,5 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Subtle animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(0, -10px);
-  }
-}
-
-@keyframes floatReverse {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(0, 10px);
-  }
-}
-
-@keyframes width {
-  from {
-    width: 0;
-  }
-  to {
-    width: 24rem;
-  }
-}
-
-/* Applied animations */
-.animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.8s ease-out forwards;
-}
-
-.animate-float {
-  animation: float 8s ease-in-out infinite;
-}
-
-.animate-float-reverse {
-  animation: floatReverse 9s ease-in-out infinite;
-}
-
-.animate-width {
-  animation: width 1s ease-out forwards;
-  width: 0;
-}
-
-/* Stats Cards */
-.stat-card {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.stat-icon-wrapper {
-  transition: all 0.3s ease;
-}
-
-/* Copy button */
-.copy-btn {
-  transition: all 0.2s ease;
-  overflow: hidden;
-}
-
-.copy-btn::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateX(-100%);
-}
-
-.copy-btn:hover::after {
-  transform: translateX(100%);
-  transition: all 0.5s ease;
-}
-
-/* Social buttons */
-.social-btn {
-  position: relative;
-  overflow: hidden;
-}
-
-.social-btn::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(255, 255, 255, 0) 70%
-  );
-  transform: scale(0);
-  opacity: 0;
-  transition: transform 0.5s, opacity 0.5s;
-}
-
-.social-btn:hover::after {
-  transform: scale(1);
-  opacity: 1;
-}
-
-.social-btn:hover {
-  transform: translateY(-2px);
-}
-
-/* Add these to your existing styles */
-
-.tab-button:hover .tab-icon {
-  transform: translateY(-2px) scale(1.1);
-}
-
-.table-row-animate {
-  opacity: 0;
-  animation: tableRowFadeIn 0.5s forwards;
-  animation-delay: var(--delay, 0s);
-}
-
-@keyframes tableRowFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Search input animation */
-.search-input {
-  transition: width 0.3s ease;
-}
-
-.search-input:focus-within {
-  width: 160px !important;
-}
-
-/* Action button hover effect */
-.action-btn {
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.action-btn::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(var(--color-primary-500-rgb), 0.1);
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 0.4s ease;
-  z-index: -1;
-}
-
-.action-btn:hover::after {
-  transform: scaleX(1);
-  transform-origin: left;
-}
-
-/* Tab animation enhancements */
-.tab-pane {
-  will-change: transform, opacity;
-}
-
-/* Enhanced pagination styling */
-.pagination-control {
-  transition: transform 0.3s ease;
-}
-
-.pagination-control:hover {
-  transform: translateY(-2px);
-}
-
-/* User avatar enhanced animation */
-.user-avatar {
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-tr:hover .user-avatar {
-  transform: scale(1.2) rotate(8deg);
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
-}
-/* public section */
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInDelayed {
-  0% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes floatSlow {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(0, -30px);
-  }
-}
-
-@keyframes floatReverse {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(0, 30px);
-  }
-}
-
-@keyframes expand {
-  from {
-    width: 0;
-  }
-  to {
-    width: 5rem;
-  }
-}
-
-/* Applied animations */
-.animate-fade-in {
-  animation: fadeIn 1s ease-out forwards;
-}
-
-.animate-fade-in-delayed {
-  animation: fadeInDelayed 1.5s ease-out forwards;
-}
-
-.animate-float-slow {
-  animation: floatSlow 20s ease-in-out infinite;
-}
-
-.animate-float-reverse {
-  animation: floatReverse 15s ease-in-out infinite;
-}
-
-.animate-expand {
-  animation: expand 1s ease-out forwards;
-}
-
-/* CTA Buttons */
-.cta-button,
-.cta-button-secondary {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.cta-button::after,
-.cta-button-secondary::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    120deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.3) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: translateX(-100%);
-  transition: transform 0.8s;
-}
-
-.cta-button:hover::after,
-.cta-button-secondary:hover::after {
-  transform: translateX(100%);
-}
-
-/* Step Cards Animation */
-.step-card {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transform: translateY(0);
-}
-
-.step-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-}
-
-/* Stat Boxes */
-.stat-box {
-  transition: all 0.3s ease;
-}
-
-.stat-box:hover {
-  transform: scale(1.05);
-}
-
-/* Testimonial Cards */
-.testimonial-card {
-  transition: all 0.3s ease;
-  border-left: 4px solid transparent;
-}
-
-.testimonial-card:hover {
-  border-left: 4px solid var(--color-primary-500);
-  transform: translateX(5px);
-}
-
-/* FAQ Accordion */
-.faq-accordion :deep(.u-accordion-item) {
-  margin-bottom: 0.5rem;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  border: 1px solid var(--color-gray-100);
-}
-
-.faq-accordion :deep(.u-accordion-item:hover) {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-}
-
-.faq-accordion :deep(.u-accordion-item__button) {
-  transition: background 0.3s ease;
-}
-
-.faq-accordion :deep(.u-accordion-item__button:hover) {
-  background-color: var(--color-gray-50);
-}
-
-.faq-accordion :deep(.dark .u-accordion-item) {
-  border-color: var(--color-gray-700);
-}
-
-.faq-accordion :deep(.dark .u-accordion-item__button:hover) {
-  background-color: var(--color-gray-700);
-}
-
-/* Final CTA Section */
-.cta-section {
-  position: relative;
-  overflow: hidden;
-}
-
-.cta-section::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
-  opacity: 0.5;
-}
-
-.cta-button-final {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.cta-button-final:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 7px 14px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
-}
+/* No scoped styles needed since all styling is now in the components */
 </style>

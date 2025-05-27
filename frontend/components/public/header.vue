@@ -1,180 +1,133 @@
-<template>  <div
-    class="py-3 z-[99999999] bg-slate-200/70 shadow-sm rounded-b-lg dark:bg-black max-w-[1280px] md:mx-auto"
+<template>
+  <div
+    class="py-3 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg  transition-all duration-300  z-[99999999] w-full"
     :class="[
       isScrolled
-        ? 'fixed top-0 left-0 right-0 mx-auto backdrop-blur-sm border-b border-slate-200/50 rounded-b-lg'
-        : 'sticky',
-      'mobile-app-header' // Adding class for mobile app styling
+        ? 'fixed backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg  border-gray-200/50 dark:border-gray-800/50'
+        : 'sticky w-full shadow-sm',
+      'sm:py-3 py-1.5', // Smaller padding on mobile
     ]"
   >
-    <!-- Subscription Warnings - Always visible regardless of scroll state -->
-    <div class="subscription-warnings relative px-4">
-      <!-- Pre-expiration Warning (Closable) -->
-      <transition name="fade">
+    <!-- Subscription Warnings Section -->
+    <div class="relative px-4">
+      <!-- Pre-expiration Warning -->
+      <transition enter-active-class="transition duration-300 ease-out" 
+                  enter-from-class="opacity-0 -translate-y-4" 
+                  leave-active-class="transition duration-200 ease-in" 
+                  leave-to-class="opacity-0 -translate-y-4">
         <div
           v-if="shouldShowWarning && !warningDismissed"
           class="mx-auto my-2 px-4 relative overflow-hidden rounded-lg border border-amber-300/70 dark:border-amber-600/50 group transition-all duration-300 hover:shadow-sm"
         >
-          <!-- Premium glass background -->
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-amber-50/90 via-amber-50/80 to-amber-100/90 dark:from-amber-900/30 dark:via-amber-800/20 dark:to-amber-900/30 backdrop-blur-md"
-          ></div>
+          <!-- Warning Background -->
+          <div class="absolute inset-0 bg-gradient-to-r from-amber-50/90 via-amber-50/80 to-amber-100/90 dark:from-amber-900/30 dark:via-amber-800/20 dark:to-amber-900/30 backdrop-blur-md"></div>
+          
+          <!-- Decorative Elements -->
+          <div class="absolute -left-20 -top-20 w-40 h-40 bg-amber-200/20 rounded-full blur-2xl transform-gpu"></div>
+          <div class="absolute -right-20 -bottom-20 w-40 h-40 bg-amber-300/20 rounded-full blur-2xl transform-gpu"></div>
+          
+          <!-- Animated Border Lines -->
+          <div class="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-amber-400/50 dark:via-amber-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"></div>
+          <div class="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-amber-400/50 dark:via-amber-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"></div>
 
-          <!-- Premium effects -->
-          <div
-            class="absolute -left-20 -top-20 w-40 h-40 bg-amber-200/20 rounded-full blur-2xl transform-gpu"
-          ></div>
-          <div
-            class="absolute -right-20 -bottom-20 w-40 h-40 bg-amber-300/20 rounded-full blur-2xl transform-gpu"
-          ></div>
-
-          <!-- Shimmering line -->
-          <div
-            class="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-amber-400/50 dark:via-amber-400/30 to-transparent opacity-70 animate-shimmer"
-          ></div>
-          <div
-            class="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-amber-400/50 dark:via-amber-400/30 to-transparent opacity-70 animate-shimmer"
-          ></div>
-
-          <div
-            class="relative z-10 p-2.5 sm:p-3.5 flex items-center justify-between"
-          >
-            <!-- Left side with icon and text -->
+          <!-- Content -->
+          <div class="relative z-10 p-2.5 sm:p-3.5 flex items-center justify-between">
             <div class="flex items-center gap-2 sm:gap-3">
-              <!-- Premium icon with pulse effect -->
+              <!-- Warning Icon -->
               <div class="relative hidden xs:block">
-                <div
-                  class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-800 dark:to-amber-700 border border-amber-300/50 dark:border-amber-600/30 flex items-center justify-center shadow-inner"
-                >
-                  <UIcon
-                    name="i-heroicons-clock"
-                    class="w-5 h-5 text-amber-600 dark:text-amber-400"
-                  />
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-800 dark:to-amber-700 border border-amber-300/50 dark:border-amber-600/30 flex items-center justify-center shadow-inner">
+                  <UIcon name="i-heroicons-clock" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 </div>
-                <div
-                  class="absolute -inset-1.5 bg-amber-300/20 blur-md rounded-full animate-pulse-slow opacity-50"
-                ></div>
+                <div class="absolute -inset-1.5 bg-amber-300/20 blur-md rounded-full animate-pulse opacity-50"></div>
               </div>
-
-              <!-- Alert content - simplified to just the title -->
-
+              
+              <!-- Warning Text -->
               <div class="inline-flex items-center gap-2">
-                <UIcon
-                  name="i-icon-park-outline-caution"
-                  class="size-5 text-amber-800"
-                />
+                <UIcon name="i-icon-park-outline-caution" class="w-5 h-5 text-amber-800" />
                 <h3 class="text-xs sm:text-sm font-medium text-amber-800">
                   {{ $t("subscription_expiring") }}
                   <span class="inline-block ml-1 font-semibold">
-                    {{ daysRemaining }}
-                    {{ daysRemaining === 1 ? $t("day") : $t("days") }}
+                    {{ daysRemaining }} {{ daysRemaining === 1 ? $t("day") : $t("days") }}
                   </span>
                 </h3>
               </div>
             </div>
-
-            <!-- Right side with actions -->
-            <div class="flex items-center gap-2">
-              <UButton
-                @click="dismissWarning"
-                size="2xs"
-                variant="ghost"
-                color="gray"
-                icon="i-heroicons-x-mark"
-                class="!p-1 hover:rotate-90 transition-transform"
-                aria-label="Dismiss"
-              />
-            </div>
+            
+            <!-- Dismiss Button -->
+            <UButton
+              @click="dismissWarning"
+              size="2xs"
+              variant="ghost"
+              color="gray"
+              icon="i-heroicons-x-mark"
+              class="p-1 hover:rotate-90 transition-transform"
+              aria-label="Dismiss"
+            />
           </div>
         </div>
       </transition>
 
-      <!-- Post-expiration Alert (Not Closable) -->
-      <transition name="fade">
+      <!-- Post-expiration Alert -->
+      <transition enter-active-class="transition duration-300 ease-out" 
+                  enter-from-class="opacity-0 -translate-y-4" 
+                  leave-active-class="transition duration-200 ease-in" 
+                  leave-to-class="opacity-0 -translate-y-4">
         <div
           v-if="isExpired"
-          class="mx-auto my-2 relative overflow-hidden rounded-lg border border-red-400/70 dark:border-red-600/40 group transition-all duration-300 shadow-sm hover:shadow-sm"
+          class="mx-auto my-2 relative overflow-hidden rounded-lg border border-red-400/70 dark:border-red-600/40 transition-all duration-300 shadow-sm hover:shadow-sm"
         >
-          <!-- Premium glass background with subtle animation -->
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-red-50/90 via-red-100/80 to-red-50/90 dark:from-red-900/30 dark:via-red-800/20 dark:to-red-900/30 backdrop-blur-md"
-          ></div>
+          <!-- Alert Background -->
+          <div class="absolute inset-0 bg-gradient-to-r from-red-50/90 via-red-100/80 to-red-50/90 dark:from-red-900/30 dark:via-red-800/20 dark:to-red-900/30 backdrop-blur-md"></div>
+          
+          <!-- Decorative Elements -->
+          <div class="absolute -left-20 -top-20 w-40 h-40 bg-red-200/20 rounded-full blur-2xl transform-gpu"></div>
+          <div class="absolute -right-20 -bottom-20 w-40 h-40 bg-red-300/20 rounded-full blur-2xl transform-gpu"></div>
+          
+          <!-- Pulsing Border -->
+          <div class="absolute inset-0 rounded-lg border-2 border-red-400/20 dark:border-red-600/20 scale-[0.98] animate-pulse"></div>
+          
+          <!-- Animated Border Lines -->
+          <div class="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"></div>
+          <div class="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"></div>
 
-          <!-- Premium effects -->
-          <div
-            class="absolute -left-20 -top-20 w-40 h-40 bg-red-200/20 rounded-full blur-2xl transform-gpu"
-          ></div>
-          <div
-            class="absolute -right-20 -bottom-20 w-40 h-40 bg-red-300/20 rounded-full blur-2xl transform-gpu"
-          ></div>
-
-          <!-- Pulsing border effect -->
-          <div
-            class="absolute inset-0 rounded-lg border-2 border-red-400/20 dark:border-red-600/20 scale-[0.98] animate-pulse-slow"
-          ></div>
-
-          <!-- Shimmering lines -->
-          <div
-            class="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-shimmer"
-          ></div>
-          <div
-            class="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-shimmer"
-          ></div>
-
-          <div
-            class="relative z-10 p-3 sm:p-3.5 flex items-center justify-between"
-          >
-            <!-- Left side with icon and text -->
+          <!-- Content -->
+          <div class="relative z-10 p-3 sm:p-3.5 flex items-center justify-between">
             <div class="flex items-center gap-2 sm:gap-3">
-              <!-- Premium alert icon with effect -->
+              <!-- Alert Icon -->
               <div class="relative hidden xs:block">
-                <div
-                  class="w-10 h-10 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-800 dark:to-red-700 border border-red-300/50 dark:border-red-600/30 flex items-center justify-center shadow-inner"
-                >
-                  <UIcon
-                    name="i-heroicons-exclamation-triangle"
-                    class="w-5 h-5 text-red-600 dark:text-red-400"
-                  />
+                <div class="size-7 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-800 dark:to-red-700 border border-red-300/50 dark:border-red-600/30 flex items-center justify-center shadow-inner">
+                  <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
-                <div
-                  class="absolute -inset-1.5 bg-red-300/30 blur-md rounded-full animate-pulse opacity-70"
-                ></div>
+                <div class="absolute -inset-1.5 bg-red-300/30 blur-md rounded-full animate-pulse opacity-70"></div>
               </div>
-
-              <!-- Simplified alert content - just the title -->
-              <h3
-                class="text-xs sm:text-sm font-medium text-red-800 dark:text-red-300"
-              >
+              
+              <!-- Alert Text -->
+              <h3 class="text-xs sm:text-sm font-medium text-red-800 dark:text-red-300">
                 {{ $t("subscription_expired") }}
               </h3>
             </div>
-
-            <!-- Premium renewal button -->
+            
+            <!-- Renewal Button -->
             <UButton
               @click="renewSubscription"
               size="2xs"
               color="red"
               variant="solid"
-              class="!py-1 !px-2.5 group hover:bg-red-600 transition-colors duration-300 relative overflow-hidden"
+              class="py-1 px-2.5 group hover:bg-red-600 transition-colors duration-300 relative overflow-hidden"
             >
-              <div
-                class="absolute inset-0 bg-gradient-to-r from-red-400/0 via-white/10 to-red-400/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"
-              ></div>
-              <span
-                class="text-2xs sm:text-xs whitespace-nowrap flex items-center gap-1 relative z-10"
-              >
+              <div class="absolute inset-0 bg-gradient-to-r from-red-400/0 via-white/10 to-red-400/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
+              <span class="text-xs whitespace-nowrap flex items-center gap-1 relative z-10">
                 {{ $t("renew_now") }}
-                <UIcon
-                  name="i-heroicons-arrow-right"
-                  class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"
-                />
+                <UIcon name="i-heroicons-arrow-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
               </span>
             </UButton>
           </div>
         </div>
       </transition>
-    </div>    <UContainer>
-      <!-- <PublicDonation /> -->
+    </div>
+    
+    <UContainer class="w-full max-w-7xl mx-auto">
+      <!-- Mobile Sidebar Menu -->
       <USlideover
         v-model="isOpen"
         side="left"
@@ -186,18 +139,15 @@
       >
         <UCard
           :ui="{
-            header: {
-              padding: 'pb-0.5',
-            },
+            header: { padding: 'pb-0.5' },
             ring: '',
             rounded: '',
             shadow: '',
-            body: {
-              padding: '',
-            },
+            body: { padding: '' },
           }"
           class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 mt-4 overflow-y-scroll"
         >
+          <!-- Close Button -->
           <div class="w-full flex justify-end pt-12 px-4">
             <UButton
               color="gray"
@@ -207,60 +157,80 @@
               @click="isOpen = false"
             />
           </div>
+          
+          <!-- Language Switcher in Sidebar -->
           <div class="px-4">
-            <PublicTranslateHandler class="px-2 mt-3" />
+            <PublicTranslateHandler class="px-2 mt-3" :showText="true" />
           </div>
+          
           <!-- Navigation Links -->
           <div class="px-4 py-6">
-            <h3
-              class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 px-4"
-            >
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 px-4">
               {{ $t("menu") }}
             </h3>
-            <UVerticalNavigation
-              :links="[
-                {
-                  label: $t('home'),
-                  to: '/',
-                  icon: 'i-heroicons-home',
-                },
-                {
-                  label: $t('classified_service'),
-                  to: '#classified-services',
-                  icon: 'i-heroicons-clipboard-document-list',
-                },
-                {
-                  label: $t('earn_money'),
-                  to: '#micro-gigs',
-                  icon: 'i-healthicons:money-bag-outline',
-                },
-                {
-                  label: $t('faq'),
-                  to: '/faq/',
-                  icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
-                },
-                {
-                  label: 'মোবাইল রিচার্জ',
-                  to: '/mobile-recharge',
-                  icon: 'i-ic-baseline-install-mobile',
-                },
-              ]"
-              :ui="{
-                padding: 'py-3 px-4',
-              }"
-              class="space-y-2"
-            >
-              <template #default="{ link }">
-                <span @click="isOpen = false">{{ link.label }}</span>
-              </template>
-            </UVerticalNavigation>
+            
+            <!-- Mobile Navigation Menu -->
+            <div class="rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 space-y-1 py-2">
+              <!-- Home -->
+              <NuxtLink to="/" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
+                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                  <UIcon name="i-heroicons-home-20-solid" class="w-5 h-5" />
+                </div>
+                <span class="flex-1 font-medium text-sm text-blue-700 dark:text-blue-300">{{ $t('home') }}</span>
+                <UIcon name="i-heroicons-chevron-right" 
+                class="w-4 h-4 text-blue-500 dark:text-blue-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+              </NuxtLink>
+              
+              <!-- Classified Service -->
+              <NuxtLink to="#classified-services" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
+                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+                  <UIcon name="i-heroicons-clipboard-document-list" class="w-5 h-5" />
+                </div>
+                <span class="flex-1 font-medium text-sm text-emerald-700 dark:text-emerald-300">{{ $t('classified_service') }}</span>
+                <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-emerald-500 dark:text-emerald-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+              </NuxtLink>
+              
+              <!-- E-Learning -->
+              <NuxtLink to="/courses" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
+                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+                  <UIcon name="i-heroicons-academic-cap" class="w-5 h-5" />
+                </div>
+                <span class="flex-1 font-medium text-sm text-purple-700 dark:text-purple-300">{{ $t('elearning') }}</span>
+                <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-purple-500 dark:text-purple-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+              </NuxtLink>
+              
+              <!-- Earn Money -->
+              <NuxtLink to="#micro-gigs" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
+                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                  <UIcon name="i-healthicons:money-bag-outline" class="w-5 h-5" />
+                </div>
+                <span class="flex-1 font-medium text-sm text-amber-700 dark:text-amber-300">{{ $t('earn_money') }}</span>
+                <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-amber-500 dark:text-amber-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+              </NuxtLink>
+              
+              <!-- FAQ -->
+              <NuxtLink to="/faq/" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
+                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                  <UIcon name="i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question" class="w-5 h-5" />
+                </div>
+                <span class="flex-1 font-medium text-sm text-red-700 dark:text-red-300">{{ $t('faq') }}</span>
+                <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-red-500 dark:text-red-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+              </NuxtLink>
+              
+              <!-- Mobile Recharge -->
+              <NuxtLink to="/mobile-recharge" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
+                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                  <UIcon name="i-ic-baseline-install-mobile" class="w-5 h-5" />
+                </div>
+                <span class="flex-1 font-medium text-sm text-indigo-700 dark:text-indigo-300">মোবাইল রিচার্জ</span>
+                <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-indigo-500 dark:text-indigo-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+              </NuxtLink>
+            </div>
           </div>
 
           <!-- Download App Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
-            <h3
-              class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4"
-            >
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
               {{ $t("download_our_app") }}
             </h3>
             <div class="flex items-center gap-4">
@@ -268,33 +238,24 @@
                 to="/coming-soon"
                 class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
               >
-                <img
-                  src="/static/frontend/images/google.png"
-                  alt="Google Play"
-                  class="w-full h-full object-contain"
-                />
+                <img src="/static/frontend/images/google.png" alt="Google Play" class="w-full h-full object-contain" />
               </NuxtLink>
               <NuxtLink
                 href="/coming-soon"
                 class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
               >
-                <img
-                  src="/static/frontend/images/apple.png"
-                  alt="App Store"
-                  class="w-full h-full object-contain"
-                />
+                <img src="/static/frontend/images/apple.png" alt="App Store" class="w-full h-full object-contain" />
               </NuxtLink>
             </div>
           </div>
 
-          <!-- Social Media Share Section -->
+          <!-- Social Media Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
-            <h3
-              class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4"
-            >
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
               {{ $t("follow_us") }}
             </h3>
-            <div class="flex items-center gap-4">              <a
+            <div class="flex items-center gap-4">
+              <a
                 href="https://www.facebook.com/profile.php?id=61573940373294"
                 target="_blank"
                 class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition"
@@ -302,137 +263,151 @@
               >
                 <UIcon name="i-logos-facebook" class="w-5 h-5" />
               </a>
-              
             </div>
           </div>
-
-          <!-- Footer Section -->
         </UCard>
       </USlideover>
       
-      <div class="flex items-center justify-between gap-2 lg:gap-6 px-3">        
-        <!-- Mobile Layout: Menu Button and Logo grouped together -->
-        <div class="flex items-center gap-4">
-          <!-- Mobile View - Sidebar Menu Button (only visible on mobile) -->
+      <div class="flex items-center justify-between gap-2 lg:gap-6 px-3">
+        <!-- Mobile Layout: Menu Button and Logo -->
+        <div class="flex items-center gap-2">
+          <!-- Mobile Menu Button -->
           <div class="md:hidden">
             <UButton
               @click="isOpen = true"
-              icon="i-ci-hamburger-md"
-              variant="outline"
+              icon="i-heroicons-bars-3"
+              variant="ghost"
               color="gray"
+              class="hover:bg-gray-100 rounded-lg transition-all duration-200"
               size="sm"
             />
           </div>
-          
-          <!-- Logo for all screens - positioned next to hamburger on mobile -->
+
+          <!-- Logo -->
           <PublicLogo />
         </div>
         
         <!-- Desktop Navigation Menu -->
-        <div class="hidden md:block">
-          <UHorizontalNavigation
-            :links="[
-              {
-                label: $t('home'),
-                to: '/#home',
-                icon: 'i-heroicons-home',
-              },
-              {
-                label: $t('business_network'),
-                to: '/business-network',
-                icon: 'i-lucide-globe',
-              },
-              {
-                label: $t('adsy_news'),
-                to: '/adsy-news',
-                icon: 'i-lucide-newspaper',
-              },
-              {
-                label: $t('earn_money'),
-                to: '/#micro-gigs',
-                icon: 'i-healthicons:money-bag-outline',
-              },
-              {
-                label: $t('mobile_recharge'),
-                to: '/mobile-recharge',
-                icon: 'i-uil-mobile-vibrate',
-              },
-            ]"
-            class="border-b border-gray-200 dark:border-gray-800 text-lg"
-            :ui="{
-              wrapper: 'w-auto',
-              label: 'text-base',
-              active: 'after:hidden',
-            }"
-          />
-        </div>
-          <!-- Not Logged In User Section -->
+        <nav class="hidden md:block">
+          <div class="flex items-center gap-2 border-b border-transparent">
+            <NuxtLink 
+              to="/#home" 
+              class="relative flex items-center gap-2 py-1 px-2 font-medium text-blue-600 hover:text-blue-800 transition-all duration-300"
+              :class="{ 'active': $route.path === '/' }"
+            >
+              <UIcon name="i-heroicons-home-20-solid" class="w-5 h-5 transition-transform duration-200 hover:scale-110" />
+              <span>{{ $t('home') }}</span>
+              <div class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" :class="{ 'scale-x-100': $route.path === '/' }"></div>
+            </NuxtLink>
+            
+            <NuxtLink 
+              to="/business-network" 
+              class="relative flex items-center gap-2 py-1 px-2 font-medium text-emerald-600 hover:text-emerald-800 transition-all duration-300"
+              :class="{ 'active': $route.path === '/business-network' }"
+            >
+              <UIcon name="i-lucide-globe" class="w-5 h-5 transition-transform duration-200 hover:scale-110" />
+              <span>{{ $t('business_network') }}</span>
+              <div class="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" :class="{ 'scale-x-100': $route.path === '/business-network' }"></div>
+            </NuxtLink>
+            
+            <NuxtLink 
+              to="/adsy-news" 
+              class="relative flex items-center gap-2 py-1 px-2 font-medium text-amber-600 hover:text-amber-800 transition-all duration-300"
+              :class="{ 'active': $route.path === '/adsy-news' }"
+            >
+              <UIcon name="i-lucide-newspaper" class="w-5 h-5 transition-transform duration-200 hover:scale-110" />
+              <span>{{ $t('adsy_news') }}</span>
+              <div class="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" :class="{ 'scale-x-100': $route.path === '/adsy-news' }"></div>
+            </NuxtLink>
+            
+            <NuxtLink 
+              to="/courses" 
+              class="relative flex items-center gap-2 py-1 px-2 font-medium text-purple-600 hover:text-purple-800 transition-all duration-300"
+              :class="{ 'active': $route.path === '/courses' }"
+            >
+              <UIcon name="i-heroicons-academic-cap" class="w-5 h-5 transition-transform duration-200 hover:scale-110" />
+              <span>{{ $t('elearning') }}</span>
+              <div class="absolute bottom-0 left-0 w-full h-0.5 bg-purple-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" :class="{ 'scale-x-100': $route.path === '/courses' }"></div>
+            </NuxtLink>
+            
+            <NuxtLink 
+              to="/#micro-gigs" 
+              class="relative flex items-center gap-2 py-1 px-2 font-medium text-red-600 hover:text-red-800 transition-all duration-300"
+              :class="{ 'active': $route.path === '/#micro-gigs' }"
+            >
+              <UIcon name="i-healthicons:money-bag-outline" class="w-5 h-5 transition-transform duration-200 hover:scale-110" />
+              <span>{{ $t('earn_money') }}</span>
+              <div class="absolute bottom-0 left-0 w-full h-0.5 bg-red-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" :class="{ 'scale-x-100': $route.path === '/#micro-gigs' }"></div>
+            </NuxtLink>
+          </div>
+        </nav>
+        
+        <!-- Not Logged In User Section -->
         <div v-if="!user" class="flex relative menu-container items-center">
-          <!-- Desktop language switcher -->
-          <PublicTranslateHandler class="px-2 max-sm:hidden" />
-          
+          <!-- Desktop language switcher - completely hidden on mobile -->
+          <PublicTranslateHandler class="px-2 hidden sm:block" />
+
           <!-- Mobile Profile Icon -->
           <div class="sm:hidden">
             <NuxtLink to="/auth/login">
-              <div 
-                class="size-10 rounded-full flex pl-1 items-center justify-center bg-gray-100 border border-gray-200 shadow-sm"
-              >
-                <UIcon name="i-material-symbols-person-rounded" class="size-7 text-gray-500" />
+              <div class="w-10 h-10 rounded-full flex pl-1 items-center justify-center bg-gray-100 border border-gray-200 shadow-sm">
+                <UIcon name="i-material-symbols-person-rounded" class="w-7 h-7 text-gray-500" />
               </div>
             </NuxtLink>
           </div>
-          
+
           <!-- Login Button -->
           <UButton
             to="/auth/login"
             label="Login/Register"
             color="gray"
-            class="max-sm:hidden"
+            class="hidden sm:flex"
             :ui="{
-              size: {
-                sm: 'text-xs md:text-sm',
-              },
-              padding: {
-                sm: 'px-2 py-1 md:px-2.5 md:py-1.5',
-              },
-              icon: {
-                size: {
-                  sm: 'w-2 h-2 md:w-2.5 md:h-2.5',
-                },
-              },
+              size: { sm: 'text-xs md:text-sm' },
+              padding: { sm: 'px-2 py-1 md:px-2.5 md:py-1.5' },
+              icon: { size: { sm: 'w-2 h-2 md:w-2.5 md:h-2.5' } },
             }"
             size="md"
-          >
-          </UButton>
+          />
         </div>
-          <!-- Logged In User Section -->
+        
+        <!-- Logged In User Section -->
         <div v-else class="flex relative menu-container items-center z-40">
-          <!-- Desktop language switcher -->
-          <PublicTranslateHandler class="px-2 max-sm:hidden" />
+          <!-- Desktop language switcher - completely hidden on mobile -->
+          <PublicTranslateHandler class="px-2 hidden sm:block" />
           
-          <!-- QR Code Button -->
-          <div class="flex items-center" v-if="user && user.user">
-            <UButton
-              icon="i-ic:twotone-qr-code-scanner"
-              size="xl"
-              :ui="{
-                size: { md: 'text-sm' },
-                padding: { md: 'px-2.5 py-1.5 sm:px-3 sm:py-2' },
-              }"
-              color="primary"
-              variant="ghost"
-              @click="showQr = !showQr"
-              block
-            />
-            <UModal
-              v-model="showQr"
-              :ui="{
-                width: 'w-full sm:max-w-md',
-                background: 'bg-slate-100',
-              }"
-            >              <div
-                class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden"
-              >
+          <!-- User Action Buttons -->
+          <div class="flex items-center gap-1.5 pr-1.5" v-if="user && user.user">
+            <!-- Inbox Button with Tailwind styling -->
+            <NuxtLink to="/inbox/" class="relative cursor-pointer">
+              <div class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm">
+                <UIcon name="i-material-symbols:mark-email-unread-outline" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                
+                <!-- Notification Badge with animation -->
+                <transition enter-active-class="transition duration-300 ease-out" 
+                  enter-from-class="transform scale-50 opacity-0" 
+                  leave-active-class="transition duration-200 ease-in" 
+                  leave-to-class="transform scale-50 opacity-0">
+                  <div 
+                    v-if="badgeCount > 0" 
+                    class="absolute -top-1 -right-1 min-w-4 h-4 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold px-1 shadow-sm animate-pulse"
+                  >
+                    {{ badgeCount > 99 ? '99+' : badgeCount }}
+                  </div>
+                </transition>
+              </div>
+            </NuxtLink>
+            
+            <!-- QR Code Button with Tailwind styling -->
+            <div @click="showQr = !showQr" class="relative cursor-pointer">
+              <div class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm dark:bg-green-900/30 dark:hover:bg-green-900/50">
+                <UIcon name="i-ic:twotone-qr-code-scanner" class="w-5 h-5 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+            
+            <!-- QR Code Modal -->
+            <UModal v-model="showQr" :ui="{ width: 'w-full sm:max-w-md', background: 'bg-slate-100' }">
+              <div class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden">
                 <UButton
                   icon="i-heroicons-x-mark"
                   size="sm"
@@ -441,114 +416,103 @@
                   @click="showQr = false"
                   class="absolute top-2 right-2 rounded-full"
                 />
-
                 <h3 class="text-xl font-semibold text-green-700">AdsyPay</h3>
                 <h3 class="text-xl font-semibold">Scan My QR Code</h3>
                 <div class="border p-4 rounded-lg shadow-sm bg-white">
-                  <NuxtImg
-                    class="w-[250px]"
-                    :src="`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${user.user.phone}`"
-                  ></NuxtImg>
+                  <NuxtImg class="w-[250px]" :src="`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${user.user.phone}`" />
                 </div>
               </div>
             </UModal>
-          </div>          
-          <!-- Mobile User Profile Avatar -->
-          <div 
-            @click="openMenu = !openMenu"
-            class="sm:hidden relative cursor-pointer"
-          >            <div class="relative">
-              <!-- User profile image with pink gradient border for Pro users -->
-              <div 
+          </div>
+          
+          <!-- Mobile User Profile Avatar with Tailwind -->
+          <div @click="openMenu = !openMenu" class="sm:hidden relative cursor-pointer">
+            <div class="relative">
+              <!-- User profile image with Tailwind styling -->
+              <div
                 :class="[
-                  'size-11 rounded-full flex items-center justify-center overflow-hidden shadow-sm',
-                  user?.user?.is_pro ? 'pro-profile-pink-border' : 'border-2 border-white'
+                  'size-10 rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow-sm',
+                  user?.user?.is_pro ? 'shadow-indigo-200 ring-2 ring-indigo-500' : '',
                 ]"
               >
-                <img 
+                <img
                   v-if="user?.user?.image"
                   :src="user.user.image"
                   :alt="user.user.name || user.user.first_name"
-                  class="size-full object-cover rounded-full relative z-1"
-                  style="position: relative; z-index: 1;"
+                  class="w-full h-full object-cover rounded-full z-10"
                 />
-                <UIcon v-else name="i-heroicons-user" class="size-6 text-gray-500 ml-2.5 relative z-1" style="position: relative; z-index: 1;" />
+                <UIcon v-else name="i-heroicons-user" class="w-6 h-6 text-gray-500 ml-2.5 z-10" />
               </div>
-              
-              <!-- Pro Badge for mobile - text at top right -->
-              <span
+
+              <!-- Pro Badge with Tailwind -->
+              <div
                 v-if="user?.user?.is_pro"
-                class="absolute -top-1 -right-3.5 px-2  bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full text-2xs font-semibold shadow-sm"
+                class="absolute -top-2.5 -right-3.5 px-2 flex items-center gap-0.5 py-0.5 px-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded-full text-[9px] font-medium shadow-sm"
               >
-                Pro
-              </span>
-              
-              <!-- Verification Badge for mobile -->
-              <span
+                <UIcon name="i-heroicons-shield-check" class="w-3 h-3" />
+                <span>Pro</span>
+              </div>
+
+              <!-- Verification Badge with Tailwind -->
+              <div
                 v-if="user?.user?.kyc"
-                class="absolute -bottom-1 -right-1 size-4 flex items-center justify-center bg-white rounded-full shadow-sm"
+                class="absolute -bottom-1 -right-1 w-4 h-4 bg-white dark:bg-gray-800 flex items-center justify-center rounded-full shadow-sm"
               >
-                <UIcon
-                  name="mdi:check-decagram"
-                  class="size-4 text-blue-600"
-                />
-              </span>
+                <UIcon name="mdi:check-decagram" class="w-4 h-4 text-blue-600" />
+              </div>
             </div>
           </div>
           
-          <!-- Desktop User Profile Button -->
-          <UButton
-            size="sm"
-            color="primary"
-            variant="outline"
-            @click="openMenu = !openMenu"
-            class="max-sm:hidden"
-            :ui="{
-              gap: {
-                sm: 'gap-x-1 md:gap-x-1.5',
-              },
-              size: {
-                sm: 'text-xs sm:text-sm',
-              },
-              padding: {
-                sm: 'px-1.5 py-1 md:px-2.5 md:py-1.5',
-              },
-              icon: {
-                size: {
-                  sm: 'w-2 h-2 md:w-2.5 md:h-2.5',
-                },
-              },
-            }"
+          <!-- Desktop User Profile Button with Tailwind -->
+          <div 
+            @click="openMenu = !openMenu" 
+            class="relative cursor-pointer transition-all duration-300 rounded-full hover:shadow-sm max-sm:hidden"
           >
-            <span
-              v-if="user?.user?.is_pro"
-              class="text-2xs px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
-            >
-              <div class="flex items-center gap-1">
-                <UIcon
-                  name="i-heroicons-shield-check"
-                  class="size-4 text-white"
-                />
-                <span class="text-xs">Pro</span>
+            <div class="flex items-center gap-2 p-1 pl-1 pr-3 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+              <!-- Pro Badge -->
+              <div 
+                v-if="user?.user?.is_pro"
+                class="flex items-center gap-1 py-0.5 px-2 bg-gradient-to-r from-indigo-500 to-blue-600 text-white text-xs font-medium rounded-full"
+              >
+                <UIcon name="i-heroicons-shield-check" class="w-3.5 h-3.5" />
+                <span>Pro</span>
               </div>
-            </span>
-            <UIcon
-              v-if="user?.user?.kyc"
-              name="mdi:check-decagram"
-              class="w-5 h-5 text-blue-600"
-            />
-            <UIcon v-else name="i-heroicons-user-circle" class="text-xl" />
+              
+              <!-- User Info -->
+              <div class="flex items-center gap-1.5">
+                <!-- Verified Icon -->
+                <UIcon
+                  v-if="user?.user?.kyc"
+                  name="mdi:check-decagram"
+                  class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                
+                <!-- Avatar -->
+                <div class="relative w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                  <img 
+                    v-if="user?.user?.image"
+                    :src="user.user.image"
+                    :alt="user.user.name || user.user.first_name"
+                    class="w-full h-full object-cover"
+                  />
+                  <UIcon v-else name="i-heroicons-user-circle" class="w-6 h-6 text-gray-500 dark:text-gray-300" />
+                </div>
+              </div>
+              
+              <!-- Dropdown indicator -->
+              <UIcon 
+                :name="openMenu ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" 
+                class="w-4 h-4 text-gray-500 transition-transform duration-200"
+              />
+            </div>
+          </div>
 
-            Hi {{ (user?.user?.first_name).slice(0, 8) }}            <UIcon name="i-heroicons-chevron-down-16-solid" v-if="!openMenu" />
-            <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu" /></UButton>
-          
-          <!-- Modern Glass-Morphism Dropdown Menu using the new component -->
-          <UserDropdownMenu 
-            :user="user" 
-            :is-open="openMenu" 
+          <!-- User Dropdown Menu -->
+          <UserDropdownMenu
+            :user="user"
+            :is-open="openMenu"
             @update:is-open="openMenu = $event"
             @upgrade-to-pro="upgradeToPro"
-            @manage-subscription="manageSubscription" 
+            @manage-subscription="manageSubscription"
             @logout="logout"
           />
         </div>
@@ -558,10 +522,12 @@
 </template>
 
 <script setup>
-import UserDropdownMenu from './user-dropdown-menu.vue';
+import UserDropdownMenu from "./user-dropdown-menu.vue";
 const { t } = useI18n();
 const { user, logout } = useAuth();
 const { get } = useApi();
+const { unreadTicketCount, fetchUnreadCount } = useTickets();
+const badgeCount = ref(0);
 const openMenu = ref(false);
 const router = useRouter();
 const open = ref(true);
@@ -570,6 +536,17 @@ const isOpen = ref(false);
 const showQr = ref(false);
 // Subscription alert state
 const warningDismissed = ref(false);
+
+// Update badge count when unreadTicketCount changes
+watch(() => unreadTicketCount.value, (newCount) => {
+  badgeCount.value = newCount;
+});
+
+// Fetch unread ticket count when component mounts
+onMounted(async () => {
+  await fetchUnreadCount();
+  badgeCount.value = unreadTicketCount.value;
+});
 
 // Calculate days remaining before subscription expiration
 const daysRemaining = computed(() => {
@@ -635,19 +612,23 @@ onMounted(() => {
   } else {
     warningDismissed.value = false;
   }
-
-  // Rest of your existing onMounted code...
 });
+
+// Set color mode
 const colorMode = useColorMode();
 colorMode.preference = "light";
 onMounted(() => {
   localStorage.setItem("nuxt-color-mode", "light");
 });
 
+// Get logo data
 async function getLogo() {
   const res = await get("/logo/");
   logo.value = res.data;
 }
+getLogo();
+
+// Navigation functions
 function upgradeToPro() {
   openMenu.value = false;
   router.push("/upgrade-to-pro");
@@ -658,6 +639,10 @@ function manageSubscription() {
   router.push("/account/subscription");
 }
 
+function navigateToInbox() {
+  router.push("/inbox/");
+}
+
 function formatDate(date) {
   return new Date(date).toLocaleDateString(undefined, {
     year: "numeric",
@@ -665,12 +650,13 @@ function formatDate(date) {
     day: "numeric",
   });
 }
-getLogo();
 
+// Keyboard shortcuts
 defineShortcuts({
   o: () => (open.value = !open.value),
 });
 
+// Handle clicks outside the menu
 const handleClickOutside = (event) => {
   const menuContainer = document.querySelector(".menu-container");
   if (menuContainer && !menuContainer.contains(event.target)) {
@@ -678,220 +664,53 @@ const handleClickOutside = (event) => {
   }
 };
 
+// Handle scroll events
+const isScrolled = ref(false);
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 80;
+};
+
+// Add and clean up event listeners
 onMounted(() => {
+  window.addEventListener("scroll", handleScroll);
   document.addEventListener("click", handleClickOutside);
+  
+  // Initialize subscription status check
+  const subscriptionEndDate = new Date(user?.user?.pro_validity);
+  const currentDate = new Date();
+  const timeDifference = subscriptionEndDate - currentDate;
+  const days = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+  if (days <= 7 && days > 0) {
+    shouldShowWarning.value = true;
+  } else if (days <= 0) {
+    isExpired.value = true;
+  }
 });
 
 onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
   document.removeEventListener("click", handleClickOutside);
 });
 
-// if sidebar clicked and route changes, close sidebar if opened
+// Close sidebar if route changes
 watch(router.currentRoute, () => {
   if (openMenu.value) {
     openMenu.value = false;
     isOpen.value = false;
   }
 });
-
-const isScrolled = ref(false);
-
-// Function to handle scroll event
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 80;
-};
-
-// Add event listener on component mount
-onMounted(() => {
-  window.addEventListener("scroll", handleScroll);
-  document.addEventListener("click", handleClickOutside);
-});
-
-// Clean up event listeners
-onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-  document.removeEventListener("click", handleClickOutside);
-});
-
-// Example logic for subscription warnings
-onMounted(() => {
-  const subscriptionEndDate = new Date(user?.user?.pro_validity);
-  const currentDate = new Date();
-  const timeDifference = subscriptionEndDate - currentDate;
-  daysRemaining.value = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-
-  if (daysRemaining.value <= 7 && daysRemaining.value > 0) {
-    shouldShowWarning.value = true;
-  } else if (daysRemaining.value <= 0) {
-    isExpired.value = true;
-  }
-});
 </script>
 
-<style scoped>
-/* Mobile app specific styling for the header */
-@media (max-width: 640px) {
-  .mobile-app-header {
-    padding-top: 6px;
-    padding-bottom: 6px;
-  }
-
-  .mobile-app-header .menu-container {
-    gap: 8px;
-  }
-  
-  /* App-like native styling */
-  .mobile-app-header .flex {
-    justify-content: space-between;
-  }
-  
-  /* Make the logo slightly smaller on mobile for better spacing */
-  .mobile-app-header .public-logo img {
-    max-height: 34px;
-  }
-}
-
-/* Menu container positioning for desktop */
-@media (min-width: 641px) {
-  .menu-container {
-    position: relative;
-  }
-  
-  .dropdown-menu-position {
-    right: 0;
-    top: calc(100% + 0.5rem);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  }
-}
-
-/* Add this style if you want to animate the transition */
-.fixed {
-  animation: slideDown 0.3s ease-in-out;
-  width: 100%;
-  max-width: 1280px;
-}
-
-@keyframes slideDown {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-.text-2xs {
-  font-size: 0.65rem;
-  line-height: 1rem;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s, transform 0.3s;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-/* For extra small screens */
-@media (max-width: 385px) {
-  .xs\:block {
-    display: block;
-  }
-}
+<!-- Using simple Tailwind animation utilities -->
+<style>
 @keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-.animate-shimmer {
-  animation: shimmer 3s linear infinite;
-}
-
-.animate-pulse-slow {
-  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-/* Dropdown menu positioning */
-@media (min-width: 641px) {
-  .menu-container > div.absolute {
-    right: 0 !important;
-  }
-  
-  .dropdown-menu-position {
-    right: 0;
-    top: calc(100% + 0.5rem);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  }
-}
-
-/* Pink gradient border for Pro user profile */
-.pro-profile-pink-border {
-  position: relative;
-  border: none;
-  isolation: isolate; /* Create a new stacking context */
-}
-
-/* Pink gradient outline - the outer ring */
-.pro-profile-pink-border::before {
-  content: '';
-  position: absolute;
-  inset: -3px; /* Creates border effect */
-  background: linear-gradient(135deg, #ec4899, #d946ef, #c026d3);
-  border-radius: 100%;
-  z-index: 0; /* Changed from -1 to 0 */
-  animation: rotate-border 6s linear infinite; /* Slowed down animation for better performance */
-  will-change: transform; /* Optimize animation performance */
-}
-
-/* Inner white space to create the outline effect */
-.pro-profile-pink-border::after {
-  content: '';
-  position: absolute;
-  inset: -1px; /* Slightly smaller than outer ring to create outline */
-  background: var(--bg-color, white); /* Use CSS variable for background color */
-  border-radius: 100%;
-  z-index: 0; /* Changed from -1 to 0 */
-}
-
-/* Set background color for light/dark mode */
-:root {
-  --bg-color: white;
-}
-
-.dark .pro-profile-pink-border::after {
-  --bg-color: #1e293b; /* Dark mode background color - matches slate-800 */
-}
-
-@keyframes rotate-border {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* Media query to disable animations on low-performance devices or when battery is low */
-@media (prefers-reduced-motion: reduce) {
-  .pro-profile-pink-border::before {
-    animation: none;
-  }
+/* For very small screens */
+@media (max-width: 385px) {
+  .xs\:block { display: block; }
 }
 </style>

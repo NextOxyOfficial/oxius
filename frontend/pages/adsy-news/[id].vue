@@ -208,9 +208,11 @@
                     {{ relatedArticle.title }}
                   </h3>
                 </NuxtLink>
-                <p class="text-sm text-gray-500 mb-4 line-clamp-2">
-                  {{ relatedArticle.content.substring(0, 100) + "..." }}
-                </p>
+                <div
+                  v-html="relatedArticle.content.substring(0, 100) + `...`"
+                  class="text-sm text-gray-500 mb-4 line-clamp-2"
+                ></div>
+
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-500">{{
                     formatDate(relatedArticle.created_at)

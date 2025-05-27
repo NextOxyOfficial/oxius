@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 flex-1">
+  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-3 flex-1">
     <!-- Lazyloader component to display while initial posts are loading -->
     <template v-if="loading && !loadingMore && allPosts.length === 0">
       <div class="p-4">

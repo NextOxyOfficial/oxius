@@ -161,13 +161,16 @@
 
                 <!-- Amar Seba -->
                 <NuxtLink
-                  to="/#classified-services"
+                  to="/courses"
                   class="service-btn bg-white hover:bg-rose-50 text-gray-700"
                 >
                   <div class="icon-circle bg-rose-50">
-                    <Cog class="icon text-rose-600" />
+                    <UIcon
+                      name="i-heroicons-academic-cap"
+                      class="icon text-rose-600"
+                    />
                   </div>
-                  <span>{{ $t("classified_service") }}</span>
+                  <span>{{ $t("elearning") }}</span>
                 </NuxtLink>
                 <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
                 <div

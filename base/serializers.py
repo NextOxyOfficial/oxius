@@ -362,6 +362,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
 class ProductMinSerializer(serializers.ModelSerializer):
     """Minimal product information for order items"""
+    image = ProductMediaSerializer( many=True, read_only=True)
     class Meta:
         model = Product
         fields = ['id', 'name', 'sale_price', 'image']

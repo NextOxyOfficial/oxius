@@ -1,243 +1,255 @@
-<template>
-  <div class="fixed top-0 left-0 right-0 z-[9999999999999] w-full mx-auto">
-    <header class="backdrop-blur-sm bg-slate-200/70 shadow-sm rounded-b-lg dark:bg-gray-900/95">
-      <div class="max-w-5xl mx-auto px-4">
-        <div
-          class="flex items-center justify-between py-2 bg-gray-100/40"
-        >
-          <!-- Left Section: Sidebar Toggle (mobile only) + Logo -->
-          <div class="flex items-center space-x-1 sm:gap-5">
-            <!-- Sidebar Toggle Button - MOBILE ONLY -->
-            <button
-              @click="cart.toggleBurgerMenu()"
-              class="flex sm:hidden group relative size-7 flex-shrink-0 items-center justify-center rounded-full dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-              aria-label="Toggle sidebar"
+<template>  <div
+    class="py-3 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg transition-all duration-300 z-[99999999] w-full"
+    :class="[
+      isScrolled
+        ? 'fixed top-0 left-0 right-0 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg border-gray-200/50 dark:border-gray-800/50'
+        : 'sticky w-full shadow-sm',
+      'sm:py-3 py-1.5', // Smaller padding on mobile
+    ]"
+  >
+    <div class="max-w-5xl mx-auto px-4">
+      <div class="flex items-center justify-between">
+        <!-- Left Section: Sidebar Toggle (mobile only) + Logo -->
+        <div class="flex items-center gap-2">          
+          <!-- Sidebar Toggle Button - MOBILE ONLY -->
+          <button
+            @click="cart.toggleBurgerMenu()"
+            class="flex sm:hidden group relative size-8 flex-shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
+            aria-label="Toggle sidebar"
+          >
+            <div
+              class="flex flex-col justify-center items-center w-5 space-y-1.5 transform transition-all duration-300"
+            >
+              <span
+                class="block h-0.5 w-5 bg-gray-600 dark:bg-gray-300 transform transition-all duration-300 group-hover:bg-blue-600 dark:group-hover:bg-blue-400"
+              ></span>
+              <span
+                class="block h-0.5 w-3.5 bg-gray-600 dark:bg-gray-300 transform transition-all duration-300 group-hover:bg-blue-600 dark:group-hover:bg-blue-400 group-hover:w-5"
+              ></span>
+              <span
+                class="block h-0.5 w-5 bg-gray-600 dark:bg-gray-300 transform transition-all duration-300 group-hover:bg-blue-600 dark:group-hover:bg-blue-400"
+              ></span>
+            </div>
+
+            <!-- Ripple effect on click -->
+            <span
+              class="absolute inset-0 rounded-full transform scale-0 bg-blue-100 dark:bg-blue-900/40 animate-ripple"
+            ></span>
+          </button>          
+          <!-- Logo with Hover Effect -->
+          <NuxtLink
+            to="/business-network/"
+            class="flex items-center overflow-hidden transform hover:scale-[1.02] transition-transform duration-300"
+            aria-label="Logo"
+          >
+            <div class="relative">
+              <NuxtImg
+                v-if="logo[0]?.image"
+                :src="logo[0].image"
+                alt="Adsy Logo"
+                width="150"
+                height="50"
+                class="h-8 sm:h-10 w-auto object-contain"
+                loading="eager"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 hover:opacity-100 -translate-x-full hover:translate-x-full transition-all duration-1000 ease-in-out"
+              ></div>
+            </div>
+          </NuxtLink>
+        </div>
+
+        <!-- Right Section: Search + Navigation + User Menu -->
+        <div class="flex items-center gap-1 sm:gap-3 relative">
+          <!-- Search Component -->
+          <CommonSearchDropdown ref="searchDropdownRef" />
+
+          <!-- Navigation Buttons - DESKTOP ONLY (AdsyClub & AdsyNews) -->
+          <div class="hidden sm:flex items-center gap-2">
+      <!-- AdsyClub Button -->
+            <NuxtLink
+              to="/"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
+              aria-label="Go to AdsyClub"
             >
               <div
-                class="flex flex-col justify-center items-center w-5 space-y-1.5 transform transition-all duration-300"
+                class="p-1 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
               >
-                <span
-                  class="block h-0.5 w-5 bg-gray-600 dark:bg-gray-300 transform transition-all duration-300 group-hover:bg-blue-600 dark:group-hover:bg-blue-400"
-                ></span>
-                <span
-                  class="block h-0.5 w-3.5 bg-gray-600 dark:bg-gray-300 transform transition-all duration-300 group-hover:bg-blue-600 dark:group-hover:bg-blue-400 group-hover:w-5"
-                ></span>
-                <span
-                  class="block h-0.5 w-5 bg-gray-600 dark:bg-gray-300 transform transition-all duration-300 group-hover:bg-blue-600 dark:group-hover:bg-blue-400"
-                ></span>
+                <BarChartBig class="h-3.5 w-3.5" />
               </div>
-
-              <!-- Ripple effect on click -->
-              <span
-                class="absolute inset-0 rounded-full transform scale-0 bg-blue-100 dark:bg-blue-900/40 animate-ripple"
-              ></span>
-            </button>
-
-            <!-- Logo with Hover Effect -->
+              <span class="relative overflow-hidden">
+                AdsyClub
+                <span
+                  class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
+                ></span>
+              </span>
+            </NuxtLink>            
+            <!-- AdsyNews Button -->
             <NuxtLink
-              to="/business-network/"
-              class="flex items-center overflow-hidden transform hover:scale-[1.02] transition-transform duration-300"
-              aria-label="Logo"
+              to="/adsy-news"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
+              aria-label="Go to AdsyNews"
             >
-              <div class="relative">
-                <NuxtImg
-                  v-if="logo[0]?.image"
-                  :src="logo[0].image"
-                  alt="Adsy Logo"
-                  width="150"
-                  height="50"
-                  class="h-8 sm:h-10 w-auto object-contain"
-                  loading="eager"
-                />
-                <div
-                  class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 hover:opacity-100 -translate-x-full hover:translate-x-full transition-all duration-1000 ease-in-out"
-                ></div>
+              <div
+                class="p-1 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+              >
+                <Newspaper class="h-3.5 w-3.5" />
               </div>
+              <span class="relative overflow-hidden">
+                AdsyNews
+                <span
+                  class="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
+                ></span>
+              </span>
             </NuxtLink>
           </div>
 
-          <!-- Right Section: Search + Navigation + User Menu -->
-          <div class="flex items-center gap-3 sm:gap-3 relative">
-            <!-- Search Component -->
-            <CommonSearchDropdown ref="searchDropdownRef" />
-
-            <!-- Navigation Buttons - DESKTOP ONLY (AdsyClub & AdsyNews) -->
-            <div class="hidden sm:flex items-center gap-2">
-              <!-- AdsyClub Button -->
-              <NuxtLink
-                to="/"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
-                aria-label="Go to AdsyClub"
-              >
-                <div
-                  class="p-1 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white transition-transform group-hover:scale-110 group-hover:rotate-3"
+          <!-- Translate Component - Desktop only -->
+          <PublicTranslateHandler class="hidden sm:block px-2" />            
+          
+          <!-- Not Logged In User Section -->
+          <div v-if="!user" class="flex relative menu-container items-center">            <!-- Mobile Profile Icon -->
+            <div class="sm:hidden">
+              <NuxtLink to="/auth/login">
+                <div 
+                  class="size-10 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors duration-200"
                 >
-                  <BarChartBig class="h-3.5 w-3.5" />
+                  <UIcon name="i-material-symbols-person-rounded" class="w-6 h-6 text-gray-500" />
                 </div>
-                <span class="relative overflow-hidden">
-                  AdsyClub
-                  <span
-                    class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 origin-left transition-transform group-hover:scale-x-100"
-                  ></span>
-                </span>
               </NuxtLink>
-
-              <!-- AdsyNews Button -->
-              <NuxtLink
-                to="/adsy-news"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all group"
-                aria-label="Go to AdsyNews"
-              >
-                <div
-                  class="p-1 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 text-white transition-transform group-hover:scale-110 group-hover:rotate-3"
-                >
-                  <Newspaper class="h-3.5 w-3.5" />
-                </div>
-                <span class="relative overflow-hidden">
-                  AdsyNews
-                  <span
-                    class="absolute bottom-0 left-0 w-full h-0.5 bg-orange-500 transform scale-x-0 origin-left transition-transform group-hover:scale-x-100"
-                  ></span>
-                </span>
-              </NuxtLink>
-            </div>            <!-- Translate Component - Desktop only -->
-            <PublicTranslateHandler class="hidden sm:block px-2" />            
-            <div v-if="!user" class="flex relative menu-container items-center">
-              <!-- Desktop language switcher (already included above) -->
+            </div>
+            
+            <!-- Login Button (Desktop) -->
+            <UButton
+              to="/auth/login"
+              label="Login/Register"
+              color="gray"
+              class="hidden sm:flex"
+              :ui="{
+                size: { sm: 'text-xs md:text-sm' },
+                padding: { sm: 'px-2 py-1 md:px-2.5 md:py-1.5' },
+                icon: { size: { sm: 'w-2 h-2 md:w-2.5 md:h-2.5' } },
+              }"
+              size="md"
+            />
+          </div>
+          
+          <!-- Logged In User Section -->
+          <div v-else class="flex relative menu-container items-center z-40">
+            <!-- User Action Buttons -->
+            <div class="flex items-center gap-1.5 pr-1.5" v-if="user && user.user">              
               
-              <!-- Mobile Profile Icon -->
-              <div class="sm:hidden">
-                <NuxtLink to="/auth/login">
-                  <div 
-                    class="size-10 rounded-full flex pl-0 items-center justify-center bg-gray-100 border border-gray-200 shadow-sm"
-                  >
-                    <UIcon name="i-material-symbols-person-rounded" class="size-7 text-gray-500" />
-                  </div>
-                </NuxtLink>
+              
+              
+              <!-- QR Code Button with Tailwind styling -->              
+               <div @click="showQr = !showQr" class="relative cursor-pointer">
+                <div class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm hover:bg-gray-100 dark:bg-green-900/30 dark:hover:bg-green-900/50">
+                  <UIcon name="i-ic:twotone-qr-code-scanner" class="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
               </div>
-              
-              <!-- Login Button (Desktop) -->
-              <UButton
-                to="/auth/login"
-                color="gray"
-                class="max-sm:hidden"
-                :ui="{
-                  size: {
-                    sm: 'text-xs md:text-sm',
-                  },
-                  padding: {
-                    sm: 'px-2 py-1 md:px-2.5 md:py-1.5',
-                  },
-                  icon: {
-                    size: {
-                      sm: 'w-2 h-2 md:w-2.5 md:h-2.5',
-                    },
-                  },
-                }"
-                size="md"
-              >
-                <UIcon name="i-material-symbols-person-rounded" class="mr-1" />
-                Login/Register
-              </UButton>
+                <!-- QR Code Modal -->
+              <UModal v-model="showQr" :ui="{ width: 'w-full sm:max-w-md', background: 'bg-slate-100' }">
+                <div class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden">
+                  <UButton
+                    icon="i-heroicons-x-mark"
+                    size="sm"
+                    color="primary"
+                    variant="solid"
+                    @click="showQr = false"
+                    class="absolute top-2 right-2 rounded-full hover:bg-blue-700 transition-colors duration-200"
+                  />
+                  <h3 class="text-xl font-semibold text-green-700">AdsyPay</h3>
+                  <h3 class="text-xl font-semibold">Scan My QR Code</h3>
+                  <div class="border p-4 rounded-lg shadow-sm bg-white">
+                    <NuxtImg class="w-[250px]" :src="`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${user.user.phone}`" alt="QR Code" />
+                  </div>
+                </div>
+              </UModal>
             </div>
             
             <!-- Mobile User Profile Avatar -->
             <div 
-              v-else
               @click="openMenu = !openMenu"
               class="sm:hidden relative cursor-pointer"
             >            
               <div class="relative">
-                <!-- User profile image with pink gradient border for Pro users -->
-                <div 
-                  :class="[
-                    'size-11 rounded-full flex items-center justify-center overflow-hidden shadow-sm',
-                    user?.user?.is_pro ? 'pro-profile-pink-border' : 'border-2 border-white'
+                <!-- User profile image with Tailwind styling -->
+                <div
+                  :class=" [
+                    'size-10 rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow-sm',
+                    user?.user?.is_pro ? 'shadow-indigo-200 ring-2 ring-indigo-500' : '',
                   ]"
                 >
                   <img 
                     v-if="user?.user?.image"
                     :src="user.user.image"
                     :alt="user.user.name || user.user.first_name"
-                    class="size-full object-cover rounded-full relative z-1"
-                    style="position: relative; z-index: 1;"
+                    class="w-full h-full object-cover rounded-full z-10"
                   />
-                  <UIcon v-else name="i-heroicons-user" class="size-6 text-gray-500 relative z-1" style="position: relative; z-index: 1;" />
+                  <UIcon v-else name="i-heroicons-user" class="w-6 h-6 text-gray-500 ml-2.5 z-10" />
                 </div>
-                
-                <!-- Pro Badge for mobile - text at top right -->
-                <span
+
+                <!-- Pro Badge with Tailwind -->
+                <div
                   v-if="user?.user?.is_pro"
-                  class="absolute -top-1 -right-3.5 px-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full text-2xs font-semibold shadow-sm"
+                  class="absolute -top-2.5 -right-3.5 px-2 flex items-center gap-0.5 py-0.5 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded-full text-[9px] font-medium shadow-sm"
                 >
-                  Pro
-                </span>
-                
-                <!-- Verification Badge for mobile -->
-                <span
+                  <UIcon name="i-heroicons-shield-check" class="w-3 h-3" />
+                  <span>Pro</span>
+                </div>
+
+                <!-- Verification Badge with Tailwind -->
+                <div
                   v-if="user?.user?.kyc"
-                  class="absolute -bottom-1 -right-1 size-4 flex items-center justify-center bg-white rounded-full shadow-sm"
+                  class="absolute -bottom-1 -right-1 w-4 h-4 bg-white dark:bg-gray-800 flex items-center justify-center rounded-full shadow-sm"
                 >
-                  <UIcon
-                    name="mdi:check-decagram"
-                    class="size-4 text-blue-600"
-                  />
-                </span>
+                  <UIcon name="mdi:check-decagram" class="w-4 h-4 text-blue-600" />
+                </div>
               </div>
             </div>
             
             <!-- Desktop User Profile Button -->
-            <UButton
-              v-if="user"
-              size="sm"
-              color="primary"
-              variant="outline"
-              @click="openMenu = !openMenu"
-              class="max-sm:hidden"
-              :ui="{
-                gap: {
-                  sm: 'gap-x-1 md:gap-x-1.5',
-                },
-                size: {
-                  sm: 'text-xs sm:text-sm',
-                },
-                padding: {
-                  sm: 'px-1.5 py-1 md:px-2.5 md:py-1.5',
-                },
-                icon: {
-                  size: {
-                    sm: 'w-2 h-2 md:w-2.5 md:h-2.5',
-                  },
-                },
-              }"
-              ref="userButtonRef"
-            >
-              <span
-                v-if="user?.user?.is_pro"
-                class="text-2xs px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
-              >
-                <div class="flex items-center gap-1">
-                  <UIcon
-                    name="i-heroicons-shield-check"
-                    class="size-4 text-white"
-                  />
-                  <span class="text-xs">Pro</span>
+            <div 
+              @click="openMenu = !openMenu" 
+              class="relative cursor-pointer transition-all duration-300 rounded-full hover:shadow-md max-sm:hidden"
+            >              <div class="flex items-center gap-2 p-1 pl-1 pr-3 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                <!-- Pro Badge -->
+                <div 
+                  v-if="user?.user?.is_pro"
+                  class="flex items-center gap-1 py-0.5 px-2 bg-gradient-to-r from-indigo-500 to-blue-600 text-white text-xs font-medium rounded-full shadow-sm"
+                >
+                  <UIcon name="i-heroicons-shield-check" class="w-3.5 h-3.5" />
+                  <span>Pro</span>
                 </div>
-              </span>
-              <UIcon
-                v-if="user?.user?.kyc"
-                name="mdi:check-decagram"
-                class="w-5 h-5 text-blue-600"
-              />
-              <UIcon v-else name="i-heroicons-user-circle" class="text-xl" />
+                
+                <!-- User Info -->
+                <div class="flex items-center gap-1.5">
+                  <!-- Verified Icon -->
+                  <UIcon
+                    v-if="user?.user?.kyc"
+                    name="mdi:check-decagram"
+                    class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  
+                  <!-- Avatar -->
+                  <div class="relative size-8 rounded-full overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+                    <img 
+                      v-if="user?.user?.image"
+                      :src="user.user.image"
+                      :alt="user.user.name || user.user.first_name"
+                      class="w-full h-full object-cover"
+                    />
+                    <UIcon v-else name="i-heroicons-user-circle" class="w-6 h-6 text-gray-500 dark:text-gray-300" />
+                  </div>
+                </div>
+                <!-- Dropdown indicator -->
+                <UIcon 
+                  :name="openMenu ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" 
+                  class="w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200"
+                />
+              </div>
+            </div>
 
-              Hi {{ user?.user?.first_name.slice(0, 8) }}
-              <UIcon
-                name="i-heroicons-chevron-down-16-solid"
-                v-if="!openMenu"
-              />
-              <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu" />
-            </UButton><!-- User dropdown menu component -->
+            <!-- User Dropdown Menu -->
             <BusinessNetworkDropdownMenu
               :user="user"
               :is-open="openMenu"
@@ -250,12 +262,12 @@
           </div>
         </div>
       </div>
-    </header>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, onUnmounted, computed } from "vue";
+import { ref, nextTick, onMounted, onUnmounted, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useApi } from "~/composables/useApi";
 import { useAuth } from "~/composables/useAuth";
@@ -283,6 +295,8 @@ const menuRef = ref(null);
 const userButtonRef = ref(null);
 const searchDropdownRef = ref(null);
 const router = useRouter();
+const badgeCount = ref(0);
+const isScrolled = ref(false);
 
 async function getLogo() {
   const { data } = await get("/bn-logo/");
@@ -290,9 +304,6 @@ async function getLogo() {
 }
 
 await getLogo();
-
-// Navigation state
-const mobileMenuOpen = ref(false);
 
 // Handle clicks outside of user menu dropdown to close it
 const handleClickOutside = (event) => {
@@ -319,17 +330,24 @@ const handleClickOutside = (event) => {
   }
 };
 
-// Use a proper lifecycle hook to add the global listener
+// Handle scroll events
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 80;
+};
+
+// Use proper lifecycle hooks
 onMounted(() => {
   // Let the DOM render first before attaching listeners
   nextTick(() => {
     document.addEventListener("click", handleClickOutside, true);
+    window.addEventListener("scroll", handleScroll);
   });
 });
 
 // Clean up event listeners
 onUnmounted(() => {
   document.removeEventListener("click", handleClickOutside, true);
+  window.removeEventListener("scroll", handleScroll);
 });
 
 function upgradeToPro() {
@@ -349,92 +367,21 @@ function formatDate(date) {
     day: "numeric",
   });
 }
+
+// Close sidebar if route changes
+watch(() => router.currentRoute.value, () => {
+  if (openMenu.value) {
+    openMenu.value = false;
+  }
+});
 </script>
 
-<style scoped>
-:root {
-  --color-primary: #e53e3e;
-  --color-primary-dark: #c53030;
-}
+<style>
+/* Custom animations that can't be done with Tailwind alone */
 
-.bg-primary {
-  background-color: var(--color-primary);
-}
-
-.text-primary {
-  color: var(--color-primary);
-}
-
-.hover\:text-primary:hover {
-  color: var(--color-primary);
-}
-
-.hover\:text-primary-dark:hover {
-  color: var(--color-primary-dark);
-}
-
-.hover\:bg-primary-dark:hover {
-  background-color: var(--color-primary-dark);
-}
-
-.focus\:ring-primary:focus {
-  --tw-ring-color: var(--color-primary);
-}
-
-.focus\:border-primary:focus {
-  border-color: var(--color-primary);
-}
-
-.border-primary {
-  border-color: var(--color-primary);
-}
-
-/* Ticker animation */
-.ticker-container {
-  animation: ticker 20s linear infinite;
-}
-
-.ticker-item {
-  margin-right: 50px;
-}
-
-@keyframes ticker {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-/* Transition effects */
-.comment-list-enter-active,
-.comment-list-leave-active {
-  transition: all 0.5s ease;
-}
-.comment-list-enter-from,
-.comment-list-leave-to {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-/* Line clamp for article summaries */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Glass effect for header */
-.backdrop-blur-sm {
-  backdrop-filter: blur(8px);
-}
-
-/* Custom shadow for dropdown */
-.search-dropdown-container {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
-    0 8px 10px -6px rgba(0, 0, 0, 0.05);
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 /* Ripple animation for sidebar toggle button */
@@ -459,101 +406,8 @@ function formatDate(date) {
   opacity: 0;
 }
 
-/* Improved search input focus styles */
-.search-input:focus {
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
-}
-
-/* Improve scrollbar for search results */
-.search-dropdown-container div {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-}
-
-.search-dropdown-container div::-webkit-scrollbar {
-  width: 4px;
-}
-
-.search-dropdown-container div::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.search-dropdown-container div::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.5);
-  border-radius: 9999px;
-}
-
-/* Mobile adjustments - FIXED POSITIONING */
-@media (max-width: 640px) {
-  .search-dropdown-container {
-    position: fixed;
-    width: calc(100% - 2rem);
-    max-width: 400px;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 5rem;
-    margin: 0 auto;
-    z-index: 1000;
-  }
-}
-
-/* Text size for badges */
-.text-2xs {
-  font-size: 0.65rem;
-  line-height: 1rem;
-}
-
-/* Pink gradient border for Pro user profile */
-.pro-profile-pink-border {
-  position: relative;
-  border: none;
-  isolation: isolate; /* Create a new stacking context */
-}
-
-/* Pink gradient outline - the outer ring */
-.pro-profile-pink-border::before {
-  content: '';
-  position: absolute;
-  inset: -3px; /* Creates border effect */
-  background: linear-gradient(135deg, #ec4899, #d946ef, #c026d3);
-  border-radius: 100%;
-  z-index: 0; /* Changed from -1 to 0 */
-  animation: rotate-border 6s linear infinite; /* Slowed down animation for better performance */
-  will-change: transform; /* Optimize animation performance */
-}
-
-/* Inner white space to create the outline effect */
-.pro-profile-pink-border::after {
-  content: '';
-  position: absolute;
-  inset: -1px; /* Slightly smaller than outer ring to create outline */
-  background: var(--bg-color, white); /* Use CSS variable for background color */
-  border-radius: 100%;
-  z-index: 0; /* Changed from -1 to 0 */
-}
-
-/* Set background color for light/dark mode */
-:root {
-  --bg-color: white;
-}
-
-.dark .pro-profile-pink-border::after {
-  --bg-color: #1e293b; /* Dark mode background color - matches slate-800 */
-}
-
-@keyframes rotate-border {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* Media query to disable animations on low-performance devices or when battery is low */
-@media (prefers-reduced-motion: reduce) {
-  .pro-profile-pink-border::before {
-    animation: none;
-  }
+/* For very small screens */
+@media (max-width: 385px) {
+  .xs\:block { display: block; }
 }
 </style>
