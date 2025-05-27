@@ -1,9 +1,9 @@
 <template>
   <div
-    class="py-3 bg-white dark:bg-gray-900 transition-all duration-300 shadow-md z-[99999999] w-full"
+    class="py-3 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg  transition-all duration-300  z-[99999999] w-full"
     :class="[
       isScrolled
-        ? 'fixed top-0 left-0 right-0 w-full backdrop-blur-sm bg-white/90 dark:bg-gray-900/95 shadow-md rounded-b-lg border-b border-gray-200/50 dark:border-gray-800/50'
+        ? 'fixed backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg  border-gray-200/50 dark:border-gray-800/50'
         : 'sticky w-full shadow-sm',
       'sm:py-3 py-1.5', // Smaller padding on mobile
     ]"
@@ -95,7 +95,7 @@
             <div class="flex items-center gap-2 sm:gap-3">
               <!-- Alert Icon -->
               <div class="relative hidden xs:block">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-800 dark:to-red-700 border border-red-300/50 dark:border-red-600/30 flex items-center justify-center shadow-inner">
+                <div class="size-7 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-800 dark:to-red-700 border border-red-300/50 dark:border-red-600/30 flex items-center justify-center shadow-inner">
                   <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div class="absolute -inset-1.5 bg-red-300/30 blur-md rounded-full animate-pulse opacity-70"></div>
@@ -377,10 +377,10 @@
           <PublicTranslateHandler class="px-2 hidden sm:block" />
           
           <!-- User Action Buttons -->
-          <div class="flex items-center gap-3" v-if="user && user.user">
+          <div class="flex items-center gap-1.5 pr-1.5" v-if="user && user.user">
             <!-- Inbox Button with Tailwind styling -->
             <NuxtLink to="/inbox/" class="relative cursor-pointer">
-              <div class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-50 hover:bg-blue-100 transition-all duration-300 shadow-sm dark:bg-blue-900/30 dark:hover:bg-blue-900/50">
+              <div class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm">
                 <UIcon name="i-material-symbols:mark-email-unread-outline" class="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 
                 <!-- Notification Badge with animation -->
@@ -390,7 +390,7 @@
                   leave-to-class="transform scale-50 opacity-0">
                   <div 
                     v-if="badgeCount > 0" 
-                    class="absolute -top-1 -right-1 min-w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold px-1 shadow-md animate-pulse"
+                    class="absolute -top-1 -right-1 min-w-4 h-4 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold px-1 shadow-md animate-pulse"
                   >
                     {{ badgeCount > 99 ? '99+' : badgeCount }}
                   </div>
@@ -400,7 +400,7 @@
             
             <!-- QR Code Button with Tailwind styling -->
             <div @click="showQr = !showQr" class="relative cursor-pointer">
-              <div class="w-10 h-10 flex items-center justify-center rounded-full bg-green-50 hover:bg-green-100 transition-all duration-300 shadow-sm dark:bg-green-900/30 dark:hover:bg-green-900/50">
+              <div class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm dark:bg-green-900/30 dark:hover:bg-green-900/50">
                 <UIcon name="i-ic:twotone-qr-code-scanner" class="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
@@ -431,7 +431,7 @@
               <!-- User profile image with Tailwind styling -->
               <div
                 :class="[
-                  'w-11 h-11 rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow-sm',
+                  'size-10 rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow-sm',
                   user?.user?.is_pro ? 'shadow-indigo-200 ring-2 ring-indigo-500' : '',
                 ]"
               >
@@ -447,7 +447,7 @@
               <!-- Pro Badge with Tailwind -->
               <div
                 v-if="user?.user?.is_pro"
-                class="absolute -top-1 -right-3.5 flex items-center gap-0.5 py-0.5 px-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded-full text-xs font-medium shadow-sm"
+                class="absolute -top-2.5 -right-3.5 px-2 flex items-center gap-0.5 py-0.5 px-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded-full text-[9px] font-medium shadow-sm"
               >
                 <UIcon name="i-heroicons-shield-check" class="w-3 h-3" />
                 <span>Pro</span>
