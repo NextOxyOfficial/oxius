@@ -332,7 +332,7 @@
                           name="i-heroicons-information-circle"
                           class="text-blue-500 flex-shrink-0 mt-1"
                         />
-                        <p class="text-sm text-blue-700">
+                        <p class="text-sm text-blue-700 text-left">
                           Please provide details about your issue. Our support
                           team will respond as soon as possible.
                         </p>
@@ -624,7 +624,7 @@
                       </div>
                     </div>
                   </template>
-                  <div class="flex-1 overflow-hidden flex flex-col">
+                  <div class="flex-1 overflow-hidden flex flex-col text-left">
                     <!-- Fixed content at top -->
                     <div
                       class="flex-shrink-0 px-6 py-4 border-b border-gray-200"

@@ -2,8 +2,11 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+
+
 class Batch(models.Model):
     """Model representing an educational batch like SSC, HSC, etc."""
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     name = models.CharField(_("Name"), max_length=100)
     code = models.SlugField(_("Code"), max_length=20, unique=True)
     description = models.TextField(_("Description"), blank=True)
@@ -12,6 +15,21 @@ class Batch(models.Model):
     is_active = models.BooleanField(_("Active"), default=True)
     created_at = models.DateTimeField(_("Created At"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
+    
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if Batch.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = _("Batch")
@@ -24,6 +42,7 @@ class Batch(models.Model):
 
 class Division(models.Model):
     """Model representing an educational division like Science, Arts, Commerce, etc."""
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     name = models.CharField(_("Name"), max_length=100)
     code = models.SlugField(_("Code"), max_length=20, unique=True)
     description = models.TextField(_("Description"), blank=True)
@@ -33,6 +52,21 @@ class Division(models.Model):
     is_active = models.BooleanField(_("Active"), default=True)
     created_at = models.DateTimeField(_("Created At"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
+    
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if Division.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = _("Division")
@@ -45,6 +79,7 @@ class Division(models.Model):
 
 class Subject(models.Model):
     """Model representing an educational subject like Physics, Chemistry, etc."""
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     name = models.CharField(_("Name"), max_length=100)
     code = models.SlugField(_("Code"), max_length=30, unique=True)
     description = models.TextField(_("Description"), blank=True)
@@ -56,6 +91,21 @@ class Subject(models.Model):
     is_active = models.BooleanField(_("Active"), default=True)
     created_at = models.DateTimeField(_("Created At"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
+    
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if Subject.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = _("Subject")
@@ -68,6 +118,7 @@ class Subject(models.Model):
 
 class VideoLesson(models.Model):
     """Model representing a video lesson in a subject."""
+    id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     title = models.CharField(_("Title"), max_length=200)
     title_bn = models.CharField(_("Bengali Title"), max_length=200, blank=True)
     description = models.TextField(_("Description"))
@@ -84,6 +135,21 @@ class VideoLesson(models.Model):
     is_featured = models.BooleanField(_("Featured"), default=False)
     created_at = models.DateTimeField(_("Created At"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
+    
+    def generate_id(self):
+        from datetime import datetime
+        import random
+        now = datetime.now()
+        base_number = now.strftime("%y%m%d%H%M")
+        if VideoLesson.objects.filter(id=base_number).exists():
+            random_suffix = f"{random.randint(0, 999):03d}"
+            return base_number[:7] + random_suffix
+        return base_number
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.id = self.generate_id()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = _("Video Lesson")

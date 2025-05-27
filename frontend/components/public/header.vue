@@ -1,10 +1,11 @@
-<template>  <div
+<template>
+  <div
     class="py-3 z-[99999999] bg-slate-200/70 shadow-sm rounded-b-lg dark:bg-black max-w-[1280px] md:mx-auto"
     :class="[
       isScrolled
         ? 'fixed top-0 left-0 right-0 mx-auto backdrop-blur-sm border-b border-slate-200/50 rounded-b-lg'
         : 'sticky',
-      'mobile-app-header' // Adding class for mobile app styling
+      'mobile-app-header', // Adding class for mobile app styling
     ]"
   >
     <!-- Subscription Warnings - Always visible regardless of scroll state -->
@@ -173,7 +174,8 @@
           </div>
         </div>
       </transition>
-    </div>    <UContainer>
+    </div>
+    <UContainer>
       <!-- <PublicDonation /> -->
       <USlideover
         v-model="isOpen"
@@ -217,7 +219,8 @@
             >
               {{ $t("menu") }}
             </h3>
-            <UVerticalNavigation              :links="[
+            <UVerticalNavigation
+              :links="[
                 {
                   label: $t('home'),
                   to: '/',
@@ -227,7 +230,7 @@
                   label: $t('classified_service'),
                   to: '#classified-services',
                   icon: 'i-heroicons-clipboard-document-list',
-                },                
+                },
                 {
                   label: 'eLearning',
                   to: '/courses',
@@ -298,7 +301,8 @@
             >
               {{ $t("follow_us") }}
             </h3>
-            <div class="flex items-center gap-4">              <a
+            <div class="flex items-center gap-4">
+              <a
                 href="https://www.facebook.com/profile.php?id=61573940373294"
                 target="_blank"
                 class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 transition"
@@ -306,15 +310,14 @@
               >
                 <UIcon name="i-logos-facebook" class="w-5 h-5" />
               </a>
-              
             </div>
           </div>
 
           <!-- Footer Section -->
         </UCard>
       </USlideover>
-      
-      <div class="flex items-center justify-between gap-2 lg:gap-6 px-3">        
+
+      <div class="flex items-center justify-between gap-2 lg:gap-6 px-3">
         <!-- Mobile Layout: Menu Button and Logo grouped together -->
         <div class="flex items-center gap-4">
           <!-- Mobile View - Sidebar Menu Button (only visible on mobile) -->
@@ -327,20 +330,21 @@
               size="sm"
             />
           </div>
-          
+
           <!-- Logo for all screens - positioned next to hamburger on mobile -->
           <PublicLogo />
         </div>
-        
+
         <!-- Desktop Navigation Menu -->
-        <div class="hidden md:block">          
+        <div class="hidden md:block">
           <UHorizontalNavigation
             :links="[
               {
                 label: $t('home'),
                 to: '/#home',
                 icon: 'i-heroicons-home',
-              },              {
+              },
+              {
                 label: $t('business_network'),
                 to: '/business-network',
                 icon: 'i-lucide-globe',
@@ -351,7 +355,7 @@
                 icon: 'i-lucide-newspaper',
               },
               {
-                label: 'eLearning',
+                label: $t('elearning'),
                 to: '/courses',
                 icon: 'i-heroicons-academic-cap',
               },
@@ -374,22 +378,25 @@
             }"
           />
         </div>
-          <!-- Not Logged In User Section -->
+        <!-- Not Logged In User Section -->
         <div v-if="!user" class="flex relative menu-container items-center">
           <!-- Desktop language switcher -->
           <PublicTranslateHandler class="px-2 max-sm:hidden" />
-          
+
           <!-- Mobile Profile Icon -->
           <div class="sm:hidden">
             <NuxtLink to="/auth/login">
-              <div 
+              <div
                 class="size-10 rounded-full flex pl-1 items-center justify-center bg-gray-100 border border-gray-200 shadow-sm"
               >
-                <UIcon name="i-material-symbols-person-rounded" class="size-7 text-gray-500" />
+                <UIcon
+                  name="i-material-symbols-person-rounded"
+                  class="size-7 text-gray-500"
+                />
               </div>
             </NuxtLink>
           </div>
-          
+
           <!-- Login Button -->
           <UButton
             to="/auth/login"
@@ -413,11 +420,11 @@
           >
           </UButton>
         </div>
-          <!-- Logged In User Section -->
+        <!-- Logged In User Section -->
         <div v-else class="flex relative menu-container items-center z-40">
           <!-- Desktop language switcher -->
           <PublicTranslateHandler class="px-2 max-sm:hidden" />
-          
+
           <!-- QR Code Button -->
           <div class="flex items-center" v-if="user && user.user">
             <UButton
@@ -438,7 +445,8 @@
                 width: 'w-full sm:max-w-md',
                 background: 'bg-slate-100',
               }"
-            >              <div
+            >
+              <div
                 class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden"
               >
                 <UButton
@@ -460,50 +468,55 @@
                 </div>
               </div>
             </UModal>
-          </div>          
+          </div>
           <!-- Mobile User Profile Avatar -->
-          <div 
+          <div
             @click="openMenu = !openMenu"
             class="sm:hidden relative cursor-pointer"
-          >            <div class="relative">
+          >
+            <div class="relative">
               <!-- User profile image with pink gradient border for Pro users -->
-              <div 
+              <div
                 :class="[
                   'size-11 rounded-full flex items-center justify-center overflow-hidden shadow-sm',
-                  user?.user?.is_pro ? 'pro-profile-pink-border' : 'border-2 border-white'
+                  user?.user?.is_pro
+                    ? 'pro-profile-pink-border'
+                    : 'border-2 border-white',
                 ]"
               >
-                <img 
+                <img
                   v-if="user?.user?.image"
                   :src="user.user.image"
                   :alt="user.user.name || user.user.first_name"
                   class="size-full object-cover rounded-full relative z-1"
-                  style="position: relative; z-index: 1;"
+                  style="position: relative; z-index: 1"
                 />
-                <UIcon v-else name="i-heroicons-user" class="size-6 text-gray-500 ml-2.5 relative z-1" style="position: relative; z-index: 1;" />
+                <UIcon
+                  v-else
+                  name="i-heroicons-user"
+                  class="size-6 text-gray-500 ml-2.5 relative z-1"
+                  style="position: relative; z-index: 1"
+                />
               </div>
-              
+
               <!-- Pro Badge for mobile - text at top right -->
               <span
                 v-if="user?.user?.is_pro"
-                class="absolute -top-1 -right-3.5 px-2  bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full text-2xs font-semibold shadow-sm"
+                class="absolute -top-1 -right-3.5 px-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full text-2xs font-semibold shadow-sm"
               >
                 Pro
               </span>
-              
+
               <!-- Verification Badge for mobile -->
               <span
                 v-if="user?.user?.kyc"
                 class="absolute -bottom-1 -right-1 size-4 flex items-center justify-center bg-white rounded-full shadow-sm"
               >
-                <UIcon
-                  name="mdi:check-decagram"
-                  class="size-4 text-blue-600"
-                />
+                <UIcon name="mdi:check-decagram" class="size-4 text-blue-600" />
               </span>
             </div>
           </div>
-          
+
           <!-- Desktop User Profile Button -->
           <UButton
             size="sm"
@@ -543,20 +556,21 @@
             <UIcon
               v-if="user?.user?.kyc"
               name="mdi:check-decagram"
-              class="w-5 h-5 text-blue-600"
-            />
+              class="w-5 h-5 text-blue-600" />
             <UIcon v-else name="i-heroicons-user-circle" class="text-xl" />
 
-            Hi {{ (user?.user?.first_name).slice(0, 8) }}            <UIcon name="i-heroicons-chevron-down-16-solid" v-if="!openMenu" />
-            <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu" /></UButton>
-          
+            Hi {{ (user?.user?.first_name).slice(0, 8) }}
+            <UIcon name="i-heroicons-chevron-down-16-solid" v-if="!openMenu" />
+            <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu"
+          /></UButton>
+
           <!-- Modern Glass-Morphism Dropdown Menu using the new component -->
-          <UserDropdownMenu 
-            :user="user" 
-            :is-open="openMenu" 
+          <UserDropdownMenu
+            :user="user"
+            :is-open="openMenu"
             @update:is-open="openMenu = $event"
             @upgrade-to-pro="upgradeToPro"
-            @manage-subscription="manageSubscription" 
+            @manage-subscription="manageSubscription"
             @logout="logout"
           />
         </div>
@@ -566,7 +580,7 @@
 </template>
 
 <script setup>
-import UserDropdownMenu from './user-dropdown-menu.vue';
+import UserDropdownMenu from "./user-dropdown-menu.vue";
 const { t } = useI18n();
 const { user, logout } = useAuth();
 const { get } = useApi();
@@ -747,12 +761,12 @@ onMounted(() => {
   .mobile-app-header .menu-container {
     gap: 8px;
   }
-  
+
   /* App-like native styling */
   .mobile-app-header .flex {
     justify-content: space-between;
   }
-  
+
   /* Make the logo slightly smaller on mobile for better spacing */
   .mobile-app-header .public-logo img {
     max-height: 34px;
@@ -764,7 +778,7 @@ onMounted(() => {
   .menu-container {
     position: relative;
   }
-  
+
   .dropdown-menu-position {
     right: 0;
     top: calc(100% + 0.5rem);
@@ -841,7 +855,7 @@ onMounted(() => {
   .menu-container > div.absolute {
     right: 0 !important;
   }
-  
+
   .dropdown-menu-position {
     right: 0;
     top: calc(100% + 0.5rem);
@@ -858,7 +872,7 @@ onMounted(() => {
 
 /* Pink gradient outline - the outer ring */
 .pro-profile-pink-border::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -3px; /* Creates border effect */
   background: linear-gradient(135deg, #ec4899, #d946ef, #c026d3);
@@ -870,10 +884,13 @@ onMounted(() => {
 
 /* Inner white space to create the outline effect */
 .pro-profile-pink-border::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: -1px; /* Slightly smaller than outer ring to create outline */
-  background: var(--bg-color, white); /* Use CSS variable for background color */
+  background: var(
+    --bg-color,
+    white
+  ); /* Use CSS variable for background color */
   border-radius: 100%;
   z-index: 0; /* Changed from -1 to 0 */
 }
