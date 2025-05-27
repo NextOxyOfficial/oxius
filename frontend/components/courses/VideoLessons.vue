@@ -1,5 +1,5 @@
 <template>  
-  <div v-if="subject" class="bg-white rounded-lg shadow-md p-4 mt-3">
+  <div v-if="subject" class="bg-white rounded-lg shadow-sm p-4 mt-3">
     <!-- Header with title and icon -->
     <div class="flex items-center mb-4">
       <div class="bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-full p-1.5 mr-2.5 shadow-sm">
@@ -176,7 +176,7 @@
       <div 
         v-for="video in filteredVideos" 
         :key="video.id"
-        class="overflow-hidden rounded-lg border transition-all hover:shadow-md"
+        class="overflow-hidden rounded-lg border transition-all hover:shadow-sm"
       >
         <!-- Video player -->
         <div class="aspect-w-16 aspect-h-9 bg-gray-100">
