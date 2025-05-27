@@ -1,7 +1,6 @@
 export default defineI18nConfig(() => ({
   legacy: false,
-  locale: "en",
-  messages: {
+  locale: "en",  messages: {
     en: {
       welcome: "Welcome",
       home: "Home",
@@ -9,6 +8,7 @@ export default defineI18nConfig(() => ({
       nearby_location: "Nearby Location Ads",
       eshop: "eShop",
       eshop_manager: "E-Shop Manager",
+      online_courses: "Online Courses",
       classified_service: "My Services",
       earn_money: "Earn Money",
       faq: "FAQ",

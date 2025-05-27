@@ -217,8 +217,7 @@
             >
               {{ $t("menu") }}
             </h3>
-            <UVerticalNavigation
-              :links="[
+            <UVerticalNavigation              :links="[
                 {
                   label: $t('home'),
                   to: '/',
@@ -228,6 +227,10 @@
                   label: $t('classified_service'),
                   to: '#classified-services',
                   icon: 'i-heroicons-clipboard-document-list',
+                },                {
+                  label: $t('online_courses'),
+                  to: '/courses',
+                  icon: 'i-heroicons-academic-cap',
                 },
                 {
                   label: $t('earn_money'),
@@ -329,7 +332,7 @@
         </div>
         
         <!-- Desktop Navigation Menu -->
-        <div class="hidden md:block">
+        <div class="hidden md:block">          
           <UHorizontalNavigation
             :links="[
               {
@@ -346,7 +349,7 @@
                 label: $t('adsy_news'),
                 to: '/adsy-news',
                 icon: 'i-lucide-newspaper',
-              },
+              },              
               {
                 label: $t('earn_money'),
                 to: '/#micro-gigs',
