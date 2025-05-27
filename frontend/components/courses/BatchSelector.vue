@@ -1,5 +1,6 @@
 <template>
-  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+  <UContainer>
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
     <div class="flex items-center justify-between mb-3">
       <h2 class="text-lg font-semibold text-gray-800">Select Your Batch</h2>
       <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">Step 1 of 4</span>
@@ -7,7 +8,7 @@
     <div class="grid grid-cols-2 gap-3">
       <div 
         @click="$emit('select-batch', 'SSC')" 
-        class="p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md hover:border-blue-300"
+        class="p-3 border rounded-lg cursor-pointer transition-all hover:shadow-sm hover:border-blue-300"
         :class="{ 'border-blue-500 bg-blue-50 shadow-sm': selectedBatch === 'SSC', 'border-gray-200': selectedBatch !== 'SSC' }"
       >
         <div class="flex items-center space-x-2">
@@ -25,7 +26,7 @@
       
       <div 
         @click="$emit('select-batch', 'HSC')" 
-        class="p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md hover:border-blue-300"
+        class="p-3 border rounded-lg cursor-pointer transition-all hover:shadow-sm hover:border-blue-300"
         :class="{ 'border-blue-500 bg-blue-50 shadow-sm': selectedBatch === 'HSC', 'border-gray-200': selectedBatch !== 'HSC' }"
       >
         <div class="flex items-center space-x-2">
@@ -42,6 +43,8 @@
       </div>
     </div>
   </div>
+  </UContainer>
+
 </template>
 
 <script setup>

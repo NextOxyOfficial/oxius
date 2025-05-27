@@ -350,7 +350,7 @@
       <div
         v-for="video in filteredVideos"
         :key="video.id"
-        class="overflow-hidden rounded-lg border transition-all hover:shadow-md"
+        class="overflow-hidden rounded-lg border transition-all hover:shadow-sm"
       >
         <!-- Video player -->
         <div class="aspect-w-16 aspect-h-9 bg-gray-100">

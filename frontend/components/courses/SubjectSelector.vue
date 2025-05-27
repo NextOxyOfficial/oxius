@@ -1,4 +1,4 @@
-<template>  <div v-if="division" class="bg-white rounded-lg shadow-md p-4 mt-3">
+<template>  <div v-if="division" class="bg-white rounded-lg shadow-sm p-4 mt-3">
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center">
         <div class="bg-blue-100 text-blue-600 rounded-full p-1 mr-2">
@@ -18,7 +18,7 @@
         v-for="subject in filteredSubjects" 
         :key="subject.id"
         @click="$emit('select-subject', subject.id)" 
-        class="border rounded-lg cursor-pointer transition-all hover:shadow-md overflow-hidden"
+        class="border rounded-lg cursor-pointer transition-all hover:shadow-sm overflow-hidden"
         :class="{ 'border-blue-500 ring-2 ring-blue-200': selectedSubject === subject.id }"
       >        <!-- Responsive layout for subject cards -->
         <div class="flex flex-col sm:flex-row items-center p-2 sm:p-3">
