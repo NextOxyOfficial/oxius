@@ -390,7 +390,7 @@
                   leave-to-class="transform scale-50 opacity-0">
                   <div 
                     v-if="badgeCount > 0" 
-                    class="absolute -top-1 -right-1 min-w-4 h-4 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold px-1 shadow-md animate-pulse"
+                    class="absolute -top-1 -right-1 min-w-4 h-4 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold px-1 shadow-sm animate-pulse"
                   >
                     {{ badgeCount > 99 ? '99+' : badgeCount }}
                   </div>
@@ -466,7 +466,7 @@
           <!-- Desktop User Profile Button with Tailwind -->
           <div 
             @click="openMenu = !openMenu" 
-            class="relative cursor-pointer transition-all duration-300 rounded-full hover:shadow-md max-sm:hidden"
+            class="relative cursor-pointer transition-all duration-300 rounded-full hover:shadow-sm max-sm:hidden"
           >
             <div class="flex items-center gap-2 p-1 pl-1 pr-3 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
               <!-- Pro Badge -->
