@@ -270,7 +270,7 @@
       
       <div class="flex items-center justify-between gap-2 lg:gap-6 px-3">
         <!-- Mobile Layout: Menu Button and Logo -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1">
           <!-- Mobile Menu Button -->
           <div class="md:hidden">
             <UButton
