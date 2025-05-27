@@ -1,6 +1,6 @@
 <template>
   <div
-    class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 pt-3 flex-1 bg-gradient"
+    class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 bg-gradient"
   >
     <!-- Skeleton loader for the entire profile page -->
     <template v-if="isLoading">

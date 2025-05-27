@@ -60,7 +60,7 @@
         </div>
 
         <!-- Right Section: Search + Navigation + User Menu -->
-        <div class="flex items-center gap-1 sm:gap-3 relative">
+        <div class="flex items-center gap-1 sm:gap-1 relative">
           <!-- Search Component -->
           <CommonSearchDropdown ref="searchDropdownRef" />
 

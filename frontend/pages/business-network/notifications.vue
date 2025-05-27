@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl my-16 pt-3 flex-1">
+  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1">
     <!-- Enhanced header with premium glass morphism effect -->
     <div
       class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 p-4 sm:p-6 mb-6 shadow-sm"

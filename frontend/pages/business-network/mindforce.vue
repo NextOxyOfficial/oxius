@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-16 pt-3 flex-1">
+  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1">
     <!-- Header Component -->
     <MindForceHeader :is-creating="isCreating" @create="openCreateModal" />
 
