@@ -1,10 +1,9 @@
-<template>
-  <div
-    class="py-3 z-[99999999] bg-slate-200/70 shadow-sm rounded-b-lg dark:bg-black max-w-[1280px] md:mx-auto"
+<template>  <div
+    class="professional-header z-[99999999] w-full"
     :class="[
       isScrolled
-        ? 'fixed top-0 left-0 right-0 mx-auto backdrop-blur-sm border-b border-slate-200/50 rounded-b-lg'
-        : 'sticky',
+        ? 'fixed top-0 left-0 right-0 w-full backdrop-blur-md border-b border-slate-200/50 rounded-b-lg shadow-lg'
+        : 'sticky w-full shadow-sm',
       'mobile-app-header', // Adding class for mobile app styling
     ]"
   >
@@ -218,53 +217,63 @@
               class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 px-4"
             >
               {{ $t("menu") }}
-            </h3>
-            <UVerticalNavigation
-              :links="[
-                {
-                  label: $t('home'),
-                  to: '/',
-                  icon: 'i-heroicons-home',
-                },
-                {
-                  label: $t('classified_service'),
-                  to: '#classified-services',
-                  icon: 'i-heroicons-clipboard-document-list',
-                },
-                {
-                  label: $t('elearning'),
-                  to: '/courses',
-                  icon: 'i-heroicons-academic-cap',
-                },
-                {
-                  label: $t('earn_money'),
-                  to: '#micro-gigs',
-                  icon: 'i-healthicons:money-bag-outline',
-                },
-                {
-                  label: $t('faq'),
-                  to: '/faq/',
-                  icon: 'i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question',
-                },
-                {
-                  label: 'মোবাইল রিচার্জ',
-                  to: '/mobile-recharge',
-                  icon: 'i-ic-baseline-install-mobile',
-                },
-              ]"
-              :ui="{
-                padding: 'py-3 px-4',
-              }"
-              class="space-y-2"
-            >
-              <template #default="{ link }">
-                <span
-                  @click="isOpen = false"
-                  class="group-hover:text-gray-700 relative"
-                  >{{ link.label }}</span
-                >
-              </template>
-            </UVerticalNavigation>
+            </h3>            
+            <div class="mobile-menu-redesigned space-y-1 py-2">
+              <!-- Home -->
+              <NuxtLink to="/" class="mobile-nav-item" @click="isOpen = false">
+                <div class="mobile-nav-icon bg-blue-100 text-blue-600">
+                  <UIcon name="i-heroicons-home-20-solid" class="text-lg" />
+                </div>
+                <span class="mobile-nav-text text-blue-700">{{ $t('home') }}</span>
+                <UIcon name="i-heroicons-chevron-right" 
+                class="mobile-nav-arrow text-blue-500" />
+              </NuxtLink>
+              
+              <!-- Classified Service -->
+              <NuxtLink to="#classified-services" class="mobile-nav-item" @click="isOpen = false">
+                <div class="mobile-nav-icon bg-emerald-100 text-emerald-600">
+                  <UIcon name="i-heroicons-clipboard-document-list" class="text-lg" />
+                </div>
+                <span class="mobile-nav-text text-emerald-700">{{ $t('classified_service') }}</span>
+                <UIcon name="i-heroicons-chevron-right" class="mobile-nav-arrow text-emerald-500" />
+              </NuxtLink>
+              
+              <!-- E-Learning -->
+              <NuxtLink to="/courses" class="mobile-nav-item" @click="isOpen = false">
+                <div class="mobile-nav-icon bg-purple-100 text-purple-600">
+                  <UIcon name="i-heroicons-academic-cap" class="text-lg" />
+                </div>
+                <span class="mobile-nav-text text-purple-700">{{ $t('elearning') }}</span>
+                <UIcon name="i-heroicons-chevron-right" class="mobile-nav-arrow text-purple-500" />
+              </NuxtLink>
+              
+              <!-- Earn Money -->
+              <NuxtLink to="#micro-gigs" class="mobile-nav-item" @click="isOpen = false">
+                <div class="mobile-nav-icon bg-amber-100 text-amber-600">
+                  <UIcon name="i-healthicons:money-bag-outline" class="text-lg" />
+                </div>
+                <span class="mobile-nav-text text-amber-700">{{ $t('earn_money') }}</span>
+                <UIcon name="i-heroicons-chevron-right" class="mobile-nav-arrow text-amber-500" />
+              </NuxtLink>
+              
+              <!-- FAQ -->
+              <NuxtLink to="/faq/" class="mobile-nav-item" @click="isOpen = false">
+                <div class="mobile-nav-icon bg-red-100 text-red-600">
+                  <UIcon name="i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question" class="text-lg" />
+                </div>
+                <span class="mobile-nav-text text-red-700">{{ $t('faq') }}</span>
+                <UIcon name="i-heroicons-chevron-right" class="mobile-nav-arrow text-red-500" />
+              </NuxtLink>
+              
+              <!-- Mobile Recharge -->
+              <NuxtLink to="/mobile-recharge" class="mobile-nav-item" @click="isOpen = false">
+                <div class="mobile-nav-icon bg-indigo-100 text-indigo-600">
+                  <UIcon name="i-ic-baseline-install-mobile" class="text-lg" />
+                </div>
+                <span class="mobile-nav-text text-indigo-700">মোবাইল রিচার্জ</span>
+                <UIcon name="i-heroicons-chevron-right" class="mobile-nav-arrow text-indigo-500" />
+              </NuxtLink>
+            </div>
           </div>
 
           <!-- Download App Section -->
@@ -319,18 +328,18 @@
 
           <!-- Footer Section -->
         </UCard>
-      </USlideover>
-
+      </USlideover>      
       <div class="flex items-center justify-between gap-2 lg:gap-6 px-3">
         <!-- Mobile Layout: Menu Button and Logo grouped together -->
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
           <!-- Mobile View - Sidebar Menu Button (only visible on mobile) -->
           <div class="md:hidden">
             <UButton
               @click="isOpen = true"
-              icon="i-ci-hamburger-md"
-              variant="outline"
+              icon="i-heroicons-bars-3"
+              variant="ghost"
               color="gray"
+              class="hover:bg-gray-100 rounded-lg transition-all duration-200"
               size="sm"
             />
           </div>
@@ -338,45 +347,61 @@
           <!-- Logo for all screens - positioned next to hamburger on mobile -->
           <PublicLogo />
         </div>
-
-        <!-- Desktop Navigation Menu -->
-        <div class="hidden md:block">
-          <UHorizontalNavigation
-            :links="[
-              {
-                label: $t('home'),
-                to: '/#home',
-                icon: 'i-heroicons-home',
-              },
-              {
-                label: $t('business_network'),
-                to: '/business-network',
-                icon: 'i-lucide-globe',
-              },
-              {
-                label: $t('adsy_news'),
-                to: '/adsy-news',
-                icon: 'i-lucide-newspaper',
-              },
-              {
-                label: $t('elearning'),
-                to: '/courses',
-                icon: 'i-heroicons-academic-cap',
-              },
-              {
-                label: $t('earn_money'),
-                to: '/#micro-gigs',
-                icon: 'i-healthicons:money-bag-outline',
-              },
-            ]"
-            class="border-b border-gray-200 dark:border-gray-800 text-lg"
-            :ui="{
-              wrapper: 'w-auto',
-              label: 'text-base',
-              active: 'after:hidden',
-            }"
-          />
-        </div>
+        
+        <!-- Desktop Navigation Menu - Redesigned -->
+        <nav class="hidden md:block">
+          <div class="custom-nav-menu">
+            <NuxtLink 
+              to="/#home" 
+              class="nav-item text-blue-600 hover:text-blue-800"
+              :class="{ 'active': $route.path === '/' }"
+            >
+              <UIcon name="i-heroicons-home-20-solid" class="nav-icon" />
+              <span>{{ $t('home') }}</span>
+              <div class="nav-indicator bg-blue-500"></div>
+            </NuxtLink>
+            
+            <NuxtLink 
+              to="/business-network" 
+              class="nav-item text-emerald-600 hover:text-emerald-800"
+              :class="{ 'active': $route.path === '/business-network' }"
+            >
+              <UIcon name="i-lucide-globe" class="nav-icon" />
+              <span>{{ $t('business_network') }}</span>
+              <div class="nav-indicator bg-emerald-500"></div>
+            </NuxtLink>
+            
+            <NuxtLink 
+              to="/adsy-news" 
+              class="nav-item text-amber-600 hover:text-amber-800"
+              :class="{ 'active': $route.path === '/adsy-news' }"
+            >
+              <UIcon name="i-lucide-newspaper" class="nav-icon" />
+              <span>{{ $t('adsy_news') }}</span>
+              <div class="nav-indicator bg-amber-500"></div>
+            </NuxtLink>
+            
+            <NuxtLink 
+              to="/courses" 
+              class="nav-item text-purple-600 hover:text-purple-800"
+              :class="{ 'active': $route.path === '/courses' }"
+            >
+              <UIcon name="i-heroicons-academic-cap" class="nav-icon" />
+              <span>{{ $t('elearning') }}</span>
+              <div class="nav-indicator bg-purple-500"></div>
+            </NuxtLink>
+            
+            <NuxtLink 
+              to="/#micro-gigs" 
+              class="nav-item text-red-600 hover:text-red-800"
+              :class="{ 'active': $route.path === '/#micro-gigs' }"
+            >
+              <UIcon name="i-healthicons:money-bag-outline" class="nav-icon" />
+              <span>{{ $t('earn_money') }}</span>
+              <div class="nav-indicator bg-red-500"></div>
+            </NuxtLink>
+          </div>
+        </nav>
         <!-- Not Logged In User Section -->
         <div v-if="!user" class="flex relative menu-container items-center">
           <!-- Desktop language switcher -->
@@ -422,22 +447,31 @@
         <!-- Logged In User Section -->
         <div v-else class="flex relative menu-container items-center z-40">
           <!-- Desktop language switcher -->
-          <PublicTranslateHandler class="px-2 max-sm:hidden" />
-
-          <!-- QR Code Button -->
-          <div class="flex items-center" v-if="user && user.user">
-            <UButton
-              icon="i-ic:twotone-qr-code-scanner"
-              size="xl"
-              :ui="{
-                size: { md: 'text-sm' },
-                padding: { md: 'px-2.5 py-1.5 sm:px-3 sm:py-2' },
-              }"
-              color="primary"
-              variant="ghost"
-              @click="showQr = !showQr"
-              block
-            />
+          <PublicTranslateHandler class="px-2 max-sm:hidden" />          <!-- User Action Buttons - Redesigned -->
+          <div class="flex items-center gap-3" v-if="user && user.user">
+            <!-- Inbox Button with improved design -->
+            <NuxtLink to="/inbox/" class="action-button-container">
+              <div class="action-button inbox-button">
+                <UIcon name="i-material-symbols:mark-email-unread-outline" class="action-icon" />
+                
+                <!-- Enhanced Notification Badge -->
+                <transition name="badge-pop">
+                  <div 
+                    v-if="badgeCount > 0" 
+                    class="notification-badge"
+                  >
+                    {{ badgeCount > 99 ? '99+' : badgeCount }}
+                  </div>
+                </transition>
+              </div>
+            </NuxtLink>
+            
+            <!-- QR Code Button with improved design -->
+            <div @click="showQr = !showQr" class="action-button-container">
+              <div class="action-button qr-button">
+                <UIcon name="i-ic:twotone-qr-code-scanner" class="action-icon" />
+              </div>
+            </div>
             <UModal
               v-model="showQr"
               :ui="{
@@ -467,101 +501,92 @@
                 </div>
               </div>
             </UModal>
-          </div>
-          <!-- Mobile User Profile Avatar -->
+          </div>          <!-- Redesigned Mobile User Profile Avatar -->
           <div
             @click="openMenu = !openMenu"
             class="sm:hidden relative cursor-pointer"
           >
-            <div class="relative">
-              <!-- User profile image with pink gradient border for Pro users -->
+            <div class="mobile-profile-container">
+              <!-- User profile image with enhanced styling -->
               <div
                 :class="[
-                  'size-11 rounded-full flex items-center justify-center overflow-hidden shadow-sm',
-                  user?.user?.is_pro
-                    ? 'pro-profile-pink-border'
-                    : 'border-2 border-white',
+                  'mobile-avatar-container',
+                  user?.user?.is_pro ? 'pro-avatar' : 'standard-avatar',
                 ]"
               >
                 <img
                   v-if="user?.user?.image"
                   :src="user.user.image"
                   :alt="user.user.name || user.user.first_name"
-                  class="size-full object-cover rounded-full relative z-1"
-                  style="position: relative; z-index: 1"
+                  class="mobile-avatar-image"
                 />
                 <UIcon
                   v-else
                   name="i-heroicons-user"
-                  class="size-6 text-gray-500 ml-2.5 relative z-1"
-                  style="position: relative; z-index: 1"
+                  class="mobile-avatar-placeholder"
                 />
               </div>
 
-              <!-- Pro Badge for mobile - text at top right -->
-              <span
+              <!-- Enhanced Pro Badge -->
+              <div
                 v-if="user?.user?.is_pro"
-                class="absolute -top-1 -right-3.5 px-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-full text-2xs font-semibold shadow-sm"
+                class="mobile-pro-badge"
               >
-                Pro
-              </span>
+                <UIcon name="i-heroicons-shield-check" class="mobile-pro-icon" />
+                <span>Pro</span>
+              </div>
 
-              <!-- Verification Badge for mobile -->
-              <span
+              <!-- Enhanced Verification Badge -->
+              <div
                 v-if="user?.user?.kyc"
-                class="absolute -bottom-1 -right-1 size-4 flex items-center justify-center bg-white rounded-full shadow-sm"
+                class="mobile-verified-badge"
               >
-                <UIcon name="mdi:check-decagram" class="size-4 text-blue-600" />
-              </span>
+                <UIcon name="mdi:check-decagram" class="mobile-verified-icon" />
+              </div>
+            </div>
+          </div><!-- Redesigned Desktop User Profile Button -->
+          <div 
+            @click="openMenu = !openMenu" 
+            class="user-profile-button max-sm:hidden"
+          >
+            <div class="user-profile-content">
+              <!-- Pro Badge -->
+              <div 
+                v-if="user?.user?.is_pro"
+                class="pro-badge"
+              >
+                <UIcon name="i-heroicons-shield-check" class="pro-icon" />
+                <span>Pro</span>
+              </div>
+              
+              <!-- User Info -->
+              <div class="user-info">
+                <!-- Verified Icon -->
+                <UIcon
+                  v-if="user?.user?.kyc"
+                  name="mdi:check-decagram"
+                  class="verified-icon" />
+                
+                <!-- Avatar & Name -->
+                <div class="user-avatar">
+                  <img 
+                    v-if="user?.user?.image"
+                    :src="user.user.image"
+                    :alt="user.user.name || user.user.first_name"
+                    class="avatar-image"
+                  />
+                  <UIcon v-else name="i-heroicons-user-circle" class="default-avatar" />
+                </div>
+               
+              </div>
+              
+              <!-- Dropdown indicator -->
+              <UIcon 
+                :name="openMenu ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" 
+                class="dropdown-indicator"
+              />
             </div>
           </div>
-
-          <!-- Desktop User Profile Button -->
-          <UButton
-            size="sm"
-            color="primary"
-            variant="outline"
-            @click="openMenu = !openMenu"
-            class="max-sm:hidden"
-            :ui="{
-              gap: {
-                sm: 'gap-x-1 md:gap-x-1.5',
-              },
-              size: {
-                sm: 'text-xs sm:text-sm',
-              },
-              padding: {
-                sm: 'px-1.5 py-1 md:px-2.5 md:py-1.5',
-              },
-              icon: {
-                size: {
-                  sm: 'w-2 h-2 md:w-2.5 md:h-2.5',
-                },
-              },
-            }"
-          >
-            <span
-              v-if="user?.user?.is_pro"
-              class="text-2xs px-2 py-0.5 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-full font-medium shadow-sm"
-            >
-              <div class="flex items-center gap-1">
-                <UIcon
-                  name="i-heroicons-shield-check"
-                  class="size-4 text-white"
-                />
-                <span class="text-xs">Pro</span>
-              </div>
-            </span>
-            <UIcon
-              v-if="user?.user?.kyc"
-              name="mdi:check-decagram"
-              class="w-5 h-5 text-blue-600" />
-            <UIcon v-else name="i-heroicons-user-circle" class="text-xl" />
-
-            Hi {{ (user?.user?.first_name).slice(0, 8) }}
-            <UIcon name="i-heroicons-chevron-down-16-solid" v-if="!openMenu" />
-            <UIcon name="i-heroicons-chevron-up-16-solid" v-if="openMenu"
-          /></UButton>
 
           <!-- Modern Glass-Morphism Dropdown Menu using the new component -->
           <UserDropdownMenu
@@ -583,6 +608,8 @@ import UserDropdownMenu from "./user-dropdown-menu.vue";
 const { t } = useI18n();
 const { user, logout } = useAuth();
 const { get } = useApi();
+const { unreadTicketCount, fetchUnreadCount } = useTickets();
+const badgeCount = ref(0);
 const openMenu = ref(false);
 const router = useRouter();
 const open = ref(true);
@@ -591,6 +618,17 @@ const isOpen = ref(false);
 const showQr = ref(false);
 // Subscription alert state
 const warningDismissed = ref(false);
+
+// Update badge count when unreadTicketCount changes
+watch(() => unreadTicketCount.value, (newCount) => {
+  badgeCount.value = newCount;
+});
+
+// Fetch unread ticket count when component mounts
+onMounted(async () => {
+  await fetchUnreadCount();
+  badgeCount.value = unreadTicketCount.value;
+});
 
 // Calculate days remaining before subscription expiration
 const daysRemaining = computed(() => {
@@ -677,6 +715,10 @@ function upgradeToPro() {
 function manageSubscription() {
   openMenu.value = false;
   router.push("/account/subscription");
+}
+
+function navigateToInbox() {
+  router.push("/inbox/");
 }
 
 function formatDate(date) {
@@ -897,6 +939,456 @@ onMounted(() => {
 /* Set background color for light/dark mode */
 :root {
   --bg-color: white;
+}
+
+/* Notification badge animation */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Professional Header Styling */
+.professional-header {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  background-color: white;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.1);
+}
+
+.dark .professional-header {
+  background-color: #111827; /* dark:bg-gray-900 */
+}
+
+/* Desktop Navigation Menu */
+.custom-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid transparent;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.nav-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: all 0.2s;
+}
+
+.nav-item:hover .nav-icon {
+  transform: scale(1.1);
+}
+
+.nav-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0.125rem;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
+}
+
+.nav-item:hover .nav-indicator,
+.nav-item.active .nav-indicator {
+  transform: scaleX(1);
+}
+
+/* Mobile Menu Redesign */
+.mobile-menu-redesigned {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background-color: #f9fafb; /* bg-gray-50 */
+}
+
+.dark .mobile-menu-redesigned {
+  background-color: #1f2937; /* dark:bg-gray-800 */
+}
+
+.mobile-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s;
+  gap: 0.75rem;
+}
+
+.mobile-nav-item:hover {
+  background-color: #f3f4f6; /* hover:bg-gray-100 */
+}
+
+.dark .mobile-nav-item:hover {
+  background-color: #374151; /* dark:hover:bg-gray-700 */
+}
+
+.mobile-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+}
+
+.mobile-nav-text {
+  flex: 1;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.mobile-nav-arrow {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.5;
+}
+
+.mobile-nav-item:hover .mobile-nav-arrow {
+  transform: translateX(0.25rem);
+  opacity: 0.9;
+}
+
+/* Action Buttons */
+.action-button-container {
+  position: relative;
+  cursor: pointer;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: #f3f4f6; /* bg-gray-100 */
+  transition: all 0.3s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.action-button:hover {
+  background-color: #e5e7eb; /* hover:bg-gray-200 */
+}
+
+.dark .action-button {
+  background-color: #1f2937; /* dark:bg-gray-800 */
+}
+
+.dark .action-button:hover {
+  background-color: #374151; /* dark:hover:bg-gray-700 */
+}
+
+.inbox-button {
+  background-color: #eff6ff; /* bg-blue-50 */
+}
+
+.inbox-button:hover {
+  background-color: #dbeafe; /* hover:bg-blue-100 */
+}
+
+.dark .inbox-button {
+  background-color: rgba(30, 58, 138, 0.3); /* dark:bg-blue-900/30 */
+}
+
+.dark .inbox-button:hover {
+  background-color: rgba(30, 58, 138, 0.5); /* dark:hover:bg-blue-900/50 */
+}
+
+.qr-button {
+  background-color: #ecfdf5; /* bg-green-50 */
+}
+
+.qr-button:hover {
+  background-color: #d1fae5; /* hover:bg-green-100 */
+}
+
+.dark .qr-button {
+  background-color: rgba(6, 78, 59, 0.3); /* dark:bg-green-900/30 */
+}
+
+.dark .qr-button:hover {
+  background-color: rgba(6, 78, 59, 0.5); /* dark:hover:bg-green-900/50 */
+}
+
+.action-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #374151; /* text-gray-700 */
+}
+
+.dark .action-icon {
+  color: #d1d5db; /* dark:text-gray-300 */
+}
+
+.inbox-button .action-icon {
+  color: #2563eb; /* text-blue-600 */
+}
+
+.dark .inbox-button .action-icon {
+  color: #60a5fa; /* dark:text-blue-400 */
+}
+
+.qr-button .action-icon {
+  color: #059669; /* text-green-600 */
+}
+
+.dark .qr-button .action-icon {
+  color: #34d399; /* dark:text-green-400 */
+}
+
+/* Notification Badge */
+.notification-badge {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: #ef4444; /* bg-red-500 */
+  color: white;
+  font-size: 0.75rem;
+  padding: 0 0.25rem;
+  font-weight: 600;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  animation: pulse-subtle 2s infinite;
+}
+
+/* User Profile Button */
+.user-profile-button {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-radius: 9999px;
+}
+
+.user-profile-button:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.user-profile-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  padding-left: 0.25rem;
+  padding-right: 0.75rem;
+  border: 1px solid #e5e7eb; /* border-gray-200 */
+  border-radius: 9999px;
+  background-color: white;
+}
+
+.dark .user-profile-content {
+  background-color: #1f2937; /* dark:bg-gray-800 */
+  border-color: #374151; /* dark:border-gray-700 */
+}
+
+.user-profile-content:hover {
+  background-color: #f9fafb; /* hover:bg-gray-50 */
+}
+
+.dark .user-profile-content:hover {
+  background-color: #374151; /* dark:hover:bg-gray-700 */
+}
+
+.pro-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-image: linear-gradient(to right, #6366f1, #3b82f6); /* bg-gradient-to-r from-indigo-500 to-blue-600 */
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.pro-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.verified-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #2563eb; /* text-blue-600 */
+}
+
+.dark .verified-icon {
+  color: #60a5fa; /* dark:text-blue-400 */
+}
+
+.user-avatar {
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6; /* bg-gray-100 */
+}
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.default-avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #6b7280; /* text-gray-500 */
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151; /* text-gray-700 */
+}
+
+.dark .user-name {
+  color: #d1d5db; /* dark:text-gray-300 */
+}
+
+.dropdown-indicator {
+  width: 1rem;
+  height: 1rem;
+  color: #6b7280; /* text-gray-500 */
+  transition: transform 0.2s;
+}
+
+/* Mobile User Profile */
+.mobile-profile-container {
+  position: relative;
+}
+
+.mobile-avatar-container {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: 2px solid white;
+}
+
+.pro-avatar {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #fff 0%, #fff 100%);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #6366f1;
+}
+
+.mobile-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9999px;
+  position: relative;
+  z-index: 10;
+}
+
+.mobile-avatar-placeholder {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #6b7280; /* text-gray-500 */
+  margin-left: 0.625rem;
+  position: relative;
+  z-index: 10;
+}
+
+.mobile-pro-badge {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.125rem 0.5rem;
+  background-image: linear-gradient(to right, #6366f1, #8b5cf6); /* bg-gradient-to-r from-indigo-500 to-violet-600 */
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.mobile-pro-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.mobile-verified-badge {
+  position: absolute;
+  bottom: -0.25rem;
+  right: -0.25rem;
+  width: 1rem;
+  height: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-radius: 9999px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.dark .mobile-verified-badge {
+  background-color: #1f2937; /* dark:bg-gray-800 */
+}
+
+.mobile-verified-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #2563eb; /* text-blue-600 */
+}
+
+/* Badge Animation */
+.badge-pop-enter-active, .badge-pop-leave-active {
+  transition: all 0.3s;
+}
+
+.badge-pop-enter-from, .badge-pop-leave-to {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
 }
 
 .dark .pro-profile-pink-border::after {

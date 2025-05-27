@@ -1,9 +1,7 @@
 <template>
   <PublicSection>
     <UContainer class="py-0 sm:py-8">
-      <!-- Header with 3D layered effect -->
-      <!-- Header with premium glass effect design -->
-      <!-- Header with clean, modern design -->
+      
       <div
         class="inbox-header relative overflow-hidden rounded-xl mb-3 sm:mb-8"
       >
@@ -56,11 +54,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Account balance card -->
-      <div class="mb-8">
-        <AccountBalance v-if="user?.user" :user="user" :isUser="true" />
       </div>
 
       <!-- Notification banner for new messages -->
