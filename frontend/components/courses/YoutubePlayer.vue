@@ -1,29 +1,38 @@
 <template>
   <div class="youtube-player-container">
     <div v-if="!isPlaying" class="preview-container" @click="playVideo">
-      <img :src="thumbnailUrl" alt="Video Thumbnail" class="thumbnail">
-      
+      <img :src="thumbnailUrl" alt="Video Thumbnail" class="thumbnail" />
+
       <!-- Video duration badge -->
       <div class="duration-badge">{{ video.duration }}</div>
-      
+
       <!-- Enhanced play button with glowing effect -->
       <div class="play-button-wrapper">
         <div class="play-button">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-12 w-12 text-white"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+              clip-rule="evenodd"
+            />
           </svg>
         </div>
-        
+
         <!-- Video title overlay -->
         <div class="video-info-overlay">
           <h4 class="video-title">{{ video.title }}</h4>
         </div>
       </div>
     </div>
-    <iframe 
+    <iframe
       v-else
-      :src="`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`" 
-      frameborder="0" 
+      :src="`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`"
+      frameborder="0"
       allowfullscreen
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       class="youtube-iframe"
@@ -32,17 +41,17 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed } from "vue";
 
 const props = defineProps({
   videoId: {
     type: String,
-    required: true
+    required: true,
   },
   video: {
     type: Object,
-    default: () => ({})
-  }
+    default: () => ({}),
+  },
 });
 
 const isPlaying = ref(false);
@@ -98,7 +107,11 @@ function playVideo() {
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 60%);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0) 60%
+  );
 }
 
 .play-button {
@@ -146,7 +159,11 @@ function playVideo() {
   left: 0;
   width: 100%;
   padding: 30px 15px 15px 15px;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
   opacity: 0;
   transform: translateY(20px);
   transition: all 0.3s ease;
@@ -161,10 +178,11 @@ function playVideo() {
   color: white;
   font-size: 0.9rem;
   font-weight: 600;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);  overflow: hidden;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  display: box;
+  display: flex;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
