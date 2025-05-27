@@ -346,7 +346,7 @@
       :prevent-close="showAddItemModal"
     >
       <div
-        class="flex items-center justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
+        class="flex items-center justify-center min-h-screen py-20 text-center sm:block sm:p-0"
       >
         <div
           class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
@@ -359,7 +359,7 @@
           >&#8203;</span
         >
         <div
-          class="inline-block align-bottom bg-white rounded-xl text-left shadow-sm transform transition-all sm:my-24 sm:align-middle sm:max-w-3xl sm:w-full animate-slide-up max-h-[80vh] overflow-auto"
+          class="inline-block align-bottom bg-white rounded-xl text-left shadow-sm transform transition-all sm:my-24 sm:align-middle sm:max-w-3xl sm:w-full animate-slide-up overflow-auto"
         >
           <div
             class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-indigo-600"

@@ -350,7 +350,7 @@
           <!-- Mobile Profile Icon -->
           <div class="sm:hidden">
             <NuxtLink to="/auth/login">
-              <div class="w-10 h-10 rounded-full flex pl-1 items-center justify-center bg-gray-100 border border-gray-200 shadow-sm">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200 shadow-sm">
                 <UIcon name="i-material-symbols-person-rounded" class="w-7 h-7 text-gray-500" />
               </div>
             </NuxtLink>

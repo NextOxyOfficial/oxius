@@ -72,17 +72,15 @@
               <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">
                 Perfect for getting started
               </p>
-            </div>
-
-            <!-- Card Body with Enhanced Features List -->
+            </div>            <!-- Card Body with Enhanced Features List -->
             <div class="p-6">
               <ul class="space-y-4 mb-8 capitalize">
                 <li class="flex items-center text-sm group/item">
                   <div
-                    class="w-6 h-6 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform"
+                    class="w-7 h-7 rounded-full bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-900/30 dark:to-blue-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform duration-300 shadow-sm"
                   >
                     <svg
-                      class="w-3.5 h-3.5 text-sky-400 dark:text-sky-400"
+                      class="w-3.5 h-3.5 text-sky-500 dark:text-sky-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -95,8 +93,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>
-                  <span class="text-gray-500 dark:text-slate-300 line-through"
+                  </div>                  <span class="text-gray-500/90 dark:text-slate-400/90 line-through font-medium"
                     >Access to eShop manager</span
                   >
                 </li>
@@ -164,9 +161,8 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>
-                  <span class="text-gray-500 dark:text-slate-300 line-through"
-                    >Add up to 10 Products</span
+                  </div>                  <span class="text-gray-500 dark:text-slate-300 line-through"
+                    >Add up to 100 Products</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">
@@ -187,8 +183,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>
-                  <span class="text-gray-500 dark:text-slate-300"
+                  </div>                  <span class="text-gray-700 dark:text-slate-100 font-medium"
                     >Post unlimited ads</span
                   >
                 </li>
@@ -261,10 +256,8 @@
                     >Regular support via Email</span
                   >
                 </li>
-              </ul>
-
-              <button
-                class="w-full py-3 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20 text-sky-500 dark:text-sky-400 rounded-xl text-sm font-medium hover:shadow-sm border border-sky-100 dark:border-sky-800/30 transition-all duration-300 relative overflow-hidden group-hover:border-sky-200 dark:group-hover:border-sky-700/50"
+              </ul>              <button
+                class="w-full py-3.5 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20 text-sky-600 dark:text-sky-400 rounded-xl text-sm font-medium hover:shadow-md hover:from-sky-100 hover:to-blue-100 dark:hover:from-sky-900/30 dark:hover:to-blue-900/30 border border-sky-100 dark:border-sky-800/30 transition-all duration-300 relative overflow-hidden group-hover:border-sky-200 dark:group-hover:border-sky-700/50"
               >
                 <span
                   class="relative z-10 flex items-center justify-center gap-2"
@@ -317,9 +310,8 @@
               class="absolute -inset-0.5 bg-gradient-to-r from-sky-300 to-blue-300 dark:from-sky-500 dark:to-blue-500 rounded-xl blur-lg opacity-0 group-hover:opacity-10 transition-all duration-700 animate-pulse"
             ></div>
 
-            <!-- Card Header -->
-            <div
-              class="p-6 bg-gradient-to-r from-sky-400 to-blue-400 dark:from-sky-500 dark:to-blue-500 relative"
+            <!-- Card Header -->            <div
+              class="p-8 bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-600 dark:from-sky-600 dark:via-blue-600 dark:to-indigo-700 relative overflow-hidden"
             >
               <h3 class="text-xl font-semibold text-white flex items-center">
                 <span class="bg-white/20 p-2 rounded-lg mr-3 backdrop-blur-sm">
@@ -365,22 +357,18 @@
                   animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite 0.5s;
                 "
               ></div>
-            </div>
-
-            <!-- Card Body -->
+            </div>              <!-- Card Body -->
             <div class="p-6 relative">
-              <!-- Animated Background Effect -->
+              <!-- Animated Background Effect with enhanced gradient -->
               <div
-                class="absolute inset-0 bg-gradient-to-br from-sky-50 to-blue-50 dark:from-sky-900/5 dark:to-blue-900/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-              ></div>
-
-              <ul class="space-y-4 mb-8 relative z-10 capitalize">
+                class="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-blue-50/80 to-indigo-50/80 dark:from-sky-900/10 dark:via-blue-900/10 dark:to-indigo-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              ></div>              <ul class="space-y-4 mb-8 relative z-10 capitalize">
                 <li class="flex items-center text-sm group/item">
                   <div
-                    class="w-6 h-6 rounded-full bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform"
+                    class="w-7 h-7 rounded-full bg-gradient-to-br from-sky-100 to-blue-100 dark:from-sky-800/40 dark:to-blue-800/40 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform duration-300 shadow-sm border border-sky-200/50 dark:border-sky-700/30"
                   >
                     <svg
-                      class="w-3.5 h-3.5 text-sky-400 dark:text-sky-400"
+                      class="w-3.5 h-3.5 text-sky-500 dark:text-sky-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -394,7 +382,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-gray-500 dark:text-slate-300 font-medium"
+                  <span class="text-gray-700 dark:text-slate-200 font-medium"
                     >Access to Eshop manager</span
                   >
                 </li>
