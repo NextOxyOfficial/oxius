@@ -126,7 +126,7 @@
       </transition>
     </div>
     
-    <UContainer class="w-full max-w-none mx-auto">
+    <UContainer class="w-full max-w-7xl mx-auto">
       <!-- Mobile Sidebar Menu -->
       <USlideover
         v-model="isOpen"
