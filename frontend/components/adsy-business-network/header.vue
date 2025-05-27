@@ -240,10 +240,7 @@
                     />
                     <UIcon v-else name="i-heroicons-user-circle" class="w-6 h-6 text-gray-500 dark:text-gray-300" />
                   </div>
-                  
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ user?.user?.first_name.slice(0, 8) }}</span>
                 </div>
-                
                 <!-- Dropdown indicator -->
                 <UIcon 
                   :name="openMenu ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" 
