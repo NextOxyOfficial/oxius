@@ -32,14 +32,13 @@
       >
         <p class="text-center text-gray-500 dark:text-gray-500 mb-3">
           {{ $t("refer_text") }}
-        </p>
-
-        <div class="flex flex-col sm:flex-row gap-3">
+        </p>        <div class="flex flex-col sm:flex-row gap-3">
           <UButtonGroup class="mx-auto">
             <input
               type="text"
               class="text-xs py-1 px-0.5 w-40 sm:w-72"
-              :value="`https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`"
+              :value="referralUrl"
+              readonly
             />
             <UButton
               size="xs"
@@ -47,18 +46,13 @@
               icon="i-iconamoon-copy-light"
               variant="solid"
               class="py-1 px-1.5 ml-2"
-              @click="
-                CopyToClip(
-                  `https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`
-                )
-              "
+              @click="copyReferralLink"
               label="Copy"
             />
           </UButtonGroup>
         </div>
 
-        <!-- Simple Social Share Icons -->
-        <div class="flex justify-center items-center gap-4 mt-4">
+        <!-- Simple Social Share Icons -->        <div class="flex justify-center items-center gap-4 mt-4">
           <UButton
             color="white"
             variant="ghost"
@@ -116,27 +110,34 @@
               </label>
               <div class="flex gap-2">
                 <UInput
-                  :value="`https://adsyclub.com/auth/register/?ref=${user?.user?.referral_code}`"
+                  :value="referralUrl"
                   readonly
-                  class="flex-1"
+                  class="flex-1 font-mono text-sm"
+                  :disabled="!user?.user?.referral_code"
                 />
                 <UButton
                   color="primary"
                   icon="i-iconamoon-copy-light"
-                  @click="CopyToClip(`https://adsyclub.com/auth/register/?ref=${user?.user?.referral_code}`)"
+                  @click="copyReferralLink"
+                  :disabled="!user?.user?.referral_code"
                 >
                   Copy
                 </UButton>
               </div>
-            </div>
-
-            <!-- QR Code Section -->
+            </div>            <!-- QR Code Section -->
             <div class="text-center">
               <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                 QR Code
               </label>
               <div class="inline-block p-4 bg-white rounded-lg shadow-sm">
-                <div class="w-32 h-32 bg-gray-100 rounded flex items-center justify-center">
+                <img
+                  v-if="user?.user?.referral_code"
+                  :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`"
+                  alt="Referral QR Code"
+                  class="w-32 h-32"
+                  @error="handleQrCodeError"
+                />
+                <div v-else class="w-32 h-32 bg-gray-100 rounded flex items-center justify-center">
                   <UIcon name="i-heroicons-qr-code" class="text-4xl text-gray-400" />
                 </div>
               </div>
@@ -849,7 +850,9 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue';
+
+const props = defineProps({
   user: {
     type: Object,
     required: true
@@ -936,10 +939,10 @@ defineProps({
   }
 })
 
-defineEmits([
-  'update:showShareModal',
-  'update:customMessage',
-  'update:filterPeriod',
+const emit = defineEmits([
+  'update:showShareModal', 
+  'update:customMessage', 
+  'update:filterPeriod', 
   'update:currentPage',
   'copy-to-clip',
   'share-on-social',
@@ -951,5 +954,39 @@ defineEmits([
   'format-date',
   'get-service-type-color',
   'get-commission-rate'
-])
+]);
+
+// Computed property for the referral URL
+const referralUrl = computed(() => {
+  if (!props.user?.user?.referral_code) return '';
+  return `https://adsyclub.com/auth/register/?ref=${props.user.user.referral_code}`;
+});
+
+// Method to copy the referral link
+function copyReferralLink() {
+  if (referralUrl.value) {
+    emit('copy-to-clip', referralUrl.value);
+  }
+}
+
+// Method for sharing on social platforms
+function shareOnSocial(platform) {
+  emit('share-on-social', platform);
+}
+
+// Method to handle errors with QR code loading
+function handleQrCodeError(event) {
+  console.error('Error loading QR code:', event);
+  // Replace the broken image with the QR code icon as fallback
+  if (event.target) {
+    event.target.style.display = 'none';
+    const parent = event.target.parentElement;
+    if (parent) {
+      const fallback = document.createElement('div');
+      fallback.className = 'w-32 h-32 bg-gray-100 rounded flex items-center justify-center';
+      fallback.innerHTML = '<div class="text-4xl text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.75h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75z" /></svg></div>';
+      parent.appendChild(fallback);
+    }
+  }
+}
 </script>

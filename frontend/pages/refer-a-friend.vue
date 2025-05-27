@@ -53,7 +53,7 @@ import LoggedInUserView from '~/components/refer-friend/LoggedInUserView.vue'
 import PublicUserView from '~/components/refer-friend/PublicUserView.vue'
 
 definePageMeta({
-  layout: "dashboard",
+  layout: "default",
 });
 
 const { user } = useAuth();

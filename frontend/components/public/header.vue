@@ -368,11 +368,6 @@
                 to: '/#micro-gigs',
                 icon: 'i-healthicons:money-bag-outline',
               },
-              {
-                label: $t('mobile_recharge'),
-                to: '/mobile-recharge',
-                icon: 'i-uil-mobile-vibrate',
-              },
             ]"
             class="border-b border-gray-200 dark:border-gray-800 text-lg"
             :ui="{
