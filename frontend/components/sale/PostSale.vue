@@ -38,7 +38,7 @@
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
       <!-- Progress Steps Indicator -->
-      <div class="px-6 sm:px-8 pt-8">
+      <div class="px-6 sm:px-8 pt-1">
         <div class="flex justify-between mb-8">
           <div
             v-for="(step, index) in formSteps"
@@ -79,7 +79,7 @@
 
       <form @submit.prevent="validateStep">
         <!-- Step 1: Basic Details -->
-        <div v-if="currentStep === 0" class="fade-transition px-6 sm:px-8 pb-8">
+        <div v-if="currentStep === 0" class="fade-transition px-2 sm:px-8 pb-8">
           <h3 class="text-xl font-semibold text-gray-700 mb-6">
             Basic Details
           </h3>
@@ -258,7 +258,7 @@
         </div>
 
         <!-- Step 2: Price and Location -->
-        <div v-if="currentStep === 1" class="fade-transition px-6 sm:px-8 pb-8">
+        <div v-if="currentStep === 1" class="fade-transition px-2 sm:px-8 pb-8">
           <h3 class="text-xl font-semibold text-gray-700 mb-6">
             Pricing & Location
           </h3>
@@ -454,7 +454,7 @@
         </div>
 
         <!-- Step 3: Images Upload -->
-        <div v-if="currentStep === 2" class="fade-transition px-6 sm:px-8 pb-8">
+        <div v-if="currentStep === 2" class="fade-transition px-2 sm:px-8 pb-8">
           <h3 class="text-xl font-semibold text-gray-700 mb-6">
             Upload Photos
           </h3>

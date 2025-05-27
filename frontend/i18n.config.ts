@@ -246,7 +246,7 @@ export default defineI18nConfig(() => ({
       post_classified_text: "আপনার কাস্টোমারের জন্য লিস্টিং করুন",
       basic_details: "বেসিক বর্ণনা",
       pricing: "প্রাইচ",
-      media_gallary: "মেডিয়া গ্যালারি",
+      media_gallary: "মিডিয়া গ্যালারি",
       post_classified_ad: "অ্যাড পোস্ট করি",
       micro_gigs: "মাইক্রো গিগস",
       quick_earn: "সহজে ইনকাম",

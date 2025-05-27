@@ -62,12 +62,43 @@ class UserSearchView(generics.ListAPIView):
         exact_username_match = User.objects.filter(username__iexact=normalized_query)
         
         # 2. Full name exact matches (first + last name combined)
-        # This uses a custom query that concatenates first and last name
-        full_name_matches = User.objects.filter(
-            Q(first_name__iexact=normalized_query) | 
-            Q(last_name__iexact=normalized_query) |
-            Q(first_name__icontains=normalized_query, last_name__icontains=normalized_query)
-        )
+        # Split the query into parts to check against first and last name combinations
+        name_parts = normalized_query.split()
+        full_name_query = Q()
+        
+        # Exact full name match
+        full_name_query |= Q(first_name__iexact=normalized_query) | Q(last_name__iexact=normalized_query)
+        
+        # Handle when the search query consists of multiple words (first and last name)
+        if len(name_parts) > 1:
+            # Check for the complete query in both first_name and last_name fields
+            full_name_query |= Q(first_name__icontains=normalized_query) | Q(last_name__icontains=normalized_query)
+            
+            # Try matching full name exactly in format "first last"
+            # This helps when searching for "Md Alimul Islam"
+            first_name_contains = Q()
+            last_name_contains = Q()
+            
+            # Try different combinations of the name parts
+            for i in range(1, len(name_parts)):
+                first_part = ' '.join(name_parts[:i])
+                last_part = ' '.join(name_parts[i:])
+                
+                # Match where first part is first_name and second part is last_name
+                full_name_query |= (Q(first_name__iexact=first_part) & Q(last_name__iexact=last_part))
+                
+                # Also check for partial matches within first and last name
+                full_name_query |= (Q(first_name__icontains=first_part) & Q(last_name__icontains=last_part))
+                
+                # Individual name part matching
+                for part in name_parts:
+                    first_name_contains |= Q(first_name__icontains=part)
+                    last_name_contains |= Q(last_name__icontains=part)
+            
+            # Add individual name part matches as a lower priority
+            full_name_query |= (first_name_contains & last_name_contains)
+        
+        full_name_matches = User.objects.filter(full_name_query)
         
         # 3. Username starts with query
         username_starts_with = User.objects.filter(username__istartswith=normalized_query).exclude(
@@ -96,7 +127,8 @@ class UserSearchView(generics.ListAPIView):
             Q(first_name__iexact=normalized_query) | 
             Q(first_name__istartswith=normalized_query) |
             Q(last_name__iexact=normalized_query) |
-            Q(last_name__istartswith=normalized_query)
+            Q(last_name__istartswith=normalized_query) |
+            Q(id__in=[user.id for user in list(full_name_matches)])  # Exclude full name matches
         )
         
         # Combine all matches with priority ordering
