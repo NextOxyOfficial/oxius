@@ -288,7 +288,7 @@
               @click.stop
             >
               <div
-                class="w-full md:h-[75vh] overflow-hidden overflow-y-auto custom-scrollbar"
+                class="w-full my-20 overflow-hidden overflow-y-auto custom-scrollbar"
               >
                 <UCard class="shadow-2xl border-0">
                   <template #header>
@@ -403,7 +403,7 @@
               @click.stop
             >
               <div
-                class="w-full md:h-[75vh] overflow-hidden overflow-y-auto custom-scrollbar"
+                class="w-full my-20 overflow-hidden overflow-y-auto custom-scrollbar"
               >
                 <UCard class="shadow-2xl border-0">
                   <template #header>
@@ -529,7 +529,7 @@
               @click.stop
             >
               <div
-                class="w-full md:h-[75vh] overflow-hidden overflow-y-auto custom-scrollbar"
+                class="w-full my-20 overflow-hidden overflow-y-auto custom-scrollbar"
               >
                 <UCard
                   v-if="activeTicket"
