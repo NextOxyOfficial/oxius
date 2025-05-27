@@ -125,7 +125,7 @@
         >
           <!-- Animated pattern background -->
           <div
-            class="absolute inset-0 bg-[url('/img/patterns/circuit.svg')] bg-center opacity-[0.03] group-hover:opacity-[0.07]"
+            class="absolute inset-0 bg-center opacity-[0.03] group-hover:opacity-[0.07]"
           ></div>
 
           <!-- Top Section: Current Plan with premium styling -->

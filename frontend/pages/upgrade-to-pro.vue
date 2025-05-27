@@ -115,8 +115,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>
-                  <span class="text-gray-500 dark:text-slate-300 line-through"
+                  </div>                  <span class="text-gray-500/90 dark:text-slate-400/90 line-through font-medium"
                     >Sell Products on AdsyClub</span
                   >
                 </li>
@@ -138,8 +137,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>
-                  <span class="text-gray-500 dark:text-slate-300 line-through"
+                  </div>                  <span class="text-gray-500/90 dark:text-slate-400/90 line-through font-medium"
                     >Receive Unlimited Order</span
                   >
                 </li>
@@ -161,7 +159,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-500 dark:text-slate-300 line-through"
+                  </div>                  <span class="text-gray-500/90 dark:text-slate-400/90 line-through font-medium"
                     >Add up to 100 Products</span
                   >
                 </li>
@@ -205,8 +203,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>
-                  <span class="text-gray-500 dark:text-slate-300"
+                  </div>                  <span class="text-gray-700 dark:text-slate-100 font-medium"
                     >Earn money by completing task</span
                   >
                 </li>
@@ -228,8 +225,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>
-                  <span class="text-gray-500 dark:text-slate-300"
+                  </div>                  <span class="text-gray-700 dark:text-slate-100 font-medium"
                     >Fast deposit and withdraw</span
                   >
                 </li>
@@ -251,8 +247,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>
-                  <span class="text-gray-500 dark:text-slate-300"
+                  </div>                  <span class="text-gray-700 dark:text-slate-100 font-medium"
                     >Regular support via Email</span
                   >
                 </li>
@@ -548,58 +543,88 @@
                     Email/WhatsApp/Telegram</span
                   >
                 </li>
-              </ul>
-
-              <!-- Enhanced CTA Button -->
+              </ul>              <!-- Enhanced Premium CTA Button -->
               <button
-                class="w-full py-3 bg-gradient-to-r from-sky-400 to-blue-400 hover:from-sky-500 hover:to-blue-500 text-white rounded-xl text-sm font-medium transition-all duration-300 shadow-sm hover:shadow-sm relative overflow-hidden group-hover:scale-[1.02]"
+                class="w-full py-3.5 bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white rounded-xl text-sm font-bold transition-all duration-300 shadow-md hover:shadow-lg relative overflow-hidden group-hover:scale-[1.02] border border-sky-400/20"
                 @click="showModal"
               >
                 <span
-                  class="relative z-10 flex items-center justify-center gap-2 text-"
+                  class="relative z-10 flex items-center justify-center gap-2"
                 >
                   <span v-if="user?.user.is_pro">Already Upgraded!</span>
-                  <span v-else>Upgrade Now!</span>
+                  <span v-else class="flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                    </svg>
+                    Upgrade Now!
+                  </span>
                 </span>
+                <!-- Enhanced shimmer effect -->
                 <div
-                  class="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:animate-shimmer"
+                  class="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/30 to-white/0 -translate-x-full group-hover:animate-shimmer"
+                ></div>
+                <!-- Bottom highlight for 3D effect -->
+                <div
+                  class="absolute bottom-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-sky-300 to-transparent opacity-70 group-hover:opacity-100 transition-opacity"
                 ></div>
               </button>
-            </div>
-
-            <!-- Best Value Tag -->
+            </div>            <!-- Enhanced Best Value Tag -->
             <div
-              class="absolute -rotate-90 -end-9 top-12 bg-gradient-to-r from-sky-400 to-blue-400 text-xs text-white py-1 px-8 font-medium"
+              class="absolute -rotate-90 -end-9 top-12 bg-gradient-to-r from-sky-500 to-blue-500 text-xs text-white py-1.5 px-8 font-bold shadow-md"
             >
-              BEST VALUE
+              <div class="relative flex items-center">
+                <span class="relative z-10">BEST VALUE</span>
+                <!-- Animated shimmer effect -->
+                <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer"></div>
+              </div>
             </div>
           </div>
+        </div>        <!-- Decorative Shapes -->
+        <div class="relative py-12">
+          <!-- Animated Shapes -->
+          <div class="absolute left-10 -top-5 w-24 h-24 opacity-20 dark:opacity-10">
+            <div class="absolute w-16 h-16 rounded-full border-8 border-sky-200 dark:border-sky-700 animate-ping-slow"></div>
+            <div class="absolute w-12 h-12 top-8 left-8 rounded-full border-8 border-blue-200 dark:border-blue-700" 
+                 style="animation: ping-slow 4s cubic-bezier(0, 0, 0.2, 1) infinite 1s"></div>
+          </div>
+          
+          <div class="absolute right-20 -bottom-2 w-20 h-20 opacity-20 dark:opacity-10">
+            <div class="absolute w-10 h-10 rounded-full border-6 border-indigo-200 dark:border-indigo-700 animate-ping-slow"></div>
+            <div class="absolute w-12 h-12 top-4 -left-4 rounded-full border-6 border-purple-200 dark:border-purple-700"
+                 style="animation: ping-slow 3.5s cubic-bezier(0, 0, 0.2, 1) infinite 0.7s"></div>
+          </div>
         </div>
-
+        
         <!-- Trust Indicators Section -->
-        <div class="mt-16 flex flex-col items-center">
+        <div class="mt-6 flex flex-col items-center relative">
           <p
-            class="text-center text-sm text-slate-500 dark:text-slate-400 mb-6"
+            class="text-center text-sm font-medium text-slate-600 dark:text-slate-300 mb-6"
           >
             Trusted by thousands of businesses worldwide
-          </p>
-
-          <div
-            class="flex flex-wrap justify-center gap-6 items-center opacity-70"
+          </p>          <div
+            class="flex flex-wrap justify-center gap-8 items-center"
           >
-            <!-- Replace with actual brand logos -->
+            <!-- Enhanced brand logos with gradient borders -->
             <div
-              class="h-8 w-24 bg-slate-200/50 dark:bg-slate-600/30 rounded-md"
-            ></div>
+              class="h-12 w-28 bg-white dark:bg-slate-800 rounded-md flex items-center justify-center p-2 border border-sky-100 dark:border-sky-800/30 hover:border-sky-200 dark:hover:border-sky-700 transition-all duration-300 hover:shadow-sm"
+            >
+              <div class="text-lg font-bold bg-gradient-to-r from-sky-500 to-blue-500 bg-clip-text text-transparent">Brand 1</div>
+            </div>
             <div
-              class="h-8 w-20 bg-slate-200/50 dark:bg-slate-600/30 rounded-md"
-            ></div>
+              class="h-12 w-28 bg-white dark:bg-slate-800 rounded-md flex items-center justify-center p-2 border border-sky-100 dark:border-sky-800/30 hover:border-sky-200 dark:hover:border-sky-700 transition-all duration-300 hover:shadow-sm"
+            >
+              <div class="text-lg font-bold bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">Brand 2</div>
+            </div>
             <div
-              class="h-8 w-28 bg-slate-200/50 dark:bg-slate-600/30 rounded-md"
-            ></div>
+              class="h-12 w-28 bg-white dark:bg-slate-800 rounded-md flex items-center justify-center p-2 border border-sky-100 dark:border-sky-800/30 hover:border-sky-200 dark:hover:border-sky-700 transition-all duration-300 hover:shadow-sm"
+            >
+              <div class="text-lg font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">Brand 3</div>
+            </div>
             <div
-              class="h-8 w-24 bg-slate-200/50 dark:bg-slate-600/30 rounded-md"
-            ></div>
+              class="h-12 w-28 bg-white dark:bg-slate-800 rounded-md flex items-center justify-center p-2 border border-sky-100 dark:border-sky-800/30 hover:border-sky-200 dark:hover:border-sky-700 transition-all duration-300 hover:shadow-sm"
+            >
+              <div class="text-lg font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">Brand 4</div>
+            </div>
           </div>
 
           <!-- Enhanced Footer -->

@@ -105,14 +105,14 @@
                   class="text-sm"
                 >
                   Skip this step
-                </UButton>
-                <UButton
+                </UButton>                <UButton
                   type="button"
                   color="purple"
                   @click="nextStep()"
                   class="text-sm"
                 >
                   Continue
+                  <UIcon name="i-heroicons-arrow-right" class="w-4 h-4 ml-1" />
                 </UButton>
               </div>
             </div>
@@ -512,7 +512,7 @@ const steps = ref(["Profile Photo", "Personal Info", "Address Info"]);
 const currentStep = ref(1);
 
 function nextStep() {
-  if (currentStep.value < steps.value.length) {
+  if (currentStep.value < steps.value.length && validateCurrentStep()) {
     currentStep.value++;
   }
 }
@@ -524,7 +524,10 @@ function prevStep() {
 }
 
 function skipStep() {
-  nextStep();
+  // Skip validation and force move to next step
+  if (currentStep.value < steps.value.length) {
+    currentStep.value++;
+  }
 }
 
 // Validate current step when moving to next
@@ -593,7 +596,7 @@ const form = ref({
 });
 
 const userProfile = ref({
-  image: null,
+  image: null, // Explicitly set to null to ensure it's handled properly
 });
 
 const error = ref({
@@ -719,8 +722,7 @@ async function handleSubmit() {
       currentStep.value = 2;
     }
     return;
-  }
-
+  }  // Create formData without the image first
   const formData = {
     first_name: form.value.first_name,
     last_name: form.value.last_name,
@@ -732,7 +734,7 @@ async function handleSubmit() {
     refer: form.value.refer,
     age: +form.value.age,
     gender: form.value.gender,
-    image: userProfile.value.image,
+    // Don't include image field if it's not provided
     country: form.value.country,
     city: form.value.city,
     state: form.value.state,
@@ -740,9 +742,32 @@ async function handleSubmit() {
     zip: form.value.zip,
     address: form.value.address,
   };
-
-  try {
-    const res = await post("/auth/register/", formData);
+  
+  // Only add image if it actually exists
+  if (userProfile.value.image) {
+    formData.image = userProfile.value.image;
+  }  try {
+    // Try to register the user
+    let res;
+    try {
+      res = await post("/auth/register/", formData);
+    } catch (registrationError) {
+      console.error("Registration error:", registrationError);
+      // Check if the error is related to the profile image
+      if (registrationError.response?.data?.error?.includes('image') || 
+          registrationError.message?.includes('startswith') ||
+          (registrationError.message && registrationError.message.toLowerCase().includes('nonetype'))) {
+        // If there's an image-related error and we have an image field, remove it
+        if ('image' in formData) {
+          delete formData.image;
+        }
+        // Try again without the image
+        res = await post("/auth/register/", formData);
+      } else {
+        // Re-throw the error if it's about something else
+        throw registrationError;
+      }
+    }
 
     if (res?.data?.message) {
       error.value = {
@@ -792,7 +817,24 @@ function handleFileUpload(event) {
 
   // Event listener for successful read
   reader.onload = () => {
-    userProfile.value.image = reader.result;
+    try {
+      // Make sure the result is a valid string
+      if (typeof reader.result === 'string' && reader.result.startsWith('data:')) {
+        userProfile.value.image = reader.result;
+      } else {
+        console.error("Invalid file format");
+        toast.add({
+          title: "Warning",
+          description: "Invalid file format. Using default profile.",
+          color: "orange",
+        });
+        // Don't set an invalid image
+        userProfile.value.image = null;
+      }
+    } catch (error) {
+      console.error("Error processing uploaded file:", error);
+      userProfile.value.image = null;
+    }
   };
 
   // Event listener for errors
@@ -803,10 +845,16 @@ function handleFileUpload(event) {
       description: "Failed to upload image",
       color: "red",
     });
+    userProfile.value.image = null;
   };
 
-  // Read the file as a data URL (Base64 string)
-  reader.readAsDataURL(files[0]);
+  try {
+    // Read the file as a data URL (Base64 string)
+    reader.readAsDataURL(files[0]);
+  } catch (error) {
+    console.error("Error reading file:", error);
+    userProfile.value.image = null;
+  }
 }
 
 function deleteUpload() {
