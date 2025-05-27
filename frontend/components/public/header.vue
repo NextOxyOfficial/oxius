@@ -232,7 +232,7 @@
                   icon: 'i-heroicons-clipboard-document-list',
                 },
                 {
-                  label: 'eLearning',
+                  label: $t('elearning'),
                   to: '/courses',
                   icon: 'i-heroicons-academic-cap',
                 },
@@ -258,7 +258,11 @@
               class="space-y-2"
             >
               <template #default="{ link }">
-                <span @click="isOpen = false">{{ link.label }}</span>
+                <span
+                  @click="isOpen = false"
+                  class="group-hover:text-gray-700 relative"
+                  >{{ link.label }}</span
+                >
               </template>
             </UVerticalNavigation>
           </div>
