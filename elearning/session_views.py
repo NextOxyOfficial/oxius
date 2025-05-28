@@ -7,8 +7,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.http import JsonResponse
+from django.contrib.auth import get_user_model
 import json
 import uuid
+
+User = get_user_model()
 
 from .session_manager import ELearningSessionManager
 from .models import ELearningSession, SessionActivityLog
@@ -379,4 +382,58 @@ def cleanup_expired_sessions(request):
     except Exception as e:
         return Response({
             'error': f'Cleanup failed: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def force_close_sessions(request):
+    """Force close all other active sessions for a user"""
+    try:
+        # Only allow pro users to force close their sessions
+        is_pro, _ = ELearningSessionManager.check_subscription_status(request.user)
+        if not is_pro:
+            return Response({
+                'error': 'This feature is only available for premium subscribers',
+                'success': False
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Get the user's current device fingerprint
+        current_device = ELearningSessionManager.generate_device_fingerprint(request)
+        
+        # End all active sessions for this user from other devices
+        active_sessions = ELearningSession.objects.filter(
+            user=request.user,
+            status='active'
+        ).exclude(device_fingerprint=current_device)
+        
+        # Log the forced closure
+        for session in active_sessions:
+            SessionActivityLog.objects.create(
+                session=session,
+                action='forced_close',
+                ip_address=ELearningSessionManager.get_client_ip(request),
+                details={
+                    'closed_by_device': current_device,
+                    'closed_by_ip': ELearningSessionManager.get_client_ip(request)
+                }
+            )
+        
+        # Update all the sessions
+        closed_count = active_sessions.update(
+            status='terminated',
+            ended_at=timezone.now(),
+            end_reason='forced_by_user'
+        )
+        
+        return Response({
+            'success': True,
+            'closed_sessions_count': closed_count,
+            'message': f'Successfully closed {closed_count} active sessions'
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Failed to force close sessions: {str(e)}',
+            'success': False
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

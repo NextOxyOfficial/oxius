@@ -364,3 +364,59 @@ class ELearningSessionManager:
                 'status': 'not_found',
                 'message': 'Session not found'
             }
+    
+    @classmethod
+    def force_close_other_sessions(cls, user, current_device_fingerprint=None):
+        """Force close all other active sessions for a user, except the current one"""
+        if not user or user.is_anonymous:
+            return 0, "User not authenticated"
+        
+        # Check if user is a pro subscriber
+        is_pro, _ = cls.check_subscription_status(user)
+        if not is_pro:
+            return 0, "Only premium subscribers can force close sessions"
+        
+        # Query the active sessions
+        active_sessions_query = ELearningSession.objects.filter(
+            user=user,
+            status='active'
+        )
+        
+        # If we have a current device, exclude it from the sessions to close
+        if current_device_fingerprint:
+            active_sessions_query = active_sessions_query.exclude(
+                device_fingerprint=current_device_fingerprint
+            )
+        
+        # Get count before closing
+        session_count = active_sessions_query.count()
+        
+        # Log the force closure for all sessions
+        for session in active_sessions_query:
+            SessionActivityLog.objects.create(
+                session=session,
+                action='forced_close',
+                ip_address=session.ip_address,
+                details={
+                    'reason': 'User forced close from another device',
+                    'forced_by_device': current_device_fingerprint or 'Unknown'
+                }
+            )
+            
+            # Update device sessions count
+            try:
+                device_session = DeviceSession.objects.get(
+                    device_fingerprint=session.device_fingerprint
+                )
+                device_session.decrement_sessions()
+            except DeviceSession.DoesNotExist:
+                pass
+        
+        # Close all active sessions
+        active_sessions_query.update(
+            status='terminated',
+            ended_at=timezone.now(),
+            end_reason='forced_by_user'
+        )
+        
+        return session_count, f"Successfully closed {session_count} active sessions"

@@ -38,10 +38,24 @@
       @load="onIframeLoad"
     ></iframe>    
     
-    <!-- Using SimpleAccessModal for non-authenticated users -->
+    <!-- Modals for different user states -->
     <SimpleAccessModal
       :show="showLoginModal"
       @close="handleModalClose"
+      @login="handleLogin"
+    />
+    
+    <SubscriptionModal
+      :show="showSubscriptionModal"
+      :error-message="subscriptionErrorMessage"
+      @close="handleModalClose"
+      @subscribe="handleSubscribe"
+    />
+    
+    <SessionLimitModal
+      :show="showSessionModal"
+      @close="handleModalClose"
+      @force-close="handleForceCloseSession"
     />
   </div>
 </template>
@@ -49,8 +63,10 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
-// Import our simplified modal component
+// Import modal components
 import SimpleAccessModal from "~/components/common/SimpleAccessModal.vue";
+import SubscriptionModal from "~/components/common/SubscriptionModal.vue";
+import SessionLimitModal from "~/components/common/SessionLimitModal.vue";
 
 const props = defineProps({
   videoId: {
@@ -69,10 +85,13 @@ const props = defineProps({
 
 const emit = defineEmits(['video-start', 'video-pause', 'video-resume', 'video-stop', 'login-required', 'subscription-required']);
 
-const { isAuthenticated } = useAuth()
+const { isAuthenticated, user } = useAuth()
 const isPlaying = ref(false);
 const showLocalAccessModal = ref(false);
 const showLoginModal = ref(false);
+const showSubscriptionModal = ref(false);
+const showSessionModal = ref(false);
+const subscriptionErrorMessage = ref(null);
 
 // Get YouTube thumbnail URL from video ID - use maxresdefault for higher quality when available
 const thumbnailUrl = computed(() => {
@@ -88,7 +107,7 @@ function showAuthModal() {
 
 async function playVideo() {
   try {
-  // First check if user is authenticated directly
+    // First check if user is authenticated
     if (!isAuthenticated.value) {
       console.log('User not authenticated, showing login modal');
       showLoginModal.value = true;
@@ -101,19 +120,59 @@ async function playVideo() {
       emit('video-start', false, 'Login required');
       return;
     }
-
+    
+    // Check if user is a pro user (authenticated but needs subscription)
+    const isProUser = props.sessionManager?.isProUser?.value || false;
+    if (!isProUser) {
+      console.log('User is not a pro subscriber, showing subscription modal');
+      showSubscriptionModal.value = true;
+      subscriptionErrorMessage.value = null; 
+      
+      // Sync with session manager state
+      if (props.sessionManager) {
+        props.sessionManager.requiresSubscription.value = true;
+        props.sessionManager.showAccessModal.value = true;
+      }
+      emit('video-start', false, 'Subscription required');
+      return;
+    }
+    
     // Check access through session manager if available and user is authenticated
     if (props.sessionManager && !props.sessionManager.checkVideoAccess()) {
       emit('video-start', false, 'Access restricted');
       return;
     }
 
-    // Check session status before playing video
-    if (props.sessionManager && !props.sessionManager.isSessionActive.value) {
+    // Try to start the session for pro users
+    try {
+      // Check session status before playing video
+      if (props.sessionManager && !props.sessionManager.isSessionActive.value) {
+        // If there's an error starting the session, it might be due to concurrent session
+        try {
+          // Try to start session or get current session status
+          await props.sessionManager.startSession(window.location.href);
+        } catch (sessionError) {
+          console.error('Session error:', sessionError);
+          
+          // Check for concurrent session error
+          if (sessionError.message && sessionError.message.includes('already active')) {
+            showSessionModal.value = true;
+            emit('video-start', false, 'Concurrent session detected');
+            return;
+          }
+          
+          throw sessionError;
+        }
+      }
+    } catch (sessionError) {
       throw new Error('Session not active. Please refresh the page.');
-    }    // For non-pro users, check time limit
+    }
+    
+    // For non-pro users with time limits, check remaining time
     if (props.sessionManager && props.sessionManager.hasTimeLimit.value && props.sessionManager.timeRemaining.value <= 0) {
-      showLocalAccessModal.value = true;
+      showSubscriptionModal.value = true;
+      subscriptionErrorMessage.value = "You've reached your daily viewing limit. Please upgrade to continue watching.";
+      
       // Sync with session manager state
       if (props.sessionManager) {
         props.sessionManager.requiresSubscription.value = true;
@@ -188,6 +247,10 @@ function onIframeLoad() {
 const handleModalClose = () => {
   showLocalAccessModal.value = false;
   showLoginModal.value = false;
+  showSubscriptionModal.value = false;
+  showSessionModal.value = false;
+  subscriptionErrorMessage.value = null;
+  
   if (props.sessionManager) {
     props.sessionManager.closeAccessModal();
   }
@@ -202,7 +265,47 @@ const handleLogin = () => {
 const handleSubscribe = () => {
   showLocalAccessModal.value = false;
   showLoginModal.value = false;
+  showSubscriptionModal.value = false;
   emit('subscription-required');
+}
+
+// Handle forcing close of another session
+const handleForceCloseSession = async () => {
+  try {
+    // Make API call to force close other sessions
+    if (props.sessionManager) {
+      // First end all other active sessions for this user
+      const response = await fetch('/api/elearning/sessions/force-close/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user.value?.id
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to close other sessions');
+      }
+      
+      // Now try to start a new session
+      await props.sessionManager.startSession(window.location.href);
+      showSessionModal.value = false;
+      
+      // Play the video now that we've forcibly closed other sessions
+      isPlaying.value = true;
+      emit('video-start', true);
+      
+      // Start video tracking
+      if (props.video.id) {
+        props.sessionManager.startVideoTracking(props.video.id);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to force close session:', error);
+    emit('video-start', false, error.message);
+  }
 }
 
 // Watch for authentication status changes
@@ -214,6 +317,20 @@ watch(() => isAuthenticated.value, (newValue) => {
     showLoginModal.value = true;
   }
 });
+
+// Watch for pro user status changes
+watch(
+  () => props.sessionManager?.isProUser?.value,
+  (newValue) => {
+    console.log('Pro user status changed:', newValue);
+    // If user's subscription status changes while video is playing
+    if (!newValue && isPlaying.value) {
+      isPlaying.value = false;
+      showSubscriptionModal.value = true;
+    }
+  },
+  { immediate: false }
+);
 
 onMounted(() => {
   window.addEventListener('message', handleMessage);
