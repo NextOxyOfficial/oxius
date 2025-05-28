@@ -1,7 +1,7 @@
-<template>
+<template>  <!-- Fixed: Explicitly check both local state and prop directly -->
   <div
-    v-if="isVisible"
-    class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4   "
+    v-if="isVisible || props.show"
+    class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4"
     @click.self="closeModal"
   >
     <div
@@ -148,7 +148,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, watchEffect } from 'vue'
 
 const props = defineProps({
   show: {
@@ -170,32 +170,54 @@ const isAnimating = ref(false)
 
 // Modal content based on type and authentication status
 const modalContent = computed(() => {
+  console.log('Premium modal computing content, isAuthenticated:', isAuthenticated.value);
   if (!isAuthenticated.value) {
     return {
-      title: 'Login Required',
-      message: 'Please login to your account to access premium video content. Join thousands of learners already benefiting from our comprehensive courses.'
+      title: $t('login_required') || 'Login Required',
+      message: $t('login_required_message') || 'Please login to your account to access premium video content. Join thousands of learners already benefiting from our comprehensive courses.'
     }
   } else {
     return {
-      title: 'Premium Subscription Required',
-      message: 'Upgrade to our premium subscription to unlock unlimited access to all video lessons and exclusive content.'
+      title: $t('premium_subscription_required') || 'Premium Subscription Required',
+      message: $t('premium_subscription_message') || 'Upgrade to our premium subscription to unlock unlimited access to all video lessons and exclusive content.'
     }
+  }
+})
+
+// This effect immediately sets the visibility state when props.show changes
+// This ensures the modal shows immediately without waiting for the watcher
+const modalVisibility = computed(() => {
+  console.log('Computed modalVisibility:', props.show);
+  return props.show;
+})
+
+// Ensure visibility state is updated on prop changes
+watchEffect(() => {
+  if (modalVisibility.value) {
+    console.log('watchEffect triggered - showing modal');
+    isVisible.value = true;
+    nextTick(() => {
+      isAnimating.value = true;
+    });
   }
 })
 
 // Watch for show prop changes
 watch(() => props.show, async (newValue) => {
+  console.log('Modal show prop changed to:', newValue);
   if (newValue) {
+    // Show modal
     isVisible.value = true
     await nextTick()
     isAnimating.value = true
   } else {
+    // Hide modal with animation
     isAnimating.value = false
     setTimeout(() => {
       isVisible.value = false
     }, 300)
   }
-})
+}, { immediate: true }) // Important: Run the callback immediately on component creation
 
 const closeModal = () => {
   isAnimating.value = false
@@ -227,6 +249,19 @@ const handleKeydown = (event) => {
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown)
+  console.log('PremiumAccessModal mounted, props:', { 
+    show: props.show, 
+    type: props.type, 
+    isAuthenticated: isAuthenticated.value 
+  })
+  
+  // Force update initial state based on props
+  if (props.show) {
+    isVisible.value = true
+    setTimeout(() => {
+      isAnimating.value = true
+    }, 50)
+  }
 })
 
 onUnmounted(() => {

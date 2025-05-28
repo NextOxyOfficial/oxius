@@ -1,6 +1,5 @@
-<template>
-  <div class="youtube-player-container">
-    <div v-if="!isPlaying" class="preview-container" @click="playVideo">
+<template>  <div class="youtube-player-container">
+    <div v-if="!isPlaying" class="preview-container" @click="playVideo" @contextmenu.prevent="showAuthModal">
       <img :src="thumbnailUrl" alt="Video Thumbnail" class="thumbnail" />
 
       <!-- Video duration badge -->
@@ -29,8 +28,7 @@
         </div>
       </div>
     </div>
-    
-    <iframe
+      <iframe
       v-else
       :src="`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1`"
       frameborder="0"
@@ -38,20 +36,21 @@
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       class="youtube-iframe"
       @load="onIframeLoad"
-    ></iframe>    <!-- Premium Access Modal -->
-    <CommonPremiumAccessModal
-      :show="shouldShowModal"
-      :type="modalType"
+    ></iframe>    
+    
+    <!-- Using SimpleAccessModal for non-authenticated users -->
+    <SimpleAccessModal
+      :show="showLoginModal"
       @close="handleModalClose"
-      @login="handleLogin"
-      @subscribe="handleSubscribe"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
+// Import our simplified modal component
+import SimpleAccessModal from "~/components/common/SimpleAccessModal.vue";
 
 const props = defineProps({
   videoId: {
@@ -73,37 +72,28 @@ const emit = defineEmits(['video-start', 'video-pause', 'video-resume', 'video-s
 const { isAuthenticated } = useAuth()
 const isPlaying = ref(false);
 const showLocalAccessModal = ref(false);
-const localModalType = ref('login_required');
+const showLoginModal = ref(false);
 
 // Get YouTube thumbnail URL from video ID - use maxresdefault for higher quality when available
 const thumbnailUrl = computed(() => {
   return `https://img.youtube.com/vi/${props.videoId}/mqdefault.jpg`;
 });
 
-// Determine modal type and show state
-const shouldShowModal = computed(() => {
-  return showLocalAccessModal.value || (props.sessionManager?.showAccessModal?.value || false)
-});
-
-const modalType = computed(() => {
-  if (showLocalAccessModal.value) {
-    return localModalType.value
-  }
-  if (props.sessionManager?.requiresLogin?.value) {
-    return 'login_required'
-  } else if (props.sessionManager?.requiresSubscription?.value) {
-    return 'subscription_required'
-  }
-  return 'login_required'
-})
+// Debug function to manually show the modal
+function showAuthModal() {
+  console.log('Manually showing access modal');
+  showLocalAccessModal.value = true;
+  return false;
+}
 
 async function playVideo() {
   try {
-    // First check if user is authenticated directly
+  // First check if user is authenticated directly
     if (!isAuthenticated.value) {
-      showLocalAccessModal.value = true;
-      localModalType.value = 'login_required';
-      // Sync with session manager state
+      console.log('User not authenticated, showing login modal');
+      showLoginModal.value = true;
+      
+      // Sync with session manager state if needed
       if (props.sessionManager) {
         props.sessionManager.requiresLogin.value = true;
         props.sessionManager.showAccessModal.value = true;
@@ -121,12 +111,9 @@ async function playVideo() {
     // Check session status before playing video
     if (props.sessionManager && !props.sessionManager.isSessionActive.value) {
       throw new Error('Session not active. Please refresh the page.');
-    }
-
-    // For non-pro users, check time limit
+    }    // For non-pro users, check time limit
     if (props.sessionManager && props.sessionManager.hasTimeLimit.value && props.sessionManager.timeRemaining.value <= 0) {
       showLocalAccessModal.value = true;
-      localModalType.value = 'subscription_required';
       // Sync with session manager state
       if (props.sessionManager) {
         props.sessionManager.requiresSubscription.value = true;
@@ -200,25 +187,37 @@ function onIframeLoad() {
 // Modal event handlers
 const handleModalClose = () => {
   showLocalAccessModal.value = false;
+  showLoginModal.value = false;
   if (props.sessionManager) {
     props.sessionManager.closeAccessModal();
   }
 }
 
 const handleLogin = () => {
-  // Emit event or handle login redirect
   showLocalAccessModal.value = false;
+  showLoginModal.value = false;
   emit('login-required');
 }
 
 const handleSubscribe = () => {
-  // Emit event or handle subscription redirect
   showLocalAccessModal.value = false;
+  showLoginModal.value = false;
   emit('subscription-required');
 }
 
+// Watch for authentication status changes
+watch(() => isAuthenticated.value, (newValue) => {
+  console.log('Authentication status changed:', newValue);
+  // If user logs out while the video is playing, show login required modal
+  if (!newValue && isPlaying.value) {
+    isPlaying.value = false;
+    showLoginModal.value = true;
+  }
+});
+
 onMounted(() => {
   window.addEventListener('message', handleMessage);
+  console.log('YoutubePlayer mounted, isAuthenticated:', isAuthenticated.value);
 });
 
 onUnmounted(() => {
