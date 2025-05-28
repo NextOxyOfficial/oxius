@@ -5,6 +5,7 @@
         <div
           class="relative rounded-xl overflow-hidden shadow-sm sm:h-[430px] h-[400px] group"
         >
+        
           <img
             :src="latestArticle.image"
             :alt="latestArticle.title"
