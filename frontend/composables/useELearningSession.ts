@@ -1,6 +1,7 @@
 // Session management composable for e-learning access control
 import { ref, computed, onMounted, onUnmounted, readonly } from 'vue'
 import { useApi } from '~/composables/useApi'
+import { useAuth } from '~/composables/useAuth'
 
 interface SessionData {
   id: string
@@ -34,6 +35,7 @@ interface SessionResponse {
 export const useELearningSession = () => {
   const { $fetch } = useNuxtApp()
   const { get, post } = useApi()
+  const { user, isAuthenticated } = useAuth()
   
   const session = ref<SessionData | null>(null)
   const isSessionActive = ref(false)
@@ -42,6 +44,11 @@ export const useELearningSession = () => {
   const viewingTimeInterval = ref<number | null>(null)
   const currentVideoId = ref<string | null>(null)
   const currentSubjectId = ref<string | null>(null)
+
+  // Access control states
+  const requiresLogin = ref(false)
+  const requiresSubscription = ref(false)
+  const showAccessModal = ref(false)
 
   // Device fingerprinting
   const generateDeviceFingerprint = (): DeviceFingerprint => {
@@ -67,6 +74,13 @@ export const useELearningSession = () => {
   }  // Session management
   const startSession = async (pageUrl: string, subjectId?: string): Promise<boolean> => {
     try {
+      // Check if user is authenticated first
+      if (!isAuthenticated.value) {
+        requiresLogin.value = true
+        showAccessModal.value = true
+        return false
+      }
+
       const fingerprint = generateDeviceFingerprint()
       const deviceHash = await hashFingerprint(fingerprint)
 
@@ -93,6 +107,8 @@ export const useELearningSession = () => {
         if (responseData?.error_code === 'CONCURRENT_SESSION') {
           throw new Error('Another session is already active. Please close other tabs/devices.')
         } else if (responseData?.error_code === 'TIME_LIMIT_EXCEEDED') {
+          requiresSubscription.value = true
+          showAccessModal.value = true
           throw new Error('Daily viewing time limit reached. Please upgrade to Pro.')
         }
         throw new Error(responseData?.message || 'Failed to start session')
@@ -178,10 +194,15 @@ export const useELearningSession = () => {
       console.error('Failed to track viewing time:', error)
       throw error
     }
-  }
-
-  // Video tracking
+  }  // Video tracking
   const startVideoTracking = (videoId: string): void => {
+    // Check authentication before starting video tracking
+    if (!isAuthenticated.value) {
+      requiresLogin.value = true
+      showAccessModal.value = true
+      return
+    }
+
     currentVideoId.value = videoId
     trackActivity('video_start', { video_id: videoId })
     
@@ -193,9 +214,15 @@ export const useELearningSession = () => {
     viewingTimeInterval.value = setInterval(async () => {
       try {
         await trackViewingTime(5)
-      } catch (error) {
+      } catch (error: any) {
         // Stop tracking if there's an error (e.g., time limit reached)
         stopVideoTracking()
+        
+        // Check if it's a subscription-related error
+        if (error?.message?.includes('upgrade to Pro') || error?.message?.includes('time limit')) {
+          requiresSubscription.value = true
+          showAccessModal.value = true
+        }
         throw error
       }
     }, 5000)
@@ -243,7 +270,6 @@ export const useELearningSession = () => {
       }
     }, 30000) // Every 30 seconds
   }
-
   const cleanup = (): void => {
     session.value = null
     isSessionActive.value = false
@@ -260,6 +286,30 @@ export const useELearningSession = () => {
       clearInterval(viewingTimeInterval.value)
       viewingTimeInterval.value = null
     }
+  }
+
+  // Access control methods
+  const closeAccessModal = (): void => {
+    showAccessModal.value = false
+    requiresLogin.value = false
+    requiresSubscription.value = false
+  }
+
+  const checkVideoAccess = (): boolean => {
+    if (!isAuthenticated.value) {
+      requiresLogin.value = true
+      showAccessModal.value = true
+      return false
+    }
+    
+    // Check if user needs subscription (non-pro with time limits)
+    if (hasTimeLimit.value && timeRemaining.value !== null && timeRemaining.value <= 0) {
+      requiresSubscription.value = true
+      showAccessModal.value = true
+      return false
+    }
+    
+    return true
   }
 
   // Computed properties
@@ -295,7 +345,6 @@ export const useELearningSession = () => {
   if (typeof window !== 'undefined') {
     document.addEventListener('visibilitychange', handleVisibilityChange)
   }
-
   return {
     // State
     session: readonly(session),
@@ -303,6 +352,11 @@ export const useELearningSession = () => {
     timeRemaining: readonly(timeRemaining),
     currentVideoId: readonly(currentVideoId),
     currentSubjectId: readonly(currentSubjectId),
+    
+    // Access control state
+    requiresLogin: readonly(requiresLogin),
+    requiresSubscription: readonly(requiresSubscription),
+    showAccessModal: readonly(showAccessModal),
     
     // Computed
     isProUser,
@@ -318,6 +372,10 @@ export const useELearningSession = () => {
     startVideoTracking,
     pauseVideoTracking,
     resumeVideoTracking,
-    stopVideoTracking
+    stopVideoTracking,
+    
+    // Access control methods
+    closeAccessModal,
+    checkVideoAccess
   }
 }

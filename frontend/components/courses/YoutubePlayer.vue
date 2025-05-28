@@ -29,6 +29,7 @@
         </div>
       </div>
     </div>
+    
     <iframe
       v-else
       :src="`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1`"
@@ -37,12 +38,20 @@
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       class="youtube-iframe"
       @load="onIframeLoad"
-    ></iframe>
+    ></iframe>    <!-- Premium Access Modal -->
+    <CommonPremiumAccessModal
+      :show="shouldShowModal"
+      :type="modalType"
+      @close="handleModalClose"
+      @login="handleLogin"
+      @subscribe="handleSubscribe"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useAuth } from "~/composables/useAuth";
 
 const props = defineProps({
   videoId: {
@@ -59,17 +68,56 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['video-start', 'video-pause', 'video-resume', 'video-stop']);
+const emit = defineEmits(['video-start', 'video-pause', 'video-resume', 'video-stop', 'login-required', 'subscription-required']);
 
+const { isAuthenticated } = useAuth()
 const isPlaying = ref(false);
+const showLocalAccessModal = ref(false);
+const localModalType = ref('login_required');
 
 // Get YouTube thumbnail URL from video ID - use maxresdefault for higher quality when available
 const thumbnailUrl = computed(() => {
   return `https://img.youtube.com/vi/${props.videoId}/mqdefault.jpg`;
 });
 
+// Determine modal type and show state
+const shouldShowModal = computed(() => {
+  return showLocalAccessModal.value || (props.sessionManager?.showAccessModal?.value || false)
+});
+
+const modalType = computed(() => {
+  if (showLocalAccessModal.value) {
+    return localModalType.value
+  }
+  if (props.sessionManager?.requiresLogin?.value) {
+    return 'login_required'
+  } else if (props.sessionManager?.requiresSubscription?.value) {
+    return 'subscription_required'
+  }
+  return 'login_required'
+})
+
 async function playVideo() {
   try {
+    // First check if user is authenticated directly
+    if (!isAuthenticated.value) {
+      showLocalAccessModal.value = true;
+      localModalType.value = 'login_required';
+      // Sync with session manager state
+      if (props.sessionManager) {
+        props.sessionManager.requiresLogin.value = true;
+        props.sessionManager.showAccessModal.value = true;
+      }
+      emit('video-start', false, 'Login required');
+      return;
+    }
+
+    // Check access through session manager if available and user is authenticated
+    if (props.sessionManager && !props.sessionManager.checkVideoAccess()) {
+      emit('video-start', false, 'Access restricted');
+      return;
+    }
+
     // Check session status before playing video
     if (props.sessionManager && !props.sessionManager.isSessionActive.value) {
       throw new Error('Session not active. Please refresh the page.');
@@ -77,6 +125,13 @@ async function playVideo() {
 
     // For non-pro users, check time limit
     if (props.sessionManager && props.sessionManager.hasTimeLimit.value && props.sessionManager.timeRemaining.value <= 0) {
+      showLocalAccessModal.value = true;
+      localModalType.value = 'subscription_required';
+      // Sync with session manager state
+      if (props.sessionManager) {
+        props.sessionManager.requiresSubscription.value = true;
+        props.sessionManager.showAccessModal.value = true;
+      }
       emit('video-start', false, 'Time limit exceeded');
       return;
     }
@@ -140,6 +195,26 @@ function handleMessage(event) {
 
 function onIframeLoad() {
   // Additional iframe load handling if needed
+}
+
+// Modal event handlers
+const handleModalClose = () => {
+  showLocalAccessModal.value = false;
+  if (props.sessionManager) {
+    props.sessionManager.closeAccessModal();
+  }
+}
+
+const handleLogin = () => {
+  // Emit event or handle login redirect
+  showLocalAccessModal.value = false;
+  emit('login-required');
+}
+
+const handleSubscribe = () => {
+  // Emit event or handle subscription redirect
+  showLocalAccessModal.value = false;
+  emit('subscription-required');
 }
 
 onMounted(() => {

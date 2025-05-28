@@ -47,31 +47,12 @@
           <span>{{ Math.floor(timeRemaining / 60) }}:{{ String(timeRemaining % 60).padStart(2, '0') }} left</span>
         </div>
 
-        <!-- Session Status Indicator -->
-        <div
+        <!-- Session Status Indicator -->        <div
           v-if="isSessionActive"
           class="text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full border border-green-200 shadow-sm flex items-center"
         >
           <div class="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
           <span>Active Session</span>
-        </div>
-        <div
-          v-else-if="sessionError"
-          class="text-xs bg-red-50 text-red-700 px-2.5 py-1 rounded-full border border-red-200 shadow-sm flex items-center"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-3.5 w-3.5 mr-1 text-red-600"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          <span>Session Error</span>
         </div>
 
         <!-- Total videos count badge -->
@@ -398,8 +379,7 @@
         :key="video.id"
         class="overflow-hidden rounded-lg border transition-all hover:shadow-sm"
       >        <!-- Video player -->
-        <div class="aspect-w-16 aspect-h-9 bg-gray-100">
-          <youtube-player 
+        <div class="aspect-w-16 aspect-h-9 bg-gray-100">          <youtube-player 
             :video-id="getYoutubeId(video.url)" 
             :video="video" 
             :session-manager="{ 
@@ -409,12 +389,19 @@
               startVideoTracking, 
               pauseVideoTracking, 
               resumeVideoTracking, 
-              stopVideoTracking 
+              stopVideoTracking,
+              showAccessModal,
+              requiresLogin,
+              requiresSubscription,
+              closeAccessModal,
+              checkVideoAccess
             }"
             @video-start="handleVideoStart"
             @video-pause="handleVideoPause"
             @video-resume="handleVideoResume"
             @video-stop="handleVideoStop"
+            @login-required="handleLoginRequired"
+            @subscription-required="handleSubscriptionRequired"
           />
         </div>
 
@@ -843,47 +830,6 @@
         </div>
       </div>
     </Teleport>
-
-    <!-- Session Error Alert -->
-    <div
-      v-if="sessionError"
-      class="fixed bottom-4 right-4 max-w-sm bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg z-40 animate-slide-up"
-    >
-      <div class="flex items-start">
-        <div class="flex-shrink-0">
-          <svg
-            class="h-5 w-5 text-red-400"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">Session Error</h3>
-          <p class="mt-1 text-sm text-red-700">{{ sessionError }}</p>
-          <div class="mt-3 flex space-x-2">
-            <button
-              @click="initializeSession"
-              class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded hover:bg-red-200 transition-colors"
-            >
-              Retry
-            </button>
-            <button
-              @click="sessionError = null"
-              class="text-xs text-red-600 hover:text-red-800 transition-colors"
-            >
-              Dismiss
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -896,6 +842,9 @@ import {
   incrementVideoViews,
   fetchVideoById,
 } from "~/services/elearningApi";
+
+// Authentication
+const { isAuthenticated } = useAuth();
 
 // Session management
 const {
@@ -911,7 +860,12 @@ const {
   pauseVideoTracking,
   resumeVideoTracking,
   stopVideoTracking,
-  trackActivity
+  trackActivity,
+  showAccessModal,
+  requiresLogin,
+  requiresSubscription,
+  closeAccessModal,
+  checkVideoAccess
 } = useELearningSession();
 
 const props = defineProps({
@@ -962,25 +916,30 @@ watch(
   () => props.subject,
   async (newSubject) => {
     if (newSubject) {
-      // Initialize session when subject changes
-      await initializeSession();
+      // Always load videos, but only initialize session for authenticated users
       loadVideos();
+      if (isAuthenticated.value) {
+        await initializeSession();
+      }
     }
   }
 );
 
 // Session management functions
-const sessionError = ref(null);
 const showUpgradePrompt = ref(false);
 
 async function initializeSession() {
   try {
-    sessionError.value = null;
+    // Only initialize session for authenticated users
+    if (!isAuthenticated.value) {
+      console.log('User not authenticated, skipping session initialization');
+      return;
+    }
+    
     const currentUrl = window.location.href;
     await startSession(currentUrl, props.subject);
     trackActivity('page_access', { subject_id: props.subject });
   } catch (error) {
-    sessionError.value = error.message;
     console.error('Failed to initialize session:', error);
     
     if (error.message.includes('upgrade')) {
@@ -1001,7 +960,6 @@ function goToUpgrade() {
 function handleVideoStart(success, errorMessage) {
   if (!success) {
     console.error('Failed to start video:', errorMessage);
-    sessionError.value = errorMessage;
     
     if (errorMessage && errorMessage.includes('limit')) {
       showUpgradePrompt.value = true;
@@ -1024,10 +982,25 @@ function handleVideoStop() {
   console.log('Video stopped');
 }
 
+// Access control event handlers
+function handleLoginRequired() {
+  // Redirect to login page
+  navigateTo('/auth/login');
+}
+
+function handleSubscriptionRequired() {
+  // Show upgrade prompt or redirect to subscription page
+  showUpgradePrompt.value = true;
+}
+
 // Initial load if subject is already available
 onMounted(async () => {
   if (props.subject) {
     loadVideos();
+    // Only initialize session for authenticated users
+    if (isAuthenticated.value) {
+      await initializeSession();
+    }
   }
 });
 
@@ -1214,24 +1187,28 @@ const activeVideo = ref(null);
 // Function to open the description modal with preloading and access control
 async function openDescriptionModal(video) {
   try {
-    // Check session status and access control
-    if (!isSessionActive.value) {
-      sessionError.value = 'Session expired. Please refresh the page.';
+    // Check if user is authenticated first
+    if (!isAuthenticated.value) {
+      // For non-authenticated users, don't check session - just show the video details
+      activeVideo.value = video;
+      showDescriptionModal.value = true;
+      return;
+    }    // Check session status and access control only for authenticated users
+    if (isSessionActive && !isSessionActive.value) {
+      console.error('Session expired. Please refresh the page.');
       return;
     }
 
     // For non-pro users, check time limit
-    if (hasTimeLimit.value && timeRemaining.value <= 0) {
+    if (hasTimeLimit && hasTimeLimit.value && timeRemaining && timeRemaining.value <= 0) {
       showUpgradePrompt.value = true;
       return;
-    }
-
-    // Show the modal immediately with current video data
+    }    // Show the modal immediately with current video data
     activeVideo.value = video;
     showDescriptionModal.value = true;
 
-    // Start video tracking when modal opens
-    if (video.id) {
+    // Start video tracking when modal opens (only for authenticated users)
+    if (video.id && isAuthenticated.value && startVideoTracking) {
       startVideoTracking(video.id);
     }
 
@@ -1248,10 +1225,8 @@ async function openDescriptionModal(video) {
         // Silently fail - we already have the basic video data showing
         console.warn("Could not fetch updated video details:", err);
       }
-    }
-  } catch (error) {
+    }  } catch (error) {
     console.error('Failed to open video:', error);
-    sessionError.value = error.message;
     
     if (error.message.includes('upgrade') || error.message.includes('limit')) {
       showUpgradePrompt.value = true;
@@ -1261,8 +1236,10 @@ async function openDescriptionModal(video) {
 
 // Function to close the description modal
 function closeDescriptionModal() {
-  // Stop video tracking when modal closes
-  stopVideoTracking();
+  // Stop video tracking when modal closes (only for authenticated users)
+  if (isAuthenticated.value && stopVideoTracking) {
+    stopVideoTracking();
+  }
   
   showDescriptionModal.value = false;
   setTimeout(() => {
@@ -1272,9 +1249,14 @@ function closeDescriptionModal() {
 
 // Cleanup on component unmount
 onUnmounted(async () => {
-  stopVideoTracking();
-  if (isSessionActive.value) {
-    await endSession();
+  // Only cleanup session-related stuff for authenticated users
+  if (isAuthenticated.value) {
+    if (stopVideoTracking) {
+      stopVideoTracking();
+    }
+    if (isSessionActive && isSessionActive.value && endSession) {
+      await endSession();
+    }
   }
 });
 
