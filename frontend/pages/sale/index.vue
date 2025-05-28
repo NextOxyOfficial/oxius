@@ -428,7 +428,7 @@
                   <img
                     :src="getListingImage(post)"
                     :alt="post?.title || `Image`"
-                    class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div class="absolute bottom-0 left-0 w-full p-2">
                     <div
@@ -557,7 +557,7 @@
                     <img
                       :src="getListingImage(listing)"
                       :alt="listing?.title || `Image`"
-                      class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div class="absolute top-2 right-2">
                       <span
