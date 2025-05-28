@@ -316,8 +316,7 @@
                           >
                             PRO
                           </div>
-                        </div>
-                        <div class="ml-3">
+                        </div>                        <div class="ml-3">
                           <div class="flex items-center">
                             <p
                               class="font-medium text-gray-700 dark:text-slate-200"
@@ -334,11 +333,12 @@
                               class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm"
                             >
                               <CheckCircle class="h-3 w-3 mr-1" /> Solution
-                            </span>
+                            </span>                          </div>
+                          <div class="w-full text-left">
+                            <p class="text-sm text-slate-500 dark:text-slate-400 text-left inline-block">
+                              {{ formatTimeAgo(comment.created_at) }}
+                            </p>
                           </div>
-                          <p class="text-sm text-slate-500 dark:text-slate-400">
-                            {{ formatTimeAgo(comment.created_at) }}
-                          </p>
                         </div>
                       </div>
                       <!-- Updated Mark Solution button with spinner and conditionally showing -->

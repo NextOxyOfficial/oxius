@@ -14,7 +14,7 @@
         <div class="absolute inset-0 dot-pattern opacity-10"></div>
 
         <!-- Minimal glass effect -->
-        <div class="absolute inset-0 backdrop-blur-[1px] opacity-40"></div>
+        <div class="absolute inset-0 backdrop-blur-[1px] opacity-40 bg-green-300"></div>
 
         <!-- Content -->
         <div class="relative z-10 p-6 sm:p-8">
