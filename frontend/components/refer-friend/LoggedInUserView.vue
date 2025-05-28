@@ -34,7 +34,7 @@
           {{ $t("refer_text") }}
         </p>
         <div class="flex flex-col sm:flex-row gap-3">
-          <UButtonGroup class="mx-auto w-full sm:w-80">
+          <UButtonGroup class="mx-auto w-full sm:w-96">
             <input
               type="text"
               class="text-xs py-1 px-0.5 w-full"
