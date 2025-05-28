@@ -862,7 +862,7 @@ async function loadMoreCategories() {
 // Seller registration function
 function goToSellerRegistration() {
   // Navigate to seller registration page
-  navigateTo("/eshop-manager");
+  navigateTo("/shop-manager");
   toggleSidebar();
 }
 
@@ -886,7 +886,7 @@ function contactSupport(type) {
 
 // Navigate to eShop Manager
 function navigateToEshopManager() {
-  navigateTo("/eshop-manager");
+  navigateTo("/shop-manager");
 }
 
 // Data fetching
