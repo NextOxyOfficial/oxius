@@ -104,25 +104,31 @@ export default defineI18nConfig(() => ({
       donation_help_text:
         "Your donation helps us maintain and improve our platform for everyone.",
       relevant_content: "Choose your location to see relevant content",
-      set_location: "Set My Location",      premium_access: "Premium Access",
+      set_location: "Set My Location",
+      premium_access: "Premium Access",
       premium_access_required: "Premium Access Required",
       premium_access_text:
         "To access this exclusive content, you need to upgrade to our Professional Package.",
       premium_upgrade: "Upgrade to Premium",
       premium_benefits: "Premium Benefits",
       login_required: "Login Required",
-      login_required_message: "Please login to your account to access premium video content. Join thousands of learners already benefiting from our comprehensive courses.",
+      login_required_message:
+        "Please login to your account to access premium video content. Join thousands of learners already benefiting from our comprehensive courses.",
       premium_subscription_required: "Premium Subscription Required",
-      premium_subscription_message: "Upgrade to our premium subscription to unlock unlimited access to all video lessons and exclusive content.",
+      premium_subscription_message:
+        "Upgrade to our premium subscription to unlock unlimited access to all video lessons and exclusive content.",
       unlimited_video_access: "Unlimited video access",
       download_materials: "Download course materials",
-      priority_support: "Priority customer support",      ad_free_experience: "Ad-free learning experience",
+      priority_support: "Priority customer support",
+      ad_free_experience: "Ad-free learning experience",
       multiple_device_access: "Access from any device",
       login_now: "Login Now",
       session_limit_reached: "Session Limit Reached",
       active_session_elsewhere: "Active Session On Another Device",
-      concurrent_session_message: "You have an active video session on another device or browser. Our premium subscription allows one active session at a time.",
-      force_session_info: "You can close your session on the other device and continue watching here, or continue watching on your other device.",
+      concurrent_session_message:
+        "You have an active video session on another device or browser. Our premium subscription allows one active session at a time.",
+      force_session_info:
+        "You can close your session on the other device and continue watching here, or continue watching on your other device.",
       continue_here: "Continue Here",
       cancel: "Cancel",
       upgrade_to_premium: "Upgrade to Premium",
@@ -238,6 +244,8 @@ export default defineI18nConfig(() => ({
       no_search_results: "No results match your search criteria",
       clear_filters: "Clear filters",
       lesson: "Lesson",
+      elearning_filter_by: "eLearning Filter By",
+      elearning_lesson: "eLearning Lesson",
     },
     bn: {
       welcome: "স্বাগতম",
@@ -339,16 +347,19 @@ export default defineI18nConfig(() => ({
       donation_help_text:
         "আপনার দান আমাদের প্লাটফর্মটি সবার জন্য বজায় রাখতে এবং উন্নত করতে সাহায্য করে।",
       relevant_content: "প্রাসঙ্গিক কন্টেন্ট দেখতে আপনার অবস্থান বেছে নিন",
-      set_location: "লোকেশন সেট করুন",      premium_access: "প্রিমিয়াম অ্যাক্সেস",
+      set_location: "লোকেশন সেট করুন",
+      premium_access: "প্রিমিয়াম অ্যাক্সেস",
       premium_access_required: "প্রিমিয়াম অ্যাক্সেস আবশ্যক",
       premium_access_text:
         "ই-শপ ম্যানেজার শুধুমাত্র প্রো সাবস্ক্রাইবারদের জন্য। ফিচার টি দেখতে বা ব্যবহার করতে আপনার প্যাকেজ আপগ্রেড করুন। ",
       premium_upgrade: "প্রিমিয়াম আপগ্রেড করি",
       premium_benefits: "প্রিমিয়াম সুবিধাসমূহ",
       login_required: "লগইন প্রয়োজন",
-      login_required_message: "প্রিমিয়াম ভিডিও কন্টেন্ট দেখতে আপনার অ্যাকাউন্টে লগইন করুন। আমাদের বিস্তৃত কোর্সগুলি থেকে উপকৃত হওয়া হাজার হাজার শিক্ষার্থীদের সাথে যোগ দিন।",
+      login_required_message:
+        "প্রিমিয়াম ভিডিও কন্টেন্ট দেখতে আপনার অ্যাকাউন্টে লগইন করুন। আমাদের বিস্তৃত কোর্সগুলি থেকে উপকৃত হওয়া হাজার হাজার শিক্ষার্থীদের সাথে যোগ দিন।",
       premium_subscription_required: "প্রিমিয়াম সাবস্ক্রিপশন প্রয়োজন",
-      premium_subscription_message: "সমস্ত ভিডিও লেসন এবং এক্সক্লুসিভ কন্টেন্টে অসীম অ্যাক্সেস পেতে আমাদের প্রিমিয়াম সাবস্ক্রিপশনে আপগ্রেড করুন।",
+      premium_subscription_message:
+        "সমস্ত ভিডিও লেসন এবং এক্সক্লুসিভ কন্টেন্টে অসীম অ্যাক্সেস পেতে আমাদের প্রিমিয়াম সাবস্ক্রিপশনে আপগ্রেড করুন।",
       unlimited_video_access: "সীমাহীন ভিডিও অ্যাক্সেস",
       download_materials: "কোর্স ম্যাটেরিয়াল ডাউনলোড",
       priority_support: "অগ্রাধিকার কাস্টমার সাপোর্ট",
@@ -357,8 +368,10 @@ export default defineI18nConfig(() => ({
       login_now: "এখনই লগইন করুন",
       session_limit_reached: "সেশন সীমা পৌঁছেছে",
       active_session_elsewhere: "অন্য ডিভাইসে সক্রিয় সেশন",
-      concurrent_session_message: "আপনার অন্য ডিভাইস বা ব্রাউজারে একটি সক্রিয় ভিডিও সেশন রয়েছে। আমাদের প্রিমিয়াম সাবস্ক্রিপশন একই সময়ে একটি সক্রিয় সেশন দেয়।",
-      force_session_info: "আপনি অন্য ডিভাইসে আপনার সেশন বন্ধ করতে পারেন এবং এখানে দেখা চালিয়ে যেতে পারেন, বা আপনার অন্য ডিভাইসে দেখা চালিয়ে যেতে পারেন।",
+      concurrent_session_message:
+        "আপনার অন্য ডিভাইস বা ব্রাউজারে একটি সক্রিয় ভিডিও সেশন রয়েছে। আমাদের প্রিমিয়াম সাবস্ক্রিপশন একই সময়ে একটি সক্রিয় সেশন দেয়।",
+      force_session_info:
+        "আপনি অন্য ডিভাইসে আপনার সেশন বন্ধ করতে পারেন এবং এখানে দেখা চালিয়ে যেতে পারেন, বা আপনার অন্য ডিভাইসে দেখা চালিয়ে যেতে পারেন।",
       continue_here: "এখানে চালিয়ে যান",
       cancel: "বাতিল",
       upgrade_to_premium: "প্রিমিয়ামে আপগ্রেড করুন",
@@ -474,10 +487,11 @@ export default defineI18nConfig(() => ({
         "উপরে থেকে আপনার ব্যাচ (এসএসসি বা এইচএসসি) নির্বাচন করে শুরু করুন। তারপর আপনার বিষয় এবং ভিডিও লেসনগুলি খুঁজে পেতে পদক্ষেপগুলি অনুসরণ করুন।",
       no_subjects_found: "এই বিভাগের জন্য কোন বিষয় পাওয়া যায়নি",
       no_videos_found: "এই বিষয়ের জন্য কোন ভিডিও পাওয়া যায়নি",
-      no_search_results:
-        "আপনার অনুসন্ধান মেলে এমন কোন ফলাফল নেই",
+      no_search_results: "আপনার অনুসন্ধান মেলে এমন কোন ফলাফল নেই",
       clear_filters: "ফিল্টার মুছে দিন",
       lesson: "পাঠ",
+      elearning_filter_by: "ফিল্টার করুন",
+      elearning_lesson: "ই-লার্নিং লেসন",
     },
   },
 }));
