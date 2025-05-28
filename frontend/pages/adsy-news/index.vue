@@ -722,7 +722,6 @@ onUnmounted(() => {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  -webkit-line-clamp: 2;
 }
 
 .bg-primary {
@@ -797,7 +796,6 @@ onUnmounted(() => {
 
 .line-clamp-3 {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
