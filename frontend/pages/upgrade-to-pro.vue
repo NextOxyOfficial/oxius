@@ -160,7 +160,7 @@
                       ></path>
                     </svg>
                   </div>                  <span class="text-gray-500/90 dark:text-slate-400/90 line-through font-medium"
-                    >Add up to 100 Products</span
+                    >Add up to 10 Products</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">
@@ -447,7 +447,7 @@
                     </svg>
                   </div>
                   <span class="text-gray-500 dark:text-slate-300 font-medium"
-                    >Add up to 100 Products</span
+                    >Add up to 10 Products</span
                   >
                 </li>
                 <li class="flex items-center text-sm group/item">
