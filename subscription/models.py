@@ -35,6 +35,7 @@ class Subscription(models.Model):
         ('nagad', 'Nagad'),
         ('bank_transfer', 'Bank Transfer'),
         ('sslcommerz', 'SSLCommerz'),
+        ('account_balance', 'Account Balance'),
         ('other', 'Other'),
     )
 
@@ -85,11 +86,52 @@ class Subscription(models.Model):
         self.status = 'active'
         self.save()
         
+        # Update user's pro status if this is a paid plan
+        if self.plan.price > 0:
+            self.user.is_pro = True
+            self.user.pro_validity = self.end_date
+            self.user.save(update_fields=['is_pro', 'pro_validity'])
+        
     def cancel(self):
         """Cancel subscription"""
         self.status = 'cancelled'
         self.auto_renew = False
         self.save()
+        
+        # If this was a paid plan, remove pro status from user
+        if self.plan.price > 0:
+            # Check if user has any other active paid subscriptions
+            other_active_paid = Subscription.objects.filter(
+                user=self.user,
+                status='active',
+                end_date__gt=timezone.now(),
+                plan__price__gt=0
+            ).exclude(id=self.id).exists()
+            
+            if not other_active_paid:
+                self.user.is_pro = False
+                self.user.pro_validity = None
+                self.user.save(update_fields=['is_pro', 'pro_validity'])
+
+    def expire(self):
+        """Mark subscription as expired and update user pro status"""
+        self.status = 'expired'
+        self.save()
+        
+        # If this was a paid plan, remove pro status from user
+        if self.plan.price > 0:
+            # Check if user has any other active paid subscriptions
+            other_active_paid = Subscription.objects.filter(
+                user=self.user,
+                status='active',
+                end_date__gt=timezone.now(),
+                plan__price__gt=0
+            ).exclude(id=self.id).exists()
+            
+            if not other_active_paid:
+                self.user.is_pro = False
+                self.user.pro_validity = None
+                self.user.save(update_fields=['is_pro', 'pro_validity'])
 
 
 class SubscriptionLog(models.Model):
