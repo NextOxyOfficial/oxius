@@ -1,6 +1,6 @@
 <template>
   <div
-    class="py-3 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg  transition-all duration-300  z-[99999999] w-full"
+    class="py-3 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg transition-all duration-300 z-[99999999] w-full"
     :class="[
       isScrolled
         ? 'fixed backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg  border-gray-200/50 dark:border-gray-800/50'
@@ -11,48 +11,73 @@
     <!-- Subscription Warnings Section -->
     <div class="relative px-4">
       <!-- Pre-expiration Warning -->
-      <transition enter-active-class="transition duration-300 ease-out" 
-                  enter-from-class="opacity-0 -translate-y-4" 
-                  leave-active-class="transition duration-200 ease-in" 
-                  leave-to-class="opacity-0 -translate-y-4">
+      <transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="opacity-0 -translate-y-4"
+        leave-active-class="transition duration-200 ease-in"
+        leave-to-class="opacity-0 -translate-y-4"
+      >
         <div
           v-if="shouldShowWarning && !warningDismissed"
           class="mx-auto my-2 px-4 relative overflow-hidden rounded-lg border border-amber-300/70 dark:border-amber-600/50 group transition-all duration-300 hover:shadow-sm"
         >
           <!-- Warning Background -->
-          <div class="absolute inset-0 bg-gradient-to-r from-amber-50/90 via-amber-50/80 to-amber-100/90 dark:from-amber-900/30 dark:via-amber-800/20 dark:to-amber-900/30 backdrop-blur-md"></div>
-          
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-amber-50/90 via-amber-50/80 to-amber-100/90 dark:from-amber-900/30 dark:via-amber-800/20 dark:to-amber-900/30 backdrop-blur-md"
+          ></div>
+
           <!-- Decorative Elements -->
-          <div class="absolute -left-20 -top-20 w-40 h-40 bg-amber-200/20 rounded-full blur-2xl transform-gpu"></div>
-          <div class="absolute -right-20 -bottom-20 w-40 h-40 bg-amber-300/20 rounded-full blur-2xl transform-gpu"></div>
-          
+          <div
+            class="absolute -left-20 -top-20 w-40 h-40 bg-amber-200/20 rounded-full blur-2xl transform-gpu"
+          ></div>
+          <div
+            class="absolute -right-20 -bottom-20 w-40 h-40 bg-amber-300/20 rounded-full blur-2xl transform-gpu"
+          ></div>
+
           <!-- Animated Border Lines -->
-          <div class="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-amber-400/50 dark:via-amber-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"></div>
-          <div class="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-amber-400/50 dark:via-amber-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"></div>
+          <div
+            class="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-amber-400/50 dark:via-amber-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"
+          ></div>
+          <div
+            class="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-amber-400/50 dark:via-amber-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"
+          ></div>
 
           <!-- Content -->
-          <div class="relative z-10 p-2.5 sm:p-3.5 flex items-center justify-between">
+          <div
+            class="relative z-10 p-2.5 sm:p-3.5 flex items-center justify-between"
+          >
             <div class="flex items-center gap-2 sm:gap-3">
               <!-- Warning Icon -->
               <div class="relative hidden xs:block">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-800 dark:to-amber-700 border border-amber-300/50 dark:border-amber-600/30 flex items-center justify-center shadow-inner">
-                  <UIcon name="i-heroicons-clock" class="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div
+                  class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-800 dark:to-amber-700 border border-amber-300/50 dark:border-amber-600/30 flex items-center justify-center shadow-inner"
+                >
+                  <UIcon
+                    name="i-heroicons-clock"
+                    class="w-5 h-5 text-amber-600 dark:text-amber-400"
+                  />
                 </div>
-                <div class="absolute -inset-1.5 bg-amber-300/20 blur-md rounded-full animate-pulse opacity-50"></div>
+                <div
+                  class="absolute -inset-1.5 bg-amber-300/20 blur-md rounded-full animate-pulse opacity-50"
+                ></div>
               </div>
-              
+
               <!-- Warning Text -->
               <div class="inline-flex items-center gap-2">
-                <UIcon name="i-icon-park-outline-caution" class="w-5 h-5 text-amber-800" />
+                <UIcon
+                  name="i-icon-park-outline-caution"
+                  class="w-5 h-5 text-amber-800"
+                />
                 <h3 class="text-xs sm:text-sm font-medium text-amber-800">
                   {{ $t("subscription_expiring") }}
                   <span class="inline-block ml-1 font-semibold">
-                    {{ daysRemaining }} {{ daysRemaining === 1 ? $t("day") : $t("days") }}
+                    {{ daysRemaining }}
+                    {{ daysRemaining === 1 ? $t("day") : $t("days") }}
                   </span>
                 </h3>
               </div>
             </div>
-            
+
             <!-- Dismiss Button -->
             <UButton
               @click="dismissWarning"
@@ -68,45 +93,70 @@
       </transition>
 
       <!-- Post-expiration Alert -->
-      <transition enter-active-class="transition duration-300 ease-out" 
-                  enter-from-class="opacity-0 -translate-y-4" 
-                  leave-active-class="transition duration-200 ease-in" 
-                  leave-to-class="opacity-0 -translate-y-4">
+      <transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="opacity-0 -translate-y-4"
+        leave-active-class="transition duration-200 ease-in"
+        leave-to-class="opacity-0 -translate-y-4"
+      >
         <div
           v-if="isExpired"
           class="mx-auto my-2 relative overflow-hidden rounded-lg border border-red-400/70 dark:border-red-600/40 transition-all duration-300 shadow-sm hover:shadow-sm"
         >
           <!-- Alert Background -->
-          <div class="absolute inset-0 bg-gradient-to-r from-red-50/90 via-red-100/80 to-red-50/90 dark:from-red-900/30 dark:via-red-800/20 dark:to-red-900/30 backdrop-blur-md"></div>
-          
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-red-50/90 via-red-100/80 to-red-50/90 dark:from-red-900/30 dark:via-red-800/20 dark:to-red-900/30 backdrop-blur-md"
+          ></div>
+
           <!-- Decorative Elements -->
-          <div class="absolute -left-20 -top-20 w-40 h-40 bg-red-200/20 rounded-full blur-2xl transform-gpu"></div>
-          <div class="absolute -right-20 -bottom-20 w-40 h-40 bg-red-300/20 rounded-full blur-2xl transform-gpu"></div>
-          
+          <div
+            class="absolute -left-20 -top-20 w-40 h-40 bg-red-200/20 rounded-full blur-2xl transform-gpu"
+          ></div>
+          <div
+            class="absolute -right-20 -bottom-20 w-40 h-40 bg-red-300/20 rounded-full blur-2xl transform-gpu"
+          ></div>
+
           <!-- Pulsing Border -->
-          <div class="absolute inset-0 rounded-lg border-2 border-red-400/20 dark:border-red-600/20 scale-[0.98] animate-pulse"></div>
-          
+          <div
+            class="absolute inset-0 rounded-lg border-2 border-red-400/20 dark:border-red-600/20 scale-[0.98] animate-pulse"
+          ></div>
+
           <!-- Animated Border Lines -->
-          <div class="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"></div>
-          <div class="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"></div>
+          <div
+            class="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"
+          ></div>
+          <div
+            class="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"
+          ></div>
 
           <!-- Content -->
-          <div class="relative z-10 p-3 sm:p-3.5 flex items-center justify-between">
+          <div
+            class="relative z-10 p-3 sm:p-3.5 flex items-center justify-between"
+          >
             <div class="flex items-center gap-2 sm:gap-3">
               <!-- Alert Icon -->
               <div class="relative hidden xs:block">
-                <div class="size-7 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-800 dark:to-red-700 border border-red-300/50 dark:border-red-600/30 flex items-center justify-center shadow-inner">
-                  <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-red-600 dark:text-red-400" />
+                <div
+                  class="size-7 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-800 dark:to-red-700 border border-red-300/50 dark:border-red-600/30 flex items-center justify-center shadow-inner"
+                >
+                  <UIcon
+                    name="i-heroicons-exclamation-triangle"
+                    class="w-5 h-5 text-red-600 dark:text-red-400"
+                  />
                 </div>
-                <div class="absolute -inset-1.5 bg-red-300/30 blur-md rounded-full animate-pulse opacity-70"></div>
+                <div
+                  class="absolute -inset-1.5 bg-red-300/30 blur-md rounded-full animate-pulse opacity-70"
+                ></div>
               </div>
-              
+
               <!-- Alert Text -->
-              <h3 class="text-xs sm:text-sm font-medium text-red-800 dark:text-red-300">
+              <h3
+                class="text-xs sm:text-sm font-medium text-red-800 dark:text-red-300"
+              >
                 {{ $t("subscription_expired") }}
               </h3>
             </div>
-            
+
             <!-- Renewal Button -->
             <UButton
               @click="renewSubscription"
@@ -115,17 +165,24 @@
               variant="solid"
               class="py-1 px-2.5 group hover:bg-red-600 transition-colors duration-300 relative overflow-hidden"
             >
-              <div class="absolute inset-0 bg-gradient-to-r from-red-400/0 via-white/10 to-red-400/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
-              <span class="text-xs whitespace-nowrap flex items-center gap-1 relative z-10">
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-red-400/0 via-white/10 to-red-400/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"
+              ></div>
+              <span
+                class="text-xs whitespace-nowrap flex items-center gap-1 relative z-10"
+              >
                 {{ $t("renew_now") }}
-                <UIcon name="i-heroicons-arrow-right" class="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                <UIcon
+                  name="i-heroicons-arrow-right"
+                  class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"
+                />
               </span>
             </UButton>
           </div>
         </div>
       </transition>
     </div>
-    
+
     <UContainer class="w-full max-w-7xl mx-auto">
       <!-- Mobile Sidebar Menu -->
       <USlideover
@@ -157,80 +214,166 @@
               @click="isOpen = false"
             />
           </div>
-          
+
           <!-- Language Switcher in Sidebar -->
           <div class="px-4">
             <PublicTranslateHandler class="px-2 mt-3" :showText="true" />
           </div>
-          
+
           <!-- Navigation Links -->
           <div class="px-4 py-6">
-            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 px-4">
+            <h3
+              class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 px-4"
+            >
               {{ $t("menu") }}
             </h3>
-            
+
             <!-- Mobile Navigation Menu -->
-            <div class="rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 space-y-1 py-2">
+            <div
+              class="rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 space-y-1 py-2"
+            >
               <!-- Home -->
-              <NuxtLink to="/" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+              <NuxtLink
+                to="/"
+                class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click="isOpen = false"
+              >
+                <div
+                  class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                >
                   <UIcon name="i-heroicons-home-20-solid" class="w-5 h-5" />
                 </div>
-                <span class="flex-1 font-medium text-sm text-blue-700 dark:text-blue-300">{{ $t('home') }}</span>
-                <UIcon name="i-heroicons-chevron-right" 
-                class="w-4 h-4 text-blue-500 dark:text-blue-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+                <span
+                  class="flex-1 font-medium text-sm text-blue-700 dark:text-blue-300"
+                  >{{ $t("home") }}</span
+                >
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="w-4 h-4 text-blue-500 dark:text-blue-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100"
+                />
               </NuxtLink>
-              
+
               <!-- Classified Service -->
-              <NuxtLink to="#classified-services" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
-                  <UIcon name="i-heroicons-clipboard-document-list" class="w-5 h-5" />
+              <NuxtLink
+                to="#classified-services"
+                class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click="isOpen = false"
+              >
+                <div
+                  class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
+                >
+                  <UIcon
+                    name="i-heroicons-clipboard-document-list"
+                    class="w-5 h-5"
+                  />
                 </div>
-                <span class="flex-1 font-medium text-sm text-emerald-700 dark:text-emerald-300">{{ $t('classified_service') }}</span>
-                <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-emerald-500 dark:text-emerald-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+                <span
+                  class="flex-1 font-medium text-sm text-emerald-700 dark:text-emerald-300"
+                  >{{ $t("classified_service") }}</span
+                >
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="w-4 h-4 text-emerald-500 dark:text-emerald-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100"
+                />
               </NuxtLink>
-              
+
               <!-- E-Learning -->
-              <NuxtLink to="/courses" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+              <NuxtLink
+                to="/courses"
+                class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click="isOpen = false"
+              >
+                <div
+                  class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
+                >
                   <UIcon name="i-heroicons-academic-cap" class="w-5 h-5" />
                 </div>
-                <span class="flex-1 font-medium text-sm text-purple-700 dark:text-purple-300">{{ $t('elearning') }}</span>
-                <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-purple-500 dark:text-purple-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+                <span
+                  class="flex-1 font-medium text-sm text-purple-700 dark:text-purple-300"
+                  >{{ $t("elearning") }}</span
+                >
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="w-4 h-4 text-purple-500 dark:text-purple-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100"
+                />
               </NuxtLink>
-              
+
               <!-- Earn Money -->
-              <NuxtLink to="#micro-gigs" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
-                  <UIcon name="i-healthicons:money-bag-outline" class="w-5 h-5" />
+              <NuxtLink
+                to="#micro-gigs"
+                class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click="isOpen = false"
+              >
+                <div
+                  class="flex items-center justify-center w-8 h-8 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400"
+                >
+                  <UIcon
+                    name="i-healthicons:money-bag-outline"
+                    class="w-5 h-5"
+                  />
                 </div>
-                <span class="flex-1 font-medium text-sm text-amber-700 dark:text-amber-300">{{ $t('earn_money') }}</span>
-                <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-amber-500 dark:text-amber-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+                <span
+                  class="flex-1 font-medium text-sm text-amber-700 dark:text-amber-300"
+                  >{{ $t("earn_money") }}</span
+                >
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="w-4 h-4 text-amber-500 dark:text-amber-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100"
+                />
               </NuxtLink>
-              
+
               <!-- FAQ -->
-              <NuxtLink to="/faq/" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
-                  <UIcon name="i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question" class="w-5 h-5" />
+              <NuxtLink
+                to="/faq/"
+                class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click="isOpen = false"
+              >
+                <div
+                  class="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                >
+                  <UIcon
+                    name="i-streamline:interface-help-question-circle-circle-faq-frame-help-info-mark-more-query-question"
+                    class="w-5 h-5"
+                  />
                 </div>
-                <span class="flex-1 font-medium text-sm text-red-700 dark:text-red-300">{{ $t('faq') }}</span>
-                <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-red-500 dark:text-red-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+                <span
+                  class="flex-1 font-medium text-sm text-red-700 dark:text-red-300"
+                  >{{ $t("faq") }}</span
+                >
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="w-4 h-4 text-red-500 dark:text-red-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100"
+                />
               </NuxtLink>
-              
+
               <!-- Mobile Recharge -->
-              <NuxtLink to="/mobile-recharge" class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700" @click="isOpen = false">
-                <div class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+              <NuxtLink
+                to="/mobile-recharge"
+                class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click="isOpen = false"
+              >
+                <div
+                  class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400"
+                >
                   <UIcon name="i-ic-baseline-install-mobile" class="w-5 h-5" />
                 </div>
-                <span class="flex-1 font-medium text-sm text-indigo-700 dark:text-indigo-300">মোবাইল রিচার্জ</span>
-                <UIcon name="i-heroicons-chevron-right" class="w-4 h-4 text-indigo-500 dark:text-indigo-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100" />
+                <span
+                  class="flex-1 font-medium text-sm text-indigo-700 dark:text-indigo-300"
+                  >মোবাইল রিচার্জ</span
+                >
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="w-4 h-4 text-indigo-500 dark:text-indigo-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100"
+                />
               </NuxtLink>
             </div>
           </div>
 
           <!-- Download App Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+            <h3
+              class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4"
+            >
               {{ $t("download_our_app") }}
             </h3>
             <div class="flex items-center gap-4">
@@ -238,20 +381,30 @@
                 to="/coming-soon"
                 class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
               >
-                <img src="/static/frontend/images/google.png" alt="Google Play" class="w-full h-full object-contain" />
+                <img
+                  src="/static/frontend/images/google.png"
+                  alt="Google Play"
+                  class="w-full h-full object-contain"
+                />
               </NuxtLink>
               <NuxtLink
                 href="/coming-soon"
                 class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
               >
-                <img src="/static/frontend/images/apple.png" alt="App Store" class="w-full h-full object-contain" />
+                <img
+                  src="/static/frontend/images/apple.png"
+                  alt="App Store"
+                  class="w-full h-full object-contain"
+                />
               </NuxtLink>
             </div>
           </div>
 
           <!-- Social Media Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+            <h3
+              class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4"
+            >
               {{ $t("follow_us") }}
             </h3>
             <div class="flex items-center gap-4">
@@ -267,7 +420,7 @@
           </div>
         </UCard>
       </USlideover>
-      
+
       <div class="flex items-center justify-between gap-2 lg:gap-6 px-3">
         <!-- Mobile Layout: Menu Button and Logo -->
         <div class="flex items-center gap-1">
@@ -286,62 +439,92 @@
           <!-- Logo -->
           <PublicLogo />
         </div>
-        
+
         <!-- Desktop Navigation Menu -->
         <nav class="hidden md:block">
           <div class="flex items-center gap-2 border-b border-transparent">
-            <NuxtLink 
-              to="/#home" 
+            <NuxtLink
+              to="/#home"
               class="relative flex items-center gap-2 py-1 px-2 font-medium text-blue-600 hover:text-blue-800 transition-all duration-300"
-              :class="{ 'active': $route.path === '/' }"
+              :class="{ active: $route.path === '/' }"
             >
-              <UIcon name="i-heroicons-home-20-solid" class="w-5 h-5 transition-transform duration-200 hover:scale-110" />
-              <span>{{ $t('home') }}</span>
-              <div class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" :class="{ 'scale-x-100': $route.path === '/' }"></div>
+              <UIcon
+                name="i-heroicons-home-20-solid"
+                class="w-5 h-5 transition-transform duration-200 hover:scale-110"
+              />
+              <span>{{ $t("home") }}</span>
+              <div
+                class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
+                :class="{ 'scale-x-100': $route.path === '/' }"
+              ></div>
             </NuxtLink>
-            
-            <NuxtLink 
-              to="/business-network" 
+
+            <NuxtLink
+              to="/business-network"
               class="relative flex items-center gap-2 py-1 px-2 font-medium text-emerald-600 hover:text-emerald-800 transition-all duration-300"
-              :class="{ 'active': $route.path === '/business-network' }"
+              :class="{ active: $route.path === '/business-network' }"
             >
-              <UIcon name="i-lucide-globe" class="w-5 h-5 transition-transform duration-200 hover:scale-110" />
-              <span>{{ $t('business_network') }}</span>
-              <div class="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" :class="{ 'scale-x-100': $route.path === '/business-network' }"></div>
+              <UIcon
+                name="i-lucide-globe"
+                class="w-5 h-5 transition-transform duration-200 hover:scale-110"
+              />
+              <span>{{ $t("business_network") }}</span>
+              <div
+                class="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
+                :class="{ 'scale-x-100': $route.path === '/business-network' }"
+              ></div>
             </NuxtLink>
-            
-            <NuxtLink 
-              to="/adsy-news" 
+
+            <NuxtLink
+              to="/adsy-news"
               class="relative flex items-center gap-2 py-1 px-2 font-medium text-amber-600 hover:text-amber-800 transition-all duration-300"
-              :class="{ 'active': $route.path === '/adsy-news' }"
+              :class="{ active: $route.path === '/adsy-news' }"
             >
-              <UIcon name="i-lucide-newspaper" class="w-5 h-5 transition-transform duration-200 hover:scale-110" />
-              <span>{{ $t('adsy_news') }}</span>
-              <div class="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" :class="{ 'scale-x-100': $route.path === '/adsy-news' }"></div>
+              <UIcon
+                name="i-lucide-newspaper"
+                class="w-5 h-5 transition-transform duration-200 hover:scale-110"
+              />
+              <span>{{ $t("adsy_news") }}</span>
+              <div
+                class="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
+                :class="{ 'scale-x-100': $route.path === '/adsy-news' }"
+              ></div>
             </NuxtLink>
-            
-            <NuxtLink 
-              to="/courses" 
+
+            <NuxtLink
+              to="/courses"
               class="relative flex items-center gap-2 py-1 px-2 font-medium text-purple-600 hover:text-purple-800 transition-all duration-300"
-              :class="{ 'active': $route.path === '/courses' }"
+              :class="{ active: $route.path === '/courses' }"
             >
-              <UIcon name="i-heroicons-academic-cap" class="w-5 h-5 transition-transform duration-200 hover:scale-110" />
-              <span>{{ $t('elearning') }}</span>
-              <div class="absolute bottom-0 left-0 w-full h-0.5 bg-purple-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" :class="{ 'scale-x-100': $route.path === '/courses' }"></div>
+              <UIcon
+                name="i-heroicons-academic-cap"
+                class="w-5 h-5 transition-transform duration-200 hover:scale-110"
+              />
+              <span>{{ $t("elearning") }}</span>
+              <div
+                class="absolute bottom-0 left-0 w-full h-0.5 bg-purple-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
+                :class="{ 'scale-x-100': $route.path === '/courses' }"
+              ></div>
             </NuxtLink>
-            
-            <NuxtLink 
-              to="/#micro-gigs" 
+
+            <NuxtLink
+              to="/#micro-gigs"
               class="relative flex items-center gap-2 py-1 px-2 font-medium text-red-600 hover:text-red-800 transition-all duration-300"
-              :class="{ 'active': $route.path === '/#micro-gigs' }"
+              :class="{ active: $route.path === '/#micro-gigs' }"
             >
-              <UIcon name="i-healthicons:money-bag-outline" class="w-5 h-5 transition-transform duration-200 hover:scale-110" />
-              <span>{{ $t('earn_money') }}</span>
-              <div class="absolute bottom-0 left-0 w-full h-0.5 bg-red-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100" :class="{ 'scale-x-100': $route.path === '/#micro-gigs' }"></div>
+              <UIcon
+                name="i-healthicons:money-bag-outline"
+                class="w-5 h-5 transition-transform duration-200 hover:scale-110"
+              />
+              <span>{{ $t("earn_money") }}</span>
+              <div
+                class="absolute bottom-0 left-0 w-full h-0.5 bg-red-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
+                :class="{ 'scale-x-100': $route.path === '/#micro-gigs' }"
+              ></div>
             </NuxtLink>
           </div>
         </nav>
-        
+
         <!-- Not Logged In User Section -->
         <div v-if="!user" class="flex relative menu-container items-center">
           <!-- Desktop language switcher - completely hidden on mobile -->
@@ -350,8 +533,13 @@
           <!-- Mobile Profile Icon -->
           <div class="sm:hidden">
             <NuxtLink to="/auth/login">
-              <div class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200 shadow-sm">
-                <UIcon name="i-material-symbols-person-rounded" class="w-7 h-7 text-gray-500" />
+              <div
+                class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200 shadow-sm"
+              >
+                <UIcon
+                  name="i-material-symbols-person-rounded"
+                  class="w-7 h-7 text-gray-500"
+                />
               </div>
             </NuxtLink>
           </div>
@@ -370,44 +558,64 @@
             size="md"
           />
         </div>
-        
+
         <!-- Logged In User Section -->
         <div v-else class="flex relative menu-container items-center z-40">
           <!-- Desktop language switcher - completely hidden on mobile -->
           <PublicTranslateHandler class="px-2 hidden sm:block" />
-          
+
           <!-- User Action Buttons -->
-          <div class="flex items-center gap-1.5 pr-1.5" v-if="user && user.user">
+          <div
+            class="flex items-center gap-1.5 pr-1.5"
+            v-if="user && user.user"
+          >
             <!-- Inbox Button with Tailwind styling -->
             <NuxtLink to="/inbox/" class="relative cursor-pointer">
-              <div class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm">
-                <UIcon name="i-material-symbols:mark-email-unread-outline" class="size-6 text-blue-600 dark:text-blue-400" />
-                
+              <div
+                class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm"
+              >
+                <UIcon
+                  name="i-material-symbols:mark-email-unread-outline"
+                  class="size-6 text-blue-600 dark:text-blue-400"
+                />
+
                 <!-- Notification Badge with animation -->
-                <transition enter-active-class="transition duration-300 ease-out" 
-                  enter-from-class="transform scale-50 opacity-0" 
-                  leave-active-class="transition duration-200 ease-in" 
-                  leave-to-class="transform scale-50 opacity-0">
-                  <div 
-                    v-if="badgeCount > 0" 
+                <transition
+                  enter-active-class="transition duration-300 ease-out"
+                  enter-from-class="transform scale-50 opacity-0"
+                  leave-active-class="transition duration-200 ease-in"
+                  leave-to-class="transform scale-50 opacity-0"
+                >
+                  <div
+                    v-if="badgeCount > 0"
                     class="absolute -top-1 -right-1 min-w-4 h-4 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold px-1 shadow-sm animate-pulse"
                   >
-                    {{ badgeCount > 99 ? '99+' : badgeCount }}
+                    {{ badgeCount > 99 ? "99+" : badgeCount }}
                   </div>
                 </transition>
               </div>
             </NuxtLink>
-            
+
             <!-- QR Code Button with Tailwind styling -->
             <div @click="showQr = !showQr" class="relative cursor-pointer">
-              <div class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm dark:bg-green-900/30 dark:hover:bg-green-900/50">
-                <UIcon name="i-ic:twotone-qr-code-scanner" class="size-6 text-green-600 dark:text-green-400" />
+              <div
+                class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm dark:bg-green-900/30 dark:hover:bg-green-900/50"
+              >
+                <UIcon
+                  name="i-ic:twotone-qr-code-scanner"
+                  class="size-6 text-green-600 dark:text-green-400"
+                />
               </div>
             </div>
-            
+
             <!-- QR Code Modal -->
-            <UModal v-model="showQr" :ui="{ width: 'w-full sm:max-w-md', background: 'bg-slate-100' }">
-              <div class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden">
+            <UModal
+              v-model="showQr"
+              :ui="{ width: 'w-full sm:max-w-md', background: 'bg-slate-100' }"
+            >
+              <div
+                class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden"
+              >
                 <UButton
                   icon="i-heroicons-x-mark"
                   size="sm"
@@ -419,20 +627,28 @@
                 <h3 class="text-xl font-semibold text-green-700">AdsyPay</h3>
                 <h3 class="text-xl font-semibold">Scan My QR Code</h3>
                 <div class="border p-4 rounded-lg shadow-sm bg-white">
-                  <NuxtImg class="w-[250px]" :src="`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${user.user.phone}`" />
+                  <NuxtImg
+                    class="w-[250px]"
+                    :src="`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${user.user.phone}`"
+                  />
                 </div>
               </div>
             </UModal>
           </div>
-          
+
           <!-- Mobile User Profile Avatar with Tailwind -->
-          <div @click="openMenu = !openMenu" class="sm:hidden relative cursor-pointer">
+          <div
+            @click="openMenu = !openMenu"
+            class="sm:hidden relative cursor-pointer"
+          >
             <div class="relative">
               <!-- User profile image with Tailwind styling -->
               <div
                 :class="[
                   'size-10 rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow-sm',
-                  user?.user?.is_pro ? 'shadow-indigo-200 ring-2 ring-indigo-500' : '',
+                  user?.user?.is_pro
+                    ? 'shadow-indigo-200 ring-2 ring-indigo-500'
+                    : '',
                 ]"
               >
                 <img
@@ -441,7 +657,11 @@
                   :alt="user.user.name || user.user.first_name"
                   class="w-full h-full object-cover rounded-full z-10"
                 />
-                <UIcon v-else name="i-heroicons-user" class="w-6 h-6 text-gray-500 ml-2.5 z-10" />
+                <UIcon
+                  v-else
+                  name="i-heroicons-user"
+                  class="w-6 h-6 text-gray-500 ml-2.5 z-10"
+                />
               </div>
 
               <!-- Pro Badge with Tailwind -->
@@ -458,49 +678,65 @@
                 v-if="user?.user?.kyc"
                 class="absolute -bottom-1 -right-1 w-4 h-4 bg-white dark:bg-gray-800 flex items-center justify-center rounded-full shadow-sm"
               >
-                <UIcon name="mdi:check-decagram" class="w-4 h-4 text-blue-600" />
+                <UIcon
+                  name="mdi:check-decagram"
+                  class="w-4 h-4 text-blue-600"
+                />
               </div>
             </div>
           </div>
-          
+
           <!-- Desktop User Profile Button with Tailwind -->
-          <div 
-            @click="openMenu = !openMenu" 
+          <div
+            @click="openMenu = !openMenu"
             class="relative cursor-pointer transition-all duration-300 rounded-full hover:shadow-sm max-sm:hidden"
           >
-            <div class="flex items-center gap-2 p-1 pl-1 pr-3 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+            <div
+              class="flex items-center gap-2 p-1 pl-1 pr-3 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+            >
               <!-- Pro Badge -->
-              <div 
+              <div
                 v-if="user?.user?.is_pro"
                 class="flex items-center gap-1 py-0.5 px-2 bg-gradient-to-r from-indigo-500 to-blue-600 text-white text-xs font-medium rounded-full"
               >
                 <UIcon name="i-heroicons-shield-check" class="w-3.5 h-3.5" />
                 <span>Pro</span>
               </div>
-              
+
               <!-- User Info -->
               <div class="flex items-center gap-1.5">
                 <!-- Verified Icon -->
                 <UIcon
                   v-if="user?.user?.kyc"
                   name="mdi:check-decagram"
-                  class="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                
+                  class="w-4 h-4 text-blue-600 dark:text-blue-400"
+                />
+
                 <!-- Avatar -->
-                <div class="relative w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-                  <img 
+                <div
+                  class="relative w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-700"
+                >
+                  <img
                     v-if="user?.user?.image"
                     :src="user.user.image"
                     :alt="user.user.name || user.user.first_name"
                     class="w-full h-full object-cover"
                   />
-                  <UIcon v-else name="i-heroicons-user-circle" class="w-6 h-6 text-gray-500 dark:text-gray-300" />
+                  <UIcon
+                    v-else
+                    name="i-heroicons-user-circle"
+                    class="w-6 h-6 text-gray-500 dark:text-gray-300"
+                  />
                 </div>
               </div>
-              
+
               <!-- Dropdown indicator -->
-              <UIcon 
-                :name="openMenu ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" 
+              <UIcon
+                :name="
+                  openMenu
+                    ? 'i-heroicons-chevron-up'
+                    : 'i-heroicons-chevron-down'
+                "
                 class="w-4 h-4 text-gray-500 transition-transform duration-200"
               />
             </div>
@@ -538,9 +774,12 @@ const showQr = ref(false);
 const warningDismissed = ref(false);
 
 // Update badge count when unreadTicketCount changes
-watch(() => unreadTicketCount.value, (newCount) => {
-  badgeCount.value = newCount;
-});
+watch(
+  () => unreadTicketCount.value,
+  (newCount) => {
+    badgeCount.value = newCount;
+  }
+);
 
 // Fetch unread ticket count when component mounts
 onMounted(async () => {
@@ -674,7 +913,7 @@ const handleScroll = () => {
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
   document.addEventListener("click", handleClickOutside);
-  
+
   // Initialize subscription status check
   const subscriptionEndDate = new Date(user?.user?.pro_validity);
   const currentDate = new Date();
@@ -705,12 +944,18 @@ watch(router.currentRoute, () => {
 <!-- Using simple Tailwind animation utilities -->
 <style>
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* For very small screens */
 @media (max-width: 385px) {
-  .xs\:block { display: block; }
+  .xs\:block {
+    display: block;
+  }
 }
 </style>
