@@ -14,7 +14,7 @@
             >
             >
             <ULink
-              :to="`/classified-categories/${service.category_details?.id}`"
+              :to="`/classified-categories/${service.category_details?.slug}`"
               active-class="text-primary"
               inactive-class="text-gray-500 dark:text-gray-500"
               >{{ service.category_details?.title }}</ULink
@@ -23,7 +23,7 @@
           </p>
 
           <UButton
-            :to="`/classified-categories/${service.category_details?.id}`"
+            :to="`/classified-categories/${service.category_details?.slug}`"
             label="Go Back"
             color="gray"
             class="self-end"
