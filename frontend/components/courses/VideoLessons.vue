@@ -24,38 +24,10 @@
         <h2 class="text-lg font-bold">{{ $t("video_lessons") }}</h2>
         <p class="text-xs text-gray-500 hidden sm:block">
           {{ $t("video_lessons_desc") }}
-        </p>
-      </div>      <!-- Session Status and Controls -->
-      <div class="ml-auto flex items-center gap-3">
-        <!-- Time Remaining for Non-Pro Users -->
-        <div
-          v-if="hasTimeLimit && isSessionActive"
-          class="text-xs bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full border border-amber-200 shadow-sm flex items-center"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-3.5 w-3.5 mr-1 text-amber-600"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          <span>{{ Math.floor(timeRemaining / 60) }}:{{ String(timeRemaining % 60).padStart(2, '0') }} left</span>
-        </div>
+        </p>      </div>
 
-        <!-- Session Status Indicator -->        <div
-          v-if="isSessionActive"
-          class="text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full border border-green-200 shadow-sm flex items-center"
-        >
-          <div class="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
-          <span>Active Session</span>
-        </div>
-
-        <!-- Total videos count badge -->
+      <!-- Total videos count badge -->
+      <div class="ml-auto">
         <span
           class="text-xs bg-gray-50 text-gray-700 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm flex items-center"
         >
@@ -382,20 +354,6 @@
         <div class="aspect-w-16 aspect-h-9 bg-gray-100">          <youtube-player 
             :video-id="getYoutubeId(video.url)" 
             :video="video" 
-            :session-manager="{ 
-              isSessionActive, 
-              hasTimeLimit, 
-              timeRemaining, 
-              startVideoTracking, 
-              pauseVideoTracking, 
-              resumeVideoTracking, 
-              stopVideoTracking,
-              showAccessModal,
-              requiresLogin,
-              requiresSubscription,
-              closeAccessModal,
-              checkVideoAccess
-            }"
             @video-start="handleVideoStart"
             @video-pause="handleVideoPause"
             @video-resume="handleVideoResume"
@@ -846,28 +804,6 @@ import {
 // Authentication
 const { isAuthenticated } = useAuth();
 
-// Session management
-const {
-  session,
-  isSessionActive,
-  timeRemaining,
-  timeRemainingFormatted,
-  isProUser,
-  hasTimeLimit,
-  startSession,
-  endSession,
-  startVideoTracking,
-  pauseVideoTracking,
-  resumeVideoTracking,
-  stopVideoTracking,
-  trackActivity,
-  showAccessModal,
-  requiresLogin,
-  requiresSubscription,
-  closeAccessModal,
-  checkVideoAccess
-} = useELearningSession();
-
 const props = defineProps({
   subject: {
     type: String,
@@ -916,37 +852,13 @@ watch(
   () => props.subject,
   async (newSubject) => {
     if (newSubject) {
-      // Always load videos, but only initialize session for authenticated users
       loadVideos();
-      if (isAuthenticated.value) {
-        await initializeSession();
-      }
     }
   }
 );
 
-// Session management functions
+// Upgrade prompt for better user experience
 const showUpgradePrompt = ref(false);
-
-async function initializeSession() {
-  try {
-    // Only initialize session for authenticated users
-    if (!isAuthenticated.value) {
-      console.log('User not authenticated, skipping session initialization');
-      return;
-    }
-    
-    const currentUrl = window.location.href;
-    await startSession(currentUrl, props.subject);
-    trackActivity('page_access', { subject_id: props.subject });
-  } catch (error) {
-    console.error('Failed to initialize session:', error);
-    
-    if (error.message.includes('upgrade')) {
-      showUpgradePrompt.value = true;
-    }
-  }
-}
 
 function closeUpgradePrompt() {
   showUpgradePrompt.value = false;
@@ -960,25 +872,18 @@ function goToUpgrade() {
 function handleVideoStart(success, errorMessage) {
   if (!success) {
     console.error('Failed to start video:', errorMessage);
-    
-    if (errorMessage && errorMessage.includes('limit')) {
-      showUpgradePrompt.value = true;
-    }
   }
 }
 
 function handleVideoPause() {
-  // Video paused - tracking is handled by session manager
   console.log('Video paused');
 }
 
 function handleVideoResume() {
-  // Video resumed - tracking is handled by session manager
   console.log('Video resumed');
 }
 
 function handleVideoStop() {
-  // Video stopped - tracking is handled by session manager
   console.log('Video stopped');
 }
 
@@ -997,10 +902,6 @@ function handleSubscriptionRequired() {
 onMounted(async () => {
   if (props.subject) {
     loadVideos();
-    // Only initialize session for authenticated users
-    if (isAuthenticated.value) {
-      await initializeSession();
-    }
   }
 });
 
@@ -1184,33 +1085,12 @@ const filteredVideos = computed(() => {
 const showDescriptionModal = ref(false);
 const activeVideo = ref(null);
 
-// Function to open the description modal with preloading and access control
+// Function to open the description modal with preloading
 async function openDescriptionModal(video) {
   try {
-    // Check if user is authenticated first
-    if (!isAuthenticated.value) {
-      // For non-authenticated users, don't check session - just show the video details
-      activeVideo.value = video;
-      showDescriptionModal.value = true;
-      return;
-    }    // Check session status and access control only for authenticated users
-    if (isSessionActive && !isSessionActive.value) {
-      console.error('Session expired. Please refresh the page.');
-      return;
-    }
-
-    // For non-pro users, check time limit
-    if (hasTimeLimit && hasTimeLimit.value && timeRemaining && timeRemaining.value <= 0) {
-      showUpgradePrompt.value = true;
-      return;
-    }    // Show the modal immediately with current video data
+    // Show the modal immediately with current video data
     activeVideo.value = video;
     showDescriptionModal.value = true;
-
-    // Start video tracking when modal opens (only for authenticated users)
-    if (video.id && isAuthenticated.value && startVideoTracking) {
-      startVideoTracking(video.id);
-    }
 
     // Try to get the latest video data (including up-to-date view count)
     // This provides a smoother UX since the modal is shown immediately
@@ -1225,22 +1105,14 @@ async function openDescriptionModal(video) {
         // Silently fail - we already have the basic video data showing
         console.warn("Could not fetch updated video details:", err);
       }
-    }  } catch (error) {
-    console.error('Failed to open video:', error);
-    
-    if (error.message.includes('upgrade') || error.message.includes('limit')) {
-      showUpgradePrompt.value = true;
     }
+  } catch (error) {
+    console.error('Failed to open video:', error);
   }
 }
 
 // Function to close the description modal
 function closeDescriptionModal() {
-  // Stop video tracking when modal closes (only for authenticated users)
-  if (isAuthenticated.value && stopVideoTracking) {
-    stopVideoTracking();
-  }
-  
   showDescriptionModal.value = false;
   setTimeout(() => {
     activeVideo.value = null;
@@ -1249,15 +1121,8 @@ function closeDescriptionModal() {
 
 // Cleanup on component unmount
 onUnmounted(async () => {
-  // Only cleanup session-related stuff for authenticated users
-  if (isAuthenticated.value) {
-    if (stopVideoTracking) {
-      stopVideoTracking();
-    }
-    if (isSessionActive && isSessionActive.value && endSession) {
-      await endSession();
-    }
-  }
+  // Component cleanup
+  console.log('VideoLessons component unmounted');
 });
 
 // Helper function to extract YouTube video ID from URL
