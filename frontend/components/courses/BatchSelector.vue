@@ -25,22 +25,21 @@
         class="mt-2 text-xs text-blue-600 hover:underline"
       >
         {{ $t("try_again") }}
-      </button>
-    </div>
+      </button>    </div>
 
     <!-- Batch grid -->
-    <div v-else class="grid grid-cols-2 gap-3">
+    <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 justify-items-center">
       <div
         v-for="batch in batches"
         :key="batch.id"
         @click="$emit('select-batch', batch.code)"
-        class="p-3 border rounded-lg cursor-pointer transition-all hover:shadow-sm hover:border-blue-300"
+        class="p-3 border rounded-lg cursor-pointer transition-all hover:shadow-sm hover:border-blue-300 w-full max-w-xs"
         :class="{
           'border-blue-500 bg-blue-50 shadow-sm': selectedBatch === batch.code,
           'border-gray-200': selectedBatch !== batch.code,
         }"
       >
-        <div class="flex items-center space-x-2">
+        <div class="flex flex-col items-center space-y-2 text-center">
           <div class="p-1.5 rounded-lg" :class="getBatchColor(batch.name)">
             <UIcon v-if="batch.icon" :name="String(batch.icon)" />
 
@@ -62,7 +61,7 @@
             </svg>
           </div>
           <div>
-            <h3 class="font-medium">{{ batch.name }}</h3>
+            <h3 class="font-medium text-sm">{{ batch.name }}</h3>
             <p class="text-xs text-gray-600">{{ batch.description }}</p>
           </div>
         </div>
