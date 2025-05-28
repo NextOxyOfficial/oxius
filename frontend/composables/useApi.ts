@@ -31,10 +31,14 @@ export function useApi() {
       data: data.value,
       error: error.value,
     };
-  };
-  const post = async (endpoint: string, postData: object | FormData) => {
+  };  const post = async (endpoint: string, postData: object | FormData) => {
+    // For FormData, don't set Content-Type header - let browser set it with boundary
+    const headers = postData instanceof FormData 
+      ? (jwt.value ? { Authorization: `Bearer ${jwt.value}` } as HeadersInit : {} as HeadersInit)
+      : head.value;
+    
     const { data, error } = await useFetch(baseURL + endpoint, {
-      headers: head.value,
+      headers,
       method: "post",
       body: postData,
     });
@@ -101,11 +105,11 @@ export function useApi() {
         console.error('DELETE request failed: No JWT token available');
         throw new Error('Authentication token is missing');
       }
-      
-      // Log auth token format (first few chars only for security)
-      console.log('Authorization header present:', !!head.value.Authorization);
-      if (head.value.Authorization) {
-        const tokenPrefix = head.value.Authorization.substring(0, 20);
+        // Log auth token format (first few chars only for security)
+      const headersObj = head.value as Record<string, string>;
+      console.log('Authorization header present:', !!headersObj.Authorization);
+      if (headersObj.Authorization) {
+        const tokenPrefix = headersObj.Authorization.substring(0, 20);
         console.log(`Authorization header starts with: ${tokenPrefix}...`);
       }
       
@@ -172,8 +176,7 @@ export function useApi() {
         data: data.value,
         error: null,
         status: status.value
-      };
-    } catch (err) {
+      };    } catch (err: any) {
       console.error('DELETE request failed with exception:', err);
       return {
         data: null,

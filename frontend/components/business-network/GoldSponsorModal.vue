@@ -1245,25 +1245,26 @@ const submitForm = async () => {
 
     if (form.value.logo) {
       formData.append("logo", form.value.logo);
-    }
-
-    // Add banner data
+    }    // Add banner data - Send as separate fields that the backend can handle
     banners.value.forEach((banner, index) => {
       if (banner.title) {
-        formData.append(`banners[${index}][title]`, banner.title);
+        formData.append(`banner_${index}_title`, banner.title);
       }
       if (banner.link_url) {
-        formData.append(`banners[${index}][link_url]`, banner.link_url);
+        formData.append(`banner_${index}_link_url`, banner.link_url);
       }
       if (banner.image) {
-        formData.append(`banners[${index}][image]`, banner.image);
+        formData.append(`banner_${index}_image`, banner.image);
       }
-      formData.append(`banners[${index}][order]`, banner.order);
-      formData.append(`banners[${index}][is_active]`, banner.is_active);
+      formData.append(`banner_${index}_order`, banner.order.toString());
+      formData.append(`banner_${index}_is_active`, banner.is_active.toString());
       if (banner.existingId) {
-        formData.append(`banners[${index}][id]`, banner.existingId);
+        formData.append(`banner_${index}_id`, banner.existingId.toString());
       }
     });
+    
+    // Add banner count for backend processing
+    formData.append('banner_count', banners.value.length.toString());
 
     // Determine endpoint based on mode
     const endpoint = isEditMode.value

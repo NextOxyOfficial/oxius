@@ -15,7 +15,6 @@ class GoldSponsorBannerSerializer(serializers.ModelSerializer):
 class GoldSponsorCreateSerializer(serializers.ModelSerializer):
     package_id = serializers.IntegerField(write_only=True)
     banners = GoldSponsorBannerSerializer(many=True, required=False)
-    
     class Meta:
         model = GoldSponsor
         fields = [
@@ -40,16 +39,40 @@ class GoldSponsorCreateSerializer(serializers.ModelSerializer):
         validated_data['package'] = package
         validated_data['user'] = request.user
         
+        # Extract banner data from FormData format
+        banner_count = int(request.data.get('banner_count', 0))
+        banner_list = []
+        
+        for i in range(banner_count):
+            banner_data = {}
+            title = request.data.get(f'banner_{i}_title')
+            link_url = request.data.get(f'banner_{i}_link_url')
+            image = request.data.get(f'banner_{i}_image')
+            order = request.data.get(f'banner_{i}_order', i + 1)
+            is_active = request.data.get(f'banner_{i}_is_active', 'true').lower() == 'true'
+            
+            if title:
+                banner_data['title'] = title
+            if link_url:
+                banner_data['link_url'] = link_url
+            if image:
+                banner_data['image'] = image
+            banner_data['order'] = int(order)
+            banner_data['is_active'] = is_active
+            
+            # Only add banner if it has at least a title or image
+            if title or image:
+                banner_list.append(banner_data)
+        
         try:
             sponsor = super().create(validated_data)
             
-            # Create banners
-            for banner_data in banners_data:
+            # Create banners from FormData
+            for banner_data in banner_list:
                 GoldSponsorBanner.objects.create(sponsor=sponsor, **banner_data)
             
             return sponsor
-        except DjangoValidationError as e:
-            raise serializers.ValidationError(str(e))
+        except DjangoValidationError as e:            raise serializers.ValidationError(str(e))
     
     def update(self, instance, validated_data):
         banners_data = validated_data.pop('banners', [])
@@ -60,13 +83,35 @@ class GoldSponsorCreateSerializer(serializers.ModelSerializer):
         
         sponsor = super().update(instance, validated_data)
         
-        # Update banners if provided
-        if banners_data:
-            # Clear existing banners
-            sponsor.banners.all().delete()
-            # Create new banners
-            for banner_data in banners_data:
-                GoldSponsorBanner.objects.create(sponsor=sponsor, **banner_data)
+        # Extract banner data from FormData format for updates
+        request = self.context.get('request')
+        if request:
+            banner_count = int(request.data.get('banner_count', 0))
+            if banner_count > 0:
+                # Clear existing banners
+                sponsor.banners.all().delete()
+                
+                # Create new banners from FormData
+                for i in range(banner_count):
+                    banner_data = {}
+                    title = request.data.get(f'banner_{i}_title')
+                    link_url = request.data.get(f'banner_{i}_link_url')
+                    image = request.data.get(f'banner_{i}_image')
+                    order = request.data.get(f'banner_{i}_order', i + 1)
+                    is_active = request.data.get(f'banner_{i}_is_active', 'true').lower() == 'true'
+                    
+                    if title:
+                        banner_data['title'] = title
+                    if link_url:
+                        banner_data['link_url'] = link_url
+                    if image:
+                        banner_data['image'] = image
+                    banner_data['order'] = int(order)
+                    banner_data['is_active'] = is_active
+                    
+                    # Only add banner if it has at least a title or image
+                    if title or image:
+                        GoldSponsorBanner.objects.create(sponsor=sponsor, **banner_data)
         
         return sponsor
 
