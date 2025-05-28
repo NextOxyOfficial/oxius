@@ -192,7 +192,7 @@
               <p class="text-blue-50 text-sm font-medium mt-1">
                 Up to 50% off on selected items
               </p>
-              <UButton size="xs" color="white" class="mt-3 shadow-sm hover:bg-white hover:text-blue-600 transition-colors" variant="solid">
+              <UButton href='/eshop' color="white" class="mt-3 shadow-sm hover:bg-white hover:text-blue-600 transition-colors" variant="solid">
                 Shop Now
               </UButton>
             </div>
