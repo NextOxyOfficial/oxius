@@ -31,7 +31,7 @@
           Commission
         </h1>
         <p
-          class="text-xl text-gray-500 dark:text-gray-400 mb-10 max-w-2xl mx-auto animate-fade-in-delayed"
+          class="text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto animate-fade-in-delayed"
         >
           Share your unique link with friends, and earn rewards with different commission rates: 5% on gig completions, 20% on subscriptions and sponsorships!
         </p>
@@ -74,7 +74,7 @@
             class="h-1 w-20 bg-primary-500 mx-auto mb-6 rounded-full animate-expand"
           ></div>
           <p
-            class="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto"
+            class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
           >
             Our referral program is simple, transparent, and rewarding. Just
             follow these easy steps:
@@ -99,7 +99,7 @@
             >
               Create Account
             </h3>
-            <p class="text-gray-500 dark:text-gray-500">
+            <p class="text-gray-600 dark:text-gray-600">
               Sign up for a free account and get your unique referral link
               instantly.
             </p>
@@ -122,7 +122,7 @@
             >
               Share Your Link
             </h3>
-            <p class="text-gray-500 dark:text-gray-500">
+            <p class="text-gray-600 dark:text-gray-600">
               Share your referral link with friends via email, social media,
               or messaging apps.
             </p>
@@ -145,7 +145,7 @@
             >
               Earn Commissions
             </h3>
-            <p class="text-gray-500 dark:text-gray-500">
+            <p class="text-gray-600 dark:text-gray-600">
               Earn different commission rates: 5% on gig completions, 20% on Pro subscriptions and Gold sponsorships.
             </p>
           </div>
@@ -163,7 +163,7 @@
             >
               5-20%
             </div>
-            <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
+            <p class="text-sm md:text-base text-gray-600 dark:text-gray-600">
               Commission Rate
             </p>
           </div>
@@ -179,7 +179,7 @@
               </span>
               <span v-else>{{ platformStats.active_referrers }}+</span>
             </div>
-            <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
+            <p class="text-sm md:text-base text-gray-600 dark:text-gray-600">
               Active Referrers
             </p>
           </div>
@@ -195,7 +195,7 @@
               </span>
               <span v-else>৳ {{ platformStats.top_earner_amount.toLocaleString() }}</span>
             </div>
-            <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
+            <p class="text-sm md:text-base text-gray-600 dark:text-gray-600">
               Top Earner
             </p>
           </div>
@@ -211,7 +211,7 @@
               </span>
               <span v-else>{{ platformStats.quick_payout_time }}</span>
             </div>
-            <p class="text-sm md:text-base text-gray-500 dark:text-gray-500">
+            <p class="text-sm md:text-base text-gray-600 dark:text-gray-600">
               Quick Payouts
             </p>
           </div>

@@ -239,7 +239,7 @@
               Summary
             </h4>
             <div
-              class="text-sm text-gray-500 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/20 p-3 rounded-lg border border-slate-100 dark:border-slate-700/40"
+              class="text-sm text-gray-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/20 p-3 rounded-lg border border-slate-100 dark:border-slate-700/40"
             >
               {{ currentProduct.short_description || "No summary available." }}
             </div>
@@ -311,7 +311,7 @@
               <span>Shipping Information</span>
             </div>
 
-            <ul class="space-y-2.5 text-gray-500 dark:text-slate-300">
+            <ul class="space-y-2.5 text-gray-600 dark:text-slate-300">
               <li class="flex items-start gap-2 text-sm">
                 <UIcon
                   name="i-heroicons-check-circle"
@@ -553,7 +553,7 @@
                   class="w-full h-full rounded-full border-3 border-t-primary-500 animate-spin absolute top-0 left-0"
                 ></div>
               </div>
-              <p class="text-sm text-gray-500 dark:text-slate-400 mt-3">
+              <p class="text-sm text-gray-600 dark:text-slate-400 mt-3">
                 Loading similar products...
               </p>
             </div>
@@ -570,7 +570,7 @@
                 class="w-8 h-8 text-gray-400 dark:text-slate-500"
               />
             </div>
-            <p class="mt-4 text-sm text-gray-500 dark:text-slate-400">
+            <p class="mt-4 text-sm text-gray-600 dark:text-slate-400">
               No similar products found
             </p>
           </div>

@@ -155,7 +155,7 @@
             <Icon
               name="heroicons:chevron-down"
               size="16px"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none"
             />
           </div>
 
@@ -228,7 +228,7 @@
                     <div class="flex">
                       <button
                         @click="$emit('edit-post', post)"
-                        class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200"
+                        class="p-2.5 text-gray-600 hover:text-primary hover:bg-blue-50 rounded-lg duration-200"
                         title="Edit post"
                       >
                         <Icon name="heroicons:pencil-square" size="size-4" />
@@ -249,7 +249,7 @@
                       class="flex items-center gap-2.5 px-2 py-1.5 text-sm rounded-lg shadow-sm"
                       :class="[
                         markingSold === post.id
-                          ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                          ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
                           : 'bg-gradient-to-r from-blue-500/10 to-blue-600/10 text-blue-600 hover:from-blue-500/20 hover:to-blue-600/20 hover:shadow border border-blue-200/50',
                       ]"
                     >
@@ -345,7 +345,7 @@
                     >
                       <Icon
                         name="heroicons:eye"
-                        class="h-3.5 w-3.5 text-gray-500"
+                        class="h-3.5 w-3.5 text-gray-600"
                       />
                       <span class="font-medium">{{ post.view_count }}</span>
                       views
@@ -356,7 +356,7 @@
                     >
                       <Icon
                         name="heroicons:tag"
-                        class="h-3.5 w-3.5 text-gray-500"
+                        class="h-3.5 w-3.5 text-gray-600"
                       />
                       {{ post.condition }}
                     </span>
@@ -370,7 +370,7 @@
               <div class="flex gap-2.5">
                 <button
                   @click="$emit('edit-post', post)"
-                  class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200"
+                  class="p-2.5 text-gray-600 hover:text-primary hover:bg-blue-50 rounded-lg duration-200"
                   title="Edit post"
                 >
                   <Icon name="heroicons:pencil-square" size="size-4" />
@@ -391,7 +391,7 @@
                 class="flex items-center gap-2.5 px-5 py-2.5 text-sm rounded-lg shadow-sm"
                 :class="[
                   markingSold === post.id
-                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                    ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
                     : 'bg-gradient-to-r from-blue-500/10 to-blue-600/10 text-blue-600 hover:from-blue-500/20 hover:to-blue-600/20 hover:shadow border border-blue-200/50',
                 ]"
               >
@@ -440,14 +440,14 @@
             <div class="flex gap-2.5">
               <button
                 @click="$emit('edit-post', post)"
-                class="p-2.5 text-gray-500 hover:text-primary hover:bg-blue-50 rounded-lg duration-200  border border-gray-100 hover:border-blue-100"
+                class="p-2.5 text-gray-600 hover:text-primary hover:bg-blue-50 rounded-lg duration-200  border border-gray-100 hover:border-blue-100"
                 title="Edit post"
               >
                 <Icon name="heroicons:pencil-square" size="size-4" />
               </button>
               <button
                 @click="confirmDelete(post.id, post.title)"
-                class="p-2.5 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-red-100"
+                class="p-2.5 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg duration-200 shadow-sm hover:shadow border border-gray-100 hover:border-red-100"
                 title="Delete post"
               >
                 <Icon name="heroicons:trash" size="size-4" />
@@ -461,7 +461,7 @@
               class="flex items-center gap-2.5 px-5 py-2.5 text-sm rounded-lg shadow-sm"
               :class="[
                 markingSold === post.id
-                  ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                  ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
                   : 'bg-gradient-to-r from-blue-500/10 to-blue-600/10 text-blue-600 hover:from-blue-500/20 hover:to-blue-600/20 hover:shadow border border-blue-200/50',
               ]"
             >
@@ -523,7 +523,7 @@
         <h3 class="text-gray-800 text-base text-base">
           No matching posts found
         </h3>
-        <p class="text-gray-500 mt-3 max-w-md mx-auto">
+        <p class="text-gray-600 mt-3 max-w-md mx-auto">
           There are no posts with the "<span
             class="font-medium text-gray-600"
             >{{ statusFilter }}</span

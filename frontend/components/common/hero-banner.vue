@@ -171,10 +171,10 @@
                 </NuxtLink>
                 <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
                 <div
-                  class="service-btn bg-white/70 text-gray-500 relative opacity-80 cursor-not-allowed"
+                  class="service-btn bg-white/70 text-gray-600 relative opacity-80 cursor-not-allowed"
                 >
                   <div class="icon-circle bg-gray-100">
-                    <HeartPulse class="icon text-gray-500" />
+                    <HeartPulse class="icon text-gray-600" />
                   </div>
                   <div class="h-12 flex items-center justify-center">
                     <span>{{ $t("shastho_sheba") }}</span>
@@ -187,10 +187,10 @@
 
                 <!-- Bill Pay (Coming Soon) - Disabled appearance -->
                 <div
-                  class="service-btn bg-white/70 text-gray-500 relative opacity-80 cursor-not-allowed"
+                  class="service-btn bg-white/70 text-gray-600 relative opacity-80 cursor-not-allowed"
                 >
                   <div class="icon-circle bg-gray-100">
-                    <Receipt class="icon text-gray-500" />
+                    <Receipt class="icon text-gray-600" />
                   </div>
                   <div class="h-12 flex items-center justify-center">
                     <span>{{ $t("bill_pay") }}</span>
@@ -326,10 +326,10 @@
           class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed"
         >
           <div class="mobile-icon-circle bg-gray-100">
-            <HeartPulse class="mobile-icon text-gray-500" />
+            <HeartPulse class="mobile-icon text-gray-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-500">{{
+            <span class="text-sm leading-tight text-gray-600">{{
               $t("shastho_sheba")
             }}</span>
           </div>
@@ -344,10 +344,10 @@
           class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed"
         >
           <div class="mobile-icon-circle bg-gray-100">
-            <Receipt class="mobile-icon text-gray-500" />
+            <Receipt class="mobile-icon text-gray-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-500">{{
+            <span class="text-sm leading-tight text-gray-600">{{
               $t("bill_pay")
             }}</span>
           </div>

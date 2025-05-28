@@ -52,7 +52,7 @@
               ></div>
               <Hash class="h-8 w-8 text-blue-600 absolute top-4 left-4" />
             </div>
-            <p class="mt-4 text-gray-500 dark:text-gray-500">
+            <p class="mt-4 text-gray-600 dark:text-gray-600">
               Loading trending hashtags...
             </p>
           </div>
@@ -80,7 +80,7 @@
                 <div
                   class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
                 >
-                  <Search class="h-5 w-5 text-gray-500" />
+                  <Search class="h-5 w-5 text-gray-600" />
                 </div>
                 <input
                   type="search"
@@ -127,7 +127,7 @@
                             #{{ tag.tag }}
                           </h3>
                           <span
-                            class="text-xs text-gray-500 dark:text-gray-500"
+                            class="text-xs text-gray-600 dark:text-gray-600"
                           >
                             {{ tag.count }}
                             {{ tag.count === 1 ? "post" : "posts" }}
@@ -150,7 +150,7 @@
 
                       <!-- Arrow -->
                       <ChevronRight
-                        class="h-4 w-4 text-gray-500 group-hover:text-blue-500 group-hover:translate-x-1 transition-all duration-300"
+                        class="h-4 w-4 text-gray-600 group-hover:text-blue-500 group-hover:translate-x-1 transition-all duration-300"
                       />
                     </div>
                   </li>
@@ -160,7 +160,7 @@
               <!-- Empty Result -->
               <div
                 v-if="filteredHashtags.length === 0"
-                class="flex flex-col items-center justify-center py-8 text-gray-500"
+                class="flex flex-col items-center justify-center py-8 text-gray-600"
               >
                 <Search class="h-12 w-12 mb-2 opacity-50" />
                 <p class="text-center">

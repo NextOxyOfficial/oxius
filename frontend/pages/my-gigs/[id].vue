@@ -144,7 +144,7 @@
     <div v-else>
       <UContainer>
         <UCard class="py-20">
-          <p class="text-center text-sm text-gray-500">No gigs found.</p>
+          <p class="text-center text-sm text-gray-600">No gigs found.</p>
         </UCard>
       </UContainer>
     </div>
@@ -173,7 +173,7 @@
         <!-- Title and Description -->
         <div class="text-center mb-8">
           <h3 class="text-xl font-semibold text-gray-800 mb-2">Stop this gig?</h3>
-          <p class="text-gray-500 max-w-sm">
+          <p class="text-gray-600 max-w-sm">
             This action will permanently stop the current gig and cannot be
             undone.
           </p>

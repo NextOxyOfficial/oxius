@@ -7,7 +7,7 @@
           <!-- Form Header -->
           <div class="text-center space-y-2">
             <h2 class="text-2xl font-bold text-gray-800">Welcome Back</h2>
-            <p class="text-gray-500">Enter your credentials to access your account</p>
+            <p class="text-gray-600">Enter your credentials to access your account</p>
           </div>
 
           <!-- Login Form Fields -->
@@ -41,7 +41,7 @@
               >
                 <UIcon
                   :name="isPassword ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'"
-                  class="w-5 h-5 text-gray-500 hover:text-gray-800"
+                  class="w-5 h-5 text-gray-600 hover:text-gray-800"
                 />
               </div>
             </div>

@@ -114,7 +114,7 @@
                 <div 
                   class="size-10 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors duration-200"
                 >
-                  <UIcon name="i-material-symbols-person-rounded" class="w-6 h-6 text-gray-500" />
+                  <UIcon name="i-material-symbols-person-rounded" class="w-6 h-6 text-gray-600" />
                 </div>
               </NuxtLink>
             </div>
@@ -186,7 +186,7 @@
                     :alt="user.user.name || user.user.first_name"
                     class="w-full h-full object-cover rounded-full z-10"
                   />
-                  <UIcon v-else name="i-heroicons-user" class="w-6 h-6 text-gray-500 ml-2.5 z-10" />
+                  <UIcon v-else name="i-heroicons-user" class="w-6 h-6 text-gray-600 ml-2.5 z-10" />
                 </div>
 
                 <!-- Pro Badge with Tailwind -->
@@ -238,13 +238,13 @@
                       :alt="user.user.name || user.user.first_name"
                       class="w-full h-full object-cover"
                     />
-                    <UIcon v-else name="i-heroicons-user-circle" class="w-6 h-6 text-gray-500 dark:text-gray-300" />
+                    <UIcon v-else name="i-heroicons-user-circle" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
                   </div>
                 </div>
                 <!-- Dropdown indicator -->
                 <UIcon 
                   :name="openMenu ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'" 
-                  class="w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform duration-200"
+                  class="w-4 h-4 text-gray-600 dark:text-gray-400 transition-transform duration-200"
                 />
               </div>
             </div>

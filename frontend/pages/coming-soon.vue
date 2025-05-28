@@ -9,7 +9,7 @@
           </h1>
 
           <!-- Subheading -->
-          <p class="text-lg md:text-xl text-gray-500">
+          <p class="text-lg md:text-xl text-gray-600">
             <strong>Affiliate Program</strong>, <strong>Android</strong> &
             <strong>iOS</strong> apps are under development. Stay tuned!
           </p>

@@ -1,7 +1,7 @@
 <template>
   <div>
     <h3
-      class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-3 flex items-center justify-between"
+      class="text-xs font-semibold text-gray-600 uppercase tracking-wider px-3 mb-3 flex items-center justify-between"
     >
       <div class="flex items-center">
         <Hash class="h-3.5 w-3.5 mr-1.5" />
@@ -18,13 +18,13 @@
     <div class="px-3">
       <div
         v-if="isLoading"
-        class="text-sm text-gray-500 py-2"
+        class="text-sm text-gray-600 py-2"
       >
         Loading trending hashtags...
       </div>
       <div
         v-else-if="tags.length === 0"
-        class="text-sm text-gray-500 py-2"
+        class="text-sm text-gray-600 py-2"
       >
         No trending hashtags available.
       </div>
@@ -44,7 +44,7 @@
                 #{{ tag.tag }}
               </span>
             </div>
-            <div class="text-xs text-gray-500">
+            <div class="text-xs text-gray-600">
               {{ tag.count || '0' }}
             </div>
           </div>

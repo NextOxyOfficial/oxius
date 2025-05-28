@@ -4,7 +4,7 @@
     <div v-if="highestGiftComment" class="mb-3">
       <div class="flex items-center gap-2 mb-1.5">
         <UIcon name="i-heroicons-star" class="w-3.5 h-3.5 text-amber-500" />
-        <span class="text-xs font-medium text-gray-500 dark:text-gray-500"
+        <span class="text-xs font-medium text-gray-600 dark:text-gray-600"
           >Top Gift</span
         >
       </div>
@@ -71,9 +71,9 @@
           <div class="flex items-center mt-1 pl-1">
             <UIcon
               name="i-heroicons-clock"
-              class="w-3 h-3 text-gray-500 dark:text-gray-500 mr-1"
+              class="w-3 h-3 text-gray-600 dark:text-gray-600 mr-1"
             />
-            <span class="text-sm text-gray-500 dark:text-gray-500">
+            <span class="text-sm text-gray-600 dark:text-gray-600">
               {{ formatTimeAgo(highestGiftComment?.created_at) }}
             </span>
           </div>
@@ -137,7 +137,7 @@
                 <button
                   type="button"
                   @click.stop="toggleDropdown(comment)"
-                  class="p-1.5 rounded-full text-gray-500 dark:text-gray-500 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
+                  class="p-1.5 rounded-full text-gray-600 dark:text-gray-600 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
                   aria-label="Comment options"
                 >
                   <UIcon
@@ -209,7 +209,7 @@
                 <button
                   type="button"
                   @click.prevent="$emit('cancel-edit-comment', comment)"
-                  class="text-xs text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
+                  class="text-xs text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
                 >
                   Cancel
                 </button>
@@ -273,9 +273,9 @@
           <div class="flex items-center mt-1 pl-1">
             <UIcon
               name="i-heroicons-clock"
-              class="w-3 h-3 text-gray-500 dark:text-gray-500 mr-1"
+              class="w-3 h-3 text-gray-600 dark:text-gray-600 mr-1"
             />
-            <span class="text-sm text-gray-500 dark:text-gray-500">
+            <span class="text-sm text-gray-600 dark:text-gray-600">
               {{ formatTimeAgo(comment?.created_at) }}
             </span>
           </div>

@@ -301,7 +301,7 @@
                       class="h-5 w-5 text-gray-400"
                     />
                   </div>
-                  <p class="text-sm text-gray-500">No categories available</p>
+                  <p class="text-sm text-gray-600">No categories available</p>
                 </div>
               </div>
             </div>
@@ -345,7 +345,7 @@
                       <p class="font-medium text-sm text-gray-800">
                         Call Business Support
                       </p>
-                      <p class="text-xs text-gray-500 mt-0.5">
+                      <p class="text-xs text-gray-600 mt-0.5">
                         {{ storeDetails.phone }}
                       </p>
                     </div>
@@ -383,7 +383,7 @@
                     </div>
                     <div class="flex-grow">
                       <p class="font-medium text-sm text-gray-800">WhatsApp</p>
-                      <p class="text-xs text-gray-500 mt-0.5">
+                      <p class="text-xs text-gray-600 mt-0.5">
                         Message for quick response
                       </p>
                     </div>
@@ -416,7 +416,7 @@
                         Email Support
                       </p>
                       <p
-                        class="text-xs text-gray-500 mt-0.5 truncate max-w-[140px]"
+                        class="text-xs text-gray-600 mt-0.5 truncate max-w-[140px]"
                       >
                         {{ storeDetails.email }}
                       </p>
@@ -444,7 +444,7 @@
                       <p class="text-sm text-gray-600 mb-1">
                         No contact information available
                       </p>
-                      <p class="text-xs text-gray-500">
+                      <p class="text-xs text-gray-600">
                         The store owner hasn't provided contact details yet
                       </p>
                     </div>
@@ -470,7 +470,7 @@
               <div class="px-5 py-4">
                 <div v-if="storeDetails.store_description" class="mb-4">
                   <h4
-                    class="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2"
+                    class="text-xs font-medium uppercase tracking-wider text-gray-600 mb-2"
                   >
                     Description
                   </h4>
@@ -486,7 +486,7 @@
                   />
                   <div>
                     <h4
-                      class="text-xs font-medium uppercase tracking-wider text-gray-500 mb-1"
+                      class="text-xs font-medium uppercase tracking-wider text-gray-600 mb-1"
                     >
                       Location
                     </h4>
@@ -507,7 +507,7 @@
             <div>
               <h2 class="text-lg md:text-xl font-bold text-gray-800">
                 {{ getCategoryName(selectedCategory) }}
-                <span class="text-sm font-normal text-gray-500 ml-2"
+                <span class="text-sm font-normal text-gray-600 ml-2"
                   >({{ filteredProducts.length }})</span
                 >
               </h2>
@@ -562,7 +562,7 @@
             <h3 class="mt-4 text-base md:text-lg font-medium text-gray-800">
               No Products Found
             </h3>
-            <p class="mt-2 text-sm md:text-base text-gray-500 max-w-md mx-auto">
+            <p class="mt-2 text-sm md:text-base text-gray-600 max-w-md mx-auto">
               We couldn't find any products matching your current selection. Try
               changing your search or selecting a different category.
             </p>

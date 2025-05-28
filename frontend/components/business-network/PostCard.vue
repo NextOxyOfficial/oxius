@@ -29,7 +29,7 @@
         <span
           v-for="(tag, idx) in post?.post_tags"
           :key="idx"
-          class="text-sm bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full"
+          class="text-sm bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full"
         >
           #{{ tag.tag }}
         </span>

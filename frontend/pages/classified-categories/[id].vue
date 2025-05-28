@@ -13,7 +13,7 @@
           <ULink
             to="/"
             active-class="text-primary"
-            inactive-class="text-gray-500 dark:text-gray-500"
+            inactive-class="text-gray-600 dark:text-gray-600"
             >{{ $t("home") }}</ULink
           >
           <span v-if="categoryDetails?.title">&#8658;</span>
@@ -93,7 +93,7 @@
                 <UIcon
                   v-if="location?.city"
                   name="i-heroicons-chevron-right"
-                  class="mx-1.5 text-gray-500"
+                  class="mx-1.5 text-gray-600"
                 />
               </div>
 
@@ -112,7 +112,7 @@
                 <UIcon
                   v-if="location?.upazila"
                   name="i-heroicons-chevron-right"
-                  class="mx-1.5 text-gray-500"
+                  class="mx-1.5 text-gray-600"
                 />
               </div>
 
@@ -325,7 +325,7 @@
                     </h3>
 
                     <div
-                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-500"
+                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-600"
                     >
                       <div class="flex gap-2 col-span-2 flex-wrap">
                         <p
@@ -431,7 +431,7 @@
 
           <!-- Message -->
 
-          <p class="text-gray-500 max-w-md mx-auto mb-6 fade-in-up-delay">
+          <p class="text-gray-600 max-w-md mx-auto mb-6 fade-in-up-delay">
             আপনার লোকেশনে এই ক্যাটাগরিতে এখনো কোনো পোস্ট পড়েনি, পার্শবর্তী
             এলাকা সিলেক্ট করুন
           </p>
@@ -518,7 +518,7 @@
                     </h3>
 
                     <div
-                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-500"
+                      class="grid grid-cols-2 sm:flex flex-wrap items-center sm:items-start gap-y-1 gap-x-4 sm:gap-1 text-gray-600"
                     >
                       <div class="flex gap-2 col-span-2 flex-wrap">
                         <p

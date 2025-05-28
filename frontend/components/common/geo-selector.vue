@@ -14,7 +14,7 @@
               />
               {{ $t("select_location") }}
             </h2>
-            <p class="text-sm text-gray-500 mt-1">
+            <p class="text-sm text-gray-600 mt-1">
               {{ $t("relevant_content") }}
             </p>
           </div>
@@ -158,7 +158,7 @@ const getCurrentStepClass = (index) => {
   if (index === getCurrentStep()) {
     return "border-primary-500 text-primary-500";
   }
-  return "border-gray-200 text-gray-500";
+  return "border-gray-200 text-gray-600";
 };
 
 // Computed property to check if all fields are filled

@@ -24,7 +24,7 @@
             >
               <UIcon
                 name="i-heroicons-user"
-                class="text-gray-500 dark:text-gray-500"
+                class="text-gray-600 dark:text-gray-600"
               />
             </div>
             <div>
@@ -45,7 +45,7 @@
                 />
                 KYC Unverified
               </span>
-              <p class="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
+              <p class="text-xs text-gray-600 dark:text-gray-600 mt-0.5">
                 {{
                   user.user.kyc
                     ? "Your identity has been verified"
@@ -91,7 +91,7 @@
           </div>
 
           <ul
-            class="space-y-3 text-sm md:text-base text-gray-500 dark:text-gray-400 pl-4"
+            class="space-y-3 text-sm md:text-base text-gray-600 dark:text-gray-400 pl-4"
           >
             <li class="flex items-start">
               <UIcon
@@ -248,7 +248,7 @@
                           >Upload Front</span
                         >
                         <span
-                          class="text-xs text-gray-500 dark:text-gray-500 mt-1"
+                          class="text-xs text-gray-600 dark:text-gray-600 mt-1"
                           >Click or drag file</span
                         >
                       </div>
@@ -322,7 +322,7 @@
                           >Upload Back</span
                         >
                         <span
-                          class="text-xs text-gray-500 dark:text-gray-500 mt-1"
+                          class="text-xs text-gray-600 dark:text-gray-600 mt-1"
                           >Click or drag file</span
                         >
                       </div>
@@ -396,7 +396,7 @@
                           >Upload Selfie</span
                         >
                         <span
-                          class="text-xs text-gray-500 dark:text-gray-500 mt-1"
+                          class="text-xs text-gray-600 dark:text-gray-600 mt-1"
                           >Click or drag file</span
                         >
                       </div>
@@ -428,7 +428,7 @@
               </div>
 
               <div class="p-6 flex flex-col">
-                <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-6">
                   Upload any additional documents that may help verify your
                   identity or support your account.
                 </p>
@@ -491,7 +491,7 @@
                           >Optional Document</span
                         >
                         <span
-                          class="text-xs text-gray-500 dark:text-gray-500 mt-1"
+                          class="text-xs text-gray-600 dark:text-gray-600 mt-1"
                           >Any supporting document</span
                         >
                       </div>
@@ -547,7 +547,7 @@
                           : 'bg-gray-300 dark:bg-gray-600'
                       "
                     ></span>
-                    <span class="ml-2 text-sm text-gray-500 dark:text-gray-400"
+                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400"
                       >ID Front</span
                     >
                   </div>
@@ -560,7 +560,7 @@
                           : 'bg-gray-300 dark:bg-gray-600'
                       "
                     ></span>
-                    <span class="ml-2 text-sm text-gray-500 dark:text-gray-400"
+                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400"
                       >ID Back</span
                     >
                   </div>
@@ -573,7 +573,7 @@
                           : 'bg-gray-300 dark:bg-gray-600'
                       "
                     ></span>
-                    <span class="ml-2 text-sm text-gray-500 dark:text-gray-400"
+                    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400"
                       >Selfie</span
                     >
                   </div>

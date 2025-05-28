@@ -25,7 +25,7 @@
       >
         <button
           v-if="cart.burgerMenu"
-          class="fixed flex top-3 -right-10 lg:hidden h-8 w-8 items-center justify-center rounded-md bg-gray-200 text-gray-500"
+          class="fixed flex top-3 -right-10 lg:hidden h-8 w-8 items-center justify-center rounded-md bg-gray-200 text-gray-600"
           @click="cart.toggleBurgerMenu()"
         >
           <X class="h-5 w-5" />
@@ -122,7 +122,7 @@
                   <h3 class="text-lg font-medium text-gray-900 dark:text-white">
                     Delete Sponsor
                   </h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
                     This action cannot be undone.
                   </p>
                 </div>
@@ -272,7 +272,7 @@
                         </div>
                         <!-- View count display -->
                         <div
-                          class="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-0.5"
+                          class="flex items-center text-xs text-gray-600 dark:text-gray-400 mt-0.5"
                         >
                           <UIcon name="i-heroicons-eye" class="w-3 h-3 mr-1" />
                           <span
@@ -345,13 +345,13 @@
             </div>
             <div
               v-else-if="goldSponsorsCount > 0"
-              class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2"
+              class="mb-3 text-xs text-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2"
             >
               You have {{ goldSponsorsCount }} sponsorship(s) pending approval
             </div>
             <div
               v-else
-              class="mb-3 text-xs text-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2"
+              class="mb-3 text-xs text-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2"
             >
               You don't have any active sponsorships yet.
             </div>

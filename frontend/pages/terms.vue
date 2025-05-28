@@ -361,7 +361,7 @@
 			
 			<!-- Footer Section -->
 			<div class="mt-10 text-center">
-				<p class="text-gray-500 dark:text-gray-400 text-sm">
+				<p class="text-gray-600 dark:text-gray-400 text-sm">
 					© 2025 Adsy Club. All Rights Reserved.
 				</p>
 			</div>

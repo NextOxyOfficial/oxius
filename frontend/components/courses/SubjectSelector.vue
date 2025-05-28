@@ -20,7 +20,7 @@
         </div>
         <h2 class="text-lg font-bold">{{ $t("select_your_subject") }}</h2>
       </div>
-      <div class="flex items-center text-sm text-gray-500">
+      <div class="flex items-center text-sm text-gray-600">
         <span
           class="bg-gray-200 text-gray-800 rounded-full w-5 h-5 flex items-center justify-center mr-1"
           >3</span
@@ -64,7 +64,7 @@
           d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
         />
       </svg>
-      <p class="text-sm text-gray-500">{{ $t("no_subjects_found") }}</p>
+      <p class="text-sm text-gray-600">{{ $t("no_subjects_found") }}</p>
     </div>
 
     <!-- Subject grid -->
@@ -114,7 +114,7 @@
           </div>
           <div class="text-center sm:text-left">
             <h3 class="font-medium text-sm sm:text-sm">{{ subject.name }}</h3>
-            <p class="text-sm text-gray-500 hidden sm:block">
+            <p class="text-sm text-gray-600 hidden sm:block">
               {{ subject.description }}
             </p>
           </div>

@@ -22,7 +22,7 @@
         </div>        
         <button 
           @click="closeModal" 
-          class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded"
+          class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded"
           aria-label="Close modal"
           ref="closeButtonRef"
         >
@@ -34,7 +34,7 @@
         <button 
           @click="activeTab = 'followers'" 
           class="flex-1 py-3 px-4 text-center"
-          :class="activeTab === 'followers' ? 'text-blue-600 dark:text-blue-400 font-medium border-b-2 border-blue-500' : 'text-gray-500 dark:text-gray-400'"
+          :class="activeTab === 'followers' ? 'text-blue-600 dark:text-blue-400 font-medium border-b-2 border-blue-500' : 'text-gray-600 dark:text-gray-400'"
           role="tab"
           :aria-selected="activeTab === 'followers'"
           id="followers-tab"
@@ -45,7 +45,7 @@
         <button 
           @click="activeTab = 'following'" 
           class="flex-1 py-3 px-4 text-center"
-          :class="activeTab === 'following' ? 'text-blue-600 dark:text-blue-400 font-medium border-b-2 border-blue-500' : 'text-gray-500 dark:text-gray-400'"
+          :class="activeTab === 'following' ? 'text-blue-600 dark:text-blue-400 font-medium border-b-2 border-blue-500' : 'text-gray-600 dark:text-gray-400'"
           role="tab"
           :aria-selected="activeTab === 'following'"
           id="following-tab"
@@ -100,7 +100,7 @@
           <h3 class="text-lg font-medium text-gray-800 dark:text-gray-300 mb-1">
             {{ activeTab === 'followers' ? 'No followers found' : 'Not following anyone' }}
           </h3>
-          <p v-if="searchTerm" class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <p v-if="searchTerm" class="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Try a different search term
           </p>
         </div>
@@ -138,7 +138,7 @@
                     role="img"
                   />
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                <p class="text-xs text-gray-600 dark:text-gray-400 truncate">
                   {{ user.profession || user.username }}
                 </p>
               </div>

@@ -361,7 +361,7 @@ function formatAmount(amount) {
 }
 
 .notification-meta {
-  @apply flex justify-between items-center mt-2 text-xs text-gray-500;
+  @apply flex justify-between items-center mt-2 text-xs text-gray-600;
 }
 
 .notification-amount {
@@ -418,7 +418,7 @@ function formatAmount(amount) {
 }
 
 .notification-message {
-  @apply text-sm text-gray-500 dark:text-gray-400;
+  @apply text-sm text-gray-600 dark:text-gray-400;
 }
 
 .notification-backdrop {

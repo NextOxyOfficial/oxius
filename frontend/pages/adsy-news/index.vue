@@ -132,7 +132,7 @@
                     </h3>
                   </NuxtLink>
                   <div
-                    class="flex justify-between items-center text-sm text-gray-500"
+                    class="flex justify-between items-center text-sm text-gray-600"
                   >
                     <span>{{ article.date }}</span>
                     <span class="flex items-center">
@@ -232,7 +232,7 @@
                 </h3>
               </NuxtLink>
               <div
-                class="text-gray-500 text-sm mb-3 line-clamp-3"
+                class="text-gray-600 text-sm mb-3 line-clamp-3"
                 v-html="article.content.substring(0, 150) + '...'"
               ></div>
               <div class="flex justify-between items-center">
@@ -250,7 +250,7 @@
                     <span class="text-primary">{{ article.author }}</span></span
                   >
                 </div>
-                <div class="flex items-center text-gray-500">
+                <div class="flex items-center text-gray-600">
                   <MessageSquareIcon class="h-4 w-4 mr-1" />
                   <span class="text-sm">{{
                     article.post_comments ? article.post_comments.length : 0
@@ -308,7 +308,7 @@
               >
                 {{ tip.title }}
               </h3>
-              <p class="text-sm text-gray-500 line-clamp-3">
+              <p class="text-sm text-gray-600 line-clamp-3">
                 {{ tip.description }}
               </p>
             </div>

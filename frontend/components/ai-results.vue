@@ -101,7 +101,7 @@
           </span>
         </div>
         <span class="dots-animation ml-1"></span>
-        <p class="text-sm text-gray-500 mt-2">
+        <p class="text-sm text-gray-600 mt-2">
           Finding information in {{ upazila }}, {{ city }}, {{ state }}
         </p>
       </div>
@@ -112,7 +112,7 @@
       <div class="flex flex-col items-center justify-center">
         <div class="bot-container mb-4">
           <div class="bot-icon">
-            <UIcon name="i-carbon:bot" class="text-5xl text-gray-500" />
+            <UIcon name="i-carbon:bot" class="text-5xl text-gray-600" />
           </div>
         </div>
         <div class="text-lg font-medium text-gray-800">

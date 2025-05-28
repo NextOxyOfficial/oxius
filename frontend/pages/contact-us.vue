@@ -40,7 +40,7 @@
               <h2 class="text-xl font-semibold text-gray-800 mb-3">
                 {{ $t("general_support") }}
               </h2>
-              <p class="text-gray-500 mb-4">
+              <p class="text-gray-600 mb-4">
                 Technical assistance and general inquiries for all our services
               </p>
               <div class="space-y-3">
@@ -50,14 +50,14 @@
                 >
                   <UIcon
                     name="i-material-symbols-mail-outline-rounded"
-                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-gray-500"
+                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-gray-600"
                   />
                   <!-- <MailIcon
-                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-gray-500"
+                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-gray-600"
                   /> -->
                   <span class="font-medium">support@adsyclub.com</span>
                 </a>
-                <div class="flex items-center text-gray-500">
+                <div class="flex items-center text-gray-600">
                   <UIcon
                     name="i-iconoir-clock"
                     class="w-5 h-5 mr-2 text-slate-400"
@@ -88,7 +88,7 @@
               <h2 class="text-xl font-semibold text-gray-800 mb-3">
                 {{ $t("partnership") }}
               </h2>
-              <p class="text-gray-500 mb-4">
+              <p class="text-gray-600 mb-4">
                 Business development and partnership opportunities
               </p>
               <div class="space-y-3">
@@ -97,15 +97,15 @@
                   class="flex items-center text-slate-700 hover:text-gray-800 group"
                 >
                   <!-- <MailIcon
-                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-gray-500"
+                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-gray-600"
                   /> -->
                   <UIcon
                     name="i-material-symbols-mail-outline-rounded"
-                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-gray-500"
+                    class="w-5 h-5 mr-2 text-slate-400 group-hover:text-gray-600"
                   />
                   <span class="font-medium">partnership@adsyclub.com</span>
                 </a>
-                <div class="flex items-center text-gray-500">
+                <div class="flex items-center text-gray-600">
                   <UIcon
                     name="i-iconoir-clock"
                     class="w-5 h-5 mr-2 text-slate-400"
@@ -126,7 +126,7 @@
             <h2 class="text-xl font-semibold text-gray-800 mb-4">
               Need Additional Support?
             </h2>
-            <p class="text-gray-500 mb-8">
+            <p class="text-gray-600 mb-8">
               Our dedicated team is ready to assist you with any questions or
               concerns you may have
             </p>

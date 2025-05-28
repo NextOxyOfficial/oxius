@@ -84,7 +84,7 @@
             </div>
           </div>
 
-          <div class="mt-2 flex items-center text-sm text-gray-500">
+          <div class="mt-2 flex items-center text-sm text-gray-600">
             <span class="font-medium text-gray-600 mr-2"
               >Ad ID: {{ product?.id }}</span
             >
@@ -108,7 +108,7 @@
                 <Tag class="h-4 w-4 text-emerald-600" />
               </div>
               <div>
-                <div class="text-sm font-medium text-gray-500">Category</div>
+                <div class="text-sm font-medium text-gray-600">Category</div>
                 <div class="text-sm text-gray-800">
                   {{ product.category_details?.name }}
                 </div>
@@ -122,7 +122,7 @@
                 <Layers class="h-4 w-4 text-emerald-600" />
               </div>
               <div>
-                <div class="text-sm font-medium text-gray-500">
+                <div class="text-sm font-medium text-gray-600">
                   Sub-Category
                 </div>
                 <div class="text-sm text-gray-800">
@@ -138,7 +138,7 @@
                 <ShieldCheck class="h-4 w-4 text-emerald-600" />
               </div>
               <div>
-                <div class="text-sm font-medium text-gray-500">Condition</div>
+                <div class="text-sm font-medium text-gray-600">Condition</div>
                 <div class="text-sm text-gray-800">{{ product.condition }}</div>
               </div>
             </div>
@@ -150,7 +150,7 @@
                 <MapPin class="h-4 w-4 text-emerald-600" />
               </div>
               <div>
-                <div class="text-sm font-medium text-gray-500">Location</div>
+                <div class="text-sm font-medium text-gray-600">Location</div>
                 <div class="text-sm text-gray-800">
                   {{
                     product?.division && product?.district && product?.area
@@ -355,7 +355,7 @@
                 <h3 class="font-semibold text-gray-800">
                   {{ product.user_details?.name }}
                 </h3>
-                <p class="text-sm text-gray-500">
+                <p class="text-sm text-gray-600">
                   Member since
                   {{ formatDate(product.user_details.date_joined) }}
                 </p>
@@ -450,10 +450,10 @@
             >
               {{ item.title }}
             </h3>
-            <div class="flex items-start mt-1 mb-2 text-xs text-gray-500">
+            <div class="flex items-start mt-1 mb-2 text-xs text-gray-600">
               <UIcon
                 name="i-heroicons-map-pin"
-                class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-500"
+                class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-600"
               />
               {{
                 post?.division && post?.district && post?.area

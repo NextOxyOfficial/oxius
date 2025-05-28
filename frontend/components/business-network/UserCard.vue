@@ -45,7 +45,7 @@
           "
         ></h3>
       </NuxtLink>
-      <div class="flex flex-wrap items-center text-xs text-gray-500">
+      <div class="flex flex-wrap items-center text-xs text-gray-600">
         <span
           v-if="user.username"
           class="mr-3"

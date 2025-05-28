@@ -4,7 +4,7 @@
         <div class="flex items-center justify-between">
           <h3 class="text-base font-medium text-gray-800 dark:text-white">
             Message to {{ sellerName || 'Seller' }}
-            <span v-if="sellerTitle" class="text-xs text-gray-500 font-normal block">{{ sellerTitle }}</span>
+            <span v-if="sellerTitle" class="text-xs text-gray-600 font-normal block">{{ sellerTitle }}</span>
           </h3>
           <UButton icon="i-heroicons-x-mark" color="gray" variant="ghost" size="sm" @click="closeModal" />
         </div>

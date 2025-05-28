@@ -653,7 +653,7 @@
               </span>
               
               <!-- Default icon for other types -->
-              <span v-else class="flex-shrink-0 h-5 w-5 text-gray-500">
+              <span v-else class="flex-shrink-0 h-5 w-5 text-gray-600">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -676,47 +676,47 @@
             </div>
           </template>          <template #recipient-data="{ row }">
             <!-- Show recipient details if available -->
-            <div class="text-sm text-gray-500 capitalize" v-if="row?.to_user_details">
+            <div class="text-sm text-gray-600 capitalize" v-if="row?.to_user_details">
               {{ row.to_user_details.first_name }}
               {{ row.to_user_details.last_name }}
             </div>
               <!-- For self-transactions like deposits, purchases, etc. show "Myself" -->
-            <div class="text-sm text-gray-500" v-else-if="['deposit', 'diamond_purchase', 'pro_subscription', 'mobile_recharge', 'order_payment', 'diamond_bonus', 'diamond_refund', 'diamond_admin'].includes(row.transaction_type?.toLowerCase())">
+            <div class="text-sm text-gray-600" v-else-if="['deposit', 'diamond_purchase', 'pro_subscription', 'mobile_recharge', 'order_payment', 'diamond_bonus', 'diamond_refund', 'diamond_admin'].includes(row.transaction_type?.toLowerCase())">
               Myself
             </div>
             
             <!-- For diamond transactions without recipient -->
-            <div class="text-sm text-gray-500" v-else-if="row.transaction_type?.toLowerCase()?.startsWith('diamond_') && !row.to_user_details">
+            <div class="text-sm text-gray-600" v-else-if="row.transaction_type?.toLowerCase()?.startsWith('diamond_') && !row.to_user_details">
               Personal Account
             </div>
           </template>          <template #sender-data="{ row }">
             <!-- Show sender details if available -->
-            <div class="text-sm text-gray-500 capitalize" v-if="row?.user_details">
+            <div class="text-sm text-gray-600 capitalize" v-if="row?.user_details">
               {{ row.user_details.first_name }}
               {{ row.user_details.last_name }}
             </div>
             
             <!-- For system-generated transactions -->
-            <div class="text-sm text-gray-500" v-else-if="row.transaction_type?.toLowerCase()?.includes('system') || row.transaction_type?.toLowerCase()?.includes('admin')">
+            <div class="text-sm text-gray-600" v-else-if="row.transaction_type?.toLowerCase()?.includes('system') || row.transaction_type?.toLowerCase()?.includes('admin')">
               System
             </div>
               <!-- For payments to self -->
-            <div class="text-sm text-gray-500" v-else-if="['deposit', 'diamond_purchase'].includes(row.transaction_type?.toLowerCase())">
+            <div class="text-sm text-gray-600" v-else-if="['deposit', 'diamond_purchase'].includes(row.transaction_type?.toLowerCase())">
               Payment Gateway
             </div>
             
             <!-- For system-generated diamond additions -->
-            <div class="text-sm text-gray-500" v-else-if="['diamond_bonus', 'diamond_refund'].includes(row.transaction_type?.toLowerCase())">
+            <div class="text-sm text-gray-600" v-else-if="['diamond_bonus', 'diamond_refund'].includes(row.transaction_type?.toLowerCase())">
               System
             </div>
           </template>
           <template #method-data="{ row }">
-            <div class="text-sm text-gray-500 capitalize">
+            <div class="text-sm text-gray-600 capitalize">
               {{ row?.payment_method }}
             </div>
           </template>
           <template #time-data="{ row }">
-            <div class="text-sm text-gray-500">
+            <div class="text-sm text-gray-600">
               {{ formatDate(row.created_at) }}
             </div>
           </template>          <template #amount-data="{ row }">
@@ -814,7 +814,7 @@
               <button
                 @click="goToPage(1)"
                 :disabled="currentPage === 1"
-                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span class="sr-only">First page</span>
                 <svg
@@ -835,7 +835,7 @@
               <button
                 @click="goToPage(currentPage - 1)"
                 :disabled="currentPage === 1"
-                class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span class="sr-only">Previous</span>
                 <svg
@@ -859,7 +859,7 @@
                 :class="[
                   currentPage === page
                     ? 'z-10 bg-primary-50 border-primary-500 text-primary-600'
-                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50',
+                    : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50',
                   'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
                 ]"
               >
@@ -869,7 +869,7 @@
               <button
                 @click="goToPage(currentPage + 1)"
                 :disabled="currentPage === totalPages"
-                class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span class="sr-only">Next</span>
                 <svg
@@ -889,7 +889,7 @@
               <button
                 @click="goToPage(totalPages)"
                 :disabled="currentPage === totalPages"
-                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span class="sr-only">Last page</span>
                 <svg
@@ -967,7 +967,7 @@
               <!-- Transfer Details -->
               <div class="space-y-4 mb-6">
                 <div class="flex justify-between items-center">
-                  <p class="text-gray-500 text-xs">Transfer amount</p>
+                  <p class="text-gray-600 text-xs">Transfer amount</p>
                   <p class="text-gray-800 text-lg font-semibold">
                     <UIcon name="i-mdi:currency-bdt" class="" />
                     {{ transfer?.payable_amount }}
@@ -977,7 +977,7 @@
                 <div class="space-y-3">
                   <!-- Recipient Field -->
                   <div class="space-y-1">
-                    <label class="text-xs text-gray-500">Recipient:</label>
+                    <label class="text-xs text-gray-600">Recipient:</label>
                     <p class="text-sm text-gray-800 font-medium" v-if="transfer?.to_user">
                       {{ transfer?.to_user }}
                     </p>
@@ -985,7 +985,7 @@
 
                   <!-- Email Field -->
                   <div class="space-y-1">
-                    <label class="text-xs text-gray-500">Email:</label>
+                    <label class="text-xs text-gray-600">Email:</label>
                     <p class="text-sm text-gray-800 font-medium">
                       {{ transfer?.contact }}
                     </p>
@@ -993,13 +993,13 @@
 
                   <!-- Name Field -->
                   <!-- <div class="space-y-1">
-                  <label class="text-xs text-gray-500">Name:</label>
+                  <label class="text-xs text-gray-600">Name:</label>
                   <p class="text-sm text-gray-800 font-medium">John Smith</p>
                 </div> -->
 
                   <!-- Time Field -->
                   <div class="flex items-center gap-2">
-                    <label class="text-xs text-gray-500">Time:</label>
+                    <label class="text-xs text-gray-600">Time:</label>
                     <span
                       class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
                     >
@@ -1011,7 +1011,7 @@
 
               <!-- Final Amount -->
               <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
-                <p class="text-xs text-gray-500">Final amount</p>
+                <p class="text-xs text-gray-600">Final amount</p>
                 <p class="text-gray-800 font-semibold">
                   <UIcon name="i-mdi:currency-bdt" class="" />
                   {{ transfer?.payable_amount }}
@@ -1058,7 +1058,7 @@
               <!-- Transfer Details -->
               <div class="space-y-4 mb-6">
                 <div class="flex justify-between items-center">
-                  <p class="text-gray-500 text-xs">Transferred amount</p>
+                  <p class="text-gray-600 text-xs">Transferred amount</p>
                   <p class="text-gray-800 text-lg font-semibold">
                     <UIcon name="i-mdi:currency-bdt" class="" />
                     {{ transfer?.payable_amount }}
@@ -1068,7 +1068,7 @@
                 <div class="space-y-3">
                   <!-- Recipient Field -->
                   <div class="space-y-1">
-                    <label class="text-xs text-gray-500">Recipient:</label>
+                    <label class="text-xs text-gray-600">Recipient:</label>
                     <p class="text-sm sm:text-lg text-gray-800 font-medium">
                       {{ transfer?.to_user }}
                     </p>
@@ -1076,14 +1076,14 @@
 
                   <!-- Email Field -->
                   <div class="space-y-1">
-                    <label class="text-xs text-gray-500">Email:</label>
+                    <label class="text-xs text-gray-600">Email:</label>
                     <p class="text-sm text-gray-800 font-medium">
                       {{ transfer?.contact }}
                     </p>
                   </div>
 
                   <div class="flex items-center gap-2">
-                    <label class="text-xs text-gray-500">Time:</label>
+                    <label class="text-xs text-gray-600">Time:</label>
                     <span
                       class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
                     >
@@ -1095,7 +1095,7 @@
 
               <!-- Final Amount -->
               <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
-                <p class="text-xs text-gray-500">Final amount</p>
+                <p class="text-xs text-gray-600">Final amount</p>
                 <p class="text-gray-800 font-semibold sm:text-lg">
                   <UIcon name="i-mdi:currency-bdt" class="" />
                   {{ transfer?.payable_amount }}
@@ -1154,12 +1154,12 @@
                 <div class="mt-4 border-t border-gray-200 pt-4">
                   <dl class="divide-y divide-gray-200">
                     <div class="py-3 grid grid-cols-3 gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Transaction ID</dt>
+                      <dt class="text-sm font-medium text-gray-600">Transaction ID</dt>
                       <dd class="text-sm text-gray-800 mt-0 col-span-2 font-mono">
                         {{ selectedTransaction?.id }}
                       </dd>
                     </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Type</dt>
+                      <dt class="text-sm font-medium text-gray-600">Type</dt>
                       <dd
                         class="text-sm text-gray-800 mt-0 col-span-2 flex items-center"
                       >
@@ -1326,7 +1326,7 @@
                         </span>
                         
                         <!-- Default icon for other types -->
-                        <span v-else class="flex-shrink-0 h-5 w-5 text-gray-500 mr-2">
+                        <span v-else class="flex-shrink-0 h-5 w-5 text-gray-600 mr-2">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -1347,7 +1347,7 @@
                       </dd>
                     </div>                    <!-- Sender information -->
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Sender</dt>
+                      <dt class="text-sm font-medium text-gray-600">Sender</dt>
                       
                       <!-- When sender details are available -->
                       <dd
@@ -1379,7 +1379,7 @@
                     
                     <!-- Recipient information -->
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Recipient</dt>
+                      <dt class="text-sm font-medium text-gray-600">Recipient</dt>
                       
                       <!-- When recipient details are available -->
                       <dd
@@ -1411,24 +1411,24 @@
                     
                     <!-- Name information -->
                     <div v-if="selectedTransaction?.to_user_details" class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Name</dt>
+                      <dt class="text-sm font-medium text-gray-600">Name</dt>
                       <dd class="text-sm text-gray-800 mt-0 col-span-2">
                         {{ selectedTransaction?.to_user_details.name }}
                       </dd>
                     </div>
                       <!-- Diamond transaction details -->                    <div v-if="selectedTransaction?.transaction_type?.startsWith('diamond_')" class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Diamond Count</dt>
+                      <dt class="text-sm font-medium text-gray-600">Diamond Count</dt>
                       <dd class="text-sm text-gray-800 mt-0 col-span-2">
                         {{ selectedTransaction?.diamonds || parseInt(selectedTransaction?.quantity) || selectedTransaction?.quantity || selectedTransaction?.amount || 0 }} 💎
                       </dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Date & Time</dt>
+                      <dt class="text-sm font-medium text-gray-600">Date & Time</dt>
                       <dd class="text-sm text-gray-800 mt-0 col-span-2">
                         {{ formatDate(selectedTransaction?.created_at) }}
                       </dd>
                     </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Amount</dt>
+                      <dt class="text-sm font-medium text-gray-600">Amount</dt>
                       <dd
                         class="text-sm font-medium mt-0 col-span-2"
                         :class="{
@@ -1449,7 +1449,7 @@
                         }}
                       </dd>
                     </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-500">Status</dt>
+                      <dt class="text-sm font-medium text-gray-600">Status</dt>
                       <dd class="text-sm text-gray-800 mt-0 col-span-2">
                         <span
                           v-if="selectedTransaction"

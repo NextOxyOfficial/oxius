@@ -168,7 +168,7 @@
                   </div>
                 </div>
                 <div class="ml-3 overflow-hidden flex-1">
-                  <p class="text-xs font-medium text-gray-500 mb-1">
+                  <p class="text-xs font-medium text-gray-600 mb-1">
                     Shop Name
                   </p>
                   <input
@@ -198,7 +198,7 @@
                   </div>
                 </div>
                 <div class="ml-3 overflow-hidden flex-1">
-                  <p class="text-xs font-medium text-gray-500 mb-1">
+                  <p class="text-xs font-medium text-gray-600 mb-1">
                     Store URL
                   </p>
                   <div class="flex items-center flex-wrap">
@@ -209,7 +209,7 @@
                         class="flex items-center"
                         :to="`/eshop/${storeDetails.store_username}`"
                       >
-                        <p class="text-xs text-gray-500 whitespace-nowrap">
+                        <p class="text-xs text-gray-600 whitespace-nowrap">
                           https://adsyclub.com/eshop/
                         </p>
                         <p
@@ -225,7 +225,7 @@
                             `https://adsyclub.com/eshop/${storeDetails.store_username}`
                           )
                         "
-                        class="ml-1.5 text-gray-500 hover:text-emerald-600 transition-colors flex-shrink-0"
+                        class="ml-1.5 text-gray-600 hover:text-emerald-600 transition-colors flex-shrink-0"
                         :class="{ 'text-emerald-600': copied }"
                       >
                         <UIcon
@@ -239,7 +239,7 @@
                       </button>
                     </div>
                   </div>
-                  <p class="text-xs text-gray-500 mt-1 italic">
+                  <p class="text-xs text-gray-600 mt-1 italic">
                     URL cannot be changed
                   </p>
                 </div>
@@ -258,7 +258,7 @@
                   </div>
                 </div>
                 <div class="ml-3 overflow-hidden flex-1">
-                  <p class="text-xs font-medium text-gray-500 mb-1">
+                  <p class="text-xs font-medium text-gray-600 mb-1">
                     Shop Address
                   </p>
                   <input
@@ -288,7 +288,7 @@
                   </div>
                 </div>
                 <div class="ml-3 overflow-hidden flex-1">
-                  <p class="text-xs font-medium text-gray-500 mb-1">
+                  <p class="text-xs font-medium text-gray-600 mb-1">
                     Description
                   </p>
                   <textarea
@@ -315,9 +315,9 @@
                 <div
                   class="h-2 w-2 rounded-full bg-emerald-500 mr-2 animate-pulse"
                 ></div>
-                <span class="text-xs text-gray-500">Store Active</span>
+                <span class="text-xs text-gray-600">Store Active</span>
               </div>
-              <div class="mt-1 sm:mt-0 sm:ml-auto text-xs text-gray-500">
+              <div class="mt-1 sm:mt-0 sm:ml-auto text-xs text-gray-600">
                 Last updated: {{ formatDate(new Date()) }}
               </div>
             </div>
@@ -340,7 +340,7 @@
                     ? 'text-indigo-600 bg-gray-200'
                     : tab.disabled
                     ? 'text-gray-400 bg-gray-50 cursor-not-allowed'
-                    : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50',
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50',
                 ]"
               >
                 <div class="flex items-center space-x-2">
@@ -352,7 +352,7 @@
                         ? 'text-indigo-600 scale-110'
                         : tab.disabled
                         ? 'text-gray-400'
-                        : 'text-gray-500',
+                        : 'text-gray-600',
                     ]"
                   />
                   <span>{{ tab.name }}</span>
@@ -384,7 +384,7 @@
           <!-- Add New Product Tab -->
           <div
             v-if="activeTab === 'add-product'"
-            class="text-center text-gray-500"
+            class="text-center text-gray-600"
           >
             <CommonAddProductTab v-if="products.length < PRODUCT_LIMIT" />
             <div
@@ -397,7 +397,7 @@
               <h3 class="text-lg font-medium text-gray-800 mb-2">
                 Product Limit Reached
               </h3>
-              <p class="text-gray-500 max-w-md mx-auto mb-6">
+              <p class="text-gray-600 max-w-md mx-auto mb-6">
                 You have reached the maximum limit of {{ PRODUCT_LIMIT }} products
                 for your shop. Please contact support to increase your limit.
               </p>
@@ -464,7 +464,7 @@
             </h3>
             <button
               @click="showEditProductModal = false"
-              class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
+              class="text-gray-600 hover:text-gray-600 transition-colors duration-150"
             >
               <X class="h-6 w-6" />
             </button>
@@ -637,7 +637,7 @@
             </h3>
             <button
               @click="showDeleteConfirmModal = false"
-              class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
+              class="text-gray-600 hover:text-gray-600 transition-colors duration-150"
             >
               <X class="h-6 w-6" />
             </button>
@@ -715,7 +715,7 @@
             </h3>
             <button
               @click="showCancelOrderModal = false"
-              class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
+              class="text-gray-600 hover:text-gray-600 transition-colors duration-150"
             >
               <X class="h-6 w-6" />
             </button>
@@ -811,7 +811,7 @@
           </div>
           <button
             @click="removeToast(toast.id)"
-            class="ml-4 text-gray-500 hover:text-gray-500"
+            class="ml-4 text-gray-600 hover:text-gray-600"
           >
             <X class="h-4 w-4" />
           </button>

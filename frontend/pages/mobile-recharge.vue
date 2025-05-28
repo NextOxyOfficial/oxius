@@ -6,7 +6,7 @@
         <h1 class="text-xl font-semibold text-gray-800 sm:text-xl">
           {{ $t("mobile_recharge") }}
         </h1>
-        <p class="mt-2 text-base sm:text-xl text-gray-500">
+        <p class="mt-2 text-base sm:text-xl text-gray-600">
           {{ $t("recharge_package_choice") }}
         </p>
       </div>
@@ -20,7 +20,7 @@
             class="w-full px-4 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             :placeholder="t('search_packages')"
           />
-          <span class="absolute right-3 top-2.5 text-gray-500">
+          <span class="absolute right-3 top-2.5 text-gray-600">
             <UIcon name="i-gg-search" class="size-4" />
           </span>
         </div>
@@ -125,24 +125,24 @@
               </div>
 
               <div class="mt-2 space-y-1">
-                <div class="flex items-center text-sm text-gray-500">
+                <div class="flex items-center text-sm text-gray-600">
                   <UIcon
                     name="i-material-symbols-light-wifi-sharp"
-                    class="w-3.5 h-3.5 mr-1.5 text-gray-500"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-600"
                   />
                   <span>{{ pack.data }}</span>
                 </div>
-                <div class="flex items-center text-sm text-gray-500">
+                <div class="flex items-center text-sm text-gray-600">
                   <UIcon
                     name="i-uit-calender"
-                    class="w-3.5 h-3.5 mr-1.5 text-gray-500"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-600"
                   />
                   <span>{{ pack.validity }}</span>
                 </div>
-                <div class="flex items-center text-sm text-gray-500">
+                <div class="flex items-center text-sm text-gray-600">
                   <UIcon
                     name="i-material-symbols-call-outline-rounded"
-                    class="w-3.5 h-3.5 mr-1.5 text-gray-500"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-600"
                   />
                   <span>{{ pack.calls }}</span>
                 </div>
@@ -198,24 +198,24 @@
               </div>
 
               <div class="mt-2 space-y-1">
-                <div class="flex items-center text-sm text-gray-500">
+                <div class="flex items-center text-sm text-gray-600">
                   <UIcon
                     name="i-material-symbols-light-wifi-sharp"
-                    class="w-3.5 h-3.5 mr-1.5 text-gray-500"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-600"
                   />
                   <span>{{ pack.data }}</span>
                 </div>
-                <div class="flex items-center text-sm text-gray-500">
+                <div class="flex items-center text-sm text-gray-600">
                   <UIcon
                     name="i-uit-calender"
-                    class="w-3.5 h-3.5 mr-1.5 text-gray-500"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-600"
                   />
                   <span>{{ pack.validity }}</span>
                 </div>
-                <div class="flex items-center text-sm text-gray-500">
+                <div class="flex items-center text-sm text-gray-600">
                   <UIcon
                     name="i-material-symbols-call-outline-rounded"
-                    class="w-3.5 h-3.5 mr-1.5 text-gray-500"
+                    class="w-3.5 h-3.5 mr-1.5 text-gray-600"
                   />
                   <span>{{ pack.calls }}</span>
                 </div>
@@ -245,7 +245,7 @@
           <h3 class="text-xl font-semibold text-gray-800">Confirm Recharge</h3>
           <button
             @click="selectedPackage = null"
-            class="text-gray-500 hover:text-gray-500"
+            class="text-gray-600 hover:text-gray-600"
           >
             <x-icon class="w-5 h-5" />
           </button>
@@ -253,19 +253,19 @@
 
         <div class="mb-6 p-4 bg-gray-50 rounded-lg">
           <div class="flex justify-between mb-2">
-            <span class="text-gray-500">Package</span>
+            <span class="text-gray-600">Package</span>
             <span class="font-medium">{{ selectedPackage.type }}</span>
           </div>
           <div class="flex justify-between mb-2">
-            <span class="text-gray-500">Amount</span>
+            <span class="text-gray-600">Amount</span>
             <span class="font-medium">{{ selectedPackage.price }}</span>
           </div>
           <div class="flex justify-between mb-2">
-            <span class="text-gray-500">Data</span>
+            <span class="text-gray-600">Data</span>
             <span class="font-medium">{{ selectedPackage.data }}</span>
           </div>
           <div class="flex justify-between">
-            <span class="text-gray-500">Validity</span>
+            <span class="text-gray-600">Validity</span>
             <span class="font-medium">{{ selectedPackage.validity }}</span>
           </div>
         </div>

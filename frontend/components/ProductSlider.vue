@@ -187,7 +187,7 @@
 
     <!-- Navigation Buttons -->
     <button
-      class="absolute top-1/2 -translate-y-1/2 -left-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-gray-500 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+      class="absolute top-1/2 -translate-y-1/2 -left-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-gray-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
       :disabled="scrollPosition <= 0"
       @click="scrollLeft"
     >
@@ -195,7 +195,7 @@
     </button>
 
     <button
-      class="absolute top-1/2 -translate-y-1/2 -right-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-gray-500 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+      class="absolute top-1/2 -translate-y-1/2 -right-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-gray-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
       :disabled="scrollPosition >= maxScroll"
       @click="scrollRight"
     >
@@ -319,7 +319,7 @@
                 </div>
 
                 <!-- Description -->
-                <p class="text-sm text-gray-500 dark:text-slate-300 mb-4">
+                <p class="text-sm text-gray-600 dark:text-slate-300 mb-4">
                   {{ selectedProduct.description }}
                 </p>
 
@@ -367,7 +367,7 @@
                       name="i-heroicons-check-circle"
                       class="w-4 h-4 text-green-500"
                     />
-                    <span class="text-gray-500 dark:text-slate-300">
+                    <span class="text-gray-600 dark:text-slate-300">
                       {{
                         selectedProduct.stock > 0 ? "In stock" : "Out of stock"
                       }}
@@ -387,7 +387,7 @@
                       name="i-heroicons-truck"
                       class="w-4 h-4 text-slate-400"
                     />
-                    <span class="text-gray-500 dark:text-slate-300">
+                    <span class="text-gray-600 dark:text-slate-300">
                       Free shipping on orders over ৳5,000
                     </span>
                   </div>
@@ -423,7 +423,7 @@
                         <div class="flex justify-between mb-2">
                           <div class="flex items-center gap-2">
                             <div
-                              class="w-8 h-8 bg-slate-200 dark:bg-slate-700 text-gray-500 dark:text-slate-300 rounded-full flex items-center justify-center"
+                              class="w-8 h-8 bg-slate-200 dark:bg-slate-700 text-gray-600 dark:text-slate-300 rounded-full flex items-center justify-center"
                             >
                               <span class="font-medium text-sm">{{
                                 review.name?.charAt(0)
@@ -458,7 +458,7 @@
                             />
                           </div>
                         </div>
-                        <p class="text-sm text-gray-500 dark:text-slate-300">
+                        <p class="text-sm text-gray-600 dark:text-slate-300">
                           {{ review.comment }}
                         </p>
                       </div>

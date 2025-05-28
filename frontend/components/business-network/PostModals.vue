@@ -21,7 +21,7 @@
                 <X class="h-5 w-5" />
               </button>
             </div>
-            <p class="text-sm text-gray-500 truncate">
+            <p class="text-sm text-gray-600 truncate">
               {{ activeLikesPost.title }}
             </p>
           </div>
@@ -62,7 +62,7 @@
                   >
                     {{ user.user_details.name }}
                   </NuxtLink>
-                  <p class="text-sm text-gray-500">
+                  <p class="text-sm text-gray-600">
                     @{{
                       user.user_details.name.toLowerCase().replace(/\s+/g, "")
                     }}
@@ -112,7 +112,7 @@
                 <X class="h-5 w-5" />
               </button>
             </div>
-            <p class="text-sm text-gray-500 truncate">
+            <p class="text-sm text-gray-600 truncate">
               {{ activeCommentsPost.title }}
             </p>
           </div>
@@ -168,7 +168,7 @@
                         <button
                           type="button"
                           @click.stop="toggleDropdown(comment)"
-                          class="p-1.5 rounded-full text-gray-500 dark:text-gray-500 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
+                          class="p-1.5 rounded-full text-gray-600 dark:text-gray-600 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
                           aria-label="Comment options"
                         >
                           <UIcon
@@ -242,7 +242,7 @@
                         <button
                           type="button"
                           @click.prevent="$emit('cancel-edit-comment', comment)"
-                          class="text-xs text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
+                          class="text-xs text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
                         >
                           Cancel
                         </button>
@@ -308,9 +308,9 @@
                   <div class="flex items-center mt-1 pl-1">
                     <UIcon
                       name="i-heroicons-clock"
-                      class="w-3 h-3 text-gray-500 dark:text-gray-500 mr-1"
+                      class="w-3 h-3 text-gray-600 dark:text-gray-600 mr-1"
                     />
-                    <span class="text-sm text-gray-500 dark:text-gray-500">
+                    <span class="text-sm text-gray-600 dark:text-gray-600">
                       {{ formatTimeAgo(comment?.created_at) }}
                     </span>
                   </div>
@@ -422,7 +422,7 @@
                   class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1"
                 >
                   <button
-                    class="p-1 rounded-full text-gray-500 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+                    class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
                     @click="activeCommentsPost.commentText = ''"
                     aria-label="Clear comment"
                   >
@@ -440,7 +440,7 @@
                     ></div>
                   </button>
                   <button
-                    class="p-1 rounded-full text-gray-500 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+                    class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
                     aria-label="Clear comment"
                   >
                     <UIcon
@@ -480,7 +480,7 @@
           @click.stop
         >
           <h3 class="text-base font-semibold mb-2">Delete Comment</h3>
-          <p class="text-gray-500 mb-4">
+          <p class="text-gray-600 mb-4">
             Are you sure you want to delete this comment? This action cannot be
             undone.
           </p>

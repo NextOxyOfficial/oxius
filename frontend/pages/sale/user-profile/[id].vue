@@ -99,7 +99,7 @@
                 Verified Seller
               </div>
             </div>
-            <p class="text-gray-500 text-sm mt-1">
+            <p class="text-gray-600 text-sm mt-1">
               Member since {{ formatDate(seller.date_joined) }}
             </p>
 
@@ -304,12 +304,12 @@
                     <span class="font-bold text-emerald-700"
                       >${{ product.price.toLocaleString() }}</span
                     >
-                    <span class="text-sm text-gray-500">{{
+                    <span class="text-sm text-gray-600">{{
                       formatDate(product.created_at)
                     }}</span>
                   </div>
 
-                  <div class="flex items-center mt-3 text-sm text-gray-500">
+                  <div class="flex items-center mt-3 text-sm text-gray-600">
                     <Tag class="h-3 w-3 mr-1" />
                     <span>{{ product.category_name }}</span>
                     <span class="mx-2">•</span>
@@ -359,12 +359,12 @@
                     <span class="font-bold text-emerald-700"
                       >${{ product.price.toLocaleString() }}</span
                     >
-                    <span class="text-sm text-gray-500">{{
+                    <span class="text-sm text-gray-600">{{
                       formatDate(product.created_at)
                     }}</span>
                   </div>
 
-                  <div class="flex items-center mt-3 text-sm text-gray-500">
+                  <div class="flex items-center mt-3 text-sm text-gray-600">
                     <Tag class="h-3 w-3 mr-1" />
                     <span>{{ product.category }}</span>
                     <span class="mx-2">•</span>
@@ -402,7 +402,7 @@
                 <SearchX class="h-8 w-8 text-gray-400" />
               </div>
               <h3 class="text-gray-800 font-medium mb-1">No listings found</h3>
-              <p class="text-gray-500 text-sm">
+              <p class="text-gray-600 text-sm">
                 Try adjusting your filters or check back later
               </p>
               <button

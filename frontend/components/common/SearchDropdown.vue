@@ -6,7 +6,7 @@
       aria-label="Search"
     >
       <SearchIcon
-        class="size-6 text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors z-10 relative"
+        class="size-6 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors z-10 relative"
       />
       <!-- Ripple effect -->
       <span
@@ -37,7 +37,7 @@
         >
           <div class="flex items-center justify-between mb-2 px-1">
             <h4
-              class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium flex items-center"
+              class="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400 font-medium flex items-center"
             >
               <SearchIcon
                 class="h-3 w-3 mr-1.5 text-blue-500 dark:text-blue-400"
@@ -45,10 +45,10 @@
               Advanced Search
             </h4>
             <div
-              class="text-xs text-gray-400 dark:text-gray-500 flex items-center"
+              class="text-xs text-gray-400 dark:text-gray-600 flex items-center"
             >
               <kbd
-                class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-500 dark:text-gray-400 font-mono text-xs"
+                class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono text-xs"
                 >Enter</kbd
               >
               <span class="mx-1">to search</span>
@@ -67,7 +67,7 @@
               aria-label="Search query"
             />
             <div
-              class="absolute left-3 top-3 text-gray-400 dark:text-gray-500 transition-colors group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400"
+              class="absolute left-3 top-3 text-gray-400 dark:text-gray-600 transition-colors group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400"
             >
               <SearchIcon class="h-[18px] w-[18px]" />
             </div>
@@ -80,7 +80,7 @@
                 class="rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 p-1 transition-colors group"
               >
                 <XIcon
-                  class="h-4 w-4 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+                  class="h-4 w-4 text-gray-400 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-300"
                 />
               </button>
             </div>
@@ -119,7 +119,7 @@
             :class="
               activeTab === 'all'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
+                : 'text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-300'
             "
             @click="activeTab = 'all'"
           >
@@ -131,7 +131,7 @@
             :class="
               activeTab === 'posts'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
+                : 'text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-300'
             "
             @click="activeTab = 'posts'"
           >
@@ -149,7 +149,7 @@
             :class="
               activeTab === 'people'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
+                : 'text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-300'
             "
             @click="activeTab = 'people'"
           >
@@ -169,14 +169,14 @@
           class="max-h-[57vh] overflow-y-auto search-results-container"
         >
           <div class="py-2 px-1">
-            <p class="text-xs text-gray-500 dark:text-gray-500 mb-1.5 px-3">
+            <p class="text-xs text-gray-600 dark:text-gray-600 mb-1.5 px-3">
               Results for "<span
                 class="font-medium text-blue-600 dark:text-blue-400"
                 >{{ searchQuery }}</span
               >"
               <span
                 v-if="usingFuzzySearch"
-                class="text-xs ml-1 text-gray-500 dark:text-gray-500"
+                class="text-xs ml-1 text-gray-600 dark:text-gray-600"
                 >(including similar words)</span
               >
             </p>
@@ -188,7 +188,7 @@
                 class="px-3 pt-1 pb-2"
               >
                 <h4
-                  class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-500 font-medium"
+                  class="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-600 font-medium"
                 >
                   Posts ({{ filteredPosts.length }})
                 </h4>
@@ -236,7 +236,7 @@
                     <!-- Content preview with highlighted matches and improved styling -->
                     <p
                       v-if="result.post_text || result.content"
-                      class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2"
+                      class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2"
                     >
                       <span
                         v-html="
@@ -256,7 +256,7 @@
                         :class="
                           isTagMatched(tag.tag, searchQuery)
                             ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/40'
-                            : 'bg-gray-100 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 border border-gray-200/60 dark:border-gray-700/50 group-hover:bg-gray-200/80 dark:group-hover:bg-gray-700/50'
+                            : 'bg-gray-100 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400 border border-gray-200/60 dark:border-gray-700/50 group-hover:bg-gray-200/80 dark:group-hover:bg-gray-700/50'
                         "
                       >
                         <span class="mr-0.5 opacity-60">#</span
@@ -272,7 +272,7 @@
                       class="flex items-center mt-1.5"
                     >
                       <span
-                        class="text-xs text-gray-400 dark:text-gray-500 flex items-center"
+                        class="text-xs text-gray-400 dark:text-gray-600 flex items-center"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -298,7 +298,7 @@
                       class="h-7 w-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-all shadow-sm"
                     >
                       <ArrowRight
-                        class="h-3.5 w-3.5 text-gray-500 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all transform group-hover:translate-x-0.5"
+                        class="h-3.5 w-3.5 text-gray-600 dark:text-gray-600 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all transform group-hover:translate-x-0.5"
                       />
                     </div>
                   </div>
@@ -313,7 +313,7 @@
                 class="px-3 pt-3 pb-2"
               >
                 <h4
-                  class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-500 font-medium"
+                  class="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-600 font-medium"
                 >
                   People ({{ filteredPeople.length }})
                 </h4>
@@ -409,7 +409,7 @@
                       </p>
                     </div>
                     <div
-                      class="flex flex-wrap items-center text-xs text-gray-500 dark:text-gray-500"
+                      class="flex flex-wrap items-center text-xs text-gray-600 dark:text-gray-600"
                     >
                       <!-- Professional information with icon -->
                       <span
@@ -556,20 +556,20 @@
           <div
             class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 mx-auto mb-3 flex items-center justify-center"
           >
-            <SearchOffIcon class="h-6 w-6 text-gray-500 dark:text-gray-500" />
+            <SearchOffIcon class="h-6 w-6 text-gray-600 dark:text-gray-600" />
           </div>
           <p class="text-sm font-medium text-gray-800 dark:text-gray-400 mb-1">
             No results found
           </p>
-          <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
+          <p class="text-xs text-gray-600 dark:text-gray-600 mb-3">
             We couldn't find anything for "{{ searchQuery }}"
           </p>
           <div
-            class="text-xs text-gray-500 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 max-w-xs mx-auto border border-gray-100 dark:border-gray-700"
+            class="text-xs text-gray-600 dark:text-gray-600 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 max-w-xs mx-auto border border-gray-100 dark:border-gray-700"
           >
             <p class="font-medium mb-1">Suggestions:</p>
             <ul
-              class="text-gray-500 dark:text-gray-500 text-left space-y-1 pl-4 list-disc"
+              class="text-gray-600 dark:text-gray-600 text-left space-y-1 pl-4 list-disc"
             >
               <li>Try different keywords</li>
               <li>Check for typos</li>
@@ -588,12 +588,12 @@
           <p class="text-sm font-medium text-gray-800 dark:text-gray-400 mb-1">
             Search the platform
           </p>
-          <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">
+          <p class="text-xs text-gray-600 dark:text-gray-600 mb-4">
             Find posts, topics, and more
           </p>
 
           <div
-            class="mt-4 space-y-2 text-xs text-gray-500 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 border border-gray-100 dark:border-gray-700"
+            class="mt-4 space-y-2 text-xs text-gray-600 dark:text-gray-600 bg-gray-50 dark:bg-gray-800/80 rounded-lg p-3 border border-gray-100 dark:border-gray-700"
           >
             <p class="font-medium">Try searching for:</p>
             <div class="flex flex-wrap gap-1.5 justify-center mt-2">
@@ -609,10 +609,10 @@
           </div>
 
           <div
-            class="mt-4 text-xs text-gray-500 dark:text-gray-500 flex justify-center items-center gap-1.5"
+            class="mt-4 text-xs text-gray-600 dark:text-gray-600 flex justify-center items-center gap-1.5"
           >
             <kbd
-              class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-gray-500 dark:text-gray-500 font-mono"
+              class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md text-gray-600 dark:text-gray-600 font-mono"
               >ESC</kbd
             >
             to close
@@ -625,7 +625,7 @@
           class="p-8 text-center"
         >
           <div class="loading-spinner mx-auto mb-3"></div>
-          <p class="text-sm text-gray-500 dark:text-gray-500">Searching...</p>
+          <p class="text-sm text-gray-600 dark:text-gray-600">Searching...</p>
         </div>
       </div>
     </Transition>

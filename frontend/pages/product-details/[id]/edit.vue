@@ -75,7 +75,7 @@
                   :alt="currentProduct.name"
                   class="object-contain h-full w-full"
                 />
-                <div v-else class="text-gray-500 flex flex-col items-center">
+                <div v-else class="text-gray-600 flex flex-col items-center">
                   <UIcon name="i-heroicons-photo" class="h-12 w-12" />
                   <span class="text-sm mt-2">No image available</span>
                 </div>
@@ -88,7 +88,7 @@
                   <h2 class="text-xl font-semibold text-gray-800">
                     {{ currentProduct.name }}
                   </h2>
-                  <p class="text-gray-500 mt-1">
+                  <p class="text-gray-600 mt-1">
                     {{
                       currentProduct.short_description ||
                       "No description available"
@@ -112,13 +112,13 @@
 
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
                 <div class="bg-gray-50 p-3 rounded-lg">
-                  <div class="text-sm text-gray-500">Price</div>
+                  <div class="text-sm text-gray-600">Price</div>
                   <div class="font-medium text-lg line-through">
                     ৳{{ currentProduct.regular_price }}
                   </div>
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg">
-                  <div class="text-sm text-gray-500">Discounted Price</div>
+                  <div class="text-sm text-gray-600">Discounted Price</div>
                   <div class="font-medium text-lg">
                     {{
                       currentProduct.sale_price || currentProduct.regular_price
@@ -126,13 +126,13 @@
                   </div>
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg">
-                  <div class="text-sm text-gray-500">Stock</div>
+                  <div class="text-sm text-gray-600">Stock</div>
                   <div class="font-medium text-lg">
                     {{ currentProduct.quantity }}
                   </div>
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg">
-                  <div class="text-sm text-gray-500">Category</div>
+                  <div class="text-sm text-gray-600">Category</div>
                   <div class="font-medium text-lg truncate">
                     {{ currentProduct.category_details?.name || "N/A" }}
                   </div>

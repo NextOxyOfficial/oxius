@@ -76,7 +76,7 @@
             <!-- Search icon -->
             <button
               @click="toggleSearch"
-              class="flex items-center justify-center h-9 w-9 rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
+              class="flex items-center justify-center h-9 w-9 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
               aria-label="Search"
             >
               <SearchIcon class="h-5 w-5" />
@@ -175,7 +175,7 @@
         <div class="p-4 border-b border-gray-100">
           <div class="relative">
             <SearchIcon
-              class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              class="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600"
             />
             <input
               type="text"
@@ -188,7 +188,7 @@
             <button
               v-if="searchQuery"
               @click="clearSearch"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-500"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-600"
             >
               <XIcon class="h-4 w-4" />
             </button>
@@ -208,7 +208,7 @@
             <p class="font-medium text-gray-800 line-clamp-2 mb-1">
               {{ result.title }}
             </p>
-            <div class="flex items-center text-xs text-gray-500">
+            <div class="flex items-center text-xs text-gray-600">
               <CalendarIcon class="h-3 w-3 mr-1" />
               {{ formatDate(result.created_at) }}
               <span class="mx-2">•</span>
@@ -226,7 +226,7 @@
 
           <div
             v-if="searchResults.length === 0 && !isSearching && searchQuery"
-            class="p-6 text-center text-gray-500"
+            class="p-6 text-center text-gray-600"
           >
             <svg
               class="mx-auto h-12 w-12 text-gray-400"
@@ -251,11 +251,11 @@
             <div
               class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto"
             ></div>
-            <p class="mt-4 text-gray-500">Searching...</p>
+            <p class="mt-4 text-gray-600">Searching...</p>
           </div>
         </div>
 
-        <div v-if="!searchQuery" class="p-6 text-center text-gray-500">
+        <div v-if="!searchQuery" class="p-6 text-center text-gray-600">
           <SearchIcon class="mx-auto h-8 w-8 text-gray-400 mb-2" />
           <p>Type to start searching</p>
           <p class="text-xs mt-1">Press ESC to close</p>

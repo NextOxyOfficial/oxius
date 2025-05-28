@@ -22,7 +22,7 @@
           <div class="flex flex-col items-center">
             <PublicLogo customClass="h-10 sm:h-12" />
             <h3
-              class="mt-6 px-7 text-center text-base font-medium text-gray-500 dark:text-slate-300"
+              class="mt-6 px-7 text-center text-base font-medium text-gray-600 dark:text-slate-300"
             >
               AdsyClub – Bangladesh’s 1st Social Business Network: Earn Money,
               Connect with Society & Find the Services You Need!
@@ -189,7 +189,7 @@
         <UDivider label="" class="opacity-60" />
 
         <p
-          class="text-center text-sm text-gray-500 dark:text-gray-300 flex items-center justify-center gap-1 flex-wrap pt-6 pb-20 sm:pb-6"
+          class="text-center text-sm text-gray-600 dark:text-gray-300 flex items-center justify-center gap-1 flex-wrap pt-6 pb-20 sm:pb-6"
         >
           <span>Developed With</span>
           <span class="inline-flex items-center">

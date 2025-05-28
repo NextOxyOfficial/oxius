@@ -90,7 +90,7 @@
               getTextAnimation(service.id),
               {
                 'text-green-700': hoveredId === service.id,
-                'text-gray-500': hoveredId !== service.id,
+                'text-gray-600': hoveredId !== service.id,
               },
             ]"
           >
@@ -133,7 +133,7 @@
         </p>
 
         <!-- Optional Helper Text -->
-        <p class="text-gray-500 text-sm mt-2 max-w-md mx-auto">
+        <p class="text-gray-600 text-sm mt-2 max-w-md mx-auto">
           {{ $t("category_search_text2") }}
         </p>
       </div>

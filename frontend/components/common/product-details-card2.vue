@@ -252,7 +252,7 @@
         <h2 class="text-xl md:text-2xl font-semibold text-center mb-4">
           Shipping Information
         </h2>
-        <p class="text-center text-gray-500 dark:text-slate-300 mb-6">
+        <p class="text-center text-gray-600 dark:text-slate-300 mb-6">
           Fast and reliable delivery options for {{ currentProduct.name }}
         </p>
 
@@ -304,7 +304,7 @@
                 <div class="flex items-center">
                   <UIcon
                     name="i-heroicons-truck"
-                    class="w-5 h-5 text-gray-500 dark:text-slate-300 mr-2"
+                    class="w-5 h-5 text-gray-600 dark:text-slate-300 mr-2"
                   />
                   <h4 class="font-medium">Inside Dhaka</h4>
                 </div>
@@ -322,7 +322,7 @@
                 <div class="flex items-center">
                   <UIcon
                     name="i-heroicons-truck"
-                    class="w-5 h-5 text-gray-500 dark:text-slate-300 mr-2"
+                    class="w-5 h-5 text-gray-600 dark:text-slate-300 mr-2"
                   />
                   <h4 class="font-medium">Outside Dhaka</h4>
                 </div>
@@ -339,7 +339,7 @@
               <div class="flex items-center">
                 <UIcon
                   name="i-heroicons-gift"
-                  class="w-5 h-5 text-gray-500 dark:text-slate-300 mr-2"
+                  class="w-5 h-5 text-gray-600 dark:text-slate-300 mr-2"
                 />
                 <h4 class="font-medium">Premium Packaging</h4>
               </div>
@@ -358,7 +358,7 @@
         <h2 class="text-xl md:text-2xl font-semibold text-center mb-4">
           Customer Reviews
         </h2>
-        <p class="text-center text-gray-500 dark:text-slate-300 mb-12">
+        <p class="text-center text-gray-600 dark:text-slate-300 mb-12">
           Join thousands of satisfied customers who have experienced the
           difference
         </p>
@@ -438,7 +438,7 @@
                   "
                 />
               </div>
-              <p class="text-gray-500 dark:text-slate-300 mb-4">
+              <p class="text-gray-600 dark:text-slate-300 mb-4">
                 "{{ review.comment }}"
               </p>
               <div class="flex items-center">
@@ -524,7 +524,7 @@
             <div class="space-y-4">
               <div>
                 <label
-                  class="block text-sm mb-1 text-gray-500 dark:text-slate-300"
+                  class="block text-sm mb-1 text-gray-600 dark:text-slate-300"
                 >
                   Your Rating
                 </label>
@@ -547,7 +547,7 @@
                       :class="
                         star <= reviewForm.rating
                           ? 'text-amber-400'
-                          : 'text-slate-300 dark:text-gray-500'
+                          : 'text-slate-300 dark:text-gray-600'
                       "
                     />
                   </UButton>
@@ -555,7 +555,7 @@
               </div>
               <div>
                 <label
-                  class="block text-sm mb-1 text-gray-500 dark:text-slate-300"
+                  class="block text-sm mb-1 text-gray-600 dark:text-slate-300"
                 >
                   Your Name
                 </label>
@@ -566,7 +566,7 @@
               </div>
               <div>
                 <label
-                  class="block text-sm mb-1 text-gray-500 dark:text-slate-300"
+                  class="block text-sm mb-1 text-gray-600 dark:text-slate-300"
                 >
                   Your Review
                 </label>
@@ -590,10 +590,10 @@
           <div v-else class="text-center p-6">
             <UIcon
               name="i-heroicons-lock-closed"
-              class="w-12 h-12 text-slate-300 dark:text-gray-500 mx-auto mb-4"
+              class="w-12 h-12 text-slate-300 dark:text-gray-600 mx-auto mb-4"
             />
             <h4 class="text-lg font-medium mb-2">Please Log In to Review</h4>
-            <p class="text-gray-500 dark:text-slate-400 mb-4">
+            <p class="text-gray-600 dark:text-slate-400 mb-4">
               You need to be logged in to share your experience with this
               product.
             </p>
@@ -613,7 +613,7 @@
         <h2 class="text-xl md:text-2xl font-semibold text-center mb-4">
           {{ currentProduct.faqs_title }}
         </h2>
-        <p class="text-center text-gray-500 dark:text-slate-300 mb-12">
+        <p class="text-center text-gray-600 dark:text-slate-300 mb-12">
           {{ currentProduct.faqs_subtitle }}
         </p>
 

@@ -10,7 +10,7 @@
         :class="
           $route.path === '/business-network'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
-            : 'text-gray-500 hover:text-blue-500'
+            : 'text-gray-600 hover:text-blue-500'
         "
         @click="handleRecentClick"
       >
@@ -18,7 +18,7 @@
           <div class="icon-wrapper">
             <Clock
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/business-network' ? 'text-blue-500' : 'text-gray-500'"
+              :class="$route.path === '/business-network' ? 'text-blue-500' : 'text-gray-600'"
             />
             <div v-if="$route.path === '/business-network'" class="icon-gradient-blue"></div>
             <div class="icon-reflection"></div>
@@ -35,14 +35,14 @@
         :class="
           $route.path === '/business-network/notifications'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
-            : 'text-gray-500 hover:text-blue-500'
+            : 'text-gray-600 hover:text-blue-500'
         "
       >
         <div class="relative">
           <div class="icon-wrapper">
             <Bell
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/business-network/notifications' ? 'text-red-500' : 'text-gray-500'"
+              :class="$route.path === '/business-network/notifications' ? 'text-red-500' : 'text-gray-600'"
             />
             <div v-if="$route.path === '/business-network/notifications'" class="icon-gradient-red"></div>
             <div class="icon-reflection"></div>
@@ -76,7 +76,7 @@
         :class="
           $route.path === `/business-network/profile/${user?.user?.id}`
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
-            : 'text-gray-500 hover:text-blue-500'
+            : 'text-gray-600 hover:text-blue-500'
         "
         @click="handleProfileClick"
       >
@@ -84,7 +84,7 @@
           <div class="icon-wrapper">
             <User
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === `/business-network/profile/${user?.user?.id}` ? 'text-purple-500' : 'text-gray-500'"
+              :class="$route.path === `/business-network/profile/${user?.user?.id}` ? 'text-purple-500' : 'text-gray-600'"
             />
             <div v-if="$route.path === `/business-network/profile/${user?.user?.id}`" class="icon-gradient-purple"></div>
             <div class="icon-reflection"></div>
@@ -100,14 +100,14 @@
         :class="
           $route.path === '/'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
-            : 'text-gray-500 hover:text-blue-500'
+            : 'text-gray-600 hover:text-blue-500'
         "
       >
         <div class="relative">
           <div class="icon-wrapper">
             <BarChart2
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/' ? 'text-green-500' : 'text-gray-500'"
+              :class="$route.path === '/' ? 'text-green-500' : 'text-gray-600'"
             />
             <div v-if="$route.path === '/'" class="icon-gradient-green"></div>
             <div class="icon-reflection"></div>
@@ -124,14 +124,14 @@
         :class="
           $route.path === '/business-network'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
-            : 'text-gray-500 hover:text-blue-500'
+            : 'text-gray-600 hover:text-blue-500'
         "
       >
         <div class="relative">
           <div class="icon-wrapper">
             <Clock
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/business-network' ? 'text-blue-500' : 'text-gray-500'"
+              :class="$route.path === '/business-network' ? 'text-blue-500' : 'text-gray-600'"
             />
             <div v-if="$route.path === '/business-network'" class="icon-gradient-blue"></div>
             <div class="icon-reflection"></div>
@@ -147,14 +147,14 @@
         :class="
           $route.path === '/auth/login'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
-            : 'text-gray-500 hover:text-blue-500'
+            : 'text-gray-600 hover:text-blue-500'
         "
       >
         <div class="relative">
           <div class="icon-wrapper">
             <User
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/auth/login' ? 'text-purple-500' : 'text-gray-500'"
+              :class="$route.path === '/auth/login' ? 'text-purple-500' : 'text-gray-600'"
             />
             <div v-if="$route.path === '/auth/login'" class="icon-gradient-purple"></div>
             <div class="icon-reflection"></div>
@@ -175,7 +175,7 @@
         :class="
           $route.path === '/#micro-gigs'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
-            : 'text-gray-500 hover:text-blue-500'
+            : 'text-gray-600 hover:text-blue-500'
         "
       >
         <div class="relative">
@@ -183,7 +183,7 @@
             <UIcon
               name="i-material-symbols-attach-money"
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/#micro-gigs' ? 'text-amber-500' : 'text-gray-500'"
+              :class="$route.path === '/#micro-gigs' ? 'text-amber-500' : 'text-gray-600'"
             />
             <div v-if="$route.path === '/#micro-gigs'" class="icon-gradient-gold"></div>
             <div class="icon-reflection"></div>
@@ -199,14 +199,14 @@
         :class="
           $route.path === '/'
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
-            : 'text-gray-500 hover:text-blue-500'
+            : 'text-gray-600 hover:text-blue-500'
         "
       >
         <div class="relative">
           <div class="icon-wrapper">
             <BarChart2
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/' ? 'text-green-500' : 'text-gray-500'"
+              :class="$route.path === '/' ? 'text-green-500' : 'text-gray-600'"
             />
             <div v-if="$route.path === '/'" class="icon-gradient-green"></div>
             <div class="icon-reflection"></div>

@@ -1,7 +1,7 @@
 <template>
   <div>
     <h3
-      class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-3 flex items-center justify-between"
+      class="text-xs font-semibold text-gray-600 uppercase tracking-wider px-3 mb-3 flex items-center justify-between"
     >
       <div class="flex items-center">
         <ShoppingBag class="h-3.5 w-3.5 mr-1.5" />
@@ -9,7 +9,7 @@
       </div>
       <div class="flex space-x-1">
         <button
-          class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"
+          class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"
           @click="$emit('refresh')"
         >
           <RefreshCw class="h-3 w-3" />

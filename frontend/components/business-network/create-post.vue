@@ -37,7 +37,7 @@
               class="absolute right-4 top-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 p-2 transition-colors transform hover:rotate-90 duration-300"
               @click="closeModalWithConfirm"
             >
-              <X class="h-5 w-5 text-gray-500 dark:text-gray-500" />
+              <X class="h-5 w-5 text-gray-600 dark:text-gray-600" />
             </button>
           </div>
 
@@ -84,7 +84,7 @@
                     :class="
                       form.title.length > 200
                         ? 'bg-amber-100 text-amber-700'
-                        : 'text-gray-500'
+                        : 'text-gray-600'
                     "
                   >
                     {{ form.title.length }}/255
@@ -114,11 +114,11 @@
                       :class="
                         form.content.length > 5000
                           ? 'text-amber-500'
-                          : 'text-gray-500'
+                          : 'text-gray-600'
                       "
                       >{{ form.content.length }}</span
                     >
-                    <span class="text-gray-500"> characters</span>
+                    <span class="text-gray-600"> characters</span>
                   </div>
                 </div>
               </div>
@@ -152,7 +152,7 @@
                         : "Drag images here or click to select"
                     }}
                   </p>
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-500">
+                  <p class="mt-1 text-xs text-gray-600 dark:text-gray-600">
                     Select up to 12 images (PNG, JPG, JPEG)
                   </p>
                   <button
@@ -188,7 +188,7 @@
                         :class="
                           images.length > 9
                             ? 'bg-amber-100 text-amber-700'
-                            : 'bg-gray-100 text-gray-500'
+                            : 'bg-gray-100 text-gray-600'
                         "
                       >
                         {{ images.length }}/12
@@ -251,7 +251,7 @@
                         <Plus class="h-5 w-5" />
                       </div>
                       <span
-                        class="text-xs text-gray-500 mt-1 group-hover:text-blue-600 transition-colors"
+                        class="text-xs text-gray-600 mt-1 group-hover:text-blue-600 transition-colors"
                         >Add More</span
                       >
                     </button>
@@ -315,7 +315,7 @@
                         @keydown.up.prevent="selectPrevSuggestion"
                       />
                       <Hash
-                        class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500"
+                        class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600"
                       />
 
                       <!-- Hashtag Suggestions Dropdown -->
@@ -338,7 +338,7 @@
                           <!-- Search results section -->
                           <div v-if="hashtagSuggestions.length > 0">
                             <div
-                              class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700"
+                              class="px-3 py-1.5 text-xs text-gray-600 bg-gray-50 dark:bg-gray-800 dark:text-gray-600 border-b border-gray-100 dark:border-gray-700"
                             >
                               Suggested hashtags
                             </div>
@@ -355,7 +355,7 @@
                             >
                               <Hash class="h-3.5 w-3.5 text-blue-500" />
                               <span class="text-sm">{{ tag.tag }}</span>
-                              <span class="text-xs text-gray-500 ml-auto"
+                              <span class="text-xs text-gray-600 ml-auto"
                                 >{{ tag.count }} posts</span
                               >
                             </div>
@@ -364,7 +364,7 @@
                           <!-- Popular hashtags section -->
                           <div v-if="popularHashtags.length > 0">
                             <div
-                              class="px-3 py-1.5 text-xs text-gray-500 bg-gray-50 dark:bg-gray-800 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700"
+                              class="px-3 py-1.5 text-xs text-gray-600 bg-gray-50 dark:bg-gray-800 dark:text-gray-600 border-b border-gray-100 dark:border-gray-700"
                             >
                               Popular Hashtags
                             </div>
@@ -527,7 +527,7 @@
                 <h3 class="text-lg font-medium text-gray-800 dark:text-white">
                   Discard changes?
                 </h3>
-                <p class="text-gray-500 dark:text-gray-400 mt-1.5">
+                <p class="text-gray-600 dark:text-gray-400 mt-1.5">
                   You have unsaved changes. Are you sure you want to discard
                   your post?
                 </p>

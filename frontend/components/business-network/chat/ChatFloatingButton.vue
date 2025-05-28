@@ -131,7 +131,7 @@
           <div class="flex items-center">
             <button 
               @click="showSettings = false" 
-              class="mr-2 rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100"
+              class="mr-2 rounded-full p-1 text-gray-600 transition-colors hover:bg-gray-100"
             >
               <ArrowLeftIcon class="h-4 w-4" />
             </button>
@@ -140,7 +140,7 @@
         </div>
         
         <div class="flex-1 p-4">
-          <p class="text-center text-md text-gray-500">Settings page will be designed later</p>
+          <p class="text-center text-md text-gray-600">Settings page will be designed later</p>
         </div>
       </div>
   
@@ -149,7 +149,7 @@
         <!-- Search bar -->
         <div class="p-2">
           <div class="flex items-center rounded-md bg-gray-50 px-2 py-1.5 transition-all focus-within:ring-1 focus-within:ring-green-300">
-            <SearchIcon class="h-3.5 w-3.5 text-gray-500" />
+            <SearchIcon class="h-3.5 w-3.5 text-gray-600" />
             <input 
               v-model="searchQuery"
               type="text" 
@@ -168,7 +168,7 @@
           <!-- Stories section -->
         <div class="p-2">
           <div class="flex items-center justify-between pb-2">
-            <h4 class="text-sm font-medium text-gray-500">Stories</h4>
+            <h4 class="text-sm font-medium text-gray-600">Stories</h4>
             <button @click="openAllStories" class="text-sm text-green-600">View all</button>
           </div>
           <div 
@@ -258,9 +258,9 @@
   
           <!-- Friends List -->
           <div class="px-2 py-1">
-            <h4 class="mb-2 text-sm font-medium text-gray-500">Friends</h4>
+            <h4 class="mb-2 text-sm font-medium text-gray-600">Friends</h4>
             
-            <div v-if="filteredFriends.length === 0" class="flex items-center justify-center py-4 text-sm text-gray-500">
+            <div v-if="filteredFriends.length === 0" class="flex items-center justify-center py-4 text-sm text-gray-600">
               <p>No friends found</p>
             </div>
             <div v-else>
@@ -295,7 +295,7 @@
                         BLOCKED
                       </span>
                     </h4>
-                    <span class="text-sm text-gray-500">{{ friend.lastTime }}</span>
+                    <span class="text-sm text-gray-600">{{ friend.lastTime }}</span>
                   </div>
                   <div class="flex items-center justify-between">
                     <div class="flex items-center">
@@ -306,7 +306,7 @@
                           <span class="dot"></span>
                         </span>
                       </p>
-                      <p v-else class="text-sm text-gray-500 line-clamp-1">{{ friend.lastMessage }}</p>
+                      <p v-else class="text-sm text-gray-600 line-clamp-1">{{ friend.lastMessage }}</p>
                     </div>
                     <span v-if="friend.unreadCount" class="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-[9px] font-medium text-white">
                       {{ friend.unreadCount }}
@@ -334,7 +334,7 @@
           <div class="flex items-center">
             <button 
               @click="showAllStories = false" 
-              class="mr-2 rounded-full p-1 text-gray-500 transition-colors hover:bg-gray-100"
+              class="mr-2 rounded-full p-1 text-gray-600 transition-colors hover:bg-gray-100"
             >
               <ArrowLeftIcon class="h-4 w-4" />
             </button>
@@ -506,7 +506,7 @@
             class="absolute bottom-16 right-4 w-48 rounded-lg bg-white py-1 shadow-sm"
           >
             <div class="px-3 py-2">
-              <p class="mb-1 text-sm font-medium text-gray-500">Viewers</p>
+              <p class="mb-1 text-sm font-medium text-gray-600">Viewers</p>
               <div v-for="(viewer, index) in activeStory.viewers" :key="index" class="flex items-center py-1">
                 <img :src="viewer.avatar" :alt="viewer.name" class="h-6 w-6 rounded-full object-cover" />
                 <span class="ml-2 text-sm text-gray-800">{{ viewer.name }}</span>
@@ -529,7 +529,7 @@
               <BanIcon class="h-8 w-8 text-red-400" />
             </div>
             <p class="mb-2 text-md font-medium text-gray-800">You've blocked this user</p>
-            <p class="mb-4 text-sm text-gray-500">You won't receive messages from this user</p>
+            <p class="mb-4 text-sm text-gray-600">You won't receive messages from this user</p>
             <button 
               @click="toggleBlockUser" 
               class="rounded-full bg-green-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600"
@@ -538,12 +538,12 @@
             </button>
           </div>
           
-          <div v-else-if="activeChat.messages.length === 0" class="flex h-full flex-col items-center justify-center text-center text-gray-500">
+          <div v-else-if="activeChat.messages.length === 0" class="flex h-full flex-col items-center justify-center text-center text-gray-600">
             <div class="flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
               <MessageSquareIcon class="h-8 w-8 text-green-300" />
             </div>
-            <p class="mb-1 mt-3 text-sm font-medium text-gray-500">No messages yet</p>
-            <p class="text-sm text-gray-500">Start a conversation with {{ activeChat.name }}</p>
+            <p class="mb-1 mt-3 text-sm font-medium text-gray-600">No messages yet</p>
+            <p class="text-sm text-gray-600">Start a conversation with {{ activeChat.name }}</p>
           </div>
           
           <div v-else>
@@ -595,11 +595,11 @@
                     controls
                   ></video>
                   <div v-else-if="message.media.type === 'file'" class="flex items-center">
-                    <FileIcon class="h-4 w-4" :class="message.isUser ? 'text-white' : 'text-gray-500'" />
+                    <FileIcon class="h-4 w-4" :class="message.isUser ? 'text-white' : 'text-gray-600'" />
                     <span class="ml-2 text-sm">{{ message.media.name }}</span>
                   </div>
                   <div v-else-if="message.media.type === 'voice'" class="flex items-center">
-                    <MicIcon class="h-4 w-4" :class="message.isUser ? 'text-white' : 'text-gray-500'" />
+                    <MicIcon class="h-4 w-4" :class="message.isUser ? 'text-white' : 'text-gray-600'" />
                     <div class="ml-2 flex-1">
                       <div class="h-1 w-full rounded-full" :class="message.isUser ? 'bg-white/30' : 'bg-gray-300'">
                         <div class="h-full" 
@@ -608,10 +608,10 @@
                         ></div>
                       </div>
                       <div class="mt-1 flex items-center justify-between">
-                        <span class="text-xs" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">
+                        <span class="text-xs" :class="message.isUser ? 'text-white/70' : 'text-gray-600'">
                           {{ formatVoiceDuration(message.media.currentTime || 0) }}
                         </span>
-                        <span class="text-xs" :class="message.isUser ? 'text-white/70' : 'text-gray-500'">
+                        <span class="text-xs" :class="message.isUser ? 'text-white/70' : 'text-gray-600'">
                           {{ formatVoiceDuration(message.media.duration || 0) }}
                         </span>
                       </div>
@@ -628,14 +628,14 @@
                 </div>
               </div>
               <div 
-                class="mt-0.5 flex items-center text-[9px] text-gray-500"
+                class="mt-0.5 flex items-center text-[9px] text-gray-600"
                 :class="{ 'justify-end': message.isUser }"
               >
                 <span>{{ message.time }}</span>
                 <span v-if="message.isUser && message.read" class="ml-1 text-green-500">
                   <CheckCheckIcon class="h-3 w-3" />
                 </span>
-                <span v-else-if="message.isUser" class="ml-1 text-gray-500">
+                <span v-else-if="message.isUser" class="ml-1 text-gray-600">
                   <CheckIcon class="h-3 w-3" />
                 </span>
               </div>
@@ -666,7 +666,7 @@
             <div class="flex space-x-3">
               <button 
                 @click="showMediaPicker = !showMediaPicker" 
-                class="flex items-center text-sm text-gray-500 transition-colors hover:text-green-500"
+                class="flex items-center text-sm text-gray-600 transition-colors hover:text-green-500"
                 :disabled="activeChatType === 'friend' && activeChat.isBlocked"
               >
                 <ImageIcon class="mr-1 h-3.5 w-3.5" />
@@ -678,13 +678,13 @@
                 @mousedown="startVoiceRecording"
                 @mouseup="stopVoiceRecording"
                 @mouseleave="stopVoiceRecording"
-                class="flex items-center text-sm text-gray-500 transition-colors hover:text-green-500"
+                class="flex items-center text-sm text-gray-600 transition-colors hover:text-green-500"
                 :disabled="activeChatType === 'friend' && activeChat.isBlocked"
               >
                 <MicIcon class="mr-1 h-3.5 w-3.5" :class="isRecording ? 'text-red-500 animate-pulse' : ''" />
                 <span>{{ isRecording ? 'Recording...' : 'Voice' }}</span>
               </button>
-              <label class="flex items-center text-sm text-gray-500 transition-colors hover:text-green-500 cursor-pointer" :class="{ 'pointer-events-none': activeChatType === 'friend' && activeChat.isBlocked }">
+              <label class="flex items-center text-sm text-gray-600 transition-colors hover:text-green-500 cursor-pointer" :class="{ 'pointer-events-none': activeChatType === 'friend' && activeChat.isBlocked }">
                 <PaperclipIcon class="mr-1 h-3.5 w-3.5" />
                 <span>Files</span>
                 <input type="file" class="hidden" @change="handleFileSelect" :disabled="activeChatType === 'friend' && activeChat.isBlocked" />
@@ -693,7 +693,7 @@
             <div class="flex items-center">
               <button 
                 @click="toggleEmojiPicker" 
-                class="text-sm text-gray-500 transition-colors hover:text-green-500"
+                class="text-sm text-gray-600 transition-colors hover:text-green-500"
                 :disabled="activeChatType === 'friend' && activeChat.isBlocked"
               >
                 <SmileIcon class="h-3.5 w-3.5" />
@@ -704,14 +704,14 @@
           <!-- Media picker -->
           <div v-if="showMediaPicker" class="mb-2 rounded-md border bg-gray-50 p-3 shadow-sm">
             <div class="flex flex-col items-center justify-center">
-              <p class="mb-2 text-sm text-gray-500">Upload media from your device</p>
+              <p class="mb-2 text-sm text-gray-600">Upload media from your device</p>
               <div class="flex space-x-3">
-                <label class="flex flex-col items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-gray-500 cursor-pointer hover:bg-gray-200">
+                <label class="flex flex-col items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-gray-600 cursor-pointer hover:bg-gray-200">
                   <ImageIcon class="h-5 w-5 mb-1" />
                   <span class="text-sm">Images</span>
                   <input type="file" accept="image/*" multiple class="hidden" @change="handleMediaUpload" />
                 </label>
-                <label class="flex flex-col items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-gray-500 cursor-pointer hover:bg-gray-200">
+                <label class="flex flex-col items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-gray-600 cursor-pointer hover:bg-gray-200">
                   <VideoIcon class="h-5 w-5 mb-1" />
                   <span class="text-sm">Videos</span>
                   <input type="file" accept="video/*" multiple class="hidden" @change="handleMediaUpload" />
@@ -719,7 +719,7 @@
               </div>
             </div>
             <div v-if="uploadedMedia.length > 0" class="mt-3">
-              <p class="mb-1 text-sm text-gray-500">Selected media ({{ uploadedMedia.length }})</p>
+              <p class="mb-1 text-sm text-gray-600">Selected media ({{ uploadedMedia.length }})</p>
               <div class="flex flex-wrap gap-2">
                 <div v-for="(media, index) in uploadedMedia" :key="index" class="relative h-16 w-16 overflow-hidden rounded-md">
                   <img v-if="media.type.includes('image')" :src="media.url" class="h-full w-full object-cover" />
@@ -767,28 +767,28 @@
           
           <!-- Voice recording preview -->
           <div v-if="recordedVoice" class="mt-2 flex items-center rounded-md bg-gray-100 p-2">
-            <MicIcon class="h-5 w-5 text-gray-500" />
+            <MicIcon class="h-5 w-5 text-gray-600" />
             <div class="ml-2 flex-1">
               <div class="h-1 w-full rounded-full bg-gray-300">
                 <div class="h-full w-full rounded-full bg-green-500"></div>
               </div>
               <div class="mt-1 flex items-center justify-between">
-                <span class="text-xs text-gray-500">0:{{ recordingDuration.toString().padStart(2, '0') }}</span>
+                <span class="text-xs text-gray-600">0:{{ recordingDuration.toString().padStart(2, '0') }}</span>
               </div>
             </div>
-            <button @click="clearRecordedVoice" class="rounded-full p-1 text-gray-500 hover:bg-gray-200">
+            <button @click="clearRecordedVoice" class="rounded-full p-1 text-gray-600 hover:bg-gray-200">
               <XIcon class="h-3.5 w-3.5" />
             </button>
           </div>
           
           <!-- Selected file preview -->
           <div v-if="selectedFile" class="mt-2 flex items-center rounded-md bg-gray-100 p-2">
-            <FileIcon class="h-5 w-5 text-gray-500" />
+            <FileIcon class="h-5 w-5 text-gray-600" />
             <div class="ml-2 flex-1">
               <p class="text-sm font-medium text-gray-800">{{ selectedFileName }}</p>
-              <p class="text-[9px] text-gray-500">Ready to send</p>
+              <p class="text-[9px] text-gray-600">Ready to send</p>
             </div>
-            <button @click="clearSelectedFile" class="rounded-full p-1 text-gray-500 hover:bg-gray-200">
+            <button @click="clearSelectedFile" class="rounded-full p-1 text-gray-600 hover:bg-gray-200">
               <XIcon class="h-3.5 w-3.5" />
             </button>
           </div>
@@ -800,15 +800,15 @@
         <div class="w-[90%] max-w-md rounded-lg bg-white p-4 shadow-sm">
           <div class="mb-3 flex items-center justify-between">
             <h3 class="text-md font-medium">Create Story</h3>
-            <button @click="showAddStoryModal = false" class="rounded-full p-1 text-gray-500 hover:bg-gray-100">
+            <button @click="showAddStoryModal = false" class="rounded-full p-1 text-gray-600 hover:bg-gray-100">
               <XIcon class="h-4 w-4" />
             </button>
           </div>
           
           <div class="mb-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 p-6">
-            <ImageIcon class="mb-2 h-10 w-10 text-gray-500" />
-            <p class="mb-1 text-sm text-gray-500">Upload a photo or video</p>
-            <p class="text-sm text-gray-500">Your story will be visible for 24 hours</p>
+            <ImageIcon class="mb-2 h-10 w-10 text-gray-600" />
+            <p class="mb-1 text-sm text-gray-600">Upload a photo or video</p>
+            <p class="text-sm text-gray-600">Your story will be visible for 24 hours</p>
             <label class="mt-3 rounded-full bg-green-500 px-4 py-1.5 text-sm text-white transition-colors hover:bg-green-600 cursor-pointer">
               Select from gallery
               <input type="file" accept="image/*,video/*" class="hidden" />
@@ -816,7 +816,7 @@
           </div>
           
           <div class="flex justify-end">
-            <button @click="showAddStoryModal = false" class="mr-2 rounded-md px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100">
+            <button @click="showAddStoryModal = false" class="mr-2 rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100">
               Cancel
             </button>
             <button class="rounded-md bg-green-500 px-3 py-1.5 text-sm text-white transition-colors hover:bg-green-600">
@@ -831,15 +831,15 @@
         <div class="w-[90%] max-w-md rounded-lg bg-white p-4 shadow-sm">
           <div class="mb-3 flex items-center justify-between">
             <h3 class="text-md font-medium">Delete Chat</h3>
-            <button @click="showDeleteConfirmation = false" class="rounded-full p-1 text-gray-500 hover:bg-gray-100">
+            <button @click="showDeleteConfirmation = false" class="rounded-full p-1 text-gray-600 hover:bg-gray-100">
               <XIcon class="h-4 w-4" />
             </button>
           </div>
           
-          <p class="mb-4 text-sm text-gray-500">Are you sure you want to delete this chat? This action cannot be undone.</p>
+          <p class="mb-4 text-sm text-gray-600">Are you sure you want to delete this chat? This action cannot be undone.</p>
           
           <div class="flex justify-end">
-            <button @click="showDeleteConfirmation = false" class="mr-2 rounded-md px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100">
+            <button @click="showDeleteConfirmation = false" class="mr-2 rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100">
               Cancel
             </button>
             <button @click="confirmDeleteChat" class="rounded-md bg-red-500 px-3 py-1.5 text-sm text-white transition-colors hover:bg-red-600">

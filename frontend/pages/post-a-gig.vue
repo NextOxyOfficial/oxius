@@ -9,7 +9,7 @@
           >
             {{ $t("post_gigs") }}
           </h1>
-          <p class="text-lg text-gray-500 max-w-lg mx-auto">
+          <p class="text-lg text-gray-600 max-w-lg mx-auto">
             Create a new micro-gig and reach potential customers
           </p>
         </div>
@@ -194,7 +194,7 @@
               "
               class="mb-5"
             >
-              <p class="text-sm text-gray-500 mb-3">
+              <p class="text-sm text-gray-600 mb-3">
                 Provide detailed instructions for completing this gig
               </p>
               <div
@@ -218,7 +218,7 @@
               <UIcon name="i-heroicons-photo" class="text-emerald-600" />
               Media Gallery
             </h2>
-            <p class="text-sm text-gray-500 mb-4">
+            <p class="text-sm text-gray-600 mb-4">
               Add photos or videos to explain your task (optional)
             </p>
 
@@ -259,7 +259,7 @@
                   accept="image/*,video/*"
                 />
                 <div
-                  class="flex flex-col items-center gap-2 text-gray-500 text-sm text-center p-2 group-hover:text-emerald-600"
+                  class="flex flex-col items-center gap-2 text-gray-600 text-sm text-center p-2 group-hover:text-emerald-600"
                 >
                   <UIcon
                     name="i-heroicons-arrow-up-tray"
@@ -446,7 +446,7 @@
             <h2 class="text-xl font-semibold text-gray-800 mb-4">
               KYC Verification Required
             </h2>
-            <p class="text-gray-500 mb-6 max-w-md leading-relaxed">
+            <p class="text-gray-600 mb-6 max-w-md leading-relaxed">
               Please Upload your ID to get permission to post a service ad.
             </p>
 

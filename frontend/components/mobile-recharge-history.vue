@@ -3,7 +3,7 @@
     <h1 class="text-lg sm:text-xl font-semibold text-center mb-2">
       {{ $t("recharge_history") }}
     </h1>
-    <p class="text-center text-gray-500 mb-6">
+    <p class="text-center text-gray-600 mb-6">
       {{ $t("mobile_recharge_transactions") }}
     </p>
 
@@ -32,7 +32,7 @@
     >
       <div
         v-if="filteredTransactions.length === 0"
-        class="text-center py-8 text-gray-500 flex flex-col items-center"
+        class="text-center py-8 text-gray-600 flex flex-col items-center"
       >
         <UIcon
           name="i-heroicons-document-magnifying-glass"
@@ -69,7 +69,7 @@
                     transaction?.operator_details?.name || "Unknown Operator"
                   }}
                 </h3>
-                <p class="text-sm text-gray-500">
+                <p class="text-sm text-gray-600">
                   {{ formatDate(transaction?.created_at) }}
                 </p>
               </div>
@@ -96,19 +96,19 @@
         >
           <div class="grid grid-cols-2 gap-1">
             <div>
-              <span class="text-gray-500">Data:</span>
+              <span class="text-gray-600">Data:</span>
               {{ transaction?.package_details?.data || "N/A" }}
             </div>
             <div>
-              <span class="text-gray-500">Duration:</span>
+              <span class="text-gray-600">Duration:</span>
               {{ transaction?.package_details?.validity || "0" }} days
             </div>
             <div>
-              <span class="text-gray-500">Calls:</span>
+              <span class="text-gray-600">Calls:</span>
               {{ transaction?.package_details?.calls || "N/A" }}
             </div>
             <div>
-              <span class="text-gray-500">Status: </span>
+              <span class="text-gray-600">Status: </span>
               <span
                 class="capitalize"
                 :class="

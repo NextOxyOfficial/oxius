@@ -14,12 +14,12 @@
         >
           <UIcon
             name="i-heroicons-arrow-path"
-            class="h-6 w-6 animate-spin text-gray-500"
+            class="h-6 w-6 animate-spin text-gray-600"
           />
         </div>
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Total Orders</p>
+            <p class="text-sm font-medium text-gray-600">Total Orders</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ orders.length }}
             </p>
@@ -48,12 +48,12 @@
         >
           <UIcon
             name="i-heroicons-arrow-path"
-            class="h-6 w-6 animate-spin text-gray-500"
+            class="h-6 w-6 animate-spin text-gray-600"
           />
         </div>
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Pending Orders</p>
+            <p class="text-sm font-medium text-gray-600">Pending Orders</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ pendingOrders.length }}
             </p>
@@ -79,12 +79,12 @@
         >
           <UIcon
             name="i-heroicons-arrow-path"
-            class="h-6 w-6 animate-spin text-gray-500"
+            class="h-6 w-6 animate-spin text-gray-600"
           />
         </div>
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Processing Orders</p>
+            <p class="text-sm font-medium text-gray-600">Processing Orders</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ processingOrders.length }}
             </p>
@@ -113,12 +113,12 @@
         >
           <UIcon
             name="i-heroicons-arrow-path"
-            class="h-6 w-6 animate-spin text-gray-500"
+            class="h-6 w-6 animate-spin text-gray-600"
           />
         </div>
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Delivered Orders</p>
+            <p class="text-sm font-medium text-gray-600">Delivered Orders</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ deliveredOrders.length }}
             </p>
@@ -168,7 +168,7 @@
             <div
               class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
             >
-              <Search class="h-5 w-5 text-gray-500" />
+              <Search class="h-5 w-5 text-gray-600" />
             </div>
           </div>
         </div>
@@ -181,37 +181,37 @@
           <tr>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
             >
               Order ID
             </th>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
             >
               Status
             </th>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
             >
               Date
             </th>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
             >
               Customer
             </th>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
             >
               Total
             </th>
             <th
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
             >
               Actions
             </th>
@@ -245,7 +245,7 @@
               <div class="text-sm text-gray-800">
                 {{ order.name }}
               </div>
-              <div class="text-sm text-gray-500">
+              <div class="text-sm text-gray-600">
                 {{ order.email }}
               </div>
             </td>
@@ -265,7 +265,7 @@
                 </button>
                 <button
                   @click="printOrder(order)"
-                  class="text-gray-500 hover:text-gray-800 transition-colors duration-150 flex items-center"
+                  class="text-gray-600 hover:text-gray-800 transition-colors duration-150 flex items-center"
                 >
                   <Printer class="h-4 w-4 mr-1" />
                   Print
@@ -274,7 +274,7 @@
             </td>
           </tr>
           <tr v-if="paginatedOrders.length === 0">
-            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+            <td colspan="6" class="px-6 py-10 text-center text-gray-600">
               <div class="flex flex-col items-center justify-center">
                 <PackageX class="h-10 w-10 text-gray-400 mb-2" />
                 No orders found matching your criteria
@@ -307,7 +307,7 @@
             <button
               @click="prevPage"
               :disabled="currentPage === 1"
-              class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span class="sr-only">Previous</span>
               <ChevronLeft class="h-5 w-5" />
@@ -330,7 +330,7 @@
             <button
               @click="nextPage"
               :disabled="currentPage === totalPages"
-              class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span class="sr-only">Next</span>
               <ChevronRight class="h-5 w-5" />
@@ -377,14 +377,14 @@
             <div class="flex items-center space-x-2">
               <button
                 @click="printOrder(selectedOrder)"
-                class="text-gray-500 hover:text-gray-800 transition-colors duration-150"
+                class="text-gray-600 hover:text-gray-800 transition-colors duration-150"
                 title="Print Order"
               >
                 <Printer class="h-5 w-5" />
               </button>
               <button
                 @click="showOrderDetailsModal = false"
-                class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
+                class="text-gray-600 hover:text-gray-600 transition-colors duration-150"
               >
                 <X class="h-6 w-6" />
               </button>
@@ -394,7 +394,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h4
-                  class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3 flex items-center"
+                  class="text-sm font-medium text-gray-600 uppercase tracking-wider mb-3 flex items-center"
                 >
                   <FileText class="h-4 w-4 mr-1 text-indigo-500" />
                   Order Information
@@ -402,16 +402,16 @@
                 <div class="bg-gray-50 rounded-lg p-4">
                   <div class="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p class="text-gray-500">Date</p>
+                      <p class="text-gray-600">Date</p>
                       <p class="font-medium">
                         {{ selectedOrder?.created_at.split("T")[0] }}
                       </p>
-                      <p class="text-xs text-gray-500">
+                      <p class="text-xs text-gray-600">
                         {{ formatDate(selectedOrder?.created_at) }}
                       </p>
                     </div>
                     <div>
-                      <p class="text-gray-500">Status</p>
+                      <p class="text-gray-600">Status</p>
                       <div class="flex items-center mt-1">
                         <select
                           v-model="editingOrderStatus"
@@ -426,7 +426,7 @@
                       </div>
                     </div>
                     <div>
-                      <p class="text-gray-500">Payment Method</p>
+                      <p class="text-gray-600">Payment Method</p>
                       <p class="font-medium capitalize">
                         {{ selectedOrder?.payment_method }}
                       </p>
@@ -437,7 +437,7 @@
               </div>
               <div>
                 <h4
-                  class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3 flex items-center justify-between"
+                  class="text-sm font-medium text-gray-600 uppercase tracking-wider mb-3 flex items-center justify-between"
                 >
                   <div class="flex items-center">
                     <User class="h-4 w-4 mr-1 text-indigo-500" />
@@ -457,22 +457,22 @@
                     class="grid grid-cols-2 gap-4 text-sm"
                   >
                     <div>
-                      <p class="text-gray-500">Name</p>
+                      <p class="text-gray-600">Name</p>
                       <p class="font-medium">{{ selectedOrder?.name }}</p>
                     </div>
                     <div>
-                      <p class="text-gray-500">Phone</p>
+                      <p class="text-gray-600">Phone</p>
                       <p class="font-medium">{{ selectedOrder?.phone }}</p>
                     </div>
                     <div>
-                      <p class="text-gray-500">Address</p>
+                      <p class="text-gray-600">Address</p>
                       <p class="font-medium">{{ selectedOrder?.address }}</p>
                     </div>
                   </div>
                   <div v-else class="space-y-3">
                     <div>
                       <label
-                        class="block text-xs font-medium text-gray-500 mb-1"
+                        class="block text-xs font-medium text-gray-600 mb-1"
                         >Name</label
                       >
                       <input
@@ -483,7 +483,7 @@
                     </div>
                     <div>
                       <label
-                        class="block text-xs font-medium text-gray-500 mb-1"
+                        class="block text-xs font-medium text-gray-600 mb-1"
                         >Email</label
                       >
                       <input
@@ -494,7 +494,7 @@
                     </div>
                     <div>
                       <label
-                        class="block text-xs font-medium text-gray-500 mb-1"
+                        class="block text-xs font-medium text-gray-600 mb-1"
                         >Phone</label
                       >
                       <input
@@ -505,7 +505,7 @@
                     </div>
                     <div>
                       <label
-                        class="block text-xs font-medium text-gray-500 mb-1"
+                        class="block text-xs font-medium text-gray-600 mb-1"
                         >Address</label
                       >
                       <textarea
@@ -534,7 +534,7 @@
 
             <div class="mt-6">
               <h4
-                class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3 flex items-center justify-between"
+                class="text-sm font-medium text-gray-600 uppercase tracking-wider mb-3 flex items-center justify-between"
               >
                 <div class="flex items-center">
                   <ShoppingCart class="h-4 w-4 mr-1 text-indigo-500" />
@@ -573,32 +573,32 @@
                     <tr>
                       <th
                         scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
                       >
                         Product
                       </th>
                       <th
                         scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
                       >
                         Price
                       </th>
                       <th
                         scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
                       >
                         Quantity
                       </th>
                       <th
                         scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
                       >
                         Total
                       </th>
                       <th
                         v-if="editOrderItems"
                         scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
                       >
                         Actions
                       </th>
@@ -674,7 +674,7 @@
                             class="p-1 rounded-md bg-gray-100 hover:bg-gray-200"
                             :disabled="item.quantity <= 1"
                           >
-                            <Minus class="h-3 w-3 text-gray-500" />
+                            <Minus class="h-3 w-3 text-gray-600" />
                           </button>
                           <input
                             type="number"
@@ -686,7 +686,7 @@
                             @click="incrementQuantity(index)"
                             class="p-1 rounded-md bg-gray-100 hover:bg-gray-200"
                           >
-                            <Plus class="h-3 w-3 text-gray-500" />
+                            <Plus class="h-3 w-3 text-gray-600" />
                           </button>
                         </div>
                       </td>
@@ -768,7 +768,7 @@
                       </h5>
                       <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <span class="text-gray-500">Price:</span>
+                          <span class="text-gray-600">Price:</span>
                           <span v-if="!editOrderItems" class="font-medium"
                             >৳{{ item.price }}</span
                           >
@@ -782,7 +782,7 @@
                           />
                         </div>
                         <div>
-                          <span class="text-gray-500">Quantity:</span>
+                          <span class="text-gray-600">Quantity:</span>
                           <span v-if="!editOrderItems" class="font-medium">{{
                             item.quantity
                           }}</span>
@@ -792,7 +792,7 @@
                               class="p-1 rounded-md bg-gray-100 hover:bg-gray-200"
                               :disabled="item.quantity <= 1"
                             >
-                              <Minus class="h-3 w-3 text-gray-500" />
+                              <Minus class="h-3 w-3 text-gray-600" />
                             </button>
                             <input
                               type="number"
@@ -804,12 +804,12 @@
                               @click="incrementQuantity(index)"
                               class="p-1 rounded-md bg-gray-100 hover:bg-gray-200"
                             >
-                              <Plus class="h-3 w-3 text-gray-500" />
+                              <Plus class="h-3 w-3 text-gray-600" />
                             </button>
                           </div>
                         </div>
                         <div class="col-span-2">
-                          <span class="text-gray-500">Total:</span>
+                          <span class="text-gray-600">Total:</span>
                           <span class="font-medium text-indigo-600"
                             >৳{{ item.price * item.quantity }}</span
                           >
@@ -838,11 +838,11 @@
 
             <div class="mt-6 bg-gray-50 rounded-lg p-4">
               <div class="flex justify-between items-center mb-2">
-                <span class="text-gray-500">Subtotal</span>
+                <span class="text-gray-600">Subtotal</span>
                 <span class="font-medium">৳{{ calculateSubtotal() }}</span>
               </div>
               <div class="flex justify-between items-center mb-2">
-                <span class="text-gray-500">Delivery Fee</span>
+                <span class="text-gray-600">Delivery Fee</span>
 
                 <div v-if="!editOrderItems">
                   <span class="font-medium"
@@ -948,7 +948,7 @@
           </h3>          
           <button
             @click="closeAddItemModal"
-            class="text-gray-500 hover:text-gray-800 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full p-1"
+            class="text-gray-600 hover:text-gray-800 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full p-1"
           >
             <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
           </button>
@@ -995,7 +995,7 @@
                     <p class="text-sm font-medium text-gray-900 truncate">
                       {{ option.name }}
                     </p>
-                    <p class="text-sm text-gray-500">
+                    <p class="text-sm text-gray-600">
                       ৳{{ option.sale_price || option.regular_price }} -
                       Available: {{ getAvailableStock(option) }}
                     </p>
@@ -1008,7 +1008,7 @@
                     name="i-heroicons-inbox"
                     class="h-8 w-8 text-gray-400 mx-auto mb-2"
                   />
-                  <p class="text-sm text-gray-500">No products available</p>
+                  <p class="text-sm text-gray-600">No products available</p>
                 </div>
               </template>
             </USelectMenu>
@@ -1041,7 +1041,7 @@
                 >
                   <UIcon
                     name="i-heroicons-photo"
-                    class="h-8 w-8 text-gray-500"
+                    class="h-8 w-8 text-gray-600"
                   />
                 </div>
               </div>
@@ -1049,7 +1049,7 @@
                 <h5 class="font-medium text-gray-800">
                   {{ selectedProductDetails.name }}
                 </h5>
-                <p class="text-sm text-gray-500 mt-1 line-clamp-2">
+                <p class="text-sm text-gray-600 mt-1 line-clamp-2">
                   {{
                     selectedProductDetails.short_description ||
                     "No description available"
@@ -1057,7 +1057,7 @@
                 </p>
                 <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <span class="text-gray-500">Price:</span>
+                    <span class="text-gray-600">Price:</span>
                     <span class="font-medium ml-1"
                       >৳{{
                         selectedProductDetails.sale_price ||
@@ -1066,7 +1066,7 @@
                     >
                   </div>
                   <div>
-                    <span class="text-gray-500">Available:</span>
+                    <span class="text-gray-600">Available:</span>
                     <span class="font-medium ml-1">{{
                       maxAvailableQuantity
                     }}</span>

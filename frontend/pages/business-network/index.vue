@@ -82,7 +82,7 @@
       <h3 class="text-lg font-medium text-gray-800 mb-1">
         You're all caught up!
       </h3>
-      <p class="text-gray-500 mb-8 max-w-md">
+      <p class="text-gray-600 mb-8 max-w-md">
         You've seen all posts in the business network feed.
       </p>
       <button
@@ -99,7 +99,7 @@
       v-if="!loading && !loadingMore && allPosts.length === 0"
       class="flex flex-col items-center justify-center py-12 text-center"
     >
-      <p class="text-gray-500 mb-2">{{ $t("no_post_available") }}</p>
+      <p class="text-gray-600 mb-2">{{ $t("no_post_available") }}</p>
     </div>
 
     <!-- Add the create post component with event listener -->
@@ -122,7 +122,7 @@
                 <div
                   class="absolute inset-y-0 left-3 flex items-center pointer-events-none"
                 >
-                  <Search class="h-5 w-5 text-gray-500" />
+                  <Search class="h-5 w-5 text-gray-600" />
                 </div>
                 <input
                   ref="searchInputRef"
@@ -142,7 +142,7 @@
           </div>
 
           <div class="p-3 border-b border-gray-200">
-            <h3 class="text-sm font-medium text-gray-500 mb-2">
+            <h3 class="text-sm font-medium text-gray-600 mb-2">
               Filter by Category
             </h3>
             <div class="flex flex-wrap gap-2">
@@ -171,7 +171,7 @@
                     @click="handleSearch(result)"
                   >
                     <div class="bg-gray-100 rounded-full p-2">
-                      <Search class="h-4 w-4 text-gray-500" />
+                      <Search class="h-4 w-4 text-gray-600" />
                     </div>
                     <span class="text-gray-800">{{ result }}</span>
                   </button>
@@ -195,7 +195,7 @@
             </div>
 
             <div v-if="searchQuery.length === 0" class="p-4">
-              <h3 class="text-sm font-medium text-gray-500 mb-2">
+              <h3 class="text-sm font-medium text-gray-600 mb-2">
                 Recent Searches
               </h3>
               <ul class="space-y-3">
@@ -205,7 +205,7 @@
                     @click="handleSearch(term)"
                   >
                     <div class="bg-gray-100 rounded-full p-2">
-                      <Clock class="h-4 w-4 text-gray-500" />
+                      <Clock class="h-4 w-4 text-gray-600" />
                     </div>
                     <span class="text-gray-800">{{ term }}</span>
                   </button>

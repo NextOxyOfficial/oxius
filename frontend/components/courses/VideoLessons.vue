@@ -45,7 +45,7 @@
       </div>
       <div>
         <h2 class="text-lg font-bold">{{ $t("video_lessons") }}</h2>
-        <p class="text-sm text-gray-500 hidden sm:block">
+        <p class="text-sm text-gray-600 hidden sm:block">
           {{ $t("video_lessons_desc") }}
         </p>      </div>
 
@@ -56,7 +56,7 @@
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-3.5 w-3.5 mr-1 text-gray-500"
+            class="h-3.5 w-3.5 mr-1 text-gray-600"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -104,7 +104,7 @@
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-3.5 w-3.5 text-gray-500 mr-1"
+              class="h-3.5 w-3.5 text-gray-600 mr-1"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -155,7 +155,7 @@
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-3.5 w-3.5 text-gray-500 mr-1"
+              class="h-3.5 w-3.5 text-gray-600 mr-1"
               viewBox="0 0 20 20"
               fill="currentColor"
             >
@@ -283,7 +283,7 @@
 
         <!-- Results count and clear all button -->
         <div class="flex items-center gap-2">
-          <div v-if="filteredVideos.length > 0" class="text-sm text-gray-500">
+          <div v-if="filteredVideos.length > 0" class="text-sm text-gray-600">
             <span class="font-medium text-gray-800">{{
               filteredVideos.length
             }}</span>
@@ -341,7 +341,7 @@
       <h3 class="text-sm font-semibold text-gray-800">
         {{ $t("no_videos_found") }}
       </h3>
-      <p class="mt-2 text-sm text-gray-500 max-w-sm mx-auto">
+      <p class="mt-2 text-sm text-gray-600 max-w-sm mx-auto">
         {{
           searchKeyword.trim() ? $t("no_search_results") : $t("no_videos_found")
         }}
@@ -491,7 +491,7 @@
             >
               {{ video.duration }}
             </span>
-            <span class="ml-2 text-sm text-gray-500">
+            <span class="ml-2 text-sm text-gray-600">
               {{ video.views }} {{ $t("videos_count") }}
             </span>
           </div>          <!-- Access indicators - fixed to work with computed property pattern -->
@@ -575,7 +575,7 @@
                 <!-- Close button (X) in top-right corner -->
                 <button
                   @click="closeDescriptionModal"
-                  class="text-gray-400 hover:text-gray-500 focus:outline-none"
+                  class="text-gray-400 hover:text-gray-600 focus:outline-none"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -608,7 +608,7 @@
                   </span>
                 </div>
                 <div
-                  class="mt-1 sm:mt-0 text-sm text-gray-500 flex items-center"
+                  class="mt-1 sm:mt-0 text-sm text-gray-600 flex items-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -657,7 +657,7 @@
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4 mr-1 text-gray-500"
+                    class="h-4 w-4 mr-1 text-gray-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

@@ -84,7 +84,7 @@
         <div class="shimmer-loader mb-4">
           <Loader2 class="h-12 w-12 text-blue-500 animate-spin" />
         </div>
-        <p class="text-gray-500 text-center">Loading notifications...</p>
+        <p class="text-gray-600 text-center">Loading notifications...</p>
       </div>
 
       <!-- Empty state with enhanced styling -->
@@ -98,7 +98,7 @@
         <h3 class="text-xl font-semibold text-gray-800 mb-2">
           No notifications yet
         </h3>
-        <p class="text-gray-500 text-sm max-w-sm text-center">
+        <p class="text-gray-600 text-sm max-w-sm text-center">
           When someone interacts with your content or mentions you, you'll see
           it here
         </p>
@@ -164,7 +164,7 @@
                 </p>
                 <p
                   v-if="notification.content"
-                  class="mt-1 text-sm text-gray-500 line-clamp-1"
+                  class="mt-1 text-sm text-gray-600 line-clamp-1"
                   :class="{ 'text-gray-800': !notification.read }"
                 >
                   {{ notification.content }}
@@ -174,7 +174,7 @@
               <!-- Notification metadata -->
               <div class="mt-2 flex items-center">
                 <!-- Time -->
-                <span class="text-xs text-gray-500">
+                <span class="text-xs text-gray-600">
                   {{ formatTimeAgo(notification.created_at) }}
                 </span>
 

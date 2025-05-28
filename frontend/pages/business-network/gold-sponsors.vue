@@ -315,7 +315,7 @@
                     <p class="text-sm text-amber-600 dark:text-amber-400 font-medium mb-2">
                       Gold Sponsor
                     </p>
-                    <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                    <div class="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
                       <span v-if="sponsor.package" class="flex items-center gap-1">
                         <UIcon name="i-heroicons-tag" class="w-3 h-3" />
                         {{ sponsor.package.name }}
@@ -368,7 +368,7 @@
                         class="w-full h-full object-cover"
                       />
                     </div>
-                    <div v-if="sponsor.banners.length > 3" class="w-16 h-10 rounded border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xs text-gray-500">
+                    <div v-if="sponsor.banners.length > 3" class="w-16 h-10 rounded border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xs text-gray-600">
                       +{{ sponsor.banners.length - 3 }}
                     </div>
                   </div>

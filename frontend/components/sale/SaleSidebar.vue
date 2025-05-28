@@ -79,7 +79,7 @@
                       'text-xs px-2 py-0.5 rounded-full',
                       selectedCategory === category.id 
                         ? 'bg-primary-100 text-primary-600 font-medium' 
-                        : 'bg-gray-100 text-gray-500'
+                        : 'bg-gray-100 text-gray-600'
                     ]"
                   >
                     {{ category?.post_count }}
@@ -121,7 +121,7 @@
       <!-- Sponsored Ad Section -->
       <div class="mb-6">
         <h3
-          class="text-xs uppercase text-gray-500 font-medium mb-3 flex items-center gap-1.5 border-b border-gray-100 pb-2"
+          class="text-xs uppercase text-gray-600 font-medium mb-3 flex items-center gap-1.5 border-b border-gray-100 pb-2"
         >
           <UIcon name="i-heroicons-sparkles" class="w-4 h-4 text-amber-500" />
           Sponsored
@@ -152,7 +152,7 @@
               <p class="text-primary-600 text-xs font-medium mt-1">
                 Discounts up to 30%
               </p>
-              <div class="mt-2 text-xs text-gray-500">Limited time offer</div>
+              <div class="mt-2 text-xs text-gray-600">Limited time offer</div>
             </div>
           </div>
         </div>
@@ -161,7 +161,7 @@
       <!-- Long Sponsored Banner - Enhanced Design -->
       <div class="mb-6">
         <h3
-          class="text-xs uppercase text-gray-500 font-medium mb-3 flex items-center gap-1.5 border-b border-gray-100 pb-2"
+          class="text-xs uppercase text-gray-600 font-medium mb-3 flex items-center gap-1.5 border-b border-gray-100 pb-2"
         >
           <UIcon name="i-heroicons-megaphone" class="w-4 h-4 text-blue-500" />
           Featured Deal

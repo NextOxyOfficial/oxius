@@ -10,7 +10,7 @@
             <h2 class="text-2xl font-bold text-gray-800">
               Create Your Account
             </h2>
-            <p class="text-gray-500">
+            <p class="text-gray-600">
               Join our community and enjoy all features
             </p>
             <div class="mt-2 flex justify-center">
@@ -92,7 +92,7 @@
                     <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
                   </button>
                 </div>
-                <span class="text-sm text-gray-500"
+                <span class="text-sm text-gray-600"
                   >Upload a profile picture (optional)</span
                 >
               </div>
@@ -257,7 +257,7 @@
                       :name="
                         isPassword ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'
                       "
-                      class="w-5 h-5 text-gray-500 hover:text-gray-800"
+                      class="w-5 h-5 text-gray-600 hover:text-gray-800"
                     />
                   </div>
                   <p v-if="error.password" class="text-red-500 text-sm mt-1">
@@ -284,7 +284,7 @@
                       :name="
                         isPassword ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'
                       "
-                      class="w-5 h-5 text-gray-500 hover:text-gray-800"
+                      class="w-5 h-5 text-gray-600 hover:text-gray-800"
                     />
                   </div>
                   <p

@@ -51,7 +51,7 @@
                 <div class="absolute top-0 left-0 h-16 w-16 rounded-full border-t-4 border-amber-500 animate-spin"></div>
                 <Trophy class="h-8 w-8 text-amber-500 absolute top-4 left-4" />
               </div>
-              <p class="mt-4 text-gray-500 dark:text-gray-500">Loading contributors...</p>
+              <p class="mt-4 text-gray-600 dark:text-gray-600">Loading contributors...</p>
             </div>
 
             <!-- Error State -->
@@ -75,7 +75,7 @@
               <div class="p-4 border-b border-gray-200 dark:border-gray-800">
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <Search class="h-5 w-5 text-gray-500" />
+                    <Search class="h-5 w-5 text-gray-600" />
                   </div>
                   <input
                     type="search"
@@ -131,7 +131,7 @@
                           </div>
                           
                           <!-- Main stats: Post count and Follower count -->
-                          <div class="flex text-xs text-gray-500 mt-1 gap-4">
+                          <div class="flex text-xs text-gray-600 mt-1 gap-4">
                             <div class="flex items-center">
                               <FileText class="h-3 w-3 mr-1" />
                               <span>{{ contributor.post_count || 0 }} posts</span>
@@ -143,7 +143,7 @@
                           </div>
                           
                           <!-- Profession and Company -->
-                          <div class="flex text-xs text-gray-500 mt-1 gap-4 overflow-hidden">
+                          <div class="flex text-xs text-gray-600 mt-1 gap-4 overflow-hidden">
                             <div v-if="contributor?.profession" class="flex items-center overflow-hidden">
                               <Briefcase class="h-3 w-3 mr-1 shrink-0" />
                               <span class="truncate">{{ contributor.profession }}</span>
@@ -156,14 +156,14 @@
                         </div>
                         
                         <!-- Arrow -->
-                        <ChevronRight class="h-4 w-4 text-gray-500 group-hover:text-amber-500 group-hover:translate-x-1 transition-all duration-300" />
+                        <ChevronRight class="h-4 w-4 text-gray-600 group-hover:text-amber-500 group-hover:translate-x-1 transition-all duration-300" />
                       </div>
                     </li>
                   </TransitionGroup>
                 </div>
                 
                 <!-- Empty Result -->
-                <div v-if="filteredContributors.length === 0" class="flex flex-col items-center justify-center py-8 text-gray-500">
+                <div v-if="filteredContributors.length === 0" class="flex flex-col items-center justify-center py-8 text-gray-600">
                   <Search class="h-12 w-12 mb-2 opacity-50" />
                   <p class="text-center">No contributors found matching "{{ searchQuery }}"</p>
                 </div>

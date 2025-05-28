@@ -56,7 +56,7 @@
 
               <div class="relative flex justify-between items-center">
                 <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-500 mb-1">
+                  <div class="text-xs text-gray-600 dark:text-gray-600 mb-1">
                     Available Diamonds
                   </div>
                   <div class="flex items-center">
@@ -74,7 +74,7 @@
                   </div>
                 </div>
                 <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-500 mb-1">
+                  <div class="text-xs text-gray-600 dark:text-gray-600 mb-1">
                     Account funds
                   </div>
                   <div class="text-base font-semibold">
@@ -95,7 +95,7 @@
                 :class="
                   activeTab === 'purchase'
                     ? 'text-pink-600 dark:text-pink-400'
-                    : 'text-gray-500 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-300'
+                    : 'text-gray-600 dark:text-gray-600 hover:text-pink-500 dark:hover:text-pink-300'
                 "
               >
                 <div class="flex items-center gap-1">
@@ -113,7 +113,7 @@
                 :class="
                   activeTab === 'history'
                     ? 'text-pink-600 dark:text-pink-400'
-                    : 'text-gray-500 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-300'
+                    : 'text-gray-600 dark:text-gray-600 hover:text-pink-500 dark:hover:text-pink-300'
                 "
               >
                 <div class="flex items-center gap-1">
@@ -165,7 +165,7 @@
                     >
                       {{ pkg.diamonds }}
                     </div>
-                    <div class="text-2xs text-gray-500">diamonds</div>
+                    <div class="text-2xs text-gray-600">diamonds</div>
 
                     <!-- Selected indicator -->
                     <div
@@ -206,8 +206,8 @@
                     </div>
                   </div>
                   <div class="flex items-center justify-between mt-1">
-                    <p class="text-2xs text-gray-500">Minimum 10 diamonds</p>
-                    <p class="text-2xs text-gray-500">
+                    <p class="text-2xs text-gray-600">Minimum 10 diamonds</p>
+                    <p class="text-2xs text-gray-600">
                       ≈ {{ calculatePrice(customDiamondAmount || 0) }} BDT
                     </p>
                   </div>
@@ -280,7 +280,7 @@
                     class="absolute top-0 left-0 rounded-full h-8 w-8 border-2 border-transparent border-t-pink-300 opacity-30"
                   ></div>
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-500">
+                <p class="text-sm text-gray-600 dark:text-gray-600">
                   Loading purchase history...
                 </p>
               </div>
@@ -297,7 +297,7 @@
                 <p class="text-sm text-gray-800 dark:text-gray-400 mb-2">
                   Failed to load history
                 </p>
-                <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
+                <p class="text-xs text-gray-600 dark:text-gray-600 mb-3">
                   {{ historyError }}
                 </p>
                 <UButton size="xs" color="pink" @click="loadPurchaseHistory"
@@ -312,12 +312,12 @@
               >
                 <UIcon
                   name="i-heroicons-document-text"
-                  class="h-8 w-8 text-gray-500 mb-3"
+                  class="h-8 w-8 text-gray-600 mb-3"
                 />
                 <p class="text-sm text-gray-800 dark:text-gray-400 mb-2">
                   No purchase history
                 </p>
-                <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
+                <p class="text-xs text-gray-600 dark:text-gray-600 mb-3">
                   You haven't purchased any diamonds yet.
                 </p>
                 <UButton size="xs" color="pink" @click="activeTab = 'purchase'"
@@ -373,7 +373,7 @@
                             {{ item.amount }} Diamonds
                           </div>
                           <div
-                            class="text-2xs text-gray-500 dark:text-gray-500"
+                            class="text-2xs text-gray-600 dark:text-gray-600"
                           >
                             {{ formatDate(item.created_at) }}
                           </div>
@@ -409,7 +409,7 @@
                       :class="[
                         'px-2 py-1 rounded-md text-xs font-medium transition-colors',
                         currentPage === 1
-                          ? 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
+                          ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed'
                           : 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700',
                       ]"
                     >
@@ -423,7 +423,7 @@
                         class="font-medium text-gray-800 dark:text-gray-400"
                         >{{ currentPage }}</span
                       >
-                      <span class="text-gray-500 dark:text-gray-500">
+                      <span class="text-gray-600 dark:text-gray-600">
                         / {{ totalPages }}</span
                       >
                     </div>
@@ -434,7 +434,7 @@
                       :class="[
                         'px-2 py-1 rounded-md text-xs font-medium transition-colors',
                         currentPage >= totalPages
-                          ? 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500 cursor-not-allowed'
+                          ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-600 cursor-not-allowed'
                           : 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700',
                       ]"
                     >

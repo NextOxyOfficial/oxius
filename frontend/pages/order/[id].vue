@@ -194,13 +194,13 @@
                   <ULink
                     to="/terms/"
                     active-class="text-primary"
-                    inactive-class="text-gray-500 dark:text-gray-500"
+                    inactive-class="text-gray-600 dark:text-gray-600"
                     >Terms & Condition</ULink
                   >,
                   <ULink
                     to="/privacy/"
                     active-class="text-primary"
-                    inactive-class="text-gray-500 dark:text-gray-500"
+                    inactive-class="text-gray-600 dark:text-gray-600"
                     >Privacy Policy</ULink
                   >.
                 </template>
@@ -272,7 +272,7 @@
                   KYC Unverified
                 </h2>
 
-                <p className="text-gray-500 mb-6">
+                <p className="text-gray-600 mb-6">
                   Please Upload your ID to get permission to post a service ad.
                 </p>
 

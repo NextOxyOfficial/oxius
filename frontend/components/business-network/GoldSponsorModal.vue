@@ -32,7 +32,7 @@
             <button
               type="button"
               @click="close"
-              class="bg-white dark:bg-slate-700 rounded-full p-1 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none shadow-md"
+              class="bg-white dark:bg-slate-700 rounded-full p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none shadow-md"
             >
               <span class="sr-only">Close</span>
               <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
@@ -154,7 +154,7 @@
                     for="profileUrl"
                     class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-1"
                     >Profile URL
-                    <span class="text-xs text-gray-500"
+                    <span class="text-xs text-gray-600"
                       >(Users will be redirected here when clicking "Visit
                       Sponsor's Profile")</span
                     ></label
@@ -200,7 +200,7 @@
                         Choose File
                       </label>
                       <span
-                        class="text-xs text-gray-500 dark:text-gray-400 mt-1"
+                        class="text-xs text-gray-600 dark:text-gray-400 mt-1"
                       >
                         {{ logoFilename || "No file chosen" }}
                       </span>
@@ -214,7 +214,7 @@
                       class="hidden"
                     />
                   </div>
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
                     Recommended: 250x250px, PNG or JPG
                   </p>
                 </div>
@@ -225,7 +225,7 @@
                     class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-2"
                     >Promotional Banners (Optional)</label
                   >
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">
                     Upload banners to showcase your business. These will be
                     displayed in your sponsor details.
                   </p>
@@ -306,7 +306,7 @@
                     v-if="banners.length < maxBanners"
                     type="button"
                     @click="addBanner"
-                    class="w-full py-2 px-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:border-amber-400 hover:text-amber-600 focus:outline-none focus:border-amber-500"
+                    class="w-full py-2 px-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:border-amber-400 hover:text-amber-600 focus:outline-none focus:border-amber-500"
                   >
                     <UIcon
                       name="i-heroicons-plus"
@@ -315,7 +315,7 @@
                     Add Banner ({{ banners.length }}/{{ maxBanners }})
                   </button>
 
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  <p class="mt-1 text-xs text-gray-600 dark:text-gray-400">
                     Recommended: 800x400px, PNG or JPG. Max
                     {{ maxBanners }} banners.
                   </p>
@@ -416,7 +416,7 @@
                             >{{ pkg.name }}</span
                           >
                           <p
-                            class="text-xs text-gray-500 dark:text-gray-400 mt-1"
+                            class="text-xs text-gray-600 dark:text-gray-400 mt-1"
                           >
                             {{ pkg.description }}
                           </p>

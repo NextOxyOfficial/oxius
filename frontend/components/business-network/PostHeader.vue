@@ -50,13 +50,13 @@
         </NuxtLink>
 
         <p
-          class="text-sm font-medium bg-transparent py-0.5 text-gray-500 dark:text-slate-400 truncate max-w-[220px]"
+          class="text-sm font-medium bg-transparent py-0.5 text-gray-600 dark:text-slate-400 truncate max-w-[220px]"
         >
           {{ post?.author_details?.profession || "" }}
         </p>
 
         <p
-          class="text-sm text-gray-500 dark:text-gray-500 flex items-center gap-1"
+          class="text-sm text-gray-600 dark:text-gray-600 flex items-center gap-1"
         >
           <UIcon name="i-heroicons-clock" class="h-3 w-3" />
           {{ formatTimeAgo(post?.created_at) }}
@@ -72,7 +72,7 @@
           class="h-8 w-8 pr-3 rounded-full hover:bg-gray-100/80 dark:hover:bg-slate-700/80 flex items-center justify-center transition-colors backdrop-blur-sm"
           @click.stop="$emit('toggle-dropdown', post)"
         >
-          <MoreHorizontal class="h-4 w-4 text-gray-500 dark:text-gray-400" />
+          <MoreHorizontal class="h-4 w-4 text-gray-600 dark:text-gray-400" />
         </button>
 
         <!-- Dropdown Menu with glassmorphism effect -->
@@ -174,11 +174,11 @@
               @click="postToDelete = null"
               class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
             >
-              <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-500" />
+              <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-600" />
             </button>
           </div>
 
-          <p class="text-gray-500 dark:text-gray-400 mb-5">
+          <p class="text-gray-600 dark:text-gray-400 mb-5">
             Are you sure you want to delete this post? This action cannot be
             undone.
           </p>

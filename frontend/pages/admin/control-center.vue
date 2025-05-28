@@ -8,7 +8,7 @@
             class="absolute inset-0 rounded-full border-4 border-t-emerald-500 border-slate-200 dark:border-slate-700 animate-spin"
           ></div>
         </div>
-        <p class="mt-4 text-gray-500 dark:text-slate-400">
+        <p class="mt-4 text-gray-600 dark:text-slate-400">
           Verifying credentials...
         </p>
       </div>
@@ -31,7 +31,7 @@
             <h2 class="mt-4 text-xl font-semibold text-gray-800 dark:text-white">
               Admin Control Center
             </h2>
-            <p class="mt-2 text-gray-500 dark:text-slate-400">
+            <p class="mt-2 text-gray-600 dark:text-slate-400">
               Please sign in with admin credentials
             </p>
           </div>
@@ -136,7 +136,7 @@
             >
           </div>
           <button
-            class="lg:hidden text-slate-500 hover:text-gray-500 dark:text-slate-400 dark:hover:text-slate-300"
+            class="lg:hidden text-slate-500 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-300"
             @click="sidebarOpen = !sidebarOpen"
           >
             <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
@@ -256,7 +256,7 @@
             <div class="flex items-center">
               <!-- Mobile menu button -->
               <button
-                class="lg:hidden text-slate-500 hover:text-gray-500 dark:text-slate-400 dark:hover:text-slate-300 mr-3"
+                class="lg:hidden text-slate-500 hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-300 mr-3"
                 @click="sidebarOpen = !sidebarOpen"
               >
                 <UIcon name="i-heroicons-bars-3" class="w-6 h-6" />
@@ -521,7 +521,7 @@
               </div>
 
               <div class="p-6">
-                <p class="text-gray-500 dark:text-slate-400">
+                <p class="text-gray-600 dark:text-slate-400">
                   User management content will be displayed here.
                 </p>
               </div>
@@ -541,7 +541,7 @@
                 </h2>
               </div>
               <div class="p-6">
-                <p class="text-gray-500 dark:text-slate-400">
+                <p class="text-gray-600 dark:text-slate-400">
                   Orders management content will be displayed here.
                 </p>
               </div>
@@ -561,7 +561,7 @@
                 </h2>
               </div>
               <div class="p-6">
-                <p class="text-gray-500 dark:text-slate-400">
+                <p class="text-gray-600 dark:text-slate-400">
                   Products management content will be displayed here.
                 </p>
               </div>
@@ -581,7 +581,7 @@
                 </h2>
               </div>
               <div class="p-6">
-                <p class="text-gray-500 dark:text-slate-400">
+                <p class="text-gray-600 dark:text-slate-400">
                   System settings content will be displayed here.
                 </p>
               </div>
@@ -593,7 +593,7 @@
             v-else
             class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6"
           >
-            <p class="text-gray-500 dark:text-slate-400">
+            <p class="text-gray-600 dark:text-slate-400">
               Select an option from the sidebar to view content.
             </p>
           </div>

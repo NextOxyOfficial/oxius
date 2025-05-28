@@ -52,7 +52,7 @@
                   :class="[
                     activeIndex === index
                       ? 'text-primary-700'
-                      : 'text-gray-500',
+                      : 'text-gray-600',
                   ]"
                 >
                   <polyline points="6 9 12 15 18 9"></polyline>
@@ -81,7 +81,7 @@
         <!-- Empty state -->
         <div
           v-if="!isLoading && items.length === 0"
-          class="text-center py-12 text-gray-500"
+          class="text-center py-12 text-gray-600"
         >
           No FAQ items available
         </div>

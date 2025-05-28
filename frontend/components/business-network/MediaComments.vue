@@ -1,6 +1,6 @@
 <template>
   <div class="max-h-[30vh] overflow-y-auto mb-3">
-    <h4 class="text-md font-medium text-gray-500 mb-2">Comments</h4>
+    <h4 class="text-md font-medium text-gray-600 mb-2">Comments</h4>
     <div class="space-y-2 px-2">
       <div
         v-for="comment in mediaComments"
@@ -50,14 +50,14 @@
                 >
                   <button
                     @click="handleEditComment(comment)"
-                    class="text-gray-500 hover:text-blue-600"
+                    class="text-gray-600 hover:text-blue-600"
                     title="Edit comment"
                   >
                     <UIcon name="i-heroicons-pencil-square" class="w-4 h-4" />
                   </button>
                   <button
                     @click="handleDeleteComment(comment)"
-                    class="text-gray-500 hover:text-red-600"
+                    class="text-gray-600 hover:text-red-600"
                     title="Delete comment"
                   >
                     <UIcon name="i-heroicons-trash" class="w-4 h-4" />
@@ -77,7 +77,7 @@
                 <div class="flex justify-end mt-1 space-x-2">
                   <button
                     @click="cancelEdit"
-                    class="text-xs text-gray-500 hover:underline"
+                    class="text-xs text-gray-600 hover:underline"
                   >
                     Cancel
                   </button>
@@ -93,7 +93,7 @@
               <p v-else class="text-sm mt-1">{{ comment.content }}</p>
             </div>
             <div class="flex items-center mt-1 space-x-3">
-              <span class="text-sm text-gray-500">{{
+              <span class="text-sm text-gray-600">{{
                 formatTimeAgo(comment.created_at)
               }}</span>
             </div>

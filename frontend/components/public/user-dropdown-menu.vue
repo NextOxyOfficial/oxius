@@ -53,7 +53,7 @@
                   class="w-4 h-4 text-slate-500 dark:text-slate-400"
                 />
                 <span
-                  class="text-xs font-medium text-gray-500 dark:text-slate-300"
+                  class="text-xs font-medium text-gray-600 dark:text-slate-300"
                   >{{ $t("current_plan") }}</span
                 >
               </div>
@@ -100,7 +100,7 @@
                   </span>
                 </h4>
                 <p
-                  class="text-xs text-gray-500 dark:text-slate-400 mt-0.5 max-w-[180px]"
+                  class="text-xs text-gray-600 dark:text-slate-400 mt-0.5 max-w-[180px]"
                 >
                   {{ $t("upgrade_pro_text") }}
                 </p>
@@ -189,7 +189,7 @@
                   {{ $t("pro_member") }}
                 </h4>
                 <p
-                  class="text-xs text-gray-500 dark:text-slate-400 mt-0.5 flex items-center"
+                  class="text-xs text-gray-600 dark:text-slate-400 mt-0.5 flex items-center"
                 >
                   Valid until {{ formatDate(user?.user?.pro_validity) }}
                 </p>

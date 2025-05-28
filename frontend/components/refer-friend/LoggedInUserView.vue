@@ -21,7 +21,7 @@
         <div
           class="h-1 w-24 bg-primary-500 mx-auto rounded-full mb-3 animate-width"
         ></div>
-        <p class="text-xl text-gray-500 dark:text-gray-400">
+        <p class="text-xl text-gray-600 dark:text-gray-400">
           {{ $t("refer") }}
         </p>
       </div>
@@ -30,7 +30,7 @@
       <div
         class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-10 shadow-sm border border-gray-100 dark:border-gray-700 animate-fade-in-up"
       >
-        <p class="text-center text-gray-500 dark:text-gray-500 mb-3">
+        <p class="text-center text-gray-600 dark:text-gray-600 mb-3">
           {{ $t("refer_text") }}
         </p>
         <div class="flex flex-col sm:flex-row gap-3">
@@ -183,7 +183,7 @@
                           />
                         </div>
                       </div>
-                      <p class="text-xs text-gray-500 mt-2">
+                      <p class="text-xs text-gray-600 mt-2">
                         Scan to open referral link
                       </p>
                     </div>
@@ -305,7 +305,7 @@
           </div>
           <div class="flex-1">
             <h3
-              class="text-sm text-gray-500 dark:text-gray-500 font-medium mb-1"
+              class="text-sm text-gray-600 dark:text-gray-600 font-medium mb-1"
             >
               Total Referred Users
             </h3>
@@ -333,7 +333,7 @@
           </div>
           <div class="flex-1">
             <h3
-              class="text-sm text-gray-500 dark:text-gray-500 font-medium mb-1"
+              class="text-sm text-gray-600 dark:text-gray-600 font-medium mb-1"
             >
               Total Earnings
             </h3>
@@ -432,7 +432,7 @@
                   <h4 class="text-sm font-medium text-gray-800 dark:text-white">
                     {{ service.name }}
                   </h4>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
                     {{ service.rate }} commission
                   </p>
                 </div>
@@ -443,7 +443,7 @@
               </UBadge>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-500 dark:text-gray-400"
+              <span class="text-xs text-gray-600 dark:text-gray-400"
                 >Total Earned</span
               >
               <div
@@ -518,7 +518,7 @@
           >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
                   Conversion Rate
                 </p>
                 <p class="text-lg font-semibold text-gray-800 dark:text-white">
@@ -537,7 +537,7 @@
           >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
                   Avg Commission
                 </p>
                 <p class="text-lg font-semibold text-gray-800 dark:text-white">
@@ -556,7 +556,7 @@
           >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
                   Best Performing
                 </p>
                 <p class="text-lg font-semibold text-gray-800 dark:text-white">
@@ -575,7 +575,7 @@
           >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
                   This Month
                 </p>
                 <p class="text-lg font-semibold text-gray-800 dark:text-white">
@@ -594,7 +594,7 @@
           >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-xs text-gray-500 dark:text-gray-400">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
                   Growth Rate
                 </p>
                 <p
@@ -637,7 +637,7 @@
                 :class="
                   activeTab === index
                     ? 'text-primary-600 dark:text-primary-400 border-b-2 border-green-500'
-                    : 'text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-400 border-b-2 border-white'
+                    : 'text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-400 border-b-2 border-white'
                 "
                 @click="setActiveTab(index)"
               >
@@ -661,7 +661,7 @@
           <div
             class="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center"
           >
-            <div class="text-xs text-gray-500 dark:text-gray-500">
+            <div class="text-xs text-gray-600 dark:text-gray-600">
               {{
                 activeTab === 0
                   ? "Track your earning commissions"
@@ -723,27 +723,27 @@
                   <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         Date
                       </th>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         Referred User
                       </th>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         Service Type
                       </th>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         Rate
                       </th>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         Amount
                       </th>
@@ -788,7 +788,7 @@
                       :style="`--delay: ${index * 0.05}s`"
                     >
                       <td
-                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500"
+                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-600"
                       >
                         {{ formatDate(earning.date) }}
                       </td>
@@ -817,7 +817,7 @@
                       </td>
 
                       <td
-                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500"
+                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-600"
                       >
                         {{
                           getCommissionRate(
@@ -842,7 +842,7 @@
                     >
                       <td
                         colspan="5"
-                        class="px-6 py-8 text-center text-gray-500 dark:text-gray-500"
+                        class="px-6 py-8 text-center text-gray-600 dark:text-gray-600"
                       >
                         <div class="py-6">
                           <div
@@ -850,7 +850,7 @@
                           >
                             <UIcon
                               name="i-heroicons-banknotes"
-                              class="text-2xl text-gray-500 dark:text-gray-500"
+                              class="text-2xl text-gray-600 dark:text-gray-600"
                             />
                           </div>
                           <p>No earnings history to display yet.</p>
@@ -886,18 +886,18 @@
                   <thead class="bg-gray-50 dark:bg-gray-800/50">
                     <tr>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         User
                       </th>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         Email
                       </th>
 
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-500 uppercase tracking-wider"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         Status
                       </th>
@@ -938,7 +938,7 @@
                         </div>
                       </td>
                       <td
-                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500"
+                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-600"
                       >
                         {{ user.email }}
                       </td>
@@ -957,7 +957,7 @@
                     <tr v-if="referredUsers.length === 0">
                       <td
                         colspan="4"
-                        class="px-6 py-8 text-center text-gray-500 dark:text-gray-500"
+                        class="px-6 py-8 text-center text-gray-600 dark:text-gray-600"
                       >
                         <div class="py-6">
                           <div
@@ -965,7 +965,7 @@
                           >
                             <UIcon
                               name="i-heroicons-users"
-                              class="text-2xl text-gray-500 dark:text-gray-500"
+                              class="text-2xl text-gray-600 dark:text-gray-600"
                             />
                           </div>
                           <p>You haven't referred any users yet.</p>
@@ -989,7 +989,7 @@
           <div
             class="px-6 py-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center"
           >
-            <div class="text-xs text-gray-500 dark:text-gray-500">
+            <div class="text-xs text-gray-600 dark:text-gray-600">
               {{
                 activeTab === 0
                   ? `Showing ${filteredEarnings.length} transactions`

@@ -210,7 +210,7 @@
               color="gray"
               variant="ghost"
               icon="i-heroicons-x-mark-20-solid"
-              class="text-gray-500 hover:text-gray-800 dark:text-gray-500 dark:hover:text-gray-300 transition-transform transform hover:scale-110"
+              class="text-gray-600 hover:text-gray-800 dark:text-gray-600 dark:hover:text-gray-300 transition-transform transform hover:scale-110"
               @click="isOpen = false"
             />
           </div>
@@ -538,7 +538,7 @@
               >
                 <UIcon
                   name="i-material-symbols-person-rounded"
-                  class="w-7 h-7 text-gray-500"
+                  class="w-7 h-7 text-gray-600"
                 />
               </div>
             </NuxtLink>
@@ -660,7 +660,7 @@
                 <UIcon
                   v-else
                   name="i-heroicons-user"
-                  class="w-6 h-6 text-gray-500 ml-2.5 z-10"
+                  class="w-6 h-6 text-gray-600 ml-2.5 z-10"
                 />
               </div>
 
@@ -725,7 +725,7 @@
                   <UIcon
                     v-else
                     name="i-heroicons-user-circle"
-                    class="w-6 h-6 text-gray-500 dark:text-gray-300"
+                    class="w-6 h-6 text-gray-600 dark:text-gray-300"
                   />
                 </div>
               </div>
@@ -737,7 +737,7 @@
                     ? 'i-heroicons-chevron-up'
                     : 'i-heroicons-chevron-down'
                 "
-                class="w-4 h-4 text-gray-500 transition-transform duration-200"
+                class="w-4 h-4 text-gray-600 transition-transform duration-200"
               />
             </div>
           </div>

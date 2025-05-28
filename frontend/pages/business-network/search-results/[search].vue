@@ -12,7 +12,7 @@
               <Search class="h-4 w-4 text-blue-700" />
             </span>
             Search Results
-          </h1>          <p class="text-gray-500 text-sm mt-2 flex items-center">
+          </h1>          <p class="text-gray-600 text-sm mt-2 flex items-center">
             <span class="font-medium text-blue-700 flex items-center">
               <span v-if="$route.params.search && $route.params.search.startsWith('#')" 
                 class="mr-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
@@ -30,10 +30,10 @@
               <span>{{ userResults.length + allPosts.length === 1 ? "result" : "results" }}</span>
               <span v-if="userResults.length > 0 && allPosts.length > 0" class="flex items-center gap-1 ml-1">
                 <span class="text-gray-400 text-xs">(</span>
-                <UsersRound class="h-3 w-3 text-gray-500" />
+                <UsersRound class="h-3 w-3 text-gray-600" />
                 <span class="text-gray-600">{{ userResults.length }}</span>
                 <span class="mr-1 text-gray-400">,</span>
-                <MessageSquare class="h-3 w-3 text-gray-500" />
+                <MessageSquare class="h-3 w-3 text-gray-600" />
                 <span class="text-gray-600">{{ allPosts.length }}</span>
                 <span class="text-gray-400 text-xs">)</span>
               </span>
@@ -250,7 +250,7 @@
               </div>
             </div>
             <div class="mt-2 pt-2 border-t border-gray-100">
-              <p class="text-xs text-gray-500">
+              <p class="text-xs text-gray-600">
                 <span class="font-medium">Exact matches and hashtag matches are weighted highest</span> in search results. Content matching your search term will be highlighted.
               </p>
             </div>
@@ -264,7 +264,7 @@
             <UsersRound class="h-4 w-4 text-blue-600 mr-2" />
             People
           </h2>
-          <div class="text-sm text-gray-500">
+          <div class="text-sm text-gray-600">
             Found {{ userResults.length }} {{ userResults.length === 1 ? 'person' : 'people' }} matching "<span class="text-blue-600 font-medium">{{ $route.params.search }}</span>"
           </div>
         </div>
@@ -303,7 +303,7 @@
           <!-- Search result count when posts are loaded -->
           <div
             v-if="!loading && displayedPosts.length > 0"
-            class="text-sm text-gray-500"
+            class="text-sm text-gray-600"
           >
             Found {{ allPosts.length }}
             {{ allPosts.length === 1 ? "post" : "posts" }} matching "<span
@@ -323,7 +323,7 @@
           <p class="text-gray-600 font-medium mb-1">
             {{ $route.params.search.startsWith('#') ? 'No posts with this hashtag' : 'No posts found' }}
           </p>
-          <p class="text-gray-500 text-sm">
+          <p class="text-gray-600 text-sm">
             <template v-if="$route.params.search.startsWith('#')">
               No posts with the hashtag "{{ $route.params.search }}" were found, but we did find people.
             </template>
@@ -426,7 +426,7 @@
       <h3 class="text-lg font-semibold text-gray-800 mb-1">
         End of Search Results
       </h3>
-      <p class="text-gray-500 mb-4 max-w-md">
+      <p class="text-gray-600 mb-4 max-w-md">
         You've seen all posts matching your search for "{{
           $route.params.search
         }}".
@@ -480,11 +480,11 @@
       <div
         class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-6 border border-gray-200"
       >
-        <Search class="h-8 w-8 text-gray-500" />
+        <Search class="h-8 w-8 text-gray-600" />
       </div>
 
       <h3 class="text-lg font-semibold text-gray-800 mb-2">No results found</h3>
-      <p class="text-gray-500 mb-6 max-w-md">
+      <p class="text-gray-600 mb-6 max-w-md">
         We couldn't find any posts matching "{{ $route.params.search }}". Try
         adjusting your search terms or filters.
       </p>
@@ -492,7 +492,7 @@
       <div class="w-full max-w-md">
         <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-100">
           <h4 class="font-medium text-gray-800 mb-3">Suggestions:</h4>
-          <ul class="text-sm text-gray-500 space-y-2">
+          <ul class="text-sm text-gray-600 space-y-2">
             <li class="flex items-start">
               <div class="min-w-4 mr-2 mt-0.5">•</div>
               <span>Check your spelling</span>

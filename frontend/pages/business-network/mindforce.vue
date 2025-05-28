@@ -64,7 +64,7 @@
             class="flex flex-col items-center justify-center py-16 bg-gray-50/50 rounded-lg border border-dashed border-gray-200"
           >
             <div class="text-center">
-              <p class="text-gray-500 mb-2">
+              <p class="text-gray-600 mb-2">
                 No active problems at the moment.
               </p>
               <button
@@ -133,13 +133,13 @@
                 stroke-width="1"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                class="mx-auto text-gray-500 mb-4"
+                class="mx-auto text-gray-600 mb-4"
               >
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="8" x2="12" y2="12"></line>
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
               </svg>
-              <p class="text-gray-500">No solved problems yet.</p>
+              <p class="text-gray-600">No solved problems yet.</p>
             </div>
           </div>
         </div>
@@ -171,7 +171,7 @@
                 stroke-width="1"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                class="mx-auto text-gray-500 mb-4"
+                class="mx-auto text-gray-600 mb-4"
               >
                 <path
                   d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
@@ -179,7 +179,7 @@
                 <line x1="12" y1="9" x2="12" y2="13"></line>
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
               </svg>
-              <p class="text-gray-500 mb-2">
+              <p class="text-gray-600 mb-2">
                 You haven't posted any problems yet.
               </p>
               <button

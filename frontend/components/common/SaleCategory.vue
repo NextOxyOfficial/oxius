@@ -306,10 +306,10 @@
                 {{ post.title }}
               </h4>
               <!-- Address with location icon -->
-              <div class="flex items-start mt-1 mb-2 text-xs text-gray-500">
+              <div class="flex items-start mt-1 mb-2 text-xs text-gray-600">
                 <Icon
                   name="heroicons:map-pin"
-                  class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-500"
+                  class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-600"
                 />
                 {{
                   post?.division && post?.district && post?.area
@@ -321,16 +321,16 @@
               <div class="mt-auto flex justify-between items-center pt-1">
                 <!-- Condition tag -->
                 <div
-                  class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full"
+                  class="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full"
                 >
                   {{ post.condition }}
                 </div>
 
                 <!-- Date or other secondary info -->
-                <div class="text-xs text-gray-500 flex items-center">
+                <div class="text-xs text-gray-600 flex items-center">
                   <Icon
                     name="heroicons:clock"
-                    class="h-3 w-3 mr-1 text-gray-500"
+                    class="h-3 w-3 mr-1 text-gray-600"
                   />
                   {{ formatDate(post.created_at) }}
                 </div>
@@ -347,12 +347,12 @@
           <Icon
             name="heroicons:document-magnifying-glass"
             size="40px"
-            class="text-gray-500 mb-2"
+            class="text-gray-600 mb-2"
           />
           <h3 class="text-base font-medium text-gray-800 mb-1">
             No listings found
           </h3>
-          <p class="text-gray-500 text-sm text-center">
+          <p class="text-gray-600 text-sm text-center">
             There are no items currently listed in this category.
           </p>
         </div>
@@ -386,7 +386,7 @@
                 </h3>
                 <button
                   type="button"
-                  class="text-gray-500 hover:text-gray-500"
+                  class="text-gray-600 hover:text-gray-600"
                   @click="closePostSaleModal"
                 >
                   <Icon name="heroicons:x-mark" size="24px" />
@@ -432,7 +432,7 @@
                   </h3>
                   <button
                     type="button"
-                    class="text-gray-500 hover:text-gray-500"
+                    class="text-gray-600 hover:text-gray-600"
                     @click="closeMyPostsModal"
                   >
                     <Icon name="heroicons:x-mark" size="24px" />

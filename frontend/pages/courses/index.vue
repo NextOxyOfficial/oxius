@@ -55,7 +55,7 @@
             </div>
             <span
               class="ml-1 text-xs font-medium"
-              :class="selectedBatch ? 'text-blue-600' : 'text-gray-500'"
+              :class="selectedBatch ? 'text-blue-600' : 'text-gray-600'"
               >{{ $t("batch") }}</span
             >
           </div>
@@ -87,7 +87,7 @@
             </div>
             <span
               class="ml-1 text-xs font-medium"
-              :class="selectedDivision ? 'text-blue-600' : 'text-gray-500'"
+              :class="selectedDivision ? 'text-blue-600' : 'text-gray-600'"
               >{{ $t("division") }}</span
             >
           </div>
@@ -119,7 +119,7 @@
             </div>
             <span
               class="ml-1 text-xs font-medium"
-              :class="selectedSubject ? 'text-blue-600' : 'text-gray-500'"
+              :class="selectedSubject ? 'text-blue-600' : 'text-gray-600'"
               >{{ $t("subject") }}</span
             >
           </div>
@@ -151,7 +151,7 @@
             </div>
             <span
               class="ml-1 text-xs font-medium"
-              :class="selectedSubject ? 'text-blue-600' : 'text-gray-500'"
+              :class="selectedSubject ? 'text-blue-600' : 'text-gray-600'"
               >{{ $t("videos") }}</span
             >
           </div>
@@ -212,7 +212,7 @@
             <div class="mt-2 text-sm text-gray-600">
               <p>{{ $t("getting_started_desc") }}</p>
               <ul
-                class="mt-2 space-y-1 list-disc list-inside text-xs text-gray-500"
+                class="mt-2 space-y-1 list-disc list-inside text-xs text-gray-600"
               >
                 <li>
                   {{ $t("step_1_of_4") }}: {{ $t("select_your_batch") }} ({{

@@ -39,7 +39,7 @@
           class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1"
         >
           <button
-            class="p-1 rounded-full text-gray-500 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+            class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
             @click="post.commentText = ''"
             aria-label="Clear comment"
           >
@@ -105,7 +105,7 @@
               </div>
               <button
                 @click="closeDiamondDropup"
-                class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500"
+                class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600"
               >
                 <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
               </button>
@@ -222,7 +222,7 @@
                 <!-- No Balance Message -->
                 <div
                   v-if="availableDiamonds === 0"
-                  class="flex items-center justify-center gap-1.5 text-center text-sm text-gray-500 dark:text-gray-500 py-1.5"
+                  class="flex items-center justify-center gap-1.5 text-center text-sm text-gray-600 dark:text-gray-600 py-1.5"
                 >
                   <UIcon
                     name="i-heroicons-exclamation-circle"
@@ -257,7 +257,7 @@
               </div>
               <button
                 @click.stop="showBuyDiamonds = false"
-                class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500"
+                class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600"
               >
                 <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
               </button>
@@ -296,7 +296,7 @@
                 </div>
               </div>
 
-              <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
+              <p class="text-xs text-gray-600 dark:text-gray-600 mb-3">
                 Purchase diamond packages (10 diamonds = 1 BDT)
               </p>
 
@@ -322,7 +322,7 @@
                       class="h-4 w-4 ml-1 text-pink-400"
                     />
                   </div>
-                  <span class="text-xs text-gray-500 dark:text-gray-400 mt-1"
+                  <span class="text-xs text-gray-600 dark:text-gray-400 mt-1"
                     >{{ pkg.price }} BDT</span
                   >
 
@@ -365,8 +365,8 @@
                   </div>
                 </div>
                 <div class="flex items-center justify-between mt-1.5">
-                  <p class="text-xs text-gray-500">Minimum 10 diamonds</p>
-                  <p class="text-xs text-gray-500">
+                  <p class="text-xs text-gray-600">Minimum 10 diamonds</p>
+                  <p class="text-xs text-gray-600">
                     ≈ {{ calculatePrice(customDiamondAmount || 0) }} BDT
                   </p>
                 </div>
@@ -402,7 +402,7 @@
         <div class="pt-1 pb-1">
           <!-- Header with subtle styling -->
           <div
-            class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-500 border-b border-gray-100/80 dark:border-slate-700/80"
+            class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-600 border-b border-gray-100/80 dark:border-slate-700/80"
           >
             Mention someone
           </div>
@@ -443,7 +443,7 @@
                   {{ user?.follower_details?.name }}
                 </span>
                 <span
-                  class="text-xs text-gray-500 dark:text-gray-500"
+                  class="text-xs text-gray-600 dark:text-gray-600"
                   v-if="user?.follower_details?.profession"
                 >
                   {{ user?.follower_details?.profession }}
@@ -482,7 +482,7 @@
             <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-1">
               Gift Sent Successfully!
             </h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
               You sent {{ lastGiftAmount }} diamonds to
               {{ post?.author_details?.name || post?.author?.name || "User" }}
             </p>

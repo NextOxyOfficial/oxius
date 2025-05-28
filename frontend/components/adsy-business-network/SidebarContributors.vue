@@ -1,7 +1,7 @@
 <template>
   <div>
     <h3
-      class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-3 flex items-center justify-between"
+      class="text-xs font-semibold text-gray-600 uppercase tracking-wider px-3 mb-3 flex items-center justify-between"
     >
       <div class="flex items-center">
         <Users class="h-3.5 w-3.5 mr-1.5" />
@@ -50,7 +50,7 @@
           <h4 class="text-sm font-medium text-gray-800 truncate">
             {{ contributor.name }}
           </h4>
-          <p class="text-xs text-gray-500 flex items-center">
+          <p class="text-xs text-gray-600 flex items-center">
             <FileText class="h-3 w-3 mr-1" />
             <span>{{ contributor.post_count || 0 }} posts</span>
             <Users class="h-3 w-3 mx-1" />

@@ -1,7 +1,7 @@
 <template>
   <div>
     <h3
-      class="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-3 flex items-center"
+      class="text-xs font-semibold text-gray-600 uppercase tracking-wider px-3 mb-3 flex items-center"
     >
       <Link class="h-3.5 w-3.5 mr-1.5" />
       <span>Useful Links</span>

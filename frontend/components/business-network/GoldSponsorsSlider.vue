@@ -219,7 +219,7 @@
                 <button
                   type="button"
                   @click="closeModal"
-                  class="bg-white dark:bg-slate-700 rounded-full pt-1 px-1 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none shadow-md"
+                  class="bg-white dark:bg-slate-700 rounded-full pt-1 px-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none shadow-md"
                 >
                   <span class="sr-only">Close</span>
                   <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />

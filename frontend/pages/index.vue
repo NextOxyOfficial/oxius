@@ -524,7 +524,7 @@
                                 class="text-purple-500 size-4"
                               />
                               <p class="text-sm font-medium">
-                                <span class="text-gray-500 dark:text-slate-300"
+                                <span class="text-gray-600 dark:text-slate-300"
                                   >By:</span
                                 >
                                 <span
@@ -652,7 +652,7 @@
                 >
                   <UIcon
                     name="i-heroicons-briefcase"
-                    class="size-16 text-slate-300 dark:text-gray-500 mb-4"
+                    class="size-16 text-slate-300 dark:text-gray-600 mb-4"
                   />
                   <p class="text-lg text-slate-500 dark:text-slate-400">
                     No gigs available in this category

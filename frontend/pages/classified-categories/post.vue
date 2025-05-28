@@ -9,7 +9,7 @@
           >
             {{ $t("post_classified") }}
           </h1>
-          <p class="text-lg text-gray-500 max-w-lg mx-auto">
+          <p class="text-lg text-gray-600 max-w-lg mx-auto">
             {{ $t("post_classified_text") }}
           </p>
         </div>
@@ -74,7 +74,7 @@
             </UFormGroup>
 
             <UFormGroup label="Description" required class="mb-5">
-              <p class="text-sm text-gray-500 mb-3">
+              <p class="text-sm text-gray-600 mb-3">
                 Provide detailed information about your listing
               </p>
               <div
@@ -158,7 +158,7 @@
               <UIcon name="i-heroicons-photo" class="text-emerald-600" />
               {{ $t("media_gallary") }}
             </h2>
-            <p class="text-sm text-gray-500 mb-4">
+            <p class="text-sm text-gray-600 mb-4">
               Add photos to showcase your listing (up to 5 images)
             </p>
 
@@ -207,7 +207,7 @@
                   accept="image/*"
                 />
                 <div
-                  class="flex flex-col items-center gap-2 text-gray-500 text-sm text-center p-2 group-hover:text-emerald-600"
+                  class="flex flex-col items-center gap-2 text-gray-600 text-sm text-center p-2 group-hover:text-emerald-600"
                 >
                   <UIcon
                     name="i-heroicons-arrow-up-tray"
@@ -352,7 +352,7 @@
           <div class="p-2 md:p-7 bg-gray-50">
             <UCheckbox name="terms_privacy" v-model="form.accepted_privacy">
               <template #label>
-                <span class="text-gray-500 text-sm">
+                <span class="text-gray-600 text-sm">
                   I agree to the
                   <NuxtLink
                     to="/terms"
@@ -409,7 +409,7 @@
             <h2 class="text-xl font-semibold text-gray-800 mb-4">
               KYC Verification Required
             </h2>
-            <p class="text-gray-500 mb-6 max-w-md leading-relaxed">
+            <p class="text-gray-600 mb-6 max-w-md leading-relaxed">
               To ensure trust and safety in our marketplace, we require identity
               verification before posting ads.
             </p>

@@ -15,7 +15,7 @@
                 <h2 class="text-xl font-semibold text-gray-800">
                   Reset password
                 </h2>
-                <p class="text-gray-500">
+                <p class="text-gray-600">
                   Choose how you want to reset your password
                 </p>
               </div>
@@ -29,7 +29,7 @@
                       'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 hidden',
                       form.method === 'email'
                         ? 'bg-white shadow-sm text-gray-800'
-                        : 'text-gray-500 hover:text-gray-800',
+                        : 'text-gray-600 hover:text-gray-800',
                     ]"
                   >
                     Email
@@ -41,7 +41,7 @@
                       'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200',
                       form.method === 'phone'
                         ? 'bg-white shadow-sm text-gray-800'
-                        : 'text-gray-500 hover:text-gray-800',
+                        : 'text-gray-600 hover:text-gray-800',
                     ]"
                   >
                     Phone
@@ -96,7 +96,7 @@
                 <h2 class="text-xl font-semibold text-gray-800">
                   Enter verification code
                 </h2>
-                <p class="text-gray-500">
+                <p class="text-gray-600">
                   We sent a code to your {{ form.method }}
                 </p>
               </div>

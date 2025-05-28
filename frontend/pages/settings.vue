@@ -9,7 +9,7 @@
           >
             {{ $t("settings") }}
           </h1>
-          <p class="text-gray-500 max-w-xl mx-auto">
+          <p class="text-gray-600 max-w-xl mx-auto">
             Manage your account settings and preferences
           </p>
         </div>
@@ -61,7 +61,7 @@
             >
               {{ userProfile.first_name }} {{ userProfile.last_name }}
             </h2>
-            <p class="text-sm text-gray-500">{{ userProfile.email }}</p>
+            <p class="text-sm text-gray-600">{{ userProfile.email }}</p>
           </div>
         </div>
 
@@ -75,7 +75,7 @@
                   'flex-1 py-3 px-4 rounded-lg font-medium transition-all',
                   activeTab === 'profile'
                     ? 'text-white bg-emerald-600 hover:bg-emerald-700'
-                    : 'text-gray-500 hover:bg-gray-50',
+                    : 'text-gray-600 hover:bg-gray-50',
                 ]"
               >
                 <div class="flex items-center justify-center gap-2">
@@ -89,7 +89,7 @@
                   'flex-1 py-3 px-4 rounded-lg font-medium transition-all',
                   activeTab === 'password'
                     ? 'text-white bg-emerald-600 hover:bg-emerald-700'
-                    : 'text-gray-500 hover:bg-gray-50',
+                    : 'text-gray-600 hover:bg-gray-50',
                 ]"
               >
                 <div class="flex items-center justify-center gap-2">
@@ -142,7 +142,7 @@
                       <div
                         class="absolute inset-y-0 right-0 flex items-center pr-3"
                       >
-                        <UIcon name="i-heroicons-key" class="text-gray-500" />
+                        <UIcon name="i-heroicons-key" class="text-gray-600" />
                       </div>
                     </div>
                   </div>
@@ -167,7 +167,7 @@
                       >
                         <UIcon
                           name="i-heroicons-shield-check"
-                          class="text-gray-500"
+                          class="text-gray-600"
                         />
                       </div>
                     </div>
@@ -176,7 +176,7 @@
 
                 <div class="mt-4 pt-4 border-t border-emerald-200">
                   <div class="password-strength" v-if="new_password">
-                    <div class="text-xs text-gray-500 mb-1">
+                    <div class="text-xs text-gray-600 mb-1">
                       Password strength
                     </div>
                     <div class="flex gap-1">
@@ -367,7 +367,7 @@
                         >Upload Banner Image</span
                       >
                     </div>
-                    <p class="mt-2 text-xs text-gray-500">
+                    <p class="mt-2 text-xs text-gray-600">
                       Recommended size: 1600×400 pixels. Max size: 10MB.
                     </p>
                   </div>
@@ -647,7 +647,7 @@
         <div
           class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between"
         >
-          <div class="text-sm text-gray-500">
+          <div class="text-sm text-gray-600">
             <span v-if="formDirty" class="flex items-center gap-1">
               <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
               Profile has unsaved changes
@@ -712,7 +712,7 @@
             </h3>
             <button
               @click="showDeleteConfirmModal = false"
-              class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
+              class="text-gray-600 hover:text-gray-600 transition-colors duration-150"
             >
               <X class="h-6 w-6" />
             </button>
@@ -788,7 +788,7 @@
             </h3>
             <button
               @click="showDeleteBannerConfirmModal = false"
-              class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
+              class="text-gray-600 hover:text-gray-600 transition-colors duration-150"
             >
               <X class="h-6 w-6" />
             </button>

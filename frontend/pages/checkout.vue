@@ -135,7 +135,7 @@
                             </h3>
                             <div
                               v-html="product.description"
-                              class="text-gray-500 text-sm line-clamp-3"
+                              class="text-gray-600 text-sm line-clamp-3"
                             ></div>
                             <div class="flex items-center justify-between mt-2">
                               <div class="text-indigo-600 font-semibold">
@@ -359,7 +359,7 @@
                                 class="font-medium text-gray-800"
                                 >Inside Dhaka</label
                               >
-                              <span class="text-gray-500 text-sm"
+                              <span class="text-gray-600 text-sm"
                                 >Delivery within 24 hours</span
                               >
 
@@ -396,7 +396,7 @@
                                 class="font-medium text-gray-800"
                                 >Outside Dhaka</label
                               >
-                              <span class="text-gray-500 text-sm"
+                              <span class="text-gray-600 text-sm"
                                 >Delivery within 3-5 days</span
                               >
                               <span class="text-indigo-600 font-medium mt-1"
@@ -454,7 +454,7 @@
                                 >Account Funds</label
                               >
                               <div class="flex items-center mt-1">
-                                <span class="text-gray-500 text-sm mr-2"
+                                <span class="text-gray-600 text-sm mr-2"
                                   >Available balance:</span
                                 >
 
@@ -488,7 +488,7 @@
                               <label for="cod" class="font-medium text-gray-800"
                                 >Cash on Delivery</label
                               >
-                              <span class="text-gray-500 text-sm"
+                              <span class="text-gray-600 text-sm"
                                 >Pay when you receive your order</span
                               >
                             </div>
@@ -511,11 +511,11 @@
                       </div>
                       <div class="p-6 bg-gradient-to-b from-white to-slate-50">
                         <div class="space-y-2 mb-4">
-                          <div class="flex justify-between py-2 text-gray-500">
+                          <div class="flex justify-between py-2 text-gray-600">
                             <span>Products ({{ totalItems }})</span>
                             <span class="font-medium">৳{{ subtotal }}</span>
                           </div>
-                          <div class="flex justify-between py-2 text-gray-500">
+                          <div class="flex justify-between py-2 text-gray-600">
                             <span>Delivery Fee</span>
                             <span class="font-medium">৳{{ deliveryFee }}</span>
                           </div>
@@ -538,7 +538,7 @@
                           Complete Purchase
                         </button>
 
-                        <p class="text-xs text-center text-gray-500 mt-4">
+                        <p class="text-xs text-center text-gray-600 mt-4">
                           By completing this purchase, you agree to our
                           <NuxtLink
                             href="/terms"
@@ -635,13 +635,13 @@
                         Insufficient Funds
                       </h3>
                       <div class="mt-3">
-                        <p class="text-base text-gray-500">
+                        <p class="text-base text-gray-600">
                           Your account balance (৳{{ user?.user.balance }}) is
                           not sufficient to complete this purchase (৳{{
                             total
                           }}).
                         </p>
-                        <p class="mt-2 text-base text-gray-500">
+                        <p class="mt-2 text-base text-gray-600">
                           Please choose another payment method or add funds to
                           your account.
                         </p>
@@ -749,7 +749,7 @@
                         Order Successful!
                       </h3>
                       <div class="mt-3">
-                        <p class="text-base text-gray-500">
+                        <p class="text-base text-gray-600">
                           Thank you for your purchase! Your order #{{
                             orderNumber
                           }}
@@ -759,11 +759,11 @@
                           class="mt-4 p-3 bg-green-50 rounded-lg border border-green-100"
                         >
                           <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-500">Order Total:</span>
+                            <span class="text-gray-600">Order Total:</span>
                             <span class="font-medium">৳{{ total }}</span>
                           </div>
                           <div class="flex justify-between text-sm">
-                            <span class="text-gray-500"
+                            <span class="text-gray-600"
                               >Estimated Delivery:</span
                             >
                             <span class="font-medium">{{

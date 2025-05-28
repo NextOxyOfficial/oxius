@@ -68,7 +68,7 @@
       >
         <UIcon
           name="i-heroicons-chevron-left"
-          class="w-5 h-5 text-gray-500 dark:text-slate-300"
+          class="w-5 h-5 text-gray-600 dark:text-slate-300"
         />
       </button>
 
@@ -86,7 +86,7 @@
       >
         <UIcon
           name="i-heroicons-chevron-right"
-          class="w-5 h-5 text-gray-500 dark:text-slate-300"
+          class="w-5 h-5 text-gray-600 dark:text-slate-300"
         />
       </button>
 

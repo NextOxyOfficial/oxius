@@ -17,7 +17,7 @@
           <h3 class="text-xl font-semibold text-gray-800 mb-3">
             Post Submitted Successfully!
           </h3>
-          <p class="text-gray-500 mb-5">
+          <p class="text-gray-600 mb-5">
             Your listing has been submitted and is now
             <span
               class="font-medium text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded"
@@ -52,7 +52,7 @@
                   ? 'bg-green-500 text-white'
                   : currentStep === index
                   ? 'bg-primary text-white'
-                  : 'bg-gray-100 text-gray-500',
+                  : 'bg-gray-100 text-gray-600',
               ]"
             >
               <span v-if="currentStep > index">
@@ -62,7 +62,7 @@
             </div>
             <span
               class="text-sm font-medium text-center"
-              :class="currentStep >= index ? 'text-gray-800' : 'text-gray-500'"
+              :class="currentStep >= index ? 'text-gray-800' : 'text-gray-600'"
               >{{ step }}</span
             >
             <!-- Connector line -->
@@ -113,7 +113,7 @@
               >
                 <Icon
                   name="heroicons:chevron-down"
-                  class="h-5 w-5 text-gray-500"
+                  class="h-5 w-5 text-gray-600"
                 />
               </div>
             </div>
@@ -159,7 +159,7 @@
               >
                 <Icon
                   name="heroicons:chevron-down"
-                  class="h-5 w-5 text-gray-500"
+                  class="h-5 w-5 text-gray-600"
                 />
               </div>
             </div>
@@ -190,10 +190,10 @@
               >
                 <Icon
                   name="heroicons:document-text"
-                  class="h-5 w-5 text-gray-500"
+                  class="h-5 w-5 text-gray-600"
                 />
               </div>
-              <div class="absolute right-3 bottom-3 text-xs text-gray-500">
+              <div class="absolute right-3 bottom-3 text-xs text-gray-600">
                 {{ formData.title.length }}/100
               </div>
             </div>
@@ -217,7 +217,7 @@
                 placeholder="Describe what you're selling in detail"
               />
 
-              <div class="absolute right-3 bottom-3 text-xs text-gray-500">
+              <div class="absolute right-3 bottom-3 text-xs text-gray-600">
                 {{ formData.description.length }}/1000
               </div>
             </div>
@@ -273,7 +273,7 @@
                 <div
                   class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
                 >
-                  <Icon name="mdi:currency-bdt" class="h-5 w-5 text-gray-500" />
+                  <Icon name="mdi:currency-bdt" class="h-5 w-5 text-gray-600" />
                 </div>
                 <input
                   type="number"
@@ -418,7 +418,7 @@
                 <div
                   class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"
                 >
-                  <Icon name="heroicons:phone" class="h-5 w-5 text-gray-500" />
+                  <Icon name="heroicons:phone" class="h-5 w-5 text-gray-600" />
                 </div>
                 <input
                   type="tel"
@@ -439,7 +439,7 @@
                 >
                   <Icon
                     name="heroicons:envelope"
-                    class="h-5 w-5 text-gray-500"
+                    class="h-5 w-5 text-gray-600"
                   />
                 </div>
                 <input
@@ -459,7 +459,7 @@
             Upload Photos
           </h3>
 
-          <p class="text-sm text-gray-500 mb-6">
+          <p class="text-sm text-gray-600 mb-6">
             Upload clear photos to get more responses. You can upload up to 8
             images.
             <span class="font-medium text-primary"
@@ -497,10 +497,10 @@
               >
                 <Icon
                   name="heroicons:photo"
-                  class="text-gray-500 text-2xl mb-2 group-hover:text-primary transition-colors"
+                  class="text-gray-600 text-2xl mb-2 group-hover:text-primary transition-colors"
                 />
                 <div
-                  class="text-sm text-gray-500 group-hover:text-primary transition-colors"
+                  class="text-sm text-gray-600 group-hover:text-primary transition-colors"
                 >
                   {{ n === 1 ? "Add main photo" : "Add photo" }}
                 </div>
@@ -572,7 +572,7 @@
                 >
                 <span class="text-red-500 ml-0.5">*</span>
                 <p
-                  class="mt-1.5 text-sm text-gray-500 group-hover:text-gray-800 transition-colors"
+                  class="mt-1.5 text-sm text-gray-600 group-hover:text-gray-800 transition-colors"
                 >
                   By posting, you confirm that this ad complies with our
                   policies and you own or have rights to the content you're

@@ -85,7 +85,7 @@
                 </button>
               </div>
             </div>
-            <span class="text-sm text-gray-500 capitalize">
+            <span class="text-sm text-gray-600 capitalize">
               {{ article.author_details?.profession || "Contributor" }}
             </span>
           </div>
@@ -155,7 +155,7 @@
                             : "Anonymous"
                         }}
                       </h3>
-                      <span class="text-sm text-gray-500">{{
+                      <span class="text-sm text-gray-600">{{
                         formatDate(comment.created_at)
                       }}</span>
                     </div>
@@ -168,7 +168,7 @@
               v-if="
                 !article.post_comments || article.post_comments.length === 0
               "
-              class="text-center py-8 text-gray-500"
+              class="text-center py-8 text-gray-600"
             >
               No comments yet. Be the first to comment!
             </div>
@@ -210,14 +210,14 @@
                 </NuxtLink>
                 <div
                   v-html="relatedArticle.content.substring(0, 100) + `...`"
-                  class="text-sm text-gray-500 mb-4 line-clamp-2"
+                  class="text-sm text-gray-600 mb-4 line-clamp-2"
                 ></div>
 
                 <div class="flex justify-between text-sm">
-                  <span class="text-gray-500">{{
+                  <span class="text-gray-600">{{
                     formatDate(relatedArticle.created_at)
                   }}</span>
-                  <span class="text-gray-500 flex items-center">
+                  <span class="text-gray-600 flex items-center">
                     <MessageSquareIcon class="h-3 w-3 mr-1" />
                     {{
                       relatedArticle.post_comments
@@ -249,7 +249,7 @@
               >
                 {{ tip.title }}
               </h3>
-              <p class="text-sm text-gray-500 line-clamp-3">
+              <p class="text-sm text-gray-600 line-clamp-3">
                 {{ tip.description }}
               </p>
             </div>

@@ -416,7 +416,7 @@
         </div>
 
         <div class="p-6">
-          <p class="text-gray-500 mb-6 text-center">
+          <p class="text-gray-600 mb-6 text-center">
             This action will mark your post as completed and it will no longer
             be active. This action cannot be undone.
           </p>

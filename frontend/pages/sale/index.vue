@@ -69,7 +69,7 @@
                       <UIcon
                         v-if="location?.city"
                         name="i-heroicons-chevron-right"
-                        class="mx-1.5 text-gray-500"
+                        class="mx-1.5 text-gray-600"
                       />
                     </div>
 
@@ -88,7 +88,7 @@
                       <UIcon
                         v-if="location?.upazila"
                         name="i-heroicons-chevron-right"
-                        class="mx-1.5 text-gray-500"
+                        class="mx-1.5 text-gray-600"
                       />
                     </div>
 
@@ -231,7 +231,7 @@
               >
                 <span class="text-xs font-medium">Menu</span>
               </UButton>
-              <p class="text-gray-500 text-sm">
+              <p class="text-gray-600 text-sm">
                 <span class="font-medium text-gray-800">{{
                   selectedCategory
                     ? getCateogryPostCount(selectedCategory)
@@ -248,7 +248,7 @@
             </div>
             <div class="flex gap-6 items-center">
               <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-500">Sort by:</span>
+                <span class="text-sm text-gray-600">Sort by:</span>
                 <USelect
                   v-model="sortOption"
                   :options="sortOptions"
@@ -281,7 +281,7 @@
             class="bg-white p-3 rounded-lg shadow-sm mb-4"
           >
             <div class="flex flex-wrap items-center gap-2">
-              <span class="text-sm text-gray-500">Filters:</span>
+              <span class="text-sm text-gray-600">Filters:</span>
 
               <UBadge
                 v-if="selectedCategory"
@@ -407,11 +407,11 @@
                 name="i-heroicons-arrow-path"
                 class="animate-spin h-6 w-6 mx-auto text-blue-500"
               />
-              <p class="mt-2 text-gray-500 text-sm">Loading listings...</p>
+              <p class="mt-2 text-gray-600 text-sm">Loading listings...</p>
             </div>
 
             <div v-else-if="!listings?.length" class="py-8 text-center">
-              <p class="text-gray-500">No listings found in this category</p>
+              <p class="text-gray-600">No listings found in this category</p>
             </div>
             <div
               v-else
@@ -437,11 +437,11 @@
                       {{ post?.title || `Post title` }}
                     </div>
                     <div
-                      class="flex items-start mt-1 mb-2 text-xs text-gray-500"
+                      class="flex items-start mt-1 mb-2 text-xs text-gray-600"
                     >
                       <UIcon
                         name="i-heroicons-map-pin"
-                        class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-500"
+                        class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-600"
                       />
                       {{
                         post?.division && post?.district && post?.area
@@ -464,7 +464,7 @@
                       >
                       <span v-else>Contact for Price</span>
                     </p>
-                    <p class="text-xs text-gray-500">
+                    <p class="text-xs text-gray-600">
                       {{ formatDate(post.created_at) }}
                     </p>
                   </div>
@@ -479,7 +479,7 @@
                   <button
                     @click="goToPage(currentPage - 1)"
                     :disabled="currentPage === 1"
-                    class="px-3 py-1 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-100 disabled:opacity-50"
+                    class="px-3 py-1 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
                   >
                     ‹
                   </button>
@@ -525,7 +525,7 @@
                   <button
                     @click="goToPage(currentPage + 1)"
                     :disabled="currentPage === totalPages"
-                    class="px-3 py-1 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-100 disabled:opacity-50"
+                    class="px-3 py-1 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
                   >
                     ›
                   </button>
@@ -576,11 +576,11 @@
                     </h3>
 
                     <div
-                      class="flex items-start mt-1 mb-2 text-xs text-gray-500"
+                      class="flex items-start mt-1 mb-2 text-xs text-gray-600"
                     >
                       <UIcon
                         name="i-heroicons-map-pin"
-                        class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-500"
+                        class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-600"
                       />
                       {{
                         post?.division && post?.district && post?.area
@@ -596,7 +596,7 @@
                         >
                         <span v-else>Negotiable</span>
                       </p>
-                      <p class="text-xs text-gray-500">
+                      <p class="text-xs text-gray-600">
                         {{ formatDate(listing.created_at) }}
                       </p>
                     </div>
@@ -613,7 +613,7 @@
               name="i-heroicons-arrow-path"
               class="animate-spin h-8 w-8 mx-auto text-amber-500"
             />
-            <p class="mt-2 text-gray-500 text-sm">Loading recent listings...</p>
+            <p class="mt-2 text-gray-600 text-sm">Loading recent listings...</p>
           </div>
 
           <!-- Empty State -->
@@ -628,7 +628,7 @@
             <h3 class="mt-2 text-lg font-medium text-gray-800">
               No recent listings found
             </h3>
-            <p class="mt-1 text-gray-500 max-w-sm text-center">
+            <p class="mt-1 text-gray-600 max-w-sm text-center">
               Check back soon for new listings.
             </p>
           </div>
@@ -804,7 +804,7 @@
                   </h3>
                   <button
                     type="button"
-                    class="text-gray-500 hover:text-gray-500"
+                    class="text-gray-600 hover:text-gray-600"
                     @click="closePostSaleModal"
                   >
                     <Icon name="heroicons:x-mark" size="24px" />

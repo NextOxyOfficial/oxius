@@ -232,7 +232,7 @@
                 </span>
                 <!-- Verified badge for mobile -->
               </h1>
-              <p class="text-sm font-medium text-gray-500 mb-0.5">
+              <p class="text-sm font-medium text-gray-600 mb-0.5">
                 {{ user?.profession }}
               </p>
             </div>
@@ -345,7 +345,7 @@
                   <div class="text-base font-semibold">
                     {{ user?.post_count || 0 }}
                   </div>
-                  <div class="text-sm font-medium text-gray-500">Posts</div>
+                  <div class="text-sm font-medium text-gray-600">Posts</div>
                 </div>
                 <div
                   @click="openFollowersModal('followers')"
@@ -354,7 +354,7 @@
                   <div class="text-base font-semibold">
                     {{ user?.followers_count || 0 }}
                   </div>
-                  <div class="text-sm font-medium text-gray-500">Followers</div>
+                  <div class="text-sm font-medium text-gray-600">Followers</div>
                 </div>
                 <div
                   @click="openFollowersModal('following')"
@@ -363,7 +363,7 @@
                   <div class="text-base font-semibold">
                     {{ user?.following_count || 0 }}
                   </div>
-                  <div class="text-sm font-medium text-gray-500">Following</div>
+                  <div class="text-sm font-medium text-gray-600">Following</div>
                 </div>
               </div>
 
@@ -430,7 +430,7 @@
                       </div>
                     </span>
                   </div>
-                  <p class="text-sm font-medium text-gray-500 mb-0.5">
+                  <p class="text-sm font-medium text-gray-600 mb-0.5">
                     {{ user?.profession }}
                   </p>
                 </div>
@@ -479,7 +479,7 @@
                     <span class="font-semibold">{{
                       user?.post_count || 0
                     }}</span>
-                    <span class="text-gray-500 ml-1.5">Posts</span>
+                    <span class="text-gray-600 ml-1.5">Posts</span>
                   </div>
                   <div
                     @click="openFollowersModal('followers')"
@@ -488,7 +488,7 @@
                     <span class="font-semibold">{{
                       user?.followers_count || 0
                     }}</span>
-                    <span class="text-gray-500 ml-1.5">Followers</span>
+                    <span class="text-gray-600 ml-1.5">Followers</span>
                   </div>
                   <div
                     @click="openFollowersModal('following')"
@@ -497,7 +497,7 @@
                     <span class="font-semibold">{{
                       user?.following_count || 0
                     }}</span>
-                    <span class="text-gray-500 ml-1.5">Following</span>
+                    <span class="text-gray-600 ml-1.5">Following</span>
                   </div>
                 </div>
                 <div
@@ -530,11 +530,11 @@
               >
                 <p
                   v-if="user?.about"
-                  class="text-sm font-medium text-gray-500 mb-3 leading-relaxed"
+                  class="text-sm font-medium text-gray-600 mb-3 leading-relaxed"
                 >
                   {{ user?.about }}
                 </p>
-                <p v-else class="text-sm text-gray-500 italic mb-3">
+                <p v-else class="text-sm text-gray-600 italic mb-3">
                   No bio provided
                 </p>
               </div>
@@ -554,7 +554,7 @@
                     <MapPin class="h-3.5 w-3.5" />
                   </div>
                   <span
-                    class="text-gray-500 text-sm font medium truncate group-hover:text-gray-800 transition-colors"
+                    class="text-gray-600 text-sm font medium truncate group-hover:text-gray-800 transition-colors"
                   >
                     {{
                       [user?.city || "", user?.state || ""]
@@ -575,7 +575,7 @@
                     <Briefcase class="h-3.5 w-3.5" />
                   </div>
                   <span
-                    class="text-gray-500 text-sm font medium truncate group-hover:text-gray-800 transition-colors"
+                    class="text-gray-600 text-sm font medium truncate group-hover:text-gray-800 transition-colors"
                   >
                     {{ user?.company }}
                   </span>
@@ -589,7 +589,7 @@
                     <Calendar class="h-3.5 w-3.5" />
                   </div>
                   <span
-                    class="text-gray-500 text-sm group-hover:text-gray-800 transition-colors"
+                    class="text-gray-600 text-sm group-hover:text-gray-800 transition-colors"
                   >
                     Joined {{ formatTimeAgo(user?.date_joined) }}
                   </span>
@@ -609,7 +609,7 @@
                     <Mail class="h-3.5 w-3.5" />
                   </div>
                   <span
-                    class="text-gray-500 text-sm font medium truncate group-hover:text-gray-800 transition-colors"
+                    class="text-gray-600 text-sm font medium truncate group-hover:text-gray-800 transition-colors"
                   >
                     {{ user?.email }}
                   </span>
@@ -629,7 +629,7 @@
                     <Phone class="h-3.5 w-3.5" />
                   </div>
                   <span
-                    class="text-gray-500 text-sm font medium truncate group-hover:text-gray-800 transition-colors"
+                    class="text-gray-600 text-sm font medium truncate group-hover:text-gray-800 transition-colors"
                   >
                     {{ user?.phone }}
                   </span>
@@ -744,7 +744,7 @@
               :class="[
                 activeTab === tab.value
                   ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-500 border-transparent hover:text-gray-800 hover:border-gray-300',
+                  : 'text-gray-600 border-transparent hover:text-gray-800 hover:border-gray-300',
               ]"
               @click="switchTab(tab.value)"
             >
@@ -842,12 +842,12 @@
                 <div
                   class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4"
                 >
-                  <ChevronUp class="h-8 w-8 text-gray-500" />
+                  <ChevronUp class="h-8 w-8 text-gray-600" />
                 </div>
                 <h3 class="text-lg font-medium text-gray-800 mb-1">
                   No posts yet
                 </h3>
-                <p class="text-gray-500 mb-4 max-w-md">
+                <p class="text-gray-600 mb-4 max-w-md">
                   This profile hasn't posted anything yet
                 </p>
               </div>
@@ -868,7 +868,7 @@
                   <h3 class="text-lg font-medium text-gray-800 mb-1">
                     You're all caught up!
                   </h3>
-                  <p class="text-gray-500 mb-8 max-w-md">
+                  <p class="text-gray-600 mb-8 max-w-md">
                     You've reached the end of the feed
                   </p>
                   <button
@@ -961,7 +961,7 @@
                   <h3 class="text-base font-medium text-gray-800 mb-2">
                     No saved posts yet
                   </h3>
-                  <p class="text-gray-500 text-sm">
+                  <p class="text-gray-600 text-sm">
                     Posts you save will appear here
                   </p>
                 </div>

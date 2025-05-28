@@ -6,7 +6,7 @@
       <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Total Products</p>
+            <p class="text-sm font-medium text-gray-600">Total Products</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ products.length }}
             </p>
@@ -25,7 +25,7 @@
       <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Active Products</p>
+            <p class="text-sm font-medium text-gray-600">Active Products</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ activeProducts.length }}
             </p>
@@ -44,7 +44,7 @@
       <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Inactive Products</p>
+            <p class="text-sm font-medium text-gray-600">Inactive Products</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ inactiveProducts.length }}
             </p>
@@ -52,10 +52,10 @@
           <div
             class="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center"
           >
-            <CirclePause class="h-6 w-6 text-gray-500" />
+            <CirclePause class="h-6 w-6 text-gray-600" />
           </div>
         </div>
-        <p class="mt-2 text-sm font-medium text-gray-500">
+        <p class="mt-2 text-sm font-medium text-gray-600">
           ৳{{ inactiveProductsValue }}
         </p>
       </div>
@@ -63,7 +63,7 @@
       <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Out of Stock</p>
+            <p class="text-sm font-medium text-gray-600">Out of Stock</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ outOfStockProducts.length }}
             </p>
@@ -108,7 +108,7 @@
             <div
               class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
             >
-              <Search class="h-5 w-5 text-gray-500" />
+              <Search class="h-5 w-5 text-gray-600" />
             </div>
           </div>
         </div>
@@ -159,14 +159,14 @@
           </h3>
           <div
             v-html="product.description"
-            class="text-sm text-gray-500 mb-2 line-clamp-2"
+            class="text-sm text-gray-600 mb-2 line-clamp-2"
           ></div>
           <div class="flex justify-between items-center">
             <div class="text-lg font-semibold text-indigo-600">
               ৳{{ product.price }}
             </div>
-            <div class="text-sm text-gray-500 flex items-center">
-              <Package class="h-4 w-4 mr-1 text-gray-500" />
+            <div class="text-sm text-gray-600 flex items-center">
+              <Package class="h-4 w-4 mr-1 text-gray-600" />
               {{ product.stock }}
             </div>
           </div>
@@ -180,7 +180,7 @@
             </button>
             <button
               @click="toggleProductStatus(product)"
-              class="btn-product-action bg-gray-50 text-gray-500 hover:bg-gray-600 hover:text-white"
+              class="btn-product-action bg-gray-50 text-gray-600 hover:bg-gray-600 hover:text-white"
             >
               <component
                 :is="product.status === 'active' ? 'EyeOff' : 'Eye'"
@@ -202,7 +202,7 @@
       </div>
       <div
         v-if="paginatedProducts.length === 0"
-        class="col-span-full py-10 text-center text-gray-500"
+        class="col-span-full py-10 text-center text-gray-600"
       >
         <div class="flex flex-col items-center justify-center">
           <PackageX class="h-12 w-12 text-gray-400 mb-2" />

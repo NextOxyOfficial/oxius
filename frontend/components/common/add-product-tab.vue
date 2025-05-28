@@ -121,7 +121,7 @@
                 <label class="form-label mb-3 flex items-center">
                   <span>Description <span class="text-red-500">*</span></span>
                   <div
-                    class="ml-2 text-sm px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-gray-500 dark:text-slate-300 rounded-full"
+                    class="ml-2 text-sm px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 rounded-full"
                   >
                     Rich Text
                   </div>
@@ -197,7 +197,7 @@
               <h3 class="section-title">Media Gallery</h3>
             </div>
 
-            <p class="text-sm text-gray-500 dark:text-slate-400 mt-4 mb-6">
+            <p class="text-sm text-gray-600 dark:text-slate-400 mt-4 mb-6">
               <UIcon
                 name="i-heroicons-light-bulb"
                 class="w-4 h-4 mr-1 text-amber-500"
@@ -608,7 +608,7 @@
                     <!-- Inside Dhaka Rate -->
                     <div class="relative">
                       <label
-                        class="block text-sm font-medium text-gray-500 dark:text-slate-400 mb-1.5"
+                        class="block text-sm font-medium text-gray-600 dark:text-slate-400 mb-1.5"
                       >
                         Inside Dhaka Rate
                       </label>
@@ -630,7 +630,7 @@
                     <!-- Outside Dhaka Rate -->
                     <div class="relative">
                       <label
-                        class="block text-sm font-medium text-gray-500 dark:text-slate-400 mb-1.5"
+                        class="block text-sm font-medium text-gray-600 dark:text-slate-400 mb-1.5"
                       >
                         Outside Dhaka Rate
                       </label>
@@ -1215,7 +1215,7 @@ function resetForm(showConfirm = true) {
 }
 
 .premium-btn-secondary {
-  @apply rounded-lg py-2.5 px-5 text-gray-500 dark:text-slate-400 hover:bg-slate-100 
+  @apply rounded-lg py-2.5 px-5 text-gray-600 dark:text-slate-400 hover:bg-slate-100 
          dark:hover:bg-slate-700/50 hover:text-gray-800 dark:hover:text-white
          transition-all duration-300;
 }

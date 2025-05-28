@@ -7,7 +7,7 @@
       <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Total Products</p>
+            <p class="text-sm font-medium text-gray-600">Total Products</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ products.length }}
             </p>
@@ -29,7 +29,7 @@
       <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Active Products</p>
+            <p class="text-sm font-medium text-gray-600">Active Products</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ activeProducts.length }}
             </p>
@@ -51,7 +51,7 @@
       <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Inactive Products</p>
+            <p class="text-sm font-medium text-gray-600">Inactive Products</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ inactiveProducts.length }}
             </p>
@@ -61,11 +61,11 @@
           >
             <UIcon
               name="i-heroicons-pause-circle"
-              class="h-6 w-6 text-gray-500"
+              class="h-6 w-6 text-gray-600"
             />
           </div>
         </div>
-        <p class="mt-2 text-sm font-medium text-gray-500">
+        <p class="mt-2 text-sm font-medium text-gray-600">
           ৳{{ inactiveProductsValue.toFixed(2) }}
         </p>
       </div>
@@ -73,7 +73,7 @@
       <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-500">Out of Stock</p>
+            <p class="text-sm font-medium text-gray-600">Out of Stock</p>
             <p class="text-xl font-semibold text-gray-800">
               {{ outOfStockProducts.length }}
             </p>
@@ -123,7 +123,7 @@
             >
               <UIcon
                 name="i-heroicons-magnifying-glass"
-                class="h-5 w-5 text-gray-500"
+                class="h-5 w-5 text-gray-600"
               />
             </div>
           </div>
@@ -149,7 +149,7 @@
             v-else
             class="w-full h-48 bg-gray-200 flex items-center justify-center"
           >
-            <UIcon name="i-heroicons-photo" class="h-12 w-12 text-gray-500" />
+            <UIcon name="i-heroicons-photo" class="h-12 w-12 text-gray-600" />
           </div>
           <div class="absolute top-2 right-2">
             <span
@@ -185,7 +185,7 @@
           </NuxtLink>
           <div
             v-if="product.short_description"
-            class="text-sm text-gray-500 mb-2 line-clamp-2"
+            class="text-sm text-gray-600 mb-2 line-clamp-2"
           >
             {{ product.short_description }}
           </div>
@@ -210,24 +210,24 @@
                 >{{ product.regular_price }}
               </span>
             </div>
-            <div class="text-sm text-gray-500 flex items-center">
+            <div class="text-sm text-gray-600 flex items-center">
               <UIcon
                 name="i-heroicons-eye"
-                class="h-4 w-4 mr-1 text-gray-500"
+                class="h-4 w-4 mr-1 text-gray-600"
               />
               {{ product.views }}
             </div>
-            <div class="text-sm text-gray-500 flex items-center">
+            <div class="text-sm text-gray-600 flex items-center">
               <UIcon
                 name="i-heroicons-shopping-bag"
-                class="h-4 w-4 mr-1 text-gray-500"
+                class="h-4 w-4 mr-1 text-gray-600"
               />
               {{ product.order_count }}
             </div>
-            <div class="text-sm text-gray-500 flex items-center">
+            <div class="text-sm text-gray-600 flex items-center">
               <UIcon
                 name="i-heroicons-cube"
-                class="h-4 w-4 mr-1 text-gray-500"
+                class="h-4 w-4 mr-1 text-gray-600"
               />
               {{ product.quantity }}
             </div>
@@ -262,7 +262,7 @@
             <!-- Activate/Deactivate Button -->
             <button
               @click="toggleProductStatus(product)"
-              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 text-gray-500 hover:shadow-sm transition-all duration-300"
+              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 text-gray-600 hover:shadow-sm transition-all duration-300"
             >
               <!-- Hover effect overlay -->
               <div
@@ -322,7 +322,7 @@
       </div>
       <div
         v-if="filteredProducts.length === 0"
-        class="col-span-full py-10 text-center text-gray-500"
+        class="col-span-full py-10 text-center text-gray-600"
       >
         <div class="flex flex-col items-center justify-center">
           <UIcon
@@ -357,7 +357,7 @@
           </h3>
           <button
             @click="showDeleteConfirmModal = false"
-            class="text-gray-500 hover:text-gray-500 transition-colors duration-150"
+            class="text-gray-600 hover:text-gray-600 transition-colors duration-150"
           >
             <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
           </button>

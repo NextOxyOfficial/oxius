@@ -39,7 +39,7 @@
                 <h1 class="text-xl sm:text-2xl font-semibold text-gray-800">
                   {{ $t("message_center") }}
                 </h1>
-                <p class="text-gray-500 text-sm mt-1">
+                <p class="text-gray-600 text-sm mt-1">
                   {{ $t("message_center_text") }}
                 </p>
               </div>
@@ -439,7 +439,7 @@
                       <div class="flex items-center gap-2 mb-2">
                         <UIcon
                           name="i-heroicons-ticket"
-                          class="text-gray-500"
+                          class="text-gray-600"
                         />
                         <h4 class="text-sm font-semibold text-gray-800">
                           {{ activeTicket.title }}
@@ -471,7 +471,7 @@
                       />
                     </UFormGroup>
 
-                    <div class="text-xs text-gray-500 italic">
+                    <div class="text-xs text-gray-600 italic">
                       <UIcon name="i-heroicons-clock" class="inline mr-1" />
                       Typical response time: 24-48 hours
                     </div>
@@ -595,7 +595,7 @@
                               </UBadge>
                             </div>
                             <div
-                              class="flex items-center gap-2 text-sm text-gray-500"
+                              class="flex items-center gap-2 text-sm text-gray-600"
                             >
                               <UIcon
                                 name="i-heroicons-calendar"
@@ -626,7 +626,7 @@
                       <h4 class="font-semibold text-lg mb-3 flex items-center">
                         <UIcon
                           name="i-heroicons-document-text"
-                          class="mr-2 text-gray-500"
+                          class="mr-2 text-gray-600"
                         />
                         {{ activeTicket.title }}
                       </h4>
@@ -752,7 +752,7 @@
                                         >Latest</UBadge
                                       >
                                       <span
-                                        class="text-xs text-gray-500 flex items-center"
+                                        class="text-xs text-gray-600 flex items-center"
                                       >
                                         <UIcon
                                           name="i-heroicons-clock"
@@ -800,7 +800,7 @@
                           class="mb-3 focus-ring"
                         />
                         <div class="flex justify-between items-center">
-                          <p class="text-xs text-gray-500 flex items-center">
+                          <p class="text-xs text-gray-600 flex items-center">
                             <UIcon
                               name="i-heroicons-information-circle"
                               class="mr-1"

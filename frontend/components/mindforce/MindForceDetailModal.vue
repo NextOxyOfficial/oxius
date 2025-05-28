@@ -101,7 +101,7 @@
                     class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-700 h-8 w-8 p-0"
                   >
                     <MoreHorizontal
-                      class="h-4 w-4 text-gray-500 dark:text-slate-300"
+                      class="h-4 w-4 text-gray-600 dark:text-slate-300"
                     />
                   </button>
 
@@ -231,7 +231,7 @@
             >
               <div class="flex items-center space-x-4">
                 <span
-                  class="text-sm text-gray-500 dark:text-slate-400 flex items-center group"
+                  class="text-sm text-gray-600 dark:text-slate-400 flex items-center group"
                 >
                   <MessageSquare
                     class="h-4 w-4 mr-1.5 group-hover:text-blue-500 transition-colors"
@@ -242,7 +242,7 @@
                 </span>
 
                 <span
-                  class="text-sm text-gray-500 dark:text-slate-400 flex items-center"
+                  class="text-sm text-gray-600 dark:text-slate-400 flex items-center"
                 >
                   <Eye class="h-4 w-4 mr-1.5" />
                   {{ problem?.views || 0 }}
