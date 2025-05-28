@@ -202,7 +202,7 @@
           aria-modal="true"
         >
           <div
-            class="flex items-end justify-center min-h-screen pt-16 text-center sm:block sm:p-0"
+            class="flex items-start sm:items-end justify-center min-h-screen pt-16 text-center sm:block sm:p-0"
           >
             <!-- Background overlay -->
             <div
@@ -213,7 +213,7 @@
 
             <!-- Modal panel -->
             <div
-              class="inline-block align-bottom mt-10 sm:mt-20 bg-white dark:bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full"
+              class="inline-block align-bottom mt-10 sm:mt-20 bg-white dark:bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl w-full"
             >
               <div class="absolute top-0 right-0 pt-4 pr-4 z-50">
                 <button
@@ -500,6 +500,7 @@ async function fetchGoldSponsors() {
       sponsors.value = result.data.map((sponsor) => ({
         id: sponsor.id,
         name: sponsor.business_name,
+        banners: sponsor.banners,
         image: sponsor.logo ? sponsor.logo : "/static/frontend/avatar.png",
         business_description: sponsor.business_description,
         contact_email: sponsor.contact_email,
@@ -550,11 +551,13 @@ async function incrementSponsorViews(sponsorId) {
 async function fetchSponsorBanners(sponsorId) {
   try {
     const result = await get(`/bn/gold-sponsors/${sponsorId}/banners/`);
+    console.log("Banners fetched:", result.data);
     if (result.error) {
       console.error("Error fetching sponsor banners:", result.error);
       sponsorBanners.value = [];
     } else if (result.data && Array.isArray(result.data)) {
       // Map banner data to image URLs
+
       sponsorBanners.value = result.data
         .filter((banner) => banner.is_active && banner.image)
         .sort((a, b) => a.order - b.order)
