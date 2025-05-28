@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from django.db import models
-from business_network.models import SponsorshipPackage, GoldSponsor
+from business_network.models import SponsorshipPackage, GoldSponsor,GoldSponsorBanner
 from .serializers import SponsorshipPackageSerializer, GoldSponsorCreateSerializer, GoldSponsorSerializer
 
 class SponsorshipPackageListView(generics.ListAPIView):
@@ -207,8 +207,8 @@ def increment_sponsor_views(request, sponsor_id):
 def sponsor_banners(request, sponsor_id):
     """Get banners for a specific sponsor"""
     try:
-        sponsor = GoldSponsor.objects.get(id=sponsor_id, status='active')
-        banners = sponsor.banners.filter(is_active=True).order_by('order')
+        # sponsor = GoldSponsor.objects.get(id=sponsor_id, status='active')
+        banners = GoldSponsorBanner.objects.filter(sponsor=sponsor_id,is_active=True).order_by('order')
         
         banner_data = [{
             'id': banner.id,
@@ -219,7 +219,7 @@ def sponsor_banners(request, sponsor_id):
             'is_active': banner.is_active
         } for banner in banners]
         
-        return Response({'data': banner_data})
+        return Response( banner_data,status=status.HTTP_200_OK)
     except GoldSponsor.DoesNotExist:
         return Response({'error': 'Sponsor not found'}, status=404)
     except Exception as e:
