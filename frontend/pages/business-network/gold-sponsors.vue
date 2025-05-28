@@ -237,12 +237,12 @@
                     </p>
                   </div>
                 </div>
-                
-                <!-- Description -->
+                  <!-- Description -->
                 <div class="mb-6">
-                  <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">
-                    {{ sponsor.business_description || `${sponsor.name} is a prestigious gold sponsor contributing to our business network community.` }}
-                  </p>
+                  <div 
+                    v-html="sponsor.business_description || `${sponsor.name} is a prestigious gold sponsor contributing to our business network community.`"
+                    class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">
+                  </div>
                 </div>
                   <!-- Contact Info -->
                 <div class="space-y-2 mb-6">
@@ -327,13 +327,13 @@
                     </div>
                   </div>
                 </div>
-                
-                <!-- Content Section -->
+                  <!-- Content Section -->
                 <div class="flex-1 min-w-0">
                   <!-- Description -->
-                  <p class="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed line-clamp-2">
-                    {{ sponsor.business_description || `${sponsor.name} is a prestigious gold sponsor contributing to our business network community.` }}
-                  </p>
+                  <div 
+                    v-html="sponsor.business_description || `${sponsor.name} is a prestigious gold sponsor contributing to our business network community.`"
+                    class="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed line-clamp-2">
+                  </div>
                   
                   <!-- Contact Grid -->
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
