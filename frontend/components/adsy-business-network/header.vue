@@ -211,7 +211,7 @@
             <!-- Desktop User Profile Button -->
             <div 
               @click="openMenu = !openMenu" 
-              class="relative cursor-pointer transition-all duration-300 rounded-full hover:shadow-md max-sm:hidden"
+              class="relative cursor-pointer transition-all duration-300 rounded-full hover:shadow-sm max-sm:hidden"
             >              <div class="flex items-center gap-2 p-1 pl-1 pr-3 border border-gray-200 dark:border-gray-700 rounded-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
                 <!-- Pro Badge -->
                 <div 
