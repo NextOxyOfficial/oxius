@@ -31,17 +31,18 @@
     </div>
     <iframe
       v-else
-      :src="`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`"
+      :src="`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1`"
       frameborder="0"
       allowfullscreen
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
       class="youtube-iframe"
+      @load="onIframeLoad"
     ></iframe>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 
 const props = defineProps({
   videoId: {
@@ -52,7 +53,13 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  sessionManager: {
+    type: Object,
+    default: null,
+  }
 });
+
+const emit = defineEmits(['video-start', 'video-pause', 'video-resume', 'video-stop']);
 
 const isPlaying = ref(false);
 
@@ -61,9 +68,91 @@ const thumbnailUrl = computed(() => {
   return `https://img.youtube.com/vi/${props.videoId}/mqdefault.jpg`;
 });
 
-function playVideo() {
-  isPlaying.value = true;
+async function playVideo() {
+  try {
+    // Check session status before playing video
+    if (props.sessionManager && !props.sessionManager.isSessionActive.value) {
+      throw new Error('Session not active. Please refresh the page.');
+    }
+
+    // For non-pro users, check time limit
+    if (props.sessionManager && props.sessionManager.hasTimeLimit.value && props.sessionManager.timeRemaining.value <= 0) {
+      emit('video-start', false, 'Time limit exceeded');
+      return;
+    }
+
+    isPlaying.value = true;
+    emit('video-start', true);
+    
+    // Start video tracking if session manager is available
+    if (props.sessionManager && props.video.id) {
+      props.sessionManager.startVideoTracking(props.video.id);
+    }
+  } catch (error) {
+    console.error('Failed to start video:', error);
+    emit('video-start', false, error.message);
+  }
 }
+
+function pauseVideo() {
+  emit('video-pause');
+  if (props.sessionManager && props.video.id) {
+    props.sessionManager.pauseVideoTracking();
+  }
+}
+
+function resumeVideo() {
+  emit('video-resume');
+  if (props.sessionManager && props.video.id) {
+    props.sessionManager.resumeVideoTracking();
+  }
+}
+
+function stopVideo() {
+  isPlaying.value = false;
+  emit('video-stop');
+  if (props.sessionManager && props.video.id) {
+    props.sessionManager.stopVideoTracking();
+  }
+}
+
+// Listen for window messages from YouTube iframe API
+function handleMessage(event) {
+  if (event.origin !== 'https://www.youtube.com') return;
+  
+  try {
+    const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+    
+    if (data.event === 'video-progress') {
+      // YouTube iframe is playing
+      if (data.info?.playerState === 1) { // Playing
+        resumeVideo();
+      } else if (data.info?.playerState === 2) { // Paused
+        pauseVideo();
+      } else if (data.info?.playerState === 0) { // Ended
+        stopVideo();
+      }
+    }
+  } catch (error) {
+    // Ignore parsing errors
+  }
+}
+
+function onIframeLoad() {
+  // Additional iframe load handling if needed
+}
+
+onMounted(() => {
+  window.addEventListener('message', handleMessage);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('message', handleMessage);
+  // Ensure video tracking is stopped when component unmounts
+  if (props.sessionManager && props.video.id) {
+    props.sessionManager.stopVideoTracking();
+  }
+});
 </script>
 
 <style scoped>

@@ -25,26 +25,75 @@
         <p class="text-xs text-gray-500 hidden sm:block">
           {{ $t("video_lessons_desc") }}
         </p>
-      </div>
-      <!-- Total videos count badge -->
-      <span
-        class="ml-auto text-xs bg-gray-50 text-gray-700 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm flex items-center"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-3.5 w-3.5 mr-1 text-gray-500"
-          viewBox="0 0 20 20"
-          fill="currentColor"
+      </div>      <!-- Session Status and Controls -->
+      <div class="ml-auto flex items-center gap-3">
+        <!-- Time Remaining for Non-Pro Users -->
+        <div
+          v-if="hasTimeLimit && isSessionActive"
+          class="text-xs bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full border border-amber-200 shadow-sm flex items-center"
         >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        <span v-if="loading">Loading...</span>
-        <span v-else>{{ subjectVideos.length }} {{ $t("videos") }}</span>
-      </span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-3.5 w-3.5 mr-1 text-amber-600"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span>{{ Math.floor(timeRemaining / 60) }}:{{ String(timeRemaining % 60).padStart(2, '0') }} left</span>
+        </div>
+
+        <!-- Session Status Indicator -->
+        <div
+          v-if="isSessionActive"
+          class="text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full border border-green-200 shadow-sm flex items-center"
+        >
+          <div class="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse"></div>
+          <span>Active Session</span>
+        </div>
+        <div
+          v-else-if="sessionError"
+          class="text-xs bg-red-50 text-red-700 px-2.5 py-1 rounded-full border border-red-200 shadow-sm flex items-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-3.5 w-3.5 mr-1 text-red-600"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span>Session Error</span>
+        </div>
+
+        <!-- Total videos count badge -->
+        <span
+          class="text-xs bg-gray-50 text-gray-700 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm flex items-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-3.5 w-3.5 mr-1 text-gray-500"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span v-if="loading">Loading...</span>
+          <span v-else>{{ subjectVideos.length }} {{ $t("videos") }}</span>
+        </span>
+      </div>
     </div>
 
     <!-- Modern search and filter card -->
@@ -348,10 +397,25 @@
         v-for="video in filteredVideos"
         :key="video.id"
         class="overflow-hidden rounded-lg border transition-all hover:shadow-sm"
-      >
-        <!-- Video player -->
+      >        <!-- Video player -->
         <div class="aspect-w-16 aspect-h-9 bg-gray-100">
-          <youtube-player :video-id="getYoutubeId(video.url)" :video="video" />
+          <youtube-player 
+            :video-id="getYoutubeId(video.url)" 
+            :video="video" 
+            :session-manager="{ 
+              isSessionActive, 
+              hasTimeLimit, 
+              timeRemaining, 
+              startVideoTracking, 
+              pauseVideoTracking, 
+              resumeVideoTracking, 
+              stopVideoTracking 
+            }"
+            @video-start="handleVideoStart"
+            @video-pause="handleVideoPause"
+            @video-resume="handleVideoResume"
+            @video-stop="handleVideoStop"
+          />
         </div>
 
         <!-- Video metadata -->
@@ -611,14 +675,220 @@
               </button>
             </div>
           </div>
+        </div>      </div>
+    </Teleport>
+
+    <!-- Upgrade Prompt Modal -->
+    <Teleport to="body">
+      <div
+        v-if="showUpgradePrompt"
+        class="fixed inset-0 z-50 overflow-y-auto"
+        aria-labelledby="upgrade-modal-title"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div
+          class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:pt-20"
+        >
+          <!-- Background overlay -->
+          <div
+            class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity modal-backdrop"
+            aria-hidden="true"
+            @click="closeUpgradePrompt"
+          ></div>
+
+          <!-- Modal panel -->
+          <div
+            class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full modal-content"
+          >
+            <!-- Header with gradient -->
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+              <div class="flex items-center justify-between">
+                <h3
+                  class="text-lg leading-6 font-semibold text-white flex items-center"
+                  id="upgrade-modal-title"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  Upgrade to Pro
+                </h3>
+                <button
+                  @click="closeUpgradePrompt"
+                  class="text-white/80 hover:text-white focus:outline-none transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Body -->
+            <div class="bg-white px-6 py-4">
+              <div class="text-center">
+                <!-- Icon -->
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 mb-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-8 w-8 text-amber-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+
+                <!-- Message -->
+                <h4 class="text-lg font-semibold text-gray-900 mb-2">
+                  Time limit reached!
+                </h4>
+                <p class="text-sm text-gray-600 mb-6">
+                  You've reached your daily viewing limit of 1 minute. Upgrade to Pro for unlimited access to all video content.
+                </p>
+
+                <!-- Features list -->
+                <div class="text-left bg-gray-50 rounded-lg p-4 mb-6">
+                  <h5 class="text-sm font-medium text-gray-900 mb-3">Pro Benefits:</h5>
+                  <ul class="space-y-2 text-sm text-gray-600">
+                    <li class="flex items-center">
+                      <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Unlimited video viewing time
+                    </li>
+                    <li class="flex items-center">
+                      <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Access to premium content
+                    </li>
+                    <li class="flex items-center">
+                      <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Multiple device access
+                    </li>
+                    <li class="flex items-center">
+                      <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Priority support
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="bg-gray-50 px-6 py-4 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
+              <button
+                @click="goToUpgrade"
+                type="button"
+                class="w-full inline-flex justify-center items-center rounded-lg border border-transparent shadow-sm px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-base font-medium text-white hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 mr-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+                Upgrade to Pro
+              </button>
+              <button
+                @click="closeUpgradePrompt"
+                type="button"
+                class="w-full inline-flex justify-center items-center rounded-lg border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </Teleport>
+
+    <!-- Session Error Alert -->
+    <div
+      v-if="sessionError"
+      class="fixed bottom-4 right-4 max-w-sm bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg z-40 animate-slide-up"
+    >
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <svg
+            class="h-5 w-5 text-red-400"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800">Session Error</h3>
+          <p class="mt-1 text-sm text-red-700">{{ sessionError }}</p>
+          <div class="mt-3 flex space-x-2">
+            <button
+              @click="initializeSession"
+              class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded hover:bg-red-200 transition-colors"
+            >
+              Retry
+            </button>
+            <button
+              @click="sessionError = null"
+              class="text-xs text-red-600 hover:text-red-800 transition-colors"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import YoutubePlayer from "~/components/courses/YoutubePlayer.vue";
 import {
@@ -626,6 +896,23 @@ import {
   incrementVideoViews,
   fetchVideoById,
 } from "~/services/elearningApi";
+
+// Session management
+const {
+  session,
+  isSessionActive,
+  timeRemaining,
+  timeRemainingFormatted,
+  isProUser,
+  hasTimeLimit,
+  startSession,
+  endSession,
+  startVideoTracking,
+  pauseVideoTracking,
+  resumeVideoTracking,
+  stopVideoTracking,
+  trackActivity
+} = useELearningSession();
 
 const props = defineProps({
   subject: {
@@ -673,15 +960,72 @@ async function loadVideos() {
 // Watch for subject changes
 watch(
   () => props.subject,
-  (newSubject) => {
+  async (newSubject) => {
     if (newSubject) {
+      // Initialize session when subject changes
+      await initializeSession();
       loadVideos();
     }
   }
 );
 
+// Session management functions
+const sessionError = ref(null);
+const showUpgradePrompt = ref(false);
+
+async function initializeSession() {
+  try {
+    sessionError.value = null;
+    const currentUrl = window.location.href;
+    await startSession(currentUrl, props.subject);
+    trackActivity('page_access', { subject_id: props.subject });
+  } catch (error) {
+    sessionError.value = error.message;
+    console.error('Failed to initialize session:', error);
+    
+    if (error.message.includes('upgrade')) {
+      showUpgradePrompt.value = true;
+    }
+  }
+}
+
+function closeUpgradePrompt() {
+  showUpgradePrompt.value = false;
+}
+
+function goToUpgrade() {
+  navigateTo('/upgrade-to-pro');
+}
+
+// Video event handlers
+function handleVideoStart(success, errorMessage) {
+  if (!success) {
+    console.error('Failed to start video:', errorMessage);
+    sessionError.value = errorMessage;
+    
+    if (errorMessage && errorMessage.includes('limit')) {
+      showUpgradePrompt.value = true;
+    }
+  }
+}
+
+function handleVideoPause() {
+  // Video paused - tracking is handled by session manager
+  console.log('Video paused');
+}
+
+function handleVideoResume() {
+  // Video resumed - tracking is handled by session manager
+  console.log('Video resumed');
+}
+
+function handleVideoStop() {
+  // Video stopped - tracking is handled by session manager
+  console.log('Video stopped');
+}
+
 // Initial load if subject is already available
-onMounted(() => {
+onMounted(async () => {
   if (props.subject) {
     loadVideos();
   }
@@ -867,35 +1211,72 @@ const filteredVideos = computed(() => {
 const showDescriptionModal = ref(false);
 const activeVideo = ref(null);
 
-// Function to open the description modal with preloading
+// Function to open the description modal with preloading and access control
 async function openDescriptionModal(video) {
-  // Show the modal immediately with current video data
-  activeVideo.value = video;
-  showDescriptionModal.value = true;
+  try {
+    // Check session status and access control
+    if (!isSessionActive.value) {
+      sessionError.value = 'Session expired. Please refresh the page.';
+      return;
+    }
 
-  // Try to get the latest video data (including up-to-date view count)
-  // This provides a smoother UX since the modal is shown immediately
-  if (video.id) {
-    try {
-      const updatedVideoDetails = await preloadVideoDetails(video.id);
-      if (updatedVideoDetails && showDescriptionModal.value) {
-        // Only update if the modal is still open and for the same video
-        activeVideo.value = updatedVideoDetails;
+    // For non-pro users, check time limit
+    if (hasTimeLimit.value && timeRemaining.value <= 0) {
+      showUpgradePrompt.value = true;
+      return;
+    }
+
+    // Show the modal immediately with current video data
+    activeVideo.value = video;
+    showDescriptionModal.value = true;
+
+    // Start video tracking when modal opens
+    if (video.id) {
+      startVideoTracking(video.id);
+    }
+
+    // Try to get the latest video data (including up-to-date view count)
+    // This provides a smoother UX since the modal is shown immediately
+    if (video.id) {
+      try {
+        const updatedVideoDetails = await preloadVideoDetails(video.id);
+        if (updatedVideoDetails && showDescriptionModal.value) {
+          // Only update if the modal is still open and for the same video
+          activeVideo.value = updatedVideoDetails;
+        }
+      } catch (err) {
+        // Silently fail - we already have the basic video data showing
+        console.warn("Could not fetch updated video details:", err);
       }
-    } catch (err) {
-      // Silently fail - we already have the basic video data showing
-      console.warn("Could not fetch updated video details:", err);
+    }
+  } catch (error) {
+    console.error('Failed to open video:', error);
+    sessionError.value = error.message;
+    
+    if (error.message.includes('upgrade') || error.message.includes('limit')) {
+      showUpgradePrompt.value = true;
     }
   }
 }
 
 // Function to close the description modal
 function closeDescriptionModal() {
+  // Stop video tracking when modal closes
+  stopVideoTracking();
+  
   showDescriptionModal.value = false;
   setTimeout(() => {
     activeVideo.value = null;
   }, 300); // Delay clearing the video for smoother animation
 }
+
+// Cleanup on component unmount
+onUnmounted(async () => {
+  stopVideoTracking();
+  if (isSessionActive.value) {
+    await endSession();
+  }
+});
 
 // Helper function to extract YouTube video ID from URL
 function getYoutubeId(url) {
