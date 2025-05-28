@@ -5,7 +5,6 @@
         <div
           class="relative rounded-xl overflow-hidden shadow-sm sm:h-[430px] h-[400px] group"
         >
-        
           <img
             :src="latestArticle.image"
             :alt="latestArticle.title"
@@ -236,7 +235,28 @@
                 class="text-gray-600 text-sm mb-3 line-clamp-3"
                 v-html="article.content.substring(0, 150) + '...'"
               ></div>
-              
+              <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                  <img
+                    :src="
+                      article.authorImage ||
+                      '/static/frontend/images/placeholder.jpg'
+                    "
+                    :alt="article.author"
+                    class="h-8 w-8 rounded-full mr-2"
+                  />
+                  <span class="text-sm font-medium text-gray-800"
+                    >Posted by:
+                    <span class="text-primary">{{ article.author }}</span></span
+                  >
+                </div>
+                <div class="flex items-center text-gray-600">
+                  <MessageSquareIcon class="h-4 w-4 mr-1" />
+                  <span class="text-sm">{{
+                    article.post_comments ? article.post_comments.length : 0
+                  }}</span>
+                </div>
+              </div>
             </div>
           </article>
         </div>
