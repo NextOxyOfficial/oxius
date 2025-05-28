@@ -139,7 +139,7 @@
           <div class="relative">
             <select
               v-model="statusFilter"
-              class="border border-gray-200/80 rounded-lg py-2.5 text-sm font-medium pl-10 pr-10 text-gray-700 bg-white/90 shadow-sm hover:shadow focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none"
+              class="border border-gray-200/80 rounded-lg py-2.5 text-sm font-medium pl-10 pr-10 text-gray-800 bg-white/90 shadow-sm hover:shadow focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none"
             >
               <option value="">All posts</option>
               <option value="pending">Pending review</option>
@@ -304,7 +304,7 @@
                         name="heroicons:calendar"
                         class="h-4 w-4 text-gray-600"
                       />
-                      <span class="text-gray-700">{{
+                      <span class="text-gray-800">{{
                         formatDate(post.created_at)
                       }}</span>
                     </div>
@@ -315,7 +315,7 @@
                         name="heroicons:currency-bangladeshi"
                         class="h-5 w-5 text-primary"
                       />
-                      <span class="font-medium text-gray-700">{{
+                      <span class="font-medium text-gray-800">{{
                         post.price
                           ? `৳${post.price.toLocaleString()}`
                           : "Negotiable"
@@ -520,7 +520,7 @@
             class="absolute w-full h-8 top-full left-0 bg-gradient-to-b from-gray-200/20 to-transparent -mt-3 blur-xl rounded-full"
           ></div>
         </div>
-        <h3 class="text-gray-700 text-base text-base">
+        <h3 class="text-gray-800 text-base text-base">
           No matching posts found
         </h3>
         <p class="text-gray-500 mt-3 max-w-md mx-auto">
@@ -531,7 +531,7 @@
         </p>
         <button
           @click="statusFilter = ''"
-          class="mt-6 px-7 py-3 bg-gradient-to-r from-gray-100 to-white text-gray-700 rounded-xl shadow-sm hover:shadow-sm border border-gray-200/50 transform hover:-translate-y-0.5"
+          class="mt-6 px-7 py-3 bg-gradient-to-r from-gray-100 to-white text-gray-800 rounded-xl shadow-sm hover:shadow-sm border border-gray-200/50 transform hover:-translate-y-0.5"
         >
           <span class="flex items-center gap-2">
             <Icon name="heroicons:arrow-path" class="h-5 w-5" />
@@ -547,7 +547,7 @@
       >
         <button
           @click="loadMorePosts"
-          class="px-8 py-3 border border-gray-200/70 rounded-xl text-gray-700 bg-white hover:bg-gradient-to-r hover:from-primary/5 hover:to-indigo-50 shadow-sm hover:shadow-sm flex items-center gap-3 mx-auto transform hover:-translate-y-0.5"
+          class="px-8 py-3 border border-gray-200/70 rounded-xl text-gray-800 bg-white hover:bg-gradient-to-r hover:from-primary/5 hover:to-indigo-50 shadow-sm hover:shadow-sm flex items-center gap-3 mx-auto transform hover:-translate-y-0.5"
           :disabled="isLoadingMore"
         >
           <span
@@ -627,7 +627,7 @@
               </button>
               <button
                 type="button"
-                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transform hover:-translate-y-0.5 sm:mt-0 sm:w-auto"
+                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-800 hover:bg-gray-50 focus:outline-none transform hover:-translate-y-0.5 sm:mt-0 sm:w-auto"
                 @click="showDeleteModal = false"
               >
                 Cancel

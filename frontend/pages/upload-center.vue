@@ -30,7 +30,7 @@
             <div>
               <span
                 v-if="user.user.kyc"
-                class="flex items-center font-medium text-gray-700 dark:text-gray-300"
+                class="flex items-center font-medium text-gray-800 dark:text-gray-300"
               >
                 {{ user.user.name }}
                 <UIcon
@@ -85,7 +85,7 @@
                 class="text-xl text-primary-500"
               />
             </div>
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
               Verification Instructions
             </h2>
           </div>
@@ -193,7 +193,7 @@
                 <!-- ID Front -->
                 <div class="upload-item">
                   <div class="upload-item-header">
-                    <h4 class="font-medium text-gray-700 dark:text-gray-300">
+                    <h4 class="font-medium text-gray-800 dark:text-gray-300">
                       ID Front
                     </h4>
                     <div
@@ -244,7 +244,7 @@
                           />
                         </div>
                         <span
-                          class="text-sm font-medium text-gray-700 dark:text-gray-400"
+                          class="text-sm font-medium text-gray-800 dark:text-gray-400"
                           >Upload Front</span
                         >
                         <span
@@ -267,7 +267,7 @@
                 <!-- ID Back -->
                 <div class="upload-item">
                   <div class="upload-item-header">
-                    <h4 class="font-medium text-gray-700 dark:text-gray-300">
+                    <h4 class="font-medium text-gray-800 dark:text-gray-300">
                       ID Back
                     </h4>
                     <div
@@ -318,7 +318,7 @@
                           />
                         </div>
                         <span
-                          class="text-sm font-medium text-gray-700 dark:text-gray-400"
+                          class="text-sm font-medium text-gray-800 dark:text-gray-400"
                           >Upload Back</span
                         >
                         <span
@@ -341,7 +341,7 @@
                 <!-- Selfie with ID -->
                 <div class="upload-item">
                   <div class="upload-item-header">
-                    <h4 class="font-medium text-gray-700 dark:text-gray-300">
+                    <h4 class="font-medium text-gray-800 dark:text-gray-300">
                       Selfie with ID
                     </h4>
                     <div
@@ -392,7 +392,7 @@
                           />
                         </div>
                         <span
-                          class="text-sm font-medium text-gray-700 dark:text-gray-400"
+                          class="text-sm font-medium text-gray-800 dark:text-gray-400"
                           >Upload Selfie</span
                         >
                         <span
@@ -435,7 +435,7 @@
 
                 <div class="upload-item flex-grow">
                   <div class="upload-item-header">
-                    <h4 class="font-medium text-gray-700 dark:text-gray-300">
+                    <h4 class="font-medium text-gray-800 dark:text-gray-300">
                       Other Document
                     </h4>
                     <div
@@ -487,7 +487,7 @@
                           />
                         </div>
                         <span
-                          class="text-sm font-medium text-gray-700 dark:text-gray-400"
+                          class="text-sm font-medium text-gray-800 dark:text-gray-400"
                           >Optional Document</span
                         >
                         <span
@@ -523,7 +523,7 @@
           <div v-if="!id_verification" class="md:col-span-2">
             <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
               <h3
-                class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4"
+                class="text-lg font-medium text-gray-800 dark:text-gray-300 mb-4"
               >
                 Verification Progress
               </h3>

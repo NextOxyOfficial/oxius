@@ -22,13 +22,13 @@
             class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white p-2 transition-all duration-200"
             @click="prevImage"
           >
-            <ChevronLeft class="h-4 w-4 text-gray-700" />
+            <ChevronLeft class="h-4 w-4 text-gray-800" />
           </button>
           <button
             class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white p-2 transition-all duration-200"
             @click="nextImage"
           >
-            <ChevronRight class="h-4 w-4 text-gray-700" />
+            <ChevronRight class="h-4 w-4 text-gray-800" />
           </button>
           <div class="absolute bottom-3 right-3 flex space-x-2">
             <button
@@ -109,7 +109,7 @@
               </div>
               <div>
                 <div class="text-sm font-medium text-gray-500">Category</div>
-                <div class="text-sm text-gray-700">
+                <div class="text-sm text-gray-800">
                   {{ product.category_details?.name }}
                 </div>
               </div>
@@ -125,7 +125,7 @@
                 <div class="text-sm font-medium text-gray-500">
                   Sub-Category
                 </div>
-                <div class="text-sm text-gray-700">
+                <div class="text-sm text-gray-800">
                   {{ product?.child_category_details?.name }}
                 </div>
               </div>
@@ -139,7 +139,7 @@
               </div>
               <div>
                 <div class="text-sm font-medium text-gray-500">Condition</div>
-                <div class="text-sm text-gray-700">{{ product.condition }}</div>
+                <div class="text-sm text-gray-800">{{ product.condition }}</div>
               </div>
             </div>
 
@@ -151,7 +151,7 @@
               </div>
               <div>
                 <div class="text-sm font-medium text-gray-500">Location</div>
-                <div class="text-sm text-gray-700">
+                <div class="text-sm text-gray-800">
                   {{
                     product?.division && product?.district && product?.area
                       ? `${product?.division}, ${product?.district}, ${product?.area}`
@@ -280,7 +280,7 @@
               </h3>
               <div
                 v-if="product?.division && product?.district && product?.area"
-                class="text-sm sm:px-6 text-gray-700"
+                class="text-sm sm:px-6 text-gray-800"
               >
                 {{
                   product?.division && product?.district && product?.area
@@ -391,7 +391,7 @@
             </div>
 
             <button
-              class="w-full mt-4 text-sm border border-gray-200 rounded-md py-2 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-700"
+              class="w-full mt-4 text-sm border border-gray-200 rounded-md py-2 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-800"
               @click="
                 navigateTo('/sale/user-profile/' + product.user_details?.id)
               "
@@ -517,10 +517,10 @@
           </div>
 
           <div class="mt-5">
-            <h4 class="text-sm font-medium mb-3 text-gray-700">Share via</h4>
+            <h4 class="text-sm font-medium mb-3 text-gray-800">Share via</h4>
             <div class="grid grid-cols-2 gap-3">
               <button
-                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-700"
+                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-800"
                 @click="shareViaMedia('facebook')"
               >
                 <span
@@ -530,7 +530,7 @@
                 Facebook
               </button>
               <button
-                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-700"
+                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-800"
                 @click="shareViaMedia('twitter')"
               >
                 <span
@@ -540,7 +540,7 @@
                 Twitter
               </button>
               <button
-                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-700"
+                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-800"
                 @click="shareViaMedia('whatsapp')"
               >
                 <span
@@ -550,7 +550,7 @@
                 WhatsApp
               </button>
               <button
-                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-700"
+                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-800"
                 @click="shareViaMedia('email')"
               >
                 <span
@@ -597,7 +597,7 @@
                 value="fake"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-700"
+              <span class="text-sm text-gray-800"
                 >Fake or misleading listing</span
               >
             </label>
@@ -608,7 +608,7 @@
                 value="prohibited"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-700">Prohibited item</span>
+              <span class="text-sm text-gray-800">Prohibited item</span>
             </label>
             <label class="flex items-center space-x-2 cursor-pointer">
               <input
@@ -617,7 +617,7 @@
                 value="offensive"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-700">Offensive content</span>
+              <span class="text-sm text-gray-800">Offensive content</span>
             </label>
             <label class="flex items-center space-x-2 cursor-pointer">
               <input
@@ -626,7 +626,7 @@
                 value="scam"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-700">Scam or fraud</span>
+              <span class="text-sm text-gray-800">Scam or fraud</span>
             </label>
             <label class="flex items-center space-x-2 cursor-pointer">
               <input
@@ -635,7 +635,7 @@
                 value="other"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-700">Other</span>
+              <span class="text-sm text-gray-800">Other</span>
             </label>
           </div>
 
@@ -643,7 +643,7 @@
             v-if="reportReason === 'other'"
             v-model="reportDetails"
             placeholder="Please provide details about your report..."
-            class="mt-4 w-full border border-gray-200 rounded-md p-2 text-sm text-gray-700 h-24 resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            class="mt-4 w-full border border-gray-200 rounded-md p-2 text-sm text-gray-800 h-24 resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500"
           ></textarea>
 
           <div class="mt-6 flex justify-end space-x-3">

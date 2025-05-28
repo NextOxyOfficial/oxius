@@ -20,7 +20,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Total Orders</p>
-            <p class="text-xl font-semibold text-gray-700">
+            <p class="text-xl font-semibold text-gray-800">
               {{ orders.length }}
             </p>
           </div>
@@ -54,7 +54,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Pending Orders</p>
-            <p class="text-xl font-semibold text-gray-700">
+            <p class="text-xl font-semibold text-gray-800">
               {{ pendingOrders.length }}
             </p>
           </div>
@@ -85,7 +85,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Processing Orders</p>
-            <p class="text-xl font-semibold text-gray-700">
+            <p class="text-xl font-semibold text-gray-800">
               {{ processingOrders.length }}
             </p>
           </div>
@@ -119,7 +119,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Delivered Orders</p>
-            <p class="text-xl font-semibold text-gray-700">
+            <p class="text-xl font-semibold text-gray-800">
               {{ deliveredOrders.length }}
             </p>
           </div>
@@ -142,7 +142,7 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between">
         <div class="flex items-center space-x-2">
           <ShoppingBag class="h-5 w-5 text-indigo-600" />
-          <h2 class="text-xl font-semibold text-gray-700">My Orders</h2>
+          <h2 class="text-xl font-semibold text-gray-800">My Orders</h2>
         </div>
         <div class="mt-3 md:mt-0 flex items-center space-x-4">
           <div class="relative">
@@ -237,12 +237,12 @@
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-700">
+              <div class="text-sm text-gray-800">
                 {{ formatDate(order.created_at) }}
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-700">
+              <div class="text-sm text-gray-800">
                 {{ order.name }}
               </div>
               <div class="text-sm text-gray-500">
@@ -250,7 +250,7 @@
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm font-medium text-gray-700">
+              <div class="text-sm font-medium text-gray-800">
                 ৳{{ +order.total + +order.delivery_fee }}
               </div>
             </td>
@@ -265,7 +265,7 @@
                 </button>
                 <button
                   @click="printOrder(order)"
-                  class="text-gray-500 hover:text-gray-700 transition-colors duration-150 flex items-center"
+                  class="text-gray-500 hover:text-gray-800 transition-colors duration-150 flex items-center"
                 >
                   <Printer class="h-4 w-4 mr-1" />
                   Print
@@ -291,7 +291,7 @@
     >
       <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
         <div>
-          <p class="text-sm text-gray-700">
+          <p class="text-sm text-gray-800">
             Showing
             <span class="font-medium">{{ paginationStart }}</span> to
             <span class="font-medium">{{ paginationEnd }}</span> of
@@ -320,7 +320,7 @@
               :class="[
                 currentPage === page
                   ? 'bg-indigo-50 text-indigo-600 border-indigo-500'
-                  : 'bg-white text-gray-700 hover:bg-gray-50',
+                  : 'bg-white text-gray-800 hover:bg-gray-50',
                 'relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium',
               ]"
             >
@@ -368,7 +368,7 @@
             class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
           >
             <h3
-              class="text-xl font-semibold text-gray-700 flex items-center"
+              class="text-xl font-semibold text-gray-800 flex items-center"
               id="modal-title"
             >
               <ShoppingBag class="h-5 w-5 mr-2 text-indigo-600" />
@@ -377,7 +377,7 @@
             <div class="flex items-center space-x-2">
               <button
                 @click="printOrder(selectedOrder)"
-                class="text-gray-500 hover:text-gray-700 transition-colors duration-150"
+                class="text-gray-500 hover:text-gray-800 transition-colors duration-150"
                 title="Print Order"
               >
                 <Printer class="h-5 w-5" />
@@ -639,7 +639,7 @@
                             </div>
                           </div>
                           <div class="ml-4">
-                            <div class="text-sm font-medium text-gray-700">
+                            <div class="text-sm font-medium text-gray-800">
                               {{ item.product_details?.name }}
                             </div>
                           </div>
@@ -648,7 +648,7 @@
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div
                           v-if="!editOrderItems"
-                          class="text-sm text-gray-700"
+                          class="text-sm text-gray-800"
                         >
                           ৳{{ item.price }}
                         </div>
@@ -664,7 +664,7 @@
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div
                           v-if="!editOrderItems"
-                          class="text-sm text-gray-700"
+                          class="text-sm text-gray-800"
                         >
                           {{ item.quantity }}
                         </div>
@@ -691,7 +691,7 @@
                         </div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-700">
+                        <div class="text-sm font-medium text-gray-800">
                           ৳{{ item.price * item.quantity }}
                         </div>
                       </td>
@@ -763,7 +763,7 @@
                       </div>
                     </div>
                     <div class="flex-1">
-                      <h5 class="font-medium text-gray-700">
+                      <h5 class="font-medium text-gray-800">
                         {{ item.product_details?.name || "Product" }}
                       </h5>
                       <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
@@ -828,7 +828,7 @@
                 <!-- <button
                   v-if="editOrderItems"
                   @click="handleShowAddItemModal"
-                  class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                  class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 focus:outline-none"
                 >
                   <Plus class="h-3 w-3 mr-1.5" />
                   Add Item
@@ -861,7 +861,7 @@
               <div
                 class="flex justify-between items-center pt-2 border-t border-gray-200 mt-2"
               >
-                <span class="text-gray-700 font-medium">Total</span>
+                <span class="text-gray-800 font-medium">Total</span>
                 <span class="text-lg font-semibold text-indigo-600"
                   >৳{{ calculateTotal() }}</span
                 >
@@ -902,7 +902,7 @@
             </button>
             <button
               @click="showOrderDetailsModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-800 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
             >
               <X class="h-4 w-4 mr-1.5" />
               Close
@@ -939,7 +939,7 @@
         <!-- <div
           class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
         >
-          <h3 class="text-xl font-semibold text-gray-700 flex items-center">
+          <h3 class="text-xl font-semibold text-gray-800 flex items-center">
             <UIcon
               name="i-heroicons-shopping-cart"
               class="h-5 w-5 mr-2 text-indigo-600"
@@ -948,7 +948,7 @@
           </h3>          
           <button
             @click="closeAddItemModal"
-            class="text-gray-500 hover:text-gray-700 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full p-1"
+            class="text-gray-500 hover:text-gray-800 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full p-1"
           >
             <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />
           </button>
@@ -956,7 +956,7 @@
         <div class="px-6 py-4">
           <!-- Product Search/Select -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-sm font-medium text-gray-800 mb-2">
               Select Product
             </label>
             <USelectMenu
@@ -1046,7 +1046,7 @@
                 </div>
               </div>
               <div class="flex-1">
-                <h5 class="font-medium text-gray-700">
+                <h5 class="font-medium text-gray-800">
                   {{ selectedProductDetails.name }}
                 </h5>
                 <p class="text-sm text-gray-500 mt-1 line-clamp-2">
@@ -1080,7 +1080,7 @@
           <div v-if="selectedProductDetails">
             <label
               for="quantity-input"
-              class="block text-sm font-medium text-gray-700 mb-1"
+              class="block text-sm font-medium text-gray-800 mb-1"
             >
               Quantity
             </label>
@@ -1526,7 +1526,7 @@ const getStatusClass = (status) => {
     case "cancelled":
       return "bg-red-100 text-red-800";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "bg-gray-100 text-gray-800";
   }
 };
 

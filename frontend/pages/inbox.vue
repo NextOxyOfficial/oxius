@@ -36,7 +36,7 @@
 
               <!-- Clean typography -->
               <div>
-                <h1 class="text-xl sm:text-2xl font-semibold text-gray-700">
+                <h1 class="text-xl sm:text-2xl font-semibold text-gray-800">
                   {{ $t("message_center") }}
                 </h1>
                 <p class="text-gray-500 text-sm mt-1">
@@ -441,7 +441,7 @@
                           name="i-heroicons-ticket"
                           class="text-gray-500"
                         />
-                        <h4 class="text-sm font-semibold text-gray-700">
+                        <h4 class="text-sm font-semibold text-gray-800">
                           {{ activeTicket.title }}
                         </h4>
                       </div>
@@ -631,7 +631,7 @@
                         {{ activeTicket.title }}
                       </h4>
                       <div
-                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-700 whitespace-pre-wrap shadow-sm"
+                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-800 whitespace-pre-wrap shadow-sm"
                       >
                         {{ activeTicket.message }}
                       </div>
@@ -647,7 +647,7 @@
                         >
                           <div class="flex items-center justify-between mb-4">
                             <h4
-                              class="flex items-center text-md font-medium text-gray-700"
+                              class="flex items-center text-md font-medium text-gray-800"
                             >
                               <UIcon
                                 name="i-heroicons-chat-bubble-bottom-center-text"
@@ -734,7 +734,7 @@
                                       :class="
                                         reply.is_from_admin
                                           ? 'text-primary-700'
-                                          : 'text-gray-700'
+                                          : 'text-gray-800'
                                       "
                                     >
                                       {{
@@ -763,7 +763,7 @@
                                     </div>
                                   </div>
                                   <div
-                                    class="text-sm text-gray-700 whitespace-pre-wrap"
+                                    class="text-sm text-gray-800 whitespace-pre-wrap"
                                   >
                                     {{ reply.message }}
                                   </div>
@@ -785,7 +785,7 @@
                         class="px-6 py-4"
                       >
                         <h4
-                          class="flex items-center text-md font-medium text-gray-700 mb-3"
+                          class="flex items-center text-md font-medium text-gray-800 mb-3"
                         >
                           <UIcon
                             name="i-heroicons-pencil-square"
@@ -828,7 +828,7 @@
                         class="border-t border-gray-200 px-6 py-4"
                       >
                         <h4
-                          class="flex items-center text-sm font-medium text-gray-700 mb-3"
+                          class="flex items-center text-sm font-medium text-gray-800 mb-3"
                         >
                           <UIcon
                             name="i-heroicons-adjustments-horizontal"

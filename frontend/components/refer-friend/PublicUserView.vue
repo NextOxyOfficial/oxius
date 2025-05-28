@@ -22,7 +22,7 @@
           Invite Friends & Earn Together
         </div>
         <h1
-          class="text-2xl md:text-2xl lg:text-6xl font-semibold mb-6 text-gray-700 dark:text-white tracking-tight animate-fade-in"
+          class="text-2xl md:text-2xl lg:text-6xl font-semibold mb-6 text-gray-800 dark:text-white tracking-tight animate-fade-in"
         >
           Earn
           <span class="text-primary-600 dark:text-primary-400"
@@ -66,7 +66,7 @@
       <div id="how-it-works" class="max-w-6xl mx-auto mb-20 scroll-mt-20">
         <div class="text-center mb-12">
           <h2
-            class="text-2xl md:text-2xl font-semibold text-gray-700 dark:text-white mb-4"
+            class="text-2xl md:text-2xl font-semibold text-gray-800 dark:text-white mb-4"
           >
             How It Works
           </h2>
@@ -95,7 +95,7 @@
               >
             </div>
             <h3
-              class="text-xl font-semibold mb-3 text-gray-700 dark:text-white"
+              class="text-xl font-semibold mb-3 text-gray-800 dark:text-white"
             >
               Create Account
             </h3>
@@ -118,7 +118,7 @@
               >
             </div>
             <h3
-              class="text-xl font-semibold mb-3 text-gray-700 dark:text-white"
+              class="text-xl font-semibold mb-3 text-gray-800 dark:text-white"
             >
               Share Your Link
             </h3>
@@ -141,7 +141,7 @@
               >
             </div>
             <h3
-              class="text-xl font-semibold mb-3 text-gray-700 dark:text-white"
+              class="text-xl font-semibold mb-3 text-gray-800 dark:text-white"
             >
               Earn Commissions
             </h3>

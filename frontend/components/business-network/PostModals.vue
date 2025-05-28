@@ -74,7 +74,7 @@
                 :class="[
                   'text-sm h-8 rounded-full px-4 flex items-center gap-1.5 font-medium shadow-sm transition-all duration-200',
                   user.isFollowing
-                    ? 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border border-gray-200 hover:shadow-sm hover:border-gray-300'
+                    ? 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 border border-gray-200 hover:shadow-sm hover:border-gray-300'
                     : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-sm hover:shadow-blue-500/20',
                 ]"
                 @click.stop="$emit('toggle-user-follow', user)"
@@ -147,7 +147,7 @@
                       <div class="flex items-center gap-1">
                         <NuxtLink
                           :to="`/business-network/profile/${comment.author}`"
-                          class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          class="text-sm font-medium text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         >
                           {{ comment.author_details?.name }}
                         </NuxtLink>
@@ -189,7 +189,7 @@
                                 editComment(activeCommentsPost, comment);
                                 comment.showDropdown = false;
                               "
-                              class="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
+                              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
                             >
                               <UIcon
                                 name="i-heroicons-pencil-square"
@@ -203,7 +203,7 @@
                                 deleteComment(activeCommentsPost, comment);
                                 comment.showDropdown = false;
                               "
-                              class="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
+                              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
                               :disabled="comment.isDeleting"
                             >
                               <div v-if="comment.isDeleting" class="mr-2">
@@ -242,7 +242,7 @@
                         <button
                           type="button"
                           @click.prevent="$emit('cancel-edit-comment', comment)"
-                          class="text-xs text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
+                          class="text-xs text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
                         >
                           Cancel
                         </button>
@@ -296,7 +296,7 @@
                       <!-- Regular comment -->
                       <p
                         v-else
-                        class="text-sm sm:text-sm text-gray-700 dark:text-gray-300"
+                        class="text-sm sm:text-sm text-gray-800 dark:text-gray-300"
                         style="word-break: break-word"
                       >
                         {{ comment?.content }}
@@ -360,7 +360,7 @@
                   v-model="activeCommentsPost.commentText"
                   placeholder="Add a comment..."
                   rows="1"
-                  class="w-full text-sm py-2.5 pr-28 pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-700 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
+                  class="w-full text-sm py-2.5 pr-28 pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
                   @input="
                     autoResize();
                     $emit('handle-comment-input', $event, activeCommentsPost);
@@ -487,7 +487,7 @@
           <div class="flex justify-end space-x-2">
             <button
               @click="$emit('cancel-delete-comment')"
-              class="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              class="px-4 py-2 border border-gray-200 text-gray-800 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
@@ -826,7 +826,7 @@ const saveEditComment = (post, comment) => {
 
 /* Gift message styling */
 .gift-message-text {
-  @apply text-sm leading-relaxed text-gray-700 dark:text-gray-300 mt-1;
+  @apply text-sm leading-relaxed text-gray-800 dark:text-gray-300 mt-1;
 }
 
 /* Top Gift Comment Styling */

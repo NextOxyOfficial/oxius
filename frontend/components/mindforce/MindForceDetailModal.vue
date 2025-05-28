@@ -147,7 +147,7 @@
             <!-- Problem Category & Payment - Enhanced styling -->
             <div class="flex flex-wrap gap-2 mt-4">
               <span
-                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium bg-slate-100 dark:bg-slate-700 text-gray-700 dark:text-slate-200 shadow-sm"
+                class="inline-flex items-center rounded-full px-2.5 py-1 text-sm font-medium bg-slate-100 dark:bg-slate-700 text-gray-800 dark:text-slate-200 shadow-sm"
               >
                 {{ problem.category_details?.name }}
               </span>
@@ -186,7 +186,7 @@
 
             <!-- Problem Title & Content with improved typography -->
             <h1
-              class="text-base mt-4 font-medium text-gray-700 dark:text-white text-left"
+              class="text-base mt-4 font-medium text-gray-800 dark:text-white text-left"
             >
               {{ problem.title }}
             </h1>
@@ -319,7 +319,7 @@
                         </div>                        <div class="ml-3">
                           <div class="flex items-center">
                             <p
-                              class="font-medium text-gray-700 dark:text-slate-200"
+                              class="font-medium text-gray-800 dark:text-slate-200"
                             >
                               {{ comment?.author_details?.name }}
                               <span

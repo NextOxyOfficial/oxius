@@ -235,7 +235,7 @@
 
           <!-- Short Description - Updated to use short_description -->
           <div class="mb-6">
-            <h4 class="font-medium text-gray-700 dark:text-white mb-2">
+            <h4 class="font-medium text-gray-800 dark:text-white mb-2">
               Summary
             </h4>
             <div
@@ -492,17 +492,6 @@
               WhatsApp
             </UButton>
 
-            <!-- Message Button -->
-            <UButton
-              color="indigo"
-              variant="soft"
-              size="sm"
-              class="flex-1 min-w-0 sm:flex-initial"
-              @click="openMessageModal"
-              icon="i-heroicons-envelope"
-            >
-              Message
-            </UButton>              
             <!-- Store Button -->
             <UButton
               v-if="currentProduct.owner_details?.store_username || currentProduct.owner_details?.id"
@@ -527,7 +516,7 @@
         <!-- Full Description Section -->
         <div class="mb-8">
           <h3
-            class="text-base font-Medium my-3 text-gray-700 dark:text-white flex items-center"
+            class="text-base font-Medium my-3 text-gray-800 dark:text-white flex items-center"
           >
             <UIcon
               name="i-heroicons-document-text"
@@ -546,7 +535,7 @@
         <!-- You may also like Section -->
         <div class="mb-8 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
           <h3
-            class="text-base font-medium my-3 px-2 text-gray-700 dark:text-white flex items-center"
+            class="text-base font-medium my-3 px-2 text-gray-800 dark:text-white flex items-center"
           >
             <UIcon
               name="i-heroicons-squares-2x2"

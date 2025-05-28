@@ -88,7 +88,7 @@
     </div>
 
     <h3
-      class="text-base sm:text-base font-medium text-gray-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+      class="text-base sm:text-base font-medium text-gray-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
       :class="{
         'group-hover:text-emerald-600 dark:group-hover:text-emerald-400':
           problem.status === 'solved',

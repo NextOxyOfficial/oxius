@@ -52,11 +52,11 @@
           v-html="'- ' + highlightMatchedText(user.username, 'username')"
         ></span>
         <span class="mr-2"
-          ><span class="font-medium text-gray-700">{{ user.post_count }}</span>
+          ><span class="font-medium text-gray-800">{{ user.post_count }}</span>
           Posts</span
         >
         <span
-          ><span class="font-medium text-gray-700">{{
+          ><span class="font-medium text-gray-800">{{
             user.follower_count
           }}</span>
           Followers</span

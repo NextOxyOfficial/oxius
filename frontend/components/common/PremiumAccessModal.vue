@@ -137,7 +137,7 @@
           <!-- Secondary Action - Maybe Later -->
           <button
             @click="closeModal"
-            class="flex-1 sm:flex-none bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200"
+            class="flex-1 sm:flex-none bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200"
           >
             {{ $t('maybe_later') || 'Maybe Later' }}
           </button>

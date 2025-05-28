@@ -75,14 +75,14 @@
             >
               <button 
                 @click="editSponsor(sponsor)"
-                class="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                class="w-full px-4 py-2 text-left text-gray-800 hover:bg-gray-50 flex items-center space-x-2"
               >
                 <Icon name="mdi:pencil" class="w-4 h-4" />
                 <span>Edit</span>
               </button>
               <button 
                 @click="viewAnalytics(sponsor)"
-                class="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                class="w-full px-4 py-2 text-left text-gray-800 hover:bg-gray-50 flex items-center space-x-2"
               >
                 <Icon name="mdi:chart-line" class="w-4 h-4" />
                 <span>Analytics</span>

@@ -24,7 +24,7 @@
             class="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
             >
               <UIcon
                 name="i-heroicons-document-text"
@@ -103,7 +103,7 @@
             class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
             >
               <UIcon
                 name="i-heroicons-currency-dollar"
@@ -153,7 +153,7 @@
             class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
             >
               <UIcon name="i-heroicons-photo" class="text-emerald-600" />
               {{ $t("media_gallary") }}
@@ -236,7 +236,7 @@
             class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
             <h2
-              class="text-xl font-semibold text-gray-700 mb-6 flex items-center gap-2"
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
             >
               <UIcon name="i-heroicons-map-pin" class="text-emerald-600" />
               {{ $t("location") }}
@@ -406,7 +406,7 @@
               />
             </div>
 
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
               KYC Verification Required
             </h2>
             <p class="text-gray-500 mb-6 max-w-md leading-relaxed">

@@ -1128,7 +1128,7 @@ function resetForm(showConfirm = true) {
 }
 
 .section-title {
-  @apply text-lg font-medium text-gray-700 dark:text-white;
+  @apply text-lg font-medium text-gray-800 dark:text-white;
 }
 
 /* Premium Floating Form Controls */
@@ -1142,7 +1142,7 @@ function resetForm(showConfirm = true) {
 
 .floating-input {
   @apply w-full px-4 py-2.5 pt-5 pl-10 rounded-lg border border-slate-200 dark:border-slate-700 
-         bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 focus:outline-none focus:border-primary-500 
+         bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 focus:outline-none focus:border-primary-500 
          dark:focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20 transition-all duration-200;
 }
 
@@ -1167,7 +1167,7 @@ function resetForm(showConfirm = true) {
 
 .premium-input {
   @apply w-full px-4 py-2.5 pt-5 pl-10 rounded-lg border border-slate-200 dark:border-slate-700
-         bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 focus:outline-none focus:border-primary-500
+         bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 focus:outline-none focus:border-primary-500
          dark:focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20 transition-all duration-200;
 }
 
@@ -1178,7 +1178,7 @@ function resetForm(showConfirm = true) {
 /* Premium Textarea */
 .premium-textarea {
   @apply w-full px-4 py-2.5 pt-5 rounded-lg border border-slate-200 dark:border-slate-700
-         bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-200 focus:outline-none focus:border-primary-500
+         bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 focus:outline-none focus:border-primary-500
          dark:focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20 transition-all duration-200 resize-none;
 }
 
@@ -1216,7 +1216,7 @@ function resetForm(showConfirm = true) {
 
 .premium-btn-secondary {
   @apply rounded-lg py-2.5 px-5 text-gray-500 dark:text-slate-400 hover:bg-slate-100 
-         dark:hover:bg-slate-700/50 hover:text-gray-700 dark:hover:text-white
+         dark:hover:bg-slate-700/50 hover:text-gray-800 dark:hover:text-white
          transition-all duration-300;
 }
 

@@ -18,7 +18,7 @@
             'px-4 py-2 rounded-full text-sm font-medium transition-colors',
             activeFilter === filter.value
               ? 'border border-green-500  shadow-sm'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+              : 'bg-gray-100 text-gray-800 hover:bg-gray-200',
           ]"
         >
           {{ filter.label }}
@@ -91,7 +91,7 @@
         </div>
 
         <div
-          class="mt-2 text-xs text-gray-700"
+          class="mt-2 text-xs text-gray-800"
           v-if="transaction?.package_details"
         >
           <div class="grid grid-cols-2 gap-1">
@@ -293,7 +293,7 @@ watch(searchQuery, () => {
 
 // Helper functions with null checks
 const getPackageClass = (packageType) => {
-  if (!packageType) return "bg-gray-100 text-gray-700";
+  if (!packageType) return "bg-gray-100 text-gray-800";
 
   switch (packageType.toLowerCase()) {
     case "data":
@@ -305,12 +305,12 @@ const getPackageClass = (packageType) => {
     case "balance":
       return "bg-blue-100 text-blue-800";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "bg-gray-100 text-gray-800";
   }
 };
 
 const getOperatorClass = (operator) => {
-  if (!operator) return "bg-gray-100 text-gray-700";
+  if (!operator) return "bg-gray-100 text-gray-800";
 
   switch (operator) {
     case "Grameenphone":
@@ -324,7 +324,7 @@ const getOperatorClass = (operator) => {
     case "Teletalk":
       return "bg-blue-100 text-blue-800";
     default:
-      return "bg-gray-100 text-gray-700";
+      return "bg-gray-100 text-gray-800";
   }
 };
 

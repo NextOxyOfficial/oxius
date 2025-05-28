@@ -14,7 +14,7 @@
       <!-- Centered Header -->
       <div class="text-center mb-12 animate-fade-in">
         <h1
-          class="text-2xl md:text-2xl font-semibold text-gray-700 dark:text-white mb-2"
+          class="text-2xl md:text-2xl font-semibold text-gray-800 dark:text-white mb-2"
         >
           {{ $t("refer_friend") }}
         </h1>
@@ -135,7 +135,7 @@
                     <!-- Copy Link Section -->
                     <div>
                       <label
-                        class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block"
+                        class="text-sm font-medium text-gray-800 dark:text-gray-300 mb-2 block"
                       >
                         Your Referral Link
                       </label>
@@ -159,7 +159,7 @@
                     <!-- QR Code Section -->
                     <div class="text-center">
                       <label
-                        class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block"
+                        class="text-sm font-medium text-gray-800 dark:text-gray-300 mb-2 block"
                       >
                         QR Code
                       </label>
@@ -191,7 +191,7 @@
                     <!-- Social Share Grid -->
                     <div>
                       <label
-                        class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block"
+                        class="text-sm font-medium text-gray-800 dark:text-gray-300 mb-3 block"
                       >
                         Share on Social Media
                       </label>
@@ -253,7 +253,7 @@
                     <!-- Custom Message -->
                     <div>
                       <label
-                        class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block"
+                        class="text-sm font-medium text-gray-800 dark:text-gray-300 mb-2 block"
                       >
                         Custom Message
                       </label>
@@ -310,7 +310,7 @@
               Total Referred Users
             </h3>
             <div
-              class="text-2xl font-semibold text-gray-700 dark:text-white flex items-center"
+              class="text-2xl font-semibold text-gray-800 dark:text-white flex items-center"
             >
               <span class="counter-animate" data-value="87">
                 {{ props.user.user.refer_count }}
@@ -338,7 +338,7 @@
               Total Earnings
             </h3>
             <div
-              class="text-2xl font-semibold text-gray-700 dark:text-white flex items-center"
+              class="text-2xl font-semibold text-gray-800 dark:text-white flex items-center"
             >
               <UIcon name="i-mdi:currency-bdt" class="mr-0.5" />
               <span class="counter-animate" data-value="2450">
@@ -359,7 +359,7 @@
 
       <!-- Commission Breakdown Section -->
       <div class="mt-8 mb-8">
-        <h3 class="text-lg font-semibold text-gray-700 dark:text-white mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
           Commission Breakdown by Service
         </h3>
 
@@ -429,7 +429,7 @@
                   />
                 </div>
                 <div class="ml-3">
-                  <h4 class="text-sm font-medium text-gray-700 dark:text-white">
+                  <h4 class="text-sm font-medium text-gray-800 dark:text-white">
                     {{ service.name }}
                   </h4>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -447,7 +447,7 @@
                 >Total Earned</span
               >
               <div
-                class="text-lg font-semibold text-gray-700 dark:text-white flex items-center"
+                class="text-lg font-semibold text-gray-800 dark:text-white flex items-center"
               >
                 <UIcon name="i-mdi:currency-bdt" class="mr-0.5 text-sm" />
                 {{ service.amount.toFixed(2) }}
@@ -508,7 +508,7 @@
 
       <!-- Advanced Analytics Section -->
       <div v-if="commissionData.total_commissions > 0" class="mt-8 mb-8">
-        <h3 class="text-lg font-semibold text-gray-700 dark:text-white mb-4">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
           Performance Analytics
         </h3>
 
@@ -521,7 +521,7 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400">
                   Conversion Rate
                 </p>
-                <p class="text-lg font-semibold text-gray-700 dark:text-white">
+                <p class="text-lg font-semibold text-gray-800 dark:text-white">
                   {{ conversionRate.toFixed(1) }}%
                 </p>
               </div>
@@ -540,7 +540,7 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400">
                   Avg Commission
                 </p>
-                <p class="text-lg font-semibold text-gray-700 dark:text-white">
+                <p class="text-lg font-semibold text-gray-800 dark:text-white">
                   ৳{{ averageCommission.toFixed(2) }}
                 </p>
               </div>
@@ -559,7 +559,7 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400">
                   Best Performing
                 </p>
-                <p class="text-lg font-semibold text-gray-700 dark:text-white">
+                <p class="text-lg font-semibold text-gray-800 dark:text-white">
                   {{ bestPerformingService }}
                 </p>
               </div>
@@ -578,7 +578,7 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400">
                   This Month
                 </p>
-                <p class="text-lg font-semibold text-gray-700 dark:text-white">
+                <p class="text-lg font-semibold text-gray-800 dark:text-white">
                   ৳{{ thisMonthEarnings.toFixed(2) }}
                 </p>
               </div>
@@ -637,7 +637,7 @@
                 :class="
                   activeTab === index
                     ? 'text-primary-600 dark:text-primary-400 border-b-2 border-green-500'
-                    : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-400 border-b-2 border-white'
+                    : 'text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-400 border-b-2 border-white'
                 "
                 @click="setActiveTab(index)"
               >
@@ -649,7 +649,7 @@
                   {{ tab.name }}
                   <span
                     v-if="tab.count"
-                    class="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-400"
+                    class="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-400"
                   >
                     {{ tab.count }}
                   </span>
@@ -795,7 +795,7 @@
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                           <div
-                            class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-200"
+                            class="ml-3 text-sm font-medium text-gray-800 dark:text-gray-200"
                           >
                             {{ earning.name }}
                           </div>
@@ -929,7 +929,7 @@
                             class="user-avatar"
                           />
                           <div
-                            class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-200"
+                            class="ml-3 text-sm font-medium text-gray-800 dark:text-gray-200"
                           >
                             <div>
                               {{ user.first_name }} {{ user.last_name }}

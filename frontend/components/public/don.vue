@@ -108,7 +108,7 @@
                         size="sm"
                       />
                       <div>
-                        <p class="font-medium text-gray-700">
+                        <p class="font-medium text-gray-800">
                           {{ donor.name }}
                         </p>
                         <p class="text-xs text-gray-500">{{ donor.date }}</p>
@@ -142,7 +142,7 @@
                         :alt="donor.name"
                         size="sm"
                       />
-                      <p class="font-medium text-gray-700">
+                      <p class="font-medium text-gray-800">
                         {{ donor.name }}
                       </p>
                     </div>
@@ -164,7 +164,7 @@
                         size="sm"
                       />
                       <div>
-                        <p class="font-medium text-gray-700">
+                        <p class="font-medium text-gray-800">
                           {{ donor.name }}
                         </p>
                         <p class="text-xs text-gray-500">

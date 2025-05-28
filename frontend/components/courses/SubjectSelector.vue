@@ -22,7 +22,7 @@
       </div>
       <div class="flex items-center text-sm text-gray-500">
         <span
-          class="bg-gray-200 text-gray-700 rounded-full w-5 h-5 flex items-center justify-center mr-1"
+          class="bg-gray-200 text-gray-800 rounded-full w-5 h-5 flex items-center justify-center mr-1"
           >3</span
         >
         <span>{{ $t("step_3_of_4") }}</span>

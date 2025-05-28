@@ -53,7 +53,7 @@
                 <div class="mb-4">
                   <label
                     for="workspaceName"
-                    class="block text-sm font-medium text-gray-700 mb-1"
+                    class="block text-sm font-medium text-gray-800 mb-1"
                   >
                     Workspace Name
                   </label>
@@ -68,7 +68,7 @@
                 <div class="flex justify-end space-x-2">
                   <button
                     type="button"
-                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                    class="px-4 py-2 border border-gray-300 text-gray-800 rounded-md hover:bg-gray-50"
                     @click="isCreateWorkspaceModalOpen = false"
                   >
                     Cancel
@@ -128,7 +128,7 @@
                 </div>
               </div>
 
-              <p class="text-gray-700 dark:text-gray-300 mb-6">
+              <p class="text-gray-800 dark:text-gray-300 mb-6">
                 Are you sure you want to delete the sponsor "{{
                   deletingSponsor?.name
                 }}"? This will permanently remove it from your sponsorships.
@@ -137,7 +137,7 @@
               <div class="flex justify-end space-x-3">
                 <button
                   @click="cancelDelete"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                  class="px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                 >
                   Cancel
                 </button>
@@ -265,7 +265,7 @@
                       </div>
                       <div class="flex-1 min-w-0">
                         <div
-                          class="text-xs text-gray-700 dark:text-gray-300 truncate font-medium"
+                          class="text-xs text-gray-800 dark:text-gray-300 truncate font-medium"
                           :title="sponsor.name"
                         >
                           {{ sponsor.name || "Unnamed Sponsor" }}
@@ -324,7 +324,7 @@
                         >
                           <button
                             @click="editSponsor(sponsor)"
-                            class="w-full px-3 py-1.5 text-left text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
+                            class="w-full px-3 py-1.5 text-left text-xs text-gray-800 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
                           >
                             <UIcon name="i-heroicons-pencil" class="w-3 h-3" />
                             <span>Edit</span>
@@ -409,7 +409,7 @@
                 />
               </div>
               <h4
-                class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+                class="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1"
               >
                 Login Required
               </h4>

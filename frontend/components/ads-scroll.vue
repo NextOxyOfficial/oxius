@@ -21,7 +21,7 @@
             >
               <UIcon name="i-heroicons-clock" class="size-5" />
             </div>
-            <h2 class="font-semibold text-gray-700 dark:text-white text-lg">
+            <h2 class="font-semibold text-gray-800 dark:text-white text-lg">
               {{ sectionTitle }}
             </h2>
           </div>
@@ -97,7 +97,7 @@
                     class="group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors"
                   >
                     <h3
-                      class="font-medium text-gray-700 dark:text-slate-100 line-clamp-2 mb-1.5 leading-snug"
+                      class="font-medium text-gray-800 dark:text-slate-100 line-clamp-2 mb-1.5 leading-snug"
                     >
                       {{ ad.title }}
                     </h3>

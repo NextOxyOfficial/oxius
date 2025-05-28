@@ -7,7 +7,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Total Products</p>
-            <p class="text-xl font-semibold text-gray-700">
+            <p class="text-xl font-semibold text-gray-800">
               {{ products.length }}
             </p>
           </div>
@@ -26,7 +26,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Active Products</p>
-            <p class="text-xl font-semibold text-gray-700">
+            <p class="text-xl font-semibold text-gray-800">
               {{ activeProducts.length }}
             </p>
           </div>
@@ -45,7 +45,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Inactive Products</p>
-            <p class="text-xl font-semibold text-gray-700">
+            <p class="text-xl font-semibold text-gray-800">
               {{ inactiveProducts.length }}
             </p>
           </div>
@@ -64,7 +64,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-500">Out of Stock</p>
-            <p class="text-xl font-semibold text-gray-700">
+            <p class="text-xl font-semibold text-gray-800">
               {{ outOfStockProducts.length }}
             </p>
           </div>
@@ -84,7 +84,7 @@
       <div class="flex flex-col md:flex-row md:items-center md:justify-between">
         <div class="flex items-center space-x-2">
           <ShoppingCart class="h-5 w-5 text-indigo-600" />
-          <h2 class="text-xl font-semibold text-gray-700">My Products</h2>
+          <h2 class="text-xl font-semibold text-gray-800">My Products</h2>
         </div>
         <div class="mt-3 md:mt-0 flex items-center space-x-4">
           <div class="relative">
@@ -139,7 +139,7 @@
             </span>
             <span
               v-else-if="product.status === 'inactive'"
-              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700"
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
             >
               <CirclePause class="h-3 w-3 mr-1" />
               Inactive
@@ -154,7 +154,7 @@
           </div>
         </div>
         <div class="p-4">
-          <h3 class="text-lg font-medium text-gray-700 mb-1 line-clamp-1">
+          <h3 class="text-lg font-medium text-gray-800 mb-1 line-clamp-1">
             {{ product.name }}
           </h3>
           <div

@@ -155,7 +155,7 @@
               :class="
                 selectedCategory === null
                   ? 'bg-indigo-100 text-indigo-800 font-medium'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               "
             >
               All Products ({{ products.length }})
@@ -169,7 +169,7 @@
               :class="
                 selectedCategory === category.id
                   ? 'bg-indigo-100 text-indigo-800 font-medium'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               "
             >
               {{ category.name }} ({{ getProductCountByCategory(category.id) }})
@@ -320,7 +320,7 @@
                 <div
                   class="bg-gradient-to-br from-indigo-50 to-blue-50 p-3.5 rounded-lg mb-4"
                 >
-                  <p class="text-sm text-gray-700">
+                  <p class="text-sm text-gray-800">
                     Need large quantities or custom orders? Contact the seller
                     directly for corporate deals and special pricing.
                   </p>
@@ -474,7 +474,7 @@
                   >
                     Description
                   </h4>
-                  <p class="text-sm text-gray-700 leading-relaxed">
+                  <p class="text-sm text-gray-800 leading-relaxed">
                     {{ storeDetails.store_description }}
                   </p>
                 </div>
@@ -490,7 +490,7 @@
                     >
                       Location
                     </h4>
-                    <p class="text-sm text-gray-700">
+                    <p class="text-sm text-gray-800">
                       {{ storeDetails.store_address }}
                     </p>
                   </div>

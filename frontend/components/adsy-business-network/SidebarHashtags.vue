@@ -40,7 +40,7 @@
               <div class="p-1 rounded bg-blue-50 group-hover:bg-blue-100 transition-colors mr-2">
                 <Hash class="h-3 w-3 text-blue-600" />
               </div>
-              <span class="text-sm text-gray-700 font-medium group-hover:text-blue-600 transition-colors">
+              <span class="text-sm text-gray-800 font-medium group-hover:text-blue-600 transition-colors">
                 #{{ tag.tag }}
               </span>
             </div>

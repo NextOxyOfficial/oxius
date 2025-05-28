@@ -9,14 +9,14 @@
         <!-- Profile Actions -->
         <div class="absolute top-4 right-4 flex space-x-2">
           <button
-            class="bg-white/90 hover:bg-white text-gray-700 px-3 py-1.5 rounded-md text-sm transition-colors duration-200 flex items-center"
+            class="bg-white/90 hover:bg-white text-gray-800 px-3 py-1.5 rounded-md text-sm transition-colors duration-200 flex items-center"
             @click="handleShare"
           >
             <Share2 class="h-4 w-4 mr-1.5" />
             Share
           </button>
           <button
-            class="bg-white/90 hover:bg-white text-gray-700 px-3 py-1.5 rounded-md text-sm transition-colors duration-200 flex items-center"
+            class="bg-white/90 hover:bg-white text-gray-800 px-3 py-1.5 rounded-md text-sm transition-colors duration-200 flex items-center"
             @click="toggleReportDialog"
           >
             <Flag class="h-4 w-4 mr-1.5" />
@@ -59,7 +59,7 @@
               <div class="flex flex-col space-y-1">
                 <button
                   @click="navigateToSettings"
-                  class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded-md text-sm text-gray-700 transition-colors"
+                  class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded-md text-sm text-gray-800 transition-colors"
                 >
                   <UIcon
                     name="i-heroicons-pencil-square"
@@ -69,7 +69,7 @@
                 </button>
                 <button
                   @click="openProfilePhotoModal"
-                  class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded-md text-sm text-gray-700 transition-colors"
+                  class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded-md text-sm text-gray-800 transition-colors"
                 >
                   <UIcon
                     name="i-heroicons-eye"
@@ -401,7 +401,7 @@
               >
                 <SearchX class="h-8 w-8 text-gray-400" />
               </div>
-              <h3 class="text-gray-700 font-medium mb-1">No listings found</h3>
+              <h3 class="text-gray-800 font-medium mb-1">No listings found</h3>
               <p class="text-gray-500 text-sm">
                 Try adjusting your filters or check back later
               </p>
@@ -489,7 +489,7 @@
                 value="fake"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-700"
+              <span class="text-sm text-gray-800"
                 >Fake or misleading listings</span
               >
             </label>
@@ -500,7 +500,7 @@
                 value="prohibited"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-700"
+              <span class="text-sm text-gray-800"
                 >Selling prohibited items</span
               >
             </label>
@@ -511,7 +511,7 @@
                 value="offensive"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-700">Offensive content</span>
+              <span class="text-sm text-gray-800">Offensive content</span>
             </label>
             <label class="flex items-center space-x-2 cursor-pointer">
               <input
@@ -520,7 +520,7 @@
                 value="scam"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-700">Scam or fraud</span>
+              <span class="text-sm text-gray-800">Scam or fraud</span>
             </label>
             <label class="flex items-center space-x-2 cursor-pointer">
               <input
@@ -529,7 +529,7 @@
                 value="other"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-700">Other</span>
+              <span class="text-sm text-gray-800">Other</span>
             </label>
           </div>
 
@@ -537,7 +537,7 @@
             v-if="reportReason === 'other'"
             v-model="reportDetails"
             placeholder="Please provide details about your report..."
-            class="mt-4 w-full border border-gray-200 rounded-md p-2 text-sm text-gray-700 h-24 resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            class="mt-4 w-full border border-gray-200 rounded-md p-2 text-sm text-gray-800 h-24 resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500"
           ></textarea>
 
           <div class="mt-6 flex justify-end space-x-3">
@@ -597,10 +597,10 @@
           </div>
 
           <div class="mt-5">
-            <h4 class="text-sm font-medium mb-3 text-gray-700">Share via</h4>
+            <h4 class="text-sm font-medium mb-3 text-gray-800">Share via</h4>
             <div class="grid grid-cols-2 gap-3">
               <button
-                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-700"
+                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-800"
                 @click="shareViaMedia('facebook')"
               >
                 <span
@@ -610,7 +610,7 @@
                 Facebook
               </button>
               <button
-                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-700"
+                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-800"
                 @click="shareViaMedia('twitter')"
               >
                 <span
@@ -620,7 +620,7 @@
                 Twitter
               </button>
               <button
-                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-700"
+                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-800"
                 @click="shareViaMedia('whatsapp')"
               >
                 <span
@@ -630,7 +630,7 @@
                 WhatsApp
               </button>
               <button
-                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-700"
+                class="flex items-center justify-center py-2 px-4 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors duration-200 text-gray-800"
                 @click="shareViaMedia('email')"
               >
                 <span

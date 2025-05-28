@@ -14,7 +14,7 @@
               <Icon name="heroicons:clock" class="h-12 w-12 text-yellow-500" />
             </div>
           </div>
-          <h3 class="text-xl font-semibold text-gray-700 mb-3">
+          <h3 class="text-xl font-semibold text-gray-800 mb-3">
             Post Submitted Successfully!
           </h3>
           <p class="text-gray-500 mb-5">
@@ -62,7 +62,7 @@
             </div>
             <span
               class="text-sm font-medium text-center"
-              :class="currentStep >= index ? 'text-gray-700' : 'text-gray-500'"
+              :class="currentStep >= index ? 'text-gray-800' : 'text-gray-500'"
               >{{ step }}</span
             >
             <!-- Connector line -->
@@ -80,7 +80,7 @@
       <form @submit.prevent="validateStep">
         <!-- Step 1: Basic Details -->
         <div v-if="currentStep === 0" class="fade-transition px-2 sm:px-8 pb-8">
-          <h3 class="text-xl font-semibold text-gray-700 mb-6">
+          <h3 class="text-xl font-semibold text-gray-800 mb-6">
             Basic Details
           </h3>
 
@@ -88,14 +88,14 @@
           <div class="mb-6">
             <label
               for="category"
-              class="block text-sm font-medium text-gray-700 mb-2"
+              class="block text-sm font-medium text-gray-800 mb-2"
               >Category <span class="text-red-500">*</span></label
             >
             <div class="relative">
               <select
                 id="category"
                 v-model="formData.category"
-                class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-1.5 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
+                class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-1.5 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-800 shadow-sm"
                 required
                 @change="handleCategoryChange"
               >
@@ -126,7 +126,7 @@
           <div class="mb-6" v-if="formData.category">
             <label
               for="childCategory"
-              class="block text-sm font-medium text-gray-700 mb-2"
+              class="block text-sm font-medium text-gray-800 mb-2"
               >Sub Category
               <span v-if="childCategories.length" class="text-red-500"
                 >*</span
@@ -136,7 +136,7 @@
               <select
                 id="childCategory"
                 v-model="formData.childCategory"
-                class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-1.5 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-700 shadow-sm"
+                class="w-full border border-gray-300 rounded-md pl-4 pr-10 py-1.5 appearance-none bg-white focus:ring-primary focus:border-primary text-gray-800 shadow-sm"
                 :required="childCategories.length > 0"
               >
                 <option value="" disabled>
@@ -172,7 +172,7 @@
           <div class="mb-6">
             <label
               for="title"
-              class="block text-sm font-medium text-gray-700 mb-2"
+              class="block text-sm font-medium text-gray-800 mb-2"
               >Title <span class="text-red-500">*</span></label
             >
             <div class="relative">
@@ -206,7 +206,7 @@
           <div class="mb-6">
             <label
               for="description"
-              class="block text-sm font-medium text-gray-700 mb-2"
+              class="block text-sm font-medium text-gray-800 mb-2"
               >Description <span class="text-red-500">*</span></label
             >
             <div class="relative">
@@ -228,7 +228,7 @@
 
           <!-- Condition -->
           <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2"
+            <label class="block text-sm font-medium text-gray-800 mb-2"
               >Condition <span class="text-red-500">*</span></label
             >
             <div class="flex flex-wrap gap-3">
@@ -259,13 +259,13 @@
 
         <!-- Step 2: Price and Location -->
         <div v-if="currentStep === 1" class="fade-transition px-2 sm:px-8 pb-8">
-          <h3 class="text-xl font-semibold text-gray-700 mb-6">
+          <h3 class="text-xl font-semibold text-gray-800 mb-6">
             Pricing & Location
           </h3>
 
           <!-- Price -->
           <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2"
+            <label class="block text-sm font-medium text-gray-800 mb-2"
               >Price <span class="text-red-500">*</span></label
             >
             <div class="flex items-center">
@@ -303,7 +303,7 @@
 
           <!-- Location Selection -->
           <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2"
+            <label class="block text-sm font-medium text-gray-800 mb-2"
               >Targeted Location <span class="text-red-500">*</span>
               <span class="text-xs"
                 >(Where you want to show your ad)</span
@@ -391,7 +391,7 @@
           <div class="mb-6">
             <label
               for="detailedAddress"
-              class="block text-sm font-medium text-gray-700 mb-2"
+              class="block text-sm font-medium text-gray-800 mb-2"
               >Item/Property Address <span class="text-red-500">*</span></label
             >
             <textarea
@@ -409,7 +409,7 @@
 
           <!-- Contact Info -->
           <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-3"
+            <label class="block text-sm font-medium text-gray-800 mb-3"
               >Contact Information <span class="text-red-500">*</span></label
             >
 
@@ -455,7 +455,7 @@
 
         <!-- Step 3: Images Upload -->
         <div v-if="currentStep === 2" class="fade-transition px-2 sm:px-8 pb-8">
-          <h3 class="text-xl font-semibold text-gray-700 mb-6">
+          <h3 class="text-xl font-semibold text-gray-800 mb-6">
             Upload Photos
           </h3>
 
@@ -558,13 +558,13 @@
                 required
               />
               <div>
-                <span class="text-sm text-gray-700">I agree to the</span>
+                <span class="text-sm text-gray-800">I agree to the</span>
                 <a
                   href="#"
                   class="text-sm text-primary hover:underline ml-1 font-medium"
                   >Terms and Conditions</a
                 >
-                <span class="text-sm text-gray-700">,</span>
+                <span class="text-sm text-gray-800">,</span>
                 <a
                   href="#"
                   class="text-sm text-primary hover:underline ml-1 font-medium"
@@ -572,7 +572,7 @@
                 >
                 <span class="text-red-500 ml-0.5">*</span>
                 <p
-                  class="mt-1.5 text-sm text-gray-500 group-hover:text-gray-700 transition-colors"
+                  class="mt-1.5 text-sm text-gray-500 group-hover:text-gray-800 transition-colors"
                 >
                   By posting, you confirm that this ad complies with our
                   policies and you own or have rights to the content you're
@@ -591,7 +591,7 @@
           <button
             v-if="currentStep > 0"
             type="button"
-            class="px-6 py-2.5 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition font-medium"
+            class="px-6 py-2.5 border border-gray-300 rounded-md text-gray-800 hover:bg-gray-100 transition font-medium"
             @click="goToPreviousStep"
           >
             <Icon

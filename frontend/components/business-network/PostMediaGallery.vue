@@ -63,7 +63,7 @@
     <div v-if="post.post_media.length > 1" class="relative px-0.5 mt-5">
       <!-- Gallery Heading -->
       <div class="flex items-center px-4 justify-between mb-4 relative">        
-        <h3 class="font-medium text-gray-700 dark:text-slate-100 flex items-center space-x-2 relative">
+        <h3 class="font-medium text-gray-800 dark:text-slate-100 flex items-center space-x-2 relative">
           <span class="inline-flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-md shadow-sm">
             <UIcon name="i-heroicons-photo" class="w-3.5 h-3.5" />
           </span>

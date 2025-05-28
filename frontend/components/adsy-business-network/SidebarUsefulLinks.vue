@@ -14,7 +14,7 @@
         class="flex flex-col items-center justify-center p-3 rounded-md bg-gray-50 border border-gray-100 hover:bg-blue-50 hover:border-blue-100 transition-all shadow-sm"
       >
         <component :is="item.icon" class="h-5 w-5 mb-2 text-blue-600" />
-        <span class="text-xs font-medium text-gray-700">{{ item.label }}</span>
+        <span class="text-xs font-medium text-gray-800">{{ item.label }}</span>
       </NuxtLink>
     </div>
   </div>

@@ -29,7 +29,7 @@
         <div class="flex justify-end gap-3 mt-8">
           <button
             @click="$emit('update:modelValue', false)"
-            class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white text-gray-700 hover:bg-gray-100 h-10 px-4 py-2"
+            class="inline-flex items-center justify-center rounded-lg text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 bg-white text-gray-800 hover:bg-gray-100 h-10 px-4 py-2"
           >
             Cancel
           </button>

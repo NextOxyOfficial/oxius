@@ -94,7 +94,7 @@
             :class="[
               item.path === route.path
                 ? getMenuItemColor(item.label, 'text')
-                : 'text-gray-700 group-hover:text-gray-700',
+                : 'text-gray-800 group-hover:text-gray-800',
             ]"
           >
             {{ item.label }}
@@ -258,7 +258,7 @@ const getMenuItemColor = (label, type) => {
     Settings: {
       bg: "bg-gradient-to-r from-gray-500 to-gray-600",
       icon: "text-gray-500 group-hover:text-gray-500",
-      text: "text-gray-700",
+      text: "text-gray-800",
       badge: "bg-gray-100 text-gray-500",
       indicator: "bg-gray-500",
     },

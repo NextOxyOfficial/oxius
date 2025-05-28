@@ -84,7 +84,7 @@
           >
             <div class="relative text-center">
               <h1
-                class="text-lg sm:text-base font-medium leading-tight text-gray-700 relative inline-block"
+                class="text-lg sm:text-base font-medium leading-tight text-gray-800 relative inline-block"
               >
                 <span class="relative z-10">{{
                   $t("bangladesh_first_title")
@@ -97,7 +97,7 @@
                 <!-- Business Network -->
                 <NuxtLink
                   to="/business-network"
-                  class="service-btn bg-white hover:bg-blue-50 text-gray-700"
+                  class="service-btn bg-white hover:bg-blue-50 text-gray-800"
                 >
                   <div class="icon-circle bg-blue-50">
                     <Globe class="icon text-blue-600" />
@@ -107,7 +107,7 @@
                 <!-- News -->
                 <NuxtLink
                   to="/adsy-news"
-                  class="service-btn bg-white hover:bg-amber-50 text-gray-700"
+                  class="service-btn bg-white hover:bg-amber-50 text-gray-800"
                 >
                   <div class="icon-circle bg-amber-50">
                     <Newspaper class="icon text-amber-600" />
@@ -117,7 +117,7 @@
                 <!-- Earn Money -->
                 <NuxtLink
                   to="/#micro-gigs"
-                  class="service-btn bg-white hover:bg-emerald-50 text-gray-700"
+                  class="service-btn bg-white hover:bg-emerald-50 text-gray-800"
                 >
                   <div class="icon-circle bg-emerald-50">
                     <BadgeDollarSign class="icon text-emerald-600" />
@@ -127,7 +127,7 @@
                 <!-- Eshop -->
                 <NuxtLink
                   to="/eshop"
-                  class="service-btn bg-white hover:bg-purple-50 text-gray-700"
+                  class="service-btn bg-white hover:bg-purple-50 text-gray-800"
                 >
                   <div class="icon-circle bg-purple-50">
                     <ShoppingCart class="icon text-purple-600" />
@@ -137,7 +137,7 @@
                 <!-- Sale Listings -->
                 <NuxtLink
                   to="/#sale-category"
-                  class="service-btn bg-white hover:bg-indigo-50 text-gray-700"
+                  class="service-btn bg-white hover:bg-indigo-50 text-gray-800"
                 >
                   <div class="icon-circle bg-indigo-50">
                     <ListFilter class="icon text-indigo-600" />
@@ -148,7 +148,7 @@
                 <!-- MindForce -->
                 <NuxtLink
                   to="/business-network/mindforce"
-                  class="service-btn bg-white hover:bg-cyan-50 text-gray-700"
+                  class="service-btn bg-white hover:bg-cyan-50 text-gray-800"
                 >
                   <div class="icon-circle bg-cyan-50">
                     <Brain class="icon text-cyan-600" />
@@ -159,7 +159,7 @@
                 <!-- Amar Seba -->
                 <NuxtLink
                   to="/courses"
-                  class="service-btn bg-white hover:bg-rose-50 text-gray-700"
+                  class="service-btn bg-white hover:bg-rose-50 text-gray-800"
                 >
                   <div class="icon-circle bg-rose-50">
                     <UIcon
@@ -203,7 +203,7 @@
                 <!-- Mobile Recharge -->
                 <NuxtLink
                   to="/mobile-recharge"
-                  class="service-btn bg-white hover:bg-orange-50 text-gray-700"
+                  class="service-btn bg-white hover:bg-orange-50 text-gray-800"
                 >
                   <div class="icon-circle bg-orange-50">
                     <Smartphone class="icon text-orange-600" />
@@ -213,7 +213,7 @@
                 <!-- Transactions -->
                 <NuxtLink
                   to="/deposit-withdraw"
-                  class="service-btn bg-white hover:bg-lime-50 text-gray-700"
+                  class="service-btn bg-white hover:bg-lime-50 text-gray-800"
                 >
                   <div class="icon-circle bg-lime-50">
                     <CreditCard class="icon text-lime-600" />
@@ -224,7 +224,7 @@
                 <!-- Membership -->
                 <NuxtLink
                   to="/upgrade-to-pro"
-                  class="service-btn bg-white hover:bg-pink-50 text-gray-700"
+                  class="service-btn bg-white hover:bg-pink-50 text-gray-800"
                 >
                   <div class="icon-circle bg-pink-50">
                     <User class="icon text-pink-600" />
@@ -250,7 +250,7 @@
             <Globe class="mobile-icon text-blue-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">{{
+            <span class="text-sm font-medium leading-tight text-gray-800">{{
               $t("business_network")
             }}</span>
           </div>
@@ -261,7 +261,7 @@
             <Newspaper class="mobile-icon text-amber-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">{{
+            <span class="text-sm font-medium leading-tight text-gray-800">{{
               $t("adsy_news")
             }}</span>
           </div>
@@ -272,7 +272,7 @@
             <BadgeDollarSign class="mobile-icon text-emerald-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">{{
+            <span class="text-sm font-medium leading-tight text-gray-800">{{
               $t("earn_money")
             }}</span>
           </div>
@@ -283,7 +283,7 @@
             <ShoppingCart class="mobile-icon text-purple-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">{{
+            <span class="text-sm font-medium leading-tight text-gray-800">{{
               $t("eshop")
             }}</span>
           </div>
@@ -294,7 +294,7 @@
             <ListFilter class="mobile-icon text-indigo-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">{{
+            <span class="text-sm font-medium leading-tight text-gray-800">{{
               $t("sale_listing")
             }}</span>
           </div>
@@ -305,7 +305,7 @@
             <Brain class="mobile-icon text-cyan-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">{{
+            <span class="text-sm font-medium leading-tight text-gray-800">{{
               $t("mindforce")
             }}</span>
           </div>
@@ -317,7 +317,7 @@
             <GraduationCap class="mobile-icon text-rose-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">
+            <span class="text-sm font-medium leading-tight text-gray-800">
               {{ $t("elearning") }}</span>
           </div>
         </NuxtLink>
@@ -362,7 +362,7 @@
             <Smartphone class="mobile-icon text-orange-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">{{
+            <span class="text-sm font-medium leading-tight text-gray-800">{{
               $t("mobile_recharge")
             }}</span>
           </div>
@@ -373,7 +373,7 @@
             <CreditCard class="mobile-icon text-lime-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">{{
+            <span class="text-sm font-medium leading-tight text-gray-800">{{
               $t("adsy_pay")
             }}</span>
           </div>
@@ -385,7 +385,7 @@
             <User class="mobile-icon text-pink-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm font-medium leading-tight text-gray-700">{{
+            <span class="text-sm font-medium leading-tight text-gray-800">{{
               $t("packeges")
             }}</span>
           </div>

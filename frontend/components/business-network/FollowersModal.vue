@@ -22,7 +22,7 @@
         </div>        
         <button 
           @click="closeModal" 
-          class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded"
+          class="text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded"
           aria-label="Close modal"
           ref="closeButtonRef"
         >
@@ -97,7 +97,7 @@
           <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center mb-4">
             <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-300 dark:text-gray-600" aria-hidden="true" />
           </div>
-          <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <h3 class="text-lg font-medium text-gray-800 dark:text-gray-300 mb-1">
             {{ activeTab === 'followers' ? 'No followers found' : 'Not following anyone' }}
           </h3>
           <p v-if="searchTerm" class="text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -149,7 +149,7 @@
                 :class="[
                   'text-sm font-medium px-3 py-1 rounded-md min-w-[90px] text-center',
                   user.is_following
-                    ? 'border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-white'
+                    ? 'border border-gray-200 dark:border-slate-600 text-gray-800 dark:text-white'
                     : 'bg-blue-500 text-white'
                 ]"
                 @click.stop="toggleFollow(user)"

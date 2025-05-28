@@ -35,7 +35,7 @@
       <div class="flex-1">
         <NuxtLink
           :to="`/business-network/profile/${post.author}`"
-          class="font-semibold text-gray-700 dark:text-white text-md hover:cursor-pointer flex gap-1 w-full items-center transition-colors hover:text-blue-600 dark:hover:text-blue-400"
+          class="font-semibold text-gray-800 dark:text-white text-md hover:cursor-pointer flex gap-1 w-full items-center transition-colors hover:text-blue-600 dark:hover:text-blue-400"
         >
           <p class="truncate max-w-[220px]">
             {{ capitalizeNames(post?.author_details?.name) }}
@@ -83,7 +83,7 @@
         >
           <div class="py-1.5">
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click.stop="$emit('toggle-save', post)"
               v-if="user?.user"
             >
@@ -111,7 +111,7 @@
             </button>
 
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click="openPostDeleteModal(post)"
               v-if="post.author_details?.id === user?.user?.id"
             >
@@ -123,7 +123,7 @@
             </button>
 
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click.stop="$emit('copy-link', post)"
             >
               <Link2
@@ -138,7 +138,7 @@
             />
 
             <button
-              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               v-if="user"
             >
               <Flag class="h-4 w-4 mr-2.5 text-amber-600 dark:text-amber-400" />
@@ -162,7 +162,7 @@
         >
           <div class="flex items-center justify-between mb-4">
             <h3
-              class="text-lg font-semibold text-gray-700 dark:text-white flex items-center"
+              class="text-lg font-semibold text-gray-800 dark:text-white flex items-center"
             >
               <UIcon
                 name="i-heroicons-exclamation-triangle"
@@ -186,7 +186,7 @@
           <div class="flex justify-end space-x-3">
             <button
               @click="postToDelete = null"
-              class="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-400 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+              class="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-400 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
             >
               Cancel
             </button>

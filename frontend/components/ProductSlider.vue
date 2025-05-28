@@ -6,7 +6,7 @@
         <div class="p-1.5 rounded bg-primary/10 text-primary">
           <UIcon :name="icon" class="w-5 h-5" />
         </div>
-        <h2 class="text-xl font-semibold text-gray-700 dark:text-white">
+        <h2 class="text-xl font-semibold text-gray-800 dark:text-white">
           {{ title }}
         </h2>
         <UBadge color="primary" variant="subtle" class="ml-2">
@@ -101,7 +101,7 @@
                   class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex flex-col items-center justify-center gap-2 transition-all duration-300 opacity-0 group-hover:opacity-100"
                 >
                   <button
-                    class="w-32 py-1.5 bg-white/90 dark:bg-slate-800/90 text-sm font-medium text-gray-700 dark:text-white rounded-md shadow-sm transform transition-all hover:scale-105"
+                    class="w-32 py-1.5 bg-white/90 dark:bg-slate-800/90 text-sm font-medium text-gray-800 dark:text-white rounded-md shadow-sm transform transition-all hover:scale-105"
                     @click="openProductModal(product)"
                   >
                     <UIcon name="i-heroicons-eye" class="w-3.5 h-3.5 mr-1" />
@@ -125,7 +125,7 @@
               <div class="p-3 flex flex-col flex-grow">
                 <!-- Title -->
                 <h3
-                  class="font-medium text-gray-700 dark:text-white text-sm mb-1 line-clamp-2 flex-grow"
+                  class="font-medium text-gray-800 dark:text-white text-sm mb-1 line-clamp-2 flex-grow"
                 >
                   {{ product.name }}
                 </h3>
@@ -157,7 +157,7 @@
                 <!-- Price and Action -->
                 <div class="flex items-center justify-between">
                   <div class="flex items-baseline gap-1">
-                    <span class="font-semibold text-gray-700 dark:text-white"
+                    <span class="font-semibold text-gray-800 dark:text-white"
                       >৳{{ product.price }}</span
                     >
                     <span
@@ -215,7 +215,7 @@
             class="relative bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 px-5 py-4 border-b border-slate-200 dark:border-slate-700"
           >
             <div class="flex justify-between items-center">
-              <h3 class="text-xl font-medium text-gray-700 dark:text-white">
+              <h3 class="text-xl font-medium text-gray-800 dark:text-white">
                 {{ selectedProduct.name }}
               </h3>
               <UButton
@@ -260,7 +260,7 @@
                   {{ selectedProduct.category }}
                 </div>
                 <h2
-                  class="text-xl font-medium text-gray-700 dark:text-white mb-2"
+                  class="text-xl font-medium text-gray-800 dark:text-white mb-2"
                 >
                   {{ selectedProduct.name }}
                 </h2>
@@ -295,7 +295,7 @@
                 <!-- Price -->
                 <div class="flex items-center gap-3 mb-4">
                   <span
-                    class="text-xl font-semibold text-gray-700 dark:text-white"
+                    class="text-xl font-semibold text-gray-800 dark:text-white"
                   >
                     ৳{{ selectedProduct.price }}
                   </span>
@@ -406,7 +406,7 @@
               <template #reviews>
                 <div class="pt-4">
                   <h3
-                    class="text-lg font-medium text-gray-700 dark:text-white mb-4"
+                    class="text-lg font-medium text-gray-800 dark:text-white mb-4"
                   >
                     Customer Reviews
                   </h3>
@@ -431,7 +431,7 @@
                             </div>
                             <div>
                               <div
-                                class="font-medium text-gray-700 dark:text-white"
+                                class="font-medium text-gray-800 dark:text-white"
                               >
                                 {{ review.name }}
                               </div>

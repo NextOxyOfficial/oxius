@@ -10,7 +10,7 @@
         class="mb-6 bg-gray-100 shadow-sm border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-xl"
       >
         <div class="flex gap-2">
-          <h2 class="text-base text-gray-700 sm:text-xl text-center">Mobile Recharge</h2>
+          <h2 class="text-base text-gray-800 sm:text-xl text-center">Mobile Recharge</h2>
           <div class="flex justify-center gap-2">
             <NuxtImg
               v-for="operator in operators"
@@ -109,7 +109,7 @@
               class="flex flex-row-reverse justify-end gap-2"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -233,7 +233,7 @@
               class="flex flex-row-reverse justify-end gap-2"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -383,7 +383,7 @@
               class="flex flex-row-reverse justify-end gap-2"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -441,7 +441,7 @@
             class="px-4 py-2 text-sm font-medium border border-gray-200 rounded-l-lg"
             :class="{
               'bg-primary-600 text-white': transactionTab === 'sent',
-              'bg-white text-gray-700 hover:bg-gray-50': transactionTab !== 'sent',
+              'bg-white text-gray-800 hover:bg-gray-50': transactionTab !== 'sent',
             }"
           >
             Sent Transactions
@@ -452,7 +452,7 @@
             class="px-4 py-2 text-sm font-medium border border-gray-200 rounded-r-lg"
             :class="{
               'bg-primary-600 text-white': transactionTab === 'received',
-              'bg-white text-gray-700 hover:bg-gray-50': transactionTab !== 'received',
+              'bg-white text-gray-800 hover:bg-gray-50': transactionTab !== 'received',
             }"
           >
             Received Transactions
@@ -670,7 +670,7 @@
               </span>
               
               <!-- Display transaction type name -->
-              <span class="ml-2 text-sm text-gray-700">
+              <span class="ml-2 text-sm text-gray-800">
                 {{ getTransactionTypeName(row.transaction_type) }}
               </span>
             </div>
@@ -727,7 +727,7 @@
                 'text-red-600': ['withdraw', 'diamond_purchase', 'pro_subscription', 'order_payment', 'mobile_recharge'].includes(row.transaction_type?.toLowerCase()),
                 'text-blue-600': row.transaction_type?.toLowerCase() === 'transfer',
                 'text-purple-600': row.transaction_type?.toLowerCase()?.startsWith('diamond_') && !['diamond_bonus', 'diamond_refund', 'diamond_purchase'].includes(row.transaction_type?.toLowerCase()),
-                'text-gray-700': !row.transaction_type
+                'text-gray-800': !row.transaction_type
               }"
             >              {{ 
                 formatAmount(
@@ -795,7 +795,7 @@
       >
         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
           <div>
-            <p class="text-sm text-gray-700">
+            <p class="text-sm text-gray-800">
               Showing
               <span class="font-medium">{{ startIndex + 1 }}</span> to
               <span class="font-medium">{{
@@ -915,18 +915,18 @@
           <button
             @click="goToPage(currentPage - 1)"
             :disabled="currentPage === 1"
-            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
-          <p class="text-sm text-gray-700">
+          <p class="text-sm text-gray-800">
             Page <span class="font-medium">{{ currentPage }}</span> of
             <span class="font-medium">{{ totalPages }}</span>
           </p>
           <button
             @click="goToPage(currentPage + 1)"
             :disabled="currentPage === totalPages"
-            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-800 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>
@@ -962,13 +962,13 @@
           >
             <div class="border p-4 bg-slate-50 rounded-xl">
               <!-- Title -->
-              <h2 class="text-lg font-semibold text-gray-700 mb-4">Confirm Transfer</h2>
+              <h2 class="text-lg font-semibold text-gray-800 mb-4">Confirm Transfer</h2>
 
               <!-- Transfer Details -->
               <div class="space-y-4 mb-6">
                 <div class="flex justify-between items-center">
                   <p class="text-gray-500 text-xs">Transfer amount</p>
-                  <p class="text-gray-700 text-lg font-semibold">
+                  <p class="text-gray-800 text-lg font-semibold">
                     <UIcon name="i-mdi:currency-bdt" class="" />
                     {{ transfer?.payable_amount }}
                   </p>
@@ -978,7 +978,7 @@
                   <!-- Recipient Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-500">Recipient:</label>
-                    <p class="text-sm text-gray-700 font-medium" v-if="transfer?.to_user">
+                    <p class="text-sm text-gray-800 font-medium" v-if="transfer?.to_user">
                       {{ transfer?.to_user }}
                     </p>
                   </div>
@@ -986,7 +986,7 @@
                   <!-- Email Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-500">Email:</label>
-                    <p class="text-sm text-gray-700 font-medium">
+                    <p class="text-sm text-gray-800 font-medium">
                       {{ transfer?.contact }}
                     </p>
                   </div>
@@ -994,7 +994,7 @@
                   <!-- Name Field -->
                   <!-- <div class="space-y-1">
                   <label class="text-xs text-gray-500">Name:</label>
-                  <p class="text-sm text-gray-700 font-medium">John Smith</p>
+                  <p class="text-sm text-gray-800 font-medium">John Smith</p>
                 </div> -->
 
                   <!-- Time Field -->
@@ -1012,7 +1012,7 @@
               <!-- Final Amount -->
               <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
                 <p class="text-xs text-gray-500">Final amount</p>
-                <p class="text-gray-700 font-semibold">
+                <p class="text-gray-800 font-semibold">
                   <UIcon name="i-mdi:currency-bdt" class="" />
                   {{ transfer?.payable_amount }}
                 </p>
@@ -1059,7 +1059,7 @@
               <div class="space-y-4 mb-6">
                 <div class="flex justify-between items-center">
                   <p class="text-gray-500 text-xs">Transferred amount</p>
-                  <p class="text-gray-700 text-lg font-semibold">
+                  <p class="text-gray-800 text-lg font-semibold">
                     <UIcon name="i-mdi:currency-bdt" class="" />
                     {{ transfer?.payable_amount }}
                   </p>
@@ -1069,7 +1069,7 @@
                   <!-- Recipient Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-500">Recipient:</label>
-                    <p class="text-sm sm:text-lg text-gray-700 font-medium">
+                    <p class="text-sm sm:text-lg text-gray-800 font-medium">
                       {{ transfer?.to_user }}
                     </p>
                   </div>
@@ -1077,7 +1077,7 @@
                   <!-- Email Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-500">Email:</label>
-                    <p class="text-sm text-gray-700 font-medium">
+                    <p class="text-sm text-gray-800 font-medium">
                       {{ transfer?.contact }}
                     </p>
                   </div>
@@ -1096,7 +1096,7 @@
               <!-- Final Amount -->
               <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
                 <p class="text-xs text-gray-500">Final amount</p>
-                <p class="text-gray-700 font-semibold sm:text-lg">
+                <p class="text-gray-800 font-semibold sm:text-lg">
                   <UIcon name="i-mdi:currency-bdt" class="" />
                   {{ transfer?.payable_amount }}
                 </p>
@@ -1106,7 +1106,7 @@
               <div class="flex gap-3">
                 <button
                   @click="reset"
-                  class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  class="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 bg-gray-100 text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300"
                 >
                   View History
                 </button>
@@ -1148,20 +1148,20 @@
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="flex items-start">
               <div class="mt-3 sm:mt-0 sm:ml-4 text-left w-full">
-                <h3 class="text-lg leading-6 font-medium text-gray-700" id="modal-title">
+                <h3 class="text-lg leading-6 font-medium text-gray-800" id="modal-title">
                   Transaction Details
                 </h3>
                 <div class="mt-4 border-t border-gray-200 pt-4">
                   <dl class="divide-y divide-gray-200">
                     <div class="py-3 grid grid-cols-3 gap-4">
                       <dt class="text-sm font-medium text-gray-500">Transaction ID</dt>
-                      <dd class="text-sm text-gray-700 mt-0 col-span-2 font-mono">
+                      <dd class="text-sm text-gray-800 mt-0 col-span-2 font-mono">
                         {{ selectedTransaction?.id }}
                       </dd>
                     </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Type</dt>
                       <dd
-                        class="text-sm text-gray-700 mt-0 col-span-2 flex items-center"
+                        class="text-sm text-gray-800 mt-0 col-span-2 flex items-center"
                       >
                         <!-- Deposit icon -->
                         <span
@@ -1352,7 +1352,7 @@
                       <!-- When sender details are available -->
                       <dd
                         v-if="selectedTransaction?.user_details"
-                        class="text-sm text-gray-700 mt-0 col-span-2 font-mono"
+                        class="text-sm text-gray-800 mt-0 col-span-2 font-mono"
                       >
                         <p>{{ selectedTransaction?.user_details?.name || '' }}</p>
                         <p>{{ selectedTransaction?.user_details?.phone || '' }}</p>
@@ -1361,18 +1361,18 @@
                       
                       <!-- For payments through gateway -->
                       <dd v-else-if="['deposit', 'diamond_purchase'].includes(selectedTransaction?.transaction_type)" 
-                          class="text-sm text-gray-700 mt-0 col-span-2">
+                          class="text-sm text-gray-800 mt-0 col-span-2">
                         Payment Gateway
                       </dd>
                       
                       <!-- For system-generated transactions -->
                       <dd v-else-if="['diamond_bonus', 'diamond_refund', 'diamond_admin'].includes(selectedTransaction?.transaction_type) || selectedTransaction?.transaction_type?.toLowerCase()?.includes('system')" 
-                          class="text-sm text-gray-700 mt-0 col-span-2">
+                          class="text-sm text-gray-800 mt-0 col-span-2">
                         System
                       </dd>
                       
                       <!-- For other transactions -->
-                      <dd v-else class="text-sm text-gray-700 mt-0 col-span-2">
+                      <dd v-else class="text-sm text-gray-800 mt-0 col-span-2">
                         Unknown
                       </dd>
                     </div>
@@ -1384,7 +1384,7 @@
                       <!-- When recipient details are available -->
                       <dd
                         v-if="selectedTransaction?.to_user_details"
-                        class="text-sm text-gray-700 mt-0 col-span-2 font-mono"
+                        class="text-sm text-gray-800 mt-0 col-span-2 font-mono"
                       >
                         <p>
                           {{ selectedTransaction?.to_user_details?.phone }}
@@ -1393,18 +1393,18 @@
                       </dd>
                         <!-- For self-transactions like deposits, purchases -->
                       <dd v-else-if="['deposit', 'diamond_purchase', 'pro_subscription', 'mobile_recharge', 'order_payment', 'diamond_bonus', 'diamond_refund', 'diamond_admin'].includes(selectedTransaction?.transaction_type)" 
-                          class="text-sm text-gray-700 mt-0 col-span-2">
+                          class="text-sm text-gray-800 mt-0 col-span-2">
                         Myself
                       </dd>
                       
                       <!-- For diamond transactions without recipient -->
                       <dd v-else-if="selectedTransaction?.transaction_type?.startsWith('diamond_') && !selectedTransaction?.to_user_details"
-                          class="text-sm text-gray-700 mt-0 col-span-2">
+                          class="text-sm text-gray-800 mt-0 col-span-2">
                         Personal Account
                       </dd>
                       
                       <!-- For other transactions, show payment method if available -->
-                      <dd v-else class="text-sm text-gray-700 mt-0 col-span-2">
+                      <dd v-else class="text-sm text-gray-800 mt-0 col-span-2">
                         {{ selectedTransaction?.payment_method || 'N/A' }}
                       </dd>
                     </div>
@@ -1412,19 +1412,19 @@
                     <!-- Name information -->
                     <div v-if="selectedTransaction?.to_user_details" class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Name</dt>
-                      <dd class="text-sm text-gray-700 mt-0 col-span-2">
+                      <dd class="text-sm text-gray-800 mt-0 col-span-2">
                         {{ selectedTransaction?.to_user_details.name }}
                       </dd>
                     </div>
                       <!-- Diamond transaction details -->                    <div v-if="selectedTransaction?.transaction_type?.startsWith('diamond_')" class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Diamond Count</dt>
-                      <dd class="text-sm text-gray-700 mt-0 col-span-2">
+                      <dd class="text-sm text-gray-800 mt-0 col-span-2">
                         {{ selectedTransaction?.diamonds || parseInt(selectedTransaction?.quantity) || selectedTransaction?.quantity || selectedTransaction?.amount || 0 }} 💎
                       </dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Date & Time</dt>
-                      <dd class="text-sm text-gray-700 mt-0 col-span-2">
+                      <dd class="text-sm text-gray-800 mt-0 col-span-2">
                         {{ formatDate(selectedTransaction?.created_at) }}
                       </dd>
                     </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
@@ -1436,7 +1436,7 @@
                           'text-red-600': ['withdraw', 'diamond_purchase', 'pro_subscription', 'order_payment', 'mobile_recharge'].includes(selectedTransaction?.transaction_type),
                           'text-blue-600': selectedTransaction?.transaction_type === 'transfer',
                           'text-purple-600': selectedTransaction?.transaction_type?.startsWith('diamond_') && !['diamond_bonus', 'diamond_refund', 'diamond_purchase'].includes(selectedTransaction?.transaction_type),
-                          'text-gray-700': !selectedTransaction?.transaction_type
+                          'text-gray-800': !selectedTransaction?.transaction_type
                         }"
                       >
                         {{
@@ -1450,7 +1450,7 @@
                       </dd>
                     </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-500">Status</dt>
-                      <dd class="text-sm text-gray-700 mt-0 col-span-2">
+                      <dd class="text-sm text-gray-800 mt-0 col-span-2">
                         <span
                           v-if="selectedTransaction"
                           class="px-2 inline-flex text-sm leading-5 font-medium rounded-full capitalize"

@@ -6,7 +6,7 @@
         class="section-header sm:mb-8 mb-5 flex justify-between items-center"
       >
         <div class="flex items-center gap-3">
-          <h2 class="text-xl md:text-xl font-medium text-gray-700">{{$t("sale_listing")}}</h2>
+          <h2 class="text-xl md:text-xl font-medium text-gray-800">{{$t("sale_listing")}}</h2>
         </div>
         <div v-if="user" class="flex gap-2 sm:gap-3">
           <button
@@ -302,7 +302,7 @@
 
             <div class="p-3 flex-grow flex flex-col">
               <!-- Title with truncation -->
-              <h4 class="font-medium text-gray-700 line-clamp-1 text-sm">
+              <h4 class="font-medium text-gray-800 line-clamp-1 text-sm">
                 {{ post.title }}
               </h4>
               <!-- Address with location icon -->
@@ -349,7 +349,7 @@
             size="40px"
             class="text-gray-500 mb-2"
           />
-          <h3 class="text-base font-medium text-gray-700 mb-1">
+          <h3 class="text-base font-medium text-gray-800 mb-1">
             No listings found
           </h3>
           <p class="text-gray-500 text-sm text-center">
@@ -381,7 +381,7 @@
           <div class="sm:flex sm:items-start">
             <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
               <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg leading-6 font-medium text-gray-700">
+                <h3 class="text-lg leading-6 font-medium text-gray-800">
                   Post a Sale
                 </h3>
                 <button
@@ -427,7 +427,7 @@
                 <div
                   class="flex justify-between items-center border-b pb-3 mb-4"
                 >
-                  <h3 class="text-lg leading-6 font-medium text-gray-700">
+                  <h3 class="text-lg leading-6 font-medium text-gray-800">
                     My Posts
                   </h3>
                   <button

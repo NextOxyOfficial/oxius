@@ -41,7 +41,7 @@
                       name="i-heroicons-globe-asia-australia"
                       class="text-primary-600 mr-1.5 animate-pulse-slow"
                     />
-                    <span class="font-medium text-gray-700">{{
+                    <span class="font-medium text-gray-800">{{
                       location?.country || "Bangladesh"
                     }}</span>
                     <span
@@ -63,7 +63,7 @@
                         name="i-heroicons-map"
                         class="text-primary-600 mr-1.5 animate-pulse-slow"
                       />
-                      <span class="font-medium text-gray-700">{{
+                      <span class="font-medium text-gray-800">{{
                         location?.state
                       }}</span>
                       <UIcon
@@ -82,7 +82,7 @@
                         name="i-heroicons-building-office-2"
                         class="text-primary-600 mr-1.5 location-icon"
                       />
-                      <span class="font-medium text-gray-700">{{
+                      <span class="font-medium text-gray-800">{{
                         location?.city
                       }}</span>
                       <UIcon
@@ -101,7 +101,7 @@
                         name="i-heroicons-home-modern"
                         class="text-primary-600 mr-1.5 location-icon"
                       />
-                      <span class="font-medium text-gray-700">{{
+                      <span class="font-medium text-gray-800">{{
                         location?.upazila
                       }}</span>
                     </div>
@@ -232,7 +232,7 @@
                 <span class="text-xs font-medium">Menu</span>
               </UButton>
               <p class="text-gray-500 text-sm">
-                <span class="font-medium text-gray-700">{{
+                <span class="font-medium text-gray-800">{{
                   selectedCategory
                     ? getCateogryPostCount(selectedCategory)
                     : totalListings
@@ -240,7 +240,7 @@
                 ads found
                 <span v-if="selectedCategory">
                   in
-                  <span class="font-medium text-gray-700">{{
+                  <span class="font-medium text-gray-800">{{
                     getCategoryName(selectedCategory)
                   }}</span>
                 </span>
@@ -396,7 +396,7 @@
             <div
               class="flex flex-col sm:flex-row items-center justify-between my-2 gap-2"
             >
-              <h2 class="text-lg font-medium text-gray-700">
+              <h2 class="text-lg font-medium text-gray-800">
                 {{ categoryBrowserHeading }}
               </h2>
             </div>
@@ -493,7 +493,7 @@
                       'px-3 py-1 rounded-md border',
                       currentPage === page
                         ? 'bg-blue-600 text-white border-blue-600'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-100',
+                        : 'border-gray-300 text-gray-800 hover:bg-gray-100',
                     ]"
                   >
                     {{ page }}
@@ -513,7 +513,7 @@
                       'px-3 py-1 rounded-md border',
                       currentPage === totalPages
                         ? 'bg-blue-600 text-white border-blue-600'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-100',
+                        : 'border-gray-300 text-gray-800 hover:bg-gray-100',
                     ]"
                   >
                     {{ totalPages }}
@@ -570,7 +570,7 @@
 
                   <div class="p-3">
                     <h3
-                      class="font-medium text-gray-700 line-clamp-1 group-hover:text-amber-700"
+                      class="font-medium text-gray-800 line-clamp-1 group-hover:text-amber-700"
                     >
                       {{ listing?.title || `Title` }}
                     </h3>
@@ -625,7 +625,7 @@
               name="i-heroicons-face-frown"
               class="h-16 w-16 text-gray-400"
             />
-            <h3 class="mt-2 text-lg font-medium text-gray-700">
+            <h3 class="mt-2 text-lg font-medium text-gray-800">
               No recent listings found
             </h3>
             <p class="mt-1 text-gray-500 max-w-sm text-center">
@@ -648,7 +648,7 @@
                   <h3 class="text-lg font-medium text-blue-800 mb-2">
                     Buyer Tips
                   </h3>
-                  <ul class="space-y-2 text-sm text-gray-700">
+                  <ul class="space-y-2 text-sm text-gray-800">
                     <li class="flex items-start">
                       <UIcon
                         name="i-heroicons-check-circle"
@@ -717,7 +717,7 @@
                   <h3 class="text-lg font-medium text-green-800 mb-2">
                     Safety Guide
                   </h3>
-                  <ul class="space-y-2 text-sm text-gray-700">
+                  <ul class="space-y-2 text-sm text-gray-800">
                     <li class="flex items-start">
                       <UIcon
                         name="i-heroicons-check-circle"
@@ -799,7 +799,7 @@
                 <div
                   class="flex justify-between items-center border-b pb-3 mb-4"
                 >
-                  <h3 class="text-lg leading-6 font-medium text-gray-700">
+                  <h3 class="text-lg leading-6 font-medium text-gray-800">
                     Post a Sale
                   </h3>
                   <button

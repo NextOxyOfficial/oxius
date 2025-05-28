@@ -28,7 +28,7 @@
                 ></span>
               </span>
             </div>
-            <h3 class="text-lg font-semibold text-gray-700">
+            <h3 class="text-lg font-semibold text-gray-800">
               সাম্প্রতি যারা ডোনেট করেছেন
             </h3>
           </div>
@@ -116,7 +116,7 @@
             </UFormGroup>
 
             <!-- Amount Selection -->
-            <label class="block text-sm font-medium text-gray-700 mb-2"
+            <label class="block text-sm font-medium text-gray-800 mb-2"
               >Select Amount</label
             >
             <div class="grid grid-cols-2 gap-3 mb-5">
@@ -164,7 +164,7 @@
           <!-- Recent Donors Section -->
           <div class="mt-8 pt-6 border-t border-gray-200">
             <h4
-              class="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2"
+              class="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2"
             >
               <UIcon name="i-heroicons-users" class="text-primary-500" />
               Recent Supporters

@@ -326,7 +326,7 @@
 								<div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-100 dark:border-yellow-900/30">
 									<div class="flex">
 										<UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-3 flex-shrink-0"/>
-										<p class="text-gray-700 dark:text-gray-300 text-sm">
+										<p class="text-gray-800 dark:text-gray-300 text-sm">
 											When you post content publicly on our platform, that information may be viewed by any user of the platform. We cannot control what other users do with information you voluntarily disclose in public areas.
 										</p>
 									</div>
@@ -402,7 +402,7 @@
 										<UIcon name="i-heroicons-exclamation-circle" class="w-5 h-5 mr-2"/>
 										Security Limitation Notice
 									</h4>
-									<p class="text-gray-700 dark:text-gray-300 text-sm">
+									<p class="text-gray-800 dark:text-gray-300 text-sm">
 										Despite our efforts to protect your information, no method of transmission over the Internet or method of electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your personal information, we cannot guarantee its absolute security. By using our Services, you acknowledge this inherent risk.
 									</p>
 								</div>
@@ -579,7 +579,7 @@
 										<UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-orange-600 dark:text-orange-400 mt-0.5 mr-3 flex-shrink-0"/>
 										<div>
 											<h4 class="font-medium text-orange-800 dark:text-orange-400 mb-1">Age Restriction</h4>
-											<p class="text-gray-700 dark:text-gray-300 text-sm">
+											<p class="text-gray-800 dark:text-gray-300 text-sm">
 												Our Services are not directed to individuals under the age of 18. We do not knowingly collect personal information from children. If you are a parent or guardian and believe that your child has provided us with personal information, please contact us immediately.
 											</p>
 										</div>

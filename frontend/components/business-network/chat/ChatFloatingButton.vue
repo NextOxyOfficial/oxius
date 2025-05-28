@@ -83,21 +83,21 @@
             >
               <button 
                 @click="toggleBlockUser" 
-                class="flex w-full items-center px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                class="flex w-full items-center px-3 py-2 text-left text-sm text-gray-800 hover:bg-gray-100"
               >
                 <BanIcon class="mr-2 h-3.5 w-3.5" :class="activeChat.isBlocked ? 'text-green-500' : 'text-red-500'" />
                 {{ activeChat.isBlocked ? 'Unblock user' : 'Block user' }}
               </button>
               <button 
                 @click="deleteChat" 
-                class="flex w-full items-center px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                class="flex w-full items-center px-3 py-2 text-left text-sm text-gray-800 hover:bg-gray-100"
               >
                 <TrashIcon class="mr-2 h-3.5 w-3.5 text-red-500" />
                 Delete chat
               </button>
               <button 
                 @click="reportSpam" 
-                class="flex w-full items-center px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+                class="flex w-full items-center px-3 py-2 text-left text-sm text-gray-800 hover:bg-gray-100"
               >
                 <ShieldIcon class="mr-2 h-3.5 w-3.5 text-orange-500" />
                 Report as spam
@@ -135,7 +135,7 @@
             >
               <ArrowLeftIcon class="h-4 w-4" />
             </button>
-            <h4 class="text-md font-medium text-gray-700">Settings</h4>
+            <h4 class="text-md font-medium text-gray-800">Settings</h4>
           </div>
         </div>
         
@@ -289,7 +289,7 @@
                 </div>
                 <div class="ml-2 flex-1">
                   <div class="flex items-center justify-between">
-                    <h4 class="flex items-center text-md font-medium text-gray-700">
+                    <h4 class="flex items-center text-md font-medium text-gray-800">
                       {{ friend.name }}
                       <span v-if="friend.isBlocked" class="ml-1 rounded-sm bg-red-100 px-1 py-0.5 text-xs text-red-600">
                         BLOCKED
@@ -338,7 +338,7 @@
             >
               <ArrowLeftIcon class="h-4 w-4" />
             </button>
-            <h4 class="text-md font-medium text-gray-700">All Stories</h4>
+            <h4 class="text-md font-medium text-gray-800">All Stories</h4>
           </div>
           <button 
             @click="showAddStoryModal = true"
@@ -509,7 +509,7 @@
               <p class="mb-1 text-sm font-medium text-gray-500">Viewers</p>
               <div v-for="(viewer, index) in activeStory.viewers" :key="index" class="flex items-center py-1">
                 <img :src="viewer.avatar" :alt="viewer.name" class="h-6 w-6 rounded-full object-cover" />
-                <span class="ml-2 text-sm text-gray-700">{{ viewer.name }}</span>
+                <span class="ml-2 text-sm text-gray-800">{{ viewer.name }}</span>
               </div>
             </div>
           </div>
@@ -528,7 +528,7 @@
             <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
               <BanIcon class="h-8 w-8 text-red-400" />
             </div>
-            <p class="mb-2 text-md font-medium text-gray-700">You've blocked this user</p>
+            <p class="mb-2 text-md font-medium text-gray-800">You've blocked this user</p>
             <p class="mb-4 text-sm text-gray-500">You won't receive messages from this user</p>
             <button 
               @click="toggleBlockUser" 
@@ -573,8 +573,8 @@
                   message.isUser 
                     ? 'ml-auto bg-gradient-to-r from-green-500 to-green-600 text-white' 
                     : activeChatType === 'ai'
-                      ? 'bg-gradient-to-r from-purple-50 to-pink-50 text-gray-700'
-                      : 'bg-white text-gray-700'
+                      ? 'bg-gradient-to-r from-purple-50 to-pink-50 text-gray-800'
+                      : 'bg-white text-gray-800'
                 ]"
               >
                 <p v-if="message.text" class="text-md">{{ message.text }}</p>
@@ -619,7 +619,7 @@
                     <button 
                       @click="playVoiceMessage(message)" 
                       class="ml-2 rounded-full p-1" 
-                      :class="message.isUser ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'"
+                      :class="message.isUser ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-800'"
                     >
                       <PlayIcon v-if="!message.media.isPlaying" class="h-3 w-3" />
                       <PauseIcon v-else class="h-3 w-3" />
@@ -785,7 +785,7 @@
           <div v-if="selectedFile" class="mt-2 flex items-center rounded-md bg-gray-100 p-2">
             <FileIcon class="h-5 w-5 text-gray-500" />
             <div class="ml-2 flex-1">
-              <p class="text-sm font-medium text-gray-700">{{ selectedFileName }}</p>
+              <p class="text-sm font-medium text-gray-800">{{ selectedFileName }}</p>
               <p class="text-[9px] text-gray-500">Ready to send</p>
             </div>
             <button @click="clearSelectedFile" class="rounded-full p-1 text-gray-500 hover:bg-gray-200">

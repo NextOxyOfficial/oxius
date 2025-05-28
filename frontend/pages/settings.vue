@@ -57,7 +57,7 @@
           </div>
           <div class="text-left ml-2">
             <h2
-              class="text-lg font-semibold text-gray-700 flex items-center gap-1"
+              class="text-lg font-semibold text-gray-800 flex items-center gap-1"
             >
               {{ userProfile.first_name }} {{ userProfile.last_name }}
             </h2>
@@ -106,7 +106,7 @@
               <div class="bg-emerald-100 p-2 rounded-full text-emerald-600">
                 <UIcon name="i-heroicons-lock-closed" class="text-xl" />
               </div>
-              <h2 class="text-xl font-semibold text-gray-700">
+              <h2 class="text-xl font-semibold text-gray-800">
                 পাসওয়ার্ড পরিবর্তন
               </h2>
             </div>
@@ -127,7 +127,7 @@
                   <div class="space-y-2">
                     <label
                       for="old_password"
-                      class="block text-sm font-medium text-gray-700"
+                      class="block text-sm font-medium text-gray-800"
                     >
                       পুরাতন পাসওয়ার্ড
                     </label>
@@ -150,7 +150,7 @@
                   <div class="space-y-2">
                     <label
                       for="new_password"
-                      class="block text-sm font-medium text-gray-700"
+                      class="block text-sm font-medium text-gray-800"
                     >
                       নতুন পাসওয়ার্ড
                     </label>
@@ -246,7 +246,7 @@
               <div class="bg-emerald-100 p-2 rounded-full text-emerald-600">
                 <UIcon name="i-heroicons-user" class="text-xl" />
               </div>
-              <h2 class="text-xl font-semibold text-gray-700">
+              <h2 class="text-xl font-semibold text-gray-800">
                 Profile Information
               </h2>
             </div>
@@ -258,7 +258,7 @@
             >
               <!-- Profile Image Upload -->
               <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
-                <label class="block text-base font-medium text-gray-700 mb-3"
+                <label class="block text-base font-medium text-gray-800 mb-3"
                   >Profile Image</label
                 >
                 <div class="flex flex-wrap items-center gap-5">
@@ -315,7 +315,7 @@
 
               <!-- Store Banner Upload -->
               <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
-                <label class="block text-base font-medium text-gray-700 mb-3"
+                <label class="block text-base font-medium text-gray-800 mb-3"
                   >Store/For Sale Banner</label
                 >
                 <div class="flex flex-col space-y-4">
@@ -376,11 +376,11 @@
 
               <!-- Personal Information -->
               <div class="space-y-4">
-                <h3 class="font-medium text-gray-700">Personal Information</h3>
+                <h3 class="font-medium text-gray-800">Personal Information</h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                    <label class="block text-sm font-medium text-gray-800 mb-1"
                       >First Name</label
                     >
                     <UInput
@@ -395,7 +395,7 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                    <label class="block text-sm font-medium text-gray-800 mb-1"
                       >Last Name</label
                     >
                     <UInput
@@ -412,7 +412,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                    <label class="block text-sm font-medium text-gray-800 mb-1"
                       >Email</label
                     >
                     <UInput
@@ -428,7 +428,7 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                    <label class="block text-sm font-medium text-gray-800 mb-1"
                       >Phone</label
                     >
                     <UInput
@@ -453,10 +453,10 @@
 
               <!-- Address Information -->
               <div class="space-y-4">
-                <h3 class="font-medium text-gray-700">Address Information</h3>
+                <h3 class="font-medium text-gray-800">Address Information</h3>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                  <label class="block text-sm font-medium text-gray-800 mb-1"
                     >Address</label
                   >
                   <UInput
@@ -472,7 +472,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                    <label class="block text-sm font-medium text-gray-800 mb-1"
                       >City</label
                     >
                     <UInput
@@ -487,7 +487,7 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                    <label class="block text-sm font-medium text-gray-800 mb-1"
                       >State</label
                     >
                     <UInput
@@ -502,7 +502,7 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1"
+                    <label class="block text-sm font-medium text-gray-800 mb-1"
                       >Zip</label
                     >
                     <UInput
@@ -520,11 +520,11 @@
 
               <!-- Social Media -->
               <div class="space-y-4">
-                <h3 class="font-medium text-gray-700">Social Media</h3>
+                <h3 class="font-medium text-gray-800">Social Media</h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <label class="block text-sm font-medium text-gray-800 mb-1">
                       <div class="flex items-center gap-1">
                         <UIcon name="i-mdi:facebook" class="text-blue-600" />
                         Facebook URL
@@ -541,7 +541,7 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <label class="block text-sm font-medium text-gray-800 mb-1">
                       <div class="flex items-center gap-1">
                         <UIcon name="i-mdi:instagram" class="text-pink-600" />
                         Instagram URL
@@ -558,7 +558,7 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <label class="block text-sm font-medium text-gray-800 mb-1">
                       <div class="flex items-center gap-1">
                         <UIcon name="i-mdi:whatsapp" class="text-green-600" />
                         WhatsApp #
@@ -576,7 +576,7 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <label class="block text-sm font-medium text-gray-800 mb-1">
                       <div class="flex items-center gap-1">Profession</div>
                     </label>
                     <UInput
@@ -590,7 +590,7 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <label class="block text-sm font-medium text-gray-800 mb-1">
                       <div class="flex items-center gap-1">Company Name</div>
                     </label>
                     <UInput
@@ -604,7 +604,7 @@
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                    <label class="block text-sm font-medium text-gray-800 mb-1">
                       <div class="flex items-center gap-1">Website</div>
                     </label>
                     <UInput
@@ -621,7 +621,7 @@
 
               <!-- About Me -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1"
+                <label class="block text-sm font-medium text-gray-800 mb-1"
                   >About Me</label
                 >
                 <UTextarea
@@ -704,7 +704,7 @@
             class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
           >
             <h3
-              class="text-xl font-semibold text-gray-700 flex items-center"
+              class="text-xl font-semibold text-gray-800 flex items-center"
               id="modal-title"
             >
               <AlertTriangle class="h-5 w-5 mr-2 text-red-500" />
@@ -718,7 +718,7 @@
             </button>
           </div>
           <div class="px-6 py-4">
-            <p class="text-gray-700">
+            <p class="text-gray-800">
               Are you sure you want to delete profile image?
             </p>
           </div>
@@ -739,7 +739,7 @@
             </button>
             <button
               @click="showDeleteConfirmModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-800 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
             >
               <X class="h-4 w-4 mr-1.5" />
               Cancel
@@ -780,7 +780,7 @@
             class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
           >
             <h3
-              class="text-xl font-semibold text-gray-700 flex items-center"
+              class="text-xl font-semibold text-gray-800 flex items-center"
               id="modal-title-banner"
             >
               <AlertTriangle class="h-5 w-5 mr-2 text-red-500" />
@@ -794,7 +794,7 @@
             </button>
           </div>
           <div class="px-6 py-4">
-            <p class="text-gray-700">
+            <p class="text-gray-800">
               Are you sure you want to delete store banner image?
             </p>
           </div>
@@ -815,7 +815,7 @@
             </button>
             <button
               @click="showDeleteBannerConfirmModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-800 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
             >
               <X class="h-4 w-4 mr-1.5" />
               Cancel

@@ -85,7 +85,7 @@
             <div class="w-full md:w-3/4">
               <div class="flex justify-between items-start">
                 <div>
-                  <h2 class="text-xl font-semibold text-gray-700">
+                  <h2 class="text-xl font-semibold text-gray-800">
                     {{ currentProduct.name }}
                   </h2>
                   <p class="text-gray-500 mt-1">
@@ -142,14 +142,14 @@
               <div class="flex mt-6 space-x-3">
                 <NuxtLink
                   :to="`/product-details/${currentProduct.slug}`"
-                  class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition duration-150"
+                  class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none transition duration-150"
                 >
                   <UIcon name="i-heroicons-eye" class="h-4 w-4 mr-2" />
                   View Product
                 </NuxtLink>
                 <NuxtLink
                   to="/shop-manager"
-                  class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition duration-150"
+                  class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none transition duration-150"
                 >
                   <UIcon name="i-heroicons-arrow-left" class="h-4 w-4 mr-2" />
                   Back to Products
@@ -176,7 +176,7 @@
               name="i-heroicons-adjustments-horizontal"
               class="h-5 w-5 text-indigo-500 mr-2"
             />
-            <h3 class="text-lg font-medium text-gray-700">
+            <h3 class="text-lg font-medium text-gray-800">
               Edit Product Details
             </h3>
           </div>

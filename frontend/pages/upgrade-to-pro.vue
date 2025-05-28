@@ -181,7 +181,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-700 dark:text-slate-100 font-medium"
+                  </div>                  <span class="text-gray-800 dark:text-slate-100 font-medium"
                     >Post unlimited ads</span
                   >
                 </li>
@@ -203,7 +203,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-700 dark:text-slate-100 font-medium"
+                  </div>                  <span class="text-gray-800 dark:text-slate-100 font-medium"
                     >Earn money by completing task</span
                   >
                 </li>
@@ -225,7 +225,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-700 dark:text-slate-100 font-medium"
+                  </div>                  <span class="text-gray-800 dark:text-slate-100 font-medium"
                     >Fast deposit and withdraw</span
                   >
                 </li>
@@ -247,7 +247,7 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-700 dark:text-slate-100 font-medium"
+                  </div>                  <span class="text-gray-800 dark:text-slate-100 font-medium"
                     >Regular support via Email</span
                   >
                 </li>
@@ -377,7 +377,7 @@
                       ></path>
                     </svg>
                   </div>
-                  <span class="text-gray-700 dark:text-slate-200 font-medium"
+                  <span class="text-gray-800 dark:text-slate-200 font-medium"
                     >Access to Eshop manager</span
                   >
                 </li>
@@ -1031,7 +1031,7 @@
               >
                 <div class="flex justify-between items-center mb-3">
                   <span class="text-slate-500 dark:text-slate-400">Plan:</span>
-                  <span class="font-semibold text-gray-700 dark:text-white"
+                  <span class="font-semibold text-gray-800 dark:text-white"
                     >Pro</span
                   >
                 </div>
@@ -1039,7 +1039,7 @@
                   <span class="text-slate-500 dark:text-slate-400"
                     >Amount:</span
                   >
-                  <span class="font-semibold text-gray-700 dark:text-white"
+                  <span class="font-semibold text-gray-800 dark:text-white"
                     >৳{{
                       months === 1 ? price : months * price - yearly_discount
                     }}</span
@@ -1049,7 +1049,7 @@
                   <span class="text-slate-500 dark:text-slate-400"
                     >Active until:</span
                   >
-                  <span class="font-semibold text-gray-700 dark:text-white">{{
+                  <span class="font-semibold text-gray-800 dark:text-white">{{
                     new Date(
                       Date.now() + months * 30 * 24 * 60 * 60 * 1000
                     ).toLocaleDateString()

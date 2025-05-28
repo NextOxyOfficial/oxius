@@ -122,7 +122,7 @@
                       <div class="flex flex-col flex-1 min-w-0">
                         <div class="flex items-center justify-between">
                           <h3
-                            class="text-base font-semibold text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate"
+                            class="text-base font-semibold text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate"
                           >
                             #{{ tag.tag }}
                           </h3>
@@ -266,7 +266,7 @@ const getRankBadgeClass = (index) => {
   if (index === 0)
     return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"; // 1st place
   if (index === 1)
-    return "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400"; // 2nd place
+    return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400"; // 2nd place
   if (index === 2)
     return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"; // 3rd place
   return "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"; // Rest

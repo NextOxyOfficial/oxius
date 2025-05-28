@@ -174,11 +174,11 @@
                   <input
                     v-if="isEditing"
                     v-model="editedUser.store_name"
-                    class="text-sm font-semibold text-gray-700 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
+                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
                   />
                   <p
                     v-else
-                    class="text-sm font-semibold text-gray-700 truncate"
+                    class="text-sm font-semibold text-gray-800 truncate"
                   >
                     {{ storeDetails.store_name || "Not set" }}
                   </p>
@@ -264,11 +264,11 @@
                   <input
                     v-if="isEditing"
                     v-model="editedUser.store_address"
-                    class="text-sm font-semibold text-gray-700 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
+                    class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
                   />
                   <p
                     v-else
-                    class="text-sm font-semibold text-gray-700 truncate"
+                    class="text-sm font-semibold text-gray-800 truncate"
                   >
                     {{ storeDetails?.store_address || "Not set" }}
                   </p>
@@ -295,9 +295,9 @@
                     v-if="isEditing"
                     v-model="editedUser.store_description"
                     rows="2"
-                    class="text-sm text-gray-700 w-full border border-emerald-200 rounded focus:outline-none py-1 px-2 resize-none"
+                    class="text-sm text-gray-800 w-full border border-emerald-200 rounded focus:outline-none py-1 px-2 resize-none"
                   ></textarea>
-                  <p v-else class="text-sm text-gray-700 line-clamp-2">
+                  <p v-else class="text-sm text-gray-800 line-clamp-2">
                     {{
                       storeDetails?.store_description ||
                       "No description available"
@@ -340,7 +340,7 @@
                     ? 'text-indigo-600 bg-gray-200'
                     : tab.disabled
                     ? 'text-gray-400 bg-gray-50 cursor-not-allowed'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50',
+                    : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50',
                 ]"
               >
                 <div class="flex items-center space-x-2">
@@ -394,7 +394,7 @@
               <div class="bg-red-50 p-3 rounded-full mb-4">
                 <UIcon name="i-heroicons-exclamation-triangle" class="h-8 w-8 text-red-400" />
               </div>
-              <h3 class="text-lg font-medium text-gray-700 mb-2">
+              <h3 class="text-lg font-medium text-gray-800 mb-2">
                 Product Limit Reached
               </h3>
               <p class="text-gray-500 max-w-md mx-auto mb-6">
@@ -456,7 +456,7 @@
             class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
           >
             <h3
-              class="text-xl font-semibold text-gray-700 flex items-center"
+              class="text-xl font-semibold text-gray-800 flex items-center"
               id="modal-title"
             >
               <Edit2 class="h-5 w-5 mr-2 text-indigo-600" />
@@ -475,7 +475,7 @@
                 <div>
                   <label
                     for="product-name"
-                    class="block text-sm font-medium text-gray-700"
+                    class="block text-sm font-medium text-gray-800"
                     >Product Name</label
                   >
                   <input
@@ -489,7 +489,7 @@
                 <div>
                   <label
                     for="product-description"
-                    class="block text-sm font-medium text-gray-700"
+                    class="block text-sm font-medium text-gray-800"
                     >Description</label
                   >
                   <textarea
@@ -503,7 +503,7 @@
                   <div>
                     <label
                       for="product-price"
-                      class="block text-sm font-medium text-gray-700"
+                      class="block text-sm font-medium text-gray-800"
                       >Price (৳)</label
                     >
                     <input
@@ -519,7 +519,7 @@
                   <div>
                     <label
                       for="product-stock"
-                      class="block text-sm font-medium text-gray-700"
+                      class="block text-sm font-medium text-gray-800"
                       >Stock</label
                     >
                     <input
@@ -535,7 +535,7 @@
                 <div>
                   <label
                     for="product-status"
-                    class="block text-sm font-medium text-gray-700"
+                    class="block text-sm font-medium text-gray-800"
                     >Status</label
                   >
                   <select
@@ -551,7 +551,7 @@
                 <div>
                   <label
                     for="product-image"
-                    class="block text-sm font-medium text-gray-700"
+                    class="block text-sm font-medium text-gray-800"
                     >Image URL</label
                   >
                   <input
@@ -588,7 +588,7 @@
             </button>
             <button
               @click="showEditProductModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-800 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
             >
               <X class="h-4 w-4 mr-1.5" />
               Cancel
@@ -629,7 +629,7 @@
             class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
           >
             <h3
-              class="text-xl font-semibold text-gray-700 flex items-center"
+              class="text-xl font-semibold text-gray-800 flex items-center"
               id="modal-title"
             >
               <AlertTriangle class="h-5 w-5 mr-2 text-red-500" />
@@ -643,7 +643,7 @@
             </button>
           </div>
           <div class="px-6 py-4">
-            <p class="text-gray-700">
+            <p class="text-gray-800">
               Are you sure you want to delete the product
               <span class="font-medium">{{ selectedProduct?.name }}</span
               >? This action cannot be undone.
@@ -666,7 +666,7 @@
             </button>
             <button
               @click="showDeleteConfirmModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-800 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
             >
               <X class="h-4 w-4 mr-1.5" />
               Cancel
@@ -707,7 +707,7 @@
             class="px-6 py-5 border-b border-gray-200 flex justify-between items-center"
           >
             <h3
-              class="text-xl font-semibold text-gray-700 flex items-center"
+              class="text-xl font-semibold text-gray-800 flex items-center"
               id="modal-title"
             >
               <AlertTriangle class="h-5 w-5 mr-2 text-red-500" />
@@ -721,7 +721,7 @@
             </button>
           </div>
           <div class="px-6 py-4">
-            <p class="text-gray-700 mb-4">
+            <p class="text-gray-800 mb-4">
               Are you sure you want to cancel order
               <span class="font-medium">#{{ selectedOrder?.id }}</span
               >?
@@ -761,7 +761,7 @@
             </button>
             <button
               @click="showCancelOrderModal = false"
-              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
+              class="inline-flex justify-center items-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-800 hover:bg-gray-50 focus:outline-none sm:text-sm transition-colors duration-200"
             >
               <X class="h-4 w-4 mr-1.5" />
               Go Back

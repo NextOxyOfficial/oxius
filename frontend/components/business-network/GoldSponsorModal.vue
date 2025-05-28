@@ -77,7 +77,7 @@
                 <div>
                   <label
                     for="businessName"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-1"
                     >Business Name</label
                   >
                   <input
@@ -93,7 +93,7 @@
                 <div>
                   <label
                     for="businessDescription"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-1"
                     >Business Description</label
                   >
                   <CommonEditor
@@ -107,7 +107,7 @@
                 <div>
                   <label
                     for="contactEmail"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-1"
                     >Contact Email</label
                   >
                   <input
@@ -122,7 +122,7 @@
                 <div>
                   <label
                     for="phoneNumber"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-1"
                     >Phone Number</label
                   >
                   <input
@@ -137,7 +137,7 @@
                 <div>
                   <label
                     for="website"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-1"
                     >Website URL</label
                   >
                   <input
@@ -152,7 +152,7 @@
                 <div>
                   <label
                     for="profileUrl"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-1"
                     >Profile URL
                     <span class="text-xs text-gray-500"
                       >(Users will be redirected here when clicking "Visit
@@ -172,7 +172,7 @@
                 <div>
                   <label
                     for="logo"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-1"
                     >Business Logo</label
                   >
                   <div class="mt-1 flex items-center space-x-3">
@@ -195,7 +195,7 @@
                     <div class="flex flex-col">
                       <label
                         for="logoFile"
-                        class="cursor-pointer px-3 py-1.5 text-xs bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300"
+                        class="cursor-pointer px-3 py-1.5 text-xs bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-600 text-gray-800 dark:text-gray-300"
                       >
                         Choose File
                       </label>
@@ -222,7 +222,7 @@
                 <!-- Banner Upload Section -->
                 <div>
                   <label
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-2"
                     >Promotional Banners (Optional)</label
                   >
                   <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
@@ -277,7 +277,7 @@
                           <div class="flex items-center space-x-2">
                             <label
                               :for="`bannerFile-${index}`"
-                              class="cursor-pointer px-2 py-1 text-xs bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300"
+                              class="cursor-pointer px-2 py-1 text-xs bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-slate-600 text-gray-800 dark:text-gray-300"
                             >
                               Choose Image
                             </label>
@@ -323,7 +323,7 @@
                 <!-- Sponsorship package selection -->
                 <div v-if="!isEditMode">
                   <label
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-2"
                     >Select Sponsorship Package</label
                   >
 

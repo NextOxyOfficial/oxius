@@ -57,7 +57,7 @@
                   ref="searchInput"
                   type="search"
                   v-model="title"
-                  class="w-full h-full py-3 px-3 sm:px-4 bg-transparent border-0 focus:ring-0 focus:outline-none text-gray-700 dark:text-white placeholder-transparent text-base"
+                  class="w-full h-full py-3 px-3 sm:px-4 bg-transparent border-0 focus:ring-0 focus:outline-none text-gray-800 dark:text-white placeholder-transparent text-base"
                   :class="isLoading ? 'opacity-70' : 'opacity-100'"
                   @focus="stopTyping"
                   @blur="restartTypingIfEmpty"
@@ -276,7 +276,7 @@
               class="text-emerald-500 size-6"
             />
             <h2
-              class="text-base text-gray-700 dark:text-gray-200 sm:text-xl font-medium"
+              class="text-base text-gray-800 dark:text-gray-200 sm:text-xl font-medium"
             >
               {{ $t("mobile_recharge") }}
             </h2>
@@ -351,7 +351,7 @@
                       @click.prevent="selectCategory(category)"
                     >
                       <span
-                        class="text-base font-medium text-gray-700 dark:text-slate-200 capitalize truncate"
+                        class="text-base font-medium text-gray-800 dark:text-slate-200 capitalize truncate"
                       >
                         {{ category.category }}
                       </span>

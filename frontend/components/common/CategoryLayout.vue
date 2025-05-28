@@ -109,7 +109,7 @@
             <div
               class="w-1 h-6 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full mr-2"
             ></div>
-            <h2 class="text-lg font-semibold text-gray-700">New & Hot Arrivals</h2>
+            <h2 class="text-lg font-semibold text-gray-800">New & Hot Arrivals</h2>
             <div
               class="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-600 text-xs font-semibold rounded-full"
             >
@@ -170,7 +170,7 @@
                   </div>
                 </div>
                 <div class="p-2 text-center">
-                  <h3 class="font-medium text-sm text-gray-700">
+                  <h3 class="font-medium text-sm text-gray-800">
                     {{ card.name }}
                   </h3>
                 </div>

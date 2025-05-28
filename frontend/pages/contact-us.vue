@@ -37,7 +37,7 @@
               </div>
             </div>
             <div class="flex-1">
-              <h2 class="text-xl font-semibold text-gray-700 mb-3">
+              <h2 class="text-xl font-semibold text-gray-800 mb-3">
                 {{ $t("general_support") }}
               </h2>
               <p class="text-gray-500 mb-4">
@@ -46,7 +46,7 @@
               <div class="space-y-3">
                 <a
                   href="mailto:support@adsyclub.com"
-                  class="flex items-center text-slate-700 hover:text-gray-700 group"
+                  class="flex items-center text-slate-700 hover:text-gray-800 group"
                 >
                   <UIcon
                     name="i-material-symbols-mail-outline-rounded"
@@ -85,7 +85,7 @@
               </div>
             </div>
             <div class="flex-1">
-              <h2 class="text-xl font-semibold text-gray-700 mb-3">
+              <h2 class="text-xl font-semibold text-gray-800 mb-3">
                 {{ $t("partnership") }}
               </h2>
               <p class="text-gray-500 mb-4">
@@ -94,7 +94,7 @@
               <div class="space-y-3">
                 <a
                   href="mailto:partnership@adsyclub.com"
-                  class="flex items-center text-slate-700 hover:text-gray-700 group"
+                  class="flex items-center text-slate-700 hover:text-gray-800 group"
                 >
                   <!-- <MailIcon
                     class="w-5 h-5 mr-2 text-slate-400 group-hover:text-gray-500"
@@ -123,7 +123,7 @@
       <!-- <div class="mt-16 mb-20">
         <div class="bg-slate-50 rounded-xl p-8 md:p-12">
           <div class="text-center max-w-3xl mx-auto">
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
               Need Additional Support?
             </h2>
             <p class="text-gray-500 mb-8">
@@ -132,7 +132,7 @@
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                class="inline-flex items-center justify-center px-6 py-3 border border-slate-900 text-gray-700 hover:bg-slate-900 hover:text-white rounded-lg font-medium transition-colors duration-300"
+                class="inline-flex items-center justify-center px-6 py-3 border border-slate-900 text-gray-800 hover:bg-slate-900 hover:text-white rounded-lg font-medium transition-colors duration-300"
               >
                 <PhoneIcon class="w-5 h-5 mr-2" />
                 Schedule a Call

@@ -172,7 +172,7 @@
 
         <!-- Title and Description -->
         <div class="text-center mb-8">
-          <h3 class="text-xl font-semibold text-gray-700 mb-2">Stop this gig?</h3>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2">Stop this gig?</h3>
           <p class="text-gray-500 max-w-sm">
             This action will permanently stop the current gig and cannot be
             undone.
@@ -185,7 +185,7 @@
         <!-- Action Buttons -->
         <div class="flex gap-4 w-full">
           <button
-            class="flex-1 py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-sm"
+            class="flex-1 py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-lg transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 shadow-sm"
             @click="isOpen = false"
           >
             <div class="flex items-center justify-center">

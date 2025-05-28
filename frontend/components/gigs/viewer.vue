@@ -14,7 +14,7 @@
       <div class="flex items-start justify-between">
         <div>
           <div
-            class="text-base font-semibold leading-6 text-gray-700 dark:text-white mb-4 flex gap-3"
+            class="text-base font-semibold leading-6 text-gray-800 dark:text-white mb-4 flex gap-3"
           >
             <div class="w-8">
               <UIcon name="i-unjs:giget" class="text-2xl mt-1.5" />

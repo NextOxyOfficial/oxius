@@ -35,7 +35,7 @@
             "
             :ui="{
               label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
+                base: 'block font-medium text-gray-800 dark:text-slate-700',
               },
             }"
           >
@@ -66,7 +66,7 @@
             "
             :ui="{
               label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
+                base: 'block font-medium text-gray-800 dark:text-slate-700',
               },
             }"
           >
@@ -90,7 +90,7 @@
             label="*"
             :ui="{
               label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
+                base: 'block font-medium text-gray-800 dark:text-slate-700',
               },
             }"
           >
@@ -118,7 +118,7 @@
             label="Total Cost (Service handling fee 10% included)"
             :ui="{
               label: {
-                base: 'block font-medium text-gray-700 dark:text-slate-700',
+                base: 'block font-medium text-gray-800 dark:text-slate-700',
               },
             }"
             required
@@ -283,7 +283,7 @@
               "
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -314,7 +314,7 @@
               "
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -339,7 +339,7 @@
               label="Total Cost (Service handling fee 10% included)"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
               required

@@ -95,7 +95,7 @@
                 >
                   <div>
                     <h2
-                      class="text-xl font-semibold text-gray-700 border-b border-gray-200 pb-3 mb-4 flex items-center"
+                      class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-4 flex items-center"
                     >
                       <ShoppingBag class="mr-2 h-5 w-5 text-indigo-500" />
                       Your Products
@@ -130,7 +130,7 @@
                             ></div>
                           </div>
                           <div class="flex-1">
-                            <h3 class="font-medium text-gray-700">
+                            <h3 class="font-medium text-gray-800">
                               {{ product.name }}
                             </h3>
                             <div
@@ -151,19 +151,19 @@
                                 <button
                                   type="button"
                                   @click="decreaseQuantity(index)"
-                                  class="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors duration-200 focus:outline-none"
+                                  class="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-800 transition-colors duration-200 focus:outline-none"
                                   :disabled="product.count <= 1"
                                 >
                                   <Minus class="h-3 w-3" />
                                 </button>
                                 <span
-                                  class="px-3 py-1 bg-white text-gray-700 min-w-[40px] text-center"
+                                  class="px-3 py-1 bg-white text-gray-800 min-w-[40px] text-center"
                                   >{{ product.count }}</span
                                 >
                                 <button
                                   type="button"
                                   @click="increaseQuantity(index)"
-                                  class="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-700 transition-colors duration-200 focus:outline-none"
+                                  class="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-800 transition-colors duration-200 focus:outline-none"
                                 >
                                   <Plus class="h-3 w-3" />
                                 </button>
@@ -185,7 +185,7 @@
                 >
                   <div>
                     <h2
-                      class="text-xl font-semibold text-gray-700 border-b border-gray-200 pb-3 flex items-center"
+                      class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-3 flex items-center"
                     >
                       <MapPin class="mr-2 h-5 w-5 text-indigo-500" />
                       Customer Information
@@ -194,7 +194,7 @@
                       <div class="relative">
                         <label
                           for="name"
-                          class="block text-sm font-medium text-gray-700 mb-1"
+                          class="block text-sm font-medium text-gray-800 mb-1"
                         >
                           Full Name
                         </label>
@@ -219,7 +219,7 @@
                       <!-- <div class="relative">
                         <label
                           for="email"
-                          class="block text-sm font-medium text-gray-700 mb-1"
+                          class="block text-sm font-medium text-gray-800 mb-1"
                         >
                           Email
                         </label>
@@ -246,7 +246,7 @@
                       <div class="relative">
                         <label
                           for="phone"
-                          class="block text-sm font-medium text-gray-700 mb-1"
+                          class="block text-sm font-medium text-gray-800 mb-1"
                         >
                           Phone Number
                         </label>
@@ -274,7 +274,7 @@
                       <div class="relative">
                         <label
                           for="address"
-                          class="block text-sm font-medium text-gray-700 mb-1"
+                          class="block text-sm font-medium text-gray-800 mb-1"
                         >
                           Full Address
                         </label>
@@ -326,7 +326,7 @@
                         class="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3"
                       >
                         <h2
-                          class="text-lg font-semibold text-gray-700 flex items-center"
+                          class="text-lg font-semibold text-gray-800 flex items-center"
                         >
                           <Truck class="mr-2 h-5 w-5 text-indigo-500" />
                           Delivery Options
@@ -356,7 +356,7 @@
                             <div class="ml-3 flex flex-col">
                               <label
                                 for="inside-dhaka"
-                                class="font-medium text-gray-700"
+                                class="font-medium text-gray-800"
                                 >Inside Dhaka</label
                               >
                               <span class="text-gray-500 text-sm"
@@ -393,7 +393,7 @@
                             <div class="ml-3 flex flex-col">
                               <label
                                 for="outside-dhaka"
-                                class="font-medium text-gray-700"
+                                class="font-medium text-gray-800"
                                 >Outside Dhaka</label
                               >
                               <span class="text-gray-500 text-sm"
@@ -418,7 +418,7 @@
                         class="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3"
                       >
                         <h2
-                          class="text-lg font-semibold text-gray-700 flex items-center"
+                          class="text-lg font-semibold text-gray-800 flex items-center"
                         >
                           <CreditCard class="mr-2 h-5 w-5 text-indigo-500" />
                           Payment Method
@@ -450,7 +450,7 @@
                             <div class="ml-3 flex flex-col">
                               <label
                                 for="account-funds"
-                                class="font-medium text-gray-700"
+                                class="font-medium text-gray-800"
                                 >Account Funds</label
                               >
                               <div class="flex items-center mt-1">
@@ -485,7 +485,7 @@
                               />
                             </div>
                             <div class="ml-3 flex flex-col">
-                              <label for="cod" class="font-medium text-gray-700"
+                              <label for="cod" class="font-medium text-gray-800"
                                 >Cash on Delivery</label
                               >
                               <span class="text-gray-500 text-sm"
@@ -524,7 +524,7 @@
                         <div
                           class="flex justify-between py-3 border-t border-gray-200 mt-2 pt-2"
                         >
-                          <span class="text-gray-700 font-medium">Total</span>
+                          <span class="text-gray-800 font-medium">Total</span>
                           <span class="text-xl font-semibold text-indigo-600"
                             >৳{{ total }}</span
                           >
@@ -629,7 +629,7 @@
                     </div>
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                       <h3
-                        class="text-xl leading-6 font-semibold text-gray-700"
+                        class="text-xl leading-6 font-semibold text-gray-800"
                         id="modal-title"
                       >
                         Insufficient Funds
@@ -665,7 +665,7 @@
                   </button>
                   <button
                     type="button"
-                    class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+                    class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-5 py-3 bg-white text-base font-medium text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
                     @click="switchToCOD"
                   >
                     Switch to Cash On Delivery
@@ -743,7 +743,7 @@
                     </div>
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                       <h3
-                        class="text-xl leading-6 font-semibold text-gray-700"
+                        class="text-xl leading-6 font-semibold text-gray-800"
                         id="modal-title"
                       >
                         Order Successful!

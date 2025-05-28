@@ -372,7 +372,7 @@
               class="text-center md:border-r md:border-slate-200 dark:md:border-slate-700 md:pr-6"
             >
               <div
-                class="text-2xl font-semibold text-gray-700 dark:text-white mb-2"
+                class="text-2xl font-semibold text-gray-800 dark:text-white mb-2"
               >
                 {{ averageRating }}
               </div>
@@ -448,7 +448,7 @@
                   {{ review.name?.charAt(0) || "U" }}
                 </div>
                 <div>
-                  <div class="font-medium text-gray-700 dark:text-white">
+                  <div class="font-medium text-gray-800 dark:text-white">
                     {{ review.name }}
                   </div>
                   <div class="text-xs text-slate-500 dark:text-slate-400">

@@ -12,7 +12,7 @@
         </div>
 
         <!-- Confirmation Message -->
-        <div class="text-lg font-medium text-gray-700 flex items-center mb-4">
+        <div class="text-lg font-medium text-gray-800 flex items-center mb-4">
           <span>
             আমি
             <span class="text-lg font-semibold text-green-950">
@@ -89,7 +89,7 @@
         </div>
 
         <!-- Animated Text -->
-        <div class="text-lg font-medium text-gray-700 flex items-center">
+        <div class="text-lg font-medium text-gray-800 flex items-center">
           <span>
             আমি
             <span class="text-lg font-semibold text-green-950">
@@ -115,7 +115,7 @@
             <UIcon name="i-carbon:bot" class="text-5xl text-gray-500" />
           </div>
         </div>
-        <div class="text-lg font-medium text-gray-700">
+        <div class="text-lg font-medium text-gray-800">
           <span>
             আমি
             <span class="text-lg font-semibold text-green-950">

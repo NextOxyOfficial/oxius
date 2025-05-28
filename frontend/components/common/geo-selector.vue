@@ -7,7 +7,7 @@
         <div class="bg-white rounded-xl shadow-sm w-full max-w-md">
           <!-- Header -->
           <div class="bg-primary-50 p-5 rounded-t-xl border-b border-gray-100">
-            <h2 class="text-xl font-semibold text-gray-700">
+            <h2 class="text-xl font-semibold text-gray-800">
               <UIcon
                 name="i-heroicons-map-pin"
                 class="inline-block mr-2 text-primary-500"

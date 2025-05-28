@@ -108,7 +108,7 @@
               class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white/95 dark:bg-gray-900/95 backdrop-blur-md mt-[60px] sm:mt-0"
             >
               <h2
-                class="text-lg font-semibold text-gray-700 dark:text-gray-300 flex items-center"
+                class="text-lg font-semibold text-gray-800 dark:text-gray-300 flex items-center"
               >
                 <UIcon
                   name="i-heroicons-circle-stack"
@@ -141,7 +141,7 @@
                     :class="
                       selectedCategory === category.id
                         ? 'bg-emerald-200 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-700 dark:text-gray-400'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-800 dark:text-gray-400'
                     "
                   >
                     <div
@@ -241,7 +241,7 @@
               class="mt-5 rounded-xl bg-white dark:bg-gray-800/70 border border-gray-100 dark:border-gray-700/50 shadow-sm p-4"
             >
               <h3
-                class="font-medium text-gray-700 dark:text-gray-300 flex items-center"
+                class="font-medium text-gray-800 dark:text-gray-300 flex items-center"
               >
                 <UIcon
                   name="i-heroicons-chat-bubble-left-right"
@@ -346,7 +346,7 @@
               <button
                 v-if="searchQuery"
                 @click="clearSearch"
-                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 dark:hover:text-gray-300 transition-colors"
               >
                 <UIcon name="i-heroicons-x-mark" class="size-5" />
               </button>
@@ -358,7 +358,7 @@
             class="flex flex-col sm:flex-row lg:w-[55%] gap-3 sm:items-center"
           >
             <h3
-              class="text-base px-2 font-medium text-gray-700 dark:text-gray-400 flex items-center lg:whitespace-nowrap"
+              class="text-base px-2 font-medium text-gray-800 dark:text-gray-400 flex items-center lg:whitespace-nowrap"
             >
               <UIcon
                 name="i-heroicons-banknotes"
@@ -418,7 +418,7 @@
           <!-- Categories Column -->
           <div class="lg:col-span-3">
             <h3
-              class="text-base font-medium mb-3 text-gray-700 dark:text-gray-400 flex items-center"
+              class="text-base font-medium mb-3 text-gray-800 dark:text-gray-400 flex items-center"
             >
               <UIcon
                 name="i-heroicons-circle-stack"
@@ -537,7 +537,7 @@
             class="size-12 text-gray-400 dark:text-gray-600"
           />
         </div>
-        <h3 class="mt-6 text-xl font-medium text-gray-700 dark:text-gray-200">
+        <h3 class="mt-6 text-xl font-medium text-gray-800 dark:text-gray-200">
           No products found
         </h3>
         <p class="mt-2 text-gray-600 dark:text-gray-600 max-w-md mx-auto">

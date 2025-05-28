@@ -2,7 +2,7 @@
   <UContainer>
     <NuxtLink
       to="/adsy-news/"
-      class="mb-6 flex items-center text-gray-700 hover:text-primary transition-colors"
+      class="mb-6 flex items-center text-gray-800 hover:text-primary transition-colors"
     >
       <ArrowLeftIcon class="h-5 w-5 mr-1" />
       Back to all news
@@ -58,7 +58,7 @@
           />
           <div class="w-full">
             <div class="flex items-center justify-between">
-              <span class="font-medium text-gray-700">
+              <span class="font-medium text-gray-800">
                 Posted by:
                 <span class="text-primary">{{
                   getAuthorName(article.author_details)
@@ -100,7 +100,7 @@
           <span
             v-for="(tag, index) in article.post_tags"
             :key="index"
-            class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 cursor-pointer transition-colors"
+            class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm hover:bg-gray-200 cursor-pointer transition-colors"
           >
             #{{ tag.tag }}
           </span>
@@ -108,7 +108,7 @@
 
         <!-- Comments Section -->
         <div class="border-t border-gray-200 pt-8">
-          <h2 class="text-xl font-semibold mb-6 text-gray-700">
+          <h2 class="text-xl font-semibold mb-6 text-gray-800">
             Comments ({{
               article.post_comments ? article.post_comments.length : 0
             }})
@@ -122,7 +122,7 @@
                   rows="3"
                   placeholder="Write a comment..."
                   required
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary bg-white text-gray-700"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary bg-white text-gray-800"
                 ></textarea>
                 <div class="mt-3 flex justify-end">
                   <button
@@ -148,7 +148,7 @@
                 <div class="flex items-start space-x-4">
                   <div class="flex-1">
                     <div class="flex justify-between mb-2">
-                      <h3 class="font-semibold text-gray-700">
+                      <h3 class="font-semibold text-gray-800">
                         {{
                           comment.author_details
                             ? getAuthorName(comment.author_details)
@@ -159,7 +159,7 @@
                         formatDate(comment.created_at)
                       }}</span>
                     </div>
-                    <p class="text-gray-700">{{ comment.content }}</p>
+                    <p class="text-gray-800">{{ comment.content }}</p>
                   </div>
                 </div>
               </div>
@@ -180,7 +180,7 @@
           v-if="relatedArticles.length > 0"
           class="mt-12 border-t border-gray-200 pt-8"
         >
-          <h2 class="text-xl font-semibold mb-6 text-gray-700">
+          <h2 class="text-xl font-semibold mb-6 text-gray-800">
             Related Articles
           </h2>
           <div class="grid gap-2 sm:gap-4 grid-cols-2 lg:grid-cols-4">
@@ -233,7 +233,7 @@
 
         <!-- Tips and Suggestions Section -->
         <div class="mt-12 bg-gray-100 rounded-xl p-3 sm:p-8">
-          <h2 class="text-xl font-semibold text-gray-700 mb-6">
+          <h2 class="text-xl font-semibold text-gray-800 mb-6">
             Tips and Suggestions
           </h2>
           <div
@@ -245,7 +245,7 @@
               class="bg-white rounded-lg shadow-sm p-4 hover:shadow-sm transition-shadow duration-300 flex flex-col"
             >
               <h3
-                class="text-sm font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2"
+                class="text-sm font-semibold mb-2 text-gray-800 hover:text-primary cursor-pointer line-clamp-2"
               >
                 {{ tip.title }}
               </h3>
@@ -260,7 +260,7 @@
           >
             <button
               @click="loadMoreTips"
-              class="px-6 py-3 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
+              class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
             >
               Load More
             </button>

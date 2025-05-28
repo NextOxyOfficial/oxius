@@ -410,7 +410,7 @@ function formatAmount(amount) {
 }
 
 .notification-title {
-  @apply text-sm font-medium text-gray-700 dark:text-white mb-1 flex items-center gap-2;
+  @apply text-sm font-medium text-gray-800 dark:text-white mb-1 flex items-center gap-2;
 }
 
 .unread-indicator {

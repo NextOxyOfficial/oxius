@@ -86,11 +86,10 @@
                 "Store"
               }}
             </span>
-          </NuxtLink>
-          <!-- Product Title with Premium Hover Effect -->
+          </NuxtLink>          <!-- Product Title with Premium Hover Effect -->
           <NuxtLink :to="`/product-details/${product?.slug}`" class="">
             <h3
-              class="font-medium text-gray-700 dark:text-white mb-2 line-clamp-2 flex-grow text-sm first-letter:uppercase text-primary-600 transition-colors h-12"
+              class="font-medium text-gray-800 dark:text-white mb-2 line-clamp-2 flex-grow text-sm first-letter:uppercase text-primary-600 transition-colors h-12 text-left"
             >
               {{ product.name }}
             </h3>
@@ -103,7 +102,7 @@
             <!-- Price Section with Improved Logic - regular_price is used if sale_price is missing/0/null -->
             <div class="flex flex-col h-10">
               <span
-                class="font-semibold text-gray-700 dark:text-white text-base flex items-center"
+                class="font-semibold text-gray-800 dark:text-white text-base flex items-center"
               >
                 <span class="text-xs mr-1 text-slate-500">৳</span
                 >{{

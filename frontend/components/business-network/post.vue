@@ -91,7 +91,7 @@
               :to="`/business-network/posts/${
                 post?.post ? post.post : post.id
               }`"
-              class="block text-base font-medium mb-1.5 hover:text-blue-600 transition-colors px-2 text-gray-700 dark:text-white hover:underline decoration-blue-500/50 decoration-2 underline-offset-2"
+              class="block text-base font-medium mb-1.5 hover:text-blue-600 transition-colors px-2 text-gray-800 dark:text-white hover:underline decoration-blue-500/50 decoration-2 underline-offset-2"
             >
               {{ post?.post_details ? post.post_details.title : post.title }}
             </NuxtLink>
@@ -156,7 +156,7 @@
               <!-- Content with better highlighting -->
               <p
                 :class="[
-                  'text-base text-gray-700 dark:text-gray-300 leading-relaxed',
+                  'text-base text-gray-800 dark:text-gray-300 leading-relaxed',
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="

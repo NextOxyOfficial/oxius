@@ -90,7 +90,7 @@
               <!-- Upgrade Text with micro-interactions -->
               <div class="flex-1">
                 <h4
-                  class="font-medium text-gray-700 dark:text-white text-sm flex items-center"
+                  class="font-medium text-gray-800 dark:text-white text-sm flex items-center"
                 >
                   {{ $t("upgrade_pro") }}
                   <span
@@ -185,7 +185,7 @@
 
               <!-- Pro Status Text -->
               <div class="flex-1">
-                <h4 class="font-medium text-gray-700 dark:text-white">
+                <h4 class="font-medium text-gray-800 dark:text-white">
                   {{ $t("pro_member") }}
                 </h4>
                 <p

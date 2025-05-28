@@ -47,7 +47,7 @@
           </div>
         </div>
         <div class="ml-3 min-w-0">
-          <h4 class="text-sm font-medium text-gray-700 truncate">
+          <h4 class="text-sm font-medium text-gray-800 truncate">
             {{ contributor.name }}
           </h4>
           <p class="text-xs text-gray-500 flex items-center">

@@ -125,7 +125,7 @@
                         <!-- Contributor Info -->
                         <div class="flex flex-col flex-1 min-w-0">
                           <div class="flex items-center justify-between">
-                            <h3 class="text-base font-semibold text-gray-700 dark:text-gray-200 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors truncate">
+                            <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200 group-hover:text-amber-500 dark:group-hover:text-amber-400 transition-colors truncate">
                               {{ contributor.name }}
                             </h3>
                           </div>
@@ -244,7 +244,7 @@ const navigateToProfile = (contributor) => {
 // Get position-based styling for rank badges
 const getRankBadgeClass = (index) => {
   if (index === 0) return "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"; // 1st place
-  if (index === 1) return "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-400"; // 2nd place
+  if (index === 1) return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400"; // 2nd place
   if (index === 2) return "bg-amber-100/80 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400"; // 3rd place
   return "bg-amber-50 text-amber-700 dark:bg-amber-900/10 dark:text-amber-300"; // Rest
 };

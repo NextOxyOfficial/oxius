@@ -4,21 +4,21 @@
       <!-- Trending News Carousel -->
       <div class="mb-12">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-semibold text-gray-700">Trending News</h2>
+          <h2 class="text-xl font-semibold text-gray-800">Trending News</h2>
           <div class="flex space-x-2">
             <button
               @click="prevTrending"
               @mouseenter="pauseCarousel"
               class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
             >
-              <ChevronLeftIcon class="h-5 w-5 text-gray-700" />
+              <ChevronLeftIcon class="h-5 w-5 text-gray-800" />
             </button>
             <button
               @click="nextTrending"
               @mouseenter="pauseCarousel"
               class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
             >
-              <ChevronRightIcon class="h-5 w-5 text-gray-700" />
+              <ChevronRightIcon class="h-5 w-5 text-gray-800" />
             </button>
           </div>
         </div>
@@ -61,7 +61,7 @@
                 <div class="p-4">
                   <NuxtLink :to="`/adsy-news/${article.slug}/`">
                     <h3
-                      class="text-sm font-medium mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2"
+                      class="text-sm font-medium mb-2 text-gray-800 hover:text-primary cursor-pointer line-clamp-2"
                     >
                       {{ article.title }}
                     </h3>
@@ -100,7 +100,7 @@
 
       <!-- Category Title -->
       <div class="flex justify-between items-center mb-8">
-        <h2 class="text-xl font-semibold text-gray-700">All News</h2>
+        <h2 class="text-xl font-semibold text-gray-800">All News</h2>
         <div class="flex space-x-2">
           <button
             v-for="layout in layouts"
@@ -113,9 +113,9 @@
           >
             <LayoutGridIcon
               v-if="layout.id === 'grid'"
-              class="h-5 w-5 text-gray-700"
+              class="h-5 w-5 text-gray-800"
             />
-            <LayoutListIcon v-else class="h-5 w-5 text-gray-700" />
+            <LayoutListIcon v-else class="h-5 w-5 text-gray-800" />
           </button>
         </div>
       </div>
@@ -161,7 +161,7 @@
             <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-2' : 'p-2']">
               <NuxtLink :to="`/adsy-news/${article.slug}/`">
                 <h3
-                  class="font-medium text-sm sm:text-base mb-2 text-gray-700 hover:text-primary cursor-pointer transition-colors duration-200 line-clamp-2"
+                  class="font-medium text-sm sm:text-base mb-2 text-gray-800 hover:text-primary cursor-pointer transition-colors duration-200 line-clamp-2"
                 >
                   {{ article.title }}
                 </h3>
@@ -180,7 +180,7 @@
                     :alt="article.author"
                     class="h-8 w-8 rounded-full mr-2"
                   />
-                  <span class="text-sm font-medium text-gray-700"
+                  <span class="text-sm font-medium text-gray-800"
                     >Posted by:
                     <span class="text-primary">{{
                       article.author_details.name
@@ -202,7 +202,7 @@
         <div v-if="filteredArticles.length > 12" class="mt-12 text-center">
           <button
             @click="loadMoreArticles"
-            class="px-6 py-3 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
+            class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
             :disabled="isLoading"
           >
             <span v-if="isLoading">Loading...</span>
@@ -211,7 +211,7 @@
         </div>
         <!-- Trending Topics Section -->
         <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
-          <h2 class="text-xl font-semibold text-gray-700 mb-4">
+          <h2 class="text-xl font-semibold text-gray-800 mb-4">
             Trending Topics
           </h2>
           <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3">
@@ -219,7 +219,7 @@
               v-for="(topic, index) in trendingTopics"
               :key="index"
               href="#"
-              class="px-2 sm:px-4 py-2 bg-white rounded-full text-gray-700 shadow-sm hover:shadow-sm transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
+              class="px-2 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-sm transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
             >
               <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
               {{ topic }}
@@ -229,7 +229,7 @@
 
         <!-- Tips and Suggestions Section -->
         <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
-          <h2 class="text-xl font-semibold text-gray-700 mb-6">
+          <h2 class="text-xl font-semibold text-gray-800 mb-6">
             Tips and Suggestions
           </h2>
           <div
@@ -241,7 +241,7 @@
               class="bg-white rounded-lg shadow-sm p-4 hover:shadow-sm transition-shadow duration-300 flex flex-col"
             >
               <h3
-                class="text-sm font-semibold mb-2 text-gray-700 hover:text-primary cursor-pointer line-clamp-2"
+                class="text-sm font-semibold mb-2 text-gray-800 hover:text-primary cursor-pointer line-clamp-2"
               >
                 {{ tip.title }}
               </h3>
@@ -256,7 +256,7 @@
           >
             <button
               @click="loadMoreTips"
-              class="px-6 py-3 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
+              class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
             >
               Load More
             </button>

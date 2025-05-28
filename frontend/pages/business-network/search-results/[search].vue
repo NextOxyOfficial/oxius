@@ -26,7 +26,7 @@
             <span v-if="!loading && !usersLoading && (allPosts.length > 0 || userResults.length > 0)"
               class="flex items-center gap-1"
             >
-              <span class="font-medium text-gray-700">{{ userResults.length + allPosts.length }}</span>
+              <span class="font-medium text-gray-800">{{ userResults.length + allPosts.length }}</span>
               <span>{{ userResults.length + allPosts.length === 1 ? "result" : "results" }}</span>
               <span v-if="userResults.length > 0 && allPosts.length > 0" class="flex items-center gap-1 ml-1">
                 <span class="text-gray-400 text-xs">(</span>
@@ -451,7 +451,7 @@
       </div>
 
       <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 max-w-md">
-        <h4 class="font-medium text-gray-700 mb-2">
+        <h4 class="font-medium text-gray-800 mb-2">
           Looking for something else?
         </h4>
         <div class="relative">
@@ -483,7 +483,7 @@
         <Search class="h-8 w-8 text-gray-500" />
       </div>
 
-      <h3 class="text-lg font-semibold text-gray-700 mb-2">No results found</h3>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">No results found</h3>
       <p class="text-gray-500 mb-6 max-w-md">
         We couldn't find any posts matching "{{ $route.params.search }}". Try
         adjusting your search terms or filters.
@@ -491,7 +491,7 @@
 
       <div class="w-full max-w-md">
         <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-100">
-          <h4 class="font-medium text-gray-700 mb-3">Suggestions:</h4>
+          <h4 class="font-medium text-gray-800 mb-3">Suggestions:</h4>
           <ul class="text-sm text-gray-500 space-y-2">
             <li class="flex items-start">
               <div class="min-w-4 mr-2 mt-0.5">•</div>

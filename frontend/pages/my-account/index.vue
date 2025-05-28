@@ -69,7 +69,7 @@
               label="First Name"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -91,7 +91,7 @@
               label="Last Name"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -113,7 +113,7 @@
               label="Address"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -136,7 +136,7 @@
               label="Email"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -156,7 +156,7 @@
               label="City"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -178,7 +178,7 @@
               label="State"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -200,7 +200,7 @@
               label="Zip"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -223,7 +223,7 @@
               label="Phone"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -252,7 +252,7 @@
               label="Facebook Url"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -273,7 +273,7 @@
               label="Instagram Url"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -294,7 +294,7 @@
               label="WhatsApp #"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >
@@ -316,7 +316,7 @@
               label="About Me"
               :ui="{
                 label: {
-                  base: 'block font-medium text-gray-700 dark:text-slate-700',
+                  base: 'block font-medium text-gray-800 dark:text-slate-700',
                 },
               }"
             >

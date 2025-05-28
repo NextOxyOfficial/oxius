@@ -138,7 +138,7 @@
             >
               <div class="">
                 <span
-                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-gray-700"
+                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-gray-800"
                 >
                   <span v-if="!service.negotiable">
                     <UIcon name="i-mdi:currency-bdt" class="mr-1" />
@@ -183,7 +183,7 @@
                   <!-- Price Badge -->
                   <!-- <div class="mb-3">
                     <span
-                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-gray-700"
+                      class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-gray-800"
                     >
                       <span v-if="!service.negotiable">
                         <UIcon name="i-mdi:currency-bdt" class="mr-1" />
@@ -363,7 +363,7 @@
               default: {
                 size: 'h-10 w-10',
                 active: 'bg-emerald-500 text-white hover:bg-emerald-600',
-                inactive: 'bg-white text-gray-700 hover:bg-gray-100',
+                inactive: 'bg-white text-gray-800 hover:bg-gray-100',
               },
             }"
             @update:model-value="handlePageChange"

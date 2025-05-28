@@ -62,7 +62,7 @@
               @keydown.enter="handleEnterKey"
               @keydown.down="focusFirstResult"
               @keydown.up="focusViewAllButton"
-              class="w-full pl-10 pr-10 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 transition-all duration-300 shadow-sm search-input"
+              class="w-full pl-10 pr-10 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300 transition-all duration-300 shadow-sm search-input"
               ref="searchInput"
               aria-label="Search query"
             />
@@ -119,7 +119,7 @@
             :class="
               activeTab === 'all'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                : 'text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
             "
             @click="activeTab = 'all'"
           >
@@ -131,7 +131,7 @@
             :class="
               activeTab === 'posts'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                : 'text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
             "
             @click="activeTab = 'posts'"
           >
@@ -149,7 +149,7 @@
             :class="
               activeTab === 'people'
                 ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                : 'text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
             "
             @click="activeTab = 'people'"
           >
@@ -376,7 +376,7 @@
                   <div class="ml-3 flex-1 min-w-0">
                     <div class="flex items-center gap-1">
                       <p
-                        class="text-sm font-medium text-gray-700 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors inline-flex items-center"
+                        class="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors inline-flex items-center"
                       >
                         <span
                           v-html="
@@ -558,7 +558,7 @@
           >
             <SearchOffIcon class="h-6 w-6 text-gray-500 dark:text-gray-500" />
           </div>
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
+          <p class="text-sm font-medium text-gray-800 dark:text-gray-400 mb-1">
             No results found
           </p>
           <p class="text-xs text-gray-500 dark:text-gray-500 mb-3">
@@ -585,7 +585,7 @@
           >
             <SearchIcon class="h-7 w-7 text-blue-500 dark:text-blue-400" />
           </div>
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">
+          <p class="text-sm font-medium text-gray-800 dark:text-gray-400 mb-1">
             Search the platform
           </p>
           <p class="text-xs text-gray-500 dark:text-gray-500 mb-4">
@@ -601,7 +601,7 @@
                 v-for="(suggestion, i) in searchSuggestions"
                 :key="i"
                 @click="setSearchQuery(suggestion)"
-                class="px-2.5 py-1.5 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-gray-700 dark:text-gray-400"
+                class="px-2.5 py-1.5 bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-gray-800 dark:text-gray-400"
               >
                 {{ suggestion }}
               </button>

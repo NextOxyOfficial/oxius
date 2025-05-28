@@ -52,7 +52,7 @@
       <!-- Total videos count badge -->
       <div class="ml-auto">
         <span
-          class="text-sm bg-gray-50 text-gray-700 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm flex items-center"
+          class="text-sm bg-gray-50 text-gray-800 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm flex items-center"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -90,7 +90,7 @@
             clip-rule="evenodd"
           />
         </svg>
-        <h3 class="text-sm font-semibold text-gray-700">
+        <h3 class="text-sm font-semibold text-gray-800">
           {{ $t("filter_and_search") }}
         </h3>
       </div>
@@ -100,7 +100,7 @@
         <!-- Lesson filter - styled select with icon -->
         <div class="md:col-span-5">
           <label
-            class="block text-sm font-medium text-gray-700 mb-1.5 flex items-center"
+            class="block text-sm font-medium text-gray-800 mb-1.5 flex items-center"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -120,7 +120,7 @@
           <div class="relative">
             <select
               v-model="selectedLesson"
-              class="appearance-none block w-full bg-white border border-gray-200 rounded-md py-2 pl-3.5 pr-8 text-sm text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="appearance-none block w-full bg-white border border-gray-200 rounded-md py-2 pl-3.5 pr-8 text-sm text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">
                 {{ $t("all_lessons") }}
@@ -130,7 +130,7 @@
               </option>
             </select>
             <div
-              class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+              class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-800"
             >
               <svg
                 class="h-4 w-4 text-gray-400"
@@ -151,7 +151,7 @@
         <!-- Search input - modern design with context indicator -->
         <div class="md:col-span-7">
           <label
-            class="block text-sm font-medium text-gray-700 mb-1.5 flex items-center"
+            class="block text-sm font-medium text-gray-800 mb-1.5 flex items-center"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -178,7 +178,7 @@
               v-model="searchKeyword"
               type="text"
               :placeholder="searchPlaceholder"
-              class="block w-full bg-white border border-gray-200 rounded-md py-2 pl-10 pr-9 text-sm text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="block w-full bg-white border border-gray-200 rounded-md py-2 pl-10 pr-9 text-sm text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <!-- Search icon positioned inside input -->
             <div
@@ -284,7 +284,7 @@
         <!-- Results count and clear all button -->
         <div class="flex items-center gap-2">
           <div v-if="filteredVideos.length > 0" class="text-sm text-gray-500">
-            <span class="font-medium text-gray-700">{{
+            <span class="font-medium text-gray-800">{{
               filteredVideos.length
             }}</span>
             {{ filteredVideos.length === 1 ? "result" : "results" }}
@@ -338,7 +338,7 @@
           />
         </svg>
       </div>
-      <h3 class="text-sm font-semibold text-gray-700">
+      <h3 class="text-sm font-semibold text-gray-800">
         {{ $t("no_videos_found") }}
       </h3>
       <p class="mt-2 text-sm text-gray-500 max-w-sm mx-auto">
@@ -653,7 +653,7 @@
               <!-- Full description with scrollable area if content is too long -->
               <div class="border-t border-gray-100 pt-3">
                 <h4
-                  class="text-sm font-medium text-gray-700 mb-1.5 flex items-center"
+                  class="text-sm font-medium text-gray-800 mb-1.5 flex items-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -693,7 +693,7 @@
               <button
                 @click="closeDescriptionModal"
                 type="button"
-                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
               >
                 {{ isBengaliLocale ? "বন্ধ করুন" : "Close" }}
               </button>
@@ -858,7 +858,7 @@
               <button
                 @click="closeUpgradePrompt"
                 type="button"
-                class="w-full inline-flex justify-center items-center rounded-lg border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                class="w-full inline-flex justify-center items-center rounded-lg border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-base font-medium text-gray-800 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
               >
                 Maybe Later
               </button>

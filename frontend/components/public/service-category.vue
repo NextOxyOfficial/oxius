@@ -128,7 +128,7 @@
         </div>
 
         <!-- Message -->
-        <p class="text-gray-700 font-medium max-w-md mx-auto">
+        <p class="text-gray-800 font-medium max-w-md mx-auto">
           {{ $t("category_search_text") }}
         </p>
 

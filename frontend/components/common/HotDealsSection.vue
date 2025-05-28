@@ -82,7 +82,7 @@
                   </div>
                 </div>
                 <div class="p-2 text-center">
-                  <h3 class="font-medium text-sm text-gray-700">
+                  <h3 class="font-medium text-sm text-gray-800">
                     {{ deal.name }}
                   </h3>
                 </div>

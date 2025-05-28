@@ -15,7 +15,7 @@
                   :class="
                     activeTab === 'my-ads'
                       ? 'border-emerald-500 text-emerald-500'
-                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      : 'border-gray-300 text-gray-800 hover:border-gray-400'
                   "
                   @click="activeTab = 'my-ads'"
                 >
@@ -26,7 +26,7 @@
                   :class="
                     activeTab === 'abn-ads'
                       ? 'border-emerald-500 text-emerald-500'
-                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      : 'border-gray-300 text-gray-800 hover:border-gray-400'
                   "
                   @click="activeTab = 'abn-ads'"
                 >
@@ -100,7 +100,7 @@
             <!-- Date Filter - Moved here from top navigation -->
             <div class="bg-white rounded-md shadow-sm p-4 mb-2">
               <h2
-                class="text-sm font-medium text-gray-700 mb-3 flex items-center"
+                class="text-sm font-medium text-gray-800 mb-3 flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -146,7 +146,7 @@
             <!-- Performance Report -->
             <div class="bg-white rounded-md shadow-sm p-4 mb-5">
               <h2
-                class="text-sm font-medium text-gray-700 mb-3 flex items-center"
+                class="text-sm font-medium text-gray-800 mb-3 flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -376,7 +376,7 @@
                     </div>
                   </div>
 
-                  <p class="text-gray-700 mb-3 text-sm line-clamp-3">
+                  <p class="text-gray-800 mb-3 text-sm line-clamp-3">
                     {{ ad.description }}
                   </p>
 
@@ -563,7 +563,7 @@
                           </a>
                           <a
                             :href="`tel:${ad.ad_type_details}`"
-                            class="ml-2 text-sm bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md hover:bg-gray-200 transition-colors"
+                            class="ml-2 text-sm bg-gray-100 text-gray-800 px-2 py-0.5 rounded-md hover:bg-gray-200 transition-colors"
                           >
                             Call
                           </a>
@@ -749,12 +749,12 @@
                   1
                 </button>
                 <button
-                  class="px-2 py-1 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md"
+                  class="px-2 py-1 text-sm border border-gray-300 text-gray-800 hover:bg-gray-50 rounded-md"
                 >
                   2
                 </button>
                 <button
-                  class="px-2 py-1 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md"
+                  class="px-2 py-1 text-sm border border-gray-300 text-gray-800 hover:bg-gray-50 rounded-md"
                 >
                   3
                 </button>
@@ -772,7 +772,7 @@
             <!-- Tutorial Videos Section -->
             <div class="bg-white rounded-md shadow-sm p-4">
               <h2
-                class="text-sm font-medium text-gray-700 mb-3 flex items-center"
+                class="text-sm font-medium text-gray-800 mb-3 flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -808,7 +808,7 @@
                     ></iframe>
                   </div>
                   <div class="p-2">
-                    <h3 class="text-sm font-medium text-gray-700">
+                    <h3 class="text-sm font-medium text-gray-800">
                       {{ video.title }}
                     </h3>
                     <p class="text-sm text-gray-500">{{ video.duration }}</p>
@@ -840,7 +840,7 @@
             <!-- Tips Section -->
             <div class="bg-white rounded-md shadow-sm p-4">
               <h2
-                class="text-sm font-medium text-gray-700 mb-3 flex items-center"
+                class="text-sm font-medium text-gray-800 mb-3 flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -865,7 +865,7 @@
                   :key="idx"
                   class="border-l-[3px] border-emerald-100 pl-2 py-1"
                 >
-                  <h3 class="text-sm font-medium text-gray-700">
+                  <h3 class="text-sm font-medium text-gray-800">
                     {{ tip.title }}
                   </h3>
                   <p class="text-sm text-gray-500">{{ tip.description }}</p>
@@ -876,7 +876,7 @@
             <!-- Useful Steps Section -->
             <div class="bg-white rounded-md shadow-sm p-4">
               <h2
-                class="text-sm font-medium text-gray-700 mb-3 flex items-center"
+                class="text-sm font-medium text-gray-800 mb-3 flex items-center"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -1054,7 +1054,7 @@
             class="bg-white rounded-md shadow-sm w-full max-w-4xl p-5 max-h-[80vh] overflow-y-auto"
           >
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-sm font-medium text-gray-700">
+              <h3 class="text-sm font-medium text-gray-800">
                 {{ editingAdIndex !== null ? "Edit Ad" : "Create New Ad" }}
               </h3>
               <button
@@ -1086,7 +1086,7 @@
                   <div>
                     <label
                       for="title"
-                      class="block text-sm font-medium text-gray-700"
+                      class="block text-sm font-medium text-gray-800"
                     >
                       Ad Title
                     </label>
@@ -1104,7 +1104,7 @@
                   <div>
                     <label
                       for="category"
-                      class="block text-sm font-medium text-gray-700"
+                      class="block text-sm font-medium text-gray-800"
                     >
                       Category
                     </label>
@@ -1125,7 +1125,7 @@
 
                   <!-- Gender -->
                   <div>
-                    <label class="block text-sm font-medium text-gray-700"
+                    <label class="block text-sm font-medium text-gray-800"
                       >Targeted Audience</label
                     >
                     <div class="mt-1 flex space-x-4">
@@ -1135,7 +1135,7 @@
                           v-model="adForm.male"
                           class="form-checkbox h-5 w-5 text-emerald-500 focus:ring-emerald-400 rounded"
                         />
-                        <span class="text-sm text-gray-700">Male</span>
+                        <span class="text-sm text-gray-800">Male</span>
                       </label>
                       <label class="inline-flex items-center space-x-2">
                         <input
@@ -1143,7 +1143,7 @@
                           v-model="adForm.female"
                           class="form-checkbox h-5 w-5 text-emerald-500 focus:ring-emerald-400 rounded"
                         />
-                        <span class="text-sm text-gray-700">Female</span>
+                        <span class="text-sm text-gray-800">Female</span>
                       </label>
                       <label class="inline-flex items-center space-x-2">
                         <input
@@ -1152,14 +1152,14 @@
                           value="other"
                           class="form-checkbox h-5 w-5 text-emerald-500 focus:ring-emerald-400 rounded"
                         />
-                        <span class="text-sm text-gray-700">Other</span>
+                        <span class="text-sm text-gray-800">Other</span>
                       </label>
                     </div>
                   </div>
 
                   <!-- Age Range -->
                   <div>
-                    <label class="block text-sm font-medium text-gray-700">
+                    <label class="block text-sm font-medium text-gray-800">
                       Age Range
                     </label>
                     <div class="mt-2 px-2">
@@ -1222,7 +1222,7 @@
                   <div>
                     <label
                       for="country"
-                      class="block text-sm font-medium text-gray-700"
+                      class="block text-sm font-medium text-gray-800"
                     >
                       Country
                     </label>
@@ -1243,7 +1243,7 @@
                   <div>
                     <label
                       for="adType"
-                      class="block text-sm font-medium text-gray-700"
+                      class="block text-sm font-medium text-gray-800"
                     >
                       Ad Type
                     </label>
@@ -1264,7 +1264,7 @@
                   <div v-if="adForm.ad_type && adForm.ad_type !== 'none'">
                     <label
                       :for="`${adForm.ad_type}Contact`"
-                      class="block text-sm font-medium text-gray-700"
+                      class="block text-sm font-medium text-gray-800"
                     >
                       {{ adTypeLabels[adForm.ad_type] }}
                     </label>
@@ -1282,7 +1282,7 @@
                   <div>
                     <label
                       for="description"
-                      class="block text-sm font-medium text-gray-700"
+                      class="block text-sm font-medium text-gray-800"
                     >
                       Description
                     </label>
@@ -1302,7 +1302,7 @@
 
                   <!-- Multiple Image Upload -->
                   <div>
-                    <label class="block text-sm font-medium text-gray-700"
+                    <label class="block text-sm font-medium text-gray-800"
                       >Images (up to 4)</label
                     >
                     <div class="mt-1">
@@ -1392,7 +1392,7 @@
                   <div>
                     <label
                       for="budget"
-                      class="block text-sm font-medium text-gray-700"
+                      class="block text-sm font-medium text-gray-800"
                     >
                       Ad Budget (৳)
                     </label>
@@ -1457,14 +1457,14 @@
                     <button
                       type="button"
                       @click="previewAdFromForm"
-                      class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                      class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                     >
                       Preview
                     </button>
                     <button
                       type="button"
                       @click="closeCreateAdModal"
-                      class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                      class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
                     >
                       Cancel
                     </button>
@@ -1509,7 +1509,7 @@
               <!-- Right side - Ad Preview -->
               <div class="w-full md:w-1/2 mt-5 md:mt-0">
                 <div class="border rounded-md p-4 bg-gray-50">
-                  <h4 class="text-sm font-medium text-gray-700 mb-2">
+                  <h4 class="text-sm font-medium text-gray-800 mb-2">
                     Ad Preview
                   </h4>
                   <div class="bg-white rounded-md shadow-sm overflow-hidden">
@@ -1570,7 +1570,7 @@
                         </div>
                       </div>
 
-                      <p class="text-gray-700 mb-3 text-sm line-clamp-3">
+                      <p class="text-gray-800 mb-3 text-sm line-clamp-3">
                         {{
                           adForm.description ||
                           "Your ad description will appear here. Make sure it is clear and concise."
@@ -1666,7 +1666,7 @@
                           <a
                             v-if="adForm.contactInfo"
                             :href="`tel:${adForm.contactInfo}`"
-                            class="ml-2 text-sm bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md hover:bg-gray-200 transition-colors"
+                            class="ml-2 text-sm bg-gray-100 text-gray-800 px-2 py-0.5 rounded-md hover:bg-gray-200 transition-colors"
                           >
                             Call
                           </a>
@@ -1718,7 +1718,7 @@
                   </div>
 
                   <div class="mt-4">
-                    <h5 class="text-sm font-medium text-gray-700 mb-2">
+                    <h5 class="text-sm font-medium text-gray-800 mb-2">
                       Tips for Better Performance
                     </h5>
                     <ul class="text-sm text-gray-500 space-y-1 pl-4 list-disc">
@@ -1758,7 +1758,7 @@
                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                 />
               </svg>
-              <h3 class="text-base font-medium text-gray-700">Delete Ad</h3>
+              <h3 class="text-base font-medium text-gray-800">Delete Ad</h3>
               <p class="text-sm text-gray-500 mt-1">
                 Are you sure you want to delete this ad? This action cannot be
                 undone.
@@ -1795,7 +1795,7 @@
               </button>
               <button
                 @click="cancelDelete"
-                class="px-4 py-1.5 text-sm border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors rounded-md"
+                class="px-4 py-1.5 text-sm border border-gray-300 text-gray-800 font-medium hover:bg-gray-100 transition-colors rounded-md"
                 :disabled="isDeleting"
               >
                 Cancel
@@ -1813,7 +1813,7 @@
             class="bg-white rounded-md shadow-sm w-full max-w-md p-5 max-h-[80vh] overflow-y-auto"
           >
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-sm font-medium text-gray-700">Ad Preview</h3>
+              <h3 class="text-sm font-medium text-gray-800">Ad Preview</h3>
               <button
                 @click="showPreviewModal = false"
                 class="text-gray-500 hover:text-gray-500 rounded-md"
@@ -1951,7 +1951,7 @@
                   </div>
                 </div>
 
-                <p class="text-gray-700 mb-4 text-sm">
+                <p class="text-gray-800 mb-4 text-sm">
                   {{
                     previewAdData.description ||
                     "Your ad description will appear here. Make sure it is clear and concise."
@@ -2032,7 +2032,7 @@
                     }}</span>
                     <a
                       :href="`tel:${previewAdData.contactInfo}`"
-                      class="rounded-md bg-gray-100 text-gray-700 p-2 hover:bg-gray-200 transition-colors"
+                      class="rounded-md bg-gray-100 text-gray-800 p-2 hover:bg-gray-200 transition-colors"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -2087,7 +2087,7 @@
             <div class="mt-4 flex justify-end">
               <button
                 @click="showPreviewModal = false"
-                class="px-4 py-2 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                class="px-4 py-2 text-sm border border-gray-300 rounded-md shadow-sm font-medium text-gray-800 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
               >
                 Close Preview
               </button>

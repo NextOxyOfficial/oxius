@@ -32,7 +32,7 @@
                 'text-sm font-medium hover:text-primary transition-colors duration-200 py-1',
                 activeCategory === category.id
                   ? 'text-primary border-b-2 border-primary'
-                  : 'text-gray-700',
+                  : 'text-gray-800',
               ]"
               :to="`/adsy-news/categories/${category.slug}/`"
             >
@@ -41,7 +41,7 @@
             <div class="relative mt-1" v-if="categories.length > 4">
               <button
                 @click="toggleMoreCategories"
-                class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200"
+                class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200"
               >
                 More
                 <UIcon
@@ -61,7 +61,7 @@
                     'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
                     activeCategory === category.id
                       ? 'text-primary'
-                      : 'text-gray-700',
+                      : 'text-gray-800',
                   ]"
                   :to="`/adsy-news/categories/${category.slug}/`"
                 >
@@ -117,7 +117,7 @@
                 'text-sm font-medium hover:text-primary transition-colors duration-200 py-1',
                 activeCategory === category.id
                   ? 'text-primary border-b-2 border-primary'
-                  : 'text-gray-700',
+                  : 'text-gray-800',
               ]"
               :to="`/adsy-news/categories/${category.slug}/`"
             >
@@ -129,7 +129,7 @@
             >
               <button
                 @click="toggleMoreCategories"
-                class="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors duration-200"
+                class="flex items-center text-sm font-medium text-gray-800 hover:text-primary transition-colors duration-200"
               >
                 More
                 <UIcon
@@ -149,7 +149,7 @@
                     'block px-4 py-2 text-sm hover:bg-gray-100 transition-colors',
                     activeCategory === category.id
                       ? 'text-primary'
-                      : 'text-gray-700',
+                      : 'text-gray-800',
                   ]"
                   :to="`/adsy-news/categories/${category.slug}/`"
                 >
@@ -181,7 +181,7 @@
               type="text"
               placeholder="Search news articles..."
               v-model="searchQuery"
-              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 text-gray-700"
+              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 text-gray-800"
               @input="handleSearchInput"
               ref="searchInputRef"
             />
@@ -205,7 +205,7 @@
             class="p-4 hover:bg-gray-50 cursor-pointer transition-colors"
             @click="navigateToArticle(result)"
           >
-            <p class="font-medium text-gray-700 line-clamp-2 mb-1">
+            <p class="font-medium text-gray-800 line-clamp-2 mb-1">
               {{ result.title }}
             </p>
             <div class="flex items-center text-xs text-gray-500">

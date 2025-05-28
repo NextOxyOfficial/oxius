@@ -19,7 +19,7 @@
         
         <!-- Message input -->
         <div>
-          <label for="message-text" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label for="message-text" class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-1">
             Your Message
           </label>
           <UTextarea
@@ -36,7 +36,7 @@
         
         <!-- Contact info -->
         <div>
-          <label for="contact-info" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label for="contact-info" class="block text-sm font-medium text-gray-800 dark:text-gray-300 mb-1">
             Your Contact Info (optional)
           </label>
           <UInput

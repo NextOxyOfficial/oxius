@@ -41,7 +41,7 @@
               >
                 <UIcon
                   :name="isPassword ? 'i-heroicons-eye' : 'i-heroicons-eye-slash'"
-                  class="w-5 h-5 text-gray-500 hover:text-gray-700"
+                  class="w-5 h-5 text-gray-500 hover:text-gray-800"
                 />
               </div>
             </div>
@@ -56,7 +56,7 @@
                 type="checkbox"
                 class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
               />
-              <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+              <label for="remember-me" class="ml-2 block text-sm text-gray-800">
                 Remember me
               </label>
             </div>
@@ -98,11 +98,11 @@
     >
       <h1 class="font-semibold text-center md:p-5 text-xl">LOGIN</h1>
       <div class="mb-6">
-        <label class="block text-gray-700 text-md font-medium mb-2" for="email">
+        <label class="block text-gray-800 text-md font-medium mb-2" for="email">
           Email
         </label>
         <input
-          class="w-full py-1.5 px-3 text-sm text-gray-700 bg-[#D9D9D9] rounded-md"
+          class="w-full py-1.5 px-3 text-sm text-gray-800 bg-[#D9D9D9] rounded-md"
           id="email"
           type="text"
           placeholder="abc@example.com"
@@ -112,13 +112,13 @@
 
       <div class="mb-2">
         <label
-          class="block text-gray-700 text-md font-medium mb-2"
+          class="block text-gray-800 text-md font-medium mb-2"
           for="password"
         >
           Password
         </label>
         <input
-          class="w-full py-1.5 px-3 text-sm text-gray-700 bg-[#D9D9D9] rounded-md"
+          class="w-full py-1.5 px-3 text-sm text-gray-800 bg-[#D9D9D9] rounded-md"
           id="password"
           type="password"
           placeholder="********"

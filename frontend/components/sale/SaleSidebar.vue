@@ -42,7 +42,7 @@
               :class="
                 !selectedCategory
                   ? 'bg-primary-200 text-primary-700 font-medium shadow-sm'
-                  : 'text-gray-700 hover:bg-gray-50'
+                  : 'text-gray-800 hover:bg-gray-50'
               "
             >
               <span class="flex items-center gap-2">
@@ -65,7 +65,7 @@
                 :class="
                   selectedCategory === category.id
                     ? 'bg-primary-50 text-primary-700 font-medium shadow-sm'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    : 'text-gray-800 hover:bg-gray-50'
                 "
               >
                 <span class="flex items-center gap-2">

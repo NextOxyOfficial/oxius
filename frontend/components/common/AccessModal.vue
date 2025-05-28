@@ -138,7 +138,7 @@
           <!-- Cancel button -->
           <button
             @click="$emit('close')"
-            class="flex-1 sm:flex-none bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium"
+            class="flex-1 sm:flex-none bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium"
           >
             {{ $t('maybe_later') || 'Maybe Later' }}
           </button>
