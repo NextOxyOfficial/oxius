@@ -4,8 +4,8 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   colorMode: {
     preference: "light",
-  },
-  ssr: false,
+  },  ssr: false,
+  
   css: ["~/assets/css/main.css"],
   modules: [
     "@nuxt/ui",
@@ -106,16 +106,30 @@ export default defineNuxtConfig({
         },
       ],
     },
-  },
-  runtimeConfig: {
+  },  runtimeConfig: {
     public: {
       baseURL: "http://127.0.0.1:8000",
+      cookieOptions: {
+        default: {
+          httpOnly: false,
+          secure: false, // Set to true in production with HTTPS
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 * 30, // 30 days to match JWT token and session lifetime
+        }
+      }
     },
-  },
-  $production: {
+  },  $production: {
     runtimeConfig: {
       public: {
         baseURL: "https://adsyclub.com",
+        cookieOptions: {
+          default: {
+            httpOnly: false,
+            secure: true, // Enable secure cookies in production with HTTPS
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 30, // 30 days to match JWT token and session lifetime
+          }
+        }
       },
     },
   },

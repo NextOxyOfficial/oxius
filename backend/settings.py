@@ -99,6 +99,14 @@ SIMPLE_JWT = {
     "TOKEN_OBTAIN_SERIALIZER": "base.serializers.MyTokenObtainPairSerializer",
 }
 
+# Session settings to prevent automatic logout
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days (same as JWT tokens)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep session even after browser close
+SESSION_SAVE_EVERY_REQUEST = True  # Refresh session on every request
+SESSION_COOKIE_HTTPONLY = True  # Security: prevent JS access to session cookie
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add whitenoise middleware right after security middleware

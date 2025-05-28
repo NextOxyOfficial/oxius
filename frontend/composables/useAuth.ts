@@ -5,7 +5,16 @@ export function useAuth() {
   // const { getUserDetails } = useStoreUser();
   const notifs = useState<Array<any>>("notifs", () => []);
   const isAuthenticated = computed(() => user.value !== null);
-  const jwt = useCookie("adsyclub-jwt");
+  // Configure JWT cookie with 30 days expiration to match backend token lifetime
+  const jwt = useCookie("adsyclub-jwt", {
+    default: () => null,
+    maxAge: 60 * 60 * 24 * 30, // 30 days - matches backend JWT and session settings
+    httpOnly: false,
+    secure: false, // Set to true in production
+    sameSite: 'lax',
+    // Ensure cookie persists across browser sessions
+    expires: new Date(Date.now() + (60 * 60 * 24 * 30 * 1000)) // 30 days from now
+  });
 
   const jwtLogin = async () => {
     if (!jwt.value) {
