@@ -3,7 +3,7 @@
     <!-- Subscription Status Indicator -->
     <div v-if="getSubscriptionStatus.status !== 'pro'" class="mb-4">
       <div
-        class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium"
+        class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium"
         :class="{
           'bg-yellow-50 text-yellow-800 border border-yellow-200': getSubscriptionStatus.status === 'expired',
           'bg-blue-50 text-blue-800 border border-blue-200': getSubscriptionStatus.status === 'free',
@@ -20,7 +20,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" />
         </svg>
         <span>{{ getSubscriptionStatus.message }}</span>
-        <span v-if="getSubscriptionStatus.status === 'expired' && daysRemaining > 0" class="ml-2 text-xs text-yellow-700">({{ $t('subscription_expiring') }} {{ daysRemaining }} {{ daysRemaining === 1 ? $t('day') : $t('days') }})</span>
+        <span v-if="getSubscriptionStatus.status === 'expired' && daysRemaining > 0" class="ml-2 text-sm text-yellow-700">({{ $t('subscription_expiring') }} {{ daysRemaining }} {{ daysRemaining === 1 ? $t('day') : $t('days') }})</span>
       </div>
     </div>
     <!-- Header with title and icon -->
@@ -45,14 +45,14 @@
       </div>
       <div>
         <h2 class="text-lg font-bold">{{ $t("video_lessons") }}</h2>
-        <p class="text-xs text-gray-500 hidden sm:block">
+        <p class="text-sm text-gray-500 hidden sm:block">
           {{ $t("video_lessons_desc") }}
         </p>      </div>
 
       <!-- Total videos count badge -->
       <div class="ml-auto">
         <span
-          class="text-xs bg-gray-50 text-gray-700 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm flex items-center"
+          class="text-sm bg-gray-50 text-gray-700 px-2.5 py-1 rounded-full border border-gray-100 shadow-sm flex items-center"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -100,7 +100,7 @@
         <!-- Lesson filter - styled select with icon -->
         <div class="md:col-span-5">
           <label
-            class="block text-xs font-medium text-gray-700 mb-1.5 flex items-center"
+            class="block text-sm font-medium text-gray-700 mb-1.5 flex items-center"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -151,7 +151,7 @@
         <!-- Search input - modern design with context indicator -->
         <div class="md:col-span-7">
           <label
-            class="block text-xs font-medium text-gray-700 mb-1.5 flex items-center"
+            class="block text-sm font-medium text-gray-700 mb-1.5 flex items-center"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -168,7 +168,7 @@
             {{ $t("search") }}:
             <span
               v-if="selectedLesson !== 'all'"
-              class="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-md font-medium"
+              class="ml-1.5 bg-blue-100 text-blue-700 text-sm px-1.5 py-0.5 rounded-md font-medium"
             >
               {{ selectedLesson }}
             </span>
@@ -232,7 +232,7 @@
         >
           <div
             v-if="selectedLesson !== 'all'"
-            class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-green-50 text-green-700 border border-green-100"
+            class="inline-flex items-center px-2 py-1 rounded-md text-sm bg-green-50 text-green-700 border border-green-100"
           >
             <span>{{ $t("lesson") }}:</span>
             <span class="font-medium ml-1">{{ selectedLesson }}</span>
@@ -257,7 +257,7 @@
 
           <div
             v-if="searchKeyword.trim()"
-            class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-blue-50 text-blue-700 border border-blue-100"
+            class="inline-flex items-center px-2 py-1 rounded-md text-sm bg-blue-50 text-blue-700 border border-blue-100"
           >
             <span>{{ isBengaliLocale ? "কীওয়ার্ড:" : "Keyword:" }}</span>
             <span class="font-medium ml-1">"{{ searchKeyword }}"</span>
@@ -283,7 +283,7 @@
 
         <!-- Results count and clear all button -->
         <div class="flex items-center gap-2">
-          <div v-if="filteredVideos.length > 0" class="text-xs text-gray-500">
+          <div v-if="filteredVideos.length > 0" class="text-sm text-gray-500">
             <span class="font-medium text-gray-700">{{
               filteredVideos.length
             }}</span>
@@ -293,7 +293,7 @@
           <button
             v-if="searchKeyword.trim() || selectedLesson !== 'all'"
             @click="clearFilters"
-            class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1.5 rounded-md flex items-center transition-colors duration-200 border border-gray-200"
+            class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1.5 rounded-md flex items-center transition-colors duration-200 border border-gray-200"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -341,7 +341,7 @@
       <h3 class="text-sm font-semibold text-gray-700">
         {{ $t("no_videos_found") }}
       </h3>
-      <p class="mt-2 text-xs text-gray-500 max-w-sm mx-auto">
+      <p class="mt-2 text-sm text-gray-500 max-w-sm mx-auto">
         {{
           searchKeyword.trim() ? $t("no_search_results") : $t("no_videos_found")
         }}
@@ -349,7 +349,7 @@
       <button
         v-if="searchKeyword.trim() || selectedLesson !== 'all'"
         @click="clearFilters"
-        class="mt-4 inline-flex items-center px-3 py-1.5 border border-blue-300 text-xs font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        class="mt-4 inline-flex items-center px-3 py-1.5 border border-blue-300 text-sm font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -380,13 +380,13 @@
       >
         <!-- Per-video access indicator overlay -->
         <div v-if="!isAuthenticated || (isAuthenticated && !isProValid)" class="absolute top-2 right-2 z-10">
-          <span v-if="!isAuthenticated" class="inline-flex items-center px-2 py-1 bg-red-500/90 text-white text-xs rounded-full shadow">
+          <span v-if="!isAuthenticated" class="inline-flex items-center px-2 py-1 bg-red-500/90 text-white text-sm rounded-full shadow">
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 20 20" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" />
             </svg>
             {{ $t('login_required') }}
           </span>
-          <span v-else class="inline-flex items-center px-2 py-1 bg-yellow-400/90 text-yellow-900 text-xs rounded-full shadow">
+          <span v-else class="inline-flex items-center px-2 py-1 bg-yellow-400/90 text-yellow-900 text-sm rounded-full shadow">
             <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 20 20" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
             </svg>
@@ -417,7 +417,7 @@
               )
             "
           ></h3>
-          <p class="text-xs text-gray-600 mt-1">
+          <p class="text-sm text-gray-600 mt-1">
             {{ $t("lesson") }}:
             <span
               v-html="
@@ -428,11 +428,10 @@
                 )
               "
             ></span>
-          </p>
-          <!-- Description with enhanced View More button -->
+          </p>          <!-- Description with enhanced View More button -->
           <div class="relative mt-1">
             <p
-              class="text-xs text-gray-600 line-clamp-2"
+              class="text-sm text-gray-600 line-clamp-2"
               v-html="
                 highlightText(
                   isBengaliLocale && video.description_bn
@@ -441,46 +440,45 @@
                 )
               "
             ></p>
-            <button
-              @click="openDescriptionModal(video)"
-              class="text-xs text-blue-600 hover:text-blue-800 font-medium mt-1.5 flex items-center transition-all duration-200 hover:translate-x-0.5"
-            >
-              <span
-                class="border-b border-blue-300 hover:border-blue-600 pb-0.5"
-                >{{ $t("view_more") }}</span
+            <div class="flex justify-end mt-1.5">
+              <button
+                @click="openDescriptionModal(video)"
+                class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center"
               >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-3 w-3 ml-0.5"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </button>
+                <span>{{ $t("view_more") }}</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-3 w-3 ml-0.5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <!-- Match indicators when searching -->
           <div v-if="searchKeyword.trim()" class="flex flex-wrap gap-1 mt-1.5">
             <span
               v-if="hasMatch(video.title)"
-              class="text-xs px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200"
+              class="text-sm px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200"
             >
               {{ isBengaliLocale ? "শিরোনাম মিল" : "Title match" }}
             </span>
             <span
               v-if="hasMatch(video.description)"
-              class="text-xs px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200"
+              class="text-sm px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200"
             >
               {{ isBengaliLocale ? "বিবরণে মিল" : "Description match" }}
             </span>
             <span
               v-if="hasMatch(video.lesson)"
-              class="text-xs px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200"
+              class="text-sm px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200"
             >
               {{ isBengaliLocale ? "পাঠ মিল" : "Lesson match" }}
             </span>
@@ -489,18 +487,18 @@
           <!-- Video stats -->
           <div class="flex items-center mt-2">
             <span
-              class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full"
+              class="text-sm bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full"
             >
               {{ video.duration }}
             </span>
-            <span class="ml-2 text-xs text-gray-500">
+            <span class="ml-2 text-sm text-gray-500">
               {{ video.views }} {{ $t("videos_count") }}
             </span>
           </div>          <!-- Access indicators - fixed to work with computed property pattern -->
           <div class="mt-2">
             <span
               v-if="!isAuthenticated"
-              class="text-xs inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-100"
+              class="text-sm inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-100"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -517,7 +515,7 @@
               {{ $t("login_required") || "Login Required" }}
             </span>            <span
               v-else-if="isAuthenticated && !isProValid"
-              class="text-xs inline-flex items-center px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-100"
+              class="text-sm inline-flex items-center px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-100"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -600,7 +598,7 @@
               >
                 <div>
                   <span
-                    class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                    class="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded"
                   >
                     {{
                       isBengaliLocale && activeVideo?.lesson_bn
@@ -610,7 +608,7 @@
                   </span>
                 </div>
                 <div
-                  class="mt-1 sm:mt-0 text-xs text-gray-500 flex items-center"
+                  class="mt-1 sm:mt-0 text-sm text-gray-500 flex items-center"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

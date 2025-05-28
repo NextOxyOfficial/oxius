@@ -4,7 +4,7 @@
       <h2 class="text-lg font-semibold text-gray-800">
         {{ $t("select_your_batch") }}
       </h2>
-      <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">{{
+      <span class="bg-blue-100 text-blue-700 text-sm px-2 py-1 rounded-full">{{
         $t("step_1_of_4")
       }}</span>
     </div>
@@ -22,7 +22,7 @@
       <p class="text-sm text-red-600">{{ error }}</p>
       <button
         @click="loadBatches"
-        class="mt-2 text-xs text-blue-600 hover:underline"
+        class="mt-2 text-sm text-blue-600 hover:underline"
       >
         {{ $t("try_again") }}
       </button>    </div>
@@ -62,7 +62,7 @@
           </div>
           <div>
             <h3 class="font-medium text-sm">{{ batch.name }}</h3>
-            <p class="text-xs text-gray-600">{{ batch.description }}</p>
+            <p class="text-sm text-gray-600">{{ batch.description }}</p>
           </div>
         </div>
       </div>

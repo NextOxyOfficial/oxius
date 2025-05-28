@@ -20,7 +20,7 @@
         </div>
         <h2 class="text-lg font-bold">{{ $t("select_your_subject") }}</h2>
       </div>
-      <div class="flex items-center text-xs text-gray-500">
+      <div class="flex items-center text-sm text-gray-500">
         <span
           class="bg-gray-200 text-gray-700 rounded-full w-5 h-5 flex items-center justify-center mr-1"
           >3</span
@@ -42,7 +42,7 @@
       <p class="text-sm text-red-600">{{ error }}</p>
       <button
         @click="loadSubjects"
-        class="mt-2 text-xs text-blue-600 hover:underline"
+        class="mt-2 text-sm text-blue-600 hover:underline"
       >
         {{ $t("try_again") }}
       </button>
@@ -113,15 +113,15 @@
             </svg>
           </div>
           <div class="text-center sm:text-left">
-            <h3 class="font-medium text-xs sm:text-sm">{{ subject.name }}</h3>
-            <p class="text-xs text-gray-500 hidden sm:block">
+            <h3 class="font-medium text-sm sm:text-sm">{{ subject.name }}</h3>
+            <p class="text-sm text-gray-500 hidden sm:block">
               {{ subject.description }}
             </p>
           </div>
         </div>
         <div
           v-if="selectedSubject === subject.id"
-          class="bg-blue-50 py-1 px-2 text-xs text-blue-600 border-t border-blue-200 flex items-center justify-center"
+          class="bg-blue-50 py-1 px-2 text-sm text-blue-600 border-t border-blue-200 flex items-center justify-center"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

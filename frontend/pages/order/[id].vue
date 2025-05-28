@@ -186,19 +186,9 @@
                 </div>
               </div>
             </div>
-            <!-- <div>
-              <UFormGroup label="Upload Link">
-                <UInput
-                  type="text"
-                  size="md"
-                  color="white"
-                  placeholder="Enter your link"
-                  v-model="task_completion_link"
-                />
-              </UFormGroup>
-            </div> -->
+           
             <div class="!mt-7">
-              <UFormGroup class="flex flex-row-reverse justify-end gap-2">
+              <UFormGroup class="flex flex-row-reverse justify-end gap-2 mb-4">
                 <template #label>
                   I accept
                   <ULink
@@ -262,10 +252,7 @@
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          <!-- <div 
-              className="fixed inset-0 bg-gray-500/75 backdrop-blur-sm transition-opacity"
-              onClick={onClose}
-            /> -->
+          
           <div
             className="relative w-full max-w-sm transform overflow-hidden rounded-lg bg-white shadow-sm transition-all"
           >
@@ -289,13 +276,6 @@
                   Please Upload your ID to get permission to post a service ad.
                 </p>
 
-                <!-- <button
-                  className="inline-flex items-center justify-center w-full px-4 py-2.5 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 active:bg-emerald-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-                  onClick="{handleUpload}"
-                >
-                  <Upload className="h-5 w-5 mr-2" />
-                  Upload NID
-                </button> -->
                 <UButton
                   size="md"
                   color="primary"
