@@ -89,9 +89,6 @@
                 <span class="relative z-10">{{
                   $t("bangladesh_first_title")
                 }}</span>
-                <span
-                  class="absolute bottom-1 left-0 w-full h-2 bg-emerald-100 -z-10"
-                ></span>
               </h1>
               <!-- Service buttons grid with cool design -->
               <div

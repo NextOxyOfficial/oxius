@@ -238,7 +238,7 @@
     </div>
 
     <!-- Premium divider -->
-    <div class="my-6 sm:my-16 mx-auto max-w-[80%] relative">
+    <div class="my-6 mx-auto max-w-[80%] relative">
       <UDivider />
       <div
         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-slate-900 px-4 py-1"
