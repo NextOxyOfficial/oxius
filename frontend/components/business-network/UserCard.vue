@@ -49,7 +49,7 @@
         <span
           v-if="user.username"
           class="mr-3"
-          v-html="'@' + highlightMatchedText(user.username, 'username')"
+          v-html="'- ' + highlightMatchedText(user.username, 'username')"
         ></span>
         <span class="mr-2"
           ><span class="font-medium text-gray-700">{{ user.post_count }}</span>

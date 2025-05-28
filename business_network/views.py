@@ -475,12 +475,44 @@ class BusinessNetworkPostSearchView(generics.ListAPIView):
             
             # Enhanced search: look in title, content, and author name fields with different weights
             # Use Case insensitive containment for broader matches
+            author_search_query = Q()
+            
+            # Basic author field searches
+            author_search_query |= Q(author__username__icontains=normalized_query)
+            author_search_query |= Q(author__first_name__icontains=normalized_query)
+            author_search_query |= Q(author__last_name__icontains=normalized_query)
+            
+            # Enhanced full name search for multi-word queries
+            name_parts = normalized_query.split()
+            if len(name_parts) > 1:
+                # For multi-word searches like "Alimul Islam", also search for combinations
+                for i in range(1, len(name_parts)):
+                    first_part = ' '.join(name_parts[:i])
+                    last_part = ' '.join(name_parts[i:])
+                    
+                    # Match where first part is in first_name and second part is in last_name
+                    author_search_query |= (
+                        Q(author__first_name__icontains=first_part) & 
+                        Q(author__last_name__icontains=last_part)
+                    )
+                    
+                    # Also try the reverse (in case names are stored differently)
+                    author_search_query |= (
+                        Q(author__first_name__icontains=last_part) & 
+                        Q(author__last_name__icontains=first_part)
+                    )
+                
+                # Also check if the complete query matches across first_name + last_name combined
+                # This handles cases where someone searches "Alimul Islam" and user has first_name="Md Alimul" last_name="Islam"
+                for part in name_parts:
+                    author_search_query |= Q(author__first_name__icontains=part)
+                    author_search_query |= Q(author__last_name__icontains=part)
+            
+            # Combine all search criteria
             content_query_results = queryset.filter(
                 Q(title__icontains=normalized_query) | 
                 Q(content__icontains=normalized_query) |
-                Q(author__username__icontains=normalized_query) |
-                Q(author__first_name__icontains=normalized_query) |
-                Q(author__last_name__icontains=normalized_query)
+                author_search_query
             )
             queryset = content_query_results
             
