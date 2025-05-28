@@ -174,18 +174,3 @@ class VideoLesson(models.Model):
             return match.group(1)
         return None
 
-
-# =============================================================================
-# SESSION TRACKING MODELS FOR ACCESS CONTROL
-# =============================================================================
-
-# Session models removed - using simple course access instead
-
-
-# Session activity logging removed
-
-
-# Device session tracking removed
-
-
-# Suspicious activity monitoring removed
