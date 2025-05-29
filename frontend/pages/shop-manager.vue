@@ -316,9 +316,8 @@
                   class="h-2 w-2 rounded-full bg-emerald-500 mr-2 animate-pulse"
                 ></div>
                 <span class="text-xs text-gray-600">Store Active</span>
-              </div>
-              <div class="mt-1 sm:mt-0 sm:ml-auto text-xs text-gray-600">
-                Last updated: {{ formatDate(new Date()) }}
+              </div>              <div class="mt-1 sm:mt-0 sm:ml-auto text-xs text-gray-600">
+                Last order received: {{ lastOrderDate ? formatDate(lastOrderDate) : 'No orders yet' }}
               </div>
             </div>
 
@@ -1024,6 +1023,20 @@ const totalOrdersAmount = computed(() => {
     const orderTotal = parseFloat(order.total || 0);
     return total + orderTotal;
   }, 0);
+});
+
+// Computed property to get the most recent order date
+const lastOrderDate = computed(() => {
+  if (orders.value.length === 0) {
+    return null;
+  }
+  
+  // Find the most recent order by created_at date
+  const sortedOrders = [...orders.value].sort((a, b) => 
+    new Date(b.created_at) - new Date(a.created_at)
+  );
+  
+  return new Date(sortedOrders[0].created_at);
 });
 
 // Products management
