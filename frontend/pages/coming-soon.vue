@@ -85,7 +85,7 @@ const downloadAndroidApp = () => {
   try {
     // Create a download link for the APK file
     const link = document.createElement('a');
-    link.href = '/AdsyClub V.1.apk';
+    link.href = '/AdsyClub.V.1.apk';
     link.download = 'AdsyClub-V1.apk';
     link.target = '_blank';
     

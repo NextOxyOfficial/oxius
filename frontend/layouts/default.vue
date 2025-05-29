@@ -119,7 +119,7 @@
 </template>
 
 <script setup>
-const { jwtLogin, user } = useAuth();
+const { jwtLogin, user, getValidToken } = useAuth();
 const toast = useToast();
 
 const loader = ref(true);
@@ -245,7 +245,7 @@ const downloadMobileApp = () => {
   try {
     // Create a download link for the APK file
     const link = document.createElement('a');
-    link.href = '/AdsyClub V.1.apk';
+    link.href = '/AdsyClub.V.1.apk';
     link.download = 'AdsyClub-V1.apk';
     link.target = '_blank';
     
@@ -330,7 +330,29 @@ const initializeMobileAppPopup = () => {
   }, 2000); // Show after 2 seconds
 };
 
-await jwtLogin();
+// Enhanced authentication initialization for default layout
+const initializeAuth = async () => {
+  try {
+    // For default layout, try to authenticate but don't force login
+    const jwt = useCookie("adsyclub-jwt");
+    const refreshToken = useCookie("adsyclub-refresh");
+    
+    if (jwt.value || refreshToken.value) {
+      // If we have tokens, try to validate/refresh them
+      const validToken = await getValidToken();
+      if (validToken) {
+        await jwtLogin();
+      }
+    }
+    // If no tokens or validation fails, that's ok for default layout
+  } catch (error) {
+    console.warn("Auth initialization error in default layout:", error);
+    // Don't redirect on error in default layout
+  }
+};
+
+// Initialize authentication
+initializeAuth();
 
 onMounted(() => {
   setTimeout(() => {

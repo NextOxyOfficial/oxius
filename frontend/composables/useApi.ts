@@ -5,6 +5,45 @@ export function useApi() {
   const staticURL = runtimeConfig.public.baseURL;
 
   const jwt = useCookie("adsyclub-jwt");
+  
+  // Enhanced header function that refreshes tokens when needed
+  const getHeaders = async (includeContentType = false) => {
+    // Try to get fresh token if we have auth composable available
+    try {
+      const { getValidToken } = useAuth();
+      const validToken = await getValidToken();
+      
+      const headers: Record<string, string> = {
+        Accept: "application/json",
+      };
+      
+      if (includeContentType) {
+        headers["Content-Type"] = "application/json";
+      }
+      
+      if (validToken) {
+        headers.Authorization = `Bearer ${validToken}`;
+      }
+      
+      return headers as HeadersInit;
+    } catch (error) {
+      // Fallback to current jwt if useAuth is not available
+      const headers: Record<string, string> = {
+        Accept: "application/json",
+      };
+      
+      if (includeContentType) {
+        headers["Content-Type"] = "application/json";
+      }
+      
+      if (jwt.value) {
+        headers.Authorization = `Bearer ${jwt.value}`;
+      }
+      
+      return headers as HeadersInit;
+    }
+  };
+
   const head = computed<HeadersInit>(() => {
     if (jwt.value) {
       return {
@@ -19,10 +58,11 @@ export function useApi() {
   });
 
   const get = async (endpoint: string) => {
+    const headers = await getHeaders();
     const { data, pending, error, refresh } = await useFetch<any>(
       baseURL + endpoint,
       {
-        headers: head.value,
+        headers,
         method: "get",
       }
     );
@@ -31,15 +71,11 @@ export function useApi() {
       data: data.value,
       error: error.value,
     };
-  };
-  const post = async (endpoint: string, postData: object | FormData) => {
+  };  const post = async (endpoint: string, postData: object | FormData) => {
     // For FormData, don't set Content-Type header - let browser set it with boundary
-    const headers =
-      postData instanceof FormData
-        ? jwt.value
-          ? ({ Authorization: `Bearer ${jwt.value}` } as HeadersInit)
-          : ({} as HeadersInit)
-        : head.value;
+    const headers = postData instanceof FormData
+      ? await getHeaders(false) // Don't include Content-Type for FormData
+      : await getHeaders(true);  // Include Content-Type for JSON
 
     const { data, error } = await useFetch(baseURL + endpoint, {
       headers,
@@ -51,12 +87,12 @@ export function useApi() {
       error: error.value,
     };
   };
-
   const put = async (endpoint: string, postData: object) => {
+    const headers = await getHeaders(true); // Include Content-Type for JSON
     const { data, pending, error, refresh } = await useFetch<any>(
       baseURL + endpoint,
       {
-        headers: head.value,
+        headers,
         method: "put",
         body: JSON.stringify(postData),
       }
@@ -66,13 +102,9 @@ export function useApi() {
       error: error.value,
     };
   };
-
   const patch = async (endpoint: string, postData: object) => {
-    // Create headers with content type for JSON data
-    const headers = {
-      ...head.value,
-      "Content-Type": "application/json",
-    } as HeadersInit;
+    // Use async header generation with content type for JSON data
+    const headers = await getHeaders(true);
 
     try {
       console.log("PATCH request to:", baseURL + endpoint);
@@ -99,19 +131,21 @@ export function useApi() {
         error: err,
       };
     }
-  };
-  const del = async (endpoint: string) => {
+  };  const del = async (endpoint: string) => {
     try {
       console.log(`DELETE request to: ${baseURL + endpoint}`);
 
-      // Check if the JWT token is valid
-      const jwt = useCookie("adsyclub-jwt");
-      if (!jwt.value) {
-        console.error("DELETE request failed: No JWT token available");
-        throw new Error("Authentication token is missing");
+      // Get valid token with automatic refresh
+      const headers = await getHeaders();
+      
+      // Check if we have authorization after refresh attempt
+      const headersObj = headers as Record<string, string>;
+      if (!headersObj.Authorization) {
+        console.error("DELETE request failed: No valid JWT token available after refresh attempt");
+        throw new Error("Authentication token is missing or expired");
       }
+
       // Log auth token format (first few chars only for security)
-      const headersObj = head.value as Record<string, string>;
       console.log("Authorization header present:", !!headersObj.Authorization);
       if (headersObj.Authorization) {
         const tokenPrefix = headersObj.Authorization.substring(0, 20);
@@ -125,7 +159,7 @@ export function useApi() {
       const { data, pending, error, status } = await useFetch<any>(
         baseURL + endpoint,
         {
-          headers: head.value,
+          headers,
           method: "delete",
           retry: 1, // Add a single retry attempt
           onRequest({ request, options }) {

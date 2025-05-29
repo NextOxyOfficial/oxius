@@ -15,7 +15,7 @@
     </div>
 
     <div
-      class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-2 lg:px-8"
+      class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-3 px-2 lg:px-8"
       v-else
     >
       <Transition

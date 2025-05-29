@@ -1,21 +1,46 @@
 <script setup>
-const { login, jwtLogin, logout, user } = useAuth();
+const { login, jwtLogin, logout, user, getValidToken, clearAuthData } = useAuth();
 const isLoading = ref(true);
 
-// Use an immediately-invoked async function to handle auth
+// Enhanced auth check with proper token refresh handling
 const checkAuth = async () => {
   try {
-    if (!useCookie("adsyclub-jwt").value) {
-      navigateTo("/auth/login/");
-    } else {
-      await jwtLogin();
+    // Check if we have any tokens
+    const jwt = useCookie("adsyclub-jwt");
+    const refreshToken = useCookie("adsyclub-refresh");
+    
+    if (!jwt.value && !refreshToken.value) {
+      // No tokens at all, redirect to login
+      await navigateTo("/auth/login/");
+      return;
+    }
+
+    // Try to get a valid token (this will attempt refresh if needed)
+    const validToken = await getValidToken();
+    
+    if (!validToken) {
+      // Token refresh failed, clear auth and redirect
+      await clearAuthData();
+      await navigateTo("/auth/login/");
+      return;
+    }
+
+    // Validate the token with the server
+    const loginSuccess = await jwtLogin();
+    if (!loginSuccess) {
+      // JWT validation failed even after refresh attempt
+      await navigateTo("/auth/login/");
     }
   } catch (error) {
     console.error("Authentication error:", error);
+    await clearAuthData();
+    await navigateTo("/auth/login/");
   } finally {
     isLoading.value = false;
   }
 };
+
+// Run auth check
 checkAuth();
 
 useHead({
