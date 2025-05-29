@@ -105,7 +105,8 @@
                   class="text-sm"
                 >
                   Skip this step
-                </UButton>                <UButton
+                </UButton>
+                <UButton
                   type="button"
                   color="purple"
                   @click="nextStep()"
@@ -327,7 +328,7 @@
               </h3>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="col-span-1">
+                <div class="">
                   <UFormGroup label="" class="w-full">
                     <div class="relative">
                       <USelectMenu
@@ -352,7 +353,7 @@
                     </div>
                   </UFormGroup>
                 </div>
-                <div class="col-span-1">
+                <div class="">
                   <UFormGroup label="" class="w-full">
                     <div class="relative">
                       <USelectMenu
@@ -377,7 +378,7 @@
                     </div>
                   </UFormGroup>
                 </div>
-                <div class="col-span-1">
+                <div class="">
                   <UFormGroup label="" class="w-full">
                     <div class="relative">
                       <USelectMenu
@@ -403,7 +404,7 @@
                     </div>
                   </UFormGroup>
                 </div>
-                <div class="col-span-1">
+                <div class="">
                   <UFormGroup label="" class="w-full">
                     <div class="relative">
                       <UIcon
@@ -420,7 +421,7 @@
                     </div>
                   </UFormGroup>
                 </div>
-                <div class="col-span-2">
+                <div class="md:col-span-2">
                   <UFormGroup label="" class="w-full">
                     <div class="relative">
                       <UIcon
@@ -502,7 +503,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted } from "vue";
 const { get, post } = useApi();
 const { login } = useAuth();
 const isPassword = ref(true);
@@ -726,7 +727,7 @@ async function handleSubmit() {
       currentStep.value = 2;
     }
     return;
-  }  // Create formData without the image first
+  } // Create formData without the image first
   const formData = {
     first_name: form.value.first_name,
     last_name: form.value.last_name,
@@ -746,11 +747,12 @@ async function handleSubmit() {
     zip: form.value.zip,
     address: form.value.address,
   };
-  
+
   // Only add image if it actually exists
   if (userProfile.value.image) {
     formData.image = userProfile.value.image;
-  }  try {
+  }
+  try {
     // Try to register the user
     let res;
     try {
@@ -758,11 +760,14 @@ async function handleSubmit() {
     } catch (registrationError) {
       console.error("Registration error:", registrationError);
       // Check if the error is related to the profile image
-      if (registrationError.response?.data?.error?.includes('image') || 
-          registrationError.message?.includes('startswith') ||
-          (registrationError.message && registrationError.message.toLowerCase().includes('nonetype'))) {
+      if (
+        registrationError.response?.data?.error?.includes("image") ||
+        registrationError.message?.includes("startswith") ||
+        (registrationError.message &&
+          registrationError.message.toLowerCase().includes("nonetype"))
+      ) {
         // If there's an image-related error and we have an image field, remove it
-        if ('image' in formData) {
+        if ("image" in formData) {
           delete formData.image;
         }
         // Try again without the image
@@ -789,33 +794,39 @@ async function handleSubmit() {
       const res2 = await login(form.value.email, form.value.password);
       if (res2) {
         const res = await post(`/send-sms/?phone=${form.value.phone}`);
-        
+
         // Enhanced registration success toast with onboarding elements
         const celebrationMessages = [
           "🌟 Your adventure begins now!",
           "🚀 Ready to explore amazing opportunities?",
           "✨ Welcome to a world of possibilities!",
           "🎯 Time to unlock your potential!",
-          "🌈 Your journey to success starts here!"
+          "🌈 Your journey to success starts here!",
         ];
-        
-        const randomCelebration = celebrationMessages[Math.floor(Math.random() * celebrationMessages.length)];
-        
+
+        const randomCelebration =
+          celebrationMessages[
+            Math.floor(Math.random() * celebrationMessages.length)
+          ];
+
         toast.add({
           title: "🎊 Registration Successful!",
           description: `Welcome to ADSY Club! ${randomCelebration}`,
           color: "emerald",
           icon: "i-heroicons-trophy",
           timeout: 6000,
-          actions: [{
-            label: "Get Started",
-            click: () => navigateTo("/")
-          }, {
-            label: "Explore Features",
-            click: () => navigateTo("/")
-          }]
+          actions: [
+            {
+              label: "Get Started",
+              click: () => navigateTo("/"),
+            },
+            {
+              label: "Explore Features",
+              click: () => navigateTo("/"),
+            },
+          ],
         });
-        
+
         navigateTo("/");
       }
     } else {
@@ -830,7 +841,8 @@ async function handleSubmit() {
       submitError.value =
         err.response?.data?.message || "An error occurred. Please try again.";
       console.error("Error submitting the form:", err);
-    }  }
+    }
+  }
   isLoading.value = false;
 }
 
@@ -844,7 +856,10 @@ function handleFileUpload(event) {
   reader.onload = () => {
     try {
       // Make sure the result is a valid string
-      if (typeof reader.result === 'string' && reader.result.startsWith('data:')) {
+      if (
+        typeof reader.result === "string" &&
+        reader.result.startsWith("data:")
+      ) {
         userProfile.value.image = reader.result;
       } else {
         console.error("Invalid file format");
