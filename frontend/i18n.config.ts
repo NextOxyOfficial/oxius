@@ -33,7 +33,7 @@ export default defineI18nConfig(() => ({
       quick_earn: "Quick Earn",
       balance: "Balance",
       add_funds: "Add Funds",
-      pending_task: "Pending Task",      
+      pending_task: "Pending Task",
       view: "View",
       view_all: "View All",
       view_more: "View More",
@@ -198,6 +198,7 @@ export default defineI18nConfig(() => ({
       shastho_sheba: "Shastho Sheba",
       bill_pay: "Bill Pay",
       adsy_pay: "Adsy Pay",
+      adsy_club: "AdsyClub",
 
       // eLearning translations
       elearning: "eLearning",
@@ -278,7 +279,8 @@ export default defineI18nConfig(() => ({
       quick_earn: "সহজে ইনকাম",
       balance: "ব্যালেন্স",
       add_funds: "ফান্ড অ্যাড করি",
-      pending_task: "পেন্ডিং টাস্ক",      view: "দেখি",
+      pending_task: "পেন্ডিং টাস্ক",
+      view: "দেখি",
       view_all: "সব দেখি",
       view_more: "আরও দেখুন",
       category_search_text:
@@ -443,6 +445,7 @@ export default defineI18nConfig(() => ({
       shastho_sheba: "স্বাস্থ্য সেবা",
       bill_pay: "বিল পে",
       adsy_pay: "অ্যাডজি পে",
+      adsy_club: "অ্যাডজি ক্লাব",
 
       // eLearning translations
       elearning: "ই-লার্নিং",

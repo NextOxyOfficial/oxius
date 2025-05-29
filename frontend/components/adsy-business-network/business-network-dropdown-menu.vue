@@ -183,9 +183,7 @@
 
               <!-- Pro Status Text -->
               <div class="flex-1">
-                <h4
-                  class="font-medium text-gray-800 dark:text-white"
-                >
+                <h4 class="font-medium text-gray-800 dark:text-white">
                   {{ $t("pro_member") }}
                 </h4>
                 <p
@@ -222,11 +220,7 @@
           >
             <!-- FREE Badge -->
             <div
-              v-if="
-                link.badge &&
-                link.badge.show &&
-                link.badge.type === 'free'
-              "
+              v-if="link.badge && link.badge.show && link.badge.type === 'free'"
               class="absolute -top-1.5 -right-1.5 bg-white dark:bg-slate-800 rounded-full p-0.5 shadow-sm transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 z-10"
             >
               <div
@@ -238,11 +232,7 @@
 
             <!-- PRO Badge -->
             <div
-              v-if="
-                link.badge &&
-                link.badge.show &&
-                link.badge.type === 'pro'
-              "
+              v-if="link.badge && link.badge.show && link.badge.type === 'pro'"
               class="absolute -top-1.5 -right-1.5 bg-white dark:bg-slate-800 rounded-full p-0.5 shadow-sm transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 z-10"
             >
               <div
@@ -349,10 +339,15 @@ const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false,
-  }
+  },
 });
 
-const emit = defineEmits(['update:isOpen', 'logout', 'upgradeToPro', 'manageSubscription']);
+const emit = defineEmits([
+  "update:isOpen",
+  "logout",
+  "upgradeToPro",
+  "manageSubscription",
+]);
 
 const router = useRouter();
 const route = useRoute();
@@ -360,88 +355,86 @@ const route = useRoute();
 // Navigation links definition
 const navigationLinks = computed(() => [
   {
-    label: route.path.includes('/business-network')
-      ? 'AdsyClub'
-      : t('business_network'),
-    to: route.path.includes('/business-network')
-      ? '/'
-      : '/business-network',
-    icon: route.path.includes('/business-network')
-      ? 'i-lucide-chart-bar-big'
-      : 'i-eos-icons-network',
-    color: 'text-orange-600 dark:text-orange-400',
-    bg: 'from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-900/10',
-    border: 'border-orange-200 dark:border-orange-800/30',
+    label: route.path.includes("/business-network")
+      ? t("adsy_club")
+      : t("business_network"),
+    to: route.path.includes("/business-network") ? "/" : "/business-network",
+    icon: route.path.includes("/business-network")
+      ? "i-lucide-chart-bar-big"
+      : "i-eos-icons-network",
+    color: "text-orange-600 dark:text-orange-400",
+    bg: "from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-900/10",
+    border: "border-orange-200 dark:border-orange-800/30",
   },
   {
-    label: t('adsy_news'),
-    to: '/adsy-news',
-    icon: 'i-mdi-newspaper-variant-multiple-outline',
-    color: 'text-purple-600 dark:text-purple-400',
-    bg: 'from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-900/10',
-    border: 'border-purple-200 dark:border-purple-800/30',
+    label: t("adsy_news"),
+    to: "/adsy-news",
+    icon: "i-mdi-newspaper-variant-multiple-outline",
+    color: "text-purple-600 dark:text-purple-400",
+    bg: "from-purple-100 to-purple-50 dark:from-purple-900/30 dark:to-purple-900/10",
+    border: "border-purple-200 dark:border-purple-800/30",
   },
   {
-    label: t('ad'),
-    to: '/my-classified-services/',
-    icon: 'i-heroicons-megaphone',
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bg: 'from-emerald-100 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-900/10',
-    border: 'border-emerald-200 dark:border-emerald-800/30',
+    label: t("ad"),
+    to: "/my-classified-services/",
+    icon: "i-heroicons-megaphone",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "from-emerald-100 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-900/10",
+    border: "border-emerald-200 dark:border-emerald-800/30",
     badge: {
       show: true,
-      type: 'free',
-      text: t('free'),
+      type: "free",
+      text: t("free"),
     },
   },
   {
-    label: t('eshop_manager'),
-    to: '/shop-manager/',
-    icon: 'i-heroicons-shopping-bag',
-    color: 'text-blue-600 dark:text-blue-400',
-    bg: 'from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-900/10',
-    border: 'border-blue-200 dark:border-blue-800/30',
+    label: t("eshop_manager"),
+    to: "/shop-manager/",
+    icon: "i-heroicons-shopping-bag",
+    color: "text-blue-600 dark:text-blue-400",
+    bg: "from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-900/10",
+    border: "border-blue-200 dark:border-blue-800/30",
     badge: {
       show: true,
-      type: 'pro',
-      text: t('pro'),
+      type: "pro",
+      text: t("pro"),
     },
   },
   {
-    label: t('adsy_pay'),
-    to: '/deposit-withdraw',
-    icon: 'i-heroicons-banknotes',
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bg: 'from-emerald-100 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-900/10',
-    border: 'border-emerald-200 dark:border-emerald-800/30',
+    label: t("adsy_pay"),
+    to: "/deposit-withdraw",
+    icon: "i-heroicons-banknotes",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "from-emerald-100 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-900/10",
+    border: "border-emerald-200 dark:border-emerald-800/30",
   },
   {
-    label: t('mobile_recharge'),
-    to: '/mobile-recharge',
-    icon: 'i-uil-mobile-vibrate',
-    color: 'text-orange-600 dark:text-orange-400',
-    bg: 'from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-900/10',
-    border: 'border-orange-200 dark:border-orange-800/30',
+    label: t("mobile_recharge"),
+    to: "/mobile-recharge",
+    icon: "i-uil-mobile-vibrate",
+    color: "text-orange-600 dark:text-orange-400",
+    bg: "from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-900/10",
+    border: "border-orange-200 dark:border-orange-800/30",
   },
 ]);
 
 // Methods
 function closeMenu() {
-  emit('update:isOpen', false);
+  emit("update:isOpen", false);
 }
 
 function upgradeToPro() {
   closeMenu();
-  emit('upgradeToPro');
+  emit("upgradeToPro");
 }
 
 function manageSubscription() {
   closeMenu();
-  emit('manageSubscription');
+  emit("manageSubscription");
 }
 
 function handleLogout() {
-  emit('logout');
+  emit("logout");
   closeMenu();
 }
 
@@ -470,7 +463,8 @@ function formatDate(date) {
 }
 
 @keyframes gradient-x {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
