@@ -161,7 +161,30 @@ async function handleLogin() {
     const res = await login(username.value, password.value);
     if (res.loggedIn) {
       navigateTo("/");
-      toast.add({ title: "Login successful!" });
+      
+      // Enhanced login success toast with personalization
+      const welcomeMessages = [
+        "Great to see you again!",
+        "Welcome back, champion!",
+        "You're back in action!",
+        "Ready to conquer today?",
+        "Welcome back to the community!"
+      ];
+      
+      const randomWelcome = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+      
+      toast.add({ 
+        title: "🎉 Login Successful!", 
+        description: randomWelcome,
+        color: "green",
+        icon: "i-heroicons-sparkles",
+        timeout: 4000,
+        actions: [{
+          label: "Explore Dashboard",
+          click: () => navigateTo("/dashboard")
+        }]
+      });
+      
       error.value = "";
     } else {
       toast.add({ title: res._value.data.error, status: "error" });

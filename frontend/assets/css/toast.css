@@ -1,69 +1,67 @@
 /* Cool Toast Notification Styles */
 
-/* Custom animation keyframes */
-@keyframes toast-slide-in {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes toast-slide-out {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-
-@keyframes toast-bounce {
+/* Authentication Success Toast Enhancements */
+@keyframes celebration-bounce {
   0% {
-    transform: translateX(100%) scale(0.9);
+    transform: translateX(100%) scale(0.8) rotate(-5deg);
     opacity: 0;
   }
   50% {
-    transform: translateX(-5%) scale(1.02);
-    opacity: 0.8;
+    transform: translateX(-8%) scale(1.05) rotate(2deg);
+    opacity: 0.9;
+  }
+  75% {
+    transform: translateX(3%) scale(0.98) rotate(-1deg);
+    opacity: 1;
   }
   100% {
-    transform: translateX(0) scale(1);
+    transform: translateX(0) scale(1) rotate(0deg);
     opacity: 1;
   }
 }
 
-@keyframes toast-glow {
-  0%, 100% {
-    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100%) rotate(0deg);
+    opacity: 1;
   }
-  50% {
-    box-shadow: 0 20px 40px -3px rgba(0, 0, 0, 0.15), 0 8px 12px -2px rgba(0, 0, 0, 0.1);
+  100% {
+    transform: translateY(500%) rotate(360deg);
+    opacity: 0;
   }
 }
 
-@keyframes icon-pulse {
+@keyframes success-glow {
   0%, 100% {
-    transform: scale(1);
-    opacity: 1;
+    box-shadow: 
+      0 10px 25px -3px rgba(34, 197, 94, 0.3),
+      0 4px 6px -2px rgba(34, 197, 94, 0.1),
+      0 0 0 0 rgba(34, 197, 94, 0.4);
   }
   50% {
-    transform: scale(1.1);
+    box-shadow: 
+      0 20px 40px -3px rgba(34, 197, 94, 0.4),
+      0 8px 12px -2px rgba(34, 197, 94, 0.2),
+      0 0 20px 5px rgba(34, 197, 94, 0.3);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
     opacity: 0.8;
   }
-}
-
-@keyframes progress-bar {
-  from {
-    width: 100%;
+  25% {
+    transform: scale(1.2) rotate(90deg);
+    opacity: 1;
   }
-  to {
-    width: 0%;
+  50% {
+    transform: scale(0.8) rotate(180deg);
+    opacity: 0.6;
+  }
+  75% {
+    transform: scale(1.1) rotate(270deg);
+    opacity: 1;
   }
 }
 
@@ -259,3 +257,5 @@
 .u-notification .text-sm {
   line-height: 1.5;
 }
+
+/* Custom animation keyframes */

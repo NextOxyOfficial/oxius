@@ -69,6 +69,29 @@ export default defineAppConfig({
           size: "sm"
         }
       },
+      // Enhanced authentication toast variants
+      auth: {
+        success: {
+          color: "green",
+          icon: "i-heroicons-sparkles",
+          timeout: 6000,
+          class: "auth-success-toast",
+          animation: "celebration-bounce"
+        },
+        registration: {
+          color: "emerald", 
+          icon: "i-heroicons-trophy",
+          timeout: 7000,
+          class: "auth-registration-toast",
+          animation: "celebration-bounce"
+        },
+        welcome: {
+          color: "blue",
+          icon: "i-heroicons-hand-raised", 
+          timeout: 5000,
+          class: "auth-welcome-toast"
+        }
+      }
     },
   },
 });
