@@ -63,8 +63,7 @@
                 </div>
                 <span class="text-gray-700 dark:text-gray-300 text-sm">Works offline for saved content</span>
               </div>
-            </div>
-
+            </div>            
             <!-- Action Buttons -->
             <div class="space-y-3">
               <UButton
@@ -78,15 +77,27 @@
                 Download APK ({{ appSize }})
               </UButton>
               
-              <UButton
-                @click="remindMeLater"
-                color="gray"
-                variant="ghost"
-                class="w-full py-2"
-                size="sm"
-              >
-                Remind me later
-              </UButton>
+              <div class="flex gap-2">
+                <UButton
+                  @click="remindMeLater"
+                  color="gray"
+                  variant="ghost"
+                  class="flex-1 py-2"
+                  size="sm"
+                >
+                  Remind me later
+                </UButton>
+                
+                <UButton
+                  @click="dontShowAgain"
+                  color="gray"
+                  variant="ghost"
+                  class="flex-1 py-2"
+                  size="sm"
+                >
+                  Don't show again
+                </UButton>
+              </div>
             </div>
 
             <!-- Privacy Note -->
@@ -115,6 +126,85 @@ const loader = ref(true);
 const showMobileAppPopup = ref(false);
 const appSize = ref('12.5 MB');
 
+// Cookie utility functions
+const setCookie = (name, value, hours = 24) => {
+  if (!process.client) return;
+  const expires = new Date();
+  expires.setTime(expires.getTime() + (hours * 60 * 60 * 1000));
+  document.cookie = `${name}=${value}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+};
+
+const getCookie = (name) => {
+  if (!process.client) return null;
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+};
+
+// Check if mobile app is already installed
+const isMobileAppInstalled = () => {
+  if (!process.client) return false;
+  
+  // Check if PWA is installed (standalone mode)
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    return true;
+  }
+  
+  // Check for iOS standalone mode
+  if (window.navigator.standalone === true) {
+    return true;
+  }
+  
+  // Check for Android app webview
+  if (document.referrer.includes('android-app://')) {
+    return true;
+  }
+  
+  // Check user agent for mobile app indicators
+  const userAgent = navigator.userAgent || '';
+  
+  // Check for common webview indicators
+  if (userAgent.includes('AdsyClub') || 
+      userAgent.includes('wv') || 
+      userAgent.includes('Version') && userAgent.includes('Mobile')) {
+    return true;
+  }
+  
+  // Check for specific webview patterns
+  if (userAgent.match(/\bwv\b/) || 
+      userAgent.match(/Android.*Mobile.*Chrome\/\d+\.\d+\.\d+\.\d+/) ||
+      userAgent.includes('FB_IAB') || 
+      userAgent.includes('FBAN') ||
+      userAgent.includes('Instagram')) {
+    return true;
+  }
+  
+  // Check window properties that indicate app context
+  if (typeof window !== 'undefined') {
+    // Check for Android app bridge
+    if (window.Android || window.AndroidInterface) {
+      return true;
+    }
+    
+    // Check for iOS app bridge  
+    if (window.webkit && window.webkit.messageHandlers) {
+      return true;
+    }
+  }
+    // Check if user has previously installed and dismissed permanently (check both localStorage and cookies)
+  if (localStorage.getItem('mobileAppInstalled') === 'true' || 
+      getCookie('mobileAppInstalled') === 'true') {
+    return true;
+  }
+  
+  return false;
+};
+
 // Check if user should see the mobile app popup
 const shouldShowMobileAppPopup = () => {
   // Only show for non-logged-in users
@@ -122,18 +212,31 @@ const shouldShowMobileAppPopup = () => {
     return false;
   }
   
-  // Check if popup was shown in the last 7 days
-  const lastShown = localStorage.getItem('mobileAppPopupLastShown');
-  if (lastShown) {
-    const lastShownDate = new Date(lastShown);
-    const now = new Date();
-    const daysDiff = Math.floor((now - lastShownDate) / (1000 * 60 * 60 * 24));
-    
-    // Show only if 7 days have passed
-    return daysDiff >= 7;
+  // Don't show if mobile app is already installed
+  if (isMobileAppInstalled()) {
+    return false;
   }
   
-  // First time visitor - show popup
+  // Don't show if user has permanently dismissed (check both localStorage and cookies)
+  if (localStorage.getItem('mobileAppPopupPermanentlyDismissed') === 'true' || 
+      getCookie('mobileAppDismissed') === 'permanently') {
+    return false;
+  }
+  
+  // Check if popup was shown in the last 24 hours using cookies
+  const lastShownCookie = getCookie('mobileAppPopupLastShown');
+  if (lastShownCookie) {
+    const lastShownTime = parseInt(lastShownCookie);
+    const now = new Date().getTime();
+    const hoursDiff = Math.floor((now - lastShownTime) / (1000 * 60 * 60));
+    
+    // Show only if 24 hours have passed
+    if (hoursDiff < 24) {
+      return false;
+    }
+  }
+  
+  // Show popup if conditions are met
   return true;
 };
 
@@ -151,6 +254,10 @@ const downloadMobileApp = () => {
     link.click();
     document.body.removeChild(link);
     
+    // Mark app as downloaded/installed to prevent future popups (use both cookies and localStorage)
+    localStorage.setItem('mobileAppInstalled', 'true');
+    setCookie('mobileAppInstalled', 'true', 24 * 365); // Set for 1 year
+    
     // Show success toast
     toast.add({
       title: 'Download Started',
@@ -159,7 +266,7 @@ const downloadMobileApp = () => {
       icon: 'i-heroicons-check-circle'
     });
     
-    // Close popup and update last shown date
+    // Close popup and update last shown time
     closeMobileAppPopup();
     
   } catch (error) {
@@ -175,26 +282,42 @@ const downloadMobileApp = () => {
 
 // Remind me later function
 const remindMeLater = () => {
-  // Set reminder for 3 days instead of 7
-  const reminderDate = new Date();
-  reminderDate.setDate(reminderDate.getDate() + 3);
-  localStorage.setItem('mobileAppPopupLastShown', reminderDate.toISOString());
+  // Set reminder for 24 hours using cookies
+  const now = new Date().getTime();
+  setCookie('mobileAppPopupLastShown', now.toString(), 24);
   
   showMobileAppPopup.value = false;
   
   toast.add({
     title: 'Reminder Set',
-    description: 'We\'ll remind you about our mobile app in 3 days',
+    description: 'We\'ll remind you about our mobile app in 24 hours',
     color: 'blue',
     icon: 'i-heroicons-clock'
+  });
+};
+
+// Don't show again function
+const dontShowAgain = () => {
+  // Mark as permanently dismissed (use both cookies and localStorage for redundancy)
+  localStorage.setItem('mobileAppPopupPermanentlyDismissed', 'true');
+  setCookie('mobileAppDismissed', 'permanently', 24 * 365); // Set for 1 year
+  
+  showMobileAppPopup.value = false;
+  
+  toast.add({
+    title: 'Notification Disabled',
+    description: 'You won\'t see this popup again',
+    color: 'gray',
+    icon: 'i-heroicons-eye-slash'
   });
 };
 
 // Close popup function
 const closeMobileAppPopup = () => {
   showMobileAppPopup.value = false;
-  // Update last shown date to current date
-  localStorage.setItem('mobileAppPopupLastShown', new Date().toISOString());
+  // Update last shown time using cookies (24 hours)
+  const now = new Date().getTime();
+  setCookie('mobileAppPopupLastShown', now.toString(), 24);
 };
 
 // Initialize popup logic
