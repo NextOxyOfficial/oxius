@@ -9,7 +9,7 @@
         class="absolute bottom-0 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-blue-100/30 to-green-200/20 blur-3xl animate-float-reverse"
       ></div>
       <div
-        class="absolute inset-0 bg-[url('/noise-pattern.svg')] opacity-[0.02] pointer-events-none"
+        class="absolute inset-0 opacity-[0.02] pointer-events-none"
       ></div>
     </div>
 

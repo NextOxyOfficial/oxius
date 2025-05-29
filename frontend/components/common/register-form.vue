@@ -502,6 +502,7 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 const { get, post } = useApi();
 const { login } = useAuth();
 const isPassword = ref(true);
@@ -625,24 +626,27 @@ const regions = ref([]);
 const cities = ref();
 const upazilas = ref();
 
-const regions_response = await get(
-  `/geo/regions/?country_name_eng=${form.value.country}`
-);
-regions.value = regions_response.data;
-
-if (form.value.state) {
-  const cities_response = await get(
-    `/geo/cities/?region_name_eng=${form.value.state}`
+// Initialize geo data on component mount
+onMounted(async () => {
+  const regions_response = await get(
+    `/geo/regions/?country_name_eng=${form.value.country}`
   );
-  cities.value = cities_response.data;
-}
+  regions.value = regions_response.data;
 
-if (form.value.city) {
-  const thana_response = await get(
-    `/geo/upazila/?city_name_eng=${form.value.city}`
-  );
-  upazilas.value = thana_response.data;
-}
+  if (form.value.state) {
+    const cities_response = await get(
+      `/geo/cities/?region_name_eng=${form.value.state}`
+    );
+    cities.value = cities_response.data;
+  }
+
+  if (form.value.city) {
+    const thana_response = await get(
+      `/geo/upazila/?city_name_eng=${form.value.city}`
+    );
+    upazilas.value = thana_response.data;
+  }
+});
 
 watch(
   () => form.value.state,
@@ -831,7 +835,7 @@ async function handleSubmit() {
   isLoading.value = false;
 }
 
-function handleSubmit() {
+async function handleSubmit() {
   isLoading.value = true;
 
   // Validate all fields before submission
