@@ -14,7 +14,10 @@
           @touchmove="handleTouchMove"
           @touchend="handleTouchEnd"
         >
-         
+          <!-- Background pattern for premium look -->
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-slate-900/5 to-slate-900/5 dark:from-slate-950/20 dark:to-slate-950/10 backdrop-blur-[1px] z-0"
+          ></div>
 
           <!-- Mobile swipe indicator shown only on mobile -->
           <div
@@ -41,7 +44,10 @@
                 'opacity-0 -translate-x-full': index < currentSlide,
               }"
             >
-             
+              <!-- Gradient overlay -->
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-black/40 to-black/20 z-10"
+              ></div>
               <img
                 v-if="banner.image"
                 :src="banner.image"
@@ -121,69 +127,49 @@
 
           <div class="overflow-y-auto flex-1 py-4 px-4">
             <!-- Featured Categories Section -->
-            <div class="mb-4">              <p
+            <div class="mb-4">
+              <p
                 class="text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-600 mb-3 ml-1"
               >
                 BROWSE CATEGORIES
               </p>
-              
-              <!-- Show category loading placeholders when categories are loading -->
-              <template v-if="isLoadingCategories && !categoriesFetched">
-                <ul class="space-y-0.5">
-                  <li v-for="index in 6" :key="`placeholder-${index}`">
-                    <div class="w-full px-4 py-3 rounded-lg flex items-center gap-3.5">
-                      <div class="flex-shrink-0 size-8 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse"></div>
-                      <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded flex-1 animate-pulse"></div>
-                    </div>
-                  </li>
-                </ul>
-              </template>
-              
-              <!-- Show loaded categories -->
-              <template v-else-if="displayedCategories.length > 0">
-                <ul class="space-y-0.5">
-                  <li v-for="category in displayedCategories" :key="category.id">
-                    <button
-                      @click="selectCategoryAndCloseSidebar(category.id)"
-                      class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3.5 transition-all"
-                      :class="
-                        selectedCategory === category.id
-                          ? 'bg-emerald-200 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-800 dark:text-gray-400'
-                      "
+              <ul class="space-y-0.5">
+                <li v-for="category in displayedCategories" :key="category.id">
+                  <button
+                    @click="selectCategoryAndCloseSidebar(category.id)"
+                    class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3.5 transition-all"
+                    :class="
+                      selectedCategory === category.id
+                        ? 'bg-emerald-200 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-800 dark:text-gray-400'
+                    "
+                  >
+                    <div
+                      class="flex-shrink-0 size-8 flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800"
                     >
-                      <div
-                        class="flex-shrink-0 size-8 flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800"
-                      >
-                        <UIcon
-                          :name="getCategoryIcon(category.name)"
-                          class="size-4.5"
-                          :class="
-                            selectedCategory === category.id
-                              ? 'text-emerald-500'
-                              : 'text-gray-600 dark:text-gray-600'
-                          "
-                        />
-                      </div>
-                      <span class="truncate font-medium">{{
-                        category.name
-                      }}</span>
-                      <div
-                        v-if="selectedCategory === category.id"
-                        class="ml-auto flex-shrink-0 size-2 rounded-full bg-emerald-500"
-                      ></div>
-                    </button>
-                  </li>
-                </ul>
-              </template>
-              
-              <!-- Show message when no categories are available -->
-              <template v-else>
-                <div class="text-center py-4">
-                  <p class="text-sm text-gray-500 dark:text-gray-600">No categories available</p>
-                </div>
-              </template>              <div
-                v-if="hasMoreCategoriesToLoad && !isLoadingCategories"
+                      <UIcon
+                        :name="getCategoryIcon(category.name)"
+                        class="size-4.5"
+                        :class="
+                          selectedCategory === category.id
+                            ? 'text-emerald-500'
+                            : 'text-gray-600 dark:text-gray-600'
+                        "
+                      />
+                    </div>
+                    <span class="truncate font-medium">{{
+                      category.name
+                    }}</span>
+                    <div
+                      v-if="selectedCategory === category.id"
+                      class="ml-auto flex-shrink-0 size-2 rounded-full bg-emerald-500"
+                    ></div>
+                  </button>
+                </li>
+              </ul>
+
+              <div
+                v-if="hasMoreCategoriesToLoad"
                 class="pt-4 pb-2 flex justify-center"
               >
                 <UButton
@@ -674,10 +660,6 @@ const isSidebarOpen = ref(false);
 const displayedCategories = ref([]);
 const hasMoreCategoriesToLoad = ref(false);
 
-// Add flags to prevent duplicate API calls
-const categoriesFetched = ref(false);
-const isLoadingCategories = ref(false);
-
 // Computed property to check if any filters are active
 const hasActiveFilters = computed(() => {
   return (
@@ -859,21 +841,13 @@ function selectCategoryAndCloseSidebar(categoryId) {
 
 // Load more categories
 async function loadMoreCategories() {
-  if (isLoadingCategories.value) return;
-  
+  // Example implementation for loading more categories
   try {
-    isLoadingCategories.value = true;
     const res = await get("/product-categories/", {
       params: { offset: displayedCategories.value.length },
     });
-    
-    if (res.data && Array.isArray(res.data)) {
-      displayedCategories.value.push(...res.data);
-      hasMoreCategoriesToLoad.value = res.data.length > 0;
-      console.log("Loaded more categories:", res.data.length);
-    } else {
-      hasMoreCategoriesToLoad.value = false;
-    }
+    displayedCategories.value.push(...res.data);
+    hasMoreCategoriesToLoad.value = res.data.length > 0;
   } catch (error) {
     console.error("Error loading more categories:", error);
     toast.add({
@@ -882,8 +856,6 @@ async function loadMoreCategories() {
       color: "red",
       timeout: 3000,
     });
-  } finally {
-    isLoadingCategories.value = false;
   }
 }
 
@@ -919,39 +891,19 @@ function navigateToEshopManager() {
 
 // Data fetching
 async function fetchCategories() {
-  // Prevent duplicate API calls
-  if (categoriesFetched.value || categories.value.length > 0) {
-    isLoadingCategories.value = false;
-    return;
-  }
-
   try {
-    isLoadingCategories.value = true;
-    console.log("Fetching categories from API...");
-    
     const res = await get("/product-categories/");
-    
-    if (res.data && Array.isArray(res.data)) {
-      categories.value = res.data;
-      displayedCategories.value = res.data.slice(0, 10); // Display first 10 categories initially
-      hasMoreCategoriesToLoad.value = res.data.length > 10;
-      categoriesFetched.value = true;
-      console.log("Categories loaded successfully:", categories.value.length);
-    } else {
-      console.warn("No categories received from API or invalid format");
-      categoriesFetched.value = true; // Mark as fetched to prevent retries
-    }
+    categories.value = res.data;
+    displayedCategories.value = res.data.slice(0, 10); // Display first 10 categories initially
+    hasMoreCategoriesToLoad.value = res.data.length > 10;
   } catch (error) {
     console.error("Error fetching categories:", error);
-    categoriesFetched.value = true; // Mark as fetched to prevent infinite retries
     toast.add({
       title: "Error loading categories",
       description: "Could not load categories. Please try again later.",
       color: "red",
       timeout: 3000,
     });
-  } finally {
-    isLoadingCategories.value = false;
   }
 }
 
@@ -1082,11 +1034,6 @@ function initInfiniteScroll() {
 // Initialize data
 await Promise.all([fetchCategories(), fetchProducts()]);
 onMounted(() => {
-  // Check if categories are already loaded to prevent duplicates
-  if (!categoriesFetched.value) {
-    fetchCategories();
-  }
-  
   startSliderInterval();
   initInfiniteScroll();
 
