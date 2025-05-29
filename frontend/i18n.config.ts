@@ -16,7 +16,7 @@ export default defineI18nConfig(() => ({
       my_account: "My Account",
       profile: "Profile",
       post_classified: "Post A Classified Ad",
-      post_free_ad: "Post Free Ad",
+      post_free_ad: "Post Free Ad",      
       post_classified_text: "Create your listing and reach potential customers",
       basic_details: "Basic Details",
       pricing: "Pricing",
@@ -48,8 +48,7 @@ export default defineI18nConfig(() => ({
       all_messages: "All Messages",
       unread: "Unread",
       inbox_empty: "Your inbox is empty",
-      inbox_empty_text:
-        "You don't have any messages yet. System notifications and important updates will appear here.",
+      inbox_empty_text:"You don't have any messages yet. System notifications and important updates will appear here.",
       my_gigs: "My Gigs",
       post_gigs: "Post A Gig",
       refer: "Refer & Earn 5% Commission",
@@ -292,11 +291,12 @@ export default defineI18nConfig(() => ({
       zip_postal_code: "Zip/Postal Code",
       full_address: "Full Address",
       referral_code_optional: "Referral code (optional)",
-      complete_registration: "Complete Registration",
-      already_have_account: "Already have an account? Sign in",
+      complete_registration: "Complete Registration",      already_have_account: "Already have an account? Sign in",
       registration_success: "Registration Successful!",
       welcome_to_adsy: "Welcome to ADSY Club!",
       registration_error: "An error occurred during registration",
+      get_started: "Get Started",
+      explore_features: "Explore Features",
 
       // Form validation messages
       first_name_required: "First name is required",
