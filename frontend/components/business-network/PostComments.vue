@@ -49,7 +49,7 @@
             <!-- Gift content with sender info -->
             <div class="gift-comment-premium">
               <div class="gift-label flex gap-1 mb-1">
-                <UIcon name="i-heroicons-gift" class="w-4 h-4 text-pink-500 mt-1 mr-1" />
+                <UIcon name="i-heroicons-gift" class="w-4 h-4 text-pink-500 mt-0.5 mr-1" />
                 <span
                   class="text-sm font-medium text-pink-600 dark:text-pink-400"
                 >
