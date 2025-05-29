@@ -1,5 +1,5 @@
 <template>
-  <div id="sale-category" class="for-sale-section py-6 bg-white rounded-sm">
+  <div id="sale-category" class="for-sale-section py-6 bg-white rounded-lg mt-3">
     <div class="container mx-auto px-1">
       <!-- Updated section header with linked buttons -->
       <div
