@@ -3,20 +3,20 @@
     <div class="bg-white rounded-xl shadow-sm p-6 sm:p-8 border border-gray-100">
       <transition name="fade" mode="out-in">
         <!-- Login Form -->
-        <form @submit.prevent="handleLogin" class="space-y-6">
+        <form @submit.prevent="handleLogin" class="space-y-6">          
           <!-- Form Header -->
-          <div class="text-center space-y-2">
-            <h2 class="text-2xl font-bold text-gray-800">Welcome Back</h2>
-            <p class="text-gray-600">Enter your credentials to access your account</p>
+          <div class="text-center space-y-2">            
+            <h2 class="text-2xl font-bold text-gray-800">{{ t('welcome_back') }}</h2>
+            <p class="text-gray-600">{{ t('login_subtitle') }}</p>
           </div>
 
           <!-- Login Form Fields -->
           <div class="space-y-5">
             <div class="relative">
-              <UIcon name="i-heroicons-envelope" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+              <UIcon name="i-heroicons-envelope" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />              
               <input
                 type="email"
-                placeholder="Email address"
+                :placeholder="t('email_address')"
                 v-model="username"
                 class="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 required
@@ -27,10 +27,10 @@
             </div>
             
             <div class="relative">
-              <UIcon name="i-heroicons-lock-closed" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+              <UIcon name="i-heroicons-lock-closed" class="absolute left-3 top-3 text-gray-400 w-5 h-5" />              
               <input
                 :type="isPassword ? 'password' : 'text'"
-                placeholder="Password"
+                :placeholder="t('password')"
                 v-model="password"
                 class="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 required
@@ -55,16 +55,16 @@
                 name="remember-me"
                 type="checkbox"
                 class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-              />
+              />              
               <label for="remember-me" class="ml-2 block text-sm text-gray-800">
-                Remember me
+                {{ t('remember_me') }}
               </label>
             </div>
             <NuxtLink
               to="/auth/reset-password/"
               class="text-purple-600 hover:text-purple-500 text-sm font-medium hover:underline"
             >
-              Forgot password?
+              {{ t('forgot_password') }}
             </NuxtLink>
           </div>
 
@@ -75,9 +75,9 @@
             color="purple"
             class="w-full py-2.5 font-medium text-sm px-4 rounded-lg justify-center"
             :class="{ 'opacity-75 cursor-not-allowed': isLoading }"
-          >
-            <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5 mr-1.5" />
-            Sign in
+          >            
+          <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5 mr-1.5" />
+            {{ t('sign_in') }}
           </UButton>
 
           <div class="text-center mt-4">
@@ -86,67 +86,20 @@
               class="text-purple-600 hover:text-purple-500 text-sm font-medium flex items-center justify-center gap-1 hover:underline"
             >
               <UIcon name="i-heroicons-user-plus" class="w-4 h-4" />
-              Don't have an account? Register now
+              {{ t('dont_have_account') }}
             </NuxtLink>
           </div>
         </form>
       </transition>
     </div>
-    <!-- <form
-      class="bg-white md:px-8 py-6 md:pb-8 mb-4 px-2 sm:px-8"
-      @submit.prevent="handleLogin"
-    >
-      <h1 class="font-semibold text-center md:p-5 text-xl">LOGIN</h1>
-      <div class="mb-6">
-        <label class="block text-gray-800 text-md font-medium mb-2" for="email">
-          Email
-        </label>
-        <input
-          class="w-full py-1.5 px-3 text-sm text-gray-800 bg-[#D9D9D9] rounded-md"
-          id="email"
-          type="text"
-          placeholder="abc@example.com"
-          v-model="username"
-        />
-      </div>
-
-      <div class="mb-2">
-        <label
-          class="block text-gray-800 text-md font-medium mb-2"
-          for="password"
-        >
-          Password
-        </label>
-        <input
-          class="w-full py-1.5 px-3 text-sm text-gray-800 bg-[#D9D9D9] rounded-md"
-          id="password"
-          type="password"
-          placeholder="********"
-          v-model="password"
-        />
-        <a
-          class="inline-block align-baseline font-medium tracking-wide text-sm text-black"
-          href="#"
-        >
-          Forgot Password?
-        </a>
-      </div>
-      <p class="text-red-500 text-sm md:text-base">{{ error }}</p>
-      <div class="text-center mt-6">
-        <button
-          class="bg-orange-500 py-1 text-base text-white px-6 capitalize rounded-md"
-          :disabled="btnDisabled"
-        >
-          Sign In
-        </button>
-      </div>
-    </form> -->
+    
   </div>
 </template>
 
 <script setup>
 const { login } = useAuth();
 const toast = useToast();
+const { t } = useI18n();
 const username = ref("");
 const password = ref("");
 const isPassword = ref(true);
@@ -159,22 +112,20 @@ async function handleLogin() {
   isLoading.value = true;
   try {
     const res = await login(username.value, password.value);
-    if (res.loggedIn) {
-      navigateTo("/");
-      
-      // Enhanced login success toast with personalization
+    if (res.loggedIn) {      navigateTo("/");
+        // Enhanced login success toast with personalization
       const welcomeMessages = [
-        "Great to see you again!",
-        "Welcome back, champion!",
-        "You're back in action!",
-        "Ready to conquer today?",
-        "Welcome back to the community!"
+        t('login_success_messages.0') || "Great to see you again!",
+        t('login_success_messages.1') || "Welcome back, champion!",
+        t('login_success_messages.2') || "You're back in action!",
+        t('login_success_messages.3') || "Ready to conquer today?",
+        t('login_success_messages.4') || "Welcome back to the community!"
       ];
       
       const randomWelcome = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
       
       toast.add({ 
-        title: "🎉 Login Successful!", 
+        title: `🎉 ${t('login_success')}`, 
         description: randomWelcome,
         color: "green",
         icon: "i-heroicons-sparkles",
