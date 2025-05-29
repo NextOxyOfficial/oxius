@@ -433,7 +433,7 @@
                 </div>
                 <!-- Price -->
                 <div class="pt-2 border-t border-gray-100">
-                  <div class="flex items-center justify-between">
+                  <div class="flex items-center justify-between px-2">
                     <p class="text-green-700 font-medium">
                       <span v-if="post.negotiable && !post.price"
                         >Negotiable</span
