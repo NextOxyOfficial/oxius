@@ -28,9 +28,8 @@
 
       <!-- Dynamic banner ads with responsive layout -->
       <div class="banner-container mb-4 sm:mb-8">
-        <div class="flex flex-col md:flex-row gap-2">
-          <!-- Show loading placeholder when banners are loading -->
-          <template v-if="isLoadingBanners">
+        <div class="flex flex-col md:flex-row gap-2">          <!-- Show loading placeholder when banners are loading -->
+          <template v-if="isLoadingBanners && !bannersFetched">
             <div class="main-banner rounded-lg overflow-hidden md:w-1/2">
               <div
                 class="w-full h-16 sm:h-20 md:h-32 bg-gray-200 animate-pulse"
@@ -133,9 +132,8 @@
             class="categories-wrapper flex transition-all duration-500 ease-out mt-3"
             :style="{ transform: `translateX(-${scrollPosition}px)` }"
             ref="categoriesWrapper"
-          >
-            <!-- Show category loading placeholders when categories are loading -->
-            <template v-if="isLoadingCategories">
+          >            <!-- Show category loading placeholders when categories are loading -->
+            <template v-if="isLoadingCategories && !categoriesFetched">
               <div
                 v-for="index in 6"
                 :key="`placeholder-${index}`"
@@ -162,7 +160,7 @@
             </template>
 
             <!-- Show loaded categories -->
-            <template v-else>
+            <template v-else-if="categories.length > 0">
               <div
                 v-for="category in categories"
                 :key="category.id"
@@ -473,6 +471,10 @@ const isMobile = ref(false);
 const isLoadingCategories = ref(true);
 const isLoadingBanners = ref(true);
 
+// Add flags to prevent duplicate API calls
+const categoriesFetched = ref(false);
+const bannersFetched = ref(false);
+
 // Touch handling variables
 const touchStartX = ref(0);
 const touchEndX = ref(0);
@@ -711,12 +713,21 @@ const handleSwipe = () => {
 
 // Fetch categories from the backend
 const fetchCategories = async () => {
+  // Prevent duplicate API calls
+  if (categoriesFetched.value || categories.value.length > 0) {
+    isLoadingCategories.value = false;
+    return;
+  }
+
   try {
     isLoadingCategories.value = true;
+    console.log("Fetching categories from API...");
+    
     // Update to the correct API endpoint
     const response = await get("/sale/categories/");
     console.log("API Response for categories:", response.data);
-    if (response.data && Array.isArray(response.data)) {
+    
+    if (response.data && Array.isArray(response.data) && response.data.length > 0) {
       // This will place the most recently added categories at the end
       const sortedCategories = [...response.data].sort((a, b) => a.id - b.id);
       categories.value = sortedCategories;
@@ -725,13 +736,16 @@ const fetchCategories = async () => {
       if (categories.value.length > 0) {
         selectedCategory.value = categories.value[0].id;
       }
+      
+      categoriesFetched.value = true;
+      console.log("Categories loaded successfully:", categories.value.length);
     } else {
-      // Fallback to default categories if API returns invalid data
-      console.error("Invalid category data received from API");
+      console.warn("No categories received from API or invalid format");
+      categoriesFetched.value = true; // Mark as fetched to prevent retries
     }
   } catch (error) {
     console.error("Error fetching sale categories:", error);
-    // Fallback to default categories if API fails
+    categoriesFetched.value = true; // Mark as fetched to prevent infinite retries
   } finally {
     isLoadingCategories.value = false;
   }
@@ -739,16 +753,30 @@ const fetchCategories = async () => {
 
 // Fetch banners from the backend
 const fetchBanners = async () => {
+  // Prevent duplicate API calls
+  if (bannersFetched.value || banners.value.length > 0) {
+    isLoadingBanners.value = false;
+    return;
+  }
+
   try {
     isLoadingBanners.value = true;
+    console.log("Fetching banners from API...");
+    
     // Update to the correct API endpoint
     const response = await get("/sale/banners/");
+    
     if (response.data && Array.isArray(response.data)) {
       banners.value = response.data;
+      bannersFetched.value = true;
+      console.log("Banners loaded successfully:", banners.value.length);
+    } else {
+      console.warn("No banners received from API or invalid format");
+      bannersFetched.value = true; // Mark as fetched to prevent retries
     }
   } catch (error) {
     console.error("Error fetching sale banners:", error);
-    // Banners will remain an empty array if API fails
+    bannersFetched.value = true; // Mark as fetched to prevent infinite retries
   } finally {
     isLoadingBanners.value = false;
   }
@@ -821,8 +849,14 @@ const checkIfMobile = () => {
 
 // Initialize on mount
 onMounted(async () => {
-  // Fetch data from API
-  await Promise.all([fetchCategories(), fetchBanners()]);
+  // Check if categories and banners are already loaded to prevent duplicates
+  if (!categoriesFetched.value) {
+    await fetchCategories();
+  }
+  
+  if (!bannersFetched.value) {
+    await fetchBanners();
+  }
 
   // Check device type initially
   checkIfMobile();
