@@ -10,28 +10,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='elearningsession',
-            name='user',
-        ),
-        migrations.RemoveField(
-            model_name='sessionactivitylog',
-            name='session',
-        ),
-        migrations.RemoveField(
-            model_name='suspiciousactivity',
-            name='user',
-        ),
-        migrations.DeleteModel(
-            name='DeviceSession',
-        ),
-        migrations.DeleteModel(
-            name='ELearningSession',
-        ),
-        migrations.DeleteModel(
-            name='SessionActivityLog',
-        ),
-        migrations.DeleteModel(
-            name='SuspiciousActivity',
-        ),
+        # No operations needed - tables were already dropped in migration 0005
+        # This migration is kept for consistency with the migration history
     ]
