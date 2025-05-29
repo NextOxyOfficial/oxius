@@ -423,8 +423,16 @@
                 :to="`/sale/${post.slug}`"
                 class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
               >
+                  <!-- Image -->
+                <div class="relative aspect-square overflow-hidden">
+                  <img
+                    :src="getListingImage(post)"
+                    :alt="post?.title || `Image`"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
                 <!-- Price -->
-                <div class="p-2 border-t border-gray-100">
+                <div class="pt-2 border-t border-gray-100">
                   <div class="flex items-center justify-between">
                     <p class="text-green-700 font-medium">
                       <span v-if="post.negotiable && !post.price"
@@ -440,32 +448,21 @@
                     </p>
                   </div>
                 </div>
-                <!-- Image -->
-                <div class="relative aspect-square overflow-hidden">
-                  <img
-                    :src="getListingImage(post)"
-                    :alt="post?.title || `Image`"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div class="absolute bottom-0 left-0 w-full p-2">
-                    <div
-                      class="text-gray-600 text-sm font-semibold line-clamp-2"
-                    >
-                      {{ post?.title || `Post title` }}
-                    </div>
-                    <div
-                      class="flex items-start mt-1 mb-2 text-xs text-gray-600"
-                    >
-                      <UIcon
-                        name="i-heroicons-map-pin"
-                        class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-600"
-                      />
-                      {{
-                        post?.division && post?.district && post?.area
-                          ? `${post?.division}, ${post?.district}, ${post?.area}`
-                          : `All Over Bangladesh`
-                      }}
-                    </div>
+                <!-- Title and Location -->
+                <div class="p-2">
+                  <div class="text-gray-600 text-sm font-semibold line-clamp-2">
+                    {{ post?.title || `Post title` }}
+                  </div>
+                  <div class="flex items-start mt-1 text-xs text-gray-600">
+                    <UIcon
+                      name="i-heroicons-map-pin"
+                      class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-600"
+                    />
+                    {{
+                      post?.division && post?.district && post?.area
+                        ? `${post?.division}, ${post?.district}, ${post?.area}`
+                        : `All Over Bangladesh`
+                    }}
                   </div>
                 </div>
               </NuxtLink>
@@ -691,7 +688,7 @@
                     color="blue"
                     variant="link"
                     class="mt-3 text-sm font-medium"
-                    to="/help/buying-guide"
+                    to="/contact-us"
                   >
                     Read full buying guide
                     <UIcon
@@ -757,7 +754,7 @@
                     color="green"
                     variant="link"
                     class="mt-3 text-sm font-medium"
-                    to="/help/safety"
+                    to="/contact-us"
                   >
                     Learn more about safety
                     <UIcon

@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-6xl mx-auto my-4">
+  <div class="max-w-6xl mx-auto">
     <!-- Main Product Section -->
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-2">
       <!-- Gallery Section - 3 columns on large screens -->
