@@ -4,7 +4,22 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   colorMode: {
     preference: "light",
-  },  ssr: false,
+  },
+  // Enable SSR for better SEO and performance
+  ssr: true,
+    // If you need SPA mode, uncomment the following lines instead:
+  // ssr: false,
+  // nitro: {
+  //   prerender: {
+  //     routes: ['/']
+  //   }
+  // },
+  
+  // Optional: Configure build optimizations
+  nitro: {
+    minify: true,
+    compressPublicAssets: true,
+  },
   
   css: ["~/assets/css/main.css", "~/assets/css/toast.css"],
   modules: [
