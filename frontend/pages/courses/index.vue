@@ -238,10 +238,6 @@
 </template>
 
 <script setup>
-definePageMeta({
-  layout: "dashboard",
-});
-
 import { ref } from "vue";
 import BatchSelector from "~/components/courses/BatchSelector.vue";
 import DivisionSelector from "~/components/courses/DivisionSelector.vue";
