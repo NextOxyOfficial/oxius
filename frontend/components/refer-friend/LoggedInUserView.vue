@@ -731,16 +731,10 @@
                         class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         Referred User
-                      </th>
-                      <th
+                      </th>                      <th
                         class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         Service Type
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
-                      >
-                        Rate
                       </th>
                       <th
                         class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
@@ -751,8 +745,7 @@
                   </thead>
                   <tbody
                     class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-                  >
-                    <!-- Loading Skeleton -->
+                  >                    <!-- Loading Skeleton -->
                     <tr
                       v-if="isLoadingCommissions"
                       v-for="i in 5"
@@ -770,9 +763,6 @@
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <USkeleton class="h-6 w-20 rounded-full" />
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <USkeleton class="h-4 w-12" />
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <USkeleton class="h-4 w-16" />
@@ -800,9 +790,7 @@
                             {{ earning.name }}
                           </div>
                         </div>
-                      </td>
-
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      </td>                      <td class="px-6 py-4 whitespace-nowrap">
                         <UBadge
                           :color="
                             getServiceTypeColor(
@@ -816,16 +804,6 @@
                         </UBadge>
                       </td>
 
-                      <td
-                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-600"
-                      >
-                        {{
-                          getCommissionRate(
-                            earning.type_code || "gig_completion"
-                          )
-                        }}
-                      </td>
-
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div
                           class="text-sm font-medium text-green-600 dark:text-green-400 flex items-center"
@@ -834,14 +812,13 @@
                           {{ earning.amount.toFixed(2) }}
                         </div>
                       </td>
-                    </tr>
-                    <tr
+                    </tr>                    <tr
                       v-if="
                         !isLoadingCommissions && filteredEarnings.length === 0
                       "
                     >
                       <td
-                        colspan="5"
+                        colspan="4"
                         class="px-6 py-8 text-center text-gray-600 dark:text-gray-600"
                       >
                         <div class="py-6">
@@ -936,11 +913,10 @@
                             </div>
                           </div>
                         </div>
-                      </td>
-                      <td
+                      </td>                      <td
                         class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-600"
                       >
-                        {{ user.email }}
+                        {{ maskEmail(user.email) }}
                       </td>
 
                       <td class="px-6 py-4 whitespace-nowrap">
@@ -952,11 +928,9 @@
                           {{ user.is_active ? "Active" : "Inactive" }}
                         </UBadge>
                       </td>
-                    </tr>
-
-                    <tr v-if="referredUsers.length === 0">
+                    </tr>                    <tr v-if="referredUsers.length === 0">
                       <td
-                        colspan="4"
+                        colspan="3"
                         class="px-6 py-8 text-center text-gray-600 dark:text-gray-600"
                       >
                         <div class="py-6">
@@ -1193,6 +1167,24 @@ function getServiceTypeColor(typeCode) {
 // Method to get commission rate
 function getCommissionRate(typeCode) {
   return emit("get-commission-rate", typeCode);
+}
+
+// Method to mask email for privacy protection
+function maskEmail(email) {
+  if (!email) return '';
+  
+  const atIndex = email.indexOf('@');
+  if (atIndex <= 3) {
+    // If email is too short or @ is at position 3 or less, just mask the domain
+    return email.substring(0, atIndex) + '****@' + email.substring(atIndex + 1);
+  }
+  
+  // Keep first 3 characters, mask everything until @, then show domain
+  const firstPart = email.substring(0, 3);
+  const maskedPart = '****';
+  const domainPart = email.substring(atIndex);
+  
+  return firstPart + maskedPart + domainPart;
 }
 
 // Method to show share modal

@@ -167,11 +167,10 @@ async function getCommissionHistory() {
     const res = await get("/commission-history/");
 
     if (res?.data) {
-      commissionData.value = res.data;
-      // Update earnings with real data
+      commissionData.value = res.data;      // Update earnings with real data
       earnings.value = res.data.recent_transactions.map(transaction => ({
         date: transaction.date,
-        userName: transaction.referred_user?.name || 'Unknown User',
+        name: transaction.referred_user?.name || 'Unknown User',
         task: transaction.type,
         type_code: transaction.type_code,
         amount: transaction.amount,
@@ -297,14 +296,12 @@ function CopyToClip(text) {
 }
 
 // Export commission data to CSV
-function exportCommissions() {
-  const csvData = [
-    ['Date', 'Referred User', 'Service Type', 'Commission Rate', 'Amount (BDT)'],
+function exportCommissions() {  const csvData = [
+    ['Date', 'Referred User', 'Service Type', 'Amount (BDT)'],
     ...filteredEarnings.value.map(earning => [
       formatDate(earning.date),
-      earning.userName,
+      earning.name,
       earning.task,
-      getCommissionRate(earning.type_code || 'gig_completion'),
       earning.amount.toFixed(2)
     ])
   ];
