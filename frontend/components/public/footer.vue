@@ -121,8 +121,7 @@
           <div class="flex flex-col gap-4">
             <h4 class="font-semibold hidden md:block">
               {{ $t("download_app") }}
-            </h4>
-            <ul class="flex gap-2 flex-1 max-md:justify-center">
+            </h4>            <ul class="flex gap-2 flex-1 max-md:justify-center">
               <li class="w-[117px]">
                 <nuxt-link
                   to="/coming-soon/"
@@ -133,23 +132,23 @@
                     class="mx-auto w-full shadow-sm rounded-lg"
                     quality="100"
                     format="webp"
-                    alt="App"
+                    alt="App Store - Coming Soon"
                   />
                 </nuxt-link>
               </li>
               <li class="w-[119px]">
-                <nuxt-link
-                  to="/coming-soon/"
-                  class="transition-transform hover:scale-105 duration-300 block"
+                <button
+                  @click="downloadAndroidApp"
+                  class="transition-transform hover:scale-105 duration-300 block w-full"
                 >
                   <img
                     src="/static/frontend/images/google.png"
                     class="mx-auto w-full shadow-sm rounded-lg"
                     quality="100"
                     format="webp"
-                    alt="App"
+                    alt="Download Android App"
                   />
-                </nuxt-link>
+                </button>
               </li>
             </ul>
           </div>
@@ -318,10 +317,44 @@ const { t } = useI18n();
 const toggleStatus = ref("");
 const { user } = useAuth();
 const { unreadCount, fetchUnreadCount } = useNotifications(); // Import useNotifications
+const toast = useToast();
 
 watch(toggleStatus, () => {
   console.log("State Changed");
 });
+
+// Download Android app function
+const downloadAndroidApp = () => {
+  try {
+    // Create a download link for the APK file
+    const link = document.createElement('a');
+    link.href = '/AdsyClub V.1.apk';
+    link.download = 'AdsyClub-V1.apk';
+    link.target = '_blank';
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Show success toast
+    toast.add({
+      title: 'Download Started',
+      description: 'AdsyClub Android app is downloading...',
+      color: 'green',
+      icon: 'i-heroicons-check-circle'
+    });
+    
+  } catch (error) {
+    console.error('Download error:', error);
+    toast.add({
+      title: 'Download Error',
+      description: 'Failed to start download. Please try again.',
+      color: 'red',
+      icon: 'i-heroicons-exclamation-triangle'
+    });
+  }
+};
 
 // Fetch unread notification count when component is mounted and user is logged in
 onMounted(async () => {
