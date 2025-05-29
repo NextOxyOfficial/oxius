@@ -809,10 +809,10 @@ async function handleSubmit() {
           timeout: 6000,
           actions: [{
             label: "Get Started",
-            click: () => navigateTo("/onboarding")
+            click: () => navigateTo("/")
           }, {
             label: "Explore Features",
-            click: () => navigateTo("/features")
+            click: () => navigateTo("/")
           }]
         });
         
@@ -830,170 +830,7 @@ async function handleSubmit() {
       submitError.value =
         err.response?.data?.message || "An error occurred. Please try again.";
       console.error("Error submitting the form:", err);
-    }
-  }
-  isLoading.value = false;
-}
-
-async function handleSubmit() {
-  isLoading.value = true;
-
-  // Validate all fields before submission
-  error.value = {
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    password: "",
-    confirmPassword: "",
-    age: "",
-    gender: "",
-    refer: "",
-  };
-
-  const phoneNumberValid = /^(?:\+?88)?01[3-9]\d{8}$/;
-  const ageValid = /^\d+$/;
-
-  // Validate fields
-  if (!form.value.first_name) error.value.first_name = "First name is required";
-  if (!form.value.last_name) error.value.last_name = "Last name is required";
-  if (!form.value.email) error.value.email = "Email is required";
-  if (!form.value.phone) error.value.phone = "Phone number is required";
-  if (!phoneNumberValid.test(form.value.phone))
-    error.value.phone = "Invalid phone number";
-  if (!form.value.password) error.value.password = "Password is required";
-  if (!form.value.confirmPassword)
-    error.value.confirmPassword = "Confirm password is required";
-  if (form.value.password !== form.value.confirmPassword) {
-    error.value.confirmPassword = "Passwords do not match";
-  }
-  if (!form.value.age) error.value.age = "Age is required";
-  if (!ageValid.test(+form.value.age)) error.value.age = "Invalid age";
-  if (!form.value.gender) error.value.gender = "Gender is required";
-
-  // If any error exists, stop submission
-  if (Object.values(error.value).some((err) => err)) {
-    isLoading.value = false;
-    // Move to the step that has errors
-    if (
-      error.value.first_name ||
-      error.value.last_name ||
-      error.value.email ||
-      error.value.phone ||
-      error.value.password ||
-      error.value.confirmPassword ||
-      error.value.age ||
-      error.value.gender
-    ) {
-      currentStep.value = 2;
-    }
-    return;
-  }  // Create formData without the image first
-  const formData = {
-    first_name: form.value.first_name,
-    last_name: form.value.last_name,
-    name: form.value.first_name + " " + form.value.last_name,
-    email: form.value.email,
-    password: form.value.password,
-    username: form.value.email,
-    phone: form.value.phone,
-    refer: form.value.refer,
-    age: +form.value.age,
-    gender: form.value.gender,
-    // Don't include image field if it's not provided
-    country: form.value.country,
-    city: form.value.city,
-    state: form.value.state,
-    upazila: form.value.upazila,
-    zip: form.value.zip,
-    address: form.value.address,
-  };
-  
-  // Only add image if it actually exists
-  if (userProfile.value.image) {
-    formData.image = userProfile.value.image;
-  }  try {
-    // Try to register the user
-    let res;
-    try {
-      res = await post("/auth/register/", formData);
-    } catch (registrationError) {
-      console.error("Registration error:", registrationError);
-      // Check if the error is related to the profile image
-      if (registrationError.response?.data?.error?.includes('image') || 
-          registrationError.message?.includes('startswith') ||
-          (registrationError.message && registrationError.message.toLowerCase().includes('nonetype'))) {
-        // If there's an image-related error and we have an image field, remove it
-        if ('image' in formData) {
-          delete formData.image;
-        }
-        // Try again without the image
-        res = await post("/auth/register/", formData);
-      } else {
-        // Re-throw the error if it's about something else
-        throw registrationError;
-      }
-    }
-
-    if (res?.data?.message) {
-      error.value = {
-        first_name: "",
-        last_name: "",
-        email: "",
-        phone: "",
-        password: "",
-        confirmPassword: "",
-        age: "",
-        gender: "",
-        refer: "",
-      };
-
-      const res2 = await login(form.value.email, form.value.password);
-      if (res2) {
-        const res = await post(`/send-sms/?phone=${form.value.phone}`);
-        
-        // Enhanced registration success toast with onboarding elements
-        const celebrationMessages = [
-          "🌟 Your adventure begins now!",
-          "🚀 Ready to explore amazing opportunities?",
-          "✨ Welcome to a world of possibilities!",
-          "🎯 Time to unlock your potential!",
-          "🌈 Your journey to success starts here!"
-        ];
-        
-        const randomCelebration = celebrationMessages[Math.floor(Math.random() * celebrationMessages.length)];
-        
-        toast.add({
-          title: "🎊 Registration Successful!",
-          description: `Welcome to ADSY Club! ${randomCelebration}`,
-          color: "emerald",
-          icon: "i-heroicons-trophy",
-          timeout: 6000,
-          actions: [{
-            label: "Get Started",
-            click: () => navigateTo("/onboarding")
-          }, {
-            label: "Explore Features",
-            click: () => navigateTo("/features")
-          }]
-        });
-        
-        navigateTo("/");
-      }
-    } else {
-      submitError.value =
-        res.error?.data?.error || "An error occurred during registration";
-    }
-  } catch (err) {
-    if (err.response?.status === 444) {
-      error.value.refer = "Invalid referral code";
-      currentStep.value = 3; // Go to referral step
-    } else {
-      submitError.value =
-        err.response?.data?.message || "An error occurred. Please try again.";
-      console.error("Error submitting the form:", err);
-    }
-  }
+    }  }
   isLoading.value = false;
 }
 

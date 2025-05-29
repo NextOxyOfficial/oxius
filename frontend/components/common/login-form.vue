@@ -181,7 +181,7 @@ async function handleLogin() {
         timeout: 4000,
         actions: [{
           label: "Explore Dashboard",
-          click: () => navigateTo("/dashboard")
+          click: () => navigateTo("/")
         }]
       });
       
