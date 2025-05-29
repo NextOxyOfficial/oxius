@@ -132,10 +132,20 @@ export default defineNuxtConfig({
         }
       },
     },
-  },
-  image: {
+  },  image: {
     dir: "/static/frontend/",
   },
   pages: true, // Enable file-based routing
+  
+  // Configure static file serving for APK files
+  nitro: {
+    publicAssets: [
+      {
+        baseURL: '/',
+        dir: 'public',
+        maxAge: 60 * 60 * 24 * 365 // Cache APK files for 1 year
+      }
+    ]
+  },
   
 });

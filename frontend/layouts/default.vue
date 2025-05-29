@@ -124,7 +124,7 @@ const toast = useToast();
 
 const loader = ref(true);
 const showMobileAppPopup = ref(false);
-const appSize = ref('12.5 MB');
+const appSize = ref('12.2 MB'); // Updated to actual file size
 
 // Cookie utility functions
 const setCookie = (name, value, hours = 24) => {
@@ -241,18 +241,33 @@ const shouldShowMobileAppPopup = () => {
 };
 
 // Download mobile app function
-const downloadMobileApp = () => {
+const downloadMobileApp = async () => {
   try {
+    console.log('Starting APK download...');
+    
+    // Use the API endpoint for downloading APK
+    const apkUrl = '/api/download/apk';
+    
     // Create a download link for the APK file
     const link = document.createElement('a');
-    link.href = '/AdsyClub.V.1.apk';
+    link.href = apkUrl;
     link.download = 'AdsyClub-V1.apk';
     link.target = '_blank';
+    
+    // Add some additional attributes for better compatibility
+    link.rel = 'noopener noreferrer';
+    link.style.display = 'none';
+    
+    console.log('Triggering APK download from:', apkUrl);
     
     // Trigger download
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(link);
+    }, 100);
     
     // Mark app as downloaded/installed to prevent future popups (use both cookies and localStorage)
     localStorage.setItem('mobileAppInstalled', 'true');
@@ -271,9 +286,18 @@ const downloadMobileApp = () => {
     
   } catch (error) {
     console.error('Download error:', error);
+    
+    // More specific error handling
+    let errorMessage = 'Failed to start download. Please try again.';
+    if (error.message && error.message.includes('not found')) {
+      errorMessage = 'APK file not found. Please contact support.';
+    } else if (error.message && error.message.includes('network')) {
+      errorMessage = 'Network error. Please check your connection.';
+    }
+    
     toast.add({
       title: 'Download Error',
-      description: 'Failed to start download. Please try again.',
+      description: errorMessage,
       color: 'red',
       icon: 'i-heroicons-exclamation-triangle'
     });
