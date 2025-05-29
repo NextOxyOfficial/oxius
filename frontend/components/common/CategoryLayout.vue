@@ -3,6 +3,7 @@
     class="w-full max-w-7xl sm:px-2 mx-auto bg-gradient-to-br from-slate-50 via-white to-slate-50"
   >
     <!-- Content Container -->
+
     <div class="relative z-10">
       <!-- 1. Main Carousel -->
       <section class="mb-8 pt-2">
@@ -24,15 +25,11 @@
                 :key="index"
                 class="min-w-full h-full relative"
               >
-                <div
-                  class="absolute inset-0 bg-gradient-to-r"
-                  :class="slide.gradientClass"
-                  :style="slide.gradientStyle"
-                ></div>
+                <div class="absolute inset-0 bg-gradient-to-r"></div>
                 <div
                   class="absolute inset-0 bg-cover bg-center"
                   :style="{
-                    backgroundImage: `url('${slide.backgroundImage}')`,
+                    backgroundImage: `url('${slide?.image}')`,
                   }"
                 ></div>
               </div>
@@ -87,7 +84,7 @@
           >
             <button
               v-for="(_, index) in carouselSlides"
-              :key="index"
+              :key="_.id"
               @click="goToSlide(index)"
               :class="[
                 'w-2 h-2 rounded-full transition-all focus:outline-none',
@@ -109,7 +106,9 @@
             <div
               class="w-1 h-6 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full mr-2"
             ></div>
-            <h2 class="text-lg font-semibold text-gray-800">New & Hot Arrivals</h2>
+            <h2 class="text-lg font-semibold text-gray-800">
+              New & Hot Arrivals
+            </h2>
             <div
               class="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-600 text-xs font-semibold rounded-full"
             >
@@ -184,6 +183,7 @@
 </template>
 
 <script setup>
+import { ca } from "date-fns/locale";
 import { ref, onMounted, onUnmounted } from "vue";
 
 const { get } = useApi();
@@ -203,58 +203,18 @@ async function fetchHotArrivals() {
 await fetchHotArrivals();
 
 // Carousel data
-const carouselSlides = [
-  {
-    title: "Summer Collection",
-    description: "Discover the hottest trends for the season",
-    buttonText: "Shop Now",
-    buttonClass: "bg-white text-purple-600 hover:bg-purple-100",
-    backgroundImage:
-      "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070",
-    gradientClass: "from-purple-500/80 to-indigo-600/80",
-    gradientStyle: "",
-  },
-  {
-    title: "Tech Week",
-    description: "Exclusive deals on the latest gadgets",
-    buttonText: "Explore",
-    buttonClass: "bg-white text-orange-600 hover:bg-orange-100",
-    backgroundImage:
-      "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?q=80&w=2025",
-    gradientClass: "from-amber-500/80 to-orange-600/80",
-    gradientStyle: "",
-  },
-  {
-    title: "Home Essentials",
-    description: "Transform your living space",
-    buttonText: "Discover",
-    buttonClass: "bg-white text-emerald-600 hover:bg-emerald-100",
-    backgroundImage:
-      "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=2070",
-    gradientClass: "from-emerald-500/80 to-teal-600/80",
-    gradientStyle: "",
-  },
-  {
-    title: "Flash Sale",
-    description: "24 hours only - Up to 70% off",
-    buttonText: "Shop Sale",
-    buttonClass: "bg-white text-rose-600 hover:bg-rose-100",
-    backgroundImage:
-      "https://images.unsplash.com/photo-1607083206968-13611e3d76db?q=80&w=2115",
-    gradientClass: "from-rose-500/80 to-pink-600/80",
-    gradientStyle: "",
-  },
-  {
-    title: "New Arrivals",
-    description: "Be the first to shop our latest products",
-    buttonText: "View All",
-    buttonClass: "bg-white text-blue-600 hover:bg-blue-100",
-    backgroundImage:
-      "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?q=80&w=2115",
-    gradientClass: "from-cyan-500/80 to-blue-600/80",
-    gradientStyle: "",
-  },
-];
+const carouselSlides = ref([]);
+
+async function fetchCarouselSlides() {
+  try {
+    const response = await get("/eshop-banner/");
+    carouselSlides.value = response.data;
+    console.log("Carousel Slides:", carouselSlides.value);
+  } catch (error) {
+    console.error("Error fetching carousel slides:", error);
+  }
+}
+await fetchCarouselSlides();
 
 // New Arrivals Cards
 const newArrivalsCards = [

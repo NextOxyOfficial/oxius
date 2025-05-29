@@ -468,4 +468,8 @@ class DiamondPackagesSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
+class EshopBannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EshopBanner
+        fields = '__all__'
+        

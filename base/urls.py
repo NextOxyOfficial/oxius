@@ -136,5 +136,6 @@ urlpatterns = [
   path('business-network/send-diamond-gift/', SendDiamondGiftView.as_view(), name='send_diamond_gift'),
   path('diamonds/send-gift/', SendDiamondGiftView.as_view(), name='send_diamond_gift'),
 
-  
+  # eshop banner
+  path('eshop-banner/', EshopBannerListView.as_view(), name='eshop_banner'),
 ]

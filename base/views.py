@@ -2697,6 +2697,13 @@ def platform_referral_stats(request):
         return Response({
             'error': 'Failed to fetch platform statistics'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class EshopBannerListView(generics.ListAPIView):
+    """
+    View to retrieve all eShop banners.
+    """
+    queryset = EshopBanner.objects.all().order_by('-created_at')
+    serializer_class = EshopBannerSerializer
 
 # for frontend
 
