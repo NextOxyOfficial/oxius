@@ -14,10 +14,7 @@
           @touchmove="handleTouchMove"
           @touchend="handleTouchEnd"
         >
-          <!-- Background pattern for premium look -->
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-slate-900/5 to-slate-900/5 dark:from-slate-950/20 dark:to-slate-950/10 backdrop-blur-[1px] z-0"
-          ></div>
+        
 
           <!-- Mobile swipe indicator shown only on mobile -->
           <div
