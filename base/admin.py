@@ -310,7 +310,14 @@ admin.site.register(ReferBonus, ReferBonusAdmin)
 
 
 class FaqAdmin(admin.ModelAdmin):
-    list_display = ('label', 'content', 'created_at', 'updated_at')
+    list_display = ('label', 'get_content', 'created_at', 'updated_at')
+    search_fields = ('label', 'content')
+    
+    def get_content(self, obj):
+        # Return first 50 chars of stripped HTML content
+        from django.utils.html import strip_tags
+        return strip_tags(obj.content)[:50] + '...'
+    get_content.short_description = 'Content'
     
 admin.site.register(Faq, FaqAdmin)
 admin.site.register(ProductCategory)
