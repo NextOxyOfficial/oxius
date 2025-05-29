@@ -423,6 +423,23 @@
                 :to="`/sale/${post.slug}`"
                 class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
               >
+                <!-- Price -->
+                <div class="p-2 border-t border-gray-100">
+                  <div class="flex items-center justify-between">
+                    <p class="text-green-700 font-medium">
+                      <span v-if="post.negotiable && !post.price"
+                        >Negotiable</span
+                      >
+                      <span v-else-if="post.price"
+                        >৳{{ formatPrice(post.price) }}</span
+                      >
+                      <span v-else>Contact for Price</span>
+                    </p>
+                    <p class="text-xs text-gray-600">
+                      {{ formatDate(post.created_at) }}
+                    </p>
+                  </div>
+                </div>
                 <!-- Image -->
                 <div class="relative aspect-square overflow-hidden">
                   <img
@@ -449,24 +466,6 @@
                           : `All Over Bangladesh`
                       }}
                     </div>
-                  </div>
-                </div>
-
-                <!-- Price -->
-                <div class="p-2 border-t border-gray-100">
-                  <div class="flex items-center justify-between">
-                    <p class="text-green-700 font-medium">
-                      <span v-if="post.negotiable && !post.price"
-                        >Negotiable</span
-                      >
-                      <span v-else-if="post.price"
-                        >৳{{ formatPrice(post.price) }}</span
-                      >
-                      <span v-else>Contact for Price</span>
-                    </p>
-                    <p class="text-xs text-gray-600">
-                      {{ formatDate(post.created_at) }}
-                    </p>
                   </div>
                 </div>
               </NuxtLink>
