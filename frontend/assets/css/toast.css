@@ -1,0 +1,261 @@
+/* Cool Toast Notification Styles */
+
+/* Custom animation keyframes */
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes toast-bounce {
+  0% {
+    transform: translateX(100%) scale(0.9);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(-5%) scale(1.02);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-glow {
+  0%, 100% {
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  50% {
+    box-shadow: 0 20px 40px -3px rgba(0, 0, 0, 0.15), 0 8px 12px -2px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@keyframes icon-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes progress-bar {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* Toast container positioning for mobile safety */
+.u-notifications {
+  bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+  z-index: 60 !important;
+}
+
+@media (min-width: 640px) {
+  .u-notifications {
+    bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Enhanced toast notification styling */
+.u-notification {
+  animation: toast-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.u-notification:hover {
+  transform: translateY(-2px);
+  animation: toast-glow 2s ease-in-out infinite;
+}
+
+/* Color-specific enhancements */
+.u-notification[data-color="green"] {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.95) 0%, rgba(22, 163, 74, 0.95) 100%);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: white;
+}
+
+.u-notification[data-color="red"] {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: white;
+}
+
+.u-notification[data-color="blue"] {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(37, 99, 235, 0.95) 100%);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: white;
+}
+
+.u-notification[data-color="amber"] {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(217, 119, 6, 0.95) 100%);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: white;
+}
+
+.u-notification[data-color="purple"] {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.95) 0%, rgba(147, 51, 234, 0.95) 100%);
+  border-color: rgba(168, 85, 247, 0.3);
+  color: white;
+}
+
+.u-notification[data-color="indigo"] {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.95) 0%, rgba(79, 70, 229, 0.95) 100%);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: white;
+}
+
+/* Default white/gray theme */
+.u-notification[data-color="white"],
+.u-notification:not([data-color]) {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%);
+  border-color: rgba(209, 213, 219, 0.3);
+  color: #374151;
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .u-notification[data-color="white"],
+  .u-notification:not([data-color]) {
+    background: linear-gradient(135deg, rgba(31, 41, 55, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%);
+    border-color: rgba(75, 85, 99, 0.3);
+    color: #e5e7eb;
+  }
+}
+
+/* Icon enhancements */
+.u-notification .u-icon {
+  animation: icon-pulse 2s ease-in-out infinite;
+}
+
+/* Progress bar for toast timeout */
+.u-notification::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%);
+  animation: progress-bar var(--toast-duration, 5s) linear forwards;
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+/* Remove progress bar for persistent toasts */
+.u-notification[data-timeout="0"]::after {
+  display: none;
+}
+
+/* Success toast specific styling */
+.u-notification[data-color="green"]::after {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.8) 0%, rgba(22, 163, 74, 0.6) 100%);
+}
+
+/* Error toast specific styling */
+.u-notification[data-color="red"]::after {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.8) 0%, rgba(220, 38, 38, 0.6) 100%);
+}
+
+/* Info toast specific styling */
+.u-notification[data-color="blue"]::after {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.8) 0%, rgba(37, 99, 235, 0.6) 100%);
+}
+
+/* Warning toast specific styling */
+.u-notification[data-color="amber"]::after {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.8) 0%, rgba(217, 119, 6, 0.6) 100%);
+}
+
+/* Enhanced close button */
+.u-notification .u-button {
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.u-notification .u-button:hover {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+/* Toast enter/exit animations */
+.toast-enter-active {
+  animation: toast-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.toast-leave-active {
+  animation: toast-slide-out 0.3s ease-in forwards;
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 640px) {
+  .u-notifications {
+    width: calc(100% - 2rem) !important;
+    margin: 0 1rem;
+  }
+  
+  .u-notification {
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Glassmorphism effect enhancement */
+.u-notification {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
+/* Additional cool effects */
+.u-notification::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.u-notification:hover::before {
+  left: 100%;
+}
+
+/* Enhanced typography */
+.u-notification .font-semibold {
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+
+.u-notification .text-sm {
+  line-height: 1.5;
+}

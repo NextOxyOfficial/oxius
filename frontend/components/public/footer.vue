@@ -205,11 +205,9 @@
           >
         </p>
       </UContainer>
-    </div>
-
-    <!-- Mobile Navigation Bar -->
+    </div>    <!-- Mobile Navigation Bar -->
     <div
-      class="sm:hidden block fixed left-0 right-0 z-[99999999] bottom-2 mx-6 dark:bg-slate-900/90 bg-white/90 backdrop-blur-sm rounded-xl border border-emerald-100 dark:border-slate-800 shadow-sm"
+      class="sm:hidden block fixed left-0 right-0 z-50 bottom-2 mx-6 dark:bg-slate-900/90 bg-white/90 backdrop-blur-sm rounded-xl border border-emerald-100 dark:border-slate-800 shadow-sm"
     >
       <UHorizontalNavigation
         v-if="user?.user?.id"

@@ -432,7 +432,7 @@
               variant="ghost"
               color="gray"
               class="hover:bg-gray-100 rounded-lg transition-all duration-200"
-              size="sm"
+              size="lg"
             />
           </div>
 

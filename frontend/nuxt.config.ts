@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     preference: "light",
   },  ssr: false,
   
-  css: ["~/assets/css/main.css"],
+  css: ["~/assets/css/main.css", "~/assets/css/toast.css"],
   modules: [
     "@nuxt/ui",
     "@nuxt/image",
