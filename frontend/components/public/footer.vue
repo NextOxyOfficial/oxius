@@ -58,6 +58,10 @@
                 to: '/about',
               },
               {
+                label: $t('faq'),
+                to: '/faq',
+              },
+              {
                 label: $t('contact_us'),
                 to: '/contact-us',
               },
@@ -205,7 +209,8 @@
           >
         </p>
       </UContainer>
-    </div>    <!-- Mobile Navigation Bar -->
+    </div>
+    <!-- Mobile Navigation Bar -->
     <div
       class="sm:hidden block fixed left-0 right-0 z-50 bottom-2 mx-6 dark:bg-slate-900/90 bg-white/90 backdrop-blur-sm rounded-xl border border-emerald-100 dark:border-slate-800 shadow-sm"
     >
@@ -252,7 +257,7 @@
               v-if="link.to === '/business-network' && unreadCount > 0"
               class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-pulse"
             >
-              {{ unreadCount > 99 ? '99+' : unreadCount }}
+              {{ unreadCount > 99 ? "99+" : unreadCount }}
             </div>
           </div>
         </template>
@@ -326,11 +331,14 @@ onMounted(async () => {
 });
 
 // Watch for user changes and fetch notification count when user logs in
-watch(() => user.value?.user?.id, async (newValue) => {
-  if (newValue) {
-    await fetchUnreadCount();
+watch(
+  () => user.value?.user?.id,
+  async (newValue) => {
+    if (newValue) {
+      await fetchUnreadCount();
+    }
   }
-});
+);
 </script>
 
 <style scoped>

@@ -8,6 +8,8 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save, pre_save
 from decimal import Decimal
 
+from tinymce import models as tinymce_models
+
 import string
 from django.utils import timezone
 from datetime import timedelta
@@ -560,7 +562,7 @@ class PendingTask(models.Model):
     
 class Faq(models.Model):
     label = models.CharField(max_length=256)
-    content = models.TextField()
+    content = tinymce_models.HTMLField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
