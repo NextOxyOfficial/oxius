@@ -11,7 +11,6 @@ class SupportTicketAdmin(admin.ModelAdmin):
     search_fields = ('title', 'message', 'user__email', 'user__username')
     readonly_fields = ('created_at', 'updated_at', 'id', 'message_preview')
     list_editable = ('status',)
-    
     fieldsets = (
         ('Ticket Information', {
             'fields': ('user', 'title', 'message', 'status')
@@ -29,9 +28,11 @@ class SupportTicketAdmin(admin.ModelAdmin):
     def message_preview(self, obj):
         """Display the rendered HTML message"""
         if obj.message:
+            # Mark the content as safe to prevent escaping HTML tags
+            from django.utils.safestring import mark_safe
             return format_html(
                 '<div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f9f9f9;">{}</div>',
-                obj.message
+                mark_safe(obj.message)
             )
         return "No message"
     
@@ -81,7 +82,6 @@ class TicketReplyAdmin(admin.ModelAdmin):
     list_filter = ('is_from_admin', 'created_at', 'ticket__status')
     search_fields = ('message', 'user__email', 'user__username', 'ticket__title')
     readonly_fields = ('created_at', 'updated_at', 'id', 'message_preview')
-    
     fieldsets = (
         ('Reply Information', {
             'fields': ('ticket', 'user', 'message', 'is_from_admin')
@@ -99,9 +99,11 @@ class TicketReplyAdmin(admin.ModelAdmin):
     def message_preview(self, obj):
         """Display the rendered HTML message"""
         if obj.message:
+            # Mark the content as safe to prevent escaping HTML tags
+            from django.utils.safestring import mark_safe
             return format_html(
                 '<div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f9f9f9;">{}</div>',
-                obj.message
+                mark_safe(obj.message)
             )
         return "No message"
     
@@ -133,7 +135,6 @@ class BulkTicketAdmin(admin.ModelAdmin):
     search_fields = ('title', 'message', 'created_by__email', 'created_by__username')
     readonly_fields = ('is_processed', 'processed_at', 'tickets_created_count', 'created_at', 'message_preview')
     filter_horizontal = ('target_users',)
-    
     fieldsets = (
         ('Bulk Ticket Information', {
             'fields': ('title', 'message', 'target_type', 'target_users')
@@ -155,9 +156,11 @@ class BulkTicketAdmin(admin.ModelAdmin):
     def message_preview(self, obj):
         """Display the rendered HTML message"""
         if obj.message:
+            # Mark the content as safe to prevent escaping HTML tags
+            from django.utils.safestring import mark_safe
             return format_html(
                 '<div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f9f9f9;">{}</div>',
-                obj.message
+                mark_safe(obj.message)
             )
         return "No message"
     
