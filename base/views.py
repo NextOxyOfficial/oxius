@@ -2717,11 +2717,10 @@ def get_latest_android_app(request):
         if not latest_version:
             # Fallback to the version with highest version code
             latest_version = AndroidAppVersion.objects.order_by('-version_code').first()
-            
         if not latest_version:
             return Response({
                 "error": "No app version found",
-                "fallback_url": "https://drive.usercontent.google.com/download?id=1pqqxQbxXjkuWfBWeZLELTq8yno2Aq35o&export=download&authuser=0"
+                "message": "Please configure an app version in the admin panel"
             }, status=404)
             
         serializer = AndroidAppVersionSerializer(latest_version)
@@ -2729,7 +2728,7 @@ def get_latest_android_app(request):
     except Exception as e:
         return Response({
             "error": str(e),
-            "fallback_url": "https://drive.usercontent.google.com/download?id=1pqqxQbxXjkuWfBWeZLELTq8yno2Aq35o&export=download&authuser=0"
+            "message": "Error retrieving app version information"
         }, status=500)
 
 # for frontend

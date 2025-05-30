@@ -12,6 +12,18 @@ export function useAppDownload() {
   const downloadUrl = ref<string>('');
   const isLoading = ref(false);
   const error = ref<string | null>(null);
+    // Response type definition
+  interface AppVersionResponse {
+    download_url?: string;
+    file_size_mb?: number;
+    version_name?: string;
+    release_notes?: string;
+  }
+  
+  // App version information
+  const appVersion = ref<string>('');
+  const fileSize = ref<string>('');
+  const releaseNotes = ref<string>('');
   
   // Get the app version download URL from the API
   const fetchDownloadUrl = async () => {
@@ -20,16 +32,30 @@ export function useAppDownload() {
     
     try {
       // Call the API to get the app version details
-      const response = await $fetch<{download_url?: string}>(`${baseURL}/api/android-app/latest/`, {
+      const response = await $fetch<AppVersionResponse>(`${baseURL}/api/android-app/latest/`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
         }
       });
       
-      // Set the download URL from the API response
+      // Set the app details from the API response
       if (response && response.download_url) {
         downloadUrl.value = response.download_url;
+        
+        // Set version and size information if available
+        if (response.version_name) {
+          appVersion.value = response.version_name;
+        }
+        
+        if (response.file_size_mb) {
+          fileSize.value = `${response.file_size_mb} MB`;
+        }
+        
+        if (response.release_notes) {
+          releaseNotes.value = response.release_notes;
+        }
+        
         return response.download_url;
       } else {
         console.warn('No valid download URL returned from API');
@@ -73,11 +99,13 @@ export function useAppDownload() {
   onMounted(() => {
     fetchDownloadUrl();
   });
-  
-  return {
+    return {
     downloadUrl,
     isLoading,
     error,
+    appVersion,
+    fileSize,
+    releaseNotes,
     downloadApp,
     fetchDownloadUrl
   };

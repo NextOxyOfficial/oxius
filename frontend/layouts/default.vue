@@ -92,9 +92,8 @@
                 variant="solid"
                 class="w-full py-3 font-semibold shadow-lg hover:shadow-xl transition-all group"
                 size="lg"
-              >
-                <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 mr-2 group-hover:animate-bounce" />
-                Download APK ({{ appSize }})
+              >                <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 mr-2 group-hover:animate-bounce" />
+                Download APK {{ fileSize ? `(${fileSize})` : '' }}
               </UButton>
               
               <div class="flex gap-2">
@@ -144,7 +143,7 @@ const toast = useToast();
 
 const loader = ref(true);
 const showMobileAppPopup = ref(false);
-const appSize = ref('12.2 MB'); // Updated to actual file size
+const appSize = ref(''); // Will be populated from API
 
 // Cookie utility functions
 const setCookie = (name, value, hours = 24) => {
@@ -260,22 +259,27 @@ const shouldShowMobileAppPopup = () => {
   return true;
 };
 
+// Use the app download composable
+import { useAppDownload } from '~/composables/useAppDownload';
+const { downloadApp, fileSize, appVersion, fetchDownloadUrl } = useAppDownload();
+
 // Download mobile app function
-const downloadMobileApp = () => {
+const downloadMobileApp = async () => {
   try {
-    console.log('Starting APK download from Google Drive...');
+    console.log('Starting APK download...');
     
-    // Direct Google Drive download link
-    const apkUrl = 'https://drive.usercontent.google.com/download?id=1pqqxQbxXjkuWfBWeZLELTq8yno2Aq35o&export=download&authuser=0';
+    // Use the composable to get the dynamic download URL from admin
+    const success = await downloadApp();
     
-    // Open the download link in a new tab
-    window.open(apkUrl, '_blank');
-    
-    console.log('Opened Google Drive download link in new tab');
-    
-    // Mark app as downloaded/installed to prevent future popups (use both cookies and localStorage)
-    localStorage.setItem('mobileAppInstalled', 'true');
-    setCookie('mobileAppInstalled', 'true', 24 * 365); // Set for 1 year
+    if (success) {
+      console.log('Opened dynamic download link in new tab');
+      
+      // Mark app as downloaded/installed to prevent future popups (use both cookies and localStorage)
+      localStorage.setItem('mobileAppInstalled', 'true');
+      setCookie('mobileAppInstalled', 'true', 24 * 365); // Set for 1 year
+    } else {
+      throw new Error('No download URL available from admin panel');
+    }
     
     // Show success toast
     toast.add({
@@ -423,7 +427,10 @@ const onRefreshError = (error) => {
 // Initialize authentication
 initializeAuth();
 
-onMounted(() => {
+onMounted(async () => {
+  // Fetch app details early
+  await fetchDownloadUrl();
+  
   setTimeout(() => {
     loader.value = false;
     // Initialize mobile app popup after loader is done
