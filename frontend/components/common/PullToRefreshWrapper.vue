@@ -58,9 +58,7 @@
     >
       <UIcon name="i-heroicons-wifi-slash" class="w-4 h-4" />
       <span>You're offline</span>
-    </div>
-
-    <!-- Refresh Success Toast -->
+    </div>    <!-- Refresh Success Toast -->
     <Teleport to="body">
       <div
         v-if="showSuccessToast"
@@ -68,7 +66,7 @@
         @click="hideSuccessToast"
       >
         <div class="toast-content">
-          <UIcon name="i-heroicons-check-circle" class="w-5 h-5 text-green-600" />
+          <UIcon name="i-heroicons-check-circle" class="w-5 h-5 text-green-600 flex-shrink-0" />
           <span>{{ successMessage }}</span>
         </div>
       </div>
@@ -212,11 +210,20 @@ const {
   emit('refresh-start');
   
   try {
+    // Check if we're online first
+    if (!navigator.onLine) {
+      throw new Error("You're offline. Please check your internet connection.");
+    }
+    
     await props.refreshCallback();
     showRefreshSuccessToast();
     emit('refresh-success');
   } catch (error) {
     console.error('Refresh failed:', error);
+    // Show offline message if network is the issue
+    if (!navigator.onLine || (error?.message && error.message.includes('network') || error.message.includes('offline'))) {
+      updateOnlineStatus(); // Update the online status indicator
+    }
     emit('refresh-error', error);
   } finally {
     emit('refresh-end');
@@ -436,6 +443,9 @@ defineExpose({
   @apply px-4 py-2 flex items-center gap-2;
   @apply border border-green-200 dark:border-green-700;
   @apply text-green-700 dark:text-green-300 text-sm font-medium;
+  min-width: 200px; /* Increased minimum width to fit content */
+  white-space: nowrap; /* Prevent text wrapping */
+  display: inline-flex; /* Use inline-flex for better spacing control */
 }
 
 /* Dark mode support */
@@ -470,13 +480,16 @@ defineExpose({
   .network-status {
     @apply top-16 text-xs px-3 py-1;
   }
-  
-  .refresh-success-toast {
+    .refresh-success-toast {
     @apply top-16;
+    width: 90vw; /* Use viewport width on mobile */
+    max-width: 300px; /* Set maximum width */
   }
   
   .toast-content {
     @apply px-3 py-2 text-xs;
+    width: 100%; /* Fill the container */
+    justify-content: center; /* Center content */
   }
 }
 
