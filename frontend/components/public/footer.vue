@@ -326,16 +326,15 @@ watch(toggleStatus, () => {
 // Download Android app function
 const downloadAndroidApp = () => {
   try {
-    // Create a download link for the APK file
-    const link = document.createElement('a');
-    link.href = '/AdsyClub.V.1.apk';
-    link.download = 'AdsyClub-V1.apk';
-    link.target = '_blank';
+    console.log('Starting APK download from Google Drive...');
     
-    // Trigger download
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Direct Google Drive download link
+    const apkUrl = 'https://drive.usercontent.google.com/download?id=1pqqxQbxXjkuWfBWeZLELTq8yno2Aq35o&export=download&authuser=0';
+    
+    // Open the download link in a new tab
+    window.open(apkUrl, '_blank');
+    
+    console.log('Opened Google Drive download link in new tab');
     
     // Show success toast
     toast.add({
