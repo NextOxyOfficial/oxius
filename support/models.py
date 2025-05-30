@@ -82,3 +82,73 @@ class TicketReadStatus(models.Model):
         """
         self.last_read_at = timezone.now()
         self.save()
+
+
+class BulkTicket(models.Model):
+    """
+    Model for creating tickets that can be sent to multiple users or all users
+    """
+    TARGET_CHOICES = [
+        ('selected', 'Selected Users'),
+        ('all', 'All Users'),
+        ('staff', 'Staff Members Only'),
+        ('non_staff', 'Non-Staff Members Only'),
+    ]
+    
+    title = models.CharField(max_length=255)
+    message = models.TextField(help_text="Rich text content with HTML formatting")
+    target_type = models.CharField(max_length=20, choices=TARGET_CHOICES, default='selected')
+    target_users = models.ManyToManyField(User, blank=True, help_text="Specific users to send tickets to (only used when target_type is 'selected')")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_bulk_tickets')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Track execution
+    is_processed = models.BooleanField(default=False)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    tickets_created_count = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Bulk Ticket'
+        verbose_name_plural = 'Bulk Tickets'
+    
+    def __str__(self):
+        return f"Bulk: {self.title} ({self.get_target_type_display()})"
+    
+    def get_target_users(self):
+        """Get the list of users this bulk ticket should be sent to"""
+        if self.target_type == 'all':
+            return User.objects.filter(is_active=True)
+        elif self.target_type == 'staff':
+            return User.objects.filter(is_active=True, is_staff=True)
+        elif self.target_type == 'non_staff':
+            return User.objects.filter(is_active=True, is_staff=False)
+        elif self.target_type == 'selected':
+            return self.target_users.filter(is_active=True)
+        return User.objects.none()
+    
+    def create_individual_tickets(self):
+        """Create individual SupportTicket instances for each target user"""
+        if self.is_processed:
+            return
+        
+        target_users = self.get_target_users()
+        created_count = 0
+        
+        for user in target_users:
+            # Create individual ticket
+            ticket = SupportTicket.objects.create(
+                user=user,
+                title=self.title,
+                message=self.message,
+                status='open'
+            )
+            created_count += 1
+        
+        # Mark as processed
+        self.is_processed = True
+        self.processed_at = timezone.now()
+        self.tickets_created_count = created_count
+        self.save()
+        
+        return created_count

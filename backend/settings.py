@@ -250,3 +250,60 @@ SP_RETURN="https://adsyclub.com/verify-payment"
 SP_CANCEL="https://adsyclub.com/deposit-withdraw/"
 SP_PREFIX="ADSYCLUB_"
 API_SMS = 'SplZ3f60tlt69pkZAEc8WHk3MbHkGeLYtJ1jElCd'
+
+# TinyMCE Configuration
+TINYMCE_DEFAULT_CONFIG = {
+    'plugins': [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'paste', 'help', 'wordcount'
+    ],
+    'toolbar': 'undo redo | blocks | '
+               'bold italic forecolor | alignleft aligncenter '
+               'alignright alignjustify | bullist numlist outdent indent | '
+               'removeformat | help',
+    'content_css': 'default',
+    'height': 400,
+    'width': 'auto',
+    'resize': True,
+    'statusbar': True,
+    'branding': False,
+    'elementpath': True,
+    'paste_data_images': True,
+    'paste_as_text': False,
+    'paste_remove_styles_if_webkit': True,
+    'verify_html': False,
+    'cleanup_on_startup': True,
+    'custom_undo_redo_levels': 20,
+    'selector': 'textarea',
+    'theme': 'silver',
+    'skin': 'oxide',
+    'content_style': '''
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; 
+            font-size: 14px; 
+            line-height: 1.4; 
+        }
+        p { margin: 0 0 10px 0; }
+    ''',
+    'block_formats': 'Paragraph=p; Header 1=h1; Header 2=h2; Header 3=h3; Header 4=h4; Header 5=h5; Header 6=h6;',
+    'font_formats': '''
+        Andale Mono=andale mono,times; 
+        Arial=arial,helvetica,sans-serif; 
+        Arial Black=arial black,avant garde; 
+        Book Antiqua=book antiqua,palatino; 
+        Comic Sans MS=comic sans ms,sans-serif; 
+        Courier New=courier new,courier; 
+        Georgia=georgia,palatino; 
+        Helvetica=helvetica; 
+        Impact=impact,chicago; 
+        Symbol=symbol; 
+        Tahoma=tahoma,arial,helvetica,sans-serif; 
+        Terminal=terminal,monaco; 
+        Times New Roman=times new roman,times; 
+        Trebuchet MS=trebuchet ms,geneva; 
+        Verdana=verdana,geneva; 
+        Webdings=webdings; 
+        Wingdings=wingdings,zapf dingbats
+    ''',
+}
