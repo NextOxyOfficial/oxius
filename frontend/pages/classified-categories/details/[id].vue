@@ -120,14 +120,7 @@
                     class="w-5 h-5 text-blue-600 mt-1"
                   />
                 </div>
-                <!-- <div class="flex items-center gap-1">
-                <UBadge class="" color="gray" variant="solid"
-                  >Badge hfghfhgfh</UBadge
-                >
-                <UBadge class="" color="gray" variant="solid"
-                  >Badge hfghfhgfh</UBadge
-                >
-              </div> -->
+               
               </div>
               <div class="px-2">
                 <div class="w-full" v-html="service.user?.about"></div>
@@ -256,8 +249,11 @@ setTimeout(() => {
   fetchServices();
 }, 20);
 
-var pageLink = window.location.href;
-var pageTitle = String(document.title).replace(/\&/g, "%26");
+// Get the actual domain for sharing instead of using localhost
+const runtimeConfig = useRuntimeConfig();
+const domain = runtimeConfig.public.domain || 'https://adsyclub.com';
+const pageLink = `${domain}/classified-categories/details/${router.params.id}`;
+const pageTitle = String(document.title).replace(/\&/g, "%26");
 
 function fbs_click() {
   window.open(

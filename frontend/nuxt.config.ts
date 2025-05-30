@@ -109,6 +109,7 @@ export default defineNuxtConfig({
   },  runtimeConfig: {
     public: {
       baseURL: "http://127.0.0.1:8000",
+      domain: "http://localhost:3000",
       cookieOptions: {
         default: {
           httpOnly: false,
@@ -122,6 +123,7 @@ export default defineNuxtConfig({
     runtimeConfig: {
       public: {
         baseURL: "https://adsyclub.com",
+        domain: "https://adsyclub.com",
         cookieOptions: {
           default: {
             httpOnly: false,
@@ -132,7 +134,7 @@ export default defineNuxtConfig({
         }
       },
     },
-  },  image: {
+  },image: {
     dir: "/static/frontend/",
   },
   pages: true, // Enable file-based routing
