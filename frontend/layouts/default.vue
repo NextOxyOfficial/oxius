@@ -241,33 +241,17 @@ const shouldShowMobileAppPopup = () => {
 };
 
 // Download mobile app function
-const downloadMobileApp = async () => {
+const downloadMobileApp = () => {
   try {
-    console.log('Starting APK download...');
+    console.log('Starting APK download from Google Drive...');
     
-    // Use the API endpoint for downloading APK
-    const apkUrl = '/api/download/apk';
+    // Direct Google Drive download link
+    const apkUrl = 'https://drive.usercontent.google.com/download?id=1pqqxQbxXjkuWfBWeZLELTq8yno2Aq35o&export=download&authuser=0';
     
-    // Create a download link for the APK file
-    const link = document.createElement('a');
-    link.href = apkUrl;
-    link.download = 'AdsyClub-V1.apk';
-    link.target = '_blank';
+    // Open the download link in a new tab
+    window.open(apkUrl, '_blank');
     
-    // Add some additional attributes for better compatibility
-    link.rel = 'noopener noreferrer';
-    link.style.display = 'none';
-    
-    console.log('Triggering APK download from:', apkUrl);
-    
-    // Trigger download
-    document.body.appendChild(link);
-    link.click();
-    
-    // Clean up
-    setTimeout(() => {
-      document.body.removeChild(link);
-    }, 100);
+    console.log('Opened Google Drive download link in new tab');
     
     // Mark app as downloaded/installed to prevent future popups (use both cookies and localStorage)
     localStorage.setItem('mobileAppInstalled', 'true');
