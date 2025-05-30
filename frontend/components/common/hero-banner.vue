@@ -136,7 +136,7 @@
                 </NuxtLink>
                 <!-- Sale Listings -->
                 <NuxtLink
-                  to="/#sale-category"
+                  to="/sale"
                   class="service-btn bg-white hover:bg-indigo-50 text-gray-800"
                 >
                   <div class="icon-circle bg-indigo-50">
@@ -289,7 +289,7 @@
           </div>
         </NuxtLink>
         <!-- Sale Listings -->
-        <NuxtLink to="/#sale-category" class="mobile-btn bg-white">
+        <NuxtLink to="/sale" class="mobile-btn bg-white">
           <div class="mobile-icon-circle bg-indigo-50">
             <ListFilter class="mobile-icon text-indigo-600" />
           </div>
