@@ -367,9 +367,7 @@
                 />
               </NuxtLink>
             </div>
-          </div>
-
-          <!-- Download App Section -->
+          </div>          <!-- Download App Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
             <h3
               class="text-lg font-semibold text-gray-800 dark:text-gray-300 mb-4"
@@ -377,26 +375,31 @@
               {{ $t("download_our_app") }}
             </h3>
             <div class="flex items-center gap-4">
-              <NuxtLink
-                to="/coming-soon"
-                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
+              <button
+                @click="downloadAndroidApp"
+                class="w-32 h-10 bg-green-100 dark:bg-green-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-green-200 dark:hover:bg-green-700 transition overflow-hidden relative group"
               >
                 <img
                   src="/static/frontend/images/google.png"
                   alt="Google Play"
                   class="w-full h-full object-contain"
                 />
-              </NuxtLink>
-              <NuxtLink
-                href="/coming-soon"
-                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden"
+                <div class="absolute inset-0 bg-green-500/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                  <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-green-600 dark:text-green-300" />
+                </div>
+              </button>
+              <div
+                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center relative opacity-60 overflow-hidden"
               >
                 <img
                   src="/static/frontend/images/apple.png"
                   alt="App Store"
                   class="w-full h-full object-contain"
                 />
-              </NuxtLink>
+                <div class="absolute inset-0 bg-gray-500/20 flex items-center justify-center">
+                  <div class="bg-gray-600 text-white text-xs py-0.5 px-2 rounded-full">Coming Soon</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -763,6 +766,7 @@ const { t } = useI18n();
 const { user, logout } = useAuth();
 const { get } = useApi();
 const { unreadTicketCount, fetchUnreadCount } = useTickets();
+const toast = useToast();
 const badgeCount = ref(0);
 const openMenu = ref(false);
 const router = useRouter();
@@ -772,6 +776,41 @@ const isOpen = ref(false);
 const showQr = ref(false);
 // Subscription alert state
 const warningDismissed = ref(false);
+
+// Download Android app function
+const downloadAndroidApp = () => {
+  try {
+    console.log('Starting APK download from Google Drive...');
+    
+    // Direct Google Drive download link
+    const apkUrl = 'https://drive.usercontent.google.com/download?id=1pqqxQbxXjkuWfBWeZLELTq8yno2Aq35o&export=download&authuser=0';
+    
+    // Open the download link in a new tab
+    window.open(apkUrl, '_blank');
+    
+    console.log('Opened Google Drive download link in new tab');
+    
+    // Close the mobile menu
+    isOpen.value = false;
+    
+    // Show success toast
+    toast.add({
+      title: 'Download Started',
+      description: 'AdsyClub Android app is downloading...',
+      color: 'green',
+      icon: 'i-heroicons-check-circle'
+    });
+    
+  } catch (error) {
+    console.error('Download error:', error);
+    toast.add({
+      title: 'Download Error',
+      description: 'Failed to start download. Please try again.',
+      color: 'red',
+      icon: 'i-heroicons-exclamation-triangle'
+    });
+  }
+};
 
 // Update badge count when unreadTicketCount changes
 watch(
