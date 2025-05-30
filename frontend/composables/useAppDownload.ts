@@ -11,17 +11,17 @@ export function useAppDownload() {
   // State for download URL
   const downloadUrl = ref<string>('');
   const isLoading = ref(false);
-  const error = ref<string | null>(null);
-    // Response type definition
+  const error = ref<string | null>(null);    // Response type definition
   interface AppVersionResponse {
     download_url?: string;
     file_size_mb?: number;
     version_name?: string;
+    version_code?: number;
     release_notes?: string;
   }
-  
-  // App version information
+    // App version information
   const appVersion = ref<string>('');
+  const versionCode = ref<number>(0);
   const fileSize = ref<string>('');
   const releaseNotes = ref<string>('');
   
@@ -42,10 +42,13 @@ export function useAppDownload() {
       // Set the app details from the API response
       if (response && response.download_url) {
         downloadUrl.value = response.download_url;
-        
-        // Set version and size information if available
+          // Set version and size information if available
         if (response.version_name) {
           appVersion.value = response.version_name;
+        }
+        
+        if (response.version_code) {
+          versionCode.value = response.version_code;
         }
         
         if (response.file_size_mb) {
@@ -98,12 +101,12 @@ export function useAppDownload() {
   // Initialize by fetching the URL when the composable is first used
   onMounted(() => {
     fetchDownloadUrl();
-  });
-    return {
+  });    return {
     downloadUrl,
     isLoading,
     error,
     appVersion,
+    versionCode,
     fileSize,
     releaseNotes,
     downloadApp,
