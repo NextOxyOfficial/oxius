@@ -1,8 +1,29 @@
-<template>
-  <div class="max-w-6xl mx-auto">
+<template>  <div class="max-w-6xl mx-auto">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center text-sm my-3 px-3">
+      <NuxtLink to="/" class="text-gray-500 hover:text-emerald-600">Home</NuxtLink>
+      <span class="mx-2 text-gray-400">
+        <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
+      </span>
+      <NuxtLink to="/sale" class="text-gray-500 hover:text-emerald-600">Marketplace</NuxtLink>
+      <span class="mx-2 text-gray-400">
+        <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
+      </span>
+      <NuxtLink 
+        v-if="product?.category_details"
+        :to="`/sale?category=${product?.category}`" 
+        class="text-gray-500 hover:text-emerald-600"
+      >
+        {{ product?.category_details?.name }}
+      </NuxtLink>
+      <span v-if="product?.category_details" class="mx-2 text-gray-400">
+        <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
+      </span>
+      <span class="text-gray-700 truncate max-w-[200px]">{{ product?.title }}</span>
+    </nav>
+    
     <!-- Main Product Section -->
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-2">
-      <!-- Gallery Section - 3 columns on large screens -->
       <div class="lg:col-span-3 relative">
         <div
           ref="galleryRef"
@@ -507,12 +528,14 @@
               >
                 <span class="text-sm text-gray-600">{{ shareUrl }}</span>
               </div>
-            </div>
-            <button
-              class="px-4 py-2 bg-emerald-600 hover:bg-emerald-600 text-white rounded-md text-sm transition-colors duration-200"
+            </div>            <button
+              class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm transition-colors duration-200"
               @click="copyToClipboard"
             >
-              Copy
+              <span class="flex items-center">
+                <UIcon name="i-heroicons-clipboard" class="w-4 h-4 mr-1" />
+                Copy
+              </span>
             </button>
           </div>
 
@@ -690,6 +713,9 @@ import {
   LayoutGrid,
 } from "lucide-vue-next";
 
+// Import toast functionality for notifications
+const toast = useToast();
+
 const { params } = useRoute();
 const { get } = useApi();
 const product = ref({});
@@ -732,7 +758,7 @@ const showReportDialog = ref(false);
 const galleryRef = ref(null);
 const touchStartX = ref(0);
 const touchEndX = ref(0);
-const shareUrl = ref(window.location.href);
+const shareUrl = ref("");
 const reportReason = ref("");
 const reportDetails = ref("");
 
@@ -815,6 +841,12 @@ const toggleShowPhone = () => {
 // Share functionality
 const handleShare = () => {
   shareDialogOpen.value = true;
+  // Use the current hostname; in production, this will be your domain
+  const productionDomain = 'https://adsyclub.com';
+  // Use window.location.pathname to get just the path without hostname
+  const pathname = window.location.pathname;
+  // Create the full URL using the production domain
+  shareUrl.value = productionDomain + pathname;
 };
 
 const closeShareDialog = () => {
@@ -823,30 +855,36 @@ const closeShareDialog = () => {
 
 const copyToClipboard = () => {
   navigator.clipboard.writeText(shareUrl.value);
+  // Show a toast message
+  toast.add({
+    title: 'Link Copied!',
+    description: 'Share link has been copied to clipboard',
+    color: 'green',
+    icon: 'i-heroicons-check-circle'
+  });
 };
 
 const shareViaMedia = (platform) => {
-  let shareUrl = "";
-  const currentUrl = encodeURIComponent(window.location.href);
-  const title = encodeURIComponent(product.title);
-
+  let platformShareUrl = "";
+  const currentUrl = encodeURIComponent(shareUrl.value);
+  const title = encodeURIComponent(product.value?.title);
   switch (platform) {
     case "facebook":
-      shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`;
+      platformShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`;
       break;
     case "twitter":
-      shareUrl = `https://twitter.com/intent/tweet?text=${title}&url=${currentUrl}`;
+      platformShareUrl = `https://twitter.com/intent/tweet?text=${title}&url=${currentUrl}`;
       break;
     case "whatsapp":
-      shareUrl = `https://api.whatsapp.com/send?text=${title} ${currentUrl}`;
+      platformShareUrl = `https://api.whatsapp.com/send?text=${title} ${currentUrl}`;
       break;
     case "email":
-      shareUrl = `mailto:?subject=${title}&body=${currentUrl}`;
+      platformShareUrl = `mailto:?subject=${title}&body=${currentUrl}`;
       break;
   }
 
-  if (shareUrl) {
-    window.open(shareUrl, "_blank");
+  if (platformShareUrl) {
+    window.open(platformShareUrl, "_blank");
   }
 
   closeShareDialog();
