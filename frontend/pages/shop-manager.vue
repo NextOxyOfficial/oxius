@@ -1014,7 +1014,7 @@
               <p class="text-sm font-medium text-gray-700">Your Account Balance</p>
               <p class="text-lg font-semibold text-gray-900">৳{{ user?.user?.balance || 0 }}</p>
             </div>
-            <NuxtLink to="/add-funds" class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center">
+            <NuxtLink to="/deposit-withdraw" class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center">
               <UIcon name="i-heroicons-plus-circle" class="h-3.5 w-3.5 mr-1" />
               Add Funds
             </NuxtLink>
@@ -1026,7 +1026,7 @@
               <p class="mb-1">
                 You have insufficient balance to purchase this package. Please add funds to your account.
               </p>
-              <NuxtLink to="/add-funds" class="text-red-600 hover:text-red-800 flex items-center font-medium text-xs">
+              <NuxtLink to="/deposit-withdraw" class="text-red-600 hover:text-red-800 flex items-center font-medium text-xs">
                 <UIcon name="i-heroicons-plus-circle" class="h-3.5 w-3.5 mr-1" />
                 Add Funds to Your Account
               </NuxtLink>
@@ -1397,28 +1397,14 @@ async function fetchProductSlotPackages() {
   try {
     const { data } = await get('/product-slot-packages/');
     productSlotPackages.value = data || [];
-    
-    // Set default selected package (if packages are available)
+      // Set default selected package (if packages are available)
     if (productSlotPackages.value.length > 0) {
       selectedSlotPackage.value = productSlotPackages.value[0];
-    } else {
-      // Fallback to hardcoded packages if API returns empty
-      productSlotPackages.value = [
-        { id: 'default1', slots: 5, price: 500 },
-        { id: 'default2', slots: 10, price: 900, original_price: 1000 },
-        { id: 'default3', slots: 20, price: 1600, original_price: 2000, is_featured: true },
-      ];
-      selectedSlotPackage.value = productSlotPackages.value[0];
-    }
-  } catch (error) {
+    }  } catch (error) {
     console.error("Error loading product slot packages:", error);
-    // Fallback to hardcoded packages
-    productSlotPackages.value = [
-      { id: 'default1', slots: 5, price: 500 },
-      { id: 'default2', slots: 10, price: 900, original_price: 1000 },
-      { id: 'default3', slots: 20, price: 1600, original_price: 2000, is_featured: true },
-    ];
-    selectedSlotPackage.value = productSlotPackages.value[0];
+    productSlotPackages.value = [];
+    selectedSlotPackage.value = null;
+    showToast("error", "Failed to Load Packages", "Could not load product slot packages. Please try again later.");
   } finally {
     isLoadingPackages.value = false;
   }
