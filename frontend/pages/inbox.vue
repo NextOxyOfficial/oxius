@@ -95,7 +95,7 @@
         </div>
       </transition>
       <!-- Open Ticket button -->
-      <div class="flex justify-start mb-4">
+      <div class="flex justify-start mb-4 px-4">
         <UButton
           color="primary"
           label="Open Ticket"
@@ -629,11 +629,10 @@
                           class="mr-2 text-gray-600"
                         />
                         {{ activeTicket.title }}
-                      </h4>
-                      <div
+                      </h4>                      <div
                         class="p-4 bg-gray-50 rounded-lg border border-gray-200 text-gray-800 whitespace-pre-wrap shadow-sm"
+                        v-html="activeTicket.message"
                       >
-                        {{ activeTicket.message }}
                       </div>
                     </div>
 
@@ -761,11 +760,10 @@
                                         {{ formatDate(reply.created_at) }}
                                       </span>
                                     </div>
-                                  </div>
-                                  <div
+                                  </div>                                  <div
                                     class="text-sm text-gray-800 whitespace-pre-wrap"
+                                    v-html="reply.message"
                                   >
-                                    {{ reply.message }}
                                   </div>
                                 </div>
                               </div>
