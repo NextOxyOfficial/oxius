@@ -2112,7 +2112,7 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                                 }
                             seller_objects[seller_key]['amount'] += price_difference
                             total_additional_amount += price_difference
-                        elif quantity_diff !=  0:
+                        elif quantity_diff !=   0:
                             # Update quantity and calculate price difference
                             price_difference = unit_price * quantity_diff
                             
@@ -2704,6 +2704,33 @@ class EshopBannerListView(generics.ListAPIView):
     """
     queryset = EshopBanner.objects.all().order_by('-created_at')
     serializer_class = EshopBannerSerializer
+
+@api_view(['GET'])
+def get_latest_android_app(request):
+    """
+    Get the latest active Android app version information
+    """
+    try:
+        # Get the active app version (should be only one due to model's save method)
+        latest_version = AndroidAppVersion.objects.filter(is_active=True).first()
+        
+        if not latest_version:
+            # Fallback to the version with highest version code
+            latest_version = AndroidAppVersion.objects.order_by('-version_code').first()
+            
+        if not latest_version:
+            return Response({
+                "error": "No app version found",
+                "fallback_url": "https://drive.usercontent.google.com/download?id=1pqqxQbxXjkuWfBWeZLELTq8yno2Aq35o&export=download&authuser=0"
+            }, status=404)
+            
+        serializer = AndroidAppVersionSerializer(latest_version)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({
+            "error": str(e),
+            "fallback_url": "https://drive.usercontent.google.com/download?id=1pqqxQbxXjkuWfBWeZLELTq8yno2Aq35o&export=download&authuser=0"
+        }, status=500)
 
 # for frontend
 

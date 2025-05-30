@@ -80,29 +80,32 @@
 <script setup>
 const toast = useToast();
 
+// Use the app download composable
+import { useAppDownload } from '~/composables/useAppDownload';
+const { downloadApp, error } = useAppDownload();
+
 // Download Android app function
-const downloadAndroidApp = () => {
+const downloadAndroidApp = async () => {
   try {
-    console.log('Starting APK download from Google Drive...');
+    console.log('Starting APK download...');
     
-    // Direct Google Drive download link
-    const apkUrl = 'https://drive.usercontent.google.com/download?id=1pqqxQbxXjkuWfBWeZLELTq8yno2Aq35o&export=download&authuser=0';
+    // Use the composable to get the dynamic download URL from admin
+    const success = await downloadApp();
     
-    // Open the download link in a new tab
-    window.open(apkUrl, '_blank');
+    if (success) {
+      // Show success toast
+      toast.add({
+        title: 'Download Started',
+        description: 'AdsyClub Android app is downloading...',
+        color: 'green',
+        icon: 'i-heroicons-check-circle'
+      });
+    } else {
+      throw new Error(error.value || 'Download failed');
+    }
     
-    console.log('Opened Google Drive download link in new tab');
-    
-    // Show success toast
-    toast.add({
-      title: 'Download Started',
-      description: 'AdsyClub Android app is downloading...',
-      color: 'green',
-      icon: 'i-heroicons-check-circle'
-    });
-    
-  } catch (error) {
-    console.error('Download error:', error);
+  } catch (err) {
+    console.error('Download error:', err);
     toast.add({
       title: 'Download Error',
       description: 'Failed to start download. Please try again.',

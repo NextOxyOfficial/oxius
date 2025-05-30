@@ -910,4 +910,29 @@ class NewsLogo(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return f"BN Logo {self.id}"
+        
+class AndroidAppVersion(models.Model):
+    version_name = models.CharField(max_length=50, help_text="Version name (e.g., 1.0.0)")
+    version_code = models.PositiveIntegerField(help_text="Version code (integer, e.g., 100)")
+    download_url = models.URLField(max_length=500, help_text="URL to download the APK")
+    release_notes = models.TextField(blank=True, help_text="What's new in this version")
+    is_active = models.BooleanField(default=True, help_text="Is this the currently active version")
+    min_android_version = models.CharField(max_length=20, default="5.0", help_text="Minimum Android version required")
+    file_size_mb = models.DecimalField(max_digits=6, decimal_places=2, help_text="APK file size in MB", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Android App Version"
+        verbose_name_plural = "Android App Versions"
+        ordering = ['-version_code']
+        
+    def __str__(self):
+        return f"v{self.version_name} (code: {self.version_code})"
+        
+    def save(self, *args, **kwargs):
+        # If this version is being set as active, deactivate all other versions
+        if self.is_active:
+            AndroidAppVersion.objects.exclude(pk=self.pk).update(is_active=False)
+        super().save(*args, **kwargs)
 

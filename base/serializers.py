@@ -472,4 +472,11 @@ class EshopBannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = EshopBanner
         fields = '__all__'
-        
+
+# Android App Version Serializer
+class AndroidAppVersionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AndroidAppVersion
+        fields = ['version_name', 'version_code', 'download_url', 'release_notes', 
+                 'min_android_version', 'file_size_mb', 'created_at']
+

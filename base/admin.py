@@ -7,66 +7,6 @@ from django.urls import reverse
 from .models import *
 
 
-# class CustomUserChangeForm(UserChangeForm):
-#     class Meta(UserChangeForm.Meta):
-#         model = User
-
-# class CustomUserCreationForm(UserCreationForm):
-#     class Meta(UserCreationForm.Meta):
-#         model = User
-
-# class CustomUserAdmin(UserAdmin):
-#     # form = CustomUserChangeForm
-#     # add_form = CustomUserCreationForm
-    
-#     list_display = ('email', 'username', 'phone', 'is_vendor', 'is_active')
-#     list_filter = ('is_vendor', 'is_active', 'user_type', 'kyc')
-    
-#     # def get_fieldsets(self, request, obj=None):
-#     #     if not obj:
-#     #         return self.add_fieldsets
-        
-#     #     return (
-#     #         (None, {'fields': ('email', 'password', 'change_password_button')}),
-#     #         ('Personal info', {'fields': ('username', 'name', 'phone', 'image', 'about')}),
-#     #         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'user_type')}),
-#     #         ('Important dates', {'fields': ('last_login', 'date_joined')}),
-#     #     )
-    
-#     # def get_readonly_fields(self, request, obj=None):
-#     #     if obj:
-#     #         return ('change_password_button',)
-#     #     return ()
-
-#     # def change_password_button(self, obj):
-#     #     if obj:
-#     #         url = reverse('admin:auth_user_password_change', args=[obj.pk])
-#     #         return format_html(
-#     #             '<a class="button" href="{}">Change Password</a>',
-#     #             url
-#     #         )
-#     #     return ''
-#     # change_password_button.short_description = 'Change Password'
-    
-#     add_fieldsets = (
-#         (None, {
-#             'classes': ('wide',),
-#             'fields': ('email', 'username', 'password1', 'password2'),
-#         }),
-#     )
-    
-#     search_fields = ('email', 'username', 'phone')
-#     ordering = ('email',)
-
-# # Unregister any existing User admin
-# try:
-#     admin.site.unregister(User)
-# except admin.sites.NotRegistered:
-#     pass
-
-# # Register the custom admin
-# admin.site.register(User, CustomUserAdmin)
-# admin.site.register(User)
 admin.site.register(DiamondPackages)
 admin.site.register(EshopBanner)
 
@@ -362,6 +302,36 @@ class DiamondTransactionAdmin(admin.ModelAdmin):
         return obj.created_at
 
 admin.site.register(DiamondTransaction, DiamondTransactionAdmin)
+
+@admin.register(AndroidAppVersion)
+class AndroidAppVersionAdmin(admin.ModelAdmin):
+    list_display = ('version_name', 'version_code', 'is_active', 'file_size_mb', 'download_link', 'created_at')
+    list_filter = ('is_active', 'min_android_version')
+    search_fields = ('version_name', 'version_code', 'release_notes')
+    readonly_fields = ('created_at', 'updated_at')
+    fieldsets = (
+        ('Version Information', {
+            'fields': ('version_name', 'version_code', 'is_active', 'min_android_version', 'file_size_mb')
+        }),
+        ('Download Details', {
+            'fields': ('download_url', 'release_notes')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def download_link(self, obj):
+        if obj.download_url:
+            return format_html('<a href="{}" target="_blank">Download Link</a>', obj.download_url)
+        return "-"
+    
+    download_link.short_description = "Download"
+    
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # Clear cache or perform other actions as needed
 
 
 

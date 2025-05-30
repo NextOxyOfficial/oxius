@@ -777,18 +777,17 @@ const showQr = ref(false);
 // Subscription alert state
 const warningDismissed = ref(false);
 
+// Use the app download composable
+import { useAppDownload } from '~/composables/useAppDownload';
+const { downloadApp } = useAppDownload();
+
 // Download Android app function
-const downloadAndroidApp = () => {
+const downloadAndroidApp = async () => {
   try {
-    console.log('Starting APK download from Google Drive...');
+    console.log('Starting APK download...');
     
-    // Direct Google Drive download link
-    const apkUrl = 'https://drive.usercontent.google.com/download?id=1pqqxQbxXjkuWfBWeZLELTq8yno2Aq35o&export=download&authuser=0';
-    
-    // Open the download link in a new tab
-    window.open(apkUrl, '_blank');
-    
-    console.log('Opened Google Drive download link in new tab');
+    // Use the composable to get the dynamic download URL from admin
+    await downloadApp();
     
     // Close the mobile menu
     isOpen.value = false;
