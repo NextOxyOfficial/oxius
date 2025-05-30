@@ -98,14 +98,14 @@ class TicketReplyAdmin(admin.ModelAdmin):
     
     def message_preview(self, obj):
         """Display the rendered HTML message"""
-        if obj.message:
-            return format_html(
+        if obj.message:            return format_html(
                 '<div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f9f9f9;">{}</div>',
                 obj.message
             )
         return "No message"
     
     message_preview.short_description = "Message Preview (Rendered)"
+    
     def short_message(self, obj):
         return obj.message[:50] + '...' if len(obj.message) > 50 else obj.message
     
