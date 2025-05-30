@@ -80,12 +80,12 @@
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-semibold text-gray-800 mb-4">
             {{ $t("popular_packages") }}
-          </h2>
-          <UButton
+          </h2>          <UButton
             :label="t('recharge_history')"
             icon="i-icon-park-outline-history-query"
             @click="isHistory = true"
             size="md"
+            variant="outline"
           />
         </div>
         <div
@@ -232,126 +232,10 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>    <!-- Recharge Modal -->
-    <div
-      v-if="selectedPackage"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-    >
-      <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-sm">
-        <div class="flex justify-between items-start mb-4">
-          <h3 class="text-xl font-semibold text-gray-800">Confirm Recharge</h3>
-          <button
-            @click="selectedPackage = null"
-            class="text-gray-600 hover:text-gray-600"
-          >
-            <x-icon class="w-5 h-5" />
-          </button>
-        </div>
+      </div>    </div>
 
-        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-          <div class="flex justify-between mb-2">
-            <span class="text-gray-600">Package</span>
-            <span class="font-medium">{{ selectedPackage.type }}</span>
-          </div>
-          <div class="flex justify-between mb-2">
-            <span class="text-gray-600">Amount</span>
-            <span class="font-medium">{{ selectedPackage.price }}</span>
-          </div>
-          <div class="flex justify-between mb-2">
-            <span class="text-gray-600">Data</span>
-            <span class="font-medium">{{ selectedPackage.data }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-600">Validity</span>
-            <span class="font-medium">{{ selectedPackage.validity }}</span>
-          </div>
-        </div>
-
-        <!-- Balance warning -->
-        <div
-          v-if="!hasSufficientBalance"
-          class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm"
-        >
-          <div class="flex items-center">
-            <UIcon
-              name="i-heroicons-exclamation-triangle"
-              class="w-5 h-5 mr-2"
-            />
-            <span>
-              Insufficient balance for this recharge. Please add funds to your
-              account.
-            </span>
-          </div>
-
-          <!-- Add a button to navigate to deposit page -->
-          <UButton
-            to="/deposit-withdraw"
-            color="emerald"
-            variant="soft"
-            class="w-full mt-3"
-            size="sm"
-          >
-            Add Funds
-          </UButton>
-        </div>
-
-        <!-- Only show phone input field if balance is sufficient -->
-        <div v-if="hasSufficientBalance" class="mb-4">
-          <label
-            for="phone"
-            class="block text-sm font-medium text-gray-800 mb-1"
-            >Mobile Number</label
-          >
-          <input
-            v-model="phoneNumber"
-            type="tel"
-            id="phone"
-            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-            placeholder="Enter mobile number"
-          />
-        </div>
-
-        <div class="flex space-x-3">
-          <button
-            @click="selectedPackage = null"
-            class="flex-1 py-2 px-4 border border-gray-300 rounded-md text-gray-800 bg-white hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            @click="handleRecharge"
-            :disabled="!hasSufficientBalance"
-            class="flex-1 py-2 px-4 text-white font-medium rounded-md transition"
-            :class="[
-              hasSufficientBalance
-                ? 'bg-green-500 hover:bg-green-600'
-                : 'bg-gray-400 cursor-not-allowed',
-            ]"
-          >
-            {{ hasSufficientBalance ? "Recharge" : "Insufficient Balance" }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Success Toast -->
-    <div
-      v-if="showToast"
-      class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-sm flex items-center"
-    >
-      <check-circle-icon class="w-5 h-5 mr-2" />
-      <span>Recharge successful!</span>
-    </div>    <UModal 
-      v-model="isHistory" 
-      :ui="{
-        width: 'w-full sm:max-w-4xl',
-        height: 'h-auto',
-        wrapper: 'z-50',
-        overlay: 'z-40 backdrop-blur-sm',
-        container: 'z-50'
-      }"
-    >
+    <!-- Recharge Modal -->
+    <UModal v-model="showRechargeModal">
       <UCard
         :ui="{
           ring: '',
@@ -359,6 +243,124 @@
         }"
       >
         <template #header>
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              Confirm Recharge
+            </h3>
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-x-mark-20-solid"
+              class="-my-1"
+              @click="showRechargeModal = false"
+            />
+          </div>
+        </template>
+
+        <div class="space-y-4">
+          <!-- Package Details -->
+          <div class="p-4 bg-gray-50 rounded-lg">
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-600">Package</span>
+              <span class="font-medium">{{ selectedPackage?.type }}</span>
+            </div>
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-600">Amount</span>
+              <span class="font-medium">{{ selectedPackage?.price }}</span>
+            </div>
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-600">Data</span>
+              <span class="font-medium">{{ selectedPackage?.data }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Validity</span>
+              <span class="font-medium">{{ selectedPackage?.validity }}</span>
+            </div>
+          </div>
+
+          <!-- Balance warning -->
+          <div
+            v-if="!hasSufficientBalance"
+            class="p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm"
+          >
+            <div class="flex items-center">
+              <UIcon
+                name="i-heroicons-exclamation-triangle"
+                class="w-5 h-5 mr-2"
+              />
+              <span>
+                Insufficient balance for this recharge. Please add funds to your
+                account.
+              </span>
+            </div>
+
+            <!-- Add a button to navigate to deposit page -->
+            <UButton
+              to="/deposit-withdraw"
+              color="emerald"
+              variant="soft"
+              class="w-full mt-3"
+              size="sm"
+            >
+              Add Funds
+            </UButton>
+          </div>
+
+          <!-- Only show phone input field if balance is sufficient -->
+          <div v-if="hasSufficientBalance">
+            <label
+              for="phone"
+              class="block text-sm font-medium text-gray-800 mb-2"
+              >Mobile Number</label
+            >
+            <UInput
+              v-model="phoneNumber"
+              type="tel"
+              id="phone"
+              placeholder="Enter mobile number"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex space-x-3 pt-4">
+            <UButton
+              @click="showRechargeModal = false"
+              color="gray"
+              variant="outline"
+              class="flex-1"
+            >
+              Cancel
+            </UButton>
+            <UButton
+              @click="handleRecharge"
+              :disabled="!hasSufficientBalance"
+              color="green"
+              class="flex-1"
+            >
+              {{ hasSufficientBalance ? "Recharge" : "Insufficient Balance" }}
+            </UButton>
+          </div>
+        </div>
+      </UCard>
+    </UModal>
+
+    <!-- Success Toast -->
+    <div
+      v-if="showToast"
+      class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center z-50"
+    >
+      <UIcon name="i-heroicons-check-circle" class="w-5 h-5 mr-2" />
+      <span>Recharge successful!</span>
+    </div>    <UModal 
+      v-model="isHistory"
+    >
+      <UCard
+        :ui="{
+          ring: '',
+          divide: 'divide-y divide-gray-100 dark:divide-gray-800',
+        }"
+      >        <template #header>
           <div class="flex justify-between items-center">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ $t("recharge_history") }}
@@ -373,7 +375,7 @@
           </div>
         </template>
 
-        <MobileRechargeHistory />
+        <LazyMobileRechargeHistory />
       </UCard>
     </UModal>
   </div>
@@ -461,28 +463,31 @@ async function handleRecharge() {
     operator: selectedPackage.value.operator,
     amount: selectedPackage.value.price,
   };
-
   try {
     console.log(submitValues);
     const res = await post("/mobile-recharge/recharges/", submitValues);
     if (res.data) {
-      toast.add({ title: "Recharge successful!" });
-      isHistory.value = false;
+      toast.add({ title: "Recharge successful!", color: "green" });
       selectedPackage.value = null;
-      jwtLogin();
-    }
-  } catch (err) {
+      phoneNumber.value = "";
+      showToast.value = true;
+      setTimeout(() => {
+        showToast.value = false;
+      }, 3000);
+      jwtLogin(); // Refresh user balance
+    }} catch (err) {
     console.log(err);
-    toast.error(err.response?.data?.message || "Recharge failed");
+    toast.add({
+      title: err.response?.data?.message || "Recharge failed", 
+      color: "red"
+    });
   }
 }
 
 // Add this computed property to check balance sufficiency
 const hasSufficientBalance = computed(() => {
   if (!selectedPackage.value) return true;
-  const packagePrice = parseFloat(
-    selectedPackage.value.price.replace(/[^\d.]/g, "")
-  );
+  const packagePrice = parseFloat(selectedPackage.value.price);
   const userBalance = parseFloat(user.value?.user.balance || 0);
   return packagePrice <= userBalance;
 });

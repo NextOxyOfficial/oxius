@@ -5,6 +5,7 @@ export function useMobileRecharge() {
 
   const operators = ref([]);
   const packages = ref([]);
+  const rechargeHistory = ref([]);
   const isLoading = ref(false);
   const searchQuery = ref("");
   const activeFilter = ref("all");
@@ -60,6 +61,23 @@ export function useMobileRecharge() {
     }
   }
 
+  // Fetch recharge history
+  async function fetchRechargeHistory() {
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      const response = await get("/mobile-recharge/recharges/");
+      rechargeHistory.value = response.data || [];
+    } catch (err) {
+      error.value = "Failed to load recharge history";
+      console.error(err);
+      rechargeHistory.value = [];
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Process recharge
   async function processRecharge(packageId, phoneNumber) {
     isLoading.value = true;
@@ -71,11 +89,11 @@ export function useMobileRecharge() {
       if (!selectedPackage) {
         throw new Error("Package not found");
       }
-
       const response = await post("/mobile-recharge/recharges/", {
         package: packageId,
         phone_number: phoneNumber,
-        amount: parseFloat(selectedPackage.price.replace("$", "")),
+        operator: selectedPackage.operator,
+        amount: selectedPackage.price,
       });
 
       return response.data;
@@ -106,6 +124,7 @@ export function useMobileRecharge() {
   return {
     operators,
     packages,
+    rechargeHistory,
     popularPackages,
     filteredPackages,
     isLoading,
@@ -115,6 +134,7 @@ export function useMobileRecharge() {
     selectedOperator,
     fetchOperators,
     fetchPackages,
+    fetchRechargeHistory,
     processRecharge,
   };
 }
