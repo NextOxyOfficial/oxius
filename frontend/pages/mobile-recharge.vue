@@ -233,12 +233,10 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Recharge Modal -->
+    </div>    <!-- Recharge Modal -->
     <div
       v-if="selectedPackage"
-      class="fixed inset-0 top-10 bottom-10 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
     >
       <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-sm">
         <div class="flex justify-between items-start mb-4">
@@ -344,17 +342,39 @@
     >
       <check-circle-icon class="w-5 h-5 mr-2" />
       <span>Recharge successful!</span>
-    </div>
-    <UModal v-model="isHistory" class="relative">
-      <UButton
-        icon="i-heroicons-x-mark"
-        size="sm"
-        variant="solid"
-        class="m-3 absolute top-0 right-0 bg-slate-500"
-        :trailing="false"
-        @click="isHistory = false"
-      />
-      <MobileRechargeHistory />
+    </div>    <UModal 
+      v-model="isHistory" 
+      :ui="{
+        width: 'w-full sm:max-w-4xl',
+        height: 'h-auto',
+        wrapper: 'z-50',
+        overlay: 'z-40 backdrop-blur-sm',
+        container: 'z-50'
+      }"
+    >
+      <UCard
+        :ui="{
+          ring: '',
+          divide: 'divide-y divide-gray-100 dark:divide-gray-800',
+        }"
+      >
+        <template #header>
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              {{ $t("recharge_history") }}
+            </h3>
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-x-mark-20-solid"
+              class="-my-1"
+              @click="isHistory = false"
+            />
+          </div>
+        </template>
+
+        <MobileRechargeHistory />
+      </UCard>
     </UModal>
   </div>
 </template>
