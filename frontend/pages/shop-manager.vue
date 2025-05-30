@@ -862,7 +862,7 @@
 
     <!-- Product Limit Modal -->
     <UModal v-model="showProductLimitModal">
-      <div class="bg-white rounded-xl shadow-sm overflow-hidden max-w-md">
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden w-full">
         <!-- Premium gradient header -->
         <div class="bg-gradient-to-r from-red-500 via-orange-400 to-amber-500 p-6 text-white relative overflow-hidden">
           <!-- Decorative elements -->
@@ -926,7 +926,7 @@
 
     <!-- Buy More Slots Modal -->
     <UModal v-model="showBuySlotsModal">
-      <div class="bg-white rounded-xl shadow-sm overflow-hidden max-w-md">
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden w-full">
         <!-- Header -->
         <div class="bg-gradient-to-r from-emerald-600 to-emerald-500 p-6 text-white relative overflow-hidden">
           <!-- Decorative elements -->
