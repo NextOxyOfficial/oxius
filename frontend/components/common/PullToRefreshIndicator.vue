@@ -168,13 +168,14 @@ const progressOffset = computed(() => {
 
 <style scoped>
 .pull-to-refresh-indicator {
-  @apply fixed left-1/2 transform -translate-x-1/2 z-50;
+  @apply fixed left-1/2 transform -translate-x-1/2;
   @apply flex flex-col items-center justify-center;
   @apply bg-white dark:bg-gray-800 rounded-2xl shadow-lg;
   @apply px-6 py-4 min-w-[200px];
   @apply border border-gray-200 dark:border-gray-700;
   @apply backdrop-blur-sm bg-white/90 dark:bg-gray-800/90;
   top: 80px; /* Sufficient margin to avoid header */
+  z-index: 999999999; /* Higher than header z-index to ensure visibility */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
   user-select: none;
@@ -241,9 +242,10 @@ const progressOffset = computed(() => {
 
 /* Refresh overlay */
 .refresh-overlay {
-  @apply fixed inset-0 z-40;
+  @apply fixed inset-0;
   @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm;
   @apply flex items-center justify-center;
+  z-index: 999999998; /* Just below the indicator but above headers */
   animation: fadeIn 0.3s ease-out;
 }
 
