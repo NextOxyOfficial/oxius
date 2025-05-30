@@ -10,7 +10,7 @@
     <!-- Sidebar -->
     <aside
       :class="[
-        'sm:max-h-screen fixed sm:static top-14 bottom-0 pb-16 sm:pb-0 z-50 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out rounded-t-sm',
+        'sm:max-h-screen fixed sm:static top-0 bottom-0 pb-16 sm:pb-0 z-50 flex flex-col bg-white border-r border-gray-200 transition-all duration-300 ease-in-out rounded-t-sm',
         isMobile
           ? cart.burgerMenu
             ? 'translate-x-0 w-72'
