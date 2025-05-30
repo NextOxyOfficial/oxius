@@ -8,6 +8,7 @@ from .models import *
 
 
 admin.site.register(DiamondPackages)
+admin.site.register(ProductSlotPackage)
 admin.site.register(EshopBanner)
 
 class CustomUserChangeForm(UserChangeForm):

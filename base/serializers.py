@@ -467,6 +467,13 @@ class DiamondPackagesSerializer(serializers.ModelSerializer):
         model = DiamondPackages
         fields = '__all__'
 
+class ProductSlotPackageSerializer(serializers.ModelSerializer):
+    discount_percentage = serializers.IntegerField(read_only=True)
+    
+    class Meta:
+        model = ProductSlotPackage
+        fields = '__all__'
+
 
 class EshopBannerSerializer(serializers.ModelSerializer):
     class Meta:

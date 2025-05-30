@@ -955,103 +955,54 @@
               You need more slots to add additional products.
             </p>
           </div>
-          
-          <!-- Slot package selection -->
+            <!-- Slot package selection -->
           <div class="space-y-4 mb-6">
             <h4 class="text-gray-700 font-medium">Select Package:</h4>
             
-            <div class="grid gap-3">
-              <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none hover:border-emerald-500 transition-all"
-                :class="{'border-emerald-500 ring-2 ring-emerald-500 ring-opacity-30': selectedSlotPackage === 5}"
+            <div v-if="isLoadingPackages" class="flex items-center justify-center py-8">
+              <UIcon name="i-heroicons-arrow-path" class="h-6 w-6 text-emerald-600 animate-spin" />
+              <span class="ml-2 text-gray-600">Loading packages...</span>
+            </div>
+            
+            <div v-else class="grid gap-3">
+              <label 
+                v-for="pkg in productSlotPackages" 
+                :key="pkg.id"
+                class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none hover:border-emerald-500 transition-all"
+                :class="{'border-emerald-500 ring-2 ring-emerald-500 ring-opacity-30': selectedSlotPackage && selectedSlotPackage.id === pkg.id}"
               >
                 <input 
                   type="radio" 
                   name="slot-package" 
-                  value="5"
-                  v-model="selectedSlotPackage"
-                  class="sr-only" 
-                />
-                <span class="flex flex-1">
-                  <span class="flex flex-col">
-                    <span class="block font-medium text-gray-900">5 Additional Slots</span>
-                    <span class="mt-1 flex items-center text-sm text-gray-500">
-                      <UIcon name="i-heroicons-shopping-bag" class="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
-                      Add 5 more product listings
-                    </span>
-                    <span class="mt-2 text-emerald-600 font-medium flex items-center">
-                      <UIcon name="i-heroicons-tag" class="h-4 w-4 mr-1" /> ৳500
-                    </span>
-                  </span>
-                </span>
-                <UIcon 
-                  name="i-heroicons-check-circle" 
-                  class="h-5 w-5 text-emerald-600"
-                  :class="{'opacity-100': selectedSlotPackage === 5, 'opacity-0': selectedSlotPackage !== 5}"
-                />
-              </label>
-
-              <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none hover:border-emerald-500 transition-all"
-                :class="{'border-emerald-500 ring-2 ring-emerald-500 ring-opacity-30': selectedSlotPackage === 10}"
-              >
-                <input 
-                  type="radio" 
-                  name="slot-package" 
-                  value="10"
-                  v-model="selectedSlotPackage"
-                  class="sr-only" 
-                />
-                <span class="flex flex-1">
-                  <span class="flex flex-col">
-                    <span class="block font-medium text-gray-900">10 Additional Slots</span>
-                    <span class="mt-1 flex items-center text-sm text-gray-500">
-                      <UIcon name="i-heroicons-shopping-bag" class="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
-                      Add 10 more product listings
-                    </span>
-                    <span class="mt-2 text-emerald-600 font-medium flex items-center">
-                      <UIcon name="i-heroicons-tag" class="h-4 w-4 mr-1" /> ৳900 
-                      <span class="text-xs text-gray-500 line-through ml-2">৳1000</span>
-                      <span class="text-xs bg-emerald-100 text-emerald-800 ml-2 px-1.5 py-0.5 rounded">Save 10%</span>
-                    </span>
-                  </span>
-                </span>
-                <UIcon 
-                  name="i-heroicons-check-circle" 
-                  class="h-5 w-5 text-emerald-600"
-                  :class="{'opacity-100': selectedSlotPackage === 10, 'opacity-0': selectedSlotPackage !== 10}"
-                />
-              </label>
-
-              <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none hover:border-emerald-500 transition-all"
-                :class="{'border-emerald-500 ring-2 ring-emerald-500 ring-opacity-30': selectedSlotPackage === 20}"
-              >
-                <input 
-                  type="radio" 
-                  name="slot-package" 
-                  value="20"
+                  :value="pkg"
                   v-model="selectedSlotPackage"
                   class="sr-only" 
                 />
                 <span class="flex flex-1">
                   <span class="flex flex-col">
                     <span class="block font-medium text-gray-900">
-                      20 Additional Slots
-                      <span class="ml-2 text-xs bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded">BEST VALUE</span>
+                      {{ pkg.slots }} Additional Slots
+                      <span v-if="pkg.is_featured" class="ml-2 text-xs bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded">BEST VALUE</span>
                     </span>
                     <span class="mt-1 flex items-center text-sm text-gray-500">
                       <UIcon name="i-heroicons-shopping-bag" class="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
-                      Add 20 more product listings
+                      Add {{ pkg.slots }} more product listings
                     </span>
                     <span class="mt-2 text-emerald-600 font-medium flex items-center">
-                      <UIcon name="i-heroicons-tag" class="h-4 w-4 mr-1" /> ৳1600 
-                      <span class="text-xs text-gray-500 line-through ml-2">৳2000</span>
-                      <span class="text-xs bg-emerald-100 text-emerald-800 ml-2 px-1.5 py-0.5 rounded">Save 20%</span>
+                      <UIcon name="i-heroicons-tag" class="h-4 w-4 mr-1" /> ৳{{ pkg.price }} 
+                      <template v-if="pkg.original_price && pkg.original_price > pkg.price">
+                        <span class="text-xs text-gray-500 line-through ml-2">৳{{ pkg.original_price }}</span>
+                        <span class="text-xs bg-emerald-100 text-emerald-800 ml-2 px-1.5 py-0.5 rounded">
+                          Save {{ Math.round(((pkg.original_price - pkg.price) / pkg.original_price) * 100) }}%
+                        </span>
+                      </template>
                     </span>
                   </span>
                 </span>
                 <UIcon 
                   name="i-heroicons-check-circle" 
                   class="h-5 w-5 text-emerald-600"
-                  :class="{'opacity-100': selectedSlotPackage === 20, 'opacity-0': selectedSlotPackage !== 20}"
+                  :class="{'opacity-100': selectedSlotPackage && selectedSlotPackage.id === pkg.id, 'opacity-0': !selectedSlotPackage || selectedSlotPackage.id !== pkg.id}"
                 />
               </label>
             </div>
@@ -1068,9 +1019,7 @@
               Add Funds
             </NuxtLink>
           </div>          <!-- Insufficient balance warning -->
-          <div v-if="(selectedSlotPackage === 5 && user?.user?.balance < 500) || 
-                     (selectedSlotPackage === 10 && user?.user?.balance < 900) || 
-                     (selectedSlotPackage === 20 && user?.user?.balance < 1600)"
+          <div v-if="selectedSlotPackage && user?.user?.balance < selectedSlotPackage.price"
                class="bg-red-50 border border-red-100 rounded-lg p-3 mb-6 text-sm text-red-800 flex items-start">
             <UIcon name="i-heroicons-exclamation-circle" class="h-5 w-5 text-red-500 mr-2 flex-shrink-0" />
             <div>
@@ -1089,10 +1038,8 @@
               color="primary"
               icon="i-heroicons-shopping-cart"
               @click="purchaseProductSlots"
-              class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
-              :disabled="(selectedSlotPackage === 5 && user?.user?.balance < 500) || 
-                         (selectedSlotPackage === 10 && user?.user?.balance < 900) || 
-                         (selectedSlotPackage === 20 && user?.user?.balance < 1600) ||
+              class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"              :disabled="!selectedSlotPackage || 
+                         (user?.user?.balance < (selectedSlotPackage?.price || 0)) ||
                          isPurchasing"
               :loading="isPurchasing"
             >
@@ -1440,21 +1387,59 @@ onMounted(async () => {
 });
 
 // Purchase product slots
-const selectedSlotPackage = ref(5); // Default to 5 slots package
+const selectedSlotPackage = ref(null); // Will be set to a package object
+const productSlotPackages = ref([]);
 const isPurchasing = ref(false);
+const isLoadingPackages = ref(false);
+
+async function fetchProductSlotPackages() {
+  isLoadingPackages.value = true;
+  try {
+    const { data } = await get('/product-slot-packages/');
+    productSlotPackages.value = data || [];
+    
+    // Set default selected package (if packages are available)
+    if (productSlotPackages.value.length > 0) {
+      selectedSlotPackage.value = productSlotPackages.value[0];
+    } else {
+      // Fallback to hardcoded packages if API returns empty
+      productSlotPackages.value = [
+        { id: 'default1', slots: 5, price: 500 },
+        { id: 'default2', slots: 10, price: 900, original_price: 1000 },
+        { id: 'default3', slots: 20, price: 1600, original_price: 2000, is_featured: true },
+      ];
+      selectedSlotPackage.value = productSlotPackages.value[0];
+    }
+  } catch (error) {
+    console.error("Error loading product slot packages:", error);
+    // Fallback to hardcoded packages
+    productSlotPackages.value = [
+      { id: 'default1', slots: 5, price: 500 },
+      { id: 'default2', slots: 10, price: 900, original_price: 1000 },
+      { id: 'default3', slots: 20, price: 1600, original_price: 2000, is_featured: true },
+    ];
+    selectedSlotPackage.value = productSlotPackages.value[0];
+  } finally {
+    isLoadingPackages.value = false;
+  }
+}
+
+// Fetch packages when modal opens
+watch(showBuySlotsModal, (newValue) => {
+  if (newValue) {
+    fetchProductSlotPackages();
+  }
+});
 
 async function purchaseProductSlots() {
   isPurchasing.value = true;
   try {
-    // Calculate the cost based on the selected package
-    let cost = 0;
-    if (selectedSlotPackage.value === 5) {
-      cost = 500;
-    } else if (selectedSlotPackage.value === 10) {
-      cost = 900;
-    } else if (selectedSlotPackage.value === 20) {
-      cost = 1600;
+    if (!selectedSlotPackage.value) {
+      showToast("error", "Selection Required", "Please select a package to purchase.");
+      return;
     }
+    
+    const cost = selectedSlotPackage.value.price;
 
     // Check if user has enough balance
     if (user.value?.user?.balance < cost) {
@@ -1464,25 +1449,24 @@ async function purchaseProductSlots() {
         `You need ৳${cost} to purchase this package. Please add funds to your account.`
       );
       return;
-    }
-
-    // Make API call to purchase slots
+    }    // Make API call to purchase slots
     const { data } = await post('/purchase-product-slots/', {
-      slot_count: selectedSlotPackage.value,
-      cost
+      package_id: selectedSlotPackage.value.id,
+      slot_count: selectedSlotPackage.value.slots, // For backward compatibility
+      cost: selectedSlotPackage.value.price // For backward compatibility
     });
 
     if (data && data.success) {
       // Update user's product limit and balance
-      user.value.user.product_limit += selectedSlotPackage.value;
-      user.value.user.balance -= cost;
+      user.value.user.product_limit += selectedSlotPackage.value.slots;
+      user.value.user.balance -= selectedSlotPackage.value.price;
       
       showToast(
         "success",
         "Purchase Successful",
-        `You have successfully purchased ${selectedSlotPackage.value} additional product slot${
-          selectedSlotPackage.value > 1 ? "s" : ""
-        } for ৳${cost}.`
+        `You have successfully purchased ${selectedSlotPackage.value.slots} additional product slot${
+          selectedSlotPackage.value.slots > 1 ? "s" : ""
+        } for ৳${selectedSlotPackage.value.price}.`
       );
 
       // Close modal

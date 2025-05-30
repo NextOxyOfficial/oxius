@@ -128,10 +128,11 @@ urlpatterns = [
   path('platform-referral-stats/', platform_referral_stats, name='platform-referral-stats'),
   path('bn-logo/', BNLogoView.as_view(), name='bn-logo'),
   path('news-logo/', NewsLogoView.as_view(), name='news-logo'),
-
   # Diamond API endpoints
   path('diamonds/packages/', DiamondPackageListView.as_view(), name='diamond_package_list'),
   path('diamonds/purchase/', PurchaseDiamondsView.as_view(), name='purchase_diamonds'),
+  # Product slots API endpoints
+  path('product-slot-packages/', ProductSlotPackageListView.as_view(), name='product_slot_package_list'),
   path('diamonds-transactions/', DiamondTransactionListView.as_view(), name='diamond_transactions'),
   path('business-network/send-diamond-gift/', SendDiamondGiftView.as_view(), name='send_diamond_gift'),
   path('diamonds/send-gift/', SendDiamondGiftView.as_view(), name='send_diamond_gift'),

@@ -824,6 +824,28 @@ class DiamondPackages(models.Model):
     
     def __str__(self):
         return f"Diamonds: {self.diamonds} - Price: {self.price}"
+        
+class ProductSlotPackage(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    slots = models.IntegerField(help_text="Number of product slots in this package")
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    original_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, help_text="Original price before discount")
+    is_featured = models.BooleanField(default=False, help_text="Highlight this package as best value")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['slots']
+    
+    def __str__(self):
+        return f"{self.slots} Slots - ৳{self.price}"
+    
+    @property
+    def discount_percentage(self):
+        """Calculate discount percentage if original price is set"""
+        if self.original_price and self.original_price > self.price:
+            return int(((self.original_price - self.price) / self.original_price) * 100)
+        return 0
 
 class DiamondTransaction(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

@@ -2347,25 +2347,39 @@ def purchase_product_slots(request):
     """
     Endpoint to handle the purchase of additional product slots.
     """
+    package_id = request.data.get('package_id')
     slot_count = request.data.get('slot_count', 0)
     cost = request.data.get('cost', 0)
     
-    if not slot_count or not cost:
+    if not package_id and (not slot_count or not cost):
         return Response(
-            {'success': False, 'message': 'Invalid slot count or cost'}, 
+            {'success': False, 'message': 'Invalid package ID or slot count/cost'}, 
             status=status.HTTP_400_BAD_REQUEST
         )
     
     user = request.user
     
-    # Validate cost against slot count to prevent client-side manipulation
+    # If package_id is provided, validate against package in database
     valid_cost = False
-    if slot_count == 5 and cost == 500:
-        valid_cost = True
-    elif slot_count == 10 and cost == 900:
-        valid_cost = True
-    elif slot_count == 20 and cost == 1600:
-        valid_cost = True
+    if package_id:
+        try:
+            package = ProductSlotPackage.objects.get(id=package_id)
+            slot_count = package.slots
+            cost = package.price
+            valid_cost = True
+        except ProductSlotPackage.DoesNotExist:
+            return Response(
+                {'success': False, 'message': 'Invalid package ID'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    else:
+        # For backward compatibility, check hardcoded values
+        if slot_count == 5 and cost == 500:
+            valid_cost = True
+        elif slot_count == 10 and cost == 900:
+            valid_cost = True
+        elif slot_count == 20 and cost == 1600:
+            valid_cost = True
     
     if not valid_cost:
         return Response(
@@ -2450,6 +2464,11 @@ def product_order_count(request, product_id):
 class DiamondPackageListView(generics.ListAPIView):
     queryset = DiamondPackages.objects.all()
     serializer_class = DiamondPackagesSerializer
+
+class ProductSlotPackageListView(generics.ListAPIView):
+    queryset = ProductSlotPackage.objects.all()
+    serializer_class = ProductSlotPackageSerializer
+    permission_classes = [AllowAny]
 
 class DiamondTransactionListView(generics.ListAPIView):
     serializer_class = DiamondTransactionSerializer
