@@ -1544,10 +1544,10 @@ let autoRefreshInterval;
 onMounted(async () => {
   await getMessages();
 
-  // Set up auto-refresh every 30 seconds
-  autoRefreshInterval = setInterval(async () => {
-    await getMessages(true);
-  }, 30000);
+  // Auto-refresh disabled - users can manually refresh by pulling down
+  // autoRefreshInterval = setInterval(async () => {
+  //   await getMessages(true);
+  // }, 30000);
 });
 
 onBeforeUnmount(() => {

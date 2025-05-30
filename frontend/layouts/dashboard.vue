@@ -108,14 +108,12 @@ useHead({
     </section>
 
     <PublicHeader v-if="!isLoading && user" />
-    
-    <!-- Pull to Refresh Wrapper for dashboard content -->
+      <!-- Pull to Refresh Wrapper for dashboard content -->
     <PullToRefreshWrapper
       v-if="!isLoading && user"
       :enabled="enablePullToRefresh"
       :refresh-callback="handlePageRefresh"
-      :auto-reload="true"
-      :auto-reload-interval="300000"
+      :auto-reload="false"
       :show-network-status="true"
       :haptic-feedback="true"
       :theme="$colorMode.preference"

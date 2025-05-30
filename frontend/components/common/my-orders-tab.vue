@@ -2119,11 +2119,6 @@ let orderUpdateInterval;
 onMounted(async () => {
   await getOrders();
   await getProducts();
-
-  // Set up polling interval (every 2 minutes)
-  orderUpdateInterval = setInterval(() => {
-    getOrders();
-  }, 120000);
 });
 
 onBeforeUnmount(() => {
