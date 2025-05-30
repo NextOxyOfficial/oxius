@@ -4,96 +4,17 @@
   >
     <!-- Content Container -->
 
-    <div class="relative z-10">
-      <!-- 1. Main Carousel -->
+    <div class="relative z-10">      <!-- 1. Main Carousel -->
       <section class="mb-8 pt-2">
-        <div class="relative w-full overflow-hidden rounded-xl shadow-sm">
-          <!-- Carousel container -->
-          <div
-            class="relative h-[200px] sm:h-[250px] md:h-[300px] w-full overflow-hidden"
-            @mouseenter="pauseAutoplay"
-            @mouseleave="startAutoplay"
-          >
-            <!-- Carousel slides -->
-            <div
-              class="flex h-full transition-transform duration-500 ease-in-out"
-              :style="{ transform: `translateX(-${currentIndex * 100}%)` }"
-            >
-              <!-- Dynamic Slides -->
-              <div
-                v-for="(slide, index) in carouselSlides"
-                :key="index"
-                class="min-w-full h-full relative"
-              >
-                <div class="absolute inset-0 bg-gradient-to-r"></div>
-                <div
-                  class="absolute inset-0 bg-cover bg-center"
-                  :style="{
-                    backgroundImage: `url('${slide?.image}')`,
-                  }"
-                ></div>
-              </div>
-            </div>
-
-            <!-- Navigation arrows -->
-            <button
-              @click="prevSlide"
-              class="opacity-0 absolute left-2 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white rounded-full p-1.5 focus:outline-none transition-colors z-30 backdrop-blur-sm"
-              aria-label="Previous slide"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-chevron-left"
-              >
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            </button>
-            <button
-              @click="nextSlide"
-              class="opacity-0 absolute right-2 top-1/2 -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white rounded-full p-1.5 focus:outline-none transition-colors z-30 backdrop-blur-sm"
-              aria-label="Next slide"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-chevron-right"
-              >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Indicators -->
-          <div
-            class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-30"
-          >
-            <button
-              v-for="(_, index) in carouselSlides"
-              :key="_.id"
-              @click="goToSlide(index)"
-              :class="[
-                'w-2 h-2 rounded-full transition-all focus:outline-none',
-                currentIndex === index ? 'bg-white w-5' : 'bg-white/50',
-              ]"
-              :aria-label="`Go to slide ${index + 1}`"
-            ></button>
-          </div>
-        </div>
+        <CommonEshopBanner 
+          :customHeight="{
+            mobile: '38%',
+            tablet: '25%',
+            desktop: '22%'
+          }"
+          endpoint="/eshop-banner/"
+          :autoplayInterval="5000"
+        />
       </section>
 
       <!-- 2. Hot Deals Section - Using the new separated component -->
@@ -201,20 +122,6 @@ async function fetchHotArrivals() {
 }
 
 await fetchHotArrivals();
-
-// Carousel data
-const carouselSlides = ref([]);
-
-async function fetchCarouselSlides() {
-  try {
-    const response = await get("/eshop-banner/");
-    carouselSlides.value = response.data;
-    console.log("Carousel Slides:", carouselSlides.value);
-  } catch (error) {
-    console.error("Error fetching carousel slides:", error);
-  }
-}
-await fetchCarouselSlides();
 
 // New Arrivals Cards
 const newArrivalsCards = [
@@ -328,36 +235,7 @@ const newArrivalsCards = [
   },
 ];
 
-// Carousel functionality
-const currentIndex = ref(0);
-const autoplayInterval = ref(null);
-const autoplayDelay = 5000; // 5 seconds
-
-const nextSlide = () => {
-  currentIndex.value = (currentIndex.value + 1) % carouselSlides.length;
-};
-
-const prevSlide = () => {
-  currentIndex.value =
-    (currentIndex.value - 1 + carouselSlides.length) % carouselSlides.length;
-};
-
-const goToSlide = (index) => {
-  currentIndex.value = index;
-};
-
-const startAutoplay = () => {
-  if (!autoplayInterval.value) {
-    autoplayInterval.value = setInterval(nextSlide, autoplayDelay);
-  }
-};
-
-const pauseAutoplay = () => {
-  if (autoplayInterval.value) {
-    clearInterval(autoplayInterval.value);
-    autoplayInterval.value = null;
-  }
-};
+// Carousel functionality was moved to the EshopBanner component
 
 // Mouse drag functionality with better performance
 // Using requestAnimationFrame for smoother scrolling
@@ -405,8 +283,6 @@ const endDrag = () => {
 };
 
 onMounted(() => {
-  startAutoplay();
-
   // Add entrance animations for sections with staggered timing
   const sections = document.querySelectorAll("section");
   sections.forEach((section, index) => {
@@ -432,8 +308,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  pauseAutoplay();
-
   // Remove event listeners
   if (arrivalsContainer.value) {
     arrivalsContainer.value.removeEventListener("mousedown", startDrag);

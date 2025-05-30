@@ -4,95 +4,15 @@
   >
     <!-- Premium Banner Slider with Enhanced Visual Effects -->
     <div class="pt-4 pb-2 mb-2">
-      <UContainer>
-        <div
-          class="relative overflow-hidden rounded-xl shadow-sm touch-slider"
-          ref="sliderContainer"
-          @mouseenter="handleSliderHover(true)"
-          @mouseleave="handleSliderHover(false)"
-          @touchstart="handleTouchStart"
-          @touchmove="handleTouchMove"
-          @touchend="handleTouchEnd"
-        >
-          <!-- Background pattern for premium look -->
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-slate-900/5 to-slate-900/5 dark:from-slate-950/20 dark:to-slate-950/10 backdrop-blur-[1px] z-0"
-          ></div>
-
-          <!-- Mobile swipe indicator shown only on mobile -->
-          <div
-            class="md:hidden absolute top-1/2 left-0 right-0 -translate-y-1/2 flex justify-between px-3 z-20 opacity-60 pointer-events-none"
-          >
-            <div class="swipe-indicator swipe-indicator-left">
-              <ChevronLeft class="h-8 w-8 text-white" />
-            </div>
-            <div class="swipe-indicator swipe-indicator-right">
-              <ChevronRight class="h-8 w-8 text-white" />
-            </div>
-          </div>
-          <!-- Aspect ratio container for rounded and consistent height - matching hero banner -->
-          <div
-            class="rounded-xl overflow-hidden relative pb-[38%] md:pb-[25%] lg:pb-[22%]"
-          >
-            <div
-              v-for="(banner, index) in banners"
-              :key="index"
-              class="absolute inset-0 transition-all duration-500 ease-out transform"
-              :class="{
-                'opacity-100 translate-x-0': index === currentSlide,
-                'opacity-0 translate-x-full': index > currentSlide,
-                'opacity-0 -translate-x-full': index < currentSlide,
-              }"
-            >
-              <!-- Gradient overlay -->
-              <div
-                class="absolute inset-0 bg-gradient-to-r from-black/40 to-black/20 z-10"
-              ></div>
-              <img
-                v-if="banner.image"
-                :src="banner.image"
-                :alt="banner.title || `Slide ${index + 1}`"
-                class="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-
-          <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->
-          <button
-            @click="prevSlide"
-            class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 shadow-sm opacity-0 transform -translate-x-2"
-            :class="{ 'opacity-100 translate-x-0': isHovering }"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft class="h-5 w-5 text-white" />
-          </button>
-
-          <button
-            @click="nextSlide"
-            class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 shadow-sm opacity-0 transform translate-x-2"
-            :class="{ 'opacity-100 translate-x-0': isHovering }"
-            aria-label="Next slide"
-          >
-            <ChevronRight class="h-5 w-5 text-white" />
-          </button>
-
-          <!-- Slider indicators -->
-          <div
-            class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3 z-20 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full"
-          >
-            <button
-              v-for="(_, index) in banners"
-              :key="index"
-              @click="goToSlide(index)"
-              class="w-2.5 h-2.5 rounded-full transition-all duration-300 relative"
-              :class="{
-                'bg-white scale-110': index === currentSlide,
-                'bg-white/40 hover:bg-white/60': index !== currentSlide,
-              }"
-              :aria-label="`Go to slide ${index + 1}`"
-            ></button>
-          </div>
-        </div>
+      <UContainer>        <CommonEshopBanner
+          :customHeight="{
+            mobile: '38%',
+            tablet: '25%',
+            desktop: '22%'
+          }"
+          endpoint="/eshop-banner/"
+          :autoplayInterval="5000"
+        />
       </UContainer>
     </div>
 
@@ -604,9 +524,8 @@
 </template>
 
 <script setup>
-import { CommonHotDealsSection } from "#components";
+import { CommonHotDealsSection, CommonEshopBanner } from "#components";
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
-import { ChevronLeft, ChevronRight } from "lucide-vue-next";
 const { get } = useApi();
 const products = ref({});
 const categories = ref([]);
@@ -622,32 +541,6 @@ const allProducts = ref([]);
 const isLoadingMore = ref(false);
 const hasMoreProducts = ref(true);
 const loadMoreTrigger = ref(null);
-
-// Banner state
-const currentSlide = ref(0);
-const intervalId = ref(null);
-const banners = ref([]);
-const sliderContainer = ref(null);
-const isHovering = ref(false);
-let touchStartX = 0;
-let touchEndX = 0;
-let isHandlingTouch = false;
-
-async function getBanner() {
-  try {
-    const res = await get("/shop-banner-images/");
-    banners.value = res.data;
-  } catch (error) {
-    console.error("Error fetching banners:", error);
-    toast.add({
-      title: "Error loading banners",
-      description: "Could not load banners. Please try again later.",
-      color: "red",
-      timeout: 3000,
-    });
-  }
-}
-await getBanner();
 
 // Filter state
 const searchQuery = ref("");
@@ -742,89 +635,6 @@ function clearAllFilters() {
 function handlePageChange(page) {
   window.scrollTo({ top: 0, behavior: "smooth" });
   fetchProducts();
-}
-
-// Banner slider functions
-function nextSlide() {
-  currentSlide.value = (currentSlide.value + 1) % banners.value.length;
-  resetSliderInterval();
-}
-
-function prevSlide() {
-  currentSlide.value =
-    (currentSlide.value - 1 + banners.value.length) % banners.value.length;
-  resetSliderInterval();
-}
-
-function goToSlide(index) {
-  currentSlide.value = index;
-  resetSliderInterval();
-}
-
-function resetSliderInterval() {
-  clearInterval(intervalId.value);
-  startSliderInterval();
-}
-
-function startSliderInterval() {
-  intervalId.value = setInterval(() => {
-    if (!isHandlingTouch) {
-      nextSlide();
-    }
-  }, 5000);
-}
-
-// Touch event handlers
-function handleTouchStart(e) {
-  isHandlingTouch = true;
-  touchStartX = e.touches[0].clientX;
-}
-
-function handleTouchMove(e) {
-  if (!isHandlingTouch) return;
-  touchEndX = e.touches[0].clientX;
-
-  // Add visual feedback during swiping
-  const swipeDiff = touchEndX - touchStartX;
-  if (Math.abs(swipeDiff) > 30) {
-    e.preventDefault(); // Prevent default only if significant swipe detected
-
-    // Add visual feedback with classes
-    if (sliderContainer.value) {
-      sliderContainer.value.classList.remove("swiping-left", "swiping-right");
-      if (swipeDiff > 0) {
-        sliderContainer.value.classList.add("swiping-right");
-      } else {
-        sliderContainer.value.classList.add("swiping-left");
-      }
-    }
-  }
-}
-
-function handleTouchEnd() {
-  if (!isHandlingTouch) return;
-
-  const swipeDiff = touchEndX - touchStartX;
-  const minSwipeDistance = 50; // Minimum distance to consider it a swipe
-
-  if (swipeDiff > minSwipeDistance) {
-    prevSlide(); // Swipe right = previous slide
-  } else if (swipeDiff < -minSwipeDistance) {
-    nextSlide(); // Swipe left = next slide
-  }
-
-  // Remove swiping classes
-  if (sliderContainer.value) {
-    sliderContainer.value.classList.remove("swiping-left", "swiping-right");
-  }
-
-  isHandlingTouch = false;
-  resetSliderInterval();
-}
-
-// Handle slider hover
-function handleSliderHover(isHover) {
-  isHovering.value = isHover;
 }
 
 // Sidebar toggle function
@@ -1034,31 +844,7 @@ function initInfiniteScroll() {
 // Initialize data
 await Promise.all([fetchCategories(), fetchProducts()]);
 onMounted(() => {
-  startSliderInterval();
   initInfiniteScroll();
-
-  // Add touch event listeners for banner slider
-  if (sliderContainer.value) {
-    sliderContainer.value.addEventListener("touchstart", handleTouchStart, {
-      passive: false,
-    });
-    sliderContainer.value.addEventListener("touchmove", handleTouchMove, {
-      passive: false,
-    });
-    sliderContainer.value.addEventListener("touchend", handleTouchEnd);
-  }
-});
-
-// Clean up slider interval
-onUnmounted(() => {
-  clearInterval(intervalId.value);
-
-  // Remove touch event listeners
-  if (sliderContainer.value) {
-    sliderContainer.value.removeEventListener("touchstart", handleTouchStart);
-    sliderContainer.value.removeEventListener("touchmove", handleTouchMove);
-    sliderContainer.value.removeEventListener("touchend", handleTouchEnd);
-  }
 });
 </script>
 
