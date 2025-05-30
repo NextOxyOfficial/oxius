@@ -9,22 +9,18 @@
         <p class="mt-2 text-base sm:text-xl text-gray-600">
           {{ $t("recharge_package_choice") }}
         </p>
-      </div>
-
-      <!-- Search and Filter -->
+      </div>      <!-- Search and Filter -->
       <div class="max-w-md mx-auto">
         <div class="relative">
-          <input
+          <UInput
             v-model="searchQuery"
             type="text"
-            class="w-full px-4 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
             :placeholder="t('search_packages')"
+            class="w-full"
+            size="md"
+            icon="i-heroicons-magnifying-glass"
           />
-          <span class="absolute right-3 top-2.5 text-gray-600">
-            <UIcon name="i-gg-search" class="size-4" />
-          </span>
-        </div>
-
+        </div>        
         <!-- Operator Filter -->
         <div class="my-6 text-center">
           <h3 class="text-sm font-medium text-gray-800 mb-3">
@@ -46,28 +42,25 @@
                 class="w-8 h-8 flex items-center justify-center rounded-full"
                 :class="operator.bgColor"
               >
-                <img :src="operator.icon" alt="gp-logo" class="h-5 w-5" />
+                <img :src="operator.icon" alt="operator-logo" class="h-5 w-5" />
               </div>
               <span class="mt-2 text-xs md:text-base font-medium">{{
                 operator.name
               }}</span>
             </button>
           </div>
-        </div>
-        <div class="my-4 flex gap-1.5 justify-center">
-          <button
+        </div><div class="my-4 flex gap-2 justify-center flex-wrap">
+          <UButton
             v-for="(filter, index) in filters"
             :key="index"
             @click="activeFilter = filter.value"
-            :class="[
-              'px-3.5 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors',
-              activeFilter === filter.value
-                ? 'bg-green-500 text-white'
-                : 'bg-white text-gray-800 border border-gray-300 hover:bg-gray-50',
-            ]"
+            :variant="activeFilter === filter.value ? 'solid' : 'outline'"
+            :color="activeFilter === filter.value ? 'green' : 'gray'"
+            size="sm"
+            class="transition-all duration-200 hover:scale-105"
           >
             {{ filter.label }}
-          </button>
+          </UButton>
         </div>
       </div>
       <div class="text-slate-700">
@@ -82,10 +75,12 @@
             {{ $t("popular_packages") }}
           </h2>          <UButton
             :label="t('recharge_history')"
-            icon="i-icon-park-outline-history-query"
+            icon="i-heroicons-clock"
             @click="isHistory = true"
             size="md"
             variant="outline"
+            color="blue"
+            class="transition-all duration-200 hover:scale-105"
           />
         </div>
         <div
@@ -146,15 +141,19 @@
                   />
                   <span>{{ pack.calls }}</span>
                 </div>
-              </div>
-
-              <div class="mt-3">
-                <button
+              </div>              <div class="mt-3">
+                <UButton
                   @click="selectPackage(pack)"
-                  class="w-full py-1.5 px-3 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                  color="green"
+                  size="sm"
+                  class="w-full transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md"
+                  :ui="{ rounded: 'rounded-lg' }"
                 >
+                  <template #leading>
+                    <UIcon name="i-heroicons-bolt" class="w-4 h-4" />
+                  </template>
                   {{ $t("recharge_now") }}
-                </button>
+                </UButton>
               </div>
             </div>
           </div>
@@ -219,15 +218,19 @@
                   />
                   <span>{{ pack.calls }}</span>
                 </div>
-              </div>
-
-              <div class="mt-3">
-                <button
+              </div>              <div class="mt-3">
+                <UButton
                   @click="selectPackage(pack)"
-                  class="w-full py-1.5 px-3 bg-green-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-md transition-colors duration-200"
+                  color="green"
+                  size="sm"
+                  class="w-full transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md"
+                  :ui="{ rounded: 'rounded-lg' }"
                 >
+                  <template #leading>
+                    <UIcon name="i-heroicons-bolt" class="w-4 h-4" />
+                  </template>
                   {{ $t("recharge_now") }}
-                </button>
+                </UButton>
               </div>
             </div>
           </div>
@@ -292,16 +295,17 @@
                 Insufficient balance for this recharge. Please add funds to your
                 account.
               </span>
-            </div>
-
-            <!-- Add a button to navigate to deposit page -->
+            </div>            <!-- Add a button to navigate to deposit page -->
             <UButton
               to="/deposit-withdraw"
               color="emerald"
               variant="soft"
-              class="w-full mt-3"
+              class="w-full mt-3 transition-all duration-200 hover:scale-105"
               size="sm"
             >
+              <template #leading>
+                <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+              </template>
               Add Funds
             </UButton>
           </div>
@@ -320,39 +324,45 @@
               placeholder="Enter mobile number"
               class="w-full"
             />
-          </div>
-
-          <!-- Action Buttons -->
+          </div>          <!-- Action Buttons -->
           <div class="flex space-x-3 pt-4">
             <UButton
               @click="showRechargeModal = false"
               color="gray"
               variant="outline"
-              class="flex-1"
+              class="flex-1 transition-all duration-200 hover:scale-105"
             >
+              <template #leading>
+                <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+              </template>
               Cancel
             </UButton>
             <UButton
               @click="handleRecharge"
               :disabled="!hasSufficientBalance"
               color="green"
-              class="flex-1"
+              class="flex-1 transition-all duration-200 hover:scale-105"
+              :class="{ 'opacity-50 cursor-not-allowed': !hasSufficientBalance }"
             >
+              <template #leading>
+                <UIcon name="i-heroicons-bolt" class="w-4 h-4" />
+              </template>
               {{ hasSufficientBalance ? "Recharge" : "Insufficient Balance" }}
             </UButton>
           </div>
         </div>
       </UCard>
-    </UModal>
-
-    <!-- Success Toast -->
-    <div
+    </UModal>    <!-- Success Toast -->
+    <UNotification
       v-if="showToast"
-      class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg flex items-center z-50"
-    >
-      <UIcon name="i-heroicons-check-circle" class="w-5 h-5 mr-2" />
-      <span>Recharge successful!</span>
-    </div>    <UModal 
+      title="Recharge Successful!"
+      description="Your mobile recharge has been processed successfully."
+      icon="i-heroicons-check-circle"
+      color="green"
+      :timeout="3000"
+      @close="showToast = false"
+      class="fixed bottom-4 right-4 z-50 shadow-lg"
+    /><UModal 
       v-model="isHistory"
     >
       <UCard
@@ -391,6 +401,7 @@ const { t } = useI18n();
 
 const toast = useToast();
 const isHistory = ref(false);
+const showRechargeModal = ref(false);
 
 const {
   operators,
@@ -436,6 +447,7 @@ function getTagClass(type) {
 
 function selectPackage(pack) {
   selectedPackage.value = pack;
+  showRechargeModal.value = true;
 }
 
 async function handleRecharge() {
@@ -462,12 +474,12 @@ async function handleRecharge() {
     phone_number: phoneNumber.value,
     operator: selectedPackage.value.operator,
     amount: selectedPackage.value.price,
-  };
-  try {
+  };  try {
     console.log(submitValues);
     const res = await post("/mobile-recharge/recharges/", submitValues);
     if (res.data) {
       toast.add({ title: "Recharge successful!", color: "green" });
+      showRechargeModal.value = false;
       selectedPackage.value = null;
       phoneNumber.value = "";
       showToast.value = true;
