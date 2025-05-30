@@ -1396,8 +1396,29 @@ class ReceivedTransfersView(generics.ListAPIView):
 class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.all().order_by('-created_at')
     serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
     
     def create(self, request, *args, **kwargs):
+        # Check product slot limit before creating the product
+        user = request.user
+        current_product_count = Product.objects.filter(owner=user).count()
+        
+        if current_product_count >= user.product_limit:
+            return Response(
+                {
+                    'error': 'Product limit reached',
+                    'message': f'You have reached your product limit of {user.product_limit}. Please purchase additional product slots to add more products.',
+                    'current_count': current_product_count,
+                    'limit': user.product_limit
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         # Extract data from request
         category_data = request.data.pop('category', None)
         images_data = request.data.pop('images', None)

@@ -859,6 +859,41 @@ async function handleAddProduct() {
     return;
   }
 
+  // Check product limit before submission (only for new products)
+  if (!props.product?.id) {
+    try {
+      const { data: userProducts } = await get("/my-products/");
+      const currentProductCount = userProducts ? userProducts.length : 0;
+      const productLimit = user.value?.user?.product_limit || 10;
+
+      if (currentProductCount >= productLimit) {
+        toast.add({
+          title: "Product Limit Reached",
+          description: `You have reached your product limit of ${productLimit}. Delete an existing product or purchase additional product slots to add new products.`,
+          color: "red",
+          timeout: 8000,
+        });
+        console.log("Form validation failed - product limit reached");
+        console.groupEnd();
+        return;
+      }
+
+      // Show warning if approaching limit
+      if (currentProductCount >= productLimit - 2) {
+        const remainingSlots = productLimit - currentProductCount;
+        toast.add({
+          title: "Approaching Product Limit",
+          description: `You can add ${remainingSlots} more product(s) before reaching your limit of ${productLimit}.`,
+          color: "amber",
+          timeout: 6000,
+        });
+      }
+    } catch (error) {
+      console.error("Error checking product limit:", error);
+      // Continue with submission even if limit check fails
+    }
+  }
+
   isSubmitting.value = true;
 
   try {
