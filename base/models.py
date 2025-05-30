@@ -94,8 +94,7 @@ class User(AbstractUser):
   company = models.CharField(max_length=256,blank=True, default="")
   website = models.CharField(max_length=256,blank=True, default="")
   is_topcontributor = models.BooleanField(default=False)
-  
-  #   subscription
+    #   subscription
   is_pro = models.BooleanField(default=False)
   pro_validity = models.DateTimeField(null=True, blank=True)
   store_name = models.CharField(max_length=40,blank=True, default="")
@@ -104,6 +103,7 @@ class User(AbstractUser):
   store_address = models.CharField(max_length=256,blank=True, default="")
   store_logo = models.ImageField(upload_to='images/', blank=True, null=True)
   store_banner = models.ImageField(upload_to='images/', blank=True, null=True)
+  product_limit = models.IntegerField(default=10)
 
   def __str__(self):
       return self.email

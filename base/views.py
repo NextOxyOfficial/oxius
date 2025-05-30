@@ -2112,7 +2112,7 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                                 }
                             seller_objects[seller_key]['amount'] += price_difference
                             total_additional_amount += price_difference
-                        elif quantity_diff !=   0:
+                        elif quantity_diff != 0:
                             # Update quantity and calculate price difference
                             price_difference = unit_price * quantity_diff
                             
@@ -2340,6 +2340,66 @@ class ShopBannerImageListView(generics.ListAPIView):
     """
     queryset = ShopBannerImage.objects.all()
     serializer_class = ShopBannerImageSerializer
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def purchase_product_slots(request):
+    """
+    Endpoint to handle the purchase of additional product slots.
+    """
+    slot_count = request.data.get('slot_count', 0)
+    cost = request.data.get('cost', 0)
+    
+    if not slot_count or not cost:
+        return Response(
+            {'success': False, 'message': 'Invalid slot count or cost'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    user = request.user
+    
+    # Validate cost against slot count to prevent client-side manipulation
+    valid_cost = False
+    if slot_count == 5 and cost == 500:
+        valid_cost = True
+    elif slot_count == 10 and cost == 900:
+        valid_cost = True
+    elif slot_count == 20 and cost == 1600:
+        valid_cost = True
+    
+    if not valid_cost:
+        return Response(
+            {'success': False, 'message': 'Invalid cost for selected slot count'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Check if user has sufficient balance
+    if user.balance < cost:
+        return Response(
+            {'success': False, 'message': 'Insufficient balance'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        # Update user's product limit and balance
+        user.product_limit += slot_count
+        user.balance -= cost
+        user.save()
+        
+        # Return updated user info
+        return Response({
+            'success': True,
+            'message': f'Successfully purchased {slot_count} product slots',
+            'data': {
+                'product_limit': user.product_limit,
+                'balance': user.balance
+            }
+        })
+    except Exception as e:
+        return Response(
+            {'success': False, 'message': str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

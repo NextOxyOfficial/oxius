@@ -55,9 +55,9 @@ urlpatterns = [
   path('user-micro-gig-task-post/',postMicroGigPostTask, name='user_micro-gig-task-post'),
   path('task-by-micro-gig-post/<uuid:gig_id>/tasks/', get_microgigpost_tasks, name='microgigpost-tasks'),
   path('update-task-by-micro-gig-post/<uuid:gig_id>/tasks/', update_microgigpost_tasks, name='microgigpost-tasks-update'),
-
   path('user-balance/<str:email>/',UserBalance.as_view()),
   path('received-transfers/', ReceivedTransfersView.as_view(), name='received-transfers'),
+  path('purchase-product-slots/', purchase_product_slots, name='purchase-product-slots'),
   
   path('add-user-balance/',postBalance),
   path('get-user-nid/',get_nid),

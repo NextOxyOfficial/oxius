@@ -13,6 +13,7 @@ export interface User {
   pro_validity?: string;
   kyc: boolean;
   kyc_pending: boolean;
+  product_limit: number; // Added product limit property
 }
 
 export const useUserStore = defineStore("user", {
@@ -38,13 +39,11 @@ export const useUserStore = defineStore("user", {
     setUser(user: User) {
       this.user = user;
       this.isAuthenticated = true;
-    },
-
-    // Set authentication token
+    },    // Set authentication token
     setToken(token: string) {
       this.token = token;
-      // Store in local storage
-      if (process.client) {
+      // Store in local storage - check if we're in browser environment
+      if (typeof window !== 'undefined') {
         localStorage.setItem('token', token);
       }
     },
@@ -54,14 +53,14 @@ export const useUserStore = defineStore("user", {
       this.user = null;
       this.isAuthenticated = false;
       this.token = null;
-      if (process.client) {
+      if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
       }
     },
 
     // Fetch user data from API
     async fetchUserData() {
-      if (!this.token && process.client) {
+      if (!this.token && typeof window !== 'undefined') {
         // Try to get token from local storage
         const savedToken = localStorage.getItem('token');
         if (savedToken) {
@@ -77,14 +76,14 @@ export const useUserStore = defineStore("user", {
       this.error = null;
       
       try {
-        const userData = await $fetch('/api/user/me', {
+        const userData = await $fetch<User>('/api/user/me', {
           headers: {
             Authorization: `Bearer ${this.token}`
           }
         });
         
         this.setUser(userData);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching user data:', error);
         this.error = 'Failed to load user data';
         if (error.response?.status === 401) {
@@ -104,7 +103,7 @@ export const useUserStore = defineStore("user", {
     
     // Initialize user state from stored token
     async initializeFromStorage() {
-      if (process.client) {
+      if (typeof window !== 'undefined') {
         const savedToken = localStorage.getItem('token');
         if (savedToken) {
           this.token = savedToken;
