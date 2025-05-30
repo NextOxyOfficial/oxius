@@ -1,7 +1,27 @@
 <template>
   <div class="font-AnekBangla">
     <PublicHeader />
-    <slot />
+    
+    <!-- Pull to Refresh Wrapper for mobile app experience -->
+    <PullToRefreshWrapper
+      :enabled="enablePullToRefresh"
+      :refresh-callback="handlePageRefresh"
+      :auto-reload="true"
+      :auto-reload-interval="300000"
+      :show-network-status="true"
+      :haptic-feedback="true"
+      :theme="$colorMode.preference"
+      pull-text="Pull down to refresh content"
+      release-text="Release to refresh page"
+      refreshing-text="Refreshing content..."
+      success-message="Page refreshed successfully!"
+      @refresh-start="onRefreshStart"
+      @refresh-success="onRefreshSuccess"
+      @refresh-error="onRefreshError"
+    >
+      <slot />
+    </PullToRefreshWrapper>
+    
     <PublicFooter />
     <UNotifications />
 
@@ -357,6 +377,47 @@ const initializeAuth = async () => {
     console.warn("Auth initialization error in default layout:", error);
     // Don't redirect on error in default layout
   }
+};
+
+// Pull to refresh functionality
+const enablePullToRefresh = ref(true);
+const router = useRouter();
+
+// Handle page refresh
+const handlePageRefresh = async () => {
+  try {
+    // Use the global refresh system
+    const { $globalRefresh } = useNuxtApp();
+    
+    if ($globalRefresh) {
+      await $globalRefresh.refresh();
+    } else {
+      // Fallback to basic refresh
+      await refreshCookie();
+      const eventBus = useEventBus();
+      eventBus.emit('global-refresh');
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+  } catch (error) {
+    console.error('Page refresh failed:', error);
+    throw error;
+  }
+};
+
+// Refresh handlers
+const onRefreshStart = () => {
+  console.log('Page refresh started');
+};
+
+const onRefreshSuccess = () => {
+  console.log('Page refresh successful');
+  // Toast removed - showing visual indicator is sufficient
+};
+
+const onRefreshError = (error) => {
+  console.error('Page refresh error:', error);
+  // Toast removed - showing visual indicator is sufficient
 };
 
 // Initialize authentication
