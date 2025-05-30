@@ -5,13 +5,15 @@
 
 export const usePullToRefresh = (refreshCallback, options = {}) => {
   const {
-    threshold = 80, // Distance to trigger refresh
-    maxPullDistance = 120, // Maximum pull distance
-    resistance = 2.5, // Resistance factor for smooth feel
+    threshold = 100, // Distance to trigger refresh (increased from 80)
+    maxPullDistance = 150, // Maximum pull distance (increased from 120)
+    resistance = 3.0, // Resistance factor for smooth feel (increased from 2.5)
     hapticFeedback = true, // Enable haptic feedback on mobile
     showIndicator = true, // Show pull indicator
     autoHide = true, // Auto hide after refresh
     resetDelay = 300, // Delay before reset animation
+    touchStartDelay = 300, // Delay before activating pull (new parameter)
+    minPullDistance = 30, // Minimum distance to consider as pull vs tap (new parameter)
   } = options;
 
   // State management
@@ -20,12 +22,14 @@ export const usePullToRefresh = (refreshCallback, options = {}) => {
   const pullDistance = ref(0);
   const canRefresh = ref(false);
   const refreshTriggered = ref(false);
-
   // Touch tracking
   let startY = 0;
   let currentY = 0;
   let isScrolling = false;
   let scrollElement = null;
+  let touchStartTimer = null;
+  let touchStartTimestamp = 0;
+  let hasMovedEnough = false;
 
   // Check if device supports touch
   const isTouchDevice = ref(false);
@@ -58,16 +62,23 @@ export const usePullToRefresh = (refreshCallback, options = {}) => {
     
     return () => cleanup();
   };
-
   // Handle touch start
   const handleTouchStart = (e) => {
     if (isRefreshing.value) return;
+    
+    // Clear any existing touch start timer
+    if (touchStartTimer) {
+      clearTimeout(touchStartTimer);
+      touchStartTimer = null;
+    }
     
     const touch = e.touches[0];
     startY = touch.clientY;
     currentY = startY;
     isScrolling = false;
     refreshTriggered.value = false;
+    hasMovedEnough = false;
+    touchStartTimestamp = Date.now();
 
     // Check if we're at the top of the page
     const scrollTop = scrollElement === window 
@@ -76,16 +87,28 @@ export const usePullToRefresh = (refreshCallback, options = {}) => {
     
     if (scrollTop > 0) return;
     
-    isPulling.value = true;
+    // Delay setting isPulling to true to prevent accidental triggers
+    touchStartTimer = setTimeout(() => {
+      // Only set it if we're still in a touch sequence
+      if (currentY > 0) {
+        isPulling.value = true;
+      }
+    }, touchStartDelay);
   };
-
   // Handle touch move
   const handleTouchMove = (e) => {
-    if (!isPulling.value || isRefreshing.value) return;
-
+    // Always track current Y position
     const touch = e.touches[0];
     currentY = touch.clientY;
     const deltaY = currentY - startY;
+    
+    // Check for minimum movement threshold to differentiate from tap
+    if (deltaY > minPullDistance) {
+      hasMovedEnough = true;
+    }
+    
+    // Only proceed with pull logic if we're in pulling state
+    if (!isPulling.value || isRefreshing.value) return;
 
     // Only proceed if pulling down
     if (deltaY <= 0) {
@@ -103,8 +126,14 @@ export const usePullToRefresh = (refreshCallback, options = {}) => {
       return;
     }
 
+    // Check if enough time has passed since touch start to prevent accidental triggers
+    const timeElapsed = Date.now() - touchStartTimestamp;
+    if (timeElapsed < touchStartDelay && deltaY < threshold/2) {
+      return; // Don't trigger pull-to-refresh too quickly
+    }
+
     // Prevent default scrolling when pulling down from top
-    if (deltaY > 10) {
+    if (hasMovedEnough && deltaY > minPullDistance) {
       e.preventDefault();
     }
 
@@ -121,9 +150,20 @@ export const usePullToRefresh = (refreshCallback, options = {}) => {
       refreshTriggered.value = true;
     }
   };
-
   // Handle touch end
   const handleTouchEnd = () => {
+    // Clear any pending touch start timer
+    if (touchStartTimer) {
+      clearTimeout(touchStartTimer);
+      touchStartTimer = null;
+    }
+    
+    // If we didn't move enough, treat it as a tap, not a pull
+    if (!hasMovedEnough) {
+      resetPull();
+      return;
+    }
+    
     if (!isPulling.value) return;
 
     isPulling.value = false;
@@ -172,13 +212,19 @@ export const usePullToRefresh = (refreshCallback, options = {}) => {
       }, resetDelay);
     }
   };
-
   // Reset pull state
   const resetPull = () => {
     pullDistance.value = 0;
     canRefresh.value = false;
     isPulling.value = false;
     refreshTriggered.value = false;
+    hasMovedEnough = false;
+    
+    // Clear any pending touch start timer
+    if (touchStartTimer) {
+      clearTimeout(touchStartTimer);
+      touchStartTimer = null;
+    }
   };
 
   // Trigger haptic feedback
@@ -198,12 +244,18 @@ export const usePullToRefresh = (refreshCallback, options = {}) => {
   const manualRefresh = async () => {
     await triggerRefresh();
   };
-
   // Cleanup
   const cleanup = () => {
     document.removeEventListener('touchstart', handleTouchStart);
     document.removeEventListener('touchmove', handleTouchMove);
     document.removeEventListener('touchend', handleTouchEnd);
+    
+    // Clean up any timers
+    if (touchStartTimer) {
+      clearTimeout(touchStartTimer);
+      touchStartTimer = null;
+    }
+    
     resetPull();
   };
 

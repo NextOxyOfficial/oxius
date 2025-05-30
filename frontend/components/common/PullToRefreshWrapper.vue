@@ -94,19 +94,27 @@ const props = defineProps({
   // Pull to refresh options
   threshold: {
     type: Number,
-    default: 80,
+    default: 100,  // Increased from 80
   },
   maxPullDistance: {
     type: Number,
-    default: 120,
+    default: 150,  // Increased from 120
   },
   resistance: {
     type: Number,
-    default: 2.5,
+    default: 3.0,  // Increased from 2.5
   },
   hapticFeedback: {
     type: Boolean,
     default: true,
+  },
+  touchStartDelay: {
+    type: Number,
+    default: 300,  // New option: delay before activating pull
+  },
+  minPullDistance: {
+    type: Number,
+    default: 30,   // New option: minimum distance to consider as pull vs tap
   },
 
   // Appearance
@@ -218,6 +226,8 @@ const {
   maxPullDistance: props.maxPullDistance,
   resistance: props.resistance,
   hapticFeedback: props.hapticFeedback,
+  touchStartDelay: props.touchStartDelay,
+  minPullDistance: props.minPullDistance,
 });
 
 // Content animation style
