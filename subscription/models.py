@@ -91,6 +91,14 @@ class Subscription(models.Model):
             self.user.is_pro = True
             self.user.pro_validity = self.end_date
             self.user.save(update_fields=['is_pro', 'pro_validity'])
+            
+            # Reactivate user's products
+            from .utils import manage_user_products_activation
+            manage_user_products_activation(
+                self.user,
+                activate=True,
+                reason=f"Subscription activated: {self.plan.name}"
+            )
         
     def cancel(self):
         """Cancel subscription"""
@@ -112,6 +120,14 @@ class Subscription(models.Model):
                 self.user.is_pro = False
                 self.user.pro_validity = None
                 self.user.save(update_fields=['is_pro', 'pro_validity'])
+                
+                # Deactivate user's products since they no longer have pro access
+                from .utils import manage_user_products_activation
+                manage_user_products_activation(
+                    self.user,
+                    activate=False,
+                    reason=f"Subscription cancelled: {self.plan.name}"
+                )
 
     def expire(self):
         """Mark subscription as expired and update user pro status"""
@@ -132,6 +148,14 @@ class Subscription(models.Model):
                 self.user.is_pro = False
                 self.user.pro_validity = None
                 self.user.save(update_fields=['is_pro', 'pro_validity'])
+                
+                # Deactivate user's products since they no longer have pro access
+                from .utils import manage_user_products_activation
+                manage_user_products_activation(
+                    self.user,
+                    activate=False,
+                    reason=f"Subscription expired: {self.plan.name}"
+                )
 
 
 class SubscriptionLog(models.Model):

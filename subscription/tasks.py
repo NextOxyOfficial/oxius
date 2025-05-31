@@ -2,6 +2,7 @@ from celery import shared_task
 from django.utils import timezone
 from base.models import User
 from .models import Subscription, SubscriptionLog
+from .utils import manage_user_products_activation, deactivate_products_for_expired_subscriptions
 
 @shared_task
 def deactivate_expired_subscriptions():
@@ -23,15 +24,22 @@ def deactivate_expired_subscriptions():
         try:
             subscription.expire()  # This will also update user pro status
             
+            # Deactivate user's products
+            product_result = manage_user_products_activation(
+                subscription.user, 
+                activate=False, 
+                reason=f"Subscription expired: {subscription.plan.name}"
+            )
+            
             # Log the expiration
             SubscriptionLog.objects.create(
                 subscription=subscription,
                 action='expired',
-                details=f"Subscription expired automatically by system at {now.strftime('%Y-%m-%d %H:%M:%S')}"
+                details=f"Subscription expired automatically by system at {now.strftime('%Y-%m-%d %H:%M:%S')}. Products affected: {product_result.get('products_affected', 0)}"
             )
             expired_count += 1
             
-            print(f"✓ Expired subscription for user: {subscription.user.email} (Plan: {subscription.plan.name})")
+            print(f"✓ Expired subscription for user: {subscription.user.email} (Plan: {subscription.plan.name}) - {product_result.get('products_affected', 0)} products deactivated")
             
         except Exception as e:
             print(f"✗ Error expiring subscription {subscription.id}: {str(e)}")
