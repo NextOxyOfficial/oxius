@@ -2830,6 +2830,15 @@ def get_latest_android_app(request):
             "error": str(e),
             "message": "Error retrieving app version information"
         }, status=500)
+        
+        
+class AILinkView(generics.ListAPIView):
+    """
+    View to retrieve AI link information.
+    """
+    queryset = AILink.objects.all()
+    serializer_class = AILinkSerializer
+    permission_classes = [AllowAny]
 
 # for frontend
 

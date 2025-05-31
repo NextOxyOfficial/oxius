@@ -10,6 +10,7 @@ from .models import *
 admin.site.register(DiamondPackages)
 admin.site.register(ProductSlotPackage)
 admin.site.register(EshopBanner)
+admin.site.register(AILink)
 
 class CustomUserChangeForm(UserChangeForm):
     class Meta(UserChangeForm.Meta):

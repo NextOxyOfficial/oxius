@@ -142,4 +142,7 @@ urlpatterns = [
   
   # Android app version
   path('android-app/latest/', get_latest_android_app, name='android_app_latest'),
+  
+  # AILink
+  path('ai-link/', AILinkView.as_view(), name='ai_link'),
 ]

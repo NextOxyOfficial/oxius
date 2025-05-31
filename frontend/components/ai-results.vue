@@ -186,14 +186,32 @@ const props = defineProps({
   business_type: String,
   upazila: String,
 });
+const { get } = useApi();
 
 const result = ref();
 const userChoice = ref(false); // Track if user has made a choice
 const isSearching = ref(false); // Track if search is in progress
 const searchDeclined = ref(false); // Track if user declined the search
+const aiLink = ref("");
 
-const url =
-  "https://jolly-snow-f5d0.shimul929.workers.dev/business-finder?key=pk00xaytupk7";
+async function fetchAILink() {
+  try {
+    const { data, error } = await get("/ai-link/");
+    if (data) {
+      aiLink.value = data;
+      console.log("AI Link fetched successfully:", aiLink.value);
+    } else {
+      throw error;
+    }
+  } catch (err) {
+    console.error("Error fetching AI link:", err);
+  }
+}
+
+await fetchAILink();
+
+// const url =
+//   "https://jolly-snow-f5d0.shimul929.workers.dev/business-finder?key=pk00xaytupk7";
 let extra_command =
   "search for fields: name,description,address,phone,email,website";
 let hidden_fields = ["phone"];
@@ -206,7 +224,7 @@ async function startSearch() {
 
   try {
     const { data, pending, error } = await useFetch(
-      `${url}&country=${props.country}&city=${props.city}&state=${props.state}&business_type=${props.business_type}&extra_command=${extra_command}`,
+      `${aiLink.value?.link}&country=${props.country}&city=${props.city}&state=${props.state}&business_type=${props.business_type}&extra_command=${extra_command}`,
       {
         method: "get",
       }

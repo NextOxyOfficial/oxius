@@ -487,3 +487,8 @@ class AndroidAppVersionSerializer(serializers.ModelSerializer):
         fields = ['version_name', 'version_code', 'download_url', 'release_notes', 
                  'min_android_version', 'file_size_mb', 'created_at']
 
+
+class AILinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AILink
+        fields = '__all__'

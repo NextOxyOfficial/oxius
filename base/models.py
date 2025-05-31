@@ -958,3 +958,10 @@ class AndroidAppVersion(models.Model):
             AndroidAppVersion.objects.exclude(pk=self.pk).update(is_active=False)
         super().save(*args, **kwargs)
 
+
+
+class AILink(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    link = models.URLField()
+    
+    
