@@ -9,7 +9,8 @@
         <p class="mt-2 text-base sm:text-xl text-gray-600">
           {{ $t("recharge_package_choice") }}
         </p>
-      </div>      <!-- Search and Filter -->
+      </div>
+      <!-- Search and Filter -->
       <div class="max-w-md mx-auto">
         <div class="relative">
           <UInput
@@ -20,7 +21,7 @@
             size="md"
             icon="i-heroicons-magnifying-glass"
           />
-        </div>        
+        </div>
         <!-- Operator Filter -->
         <div class="my-6 text-center">
           <h3 class="text-sm font-medium text-gray-800 mb-3">
@@ -49,7 +50,8 @@
               }}</span>
             </button>
           </div>
-        </div><div class="my-4 flex gap-2 justify-center flex-wrap">
+        </div>
+        <div class="my-4 flex gap-2 justify-center flex-wrap">
           <UButton
             v-for="(filter, index) in filters"
             :key="index"
@@ -73,7 +75,8 @@
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-semibold text-gray-800 mb-4">
             {{ $t("popular_packages") }}
-          </h2>          <UButton
+          </h2>
+          <UButton
             :label="t('recharge_history')"
             icon="i-heroicons-clock"
             @click="isHistory = true"
@@ -141,7 +144,8 @@
                   />
                   <span>{{ pack.calls }}</span>
                 </div>
-              </div>              <div class="mt-3">
+              </div>
+              <div class="mt-3">
                 <UButton
                   @click="selectPackage(pack)"
                   color="green"
@@ -218,13 +222,15 @@
                   />
                   <span>{{ pack.calls }}</span>
                 </div>
-              </div>              <div class="mt-3">
+              </div>
+              <div class="mt-3">
                 <UButton
                   @click="selectPackage(pack)"
                   color="green"
                   size="sm"
                   class="w-full transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md"
                   :ui="{ rounded: 'rounded-lg' }"
+                  block
                 >
                   <template #leading>
                     <UIcon name="i-heroicons-bolt" class="w-4 h-4" />
@@ -235,10 +241,17 @@
             </div>
           </div>
         </div>
-      </div>    </div>
+      </div>
+    </div>
 
     <!-- Recharge Modal -->
-    <UModal v-model="showRechargeModal">
+    <UModal
+      v-model="showRechargeModal"
+      fullscreen
+      :ui="{
+        fullscreen: 'max-w-xl w-full h-auto',
+      }"
+    >
       <UCard
         :ui="{
           ring: '',
@@ -295,13 +308,15 @@
                 Insufficient balance for this recharge. Please add funds to your
                 account.
               </span>
-            </div>            <!-- Add a button to navigate to deposit page -->
+            </div>
+            <!-- Add a button to navigate to deposit page -->
             <UButton
               to="/deposit-withdraw"
               color="emerald"
               variant="soft"
               class="w-full mt-3 transition-all duration-200 hover:scale-105"
               size="sm"
+              block
             >
               <template #leading>
                 <UIcon name="i-heroicons-plus" class="w-4 h-4" />
@@ -324,13 +339,15 @@
               placeholder="Enter mobile number"
               class="w-full"
             />
-          </div>          <!-- Action Buttons -->
+          </div>
+          <!-- Action Buttons -->
           <div class="flex space-x-3 pt-4">
             <UButton
               @click="showRechargeModal = false"
               color="gray"
               variant="outline"
               class="flex-1 transition-all duration-200 hover:scale-105"
+              block
             >
               <template #leading>
                 <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
@@ -342,7 +359,10 @@
               :disabled="!hasSufficientBalance"
               color="green"
               class="flex-1 transition-all duration-200 hover:scale-105"
-              :class="{ 'opacity-50 cursor-not-allowed': !hasSufficientBalance }"
+              :class="{
+                'opacity-50 cursor-not-allowed': !hasSufficientBalance,
+              }"
+              block
             >
               <template #leading>
                 <UIcon name="i-heroicons-bolt" class="w-4 h-4" />
@@ -352,7 +372,8 @@
           </div>
         </div>
       </UCard>
-    </UModal>    <!-- Success Toast -->
+    </UModal>
+    <!-- Success Toast -->
     <UNotification
       v-if="showToast"
       title="Recharge Successful!"
@@ -362,15 +383,14 @@
       :timeout="3000"
       @close="showToast = false"
       class="fixed bottom-4 right-4 z-50 shadow-lg"
-    /><UModal 
-      v-model="isHistory"
-    >
+    /><UModal v-model="isHistory">
       <UCard
         :ui="{
           ring: '',
           divide: 'divide-y divide-gray-100 dark:divide-gray-800',
         }"
-      >        <template #header>
+      >
+        <template #header>
           <div class="flex justify-between items-center">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ $t("recharge_history") }}
@@ -474,7 +494,8 @@ async function handleRecharge() {
     phone_number: phoneNumber.value,
     operator: selectedPackage.value.operator,
     amount: selectedPackage.value.price,
-  };  try {
+  };
+  try {
     console.log(submitValues);
     const res = await post("/mobile-recharge/recharges/", submitValues);
     if (res.data) {
@@ -487,11 +508,12 @@ async function handleRecharge() {
         showToast.value = false;
       }, 3000);
       jwtLogin(); // Refresh user balance
-    }} catch (err) {
+    }
+  } catch (err) {
     console.log(err);
     toast.add({
-      title: err.response?.data?.message || "Recharge failed", 
-      color: "red"
+      title: err.response?.data?.message || "Recharge failed",
+      color: "red",
     });
   }
 }

@@ -102,7 +102,8 @@
           <!-- store details -->
           <div
             class="bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-sm transition-all duration-300 w-full mb-3 overflow-hidden transform hover:scale-[1.01]"
-          >            <!-- Compact Header with Shimmer Effect -->
+          >
+            <!-- Compact Header with Shimmer Effect -->
             <div
               class="bg-gradient-to-r from-emerald-600 to-teal-500 px-4 py-3 flex items-center relative overflow-hidden cursor-pointer"
               @click="toggleStoreDetails"
@@ -158,7 +159,8 @@
                 />
                 {{ isEditing ? "Save" : "Edit" }}
               </button>
-            </div>            <!-- Collapsible Content -->
+            </div>
+            <!-- Collapsible Content -->
             <Transition
               name="collapse"
               enter-active-class="transition-all duration-300 ease-out"
@@ -321,7 +323,8 @@
                       </p>
                     </div>
                   </div>
-                </div>                <!-- Status Indicator -->
+                </div>
+                <!-- Status Indicator -->
                 <div
                   class="px-4 py-2 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center"
                 >
@@ -330,34 +333,50 @@
                       class="h-2 w-2 rounded-full bg-emerald-500 mr-2 animate-pulse"
                     ></div>
                     <span class="text-xs text-gray-600">Store Active</span>
-                  </div>                  <div class="mt-1 sm:mt-0 sm:ml-auto text-xs text-gray-600 flex items-center gap-3">
+                  </div>
+                  <div
+                    class="mt-1 sm:mt-0 sm:ml-auto text-xs text-gray-600 flex items-center gap-3"
+                  >
                     <div class="flex items-center">
-                      <UIcon name="i-heroicons-cube-transparent" class="h-3.5 w-3.5 mr-1 text-indigo-600" />
+                      <UIcon
+                        name="i-heroicons-cube-transparent"
+                        class="h-3.5 w-3.5 mr-1 text-indigo-600"
+                      />
                       <span>
-                        Product slots: 
-                        <span 
+                        Product slots:
+                        <span
                           class="font-medium"
                           :class="{
                             'text-red-600': remainingProductLimit <= 0,
-                            'text-amber-600': remainingProductLimit > 0 && remainingProductLimit <= 2,
-                            'text-emerald-600': remainingProductLimit > 2
+                            'text-amber-600':
+                              remainingProductLimit > 0 &&
+                              remainingProductLimit <= 2,
+                            'text-emerald-600': remainingProductLimit > 2,
                           }"
                         >
                           {{ products.length }}/{{ productLimit }}
                         </span>
-                        <button 
+                        <button
                           v-if="remainingProductLimit <= 3"
-                          @click="showBuySlotsModal = true" 
+                          @click="showBuySlotsModal = true"
                           class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-sm text-xs bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors"
                         >
-                          <UIcon name="i-heroicons-plus-small" class="h-3 w-3 mr-0.5" />
+                          <UIcon
+                            name="i-heroicons-plus-small"
+                            class="h-3 w-3 mr-0.5"
+                          />
                           Buy more
                         </button>
                       </span>
                     </div>
                     <span class="text-gray-400">|</span>
                     <span>
-                      Last order: {{ lastOrderDate ? formatDate(lastOrderDate) : 'No orders yet' }}
+                      Last order:
+                      {{
+                        lastOrderDate
+                          ? formatDate(lastOrderDate)
+                          : "No orders yet"
+                      }}
                     </span>
                   </div>
                 </div>
@@ -375,7 +394,11 @@
               <button
                 v-for="tab in tabs"
                 :key="tab.id"
-                @click="tab.disabled ? showProductLimitModal = true : activeTab = tab.id"
+                @click="
+                  tab.disabled
+                    ? (showProductLimitModal = true)
+                    : (activeTab = tab.id)
+                "
                 class="relative flex-1 flex items-center justify-center py-5 px-4 text-sm font-medium transition-all duration-200 overflow-hidden"
                 :class="[
                   activeTab === tab.id
@@ -434,13 +457,18 @@
               class="bg-white rounded-lg shadow-sm p-8 flex flex-col items-center"
             >
               <div class="bg-red-50 p-3 rounded-full mb-4">
-                <UIcon name="i-heroicons-exclamation-triangle" class="h-8 w-8 text-red-400" />
+                <UIcon
+                  name="i-heroicons-exclamation-triangle"
+                  class="h-8 w-8 text-red-400"
+                />
               </div>
               <h3 class="text-lg font-medium text-gray-800 mb-2">
                 Product Limit Reached
-              </h3>                <p class="text-gray-600 max-w-md mx-auto mb-6">
-                You have reached the maximum limit of {{ productLimit }} products
-                for your shop. You can buy additional product slots to list more products.
+              </h3>
+              <p class="text-gray-600 max-w-md mx-auto mb-6">
+                You have reached the maximum limit of
+                {{ productLimit }} products for your shop. You can buy
+                additional product slots to list more products.
               </p>
               <div class="flex space-x-4">
                 <UButton
@@ -861,61 +889,100 @@
     </div>
 
     <!-- Product Limit Modal -->
-    <UModal v-model="showProductLimitModal">
+    <UModal
+      v-model="showProductLimitModal"
+      fullscreen
+      :ui="{
+        fullscreen: 'max-w-xl w-full h-auto',
+      }"
+    >
       <div class="bg-white rounded-xl shadow-sm overflow-hidden w-full">
         <!-- Premium gradient header -->
-        <div class="bg-gradient-to-r from-red-500 via-orange-400 to-amber-500 p-6 text-white relative overflow-hidden">
+        <div
+          class="bg-gradient-to-r from-red-500 via-orange-400 to-amber-500 p-6 text-white relative overflow-hidden"
+        >
           <!-- Decorative elements -->
-          <div class="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-white/10 blur-xl"></div>
-          <div class="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-white/10 blur-xl"></div>
-          
+          <div
+            class="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-white/10 blur-xl"
+          ></div>
+          <div
+            class="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-white/10 blur-xl"
+          ></div>
+
           <div class="flex items-center justify-center mb-2 relative z-10">
             <div class="bg-white/20 p-3 rounded-full backdrop-blur-sm">
-              <UIcon name="i-heroicons-shield-exclamation" class="h-8 w-8 text-white" />
+              <UIcon
+                name="i-heroicons-shield-exclamation"
+                class="h-8 w-8 text-white"
+              />
             </div>
           </div>
-          <h3 class="text-xl font-semibold text-center text-white mb-1 relative z-10">
+          <h3
+            class="text-xl font-semibold text-center text-white mb-1 relative z-10"
+          >
             Product Limit Reached
           </h3>
           <p class="text-sm text-center text-white/90 relative z-10">
             Your store has reached the maximum limit
           </p>
         </div>
-        
+
         <div class="p-6">
           <div class="flex items-center mb-6 bg-amber-50 rounded-lg p-4">
-            <UIcon name="i-heroicons-information-circle" class="h-5 w-5 text-amber-600 mr-3 flex-shrink-0" />
+            <UIcon
+              name="i-heroicons-information-circle"
+              class="h-5 w-5 text-amber-600 mr-3 flex-shrink-0"
+            />
             <p class="text-sm text-amber-800">
-              Your shop currently has <span class="font-semibold text-amber-900">{{ products.length }}</span> products, 
-              which is the maximum allowed limit of <span class="font-semibold text-amber-900">{{ productLimit }}</span>.
+              Your shop currently has
+              <span class="font-semibold text-amber-900">{{
+                products.length
+              }}</span>
+              products, which is the maximum allowed limit of
+              <span class="font-semibold text-amber-900">{{
+                productLimit
+              }}</span
+              >.
             </p>
           </div>
-            <p class="text-gray-600 text-center mb-6">
-            You can increase your product capacity by purchasing additional product slots. Each slot allows you to list one more product in your store.
+          <p class="text-gray-600 text-center mb-6">
+            You can increase your product capacity by purchasing additional
+            product slots. Each slot allows you to list one more product in your
+            store.
           </p>
-            <div class="flex sm:flex-row gap-4 w-full">
+          <div class="flex sm:flex-row gap-4 w-full">
             <UButton
               color="primary"
               icon="i-heroicons-shopping-cart"
-              @click="showBuySlotsModal = true; showProductLimitModal = false"
+              @click="
+                showBuySlotsModal = true;
+                showProductLimitModal = false;
+              "
               class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
             >
-              Buy More Product Slots
+              Buy More Slots
             </UButton>
             <UButton
               color="gray"
               variant="outline"
               @click="showProductLimitModal = false"
               class="flex-1"
+              block
             >
               Close
             </UButton>
           </div>
-          
+
           <div class="mt-6 border-t border-gray-100 pt-4">
             <div class="flex justify-center">
-              <NuxtLink to="/upgrade-to-pro" class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center transition-colors">
-                <UIcon name="i-heroicons-arrow-up-circle" class="h-3.5 w-3.5 mr-1" />
+              <NuxtLink
+                to="/upgrade-to-pro"
+                class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center transition-colors"
+              >
+                <UIcon
+                  name="i-heroicons-arrow-up-circle"
+                  class="h-3.5 w-3.5 mr-1"
+                />
                 Learn about our premium shop features
               </NuxtLink>
             </div>
@@ -928,106 +995,189 @@
     <UModal v-model="showBuySlotsModal">
       <div class="bg-white rounded-xl shadow-sm overflow-hidden w-full">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-emerald-600 to-emerald-500 p-6 text-white relative overflow-hidden">
+        <div
+          class="bg-gradient-to-r from-emerald-600 to-emerald-500 p-6 text-white relative overflow-hidden"
+        >
           <!-- Decorative elements -->
-          <div class="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-white/10 blur-xl"></div>
-          <div class="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-white/10 blur-xl"></div>
-          
+          <div
+            class="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-white/10 blur-xl"
+          ></div>
+          <div
+            class="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-white/10 blur-xl"
+          ></div>
+
           <div class="flex items-center justify-center mb-2 relative z-10">
             <div class="bg-white/20 p-3 rounded-full backdrop-blur-sm">
-              <UIcon name="i-heroicons-shopping-bag-plus" class="h-8 w-8 text-white" />
+              <UIcon
+                name="i-heroicons-shopping-bag-plus"
+                class="h-8 w-8 text-white"
+              />
             </div>
           </div>
-          <h3 class="text-xl font-semibold text-center text-white mb-1 relative z-10">
+          <h3
+            class="text-xl font-semibold text-center text-white mb-1 relative z-10"
+          >
             Buy Additional Product Slots
           </h3>
           <p class="text-sm text-center text-white/90 relative z-10">
             Expand your store capacity
           </p>
         </div>
-        
+
         <div class="p-6">
           <!-- Current slots info -->
           <div class="flex items-center mb-6 bg-emerald-50 rounded-lg p-4">
-            <UIcon name="i-heroicons-information-circle" class="h-5 w-5 text-emerald-600 mr-3 flex-shrink-0" />
+            <UIcon
+              name="i-heroicons-information-circle"
+              class="h-5 w-5 text-emerald-600 mr-3 flex-shrink-0"
+            />
             <p class="text-sm text-emerald-800">
-              Your shop currently has <span class="font-semibold">{{ products.length }}/{{ productLimit }}</span> product slots used.
-              You need more slots to add additional products.
+              Your shop currently has
+              <span class="font-semibold"
+                >{{ products.length }}/{{ productLimit }}</span
+              >
+              product slots used. You need more slots to add additional
+              products.
             </p>
           </div>
-            <!-- Slot package selection -->
+          <!-- Slot package selection -->
           <div class="space-y-4 mb-6">
             <h4 class="text-gray-700 font-medium">Select Package:</h4>
-            
-            <div v-if="isLoadingPackages" class="flex items-center justify-center py-8">
-              <UIcon name="i-heroicons-arrow-path" class="h-6 w-6 text-emerald-600 animate-spin" />
+
+            <div
+              v-if="isLoadingPackages"
+              class="flex items-center justify-center py-8"
+            >
+              <UIcon
+                name="i-heroicons-arrow-path"
+                class="h-6 w-6 text-emerald-600 animate-spin"
+              />
               <span class="ml-2 text-gray-600">Loading packages...</span>
             </div>
-            
+
             <div v-else class="grid gap-3">
-              <label 
-                v-for="pkg in productSlotPackages" 
+              <label
+                v-for="pkg in productSlotPackages"
                 :key="pkg.id"
                 class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none hover:border-emerald-500 transition-all"
-                :class="{'border-emerald-500 ring-2 ring-emerald-500 ring-opacity-30': selectedSlotPackage && selectedSlotPackage.id === pkg.id}"
+                :class="{
+                  'border-emerald-500 ring-2 ring-emerald-500 ring-opacity-30':
+                    selectedSlotPackage && selectedSlotPackage.id === pkg.id,
+                }"
               >
-                <input 
-                  type="radio" 
-                  name="slot-package" 
+                <input
+                  type="radio"
+                  name="slot-package"
                   :value="pkg"
                   v-model="selectedSlotPackage"
-                  class="sr-only" 
+                  class="sr-only"
                 />
                 <span class="flex flex-1">
                   <span class="flex flex-col">
                     <span class="block font-medium text-gray-900">
                       {{ pkg.slots }} Additional Slots
-                      <span v-if="pkg.is_featured" class="ml-2 text-xs bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded">BEST VALUE</span>
+                      <span
+                        v-if="pkg.is_featured"
+                        class="ml-2 text-xs bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded"
+                        >BEST VALUE</span
+                      >
                     </span>
                     <span class="mt-1 flex items-center text-sm text-gray-500">
-                      <UIcon name="i-heroicons-shopping-bag" class="h-3.5 w-3.5 mr-1.5 text-emerald-500" />
+                      <UIcon
+                        name="i-heroicons-shopping-bag"
+                        class="h-3.5 w-3.5 mr-1.5 text-emerald-500"
+                      />
                       Add {{ pkg.slots }} more product listings
                     </span>
-                    <span class="mt-2 text-emerald-600 font-medium flex items-center">
-                      <UIcon name="i-heroicons-tag" class="h-4 w-4 mr-1" /> ৳{{ pkg.price }} 
-                      <template v-if="pkg.original_price && pkg.original_price > pkg.price">
-                        <span class="text-xs text-gray-500 line-through ml-2">৳{{ pkg.original_price }}</span>
-                        <span class="text-xs bg-emerald-100 text-emerald-800 ml-2 px-1.5 py-0.5 rounded">
-                          Save {{ Math.round(((pkg.original_price - pkg.price) / pkg.original_price) * 100) }}%
+                    <span
+                      class="mt-2 text-emerald-600 font-medium flex items-center"
+                    >
+                      <UIcon name="i-heroicons-tag" class="h-4 w-4 mr-1" /> ৳{{
+                        pkg.price
+                      }}
+                      <template
+                        v-if="
+                          pkg.original_price && pkg.original_price > pkg.price
+                        "
+                      >
+                        <span class="text-xs text-gray-500 line-through ml-2"
+                          >৳{{ pkg.original_price }}</span
+                        >
+                        <span
+                          class="text-xs bg-emerald-100 text-emerald-800 ml-2 px-1.5 py-0.5 rounded"
+                        >
+                          Save
+                          {{
+                            Math.round(
+                              ((pkg.original_price - pkg.price) /
+                                pkg.original_price) *
+                                100
+                            )
+                          }}%
                         </span>
                       </template>
                     </span>
                   </span>
                 </span>
-                <UIcon 
-                  name="i-heroicons-check-circle" 
+                <UIcon
+                  name="i-heroicons-check-circle"
                   class="h-5 w-5 text-emerald-600"
-                  :class="{'opacity-100': selectedSlotPackage && selectedSlotPackage.id === pkg.id, 'opacity-0': !selectedSlotPackage || selectedSlotPackage.id !== pkg.id}"
+                  :class="{
+                    'opacity-100':
+                      selectedSlotPackage && selectedSlotPackage.id === pkg.id,
+                    'opacity-0':
+                      !selectedSlotPackage || selectedSlotPackage.id !== pkg.id,
+                  }"
                 />
               </label>
             </div>
           </div>
 
           <!-- Account balance -->
-          <div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center mb-6">
+          <div
+            class="bg-gray-50 p-4 rounded-lg flex justify-between items-center mb-6"
+          >
             <div>
-              <p class="text-sm font-medium text-gray-700">Your Account Balance</p>
-              <p class="text-lg font-semibold text-gray-900">৳{{ user?.user?.balance || 0 }}</p>
+              <p class="text-sm font-medium text-gray-700">
+                Your Account Balance
+              </p>
+              <p class="text-lg font-semibold text-gray-900">
+                ৳{{ user?.user?.balance || 0 }}
+              </p>
             </div>
-            <NuxtLink to="/deposit-withdraw" class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center">
+            <NuxtLink
+              to="/deposit-withdraw"
+              class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center"
+            >
               <UIcon name="i-heroicons-plus-circle" class="h-3.5 w-3.5 mr-1" />
               Add Funds
             </NuxtLink>
-          </div>          <!-- Insufficient balance warning -->
-          <div v-if="selectedSlotPackage && user?.user?.balance < selectedSlotPackage.price"
-               class="bg-red-50 border border-red-100 rounded-lg p-3 mb-6 text-sm text-red-800 flex items-start">
-            <UIcon name="i-heroicons-exclamation-circle" class="h-5 w-5 text-red-500 mr-2 flex-shrink-0" />
+          </div>
+          <!-- Insufficient balance warning -->
+          <div
+            v-if="
+              selectedSlotPackage &&
+              user?.user?.balance < selectedSlotPackage.price
+            "
+            class="bg-red-50 border border-red-100 rounded-lg p-3 mb-6 text-sm text-red-800 flex items-start"
+          >
+            <UIcon
+              name="i-heroicons-exclamation-circle"
+              class="h-5 w-5 text-red-500 mr-2 flex-shrink-0"
+            />
             <div>
               <p class="mb-1">
-                You have insufficient balance to purchase this package. Please add funds to your account.
+                You have insufficient balance to purchase this package. Please
+                add funds to your account.
               </p>
-              <NuxtLink to="/deposit-withdraw" class="text-red-600 hover:text-red-800 flex items-center font-medium text-xs">
-                <UIcon name="i-heroicons-plus-circle" class="h-3.5 w-3.5 mr-1" />
+              <NuxtLink
+                to="/deposit-withdraw"
+                class="text-red-600 hover:text-red-800 flex items-center font-medium text-xs"
+              >
+                <UIcon
+                  name="i-heroicons-plus-circle"
+                  class="h-3.5 w-3.5 mr-1"
+                />
                 Add Funds to Your Account
               </NuxtLink>
             </div>
@@ -1038,12 +1188,15 @@
               color="primary"
               icon="i-heroicons-shopping-cart"
               @click="purchaseProductSlots"
-              class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"              :disabled="!selectedSlotPackage || 
-                         (user?.user?.balance < (selectedSlotPackage?.price || 0)) ||
-                         isPurchasing"
+              class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+              :disabled="
+                !selectedSlotPackage ||
+                user?.user?.balance < (selectedSlotPackage?.price || 0) ||
+                isPurchasing
+              "
               :loading="isPurchasing"
             >
-              {{ isPurchasing ? 'Processing...' : 'Purchase Now' }}
+              {{ isPurchasing ? "Processing..." : "Purchase Now" }}
             </UButton>
             <UButton
               color="gray"
@@ -1091,7 +1244,9 @@ const activeTab = ref("orders");
 
 // Product limit configuration (dynamic from user data)
 const productLimit = computed(() => user.value?.user?.product_limit || 10);
-const remainingProductLimit = computed(() => productLimit.value - products.value.length);
+const remainingProductLimit = computed(
+  () => productLimit.value - products.value.length
+);
 
 // Tabs configuration
 const tabs = computed(() => [
@@ -1104,11 +1259,12 @@ const tabs = computed(() => [
     id: "products",
     name: "My Products",
     icon: ShoppingCart,
-  },  {
+  },
+  {
     id: "add-product",
     name: "Add New Product",
     icon: PlusCircle,
-    disabled: products.value.length >= productLimit.value
+    disabled: products.value.length >= productLimit.value,
   },
 ]);
 
@@ -1123,8 +1279,8 @@ const showBuySlotsModal = ref(false); // State for Buy Slots modal
 // Watch for active tab changes to handle product limit
 watch(activeTab, (newTab) => {
   // Check if trying to access the add-product tab and product limit is reached
-  if (newTab === 'add-product' && products.value.length >= productLimit.value) {
-    activeTab.value = 'products'; // Redirect to products tab
+  if (newTab === "add-product" && products.value.length >= productLimit.value) {
+    activeTab.value = "products"; // Redirect to products tab
     showProductLimitModal.value = true; // Show limit reached modal
   }
 });
@@ -1205,12 +1361,12 @@ const lastOrderDate = computed(() => {
   if (orders.value.length === 0) {
     return null;
   }
-  
+
   // Find the most recent order by created_at date
-  const sortedOrders = [...orders.value].sort((a, b) => 
-    new Date(b.created_at) - new Date(a.created_at)
+  const sortedOrders = [...orders.value].sort(
+    (a, b) => new Date(b.created_at) - new Date(a.created_at)
   );
-  
+
   return new Date(sortedOrders[0].created_at);
 });
 
@@ -1222,7 +1378,7 @@ async function getProducts() {
     const res = await get("/my-products/");
     if (res && res.data) {
       products.value = res.data;
-      console.log(`Loaded ${products.value.length} products`);      // Check product limit and show notification if close to limit
+      console.log(`Loaded ${products.value.length} products`); // Check product limit and show notification if close to limit
       if (products.value.length >= productLimit.value) {
         showToast(
           "info",
@@ -1234,7 +1390,9 @@ async function getProducts() {
         showToast(
           "warning",
           "Approaching Product Limit",
-          `You can add ${productLimit.value - products.value.length} more product(s) before reaching your shop's limit. Consider buying additional slots.`
+          `You can add ${
+            productLimit.value - products.value.length
+          } more product(s) before reaching your shop's limit. Consider buying additional slots.`
         );
       }
     } else {
@@ -1369,7 +1527,7 @@ async function updateStoreInfo() {
       store_description: editedUser.store_description,
     });
     if (data) {
-      getStoreDetails(); 
+      getStoreDetails();
     }
   } catch (error) {
     console.log(error);
@@ -1395,16 +1553,21 @@ const isLoadingPackages = ref(false);
 async function fetchProductSlotPackages() {
   isLoadingPackages.value = true;
   try {
-    const { data } = await get('/product-slot-packages/');
+    const { data } = await get("/product-slot-packages/");
     productSlotPackages.value = data || [];
-      // Set default selected package (if packages are available)
+    // Set default selected package (if packages are available)
     if (productSlotPackages.value.length > 0) {
       selectedSlotPackage.value = productSlotPackages.value[0];
-    }  } catch (error) {
+    }
+  } catch (error) {
     console.error("Error loading product slot packages:", error);
     productSlotPackages.value = [];
     selectedSlotPackage.value = null;
-    showToast("error", "Failed to Load Packages", "Could not load product slot packages. Please try again later.");
+    showToast(
+      "error",
+      "Failed to Load Packages",
+      "Could not load product slot packages. Please try again later."
+    );
   } finally {
     isLoadingPackages.value = false;
   }
@@ -1421,10 +1584,14 @@ async function purchaseProductSlots() {
   isPurchasing.value = true;
   try {
     if (!selectedSlotPackage.value) {
-      showToast("error", "Selection Required", "Please select a package to purchase.");
+      showToast(
+        "error",
+        "Selection Required",
+        "Please select a package to purchase."
+      );
       return;
     }
-    
+
     const cost = selectedSlotPackage.value.price;
 
     // Check if user has enough balance
@@ -1435,22 +1602,24 @@ async function purchaseProductSlots() {
         `You need ৳${cost} to purchase this package. Please add funds to your account.`
       );
       return;
-    }    // Make API call to purchase slots
-    const { data } = await post('/purchase-product-slots/', {
+    } // Make API call to purchase slots
+    const { data } = await post("/purchase-product-slots/", {
       package_id: selectedSlotPackage.value.id,
       slot_count: selectedSlotPackage.value.slots, // For backward compatibility
-      cost: selectedSlotPackage.value.price // For backward compatibility
+      cost: selectedSlotPackage.value.price, // For backward compatibility
     });
 
     if (data && data.success) {
       // Update user's product limit and balance
       user.value.user.product_limit += selectedSlotPackage.value.slots;
       user.value.user.balance -= selectedSlotPackage.value.price;
-      
+
       showToast(
         "success",
         "Purchase Successful",
-        `You have successfully purchased ${selectedSlotPackage.value.slots} additional product slot${
+        `You have successfully purchased ${
+          selectedSlotPackage.value.slots
+        } additional product slot${
           selectedSlotPackage.value.slots > 1 ? "s" : ""
         } for ৳${selectedSlotPackage.value.price}.`
       );
@@ -1458,11 +1627,15 @@ async function purchaseProductSlots() {
       // Close modal
       showBuySlotsModal.value = false;
     } else {
-      throw new Error(data?.message || 'Purchase failed');
+      throw new Error(data?.message || "Purchase failed");
     }
   } catch (error) {
     console.error("Error purchasing product slots:", error);
-    showToast("error", "Purchase Failed", "Could not complete the purchase. Please try again.");
+    showToast(
+      "error",
+      "Purchase Failed",
+      "Could not complete the purchase. Please try again."
+    );
   } finally {
     isPurchasing.value = false;
   }
