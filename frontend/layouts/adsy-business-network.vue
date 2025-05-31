@@ -1,13 +1,11 @@
 <template>
   <div class="font-AnekBangla">
     <AdsyBusinessNetworkHeader />
-    
-    <!-- Pull to Refresh Wrapper for mobile app experience -->
+      <!-- Pull to Refresh Wrapper for mobile app experience -->
     <PullToRefreshWrapper
       :enabled="enablePullToRefresh"
       :refresh-callback="handlePageRefresh"
-      :auto-reload="true"
-      :auto-reload-interval="180000"
+      :auto-reload="false"
       :show-network-status="true"
       :haptic-feedback="true"
       :theme="$colorMode.preference"
