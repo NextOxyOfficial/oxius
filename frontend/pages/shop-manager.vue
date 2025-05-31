@@ -893,7 +893,7 @@
             <p class="text-gray-600 text-center mb-6">
             You can increase your product capacity by purchasing additional product slots. Each slot allows you to list one more product in your store.
           </p>
-            <div class="flex flex-col sm:flex-row gap-4 w-full">
+            <div class="flex sm:flex-row gap-4 w-full">
             <UButton
               color="primary"
               icon="i-heroicons-shopping-cart"
