@@ -342,7 +342,10 @@
     <!-- Order Details Modal -->
     <UModal
       v-model="showOrderDetailsModal"
-      :ui="{ width: 'w-full sm:max-w-3xl' }"
+      :ui="{
+        fullscreen: 'w-full sm:max-w-3xl h-auto',
+      }"
+      fullscreen
       :prevent-close="showAddItemModal"
     >
       <div
