@@ -88,17 +88,23 @@
           name="i-heroicons-chevron-right"
           class="w-5 h-5 text-gray-600 dark:text-slate-300"
         />
-      </button>
-
-      <!-- Two-Row Carousel with RTL direction -->
+      </button>      <!-- Two-Row Carousel with RTL direction and Touch Support -->
       <div
-        class="overflow-hidden rounded-lg bg-white/30 dark:bg-slate-800/30 backdrop-blur-sm"
+        ref="carouselContainer"
+        class="overflow-hidden rounded-lg bg-white/30 dark:bg-slate-800/30 backdrop-blur-sm select-none"
         @mouseenter="pauseAutoSlide"
-        @mouseleave="resumeAutoSlide"
-      >
-        <div
-          class="rtl-slider transition-transform duration-500 ease-out"
-          :style="{ transform: `translateX(${currentSlide * 100}%)` }"
+        @mouseleave="handleMouseLeave"
+        @mousedown="handleMouseStart"
+        @mousemove="handleMouseMove"
+        @mouseup="handleMouseEnd"
+      >        <div
+          ref="sliderTrack"
+          class="rtl-slider"
+          :style="{ 
+            transform: `translateX(${currentSlide * 100 + swipeOffset}%)`,
+            transitionDuration: isDragging ? '0ms' : '300ms',
+            transitionTimingFunction: isDragging ? 'linear' : 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+          }"
         >
           <div v-for="i in maxSlides" :key="i" class="slider-page">
             <!-- First row -->
@@ -257,6 +263,18 @@ const isLoading = ref(true);
 const currentSlide = ref(0);
 const itemsPerRow = ref(5); // Items per row
 
+// Touch/Swipe state
+const carouselContainer = ref(null);
+const sliderTrack = ref(null);
+const isDragging = ref(false);
+const startX = ref(0);
+const currentX = ref(0);
+const swipeOffset = ref(0);
+const startTime = ref(0);
+const minSwipeDistance = 20; // Very responsive - reduced from 30
+const maxSwipeDistance = 300;
+const swipeThreshold = 0.1; // 10% of container width - more sensitive
+
 // Add these new refs for controlling auto-sliding
 const autoSlideInterval = ref(null);
 const autoSlideDelay = 5000; // 5 seconds between slides
@@ -404,25 +422,126 @@ function resumeAutoSlide() {
   isPaused.value = false;
 }
 
-// Auto-slide functionality
-let autoSlideTimer = null;
-
-function pauseAutoSlideLegacy() {
-  if (autoSlideTimer) {
-    clearInterval(autoSlideTimer);
-    autoSlideTimer = null;
+// Touch/Swipe Event Handlers
+function handleTouchStart(event) {
+  console.log('Touch start detected'); // Debug log
+  // Don't prevent default here to allow normal touch interactions
+  if (event.touches.length === 1) {
+    handleStart(event.touches[0].clientX);
   }
 }
 
-function resumeAutoSlideLegacy() {
-  pauseAutoSlideLegacy();
-  autoSlideTimer = setInterval(() => {
-    if (currentSlide.value < maxSlides.value - 1) {
+function handleTouchMove(event) {
+  if (isDragging.value && event.touches.length === 1) {
+    console.log('Touch move detected'); // Debug log
+    event.preventDefault(); // Prevent page scrolling while swiping
+    event.stopPropagation(); // Prevent event bubbling
+    handleMove(event.touches[0].clientX);
+  }
+}
+
+function handleTouchEnd(event) {
+  console.log('Touch end detected'); // Debug log
+  if (isDragging.value) {
+    event.preventDefault();
+    handleEnd();
+  }
+}
+
+// Mouse Event Handlers (for desktop drag support)
+function handleMouseStart(event) {
+  // Only handle left mouse button
+  if (event.button !== 0) return;
+  event.preventDefault(); // Prevent text selection
+  handleStart(event.clientX);
+}
+
+function handleMouseMove(event) {
+  if (isDragging.value) {
+    event.preventDefault();
+    event.stopPropagation();
+    handleMove(event.clientX);
+  }
+}
+
+function handleMouseEnd(event) {
+  if (isDragging.value) {
+    event.preventDefault();
+    handleEnd();
+  }
+}
+
+function handleMouseLeave(event) {
+  if (isDragging.value) {
+    handleEnd();
+  } else {
+    resumeAutoSlide();
+  }
+}
+
+// Common drag/swipe logic
+function handleStart(clientX) {
+  isDragging.value = true;
+  startX.value = clientX;
+  currentX.value = clientX;
+  swipeOffset.value = 0;
+  startTime.value = Date.now();
+  pauseAutoSlide();
+}
+
+function handleMove(clientX) {
+  if (!isDragging.value) return;
+  
+  currentX.value = clientX;
+  const deltaX = currentX.value - startX.value;
+  
+  // Calculate swipe offset as percentage
+  const containerWidth = carouselContainer.value?.offsetWidth || 1;
+  let offsetPercentage = (deltaX / containerWidth) * 100;
+  
+  // Apply smoother resistance at boundaries
+  if (currentSlide.value === 0 && offsetPercentage > 0) {
+    // At first slide, swiping right (positive direction)
+    offsetPercentage *= 0.3; // More resistance
+  } else if (currentSlide.value === maxSlides.value - 1 && offsetPercentage < 0) {
+    // At last slide, swiping left (negative direction)
+    offsetPercentage *= 0.3; // More resistance
+  }
+  
+  swipeOffset.value = offsetPercentage;
+}
+
+function handleEnd() {
+  if (!isDragging.value) return;
+  
+  const deltaX = currentX.value - startX.value;
+  const containerWidth = carouselContainer.value?.offsetWidth || 1;
+  const swipeDistance = Math.abs(deltaX);
+  const swipeDirection = deltaX > 0 ? 'right' : 'left';
+  const swipeVelocity = swipeDistance / (Date.now() - startTime.value); // pixels per ms
+  
+  // Reset drag state
+  isDragging.value = false;
+  swipeOffset.value = 0;
+  
+  // More sensitive slide detection
+  const distanceThreshold = containerWidth * 0.15; // 15% of container width
+  const velocityThreshold = 0.3; // pixels per ms
+  
+  const shouldSlide = swipeDistance > distanceThreshold || swipeVelocity > velocityThreshold;
+  
+  if (shouldSlide) {
+    if (swipeDirection === 'right' && currentSlide.value > 0) {
+      // Swipe right = previous slide
+      currentSlide.value--;
+    } else if (swipeDirection === 'left' && currentSlide.value < maxSlides.value - 1) {
+      // Swipe left = next slide
       currentSlide.value++;
-    } else {
-      currentSlide.value = 0;
     }
-  }, 5000);
+  }
+  
+  // Resume auto-slide after a delay
+  setTimeout(resumeAutoSlide, 2000);
 }
 
 // Lifecycle hooks
@@ -431,12 +550,28 @@ onMounted(() => {
   updateItemsPerRow();
   window.addEventListener("resize", updateItemsPerRow);
 
+  // Add touch event listeners manually for better control
+  nextTick(() => {
+    if (carouselContainer.value) {
+      carouselContainer.value.addEventListener('touchstart', handleTouchStart, { passive: false });
+      carouselContainer.value.addEventListener('touchmove', handleTouchMove, { passive: false });
+      carouselContainer.value.addEventListener('touchend', handleTouchEnd, { passive: false });
+    }
+  });
+
   // Start auto-sliding after mounting
   startAutoSlide();
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", updateItemsPerRow);
+
+  // Remove touch event listeners
+  if (carouselContainer.value) {
+    carouselContainer.value.removeEventListener('touchstart', handleTouchStart);
+    carouselContainer.value.removeEventListener('touchmove', handleTouchMove);
+    carouselContainer.value.removeEventListener('touchend', handleTouchEnd);
+  }
 
   // Clear interval when component is destroyed
   if (autoSlideInterval.value) clearInterval(autoSlideInterval.value);
@@ -451,6 +586,21 @@ watch(
     }
   }
 );
+
+// Watch for carousel container to add touch events
+watch(carouselContainer, (newVal) => {
+  if (newVal) {
+    // Remove existing listeners first
+    newVal.removeEventListener('touchstart', handleTouchStart);
+    newVal.removeEventListener('touchmove', handleTouchMove);
+    newVal.removeEventListener('touchend', handleTouchEnd);
+    
+    // Add new listeners
+    newVal.addEventListener('touchstart', handleTouchStart, { passive: false });
+    newVal.addEventListener('touchmove', handleTouchMove, { passive: false });
+    newVal.addEventListener('touchend', handleTouchEnd, { passive: false });
+  }
+});
 </script>
 
 <style scoped>
@@ -458,11 +608,48 @@ watch(
 .rtl-slider {
   display: flex;
   direction: rtl;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
 }
 
 .slider-page {
   min-width: 100%;
-  direction: ltr; /* Reset direction for content */
+  direction: ltr;
+}
+
+/* Touch optimizations for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .rtl-slider {
+    touch-action: pan-y;
+  }
+  
+  /* Prevent iOS bounce scrolling interference */
+  .overflow-hidden {
+    -webkit-overflow-scrolling: auto;
+  }
+}
+
+/* Smooth cursor changes during drag */
+.rtl-slider {
+  cursor: grab;
+}
+
+.rtl-slider:active {
+  cursor: grabbing;
+}
+
+/* Hardware acceleration for smoother animations */
+.rtl-slider,
+.rtl-slider * {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 @keyframes shimmer {
