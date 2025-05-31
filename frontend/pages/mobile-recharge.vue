@@ -348,6 +348,7 @@
               variant="outline"
               class="flex-1 transition-all duration-200 hover:scale-105"
               block
+              size="lg"
             >
               <template #leading>
                 <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
@@ -363,6 +364,7 @@
                 'opacity-50 cursor-not-allowed': !hasSufficientBalance,
               }"
               block
+              size="lg"
             >
               <template #leading>
                 <UIcon name="i-heroicons-bolt" class="w-4 h-4" />

@@ -959,6 +959,8 @@
                 showProductLimitModal = false;
               "
               class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+              size="lg"
+              block
             >
               Buy More Slots
             </UButton>
@@ -968,6 +970,7 @@
               @click="showProductLimitModal = false"
               class="flex-1"
               block
+              size="lg"
             >
               Close
             </UButton>
