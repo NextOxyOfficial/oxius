@@ -1,27 +1,23 @@
 <template>
   <div class="transaction-history h-max">
-    <h1 class="text-lg sm:text-xl font-semibold text-center mb-2">
-      {{ $t("recharge_history") }}
-    </h1>
-    <p class="text-center text-gray-600 mb-6">
+    <p class="text-center text-gray-600">
       {{ $t("mobile_recharge_transactions") }}
     </p>
 
     <!-- Filter buttons with improved styling -->
-    <div class="filters mb-6">
+    <div class="filters mb-4">
       <div class="filter-buttons flex flex-wrap gap-2 justify-center">
         <button
           v-for="filter in filterOptions"
           :key="filter.value"
           @click="activeFilter = filter.value"
           :class="[
-            'px-4 py-2 rounded-full text-sm font-medium transition-colors',
+            'px-2 py-2 rounded-full text-sm font-medium transition-colors',
             activeFilter === filter.value
               ? 'border border-green-500  shadow-sm'
               : 'bg-gray-100 text-gray-800 hover:bg-gray-200',
           ]"
         >
-          {{ filter.label }}
         </button>
       </div>
     </div>
@@ -169,9 +165,6 @@ const searchQuery = ref("");
 const activeFilter = ref("all");
 const currentPage = ref(1);
 const itemsPerPage = 5;
-
-// Pre-defined filter options to avoid hardcoding
-const filterOptions = [{ value: "all", label: "All Transactions" }];
 
 // Fetch transaction data
 const transactions = ref([]);
