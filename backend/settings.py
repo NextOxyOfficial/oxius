@@ -37,8 +37,7 @@ INSTALLED_APPS = [
   'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
+    'django.contrib.contenttypes',    'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'base',
@@ -52,6 +51,7 @@ INSTALLED_APPS = [
     'news',
     'sale',  # Add the sale app here
     'support',  # Support ticket system
+    'popups',  # Popup management system
     'django_filters',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',

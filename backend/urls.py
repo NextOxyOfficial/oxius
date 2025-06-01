@@ -27,8 +27,7 @@ urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # Then add the actual URL patterns
 urlpatterns = urlpatterns + [
     path('admin/', admin.site.urls),
-    path('tinymce/', include('tinymce.urls')),
-    path('api/', include('base.urls')),
+    path('tinymce/', include('tinymce.urls')),    path('api/', include('base.urls')),
     path('api/geo/', include('cities.urls')),    path('api/', include('mobile_recharge.urls')),
     path('api/', include('subscription.urls')),
     path('api/sale/', include('sale.urls')),  # Add the sale app URLs here
@@ -36,6 +35,7 @@ urlpatterns = urlpatterns + [
     path('api/news/', include('news.urls')),
     path('api/', include('support.urls')),  # Support ticket system URLs
     path('api/elearning/', include('elearning.urls')),  # eLearning system URLs
+    path('api/popups/', include('popups.urls')),  # Popup management system URLs
     # for frontend
     path('', index, name='index'),
     path('<str:param>', index, name='index2'),
