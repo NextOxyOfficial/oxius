@@ -1,5 +1,5 @@
 <template>
-  <UContainer class="mt-16 flex-1">
+  <UContainer class="mt-2 flex-1">
     <!-- Lazyloader component -->
     <div v-if="loading" class="p-4">
       <div class="flex justify-center items-center mb-6">
