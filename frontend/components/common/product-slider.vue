@@ -52,19 +52,11 @@
       </div>
     </div>
 
-    <div v-else-if="productsCount > 0" class="relative">
+    <div v-else-if="productsCount > 0" class="relative product-slider-container">
       <!-- Navigation Arrows with Premium Styling -->
       <button
-        @click="
-          nextSlide();
-          pauseAutoSlide();
-          setTimeout(resumeAutoSlide, 2000);
-        "
-        class="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm hover:shadow-sm transition-all duration-200 hover:scale-105"
-        :class="{
-          'opacity-50 cursor-not-allowed': currentSlide === 0,
-        }"
-        :disabled="currentSlide === 0"
+        @click="scrollSlider('left')"
+        class="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 opacity-0 group-hover:opacity-100"
       >
         <UIcon
           name="i-heroicons-chevron-left"
@@ -73,103 +65,75 @@
       </button>
 
       <button
-        @click="
-          prevSlide();
-          pauseAutoSlide();
-          setTimeout(resumeAutoSlide, 2000);
-        "
-        class="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm hover:shadow-sm transition-all duration-200 hover:scale-105"
-        :class="{
-          'opacity-50 cursor-not-allowed': currentSlide === maxSlides - 1,
-        }"
-        :disabled="currentSlide === maxSlides - 1"
+        @click="scrollSlider('right')"
+        class="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 opacity-0 group-hover:opacity-100"
       >
         <UIcon
           name="i-heroicons-chevron-right"
           class="w-5 h-5 text-gray-600 dark:text-slate-300"
         />
-      </button>      <!-- Two-Row Carousel with RTL direction and Touch Support -->
-      <div
-        ref="carouselContainer"
-        class="overflow-hidden rounded-lg bg-white/30 dark:bg-slate-800/30 backdrop-blur-sm select-none touch-container"
-        @mouseenter="pauseAutoSlide"
-        @mouseleave="handleMouseLeave"
-        @mousedown="handleMouseStart"
-        @mousemove="handleMouseMove"
-        @mouseup="handleMouseEnd"
-        @touchstart.passive="false"
-        @touchmove.passive="false"
-        @touchend.passive="false"
-      >        <div
-          ref="sliderTrack"
-          class="slider-track"
-          :style="{ 
-            transform: `translate3d(${-(currentSlide * 100) + swipeOffset}%, 0, 0)`,
-            transitionDuration: isDragging ? '0ms' : '450ms',
-            transitionTimingFunction: isDragging ? 'linear' : 'cubic-bezier(0.23, 1, 0.32, 1)'
-          }"
-        >
-          <div v-for="i in maxSlides" :key="i" class="slider-page">
-            <!-- First row -->
-            <div
-              class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 mb-2"
-            >
-              <CommonProductCard
-                v-for="product in getProductsForRow(i - 1, 0)"
-                :key="product.id"
-                :product="product"
-              />
-            </div>
+      </button>
 
-            <!-- Second row -->
-            <div
-              class="grid grid-cols-2 pb-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2"
-            >
-              <CommonProductCard
-                v-for="product in getProductsForRow(i - 1, 1)"
+      <!-- Smooth Scrollable Product Slider -->
+      <div
+        ref="sliderContainer"
+        class="overflow-x-auto custom-scrollbar rounded-lg bg-white/30 dark:bg-slate-800/30 backdrop-blur-sm select-none scroll-smooth hide-scrollbar"
+        @mousedown="handleSliderClick"
+        @touchstart="handleSliderTouch"
+      >
+        <div class="slider-content inline-flex py-3 px-2">
+          <!-- First row of products -->
+          <div class="product-row">
+            <div class="flex gap-2">
+              <div
+                v-for="product in firstRowProducts"
                 :key="product.id"
-                :product="product"
-              />
+                class="product-card-wrapper flex-shrink-0"
+              >
+                <CommonProductCard
+                  :product="product"
+                  class="product-card"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="slider-content inline-flex py-1 px-2 mb-2">
+          <!-- Second row of products -->
+          <div class="product-row">
+            <div class="flex gap-4">
+              <div
+                v-for="product in secondRowProducts"
+                :key="product.id"
+                class="product-card-wrapper flex-shrink-0"
+              >
+                <CommonProductCard
+                  :product="product"
+                  class="product-card"
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Premium Dot Indicators -->
-      <div class="flex justify-center gap-1.5 mt-4">
-        <button
-          v-for="i in maxSlides"
+      <!-- Scroll indicator dots -->
+      <div class="flex justify-center gap-1.5 mt-3">
+        <div
+          v-for="(_, i) in scrollPositions"
           :key="i"
-          @click="
-            goToSlide(i - 1);
-            pauseAutoSlide();
-            setTimeout(resumeAutoSlide, 2000);
-          "
-          class="w-2 h-2 rounded-full transition-all duration-200 hover:scale-110"
+          @click="scrollToPosition(i)"
+          class="w-2 h-2 rounded-full cursor-pointer transition-all duration-200 hover:scale-110"
           :class="
-            currentSlide === i - 1
+            currentScrollIndex === i
               ? 'bg-green-500 w-6'
               : 'bg-slate-300 dark:bg-slate-600'
           "
-        ></button>
-      </div>
-
-      <!-- Progress Bar -->
-      <div
-        class="w-full max-w-[250px] mx-auto mt-2 h-0.5 bg-slate-200 dark:bg-slate-700 overflow-hidden rounded-full"
-      >
-        <div
-          class="h-full bg-green-500 transition-all duration-300 rounded-full"
-          :class="{ 'progress-animation': !isPaused }"
-          :style="{
-            animation: isPaused
-              ? 'none'
-              : `progress-animation ${autoSlideDelay}ms linear infinite`,
-          }"
         ></div>
       </div>
 
-      <!-- Bottom "All Products" button (styled like category load more) -->
+      <!-- Bottom "All Products" button -->
       <div class="text-center mt-5 mb-2">
         <NuxtLink
           to="/eshop"
@@ -263,60 +227,70 @@ const { get } = useApi();
 // Core state
 const products = ref([]);
 const isLoading = ref(true);
-const currentSlide = ref(0);
-const itemsPerRow = ref(5); // Items per row
+const sliderContainer = ref(null);
 
-// Touch/Swipe state
-const carouselContainer = ref(null);
-const sliderTrack = ref(null);
-const isDragging = ref(false);
-const startX = ref(0);
-const currentX = ref(0);
-const swipeOffset = ref(0);
-const startTime = ref(0);
-const touchStartY = ref(0);
-const initialTouchDirection = ref(null); // Track initial touch direction
-const isVerticalScroll = ref(false); // Detect if user is scrolling vertically
+// Responsive settings
+const itemsPerRow = ref(5); // Default for desktop
+const productsLimit = 20; // Total products to fetch
 
-// Add these new refs for controlling auto-sliding
-const autoSlideInterval = ref(null);
-const autoSlideDelay = 5000; // 5 seconds between slides
-const isPaused = ref(false);
-
-// Computed values for the two-row layout
-const itemsPerSlide = computed(() => itemsPerRow.value * 2); // Double because we have 2 rows
+// Scroll state
+const currentScrollIndex = ref(0);
+const scrollInterval = ref(null);
+const isScrolling = ref(false);
+const clickStartX = ref(0);
+const clickStartTime = ref(0);
+const isMouseDown = ref(false);
 
 // Debug settings
 const debugMode = ref(false);
 const debugData = ref(null);
 
-// Fetch products from API with better error handling
+// Computed properties for product display
+const productsCount = computed(() => products.value?.length || 0);
+
+const firstRowProducts = computed(() => {
+  if (!products.value.length) return [];
+  return products.value.slice(0, 10); // First 10 products (half of total)
+});
+
+const secondRowProducts = computed(() => {
+  if (!products.value.length) return [];
+  return products.value.slice(10, 20); // Last 10 products (second half)
+});
+
+// Calculate number of scroll positions based on products and visible items
+const scrollPositions = computed(() => {
+  if (productsCount.value === 0) return [];
+  const cardsPerView = getCardsPerView();
+  const totalPositions = Math.ceil((productsCount.value / 2) / cardsPerView);
+  return Array.from({ length: totalPositions });
+});
+
+// Fetch products from API with better error handling and limit
 async function fetchProducts() {
   isLoading.value = true;
 
   try {
-    const response = await get("/all-products/");
+    // Add limit parameter to fetch exactly 20 products
+    const response = await get(`/all-products/?limit=${productsLimit}`);
     console.log("API Response:", response);
 
     if (response && response.data) {
       debugData.value = response.data;
 
       if (Array.isArray(response.data)) {
-        products.value = response.data;
+        products.value = response.data.slice(0, productsLimit);
       } else if (
         response.data.results &&
         Array.isArray(response.data.results)
       ) {
-        products.value = response.data.results;
+        products.value = response.data.results.slice(0, productsLimit);
       } else if (typeof response.data === "object") {
-        products.value = [response.data];
+        products.value = [response.data].slice(0, productsLimit);
       } else {
         console.error("Unknown API response format:", response.data);
         products.value = [];
       }
-
-      // Reset to first slide when products change
-      currentSlide.value = 0;
     } else {
       console.error("No data in API response");
       products.value = [];
@@ -332,19 +306,26 @@ async function fetchProducts() {
     products.value = [];
   } finally {
     isLoading.value = false;
+    // Reset scroll position after new products load
+    resetScrollPosition();
   }
 }
 
-// Helper computed properties
-const productsCount = computed(() => products.value?.length || 0);
+// Determine cards per view based on screen size
+function getCardsPerView() {
+  if (window.innerWidth < 640) {
+    return 2; // Mobile: 2 cards per view
+  } else if (window.innerWidth < 768) {
+    return 3; // Tablet: 3 cards per view
+  } else if (window.innerWidth < 1024) {
+    return 4; // Small desktop: 4 cards per view
+  } else {
+    return 5; // Large desktop: 5 cards per view
+  }
+}
 
-const maxSlides = computed(() => {
-  if (!productsCount.value) return 0;
-  return Math.ceil(productsCount.value / itemsPerSlide.value);
-});
-
-// Update responsive items per row based on screen size
-function updateItemsPerRow() {
+// Update responsive display based on screen size
+function updateResponsiveDisplay() {
   if (window.innerWidth < 640) {
     itemsPerRow.value = 2; // Mobile: 2 items per row
   } else if (window.innerWidth < 768) {
@@ -354,503 +335,415 @@ function updateItemsPerRow() {
   } else {
     itemsPerRow.value = 5; // Desktop: 5 items per row
   }
+
+  // Update current scroll position based on new display
+  updateScrollPosition();
 }
 
-// New function to get products for a specific row in a slide
-function getProductsForRow(slideIndex, rowIndex) {
-  if (!products.value || !products.value.length) {
-    return [];
+// Smooth scrolling function for arrow navigation
+function scrollSlider(direction) {
+  if (!sliderContainer.value) return;
+  
+  isScrolling.value = true;
+  
+  const container = sliderContainer.value;
+  const scrollWidth = container.scrollWidth;
+  const containerWidth = container.clientWidth;
+  const scrollLeft = container.scrollLeft;
+  
+  const cardWidth = containerWidth / getCardsPerView();
+  const scrollAmount = direction === 'left' ? -cardWidth * 2 : cardWidth * 2;
+  const targetScroll = Math.max(0, Math.min(scrollLeft + scrollAmount, scrollWidth - containerWidth));
+  
+  container.scrollTo({
+    left: targetScroll,
+    behavior: 'smooth'
+  });
+  
+  // Update scroll indicator
+  const scrollIndex = Math.round((targetScroll / (scrollWidth - containerWidth)) * (scrollPositions.value.length - 1));
+  currentScrollIndex.value = Math.max(0, Math.min(scrollIndex, scrollPositions.value.length - 1));
+  
+  // Reset scrolling flag after animation
+  setTimeout(() => {
+    isScrolling.value = false;
+  }, 500);
+}
+
+// Handle mouse click for slider interaction
+function handleSliderClick(event) {
+  // Ignore clicks on product cards to allow normal card interactions
+  if (event.target.closest('.product-card') || 
+      event.target.closest('a') || 
+      event.target.closest('button')) {
+    return;
   }
-
-  const itemsPerSlideTotal = itemsPerRow.value * 2; // Total items per slide (2 rows)
-  const startIndexInSlide = slideIndex * itemsPerSlideTotal;
-  const startIndexInRow = startIndexInSlide + rowIndex * itemsPerRow.value;
-  const endIndexInRow = startIndexInRow + itemsPerRow.value;
-
-  return products.value.slice(startIndexInRow, endIndexInRow);
+  
+  event.preventDefault();
+  clickStartX.value = event.clientX;
+  clickStartTime.value = Date.now();
+  isMouseDown.value = true;
+  
+  // Add event listeners for mouse movement and release
+  window.addEventListener('mousemove', handleMouseMove, { once: false });
+  window.addEventListener('mouseup', handleMouseUp, { once: true });
 }
 
-// Carousel navigation - Fixed for smooth left-to-right sliding
-function prevSlide() {
-  if (currentSlide.value < maxSlides.value - 1) {
-    currentSlide.value++;
+// Handle mouse movement during click
+function handleMouseMove(event) {
+  if (!isMouseDown.value) return;
+  
+  const deltaX = event.clientX - clickStartX.value;
+  
+  // If moved more than 5px, treat as a drag operation, not a click
+  if (Math.abs(deltaX) > 5) {
+    const container = sliderContainer.value;
+    if (container) {
+      container.scrollLeft -= deltaX;
+      clickStartX.value = event.clientX;
+    }
   }
 }
 
-function nextSlide() {
-  if (currentSlide.value > 0) {
-    currentSlide.value--;
-  }
-}
-
-function goToSlide(index) {
-  currentSlide.value = index;
-}
-
-// // Product modal
-// function openProductModal(product) {
-//   selectedProduct.value = product;
-//   quantity.value = 1;
-//   isModalOpen.value = true;
-// }
-
-// function closeProductModal() {
-//   isModalOpen.value = false;
-// }
-
-// Start automatic sliding
-function startAutoSlide() {
-  if (autoSlideInterval.value) clearInterval(autoSlideInterval.value);
-
-  autoSlideInterval.value = setInterval(() => {
-    if (!isPaused.value && maxSlides.value > 1) {
-      // Normal left-to-right sliding progression
-      if (currentSlide.value < maxSlides.value - 1) {
-        currentSlide.value++;
+// Handle mouse up after click
+function handleMouseUp(event) {
+  if (!isMouseDown.value) return;
+  
+  window.removeEventListener('mousemove', handleMouseMove);
+  
+  const deltaX = event.clientX - clickStartX.value;
+  const timeDiff = Date.now() - clickStartTime.value;
+  
+  // If it's a quick click (not a drag) and barely moved, scroll in the direction of the click
+  if (Math.abs(deltaX) < 5 && timeDiff < 300) {
+    const container = sliderContainer.value;
+    if (container) {
+      const containerWidth = container.clientWidth;
+      const clickPosition = event.clientX - container.getBoundingClientRect().left;
+      
+      // Click on left half scrolls left, right half scrolls right
+      if (clickPosition < containerWidth / 2) {
+        scrollSlider('left');
       } else {
-        // Reset to first slide when reaching the end
-        currentSlide.value = 0;
+        scrollSlider('right');
       }
     }
-  }, autoSlideDelay);
-}
-
-// Pause automatic sliding (for user interaction)
-function pauseAutoSlide() {
-  isPaused.value = true;
-}
-
-// Resume automatic sliding
-function resumeAutoSlide() {
-  isPaused.value = false;
-}
-
-// Touch/Swipe Event Handlers - Enhanced for smooth interactions
-function handleTouchStart(event) {
-  if (event.touches.length === 1) {
-    const touch = event.touches[0];
-    isDragging.value = true;
-    startX.value = touch.clientX;
-    currentX.value = touch.clientX;
-    touchStartY.value = touch.clientY;
-    swipeOffset.value = 0;
-    startTime.value = Date.now();
-    initialTouchDirection.value = null;
-    isVerticalScroll.value = false;
-    pauseAutoSlide();
   }
+  
+  isMouseDown.value = false;
 }
 
-function handleTouchMove(event) {
-  if (!isDragging.value || event.touches.length !== 1) return;
+// Handle touch events for mobile devices
+function handleSliderTouch(event) {
+  // Ignore touches on product cards to allow normal card interactions
+  if (event.target.closest('.product-card') || 
+      event.target.closest('a') || 
+      event.target.closest('button')) {
+    return;
+  }
   
   const touch = event.touches[0];
-  const deltaX = touch.clientX - startX.value;
-  const deltaY = touch.clientY - touchStartY.value;
+  clickStartX.value = touch.clientX;
+  clickStartTime.value = Date.now();
   
-  // Determine touch direction on first significant move
-  if (initialTouchDirection.value === null) {
-    const absX = Math.abs(deltaX);
-    const absY = Math.abs(deltaY);
-    
-    // Lower threshold for faster direction detection
-    if (absX > absY && absX > 5) {
-      initialTouchDirection.value = 'horizontal';
-      isVerticalScroll.value = false;
-    } else if (absY > absX && absY > 5) {
-      initialTouchDirection.value = 'vertical';
-      isVerticalScroll.value = true;
-    }
-  }
-  
-  // Only handle horizontal swipes - improved smoothness
-  if (initialTouchDirection.value === 'horizontal' && !isVerticalScroll.value) {
-    event.preventDefault(); // Prevent page scrolling
-    event.stopPropagation();
-    
-    currentX.value = touch.clientX;
-    
-    // Calculate swipe offset as percentage with improved smoothing
-    const containerWidth = carouselContainer.value?.offsetWidth || 1;
-    let offsetPercentage = (deltaX / containerWidth) * 100;
-    
-    // Smoother boundary resistance with elastic feel
-    if (currentSlide.value === 0 && offsetPercentage > 0) {
-      // At first slide, allow some movement but with strong resistance
-      offsetPercentage *= 0.3;
-      // Cap the maximum resistance offset
-      offsetPercentage = Math.min(offsetPercentage, 15);
-    } else if (currentSlide.value === maxSlides.value - 1 && offsetPercentage < 0) {
-      // At last slide, allow some movement but with strong resistance
-      offsetPercentage *= 0.3;
-      // Cap the maximum resistance offset
-      offsetPercentage = Math.max(offsetPercentage, -15);
-    }
-    
-    swipeOffset.value = offsetPercentage;
-    
-    // Add haptic feedback for iOS devices if available
-    if (window.navigator && window.navigator.vibrate) {
-      // Very light vibration for touch feedback
-      if (Math.abs(offsetPercentage) > 5 && Date.now() - startTime.value > 100) {
-        window.navigator.vibrate(1);
-      }
-    }
-  }
+  // Add event listeners for touch movement and end
+  window.addEventListener('touchend', handleTouchEnd, { once: true });
 }
 
+// Handle touch end
 function handleTouchEnd(event) {
-  if (!isDragging.value) return;
+  if (event.target.closest('.product-card') || 
+      event.target.closest('a') || 
+      event.target.closest('button')) {
+    return;
+  }
   
-  // Only process if it was a horizontal swipe
-  if (initialTouchDirection.value === 'horizontal' && !isVerticalScroll.value) {
-    event.preventDefault();
-    
-    const deltaX = currentX.value - startX.value;
-    const containerWidth = carouselContainer.value?.offsetWidth || 1;
-    const swipeDistance = Math.abs(deltaX);
-    const swipeDirection = deltaX > 0 ? 'right' : 'left';
-    const swipeTime = Date.now() - startTime.value;
-    const swipeVelocity = swipeDistance / Math.max(swipeTime, 1); // Prevent division by zero
-    
-    // Enhanced thresholds for better responsiveness
-    const distanceThreshold = containerWidth * 0.08; // 8% of container width (more sensitive)
-    const velocityThreshold = 0.15; // Lower velocity threshold for easier triggering
-    const minSwipeTime = 50; // Minimum time to register as intentional swipe
-      const shouldSlide = (swipeDistance > distanceThreshold || swipeVelocity > velocityThreshold) 
-                       && swipeTime > minSwipeTime;
-    
-    if (shouldSlide) {
-      if (swipeDirection === 'right' && currentSlide.value > 0) {
-        currentSlide.value--; // Swipe right = go to previous slide
-        // Provide stronger haptic feedback for successful slide
-        if (window.navigator && window.navigator.vibrate) {
-          window.navigator.vibrate(10);
-        }
-      } else if (swipeDirection === 'left' && currentSlide.value < maxSlides.value - 1) {
-        currentSlide.value++; // Swipe left = go to next slide
-        // Provide stronger haptic feedback for successful slide
-        if (window.navigator && window.navigator.vibrate) {
-          window.navigator.vibrate(10);
-        }
+  const touch = event.changedTouches[0];
+  const deltaX = touch.clientX - clickStartX.value;
+  const timeDiff = Date.now() - clickStartTime.value;
+  
+  // If it's a quick tap (not a swipe) and barely moved, scroll in the direction of the tap
+  if (Math.abs(deltaX) < 5 && timeDiff < 300) {
+    const container = sliderContainer.value;
+    if (container) {
+      const containerWidth = container.clientWidth;
+      const touchPosition = touch.clientX - container.getBoundingClientRect().left;
+      
+      // Tap on left half scrolls left, right half scrolls right
+      if (touchPosition < containerWidth / 2) {
+        scrollSlider('left');
+      } else {
+        scrollSlider('right');
       }
     }
   }
-  
-  // Smooth reset of state with animation
-  isDragging.value = false;
-  swipeOffset.value = 0;
-  initialTouchDirection.value = null;
-  isVerticalScroll.value = false;
-  
-  // Resume auto-slide after interaction
-  setTimeout(resumeAutoSlide, 2000);
 }
 
-// Mouse Event Handlers (for desktop drag support) - Enhanced
-function handleMouseStart(event) {
-  if (event.button !== 0) return; // Only left mouse button
-  event.preventDefault();
+// Scroll to specific position (for indicator dots)
+function scrollToPosition(index) {
+  if (!sliderContainer.value || isScrolling.value) return;
   
-  isDragging.value = true;
-  startX.value = event.clientX;
-  currentX.value = event.clientX;
-  swipeOffset.value = 0;
-  startTime.value = Date.now();
-  pauseAutoSlide();
+  isScrolling.value = true;
+  currentScrollIndex.value = index;
   
-  // Change cursor to grabbing
-  if (carouselContainer.value) {
-    carouselContainer.value.style.cursor = 'grabbing';
-  }
+  const container = sliderContainer.value;
+  const scrollWidth = container.scrollWidth;
+  const containerWidth = container.clientWidth;
+  
+  const scrollableWidth = scrollWidth - containerWidth;
+  const targetScroll = index === 0 ? 0 : (index / (scrollPositions.value.length - 1)) * scrollableWidth;
+  
+  container.scrollTo({
+    left: targetScroll,
+    behavior: 'smooth'
+  });
+  
+  // Reset scrolling flag after animation
+  setTimeout(() => {
+    isScrolling.value = false;
+  }, 500);
 }
 
-function handleMouseMove(event) {
-  if (!isDragging.value) return;
-  
-  event.preventDefault();
-  event.stopPropagation();
-  
-  currentX.value = event.clientX;
-  const deltaX = currentX.value - startX.value;
-  const containerWidth = carouselContainer.value?.offsetWidth || 1;
-  let offsetPercentage = (deltaX / containerWidth) * 100;
-  
-  // Smoother resistance at boundaries for mouse
-  if (currentSlide.value === 0 && offsetPercentage > 0) {
-    offsetPercentage *= 0.4; // Slightly less resistance for mouse
-    offsetPercentage = Math.min(offsetPercentage, 20);
-  } else if (currentSlide.value === maxSlides.value - 1 && offsetPercentage < 0) {
-    offsetPercentage *= 0.4;
-    offsetPercentage = Math.max(offsetPercentage, -20);
-  }
-  
-  swipeOffset.value = offsetPercentage;
+// Reset scroll position
+function resetScrollPosition() {
+  if (!sliderContainer.value) return;
+  sliderContainer.value.scrollLeft = 0;
+  currentScrollIndex.value = 0;
 }
 
-function handleMouseEnd(event) {
-  if (!isDragging.value) return;
+// Update scroll position when screen size changes
+function updateScrollPosition() {
+  if (!sliderContainer.value || scrollPositions.value.length === 0) return;
   
-  event.preventDefault();
+  const container = sliderContainer.value;
+  const scrollWidth = container.scrollWidth;
+  const containerWidth = container.clientWidth;
   
-  const deltaX = currentX.value - startX.value;
-  const containerWidth = carouselContainer.value?.offsetWidth || 1;
-  const swipeDistance = Math.abs(deltaX);
-  const swipeDirection = deltaX > 0 ? 'right' : 'left';
-  const swipeTime = Date.now() - startTime.value;
-  const swipeVelocity = swipeDistance / Math.max(swipeTime, 1);
+  const scrollableWidth = scrollWidth - containerWidth;
+  const targetScroll = currentScrollIndex.value === 0 ? 0 : 
+    (currentScrollIndex.value / (scrollPositions.value.length - 1)) * scrollableWidth;
   
-  // Adjusted thresholds for mouse (slightly higher than touch)
-  const distanceThreshold = containerWidth * 0.12; // 12% for mouse
-  const velocityThreshold = 0.25;
-  const minSwipeTime = 30;
-  
-  const shouldSlide = (swipeDistance > distanceThreshold || swipeVelocity > velocityThreshold) 
-                     && swipeTime > minSwipeTime;
-    if (shouldSlide) {
-    if (swipeDirection === 'right' && currentSlide.value > 0) {
-      currentSlide.value--; // Swipe right = go to previous slide
-    } else if (swipeDirection === 'left' && currentSlide.value < maxSlides.value - 1) {
-      currentSlide.value++; // Swipe left = go to next slide
-    }
-  }
-  
-  isDragging.value = false;
-  swipeOffset.value = 0;
-  
-  // Reset cursor
-  if (carouselContainer.value) {
-    carouselContainer.value.style.cursor = 'grab';
-  }
-  
-  setTimeout(resumeAutoSlide, 2000);
+  container.scrollTo({
+    left: targetScroll,
+    behavior: 'auto'
+  });
 }
 
-function handleMouseLeave(event) {
-  if (isDragging.value) {
-    handleMouseEnd(event);
-  } else {
-    resumeAutoSlide();
-  }
+// Watch for scroll events
+function handleScroll() {
+  if (!sliderContainer.value || isScrolling.value || scrollPositions.value.length <= 1) return;
   
-  // Reset cursor when leaving container
-  if (carouselContainer.value) {
-    carouselContainer.value.style.cursor = 'grab';
-  }
+  const container = sliderContainer.value;
+  const scrollWidth = container.scrollWidth;
+  const containerWidth = container.clientWidth;
+  const scrollLeft = container.scrollLeft;
+  
+  const scrollableWidth = scrollWidth - containerWidth;
+  const scrollRatio = scrollLeft / scrollableWidth;
+  
+  currentScrollIndex.value = Math.round(scrollRatio * (scrollPositions.value.length - 1));
 }
 
-// Common drag/swipe logic
-function handleStart(clientX) {
-  isDragging.value = true;
-  startX.value = clientX;
-  currentX.value = clientX;
-  swipeOffset.value = 0;
-  startTime.value = Date.now();
-  pauseAutoSlide();
-}
-
-function handleMove(clientX) {
-  if (!isDragging.value) return;
-  
-  currentX.value = clientX;
-  const deltaX = currentX.value - startX.value;
-  
-  // Calculate swipe offset as percentage
-  const containerWidth = carouselContainer.value?.offsetWidth || 1;
-  let offsetPercentage = (deltaX / containerWidth) * 100;
-  
-  // Apply smoother resistance at boundaries
-  if (currentSlide.value === 0 && offsetPercentage > 0) {
-    // At first slide, swiping right (positive direction)
-    offsetPercentage *= 0.3; // More resistance
-  } else if (currentSlide.value === maxSlides.value - 1 && offsetPercentage < 0) {
-    // At last slide, swiping left (negative direction)
-    offsetPercentage *= 0.3; // More resistance
-  }
-  
-  swipeOffset.value = offsetPercentage;
-}
-
-function handleEnd() {
-  if (!isDragging.value) return;
-  
-  const deltaX = currentX.value - startX.value;
-  const containerWidth = carouselContainer.value?.offsetWidth || 1;
-  const swipeDistance = Math.abs(deltaX);
-  const swipeDirection = deltaX > 0 ? 'right' : 'left';
-  const swipeVelocity = swipeDistance / (Date.now() - startTime.value); // pixels per ms
-  
-  // Reset drag state
-  isDragging.value = false;
-  swipeOffset.value = 0;
-  
-  // More sensitive slide detection
-  const distanceThreshold = containerWidth * 0.15; // 15% of container width
-  const velocityThreshold = 0.3; // pixels per ms
-  
-  const shouldSlide = swipeDistance > distanceThreshold || swipeVelocity > velocityThreshold;
-    if (shouldSlide) {
-    if (swipeDirection === 'right' && currentSlide.value > 0) {
-      // Swipe right = go to previous slide
-      currentSlide.value--;
-    } else if (swipeDirection === 'left' && currentSlide.value < maxSlides.value - 1) {
-      // Swipe left = go to next slide
-      currentSlide.value++;
-    }
-  }
-  
-  // Resume auto-slide after a delay
-  setTimeout(resumeAutoSlide, 2000);
-}
+// Watch for element resizing using ResizeObserver
+let resizeObserver = null;
 
 // Lifecycle hooks
 onMounted(() => {
   fetchProducts();
-  updateItemsPerRow();
-  window.addEventListener("resize", updateItemsPerRow);
-
-  // Add touch event listeners manually for better control
+  updateResponsiveDisplay();
+  window.addEventListener("resize", updateResponsiveDisplay);
+  
+  // Set up ResizeObserver to adjust on container size changes
   nextTick(() => {
-    if (carouselContainer.value) {
-      carouselContainer.value.addEventListener('touchstart', handleTouchStart, { passive: false });
-      carouselContainer.value.addEventListener('touchmove', handleTouchMove, { passive: false });
-      carouselContainer.value.addEventListener('touchend', handleTouchEnd, { passive: false });
+    if (window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(() => {
+        updateResponsiveDisplay();
+      });
+      
+      if (sliderContainer.value) {
+        resizeObserver.observe(sliderContainer.value);
+        sliderContainer.value.addEventListener('scroll', handleScroll);
+      }
     }
   });
-
-  // Start auto-sliding after mounting
-  startAutoSlide();
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", updateItemsPerRow);
-
-  // Remove touch event listeners
-  if (carouselContainer.value) {
-    carouselContainer.value.removeEventListener('touchstart', handleTouchStart);
-    carouselContainer.value.removeEventListener('touchmove', handleTouchMove);
-    carouselContainer.value.removeEventListener('touchend', handleTouchEnd);
+  window.removeEventListener("resize", updateResponsiveDisplay);
+  window.removeEventListener('mousemove', handleMouseMove);
+  window.removeEventListener('mouseup', handleMouseUp);
+  window.removeEventListener('touchend', handleTouchEnd);
+  
+  // Clean up ResizeObserver and event listeners
+  if (resizeObserver && sliderContainer.value) {
+    resizeObserver.unobserve(sliderContainer.value);
+    resizeObserver.disconnect();
+    sliderContainer.value.removeEventListener('scroll', handleScroll);
   }
-
-  // Clear interval when component is destroyed
-  if (autoSlideInterval.value) clearInterval(autoSlideInterval.value);
 });
 
-// Watch for products change to restart auto-slide
+// Watch for products change
 watch(
   () => products.value,
   () => {
     if (products.value.length > 0) {
-      startAutoSlide();
+      // Reset scroll position when products change
+      resetScrollPosition();
     }
   }
 );
 
-// Watch for carousel container to add touch events
-watch(carouselContainer, (newVal) => {
-  if (newVal) {
-    // Remove existing listeners first
-    newVal.removeEventListener('touchstart', handleTouchStart);
-    newVal.removeEventListener('touchmove', handleTouchMove);
-    newVal.removeEventListener('touchend', handleTouchEnd);
-    
-    // Add new listeners
-    newVal.addEventListener('touchstart', handleTouchStart, { passive: false });
-    newVal.addEventListener('touchmove', handleTouchMove, { passive: false });
-    newVal.addEventListener('touchend', handleTouchEnd, { passive: false });
+// Watch for window resize to recalculate scroll positions
+watch(
+  () => itemsPerRow.value,
+  () => {
+    nextTick(() => {
+      updateScrollPosition();
+    });
   }
-});
+);
 </script>
 
 <style scoped>
-/* Slider layout - Enhanced for smooth left-to-right sliding */
-.slider-track {
-  display: flex;
-  direction: ltr; /* Changed from RTL for natural left-to-right progression */
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
-  -webkit-transform-style: preserve-3d;
-  cursor: grab;
-  
-  /* Enhanced hardware acceleration */
-  -webkit-transform: translateZ(0);
-  -moz-transform: translateZ(0);
-  transform: translateZ(0);
-  
-  /* Improved touch handling */
-  -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
-  
-  /* Smooth transitions */
-  transition-property: transform;
-  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+/* Product Slider Container */
+.product-slider-container {
+  position: relative;
 }
 
-.slider-track:active {
+.product-slider-container:hover .group-hover\:opacity-100 {
+  opacity: 1;
+}
+
+/* Slider Scrollbar Styling */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px; /* Thin horizontal scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 20px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.3);
+}
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Product card wrapper - this isolates hover effects */
+.product-card-wrapper {
+  position: relative;
+  isolation: isolate; /* Create stacking context to isolate hover effects */
+}
+
+/* Product row and card styling */
+.product-row {
+  min-width: 100%;
+  padding: 0 1px;
+}
+
+.product-card {
+  transition: transform 0.2s ease;
+  z-index: 1;
+}
+
+/* Improved clickable areas */
+.slider-content {
+  cursor: grab;
+}
+
+.slider-content:active {
   cursor: grabbing;
 }
 
-.slider-page {
-  min-width: 100%;
-  flex-shrink: 0; /* Prevent shrinking */
-  direction: ltr;
-  /* Prevent text selection during drag */
-  user-select: none;
-  -webkit-user-select: none;
+/* Product cards should have pointer cursor */
+.product-card,
+.product-card * {
+  cursor: pointer;
 }
 
-/* Touch optimizations for mobile devices */
-@media (hover: none) and (pointer: coarse) {
-  .slider-track {
-    touch-action: pan-y;
-    /* Enhanced iOS optimizations */
-    -webkit-overflow-scrolling: touch;
-    -webkit-transform: translate3d(0, 0, 0);
-    -moz-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
+/* Card sizes based on screen size */
+@media (min-width: 1024px) {
+  .product-card-wrapper {
+    width: calc(20% - 16px); /* 5 cards per row on desktop */
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .product-card-wrapper {
+    width: calc(25% - 16px); /* 4 cards per row on tablet */
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .product-card-wrapper {
+    width: calc(33.33% - 16px); /* 3 cards per row on small tablet */
+  }
+}
+
+@media (max-width: 639px) {
+  .product-card-wrapper {
+    width: calc(50% - 10px); /* 2 cards per row on mobile */
   }
   
-  .touch-container {
-    /* Improve touch responsiveness */
-    -webkit-overflow-scrolling: auto;
-    -webkit-transform: translateZ(0);
-    -moz-transform: translateZ(0);
-    transform: translateZ(0);
-    
-    /* Prevent iOS bounce scrolling conflicts */
-    overscroll-behavior-x: none;
-    -webkit-overscroll-behavior-x: none;
-  }
-  
-  /* Smoother animations on mobile */
-  .slider-track {
-    transition-property: transform;
-    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  .product-row .flex {
+    gap: 10px; /* Smaller gap on mobile */
   }
 }
 
-/* Enhanced touch feedback */
-@media (hover: hover) and (pointer: fine) {
-  .slider-track:hover {
-    /* Subtle visual feedback on desktop */
-    transition: all 0.2s ease;
-  }
-}
-
-/* Hardware acceleration for smoother animations */
-.slider-track,
-.slider-track * {
+/* Slider content styling */
+.slider-content {
   -webkit-transform: translateZ(0);
   -moz-transform: translateZ(0);
   transform: translateZ(0);
+  will-change: transform;
+  width: 100%;
+  scroll-snap-type: x mandatory;
 }
 
+/* Enhanced touch feedback */
+.slider-content::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(circle, transparent 90%, rgba(0, 0, 0, 0.03) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.slider-content:active::after {
+  opacity: 1;
+}
+
+/* Improved scrolling for touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .slider-content {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Animation effects */
 @keyframes shimmer {
   0% {
     -webkit-transform: translateX(-100%);
@@ -867,70 +760,10 @@ watch(carouselContainer, (newVal) => {
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
-@keyframes progress-animation {
-  0% {
-    width: 0%;
-  }
-  100% {
-    width: 100%;
-  }
-}
 
-.progress-animation {
-  animation: progress-animation var(--auto-slide-delay, 5000ms) linear infinite;
-  animation-play-state: running;
-}
-
-/* Custom scrollbar styling */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.5);
-  border-radius: 20px;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(75, 85, 99, 0.5);
-}
-
-/* Animations */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes modal-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out forwards;
-}
-
-.animate-modal-slide-up {
-  animation: modal-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* Smooth transition for scroll position indicators */
+.w-2.rounded-full {
+  transition: all 0.3s ease;
 }
 
 /* Custom colors */
