@@ -11,7 +11,7 @@
           class="flex-shrink-0 w-[49%]"
         />
       </div>
-
+ 
       <!-- Grid Layout for Desktop -->
       <div class="hidden sm:grid sm:grid-cols-3 my-2 gap-2">
         <CommonProductCard
