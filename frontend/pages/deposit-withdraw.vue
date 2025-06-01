@@ -72,7 +72,7 @@
         >
       </div>
 
-      <div class="flex items-center">
+      <div class="flex items-center px-4">
         <div v-if="currentTab === 1" class="max-sm:w-full">
           <div class="space-y-2">
             <!-- Modern Amount Input with Animation -->
