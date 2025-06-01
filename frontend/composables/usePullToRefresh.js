@@ -20,11 +20,11 @@ export const usePullToRefresh = (refreshCallback, options = {}) => {
   const isPulling = ref(false);
   const pullDistance = ref(0);
   const canRefresh = ref(false);
-  const refreshTriggered = ref(false);
-  // Touch tracking
+  const refreshTriggered = ref(false);  // Touch tracking
   let startY = 0;
   let startX = 0;
   let currentY = 0;
+  let initialTouchY = 0;
   let scrollElement = null;
   let targetElement = null;
   let hasMovedEnough = false;
@@ -114,6 +114,9 @@ export const usePullToRefresh = (refreshCallback, options = {}) => {
       }
     }, 10);
     
+    // Store initial touch direction check data
+    initialTouchY = e.touches[0].clientY;
+    
     // Quick check for essential interactive elements only
     const target = e.target;
     const tagName = target.tagName.toLowerCase();
@@ -141,7 +144,7 @@ export const usePullToRefresh = (refreshCallback, options = {}) => {
       cancelAnimationFrame(rafId);
       rafId = null;
     }
-  };// Handle touch move - ULTRA conservative with constant position checking
+  };  // Handle touch move - ULTRA conservative with constant position checking
   const handleTouchMove = (e) => {
     if (isRefreshing.value) return;
 
@@ -163,20 +166,18 @@ export const usePullToRefresh = (refreshCallback, options = {}) => {
       return;
     }
 
-    // Must be pulling down
+    // CRITICAL FIX: Only activate when pulling DOWN (positive deltaY)
+    // This ensures pulling UP (negative deltaY) doesn't trigger refresh
     if (deltaY <= 0) {
       resetPull();
       return;
-    }
-
-    // Triple check - still at exact top before activating
-    if (deltaY > minPullDistance && !hasMovedEnough && isAtExactTop()) {
+    }    // Triple check - still at exact top AND pulling DOWN before activating
+    if (deltaY > minPullDistance && !hasMovedEnough && isAtExactTop() && (currentY > startY)) {
       hasMovedEnough = true;
       isPulling.value = true;
     }
-    
-    // Only proceed if we're actively pulling and still at top
-    if (!isPulling.value || !hasMovedEnough || isScrolling || !isAtExactTop()) {
+      // Only proceed if we're actively pulling DOWN and still at top
+    if (!isPulling.value || !hasMovedEnough || isScrolling || !isAtExactTop() || currentY <= startY) {
       resetPull();
       return;
     }
