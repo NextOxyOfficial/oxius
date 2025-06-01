@@ -688,8 +688,8 @@ const { formatDate } = useUtils();
 const isOpen = ref(false);
 const { get, baseURL } = useApi();
 const { user } = useAuth();
-const services = ref([]);
-const searchServices = ref([]);
+const services = ref({ results: [], next: null });
+const searchServices = ref({ results: [], next: null });
 const microGigs = ref([]);
 const categoryArray = ref([]);
 const selectedCategory = ref(null);
@@ -699,7 +699,12 @@ const previewGid = ref(null);
 const { data } = await get("/micro-gigs/");
 microGigs.value = data;
 const res = await get("/classified-categories/");
-services.value = res.data;
+// Ensure services has the expected structure
+if (Array.isArray(res.data)) {
+  services.value = { results: res.data, next: null };
+} else {
+  services.value = res.data;
+}
 const classifiedLatestPosts = ref([]);
 const res2 = await get("/classified-posts/");
 classifiedLatestPosts.value = res2.data;
@@ -790,8 +795,25 @@ const loadMore = async (url) => {
   try {
     const getRecentNext = async (url) => {
       const res = await $fetch(`${url}`);
-      services.value.next = res.next;
-      services.value.results = [...services.value.results, ...res.results];
+      // Ensure services.value has the expected structure
+      if (services.value && typeof services.value === 'object') {
+        if ('results' in services.value && Array.isArray(services.value.results)) {
+          services.value.next = res.next;
+          services.value.results = [...services.value.results, ...(res.results || [])];
+        } else {
+          // Convert to expected format if needed
+          services.value = {
+            next: res.next,
+            results: [...(Array.isArray(services.value) ? services.value : []), ...(res.results || [])]
+          };
+        }
+      } else {
+        // Initialize with expected format
+        services.value = {
+          next: res.next,
+          results: res.results || []
+        };
+      }
     };
 
     url = url.split("/api/");
@@ -829,7 +851,13 @@ async function handleSearch() {
       get(`/classified-posts/?title=${encodeURIComponent(title.value.trim())}`),
     ]);
 
-    services.value = categoriesRes.data;
+    // Ensure consistent structure
+    if (Array.isArray(categoriesRes.data)) {
+      services.value = { results: categoriesRes.data, next: null };
+    } else {
+      services.value = categoriesRes.data;
+    }
+    
     classifiedPosts.value = postsRes.data;
   } catch (error) {
     console.error("Search error:", error);
@@ -851,8 +879,13 @@ watch(
       isLoading.value = true;
       try {
         const res = await get("/classified-categories/");
-        services.value = res.data;
-        searchServices.value = [];
+        // Ensure consistent structure
+        if (Array.isArray(res.data)) {
+          services.value = { results: res.data, next: null };
+        } else {
+          services.value = res.data;
+        }
+        searchServices.value = { results: [], next: null };
         classifiedPosts.value = [];
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -876,8 +909,14 @@ watch(
         get(`/classified-posts/?title=${encodeURIComponent(newValue.trim())}`),
       ]);
 
-      services.value = categoriesRes.data;
-      searchServices.value = categoriesRes.data;
+      // Ensure consistent structure for both services and searchServices
+      if (Array.isArray(categoriesRes.data)) {
+        services.value = { results: categoriesRes.data, next: null };
+        searchServices.value = { results: categoriesRes.data, next: null };
+      } else {
+        services.value = categoriesRes.data;
+        searchServices.value = categoriesRes.data;
+      }
       classifiedPosts.value = postsRes.data;
     } catch (error) {
       console.error("Search error:", error);

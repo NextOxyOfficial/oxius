@@ -18,9 +18,6 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-!fhx-*zsy791frr7y538j7bt5mx_*5pr@*inb$w!bxzszqs0^-'
 
@@ -51,7 +48,6 @@ INSTALLED_APPS = [
     'news',
     'sale',  # Add the sale app here
     'support',  # Support ticket system
-    'popups',  # Popup management system
     'django_filters',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -78,12 +74,6 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 REST_FRAMEWORK = {
-    # Permissions: Define who can access your APIs
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
-    # ],
-
-    # Authentication: Define how users are authenticated
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
@@ -221,13 +211,9 @@ MEDIA_URL = 'https://adsyclub.com/media/'
 # MEDIA_URL = 'http://127.0.0.1:8000//media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# File Upload Settings
 # Increase max upload size to 50MB (default is around 2.5MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB in bytes
 FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB in bytes
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
