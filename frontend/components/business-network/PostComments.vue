@@ -17,7 +17,7 @@
               class="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 to-pink-500 opacity-50 blur-sm animate-pulse"
             ></div>
             <img
-              :src="highestGiftComment.author_details?.image"
+              :src="highestGiftComment.author_details?.image || placeholderPath"
               :alt="highestGiftComment.author_details?.name"
               class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border-2 border-amber-300 dark:border-amber-500/80 shadow-sm group-hover:shadow-sm transition-all duration-300 relative z-10"
             />
@@ -104,7 +104,7 @@
         <NuxtLink :to="`/business-network/profile/${comment?.author}`">
           <div class="relative group">
             <img
-              :src="comment.author_details?.image"
+              :src="comment.author_details?.image || placeholderPath"
               :alt="comment.author_details?.name"
               class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-sm transition-all duration-300"
             />
@@ -299,6 +299,9 @@ const props = defineProps({
     default: null,
   },
 });
+
+// Define placeholder path for consistent usage
+const placeholderPath = '/static/frontend/images/placeholder.jpg';
 
 const emit = defineEmits([
   "open-comments-modal",

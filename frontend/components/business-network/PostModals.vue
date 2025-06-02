@@ -38,10 +38,10 @@
                     <div
                       v-if="user.user_details?.is_pro"
                       class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
-                    ></div>
+                    ></div>                    
                     <img
                       :src="
-                        user.user_details.image || '/static/frontend/images/placeholder.jpg'
+                        user.user_details.image || placeholderPath
                       "
                       :alt="user.user_details.name"
                       class="w-10 h-10 rounded-full cursor-pointer object-cover"
@@ -130,9 +130,8 @@
             >
               <div class="flex items-start space-x-2.5 w-full">
                 <NuxtLink :to="`/business-network/profile/${comment?.author}`">
-                  <div class="relative group">
-                    <img
-                      :src="comment.author_details?.image"
+                  <div class="relative group">                    <img
+                      :src="comment.author_details?.image || placeholderPath"
                       :alt="comment.author_details?.name"
                       class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-sm transition-all duration-300"
                     />
@@ -325,9 +324,8 @@
                 <div
                   v-if="user?.user?.is_pro"
                   class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
-                ></div>
-                <img
-                  :src="user?.user?.image || '/static/frontend/images/placeholder.jpg'"
+                ></div>                <img
+                  :src="user?.user?.image || placeholderPath"
                   :alt="user?.user?.name"
                   class="w-6 h-6 rounded-full object-cover"
                 />
@@ -394,11 +392,10 @@
                         <div
                           v-if="user?.follower_details?.is_pro"
                           class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
-                        ></div>
-                        <img
+                        ></div>                        <img
                           :src="
                             user?.follower_details?.image ||
-                            '/static/frontend/images/placeholder.jpg'
+                            placeholderPath
                           "
                           :alt="user?.follower_details?.name"
                           class="w-7 h-7 rounded-full mr-2 object-cover"
@@ -612,6 +609,9 @@
 
 <script setup>
 import { X, Check, UserPlus, Loader2, Send } from "lucide-vue-next";
+
+// Define placeholder path for consistent usage across components
+const placeholderPath = '/static/frontend/images/placeholder.jpg';
 
 const props = defineProps({
   activeLikesPost: {
