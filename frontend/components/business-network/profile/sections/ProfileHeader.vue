@@ -52,7 +52,7 @@
           <!-- QR Code Button for mobile with enhanced styling -->
           <button
             @click="$emit('open-qr-modal')"
-            class="p-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all shadow-sm relative overflow-hidden group"
+            class="p-1.5 size-9 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all shadow-sm relative overflow-hidden group"
             title="View QR Code"
           >
             <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
