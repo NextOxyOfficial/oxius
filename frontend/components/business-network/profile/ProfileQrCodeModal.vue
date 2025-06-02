@@ -1,15 +1,20 @@
-<template>
-  <div class="qr-code-modal">
+<template>  <div class="qr-code-modal">
     <UModal
       v-model="isOpen"
       :ui="{ 
         width: 'sm:max-w-md',
-        container: 'flex flex-col h-auto',
+        container: 'flex flex-col h-auto mt-16',
         base: 'relative flex flex-col h-auto', 
         rounded: 'rounded-xl',
         overlay: { base: 'bg-black/50 backdrop-blur-sm' },
         padding: 'p-0',
-        ring: ''
+        ring: '',
+        transition: {
+          enterFrom: 'opacity-0 scale-95',
+          enterTo: 'opacity-100 scale-100',
+          leaveFrom: 'opacity-100 scale-100',
+          leaveTo: 'opacity-0 scale-95',
+        }
       }"
     >
       <div class="relative">
@@ -53,11 +58,13 @@
               <Loader2 class="h-8 w-8 text-blue-500 animate-spin" />
             </div>
           </div>
-          
-          <!-- Business Network branding -->
-          <div class="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
-            <CircleUserIcon class="h-4 w-4 text-blue-500" />
-            <span>AdsyClub Business Network</span>
+            <!-- Business Network branding with improved design -->
+          <div class="flex items-center justify-center mb-4">
+            <div class="flex items-center gap-1.5 text-xs text-gray-600 bg-white/80 px-3 py-1.5 rounded-full shadow-sm">
+              <UIcon name="i-heroicons-globe-alt" class="w-4 h-4 text-blue-500" aria-hidden="true" />
+              <span class="font-medium">AdsyClub</span>
+              <span>Business Network</span>
+            </div>
           </div>
         </div>
         
@@ -103,15 +110,13 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Action buttons -->
+        </div>        <!-- Action buttons with enhanced design -->
         <div class="p-4 bg-white rounded-b-xl border-t border-gray-100">
-          <div class="flex justify-center gap-4">
+          <div class="flex flex-wrap gap-3 justify-center">
             <!-- Download button -->
             <button
               @click="downloadQrCode"
-              class="px-5 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 flex-1 justify-center"
+              class="flex items-center gap-2 px-5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full transition-all text-sm font-medium"
               :disabled="!qrCodeUrl"
             >
               <DownloadIcon class="h-4 w-4" />
@@ -121,7 +126,7 @@
             <!-- Share button -->
             <button
               @click="shareProfile"
-              class="px-5 py-2 bg-blue-600 rounded-lg text-white hover:bg-blue-700 transition-colors flex items-center gap-2 flex-1 justify-center"
+              class="flex items-center gap-2 px-5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-full transition-all text-sm font-medium"
             >
               <ShareIcon class="h-4 w-4" />
               <span>Share</span>
@@ -229,6 +234,15 @@ const generateQrCode = async () => {
 const downloadQrCode = () => {
   if (!qrCodeUrl.value) return;
   
+  // Add subtle feedback animation
+  const downloadButton = document.activeElement;
+  if (downloadButton) {
+    downloadButton.classList.add('scale-95');
+    setTimeout(() => {
+      downloadButton.classList.remove('scale-95');
+    }, 150);
+  }
+  
   const link = document.createElement('a');
   link.href = qrCodeUrl.value;
   
@@ -244,6 +258,15 @@ const downloadQrCode = () => {
 // Share profile
 const shareProfile = async () => {
   try {
+    // Add subtle feedback animation
+    const shareButton = document.activeElement;
+    if (shareButton) {
+      shareButton.classList.add('scale-95');
+      setTimeout(() => {
+        shareButton.classList.remove('scale-95');
+      }, 150);
+    }
+    
     const profileUrl = `${window.location.origin}/business-network/profile/${props.user?.id}`;
     const shareData = {
       title: `${props.user?.name}'s Profile`,
