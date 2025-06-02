@@ -1450,11 +1450,12 @@
                           'text-purple-600': selectedTransaction?.transaction_type?.startsWith('diamond_') && !['diamond_bonus', 'diamond_refund', 'diamond_purchase'].includes(selectedTransaction?.transaction_type),
                           'text-gray-800': !selectedTransaction?.transaction_type
                         }"
-                      >
-                        {{
+                      >                        {{
                           selectedTransaction
                             ? formatAmount(
-                                selectedTransaction.amount || selectedTransaction.payable_amount || selectedTransaction.cost,
+                                selectedTransaction.amount || 
+                                (selectedTransaction.transaction_type?.toLowerCase() !== 'withdraw' ? selectedTransaction.payable_amount : null) || 
+                                selectedTransaction.cost,
                                 selectedTransaction.transaction_type?.toLowerCase()
                               )
                             : ""
@@ -1791,8 +1792,7 @@ function openTransactionDetails(transaction) {
                 (enhancedTransaction.completed ? 'completed' : 
                   (enhancedTransaction.rejected ? 'rejected' : 'pending'));
                     enhancedTransaction.bank_status = status;
-    
-  // For diamond transactions, make sure we have a consistent diamond count display
+      // For diamond transactions, make sure we have a consistent diamond count display
   if (enhancedTransaction.transaction_type?.startsWith('diamond_')) {
     // Get diamond count from any available field
     enhancedTransaction.diamonds = enhancedTransaction.diamonds || 
@@ -1805,6 +1805,14 @@ function openTransactionDetails(transaction) {
     if (!enhancedTransaction.amount && !enhancedTransaction.payable_amount && !enhancedTransaction.cost) {
       enhancedTransaction.amount = enhancedTransaction.diamonds * 10; // Assuming 10 BDT per diamond as default
     }
+  }
+    // For withdraw transactions, make sure we have proper amount display
+  // The withdrawal amount is stored in payable_amount including fees
+  if (enhancedTransaction.transaction_type === 'withdraw' && enhancedTransaction.payable_amount) {
+    // The payable_amount includes the 2.95% fee, so we calculate the original withdrawal amount
+    const payableAmount = parseFloat(enhancedTransaction.payable_amount);
+    const originalAmount = payableAmount / 1.0295; // Reversing the fee calculation
+    enhancedTransaction.amount = originalAmount.toFixed(2); // Set the amount to display
   }
   
   selectedTransaction.value = enhancedTransaction;
