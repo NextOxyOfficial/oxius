@@ -237,14 +237,15 @@
               </p>
             </div>
 
-            <div class="flex gap-2">
-              <!-- QR Code Button for mobile -->
+            <div class="flex gap-2">              
+              <!-- QR Code Button for mobile with enhanced styling -->
               <button
                 @click="openQrCodeModal"
-                class="px-3 py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
+                class="px-3 py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all shadow-sm relative overflow-hidden group"
                 title="View QR Code"
               >
-                <UIcon name="i-mdi:qrcode" class="w-3.5 h-3.5" />
+                <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                <UIcon name="i-mdi:qrcode" class="size-6 relative z-10" />
               </button>
               
               <!-- Action buttons for mobile -->              <button
@@ -445,15 +446,16 @@
                 </div>
 
                 <!-- Action buttons (Desktop) -->
-                <div class="hidden sm:flex gap-2"> 
-                  <!-- QR Code Button -->
+                <div class="hidden sm:flex gap-2">                  
+                  <!-- QR Code Button with enhanced styling -->
                   <button
                     @click="openQrCodeModal"
-                    class="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border border-gray-200 text-gray-800 hover:bg-gray-50 transition-all"
+                    class="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border border-gray-200 text-gray-800 hover:bg-gray-50 transition-all relative overflow-hidden group"
                     title="View QR Code"
                   >
-                    <UIcon name="i-mdi:qrcode" class="w-4 h-4" />
-                    <span>QR Code</span>
+                    <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    <UIcon name="i-mdi:qrcode" class="w-4 h-4 relative z-10" />
+                    <span class="relative z-10">QR Code</span>
                   </button>
                   
                   <button
@@ -1015,10 +1017,8 @@
       :followingCount="user?.following_count || 0"
       @close="showFollowersModal = false"
       @follow-changed="handleFollowStatusChange"
-    />
-
-    <!-- QR Code Modal -->
-    <UModal v-model="showQrModal" :ui="{ width: 'sm:max-w-md' }">
+    />    <!-- Enhanced QR Code Modal -->
+    <UModal v-model="showQrModal" :ui="{ width: 'sm:max-w-lg' }">
       <div class="p-5 flex flex-col items-center space-y-4">
         <h2 class="text-lg font-semibold text-center">
           {{ user?.id === currentUser?.user?.id ? 'My' : user?.name + `'s` }} ABN Profile QR Code
@@ -1026,17 +1026,91 @@
         <p class="text-center text-sm text-gray-600">
           Scan this QR code to view {{ user?.id === currentUser?.user?.id ? 'your' : 'this' }} profile
         </p>
-        <div class="qr-code-container flex items-center justify-center">
-          <img 
-            :src="qrCodeUrl" 
-            alt="Profile QR Code" 
-            class="w-64 h-64 qr-code-image"
-          />
+        
+        <!-- QR Code Container with Enhanced Styling -->
+        <div class="qr-code-container flex flex-col items-center justify-center">
+          <div class="qr-code-frame relative">
+            <!-- Loading overlay -->
+            <div v-if="qrCodeOptions.isLoading" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-20">
+              <div class="animate-pulse-gentle flex flex-col items-center">
+                <UIcon name="i-heroicons-arrow-path" class="w-10 h-10 text-blue-500 animate-spin" />
+                <span class="text-sm text-blue-600 mt-2">Generating...</span>
+              </div>
+            </div>
+            
+            <!-- Premium logo overlay at the center of QR code -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <div class="bg-white rounded-full p-2.5 shadow-md border border-blue-100">
+                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full p-1.5 shadow-inner">
+                  <UIcon name="i-mdi-account-circle" class="w-12 h-12 text-white" />
+                </div>
+              </div>
+            </div>
+              <!-- QR Code Image with enhanced animation effects -->
+            <transition name="qr-fade">
+              <img 
+                v-show="!qrCodeOptions.isLoading"
+                :src="qrCodeUrl" 
+                alt="Profile QR Code" 
+                class="w-80 h-80 qr-code-image"
+                @load="handleQrCodeLoaded"
+                @error="qrCodeOptions.isLoading = false"
+              />
+            </transition>
+          </div>
+          
+          <!-- Enhanced Branding -->
+          <div class="flex items-center gap-1.5 mt-3 text-xs text-gray-600 bg-white/80 px-3 py-1.5 rounded-full shadow-sm">
+            <UIcon name="i-heroicons-globe-alt" class="w-4 h-4 text-blue-500" />
+            <span class="font-medium">AdsyClub</span>
+            <span>Business Network</span>
+          </div>
         </div>
-        <div class="flex gap-3 mt-2">
+        
+        <!-- QR Code Customization Options -->
+        <div class="w-full border-t border-gray-100 pt-4 mt-2">
+          <h3 class="text-sm font-medium text-gray-700 mb-3">Customize QR Code</h3>
+          
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <!-- Color Picker -->
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">QR Color</label>
+              <div class="flex gap-2">
+                <button 
+                  v-for="color in ['4066E0', '000000', 'FF0000', '00AA00', 'FF6B00']" 
+                  :key="color"
+                  @click="changeQrColor(color)"
+                  class="w-6 h-6 rounded-full border border-gray-200 transition-all"
+                  :class="{'ring-2 ring-blue-500 ring-offset-1': qrCodeOptions.color === color}"
+                  :style="{ backgroundColor: `#${color}` }"
+                ></button>
+              </div>
+            </div>
+            
+            <!-- Format Selection -->
+            <div>
+              <label class="block text-xs text-gray-500 mb-1">Format</label>
+              <div class="flex gap-2">
+                <button 
+                  v-for="format in ['png', 'svg']" 
+                  :key="format"
+                  @click="qrCodeOptions.format = format; qrCodeOptions.isLoading = true"
+                  class="px-2 py-1 text-xs rounded-md border transition-all"
+                  :class="qrCodeOptions.format === format ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-200'"
+                >
+                  {{ format.toUpperCase() }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap gap-3 mt-2 justify-center">
           <button 
             @click="downloadQrCode" 
             class="flex items-center gap-2 px-5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full transition-all text-sm font-medium"
+            :disabled="qrCodeOptions.isLoading"
           >
             <Download class="h-4 w-4" />
             <span>Download</span>
@@ -1044,6 +1118,7 @@
           <button 
             @click="shareQrCode"
             class="flex items-center gap-2 px-5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-full transition-all text-sm font-medium"
+            :disabled="qrCodeOptions.isLoading"
           >
             <Share2 class="h-4 w-4" />
             <span>Share</span>
@@ -1105,7 +1180,7 @@ import {
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
-const { get } = useApi(); // Initialize the get function from useApi
+const { get, post, del } = useApi(); // Initialize API functions
 
 const { user: currentUser } = useAuth();
 
@@ -1115,19 +1190,51 @@ const profileUrl = computed(() => {
   const baseUrl = window.location.origin;
   return `${baseUrl}/business-network/profile/${route.params.id}`;
 });
+// QR code style options with reactive properties
+const qrCodeOptions = reactive({
+  size: 600, // Larger size for better quality
+  color: '4066E0', // Blue color for QR dots
+  bgColor: 'FFFFFF', // White background
+  margin: 8,
+  format: 'png',
+  cornerStyle: 'dot', // dot, square, extra-rounded
+  cornerDotColor: '3B82F6', // Different shade for corner dots
+  isLoading: false
+});
+
+// Compute QR code URL based on reactive options
 const qrCodeUrl = computed(() => {
-  // Generate QR code using an external API service
-  const size = 512; // Larger size for better quality
   const data = encodeURIComponent(profileUrl.value);
-  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${data}&margin=10`;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${qrCodeOptions.size}x${qrCodeOptions.size}&data=${data}&margin=${qrCodeOptions.margin}&format=${qrCodeOptions.format}&qzone=2&color=${qrCodeOptions.color}&bgcolor=${qrCodeOptions.bgColor}&ecc=H`;
 });
 
 // Functions for QR Code
 const openQrCodeModal = () => {
   showQrModal.value = true;
+  qrCodeOptions.isLoading = true; // Start with loading state
+  
+  // Preload the QR code image
+  const img = new Image();
+  img.onload = () => { 
+    qrCodeOptions.isLoading = false;
+  };
+  img.onerror = () => {
+    qrCodeOptions.isLoading = false;
+    toast.add({
+      title: 'QR Code Error',
+      description: 'Could not load QR code. Please try again.',
+      color: 'red'
+    });
+  };
+  img.src = qrCodeUrl.value;
 };
 
 const downloadQrCode = async () => {
+  if (qrCodeOptions.isLoading) return;
+  
+  // Show loading state
+  qrCodeOptions.isLoading = true;
+  
   try {
     // Create a temporary link element
     const link = document.createElement('a');
@@ -1138,7 +1245,14 @@ const downloadQrCode = async () => {
     
     // Create a download link
     link.href = URL.createObjectURL(blob);
-    link.download = `${user.value?.name || 'profile'}-qr-code.png`;
+    
+    // Use appropriate extension based on format
+    const fileExt = qrCodeOptions.format === 'svg' ? 'svg' : 'png';
+    const userName = user.value?.name || 'profile';
+    const fileName = userName.replace(/\s+/g, '-').toLowerCase();
+    
+    // Download with formatted file name
+    link.download = `${fileName}-qr-code.${fileExt}`;
     
     // Trigger download
     document.body.appendChild(link);
@@ -1147,7 +1261,7 @@ const downloadQrCode = async () => {
     
     toast.add({
       title: 'QR Code Download',
-      description: 'QR code has been downloaded successfully',
+      description: `QR code has been downloaded successfully as ${fileExt.toUpperCase()}`,
       color: 'green'
     });
   } catch (error) {
@@ -1157,7 +1271,34 @@ const downloadQrCode = async () => {
       description: 'Could not download the QR code. Please try again.',
       color: 'red'
     });
+  } finally {
+    // Reset loading state
+    qrCodeOptions.isLoading = false;
   }
+};
+
+// Change QR code color with loading state
+const changeQrColor = (color) => {
+  qrCodeOptions.isLoading = true;
+  qrCodeOptions.color = color;
+  
+  // Adjust corner dot color to be a lighter/darker variant
+  if (color === '000000') {
+    qrCodeOptions.cornerDotColor = '333333';
+  } else if (color === 'FF0000') {
+    qrCodeOptions.cornerDotColor = 'CC0000';
+  } else if (color === '00AA00') {
+    qrCodeOptions.cornerDotColor = '008800';
+  } else if (color === 'FF6B00') {
+    qrCodeOptions.cornerDotColor = 'E06000';
+  } else {
+    qrCodeOptions.cornerDotColor = '3B82F6';
+  }
+};
+
+// Handle QR code image load completion with reveal effect
+const handleQrCodeLoaded = () => {
+  qrCodeOptions.isLoading = false;
 };
 
 const shareQrCode = async () => {
@@ -1903,22 +2044,103 @@ const scrollToTop = () => {
 
 /* QR Code styling */
 .qr-code-container {
-  padding: 1rem;
-  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
+  padding: 1.75rem;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e6eeff 50%, #dce6ff 100%);
+  border-radius: 1.5rem;
+  box-shadow: 0 15px 30px -10px rgba(66, 99, 235, 0.07), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .qr-code-container:hover {
-  transform: scale(1.01);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: scale(1.03) translateY(-5px);
+  box-shadow: 0 25px 35px -12px rgba(66, 99, 235, 0.1), 0 15px 20px -10px rgba(0, 0, 0, 0.05);
+  border-color: rgba(255, 255, 255, 1);
+}
+
+.qr-code-frame {
+  position: relative;
+  padding: 1rem;
+  background: white;
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(66, 99, 235, 0.05);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.qr-code-frame::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(45deg);
+  animation: qrShine 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes qrShine {
+  0% {
+    transform: translateY(-100%) translateX(-100%) rotate(45deg);
+  }
+  25%, 100% {
+    transform: translateY(100%) translateX(100%) rotate(45deg);
+  }
 }
 
 .qr-code-image {
-  border-radius: 0.5rem;
-  border: 4px solid white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 0.75rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.05));
+  transition: all 0.5s ease;
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes animate-pulse-gentle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-pulse-gentle {
+  animation: animate-pulse-gentle 1.5s infinite;
+}
+
+/* QR Code Fade Transition */
+.qr-fade-enter-active {
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.qr-fade-leave-active {
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.qr-fade-enter-from,
+.qr-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+/* Add responsiveness for small screens */
+@media (max-width: 640px) {
+  .qr-code-container {
+    padding: 1rem;
+  }
+  
+  .qr-code-image {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 280px;
+  }
 }
 
 /* Animations */
