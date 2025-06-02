@@ -372,11 +372,11 @@
         v-if="user?.user"
         class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl w-full"
       >
-        <div class="bg-white px-2 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="bg-white p-2">
           <div class="sm:flex sm:items-start">
             <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
-              <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-lg leading-6 font-medium text-gray-800">
+              <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-lg leading-6 font-medium text-gray-800 py-2">
                   Post a Sale
                 </h3>
                 <button
@@ -416,13 +416,13 @@
           v-if="user?.user"
           class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
         >
-          <div class="bg-white px-2 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="bg-white p-2">
             <div class="sm:flex sm:items-start">
               <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
                 <div
-                  class="flex justify-between items-center border-b pb-3 mb-4"
+                  class="flex justify-between items-center border-b mb-2"
                 >
-                  <h3 class="text-lg leading-6 font-medium text-gray-800">
+                  <h3 class="text-lg leading-6 font-medium text-gray-800 py-2">
                     My Posts
                   </h3>
                   <button

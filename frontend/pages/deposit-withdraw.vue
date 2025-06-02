@@ -1155,7 +1155,7 @@
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="flex items-start">
               <div class="mt-3 sm:mt-0 sm:ml-4 text-left w-full">
-                <h3 class="text-lg leading-6 font-medium text-gray-800" id="modal-title">
+                <h3 class="text-lg leading-6 font-medium text-gray-800 py-2" id="modal-title">
                   Transaction Details
                 </h3>
                 <div class="mt-4 border-t border-gray-200 pt-4">

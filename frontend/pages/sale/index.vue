@@ -795,7 +795,7 @@
                 <div
                   class="flex justify-between items-center border-b pb-3 mb-4"
                 >
-                  <h3 class="text-lg leading-6 font-medium text-gray-800">
+                  <h3 class="text-lg leading-6 font-medium text-gray-800 py-2">
                     Post a Sale
                   </h3>
                   <button
