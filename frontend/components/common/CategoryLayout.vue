@@ -26,8 +26,7 @@
           <div class="flex items-center">
             <div
               class="w-1 h-6 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full mr-2"
-            ></div>
-            <h2 class="text-lg font-semibold text-gray-800">
+            ></div>            <h2 class="text-lg font-semibold text-gray-800">
               New & Hot Arrivals
             </h2>
             <div
@@ -38,9 +37,8 @@
           </div>
           <a
             href="/eshop"
-            class="text-emerald-600 hover:underline flex items-center text-sm font-medium"
-          >
-            View All
+            class="text-emerald-600 hover:underline flex items-center text-sm font-medium"          >
+            {{ $t('view_all') }}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"

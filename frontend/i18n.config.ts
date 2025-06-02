@@ -296,8 +296,13 @@ export default defineI18nConfig(() => ({
       welcome_to_adsy: "Welcome to ADSY Club!",
       registration_error: "An error occurred during registration",
       get_started: "Get Started",
-      explore_features: "Explore Features",
-
+      explore_features: "Explore Features",      // Sale category translations
+      my_posts: "My Posts",
+      post_a_sale: "Post a Sale",
+      no_listings_found: "No listings found",
+      no_items_currently_listed: "There are no items currently listed in this category",
+      no_gigs_available_category: "No gigs available in this category",
+      
       // Form validation messages
       first_name_required: "First name is required",
       last_name_required: "Last name is required",
@@ -310,7 +315,7 @@ export default defineI18nConfig(() => ({
       age_required: "Age is required",
       invalid_age: "Invalid age",
       gender_required: "Gender is required",
-      invalid_referral: "Invalid referral code",      // Success messages
+      invalid_referral: "Invalid referral code",// Success messages
       login_success_messages: {
         0: "Great to see you again!",
         1: "Welcome back, champion!",
@@ -621,7 +626,11 @@ export default defineI18nConfig(() => ({
       already_have_account: "ইতিমধ্যে অ্যাকাউন্ট আছে? সাইন ইন করুন",
       registration_success: "রেজিস্ট্রেশন সফল!",
       welcome_to_adsy: "AdsyClub এ স্বাগতম!",
-      registration_error: "রেজিস্ট্রেশনের সময় একটি সমস্যা হয়েছে",
+      registration_error: "রেজিস্ট্রেশনের সময় একটি সমস্যা হয়েছে",      // Sale category translations in Bangla      my_posts: "আমার পোস্ট",
+      post_a_sale: "সেল পোস্ট করি",
+      no_listings_found: "কোনো লিস্ট পাওয়া যায়নি",
+      no_items_currently_listed: "এই ক্যাটাগরিতে বর্তমানে কোনো আইটেম নেই",
+      no_gigs_available_category: "এই ক্যাটাগরিতে কোনো গিগ নেই",
 
       // Form validation messages (Bengali)
       first_name_required: "প্রথম নাম প্রয়োজন",
@@ -630,12 +639,12 @@ export default defineI18nConfig(() => ({
       phone_required: "ফোন নম্বর প্রয়োজন",
       invalid_phone: "ভুল ফোন নম্বর",
       password_required: "পাসওয়ার্ড প্রয়োজন",
-      confirm_password_required: "পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন",
+      confirm_password_required: "নিশ্চিতকরণ পাসওয়ার্ড প্রয়োজন",
       passwords_not_match: "পাসওয়ার্ড মিলছে না",
       age_required: "বয়স প্রয়োজন",
       invalid_age: "ভুল বয়স",
       gender_required: "জেন্ডার প্রয়োজন",
-      invalid_referral: "ভুল রেফারেল কোড",      // Success messages (Bengali)
+      invalid_referral: "ভুল রেফারেল কোড",// Success messages (Bengali)
       login_success_messages: {
         0: "আপনাকে আবার দেখে খুশি হলাম!",
         1: "আপনি আবার ফিরে এসেছেন, চ্যাম্পিয়ন!",

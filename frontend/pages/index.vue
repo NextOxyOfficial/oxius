@@ -653,9 +653,8 @@
                   <UIcon
                     name="i-heroicons-briefcase"
                     class="size-16 text-slate-300 dark:text-gray-600 mb-4"
-                  />
-                  <p class="text-lg text-slate-500 dark:text-slate-400">
-                    No gigs available in this category
+                  />                  <p class="text-lg text-slate-500 dark:text-slate-400">
+                    {{ $t('no_gigs_available_category') }}
                   </p>
                 </div>
               </div>

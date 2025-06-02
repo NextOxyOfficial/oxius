@@ -8,20 +8,19 @@
         <div class="flex items-center gap-3">
           <h2 class="text-xl md:text-xl font-medium text-gray-800">{{$t("sale_listing")}}</h2>
         </div>
-        <div v-if="user" class="flex gap-2 sm:gap-3">
-          <button
+        <div v-if="user" class="flex gap-2 sm:gap-3">          <button
             class="my-post-btn border border-gray-300 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-sm sm:text-sm flex items-center gap-1"
             @click="openMyPostsModal"
           >
             <Icon name="heroicons:document-text" size="16px" />
-            My Posts
+            {{ $t('my_posts') }}
           </button>
           <button
             class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"
             @click="openPostSaleModal"
           >
             <Icon name="heroicons:plus-circle" size="16px" />
-            Post a Sale
+            {{ $t('post_a_sale') }}
           </button>
         </div>
       </div>
@@ -224,9 +223,8 @@
           </div>
           <NuxtLink
             :to="`/sale`"
-            class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"
-          >
-            View All <Icon name="heroicons:arrow-right" size="14px" />
+            class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"          >
+            {{ $t('view_all') }} <Icon name="heroicons:arrow-right" size="14px" />
           </NuxtLink>
         </div>
 
@@ -346,12 +344,11 @@
             name="heroicons:document-magnifying-glass"
             size="40px"
             class="text-gray-600 mb-2"
-          />
-          <h3 class="text-base font-medium text-gray-800 mb-1">
-            No listings found
+          />          <h3 class="text-base font-medium text-gray-800 mb-1">
+            {{ $t('no_listings_found') }}
           </h3>
           <p class="text-gray-600 text-sm text-center">
-            There are no items currently listed in this category.
+            {{ $t('no_items_currently_listed') }}
           </p>
         </div>
       </div>
