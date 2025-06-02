@@ -1186,7 +1186,7 @@
             </div>
           </div>
 
-          <div class="flex flex-col sm:flex-row gap-4 w-full">
+          <div class="flex sm:flex-row gap-4 w-full">
             <UButton
               color="primary"
               icon="i-heroicons-shopping-cart"
