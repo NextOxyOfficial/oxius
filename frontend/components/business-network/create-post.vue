@@ -151,16 +151,18 @@
                         ? "Drop your images here"
                         : "Drag images here or click to select"
                     }}
-                  </p>
-                  <p class="mt-1 text-xs text-gray-600 dark:text-gray-600">
-                    Select up to 12 images (PNG, JPG, JPEG)
-                  </p>
-                  <button
+                  </p>                  <p class="mt-1 text-xs text-gray-600 dark:text-gray-600 flex items-center justify-center gap-1">
+                    <span>Select up to 12 images (PNG, JPG, JPEG)</span>
+                    <span class="inline-flex items-center px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium rounded">
+                      {{ images.length }}/12
+                    </span>
+                  </p>                  <button
                     @click.stop="triggerFileInput"
                     class="mt-3 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition-all duration-200 hover:shadow-sm flex items-center gap-1.5 mx-auto"
                   >
                     <Upload class="h-3.5 w-3.5" />
-                    Select Images
+                    <span v-if="images.length === 0">Select Images</span>
+                    <span v-else>Add More ({{ 12 - images.length }} remaining)</span>
                   </button>
                 </div>
               </div>
@@ -181,22 +183,29 @@
                     >
                       <ImageIcon class="h-4 w-4 text-blue-500" />
                       <span>Selected Media</span>
-                    </h4>
-                    <div class="flex items-center gap-2">
+                    </h4>                    <div class="flex items-center gap-2">
                       <span
-                        class="text-xs px-2 py-0.5 rounded-full"
+                        class="text-xs px-2 py-0.5 rounded-full font-medium transition-colors"
                         :class="
                           images.length > 9
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-gray-100 text-gray-600'
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                            : images.length > 6
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                         "
                       >
-                        {{ images.length }}/12
+                        {{ images.length }}/12 selected
+                      </span>
+                      <span v-if="images.length < 12" class="text-xs text-gray-500 dark:text-gray-400">
+                        ({{ 12 - images.length }} more allowed)
+                      </span>
+                      <span v-else class="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                        Limit reached
                       </span>
                       <button
                         v-if="images.length > 0"
                         @click="clearAllImages"
-                        class="text-xs px-2 py-0.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        class="text-xs px-2 py-0.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                       >
                         Clear All
                       </button>
@@ -580,8 +589,7 @@
             <div class="relative bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 text-white p-6 text-center">              <!-- Animated Success Icon -->
               <div class="relative mx-auto w-16 h-16 mb-4">
                 <div class="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
-                <div class="relative bg-white rounded-full w-16 h-16 flex items-center justify-center">
-                  <svg class="h-8 w-8 text-purple-600 animate-bounce" fill="currentColor" viewBox="0 0 24 24">
+                <div class="relative bg-white rounded-full w-16 h-16 flex items-center justify-center">                  <svg class="h-8 w-8 text-purple-600 animate-party-slow" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.9 1 3 1.9 3 3V17C3 18.1 3.9 19 5 19H11.81C11.3 18.12 11 17.1 11 16C11 13.24 13.24 11 16 11S21 13.24 21 16C21 17.1 20.7 18.12 20.19 19H21C22.1 19 23 18.1 23 17V9H21ZM14 9V3.5L19.5 9H14ZM16 12C14.34 12 13 13.34 13 15S14.34 18 16 18 19 16.66 19 15 17.66 12 16 12ZM16 16.5C15.17 16.5 14.5 15.83 14.5 15S15.17 13.5 16 13.5 17.5 14.17 17.5 15 16.83 16.5 16 16.5Z"/>
                     <circle cx="7" cy="6" r="1"/>
                     <circle cx="7" cy="9" r="1"/>
@@ -1767,5 +1775,28 @@ input,
 textarea,
 button {
   transition: all 0.2s ease-in-out;
+}
+
+/* Slow party celebration animation */
+@keyframes party-slow {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateY(-2px) rotate(2deg) scale(1.05);
+  }
+  50% {
+    transform: translateY(-4px) rotate(0deg) scale(1.1);
+  }
+  75% {
+    transform: translateY(-2px) rotate(-2deg) scale(1.05);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+.animate-party-slow {
+  animation: party-slow 3s ease-in-out infinite;
 }
 </style>
