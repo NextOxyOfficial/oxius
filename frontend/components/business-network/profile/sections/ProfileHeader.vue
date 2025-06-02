@@ -8,9 +8,9 @@
     ></div>
     <div class="absolute inset-0 opacity-5 bg-pattern"></div>
 
-    <div class="p-2 py-5 sm:p-8 relative">
+    <div class="p-2 py-5 sm:p-4 relative">
       <!-- Mobile Profile Header (Mobile Only) -->
-      <div class="flex sm:hidden items-center justify-between mb-4">
+      <div class="flex sm:hidden justify-between mb-4">
         <div>
           <h1 class="text-xl font-semibold flex items-center gap-1">
             {{ user?.name }}
@@ -52,7 +52,7 @@
           <!-- QR Code Button for mobile with enhanced styling -->
           <button
             @click="$emit('open-qr-modal')"
-            class="px-3 py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all shadow-sm relative overflow-hidden group"
+            class="p-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all shadow-sm relative overflow-hidden group"
             title="View QR Code"
           >
             <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
