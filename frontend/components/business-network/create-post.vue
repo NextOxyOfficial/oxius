@@ -577,12 +577,16 @@
             @click.stop
           >
             <!-- Success Header with Gradient -->
-            <div class="relative bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 text-white p-6 text-center">
-              <!-- Animated Success Icon -->
+            <div class="relative bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 text-white p-6 text-center">              <!-- Animated Success Icon -->
               <div class="relative mx-auto w-16 h-16 mb-4">
                 <div class="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
                 <div class="relative bg-white rounded-full w-16 h-16 flex items-center justify-center">
-                  <CheckCircle class="h-8 w-8 text-green-600 animate-bounce" />
+                  <svg class="h-8 w-8 text-purple-600 animate-bounce" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.9 1 3 1.9 3 3V17C3 18.1 3.9 19 5 19H11.81C11.3 18.12 11 17.1 11 16C11 13.24 13.24 11 16 11S21 13.24 21 16C21 17.1 20.7 18.12 20.19 19H21C22.1 19 23 18.1 23 17V9H21ZM14 9V3.5L19.5 9H14ZM16 12C14.34 12 13 13.34 13 15S14.34 18 16 18 19 16.66 19 15 17.66 12 16 12ZM16 16.5C15.17 16.5 14.5 15.83 14.5 15S15.17 13.5 16 13.5 17.5 14.17 17.5 15 16.83 16.5 16 16.5Z"/>
+                    <circle cx="7" cy="6" r="1"/>
+                    <circle cx="7" cy="9" r="1"/>
+                    <circle cx="7" cy="12" r="1"/>
+                  </svg>
                 </div>
               </div>
               
@@ -630,22 +634,14 @@
                   </div>
                 </div>
               </div>
-              
-              <!-- Action Buttons -->
-              <div class="flex gap-3">
+                <!-- Action Buttons -->
+              <div class="flex flex-col gap-3">
                 <button
                   @click="closeSuccessModal"
-                  class="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
+                  class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                 >
-                  <CheckCircle class="h-4 w-4" />
-                  Continue
-                </button>
-                <button
-                  @click="createAnotherPost"
-                  class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                  <Plus class="h-4 w-4" />
-                  Create Another
+                  <X class="h-4 w-4" />
+                  Close {{ autoCloseCountdown > 0 ? `(${autoCloseCountdown})` : '' }}
                 </button>
               </div>
             </div>
@@ -717,6 +713,8 @@ const selectedSuggestionIndex = ref(-1);
 
 // Success modal state
 const showSuccessModal = ref(false);
+const autoCloseCountdown = ref(0);
+const autoCloseTimer = ref(null);
 
 // Simplified compression progress tracking (hidden from users)
 const compressionProgress = ref(0);
@@ -854,6 +852,13 @@ const clearAllImages = () => {
 
 // Success modal control functions
 const closeSuccessModal = () => {
+  // Clear any existing timer
+  if (autoCloseTimer.value) {
+    clearInterval(autoCloseTimer.value);
+    autoCloseTimer.value = null;
+  }
+  
+  autoCloseCountdown.value = 0;
   showSuccessModal.value = false;
   
   // Now close the main modal and reset form
@@ -867,19 +872,16 @@ const closeSuccessModal = () => {
   }
 };
 
-const createAnotherPost = () => {
-  showSuccessModal.value = false;
+const startAutoCloseTimer = () => {
+  autoCloseCountdown.value = 5;
   
-  // Reset form but keep the main modal open
-  resetForm();
-  
-  // Focus on title input for next post
-  nextTick(() => {
-    const titleInput = document.querySelector('input[placeholder="What\'s on your mind?"]');
-    if (titleInput) {
-      titleInput.focus();
+  autoCloseTimer.value = setInterval(() => {
+    autoCloseCountdown.value--;
+    
+    if (autoCloseCountdown.value <= 0) {
+      closeSuccessModal();
     }
-  });
+  }, 1000);
 };
 
 const handleEmojiClick = (emoji) => {
@@ -1431,10 +1433,11 @@ async function handleCreatePost() {
       console.log("Broadcasting via eventBus");
       const eventBus = useEventBus();
       eventBus.emit("post-created", response.data);
-    }
-
-    // Show success modal
+    }    // Show success modal
     showSuccessModal.value = true;
+    
+    // Start auto-close timer
+    startAutoCloseTimer();
 
     // Don't close main modal immediately - let user interact with success modal
     // The success modal will handle closing the main modal
