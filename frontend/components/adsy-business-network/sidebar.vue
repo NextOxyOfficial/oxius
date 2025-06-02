@@ -33,7 +33,7 @@
       </div>
 
       <!-- Sidebar Content (Scrollable) -->
-      <div class="flex-1 overflow-y-auto py-4 px-2 space-y-7 -mt-12 sm:-mt-10">
+      <div class="flex-1 overflow-y-auto py-4 px-2 space-y-7 sm:-mt-10">
         <!-- Main Menu Section -->
         <SidebarMenu :isMobile="isMobile" @menu-click="handleMenuClick" />
 
