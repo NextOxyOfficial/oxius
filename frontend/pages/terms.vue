@@ -341,14 +341,14 @@
 											<UIcon name="i-heroicons-phone" class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3"/>
 											<div>
 												<p class="font-medium text-gray-900 dark:text-white">Phone</p>
-												<p class="text-gray-600 dark:text-gray-300">+880 1234 567890</p>
+												<p class="text-gray-600 dark:text-gray-300">+8801896144067</p>
 											</div>
 										</div>
 										<div class="flex items-start">
 											<UIcon name="i-heroicons-map-pin" class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3"/>
 											<div>
 												<p class="font-medium text-gray-900 dark:text-white">Address</p>
-												<p class="text-gray-600 dark:text-gray-300">123 Business Avenue, Dhaka, Bangladesh</p>
+												<p class="text-gray-600 dark:text-gray-300">H#116, Office Building, Sewria, Kushtia, Bangladesh</p>
 											</div>
 										</div>
 									</div>
