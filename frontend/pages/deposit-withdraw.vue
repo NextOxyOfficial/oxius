@@ -673,8 +673,7 @@
               <span class="ml-2 text-sm text-gray-800">
                 {{ getTransactionTypeName(row.transaction_type) }}
               </span>
-            </div>
-          </template>          <template #recipient-data="{ row }">
+            </div>          </template>          <template #recipient-data="{ row }">
             <!-- Show recipient details if available -->
             <div class="text-sm text-gray-600 capitalize" v-if="row?.to_user_details">
               {{ row.to_user_details.first_name }}
@@ -683,6 +682,12 @@
               <!-- For self-transactions like deposits, purchases, etc. show "Myself" -->
             <div class="text-sm text-gray-600" v-else-if="['deposit', 'diamond_purchase', 'pro_subscription', 'mobile_recharge', 'order_payment', 'diamond_bonus', 'diamond_refund', 'diamond_admin'].includes(row.transaction_type?.toLowerCase())">
               Myself
+            </div>
+            
+            <!-- For withdraw transactions, show payment method and number in recipients -->
+            <div class="text-sm text-gray-600" v-else-if="row.transaction_type?.toLowerCase() === 'withdraw'">
+              {{ row.payment_method ? (row.payment_method.charAt(0).toUpperCase() + row.payment_method.slice(1)) : 'N/A' }}
+              <span v-if="row.card_number" class="block text-xs text-gray-500 font-mono">{{ row.card_number }}</span>
             </div>
             
             <!-- For diamond transactions without recipient -->
@@ -709,10 +714,12 @@
             <div class="text-sm text-gray-600" v-else-if="['diamond_bonus', 'diamond_refund'].includes(row.transaction_type?.toLowerCase())">
               System
             </div>
-          </template>
-          <template #method-data="{ row }">
+          </template>          <template #method-data="{ row }">
             <div class="text-sm text-gray-600 capitalize">
               {{ row?.payment_method }}
+              <span v-if="row?.transaction_type?.toLowerCase() === 'withdraw' && row?.card_number" class="block text-xs text-gray-500 font-mono">
+                {{ row.card_number }}
+              </span>
             </div>
           </template>
           <template #time-data="{ row }">
@@ -1401,8 +1408,13 @@
                       <dd v-else-if="selectedTransaction?.transaction_type?.startsWith('diamond_') && !selectedTransaction?.to_user_details"
                           class="text-sm text-gray-800 mt-0 col-span-2">
                         Personal Account
+                      </dd>                        <!-- For withdraw transactions, show payment method and number -->
+                      <dd v-else-if="selectedTransaction?.transaction_type?.toLowerCase() === 'withdraw'" class="text-sm text-gray-800 mt-0 col-span-2">
+                        {{ selectedTransaction?.payment_method ? (selectedTransaction?.payment_method.charAt(0).toUpperCase() + selectedTransaction?.payment_method.slice(1)) : 'N/A' }} 
+                        <span v-if="selectedTransaction?.card_number" class="block mt-1 font-mono">
+                          Account: {{ selectedTransaction?.card_number }}
+                        </span>
                       </dd>
-                      
                       <!-- For other transactions, show payment method if available -->
                       <dd v-else class="text-sm text-gray-800 mt-0 col-span-2">
                         {{ selectedTransaction?.payment_method || 'N/A' }}
