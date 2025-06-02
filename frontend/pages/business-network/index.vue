@@ -520,14 +520,6 @@ const handleNewPost = async (newPost) => {
       newestCreatedAt.value = processedNewPost.created_at;
     }
 
-    // Display success notification
-    console.log("Showing success notification");
-    useToast().add({
-      title: "Post Created!",
-      description: "Your post has been successfully published",
-      color: "green",
-      timeout: 3000,
-    });
   } else {
     console.log("No post data provided, reloading all posts");
     // If no post data is provided, reload all posts
