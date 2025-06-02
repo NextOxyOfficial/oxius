@@ -23,42 +23,95 @@
           <UIcon name="i-heroicons-x-mark" class="h-5 w-5" />
         </button>
 
-        <!-- QR Code Container with gradient background and styling -->
-        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-t-xl pt-8 pb-6 px-6 text-center">
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">
-            {{ user?.name }}'s Profile QR
+        <!-- QR Code Container with updated styling -->
+        <div class="bg-white rounded-t-xl pt-4 px-6 text-center">
+          <h3 class="text-xl font-semibold text-gray-900 mb-1">
+            My ABN Profile QR Code
           </h3>
-          <p class="text-gray-600 text-sm mb-4">
-            Scan this code to view this profile
+          <p class="text-gray-600 text-sm mb-5">
+            Scan this QR code to view your profile
           </p>
 
           <!-- QR Code with enhanced styling -->
-          <div class="inline-flex items-center justify-center p-2 bg-white rounded-xl shadow-sm mb-3 border border-gray-100">
-            <div v-if="qrCodeUrl" class="overflow-hidden rounded-lg">
+          <div class="inline-flex items-center justify-center p-4 bg-white rounded-xl shadow-sm mb-4 border border-gray-100">
+            <div v-if="qrCodeUrl" class="overflow-hidden rounded-lg relative">
               <img 
                 :src="qrCodeUrl" 
                 alt="Profile QR Code" 
-                class="w-52 h-52"
+                class="w-60 h-60"
               />
+              <!-- Center logo overlay -->
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="bg-blue-100 rounded-full p-2 border-4 border-white">
+                  <div class="bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center">
+                    <UserIcon class="h-5 w-5 text-white" />
+                  </div>
+                </div>
+              </div>
             </div>
-            <div v-else class="w-52 h-52 flex items-center justify-center">
+            <div v-else class="w-60 h-60 flex items-center justify-center">
               <Loader2 class="h-8 w-8 text-blue-500 animate-spin" />
             </div>
           </div>
-
-          <!-- Username display -->
-          <p class="text-blue-600 font-medium">
-            {{ formatUsername(user?.username) }}
-          </p>
+          
+          <!-- Business Network branding -->
+          <div class="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
+            <CircleUserIcon class="h-4 w-4 text-blue-500" />
+            <span>AdsyClub Business Network</span>
+          </div>
+        </div>
+        
+        <!-- Customization section -->
+        <div class="px-4 py-2 bg-gray-50 border-t border-gray-100">
+          <h4 class="text-sm font-medium text-gray-700 mb-3">Customize QR Code</h4>
+          
+          <div class="flex items-center justify-between mb-4">
+            <!-- QR Color options -->
+            <div>
+              <label class="text-xs text-gray-500 block mb-2">QR Color</label>
+              <div class="flex gap-1">
+                <button 
+                  v-for="color in qrColorOptions" 
+                  :key="color.value"
+                  @click="selectedQrColor = color.value"
+                  :class="[
+                    'w-6 h-6 rounded-full border transition-all', 
+                    selectedQrColor === color.value ? 'ring-2 ring-offset-1 ring-blue-500' : 'ring-0'
+                  ]"
+                  :style="{ backgroundColor: color.hex }"
+                ></button>
+              </div>
+            </div>
+            
+            <!-- Format options -->
+            <div>
+              <label class="text-xs text-gray-500 block mb-2">Format</label>
+              <div class="flex gap-1">
+                <button 
+                  v-for="format in formatOptions" 
+                  :key="format"
+                  @click="selectedFormat = format"
+                  :class="[
+                    'px-3 py-1 text-xs rounded border transition-all',
+                    selectedFormat === format 
+                      ? 'bg-blue-100 text-blue-700 border-blue-300' 
+                      : 'bg-white text-gray-700 border-gray-200'
+                  ]"
+                >
+                  {{ format }}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Action buttons -->
         <div class="p-4 bg-white rounded-b-xl border-t border-gray-100">
-          <div class="flex justify-center gap-3">
+          <div class="flex justify-center gap-4">
             <!-- Download button -->
             <button
               @click="downloadQrCode"
-              class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+              class="px-5 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 flex-1 justify-center"
               :disabled="!qrCodeUrl"
             >
               <DownloadIcon class="h-4 w-4" />
@@ -68,7 +121,7 @@
             <!-- Share button -->
             <button
               @click="shareProfile"
-              class="px-4 py-2 bg-blue-600 rounded-lg text-white hover:bg-blue-700 transition-colors flex items-center gap-2"
+              class="px-5 py-2 bg-blue-600 rounded-lg text-white hover:bg-blue-700 transition-colors flex items-center gap-2 flex-1 justify-center"
             >
               <ShareIcon class="h-4 w-4" />
               <span>Share</span>
@@ -82,7 +135,13 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue';
-import { Loader2, Share as ShareIcon, Download as DownloadIcon } from 'lucide-vue-next';
+import { 
+  Loader2, 
+  Share as ShareIcon, 
+  Download as DownloadIcon, 
+  User as UserIcon,
+  CircleUser as CircleUserIcon
+} from 'lucide-vue-next';
 
 const props = defineProps({
   modelValue: {
@@ -103,6 +162,27 @@ const isOpen = computed({
 });
 
 const qrCodeUrl = ref(null);
+const selectedQrColor = ref('blue');
+const selectedFormat = ref('PNG');
+
+// QR Color options
+const qrColorOptions = [
+  { value: 'blue', hex: '#4285F4' },
+  { value: 'black', hex: '#000000' },
+  { value: 'red', hex: '#EA4335' },
+  { value: 'green', hex: '#34A853' },
+  { value: 'orange', hex: '#FBBC05' },
+];
+
+// Format options
+const formatOptions = ['PNG', 'SVG'];
+
+// Watch for changes in customization options
+watch([selectedQrColor, selectedFormat], () => {
+  if (props.user?.username) {
+    generateQrCode();
+  }
+});
 
 // Generate QR code when modal opens
 watch(() => props.modelValue, (newVal) => {
@@ -117,11 +197,27 @@ const formatUsername = (username) => {
   return username.startsWith('@') ? username : `@${username}`;
 };
 
-// Generate QR code for the profile
+// Generate QR code for the profile with color customization
 const generateQrCode = async () => {
   try {
     const profileUrl = `${window.location.origin}/business-network/profile/${props.user?.id}`;
-    const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(profileUrl)}&size=200x200&margin=10`;
+    
+    // Get the hex color from the selected color option (default to blue)
+    const colorOption = qrColorOptions.find(c => c.value === selectedQrColor.value) || qrColorOptions[0];
+    const colorHex = colorOption.hex.replace('#', '');
+    
+    // Build API URL with options
+    let qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/`;
+    qrCodeApiUrl += `?data=${encodeURIComponent(profileUrl)}`;
+    qrCodeApiUrl += `&size=240x240`;
+    qrCodeApiUrl += `&margin=10`;
+    qrCodeApiUrl += `&color=${colorHex}`;
+    
+    // Add format if SVG
+    if (selectedFormat.value === 'SVG') {
+      qrCodeApiUrl += `&format=svg`;
+    }
+    
     qrCodeUrl.value = qrCodeApiUrl;
   } catch (error) {
     console.error("Error generating QR code:", error);
@@ -135,7 +231,11 @@ const downloadQrCode = () => {
   
   const link = document.createElement('a');
   link.href = qrCodeUrl.value;
-  link.download = `${props.user?.name || 'profile'}-qr-code.png`;
+  
+  // Set appropriate extension based on format
+  const extension = selectedFormat.value.toLowerCase();
+  link.download = `${props.user?.name || 'profile'}-qr-code.${extension}`;
+  
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
