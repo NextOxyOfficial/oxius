@@ -9,7 +9,7 @@ from .serializers import SponsorshipPackageSerializer, GoldSponsorCreateSerializ
 
 class SponsorshipPackageListView(generics.ListAPIView):
     """Get all active sponsorship packages"""
-    queryset = SponsorshipPackage.objects.filter(is_active=True).order_by('duration_months')
+    queryset = SponsorshipPackage.objects.filter(is_active=True).order_by('price', 'duration_months')
     serializer_class = SponsorshipPackageSerializer
 
 class GoldSponsorCreateView(generics.CreateAPIView):

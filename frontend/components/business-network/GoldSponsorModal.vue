@@ -389,11 +389,10 @@
                     >
                       Try again
                     </button>
-                  </div>
-                  <!-- Package list -->
+                  </div>                  <!-- Package list -->
                   <div v-else class="space-y-2">
                     <div
-                      v-for="pkg in packages"
+                      v-for="pkg in sortedPackages"
                       :key="pkg.id"
                       class="relative border rounded-lg p-3 cursor-pointer transition-all"
                       :class="{
@@ -837,8 +836,12 @@ const hasInsufficientBalance = computed(() => {
     packagePrice: pkgPrice,
     comparison: `${userBal} < ${pkgPrice}`,
     result,
-  });
-  return result;
+  });  return result;
+});
+
+// Sorted packages by price (smallest first)
+const sortedPackages = computed(() => {
+  return [...packages.value].sort((a, b) => a.price - b.price);
 });
 
 // Get selected package details
