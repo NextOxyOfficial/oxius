@@ -12,7 +12,7 @@
       <!-- Mobile Profile Header (Mobile Only) -->
       <div class="flex sm:hidden items-center justify-between mb-4">
         <div>
-          <h1 class="text-xl font-semibold flex items-center gap-1.5">
+          <h1 class="text-xl font-semibold flex items-center gap-1">
             {{ user?.name }}
             <div class="relative inline-flex tooltip-container">
               <UIcon

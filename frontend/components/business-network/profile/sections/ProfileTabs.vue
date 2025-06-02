@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <div class="py-4 px-1">
+    <div class="py-2 px-1">
       <transition name="tab-transition" mode="out-in">
         <!-- Posts Tab Content -->
         <div v-if="activeTab === 'posts'" class="tab-content">
