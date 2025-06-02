@@ -16,7 +16,7 @@
         <div class="h-full w-full" style="background-image: radial-gradient(circle at 1px 1px, rgba(251, 191, 36, 0.3) 1px, transparent 0); background-size: 50px 50px;"></div>
       </div>
       
-      <div class="container mx-auto py-16 px-4 relative">
+      <div class="container mx-auto py-6 px-4 relative">
         <div class="text-center max-w-4xl mx-auto">
           <!-- Premium Badge -->
           <div class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white px-4 py-2 rounded-full text-sm font-medium mb-6 shadow-sm">
@@ -63,7 +63,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="container mx-auto py-12 px-4">
+    <div class="container mx-auto py-8 px-4">
       <!-- Filter and View Options -->
       <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <div class="flex items-center gap-4">
@@ -82,14 +82,14 @@
           <span class="text-sm text-gray-600 dark:text-gray-400">View:</span>
           <button 
             @click="viewMode = 'grid'" 
-            :class="viewMode === 'grid' ? 'bg-amber-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'"
+            :class="viewMode === 'grid' ? 'bg-amber-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 flex items-center justify-center'"
             class="p-2 rounded-lg transition-all duration-200"
           >
             <UIcon name="i-heroicons-squares-2x2" class="w-5 h-5" />
           </button>
           <button 
             @click="viewMode = 'list'" 
-            :class="viewMode === 'list' ? 'bg-amber-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'"
+            :class="viewMode === 'list' ? 'bg-amber-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 flex items-center'"
             class="p-2 rounded-lg transition-all duration-200"
           >
             <UIcon name="i-heroicons-list-bullet" class="w-5 h-5" />

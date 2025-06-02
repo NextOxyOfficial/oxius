@@ -20,7 +20,7 @@
       >
         <!-- Background overlay -->
         <div
-          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          class="fixed  inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
           aria-hidden="true"
           @click="close"
         ></div>
@@ -32,7 +32,7 @@
             <button
               type="button"
               @click="close"
-              class="bg-white dark:bg-slate-700 rounded-full p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none shadow-md"
+              class="bg-white flex items-center justify-center dark:bg-slate-700 rounded-full p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none shadow-md"
             >
               <span class="sr-only">Close</span>
               <UIcon name="i-heroicons-x-mark" class="h-6 w-6" />

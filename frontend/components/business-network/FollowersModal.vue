@@ -20,7 +20,7 @@
           <!-- Close button redesigned -->
           <button 
             @click="closeModal" 
-            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white p-1.5 rounded-full bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+            class="text-gray-500 flex items-center justify-center hover:text-gray-700 dark:text-gray-400 dark:hover:text-white p-1.5 rounded-full bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
             aria-label="Close modal"
             ref="closeButtonRef"
           >
@@ -82,7 +82,7 @@
           <div class="ml-auto flex items-center">
             <button 
               @click="toggleSearch" 
-              class="p-1.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+              class="p-1.5 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
               :class="{ 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300': isSearchOpen }"
               aria-label="Toggle search"
             >
