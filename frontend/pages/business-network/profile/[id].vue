@@ -238,9 +238,18 @@
             </div>
 
             <div class="flex gap-2">
+              <!-- QR Code Button for mobile -->
+              <button
+                @click="openQrCodeModal"
+                class="px-3 py-1.5 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
+                title="View QR Code"
+              >
+                <UIcon name="i-mdi:qrcode" class="w-3.5 h-3.5" />
+              </button>
+              
               <!-- Action buttons for mobile -->              <button
                 v-if="user?.id !== currentUser?.user?.id && currentUser"
-                :class="[
+                :class=" [
                   'px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-300 min-w-[90px] text-center relative overflow-hidden group/follow',
                   isFollowing
                     ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-800'
@@ -436,7 +445,18 @@
                 </div>
 
                 <!-- Action buttons (Desktop) -->
-                <div class="hidden sm:flex">                  <button
+                <div class="hidden sm:flex gap-2"> 
+                  <!-- QR Code Button -->
+                  <button
+                    @click="openQrCodeModal"
+                    class="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border border-gray-200 text-gray-800 hover:bg-gray-50 transition-all"
+                    title="View QR Code"
+                  >
+                    <UIcon name="i-mdi:qrcode" class="w-4 h-4" />
+                    <span>QR Code</span>
+                  </button>
+                  
+                  <button
                     v-if="user?.id !== currentUser?.user?.id && currentUser"
                     :class="[
                       'px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-300 relative overflow-hidden group/follow',
@@ -996,6 +1016,41 @@
       @close="showFollowersModal = false"
       @follow-changed="handleFollowStatusChange"
     />
+
+    <!-- QR Code Modal -->
+    <UModal v-model="showQrModal" :ui="{ width: 'sm:max-w-md' }">
+      <div class="p-5 flex flex-col items-center space-y-4">
+        <h2 class="text-lg font-semibold text-center">
+          {{ user?.id === currentUser?.user?.id ? 'My' : user?.name + `'s` }} ABN Profile QR Code
+        </h2>
+        <p class="text-center text-sm text-gray-600">
+          Scan this QR code to view {{ user?.id === currentUser?.user?.id ? 'your' : 'this' }} profile
+        </p>
+        <div class="qr-code-container flex items-center justify-center">
+          <img 
+            :src="qrCodeUrl" 
+            alt="Profile QR Code" 
+            class="w-64 h-64 qr-code-image"
+          />
+        </div>
+        <div class="flex gap-3 mt-2">
+          <button 
+            @click="downloadQrCode" 
+            class="flex items-center gap-2 px-5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full transition-all text-sm font-medium"
+          >
+            <Download class="h-4 w-4" />
+            <span>Download</span>
+          </button>
+          <button 
+            @click="shareQrCode"
+            class="flex items-center gap-2 px-5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-full transition-all text-sm font-medium"
+          >
+            <Share2 class="h-4 w-4" />
+            <span>Share</span>
+          </button>
+        </div>
+      </div>
+    </UModal>
   </div>
 </template>
 
@@ -1007,6 +1062,7 @@ definePageMeta({
 import BusinessNetworkDiamondPurchaseModal from "~/components/business-network/DiamondPurchaseModal.vue";
 import MediaViewer from "~/components/business-network/MediaViewer.vue";
 import FollowersModal from "~/components/business-network/FollowersModal.vue";
+import { useApi } from "~/composables/useApi";
 import {
   Camera,
   Edit,
@@ -1043,13 +1099,105 @@ import {
   Loader2,
   ChevronUp,
   Trophy,
+  QrCode,
 } from "lucide-vue-next";
 
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
+const { get } = useApi(); // Initialize the get function from useApi
 
 const { user: currentUser } = useAuth();
-const { get, post, del } = useApi();
+
+// QR code related variables
+const showQrModal = ref(false);
+const profileUrl = computed(() => {
+  const baseUrl = window.location.origin;
+  return `${baseUrl}/business-network/profile/${route.params.id}`;
+});
+const qrCodeUrl = computed(() => {
+  // Generate QR code using an external API service
+  const size = 512; // Larger size for better quality
+  const data = encodeURIComponent(profileUrl.value);
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${data}&margin=10`;
+});
+
+// Functions for QR Code
+const openQrCodeModal = () => {
+  showQrModal.value = true;
+};
+
+const downloadQrCode = async () => {
+  try {
+    // Create a temporary link element
+    const link = document.createElement('a');
+    
+    // Convert the QR code to blob
+    const response = await fetch(qrCodeUrl.value);
+    const blob = await response.blob();
+    
+    // Create a download link
+    link.href = URL.createObjectURL(blob);
+    link.download = `${user.value?.name || 'profile'}-qr-code.png`;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.add({
+      title: 'QR Code Download',
+      description: 'QR code has been downloaded successfully',
+      color: 'green'
+    });
+  } catch (error) {
+    console.error('Error downloading QR code:', error);
+    toast.add({
+      title: 'Download Error',
+      description: 'Could not download the QR code. Please try again.',
+      color: 'red'
+    });
+  }
+};
+
+const shareQrCode = async () => {
+  try {
+    if (navigator.share) {
+      // Use Web Share API if available
+      await navigator.share({
+        title: `${user.value?.name || 'Profile'} QR Code`,
+        text: `Check out ${user.value?.name || 'this'} profile on AdsyClub Business Network!`,
+        url: profileUrl.value
+      });
+    } else {
+      // Fallback - copy link to clipboard
+      await navigator.clipboard.writeText(profileUrl.value);
+      toast.add({
+        title: 'Link Copied',
+        description: 'Profile link copied to clipboard',
+        color: 'green'
+      });
+    }
+  } catch (error) {
+    console.error('Error sharing QR code:', error);
+    // Attempt to copy to clipboard as fallback
+    try {
+      await navigator.clipboard.writeText(profileUrl.value);
+      toast.add({
+        title: 'Link Copied',
+        description: 'Profile link copied to clipboard',
+        color: 'green'
+      });
+    } catch (clipboardError) {
+      toast.add({
+        title: 'Share Error',
+        description: 'Could not share QR code. Please try again.',
+        color: 'red'
+      });
+    }
+  }
+};
+
 const eventBus = useEventBus();
 
 // Always start with loading state to show skeleton immediately
@@ -1066,7 +1214,6 @@ const loadedPostIds = ref(new Set()); // Track loaded post IDs to prevent duplic
 // Initialize other reactive state
 const user = ref({});
 const posts = ref({});
-const toast = useToast();
 const savedPosts = ref([]);
 const allMedia = ref([]);
 const followLoading = ref(false);
@@ -1754,6 +1901,26 @@ const scrollToTop = () => {
   min-height: 300px;
 }
 
+/* QR Code styling */
+.qr-code-container {
+  padding: 1rem;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.qr-code-container:hover {
+  transform: scale(1.01);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.qr-code-image {
+  border-radius: 0.5rem;
+  border: 4px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {
@@ -1839,9 +2006,9 @@ const scrollToTop = () => {
     90deg,
     rgba(255, 255, 255, 0) 0%,
     rgba(255, 255, 255, 0.8) 50%,
-    rgba(255, 255, 255, 0) 100%
+    rgba(255, 255, 255, 255, 0) 100%
   );
-  background-size: 200% 100%;
+  background-size: 200%  100%;
   animation: shimmer 2s infinite;
 }
 
