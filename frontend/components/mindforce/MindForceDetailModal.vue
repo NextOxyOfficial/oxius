@@ -44,7 +44,7 @@
                   <img
                     :src="
                       problem.user_details?.image ||
-                      '/static/frontend/avatar.png'
+                      '/static/frontend/images/placeholder.jpg'
                     "
                     :alt="problem.user_details?.name"
                     class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"

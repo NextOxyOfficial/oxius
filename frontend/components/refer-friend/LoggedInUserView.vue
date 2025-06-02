@@ -901,7 +901,7 @@
                           </div>
                           <UAvatar
                             v-else
-                            :src="user.image || '/static/frontend/avatar.png'"
+                            :src="user.image || '/static/frontend/images/placeholder.jpg'"
                             size="sm"
                             class="user-avatar"
                           />

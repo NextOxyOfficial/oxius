@@ -34,7 +34,7 @@
       >
         <div class="relative">
           <img
-            :src="contributor.image || '/static/frontend/avatar.png'"
+            :src="contributor.image || '/static/frontend/images/placeholder.jpg'"
             :alt="contributor.name"
             class="size-7 rounded-full object-cover border-2 border-white shadow-sm"
           />

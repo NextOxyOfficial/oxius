@@ -25,7 +25,7 @@
             />
             <div
               v-else
-              src="/static/frontend/avatar.png"
+              src="/static/frontend/images/placeholder.jpg"
               alt="Profile"
               class="w-20 h-20 rounded-full object-contain border-4 border-white shadow-sm"
             >

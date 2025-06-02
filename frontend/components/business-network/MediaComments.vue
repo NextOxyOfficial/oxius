@@ -19,7 +19,7 @@
             />
             <img
               v-else
-              src="/static/frontend/avatar.png"
+              src="/static/frontend/images/placeholder.jpg"
               alt="User"
               class="w-6 h-6 rounded-full cursor-pointer"
             />

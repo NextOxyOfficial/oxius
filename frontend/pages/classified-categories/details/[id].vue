@@ -95,7 +95,7 @@
               />
               <img
                 v-else
-                src="/static/frontend/avatar.png"
+                src="/static/frontend/images/placeholder.jpg"
                 class="h-16 w-16 mx-auto md:ml-0 md:h-24 md:w-24 rounded-full"
                 alt="Avatar"
               />

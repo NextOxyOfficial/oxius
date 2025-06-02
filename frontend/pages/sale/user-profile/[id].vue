@@ -32,7 +32,7 @@
           @click="openProfilePhotoModal"
         >
           <img
-            :src="seller.image || '/static/frontend/avatar.png'"
+            :src="seller.image || '/static/frontend/images/placeholder.jpg'"
             :alt="seller.name"
             class="h-full w-full object-contain"
           />
@@ -343,7 +343,7 @@
               >
                 <div class="relative sm:w-1/3 aspect-video sm:aspect-none">
                   <img
-                    :src="product.main_image || '/static/frontend/avatar.png'"
+                    :src="product.main_image || '/static/frontend/images/placeholder.jpg'"
                     :alt="product.title"
                     class="absolute inset-0 w-full h-full object-contain"
                   />

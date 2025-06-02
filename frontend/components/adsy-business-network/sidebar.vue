@@ -258,7 +258,7 @@
                         class="h-6 w-6 rounded-full overflow-hidden mr-2 border border-amber-200 dark:border-amber-700 flex-shrink-0"
                       >
                         <img
-                          :src="sponsor.image || '/static/frontend/avatar.png'"
+                          :src="sponsor.image || '/static/frontend/images/placeholder.jpg'"
                           :alt="sponsor.name || 'Sponsor'"
                           class="h-full w-full object-cover"
                         />
@@ -730,7 +730,7 @@ async function fetchGoldSponsorsData() {
             sponsor.title ||
             "Unnamed Sponsor",
           status: sponsor.status || "active",
-          image: sponsor.logo || sponsor.image || "/static/frontend/avatar.png",
+          image: sponsor.logo || sponsor.image || "/static/frontend/images/placeholder.jpg",
           views: sponsor.views || 0,
         }));
 

@@ -219,7 +219,7 @@
                   <div class="relative">
                     <div class="absolute inset-0 rounded-full golden-border opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <img 
-                      :src="sponsor.image || '/static/frontend/avatar.png'" 
+                      :src="sponsor.image || '/static/frontend/images/placeholder.jpg'" 
                       :alt="sponsor.name"
                       class="w-16 h-16 rounded-full object-cover border-2 border-white dark:border-slate-700 relative z-10 transition-transform duration-300 group-hover:scale-105"
                     />
@@ -299,7 +299,7 @@
                   <div class="relative">
                     <div class="absolute inset-0 rounded-xl golden-border opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <img 
-                      :src="sponsor.image || '/static/frontend/avatar.png'" 
+                      :src="sponsor.image || '/static/frontend/images/placeholder.jpg'" 
                       :alt="sponsor.name"
                       class="w-20 h-20 rounded-xl object-cover border-2 border-white dark:border-slate-700 relative z-10"
                     />
@@ -453,7 +453,7 @@ async function fetchGoldSponsors() {
       sponsors.value = result.data.map(sponsor => ({
         id: sponsor.id,
         name: sponsor.business_name,
-        image: sponsor.logo ? sponsor.logo : '/static/frontend/avatar.png',
+        image: sponsor.logo ? sponsor.logo : '/static/frontend/images/placeholder.jpg',
         business_description: sponsor.business_description,
         contact_email: sponsor.contact_email,
         phone_number: sponsor.phone_number,

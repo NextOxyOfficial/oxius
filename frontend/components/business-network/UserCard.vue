@@ -3,7 +3,7 @@
     <!-- User Avatar -->
     <div class="mr-3">
       <img
-        :src="user.image || '/static/frontend/avatar.png'"
+        :src="user.image || '/static/frontend/images/placeholder.jpg'"
         :alt="user.first_name + ' ' + user.last_name"
         class="w-10 h-10 rounded-full object-cover"
       />

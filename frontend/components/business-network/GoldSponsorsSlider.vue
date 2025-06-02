@@ -117,7 +117,7 @@
               >
                 <div class="absolute inset-0 rounded-full golden-border"></div>
                 <img
-                  :src="sponsor.image || '/static/frontend/avatar.png'"
+                  :src="sponsor.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="sponsor.name"
                   class="size-20 rounded-full object-cover border-2 border-white dark:border-slate-700 relative z-10"
                 />
@@ -158,7 +158,7 @@
               >
                 <div class="absolute inset-0 rounded-full golden-border"></div>
                 <img
-                  :src="sponsor.image || '/static/frontend/avatar.png'"
+                  :src="sponsor.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="sponsor.name"
                   class="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-slate-700 relative z-10"
                 />
@@ -277,7 +277,7 @@
                         <img
                           :src="
                             selectedSponsor.image ||
-                            '/static/frontend/avatar.png'
+                            '/static/frontend/images/placeholder.jpg'
                           "
                           :alt="selectedSponsor.name"
                           class="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-4 border-white dark:border-slate-700 relative z-10"
@@ -501,7 +501,7 @@ async function fetchGoldSponsors() {
         id: sponsor.id,
         name: sponsor.business_name,
         banners: sponsor.banners,
-        image: sponsor.logo ? sponsor.logo : "/static/frontend/avatar.png",
+        image: sponsor.logo ? sponsor.logo : "/static/frontend/images/placeholder.jpg",
         business_description: sponsor.business_description,
         contact_email: sponsor.contact_email,
         phone_number: sponsor.phone_number,

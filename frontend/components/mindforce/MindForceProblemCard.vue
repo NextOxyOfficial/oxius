@@ -35,7 +35,7 @@
             class="absolute inset-0 bg-gradient-to-br from-blue-400 to-violet-500 opacity-0 z-10"
           ></div>
           <img
-            :src="problem?.user_details?.image || '/static/frontend/avatar.png'"
+            :src="problem?.user_details?.image || '/static/frontend/images/placeholder.jpg'"
             :alt="problem?.user_details?.name"
             class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
             style="object-fit: cover; aspect-ratio: 1/1"

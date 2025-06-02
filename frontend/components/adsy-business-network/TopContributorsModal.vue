@@ -116,7 +116,7 @@
                         <!-- Profile Image -->
                         <div class="relative">
                           <img 
-                            :src="contributor.image || '/static/frontend/avatar.png'" 
+                            :src="contributor.image || '/static/frontend/images/placeholder.jpg'" 
                             :alt="contributor.name"
                             class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
                           />

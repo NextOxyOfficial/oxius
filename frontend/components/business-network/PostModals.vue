@@ -41,7 +41,7 @@
                     ></div>
                     <img
                       :src="
-                        user.user_details.image || '/static/frontend/avatar.png'
+                        user.user_details.image || '/static/frontend/images/placeholder.jpg'
                       "
                       :alt="user.user_details.name"
                       class="w-10 h-10 rounded-full cursor-pointer object-cover"
@@ -327,7 +327,7 @@
                   class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
                 ></div>
                 <img
-                  :src="user?.user?.image || '/static/frontend/avatar.png'"
+                  :src="user?.user?.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="user?.user?.name"
                   class="w-6 h-6 rounded-full object-cover"
                 />
@@ -398,7 +398,7 @@
                         <img
                           :src="
                             user?.follower_details?.image ||
-                            '/static/frontend/avatar.png'
+                            '/static/frontend/images/placeholder.jpg'
                           "
                           :alt="user?.follower_details?.name"
                           class="w-7 h-7 rounded-full mr-2 object-cover"

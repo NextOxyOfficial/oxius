@@ -366,7 +366,7 @@
               >
                 <img
                   :src="
-                    product.user_details?.image || '/static/frontend/avatar.png'
+                    product.user_details?.image || '/static/frontend/images/placeholder.jpg'
                   "
                   :alt="product.user_details?.name"
                   class="h-full w-full object-cover"

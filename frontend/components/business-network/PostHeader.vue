@@ -11,7 +11,7 @@
             class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
           ></div>
           <img
-            :src="post?.author_details?.image || '/static/frontend/avatar.png'"
+            :src="post?.author_details?.image || '/static/frontend/images/placeholder.jpg'"
             :alt="post?.author_details?.name"
             class="size-14 rounded-full cursor-pointer object-cover border-2 border-white dark:border-slate-700 shadow-sm transition-all duration-300 group-hover:shadow-sm transform group-hover:scale-105"
           />

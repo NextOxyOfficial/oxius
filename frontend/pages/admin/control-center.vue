@@ -450,7 +450,7 @@
                           <UAvatar
                             :src="
                               activity.user.image ||
-                              '/static/frontend/avatar.png'
+                              '/static/frontend/images/placeholder.jpg'
                             "
                             size="sm"
                             class="mr-3"
