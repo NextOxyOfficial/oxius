@@ -3,7 +3,7 @@
     <div class="container mx-auto px-1">
       <!-- Updated section header with linked buttons -->
       <div
-        class="section-header sm:mb-8 mb-5 flex justify-between items-center"
+        class="section-header max-sm:flex max-sm:flex-col max-sm:gap-3 sm:mb-8 mb-5 flex justify-between items-center"
       >
         <div class="flex items-center gap-3">
           <h2 class="text-xl md:text-xl font-medium text-gray-800">{{$t("sale_listing")}}</h2>
