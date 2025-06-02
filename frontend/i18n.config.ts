@@ -28,7 +28,6 @@ export default defineI18nConfig(() => ({
       settings: "Settings",
       support: "Support",
       logout: "Logout",
-      my_post: "My Post",
       micro_gigs: "Micro Gigs",
       quick_earn: "Quick Earn",
       balance: "Balance",

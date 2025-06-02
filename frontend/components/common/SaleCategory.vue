@@ -13,7 +13,7 @@
             @click="openMyPostsModal"
           >
             <Icon name="heroicons:document-text" size="16px" />
-            {{ $t('my_posts') }}
+            {{ $t('my_post') }}
           </button>
           <button
             class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"
