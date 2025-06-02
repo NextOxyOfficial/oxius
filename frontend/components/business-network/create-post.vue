@@ -481,42 +481,6 @@
     </div>
   </Teleport>
 
-  <!-- Success Toast Notification -->
-  <Teleport to="body">
-    <Transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0 translate-y-4"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-4"
-    >
-      <div
-        v-if="showSuccessToast"
-        class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 shadow-sm rounded-lg px-4 py-3 flex items-center gap-3 z-[10001] min-w-[280px] max-w-sm animate-bounce-once"
-      >
-        <div
-          class="p-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm"
-        >
-          <CheckCircle class="h-5 w-5" />
-        </div>
-        <div>
-          <p class="font-medium text-green-800">{{ successMessage }}</p>
-          <p class="text-sm text-green-600">
-            Your post was successfully
-            {{ isEditMode ? "updated" : "created" }}
-          </p>
-        </div>
-        <button
-          class="ml-auto p-1 text-green-700 hover:bg-green-100 rounded-full"
-          @click="showSuccessToast = false"
-          aria-label="Close notification"
-        >
-          <X class="h-4 w-4" />
-        </button>
-      </div>
-    </Transition>
-  </Teleport>
 
   <!-- Confirmation Modal -->
   <Teleport to="body">
@@ -578,6 +542,112 @@
                 <Trash2 class="h-4 w-4" />
                 Discard
               </button>
+            </div>          </div>
+        </Transition>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- Success Modal -->
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="showSuccessModal"
+        class="fixed inset-0 z-[10001] bg-black/50 backdrop-blur-md flex items-center justify-center p-4"
+        @click="closeSuccessModal"
+      >
+        <Transition
+          enter-active-class="transition duration-300 ease-out"
+          enter-from-class="opacity-0 scale-90 translate-y-8"
+          enter-to-class="opacity-100 scale-100 translate-y-0"
+          leave-active-class="transition duration-200 ease-in"
+          leave-from-class="opacity-100 scale-100 translate-y-0"
+          leave-to-class="opacity-0 scale-90 translate-y-8"
+        >
+          <div
+            v-if="showSuccessModal"
+            class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full mx-4 shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden"
+            @click.stop
+          >
+            <!-- Success Header with Gradient -->
+            <div class="relative bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 text-white p-6 text-center">
+              <!-- Animated Success Icon -->
+              <div class="relative mx-auto w-16 h-16 mb-4">
+                <div class="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
+                <div class="relative bg-white rounded-full w-16 h-16 flex items-center justify-center">
+                  <CheckCircle class="h-8 w-8 text-green-600 animate-bounce" />
+                </div>
+              </div>
+              
+              <!-- Success Title -->
+              <h3 class="text-xl font-bold mb-2">
+                {{ successMessage }}
+              </h3>
+              
+              <!-- Success Description -->
+              <p class="text-green-50 text-sm opacity-90">
+                Your {{ isEditMode ? 'updated' : 'new' }} post is now live and visible to your network
+              </p>
+              
+              <!-- Decorative Elements -->
+              <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+              <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="p-6 bg-gray-50 dark:bg-gray-900">
+              <!-- Quick Stats -->
+              <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                  <div class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                    {{ images.length }}
+                  </div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {{ images.length === 1 ? 'Image' : 'Images' }}
+                  </div>
+                </div>
+                <div class="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                  <div class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                    {{ createPostCategories.length }}
+                  </div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    {{ createPostCategories.length === 1 ? 'Tag' : 'Tags' }}
+                  </div>
+                </div>
+                <div class="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                  <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                    ✓
+                  </div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    Published
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Action Buttons -->
+              <div class="flex gap-3">
+                <button
+                  @click="closeSuccessModal"
+                  class="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
+                >
+                  <CheckCircle class="h-4 w-4" />
+                  Continue
+                </button>
+                <button
+                  @click="createAnotherPost"
+                  class="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <Plus class="h-4 w-4" />
+                  Create Another
+                </button>
+              </div>
             </div>
           </div>
         </Transition>
@@ -639,12 +709,14 @@ const showConfirmClose = ref(false);
 const uploadError = ref("");
 const isUploading = ref(false);
 const modalRef = ref(null);
-const showSuccessToast = ref(false);
 const isDragging = ref(false);
 const showSuggestions = ref(false);
 const hashtagSuggestions = ref([]);
 const popularHashtags = ref([]);
 const selectedSuggestionIndex = ref(-1);
+
+// Success modal state
+const showSuccessModal = ref(false);
 
 // Simplified compression progress tracking (hidden from users)
 const compressionProgress = ref(0);
@@ -680,6 +752,10 @@ const modalTitle = computed(() =>
 );
 const submitButtonText = computed(() =>
   isEditMode.value ? "Update Post" : "Publish Post"
+);
+
+const successMessage = computed(() =>
+  isEditMode.value ? "Post updated successfully!" : "Post published!"
 );
 
 watch(
@@ -774,6 +850,36 @@ const removeMedia = (index) => {
 
 const clearAllImages = () => {
   images.value = [];
+};
+
+// Success modal control functions
+const closeSuccessModal = () => {
+  showSuccessModal.value = false;
+  
+  // Now close the main modal and reset form
+  resetForm();
+  isCreatePostOpen.value = false;
+  document.body.style.overflow = "";
+  
+  // Reload if on profile page
+  if (route.path.includes("profile")) {
+    window.location.reload();
+  }
+};
+
+const createAnotherPost = () => {
+  showSuccessModal.value = false;
+  
+  // Reset form but keep the main modal open
+  resetForm();
+  
+  // Focus on title input for next post
+  nextTick(() => {
+    const titleInput = document.querySelector('input[placeholder="What\'s on your mind?"]');
+    if (titleInput) {
+      titleInput.focus();
+    }
+  });
 };
 
 const handleEmojiClick = (emoji) => {
@@ -1321,25 +1427,17 @@ async function handleCreatePost() {
 
       // Emit the event with the complete post data for immediate display
       console.log("Emitting post-created event");
-      emit("post-created", response.data);
-
-      // Use event bus for better cross-component communication
+      emit("post-created", response.data);      // Use event bus for better cross-component communication
       console.log("Broadcasting via eventBus");
       const eventBus = useEventBus();
       eventBus.emit("post-created", response.data);
     }
 
-    // Reset form and close modal (existing logic)
-    resetForm();
-    isCreatePostOpen.value = false;
-    document.body.style.overflow = "";
+    // Show success modal
+    showSuccessModal.value = true;
 
-    // Show success toast notification
-    showSuccessToast.value = true;
-    route.path.includes("profile") && window.location.reload();
-    setTimeout(() => {
-      showSuccessToast.value = false;
-    }, 5000);
+    // Don't close main modal immediately - let user interact with success modal
+    // The success modal will handle closing the main modal
   } catch (error) {
     console.error(
       `Error ${isEditMode.value ? "updating" : "creating"} post:`,
@@ -1349,14 +1447,10 @@ async function handleCreatePost() {
       error.response?.data?.message ||
       `Failed to ${
         isEditMode.value ? "update" : "create"
-      } post. Please try again.`;
-  } finally {
+      } post. Please try again.`;  } finally {
     isSubmitting.value = false;
   }
 }
-const successMessage = computed(() =>
-  isEditMode.value ? "Post updated successfully!" : "Post published!"
-);
 
 // Refresh posts using JWT without page reload
 const refreshPostsWithJWT = async () => {
