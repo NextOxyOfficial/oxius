@@ -16,7 +16,6 @@
               class="w-4 h-4 text-blue-600 animate-pulse-subtle"
               data-tooltip="Verified"
             />
-            <div class="tooltip-content">Verified</div>
           </div>
 
           <!-- Pro badge -->

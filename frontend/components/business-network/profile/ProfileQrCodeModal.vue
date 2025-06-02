@@ -4,8 +4,8 @@
       v-model="isOpen"
       :ui="{ 
         width: 'sm:max-w-md',
-        container: 'flex flex-col h-full sm:h-auto',
-        base: 'relative flex flex-col h-full sm:h-auto', 
+        container: 'flex flex-col h-auto',
+        base: 'relative flex flex-col h-auto', 
         rounded: 'rounded-xl',
         overlay: { base: 'bg-black/50 backdrop-blur-sm' },
         padding: 'p-0',
