@@ -1598,7 +1598,7 @@
                             />
                           </svg>
                           <span>{{
-                            adForm.contactInfo || "https://example.com"
+                            adForm.contactInfo || "https://adsyclub.com"
                           }}</span>
                           <a
                             v-if="adForm.contactInfo"
@@ -1628,7 +1628,7 @@
                             />
                           </svg>
                           <span>{{
-                            adForm.contactInfo || "+880 1234567890"
+                            adForm.contactInfo || "+8801896144067"
                           }}</span>
                           <a
                             v-if="adForm.contactInfo"
@@ -1661,7 +1661,7 @@
                             />
                           </svg>
                           <span>{{
-                            adForm.contactInfo || "+880 1234567890"
+                            adForm.contactInfo || "+8801896144067"
                           }}</span>
                           <a
                             v-if="adForm.contactInfo"
@@ -2208,10 +2208,10 @@ const adTypeInputTypes = {
 };
 
 const adTypePlaceholders = {
-  website: "https://example.com",
-  whatsapp: "+880 1234567890",
-  phone: "+880 1234567890",
-  email: "example@email.com",
+  website: "https://adsyclub.com",
+  whatsapp: "+8801896144067",
+  phone: "+8801896144067",
+  email: "support@adsyclub.com",
 };
 
 // Computed property to check if balance is low (under 250)

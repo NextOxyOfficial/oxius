@@ -157,7 +157,7 @@
                 {{ user?.user?.first_name || user?.user?.username || "Admin" }}
               </div>
               <div class="text-xs text-slate-500 dark:text-slate-400">
-                {{ user?.user?.email || "admin@example.com" }}
+                {{ user?.user?.email || "support@adsyclub.com" }}
               </div>
             </div>
           </div>
