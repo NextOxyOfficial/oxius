@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="fixed inset-0 z-50 overflow-auto bg-black/60 flex justify-center items-center p-4" 
+    class="fixed inset-0 z-50 overflow-hidden bg-black/60 flex justify-center items-center p-4" 
     v-if="show"
     role="dialog"
     aria-modal="true"
@@ -9,90 +9,146 @@
     tabindex="-1"
     ref="modalRef"
   >
-    <div class="bg-white dark:bg-slate-800 rounded-md shadow-md w-full max-w-xl flex flex-col border border-gray-200 dark:border-slate-700 overflow-hidden" style="max-height: 85vh; height: auto;">
-      <!-- Header -->
-      <div class="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">        
-        <div class="flex items-center">
-          <h3 id="modal-title" class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-xl flex flex-col border border-gray-200 dark:border-slate-700 overflow-hidden max-h-[75vh] my-auto">
+      <!-- Improved Header with Tabs and Close Button -->
+      <div class="sticky top-0 z-10 bg-white dark:bg-slate-800">
+        <!-- Redesigned header with title and close button -->
+        <div class="flex items-center justify-between px-4 py-2">
+          <h3 id="modal-title" class="text-lg font-semibold text-gray-900 dark:text-white">
             {{ activeTab === 'followers' ? 'Followers' : 'Following' }}
-            <span class="ml-2 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded">
-              {{ totalCount }}
-            </span>
           </h3>
-        </div>        
-        <button 
-          @click="closeModal" 
-          class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded"
-          aria-label="Close modal"
-          ref="closeButtonRef"
-        >
-          <UIcon name="i-heroicons-x-mark" class="w-5 h-5" aria-hidden="true" />
-        </button>
-      </div>
-      <!-- Tabs -->
-      <div class="flex border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80" role="tablist">
-        <button 
-          @click="activeTab = 'followers'" 
-          class="flex-1 py-3 px-4 text-center"
-          :class="activeTab === 'followers' ? 'text-blue-600 dark:text-blue-400 font-medium border-b-2 border-blue-500' : 'text-gray-600 dark:text-gray-400'"
-          role="tab"
-          :aria-selected="activeTab === 'followers'"
-          id="followers-tab"
-          aria-controls="followers-panel"
-        >
-          <span>Followers</span>
-        </button>        
-        <button 
-          @click="activeTab = 'following'" 
-          class="flex-1 py-3 px-4 text-center"
-          :class="activeTab === 'following' ? 'text-blue-600 dark:text-blue-400 font-medium border-b-2 border-blue-500' : 'text-gray-600 dark:text-gray-400'"
-          role="tab"
-          :aria-selected="activeTab === 'following'"
-          id="following-tab"
-          aria-controls="following-panel"
-        >
-          <span>Following</span>
-        </button>
-      </div>      
-      <!-- Search Input -->
-      <div class="px-6 py-3 border-b border-gray-100 dark:border-slate-700/50">
-        <div class="relative">
-          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 text-gray-400" aria-hidden="true" />
-          </div>
-          <input
-            type="text"
-            class="bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white text-sm rounded-lg block w-full pl-10 p-2.5"
-            placeholder="Search by name or username"
-            v-model="searchTerm"
-            aria-label="Search users"
-          />
+          <!-- Close button redesigned -->
+          <button 
+            @click="closeModal" 
+            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white p-1.5 rounded-full bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+            aria-label="Close modal"
+            ref="closeButtonRef"
+          >
+            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" aria-hidden="true" />
+          </button>
         </div>
-      </div>      
+
+        <!-- Improved Tabs with count badges -->
+        <div class="flex border-b border-gray-200 dark:border-slate-700 px-2" role="tablist">
+          <button 
+            @click="activeTab = 'followers'" 
+            class="py-3 px-4 text-center relative mr-2"
+            :class="
+              [
+                'transition-colors duration-200',
+                activeTab === 'followers' 
+                  ? 'text-blue-600 dark:text-blue-400 font-medium' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'
+              ]"
+            role="tab"
+            :aria-selected="activeTab === 'followers'"
+            id="followers-tab"
+            aria-controls="followers-panel"
+          >
+            <div class="flex items-center">
+              <span>Followers</span>
+              <span class="ml-1.5 px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded-full">
+                {{ followersCount }}
+              </span>
+            </div>
+            <div v-if="activeTab === 'followers'" class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500"></div>
+          </button>
+          
+          <button 
+            @click="activeTab = 'following'" 
+            class="py-3 px-4 text-center relative"
+            :class="
+              [
+                'transition-colors duration-200',
+                activeTab === 'following' 
+                  ? 'text-blue-600 dark:text-blue-400 font-medium' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'
+              ]"
+            role="tab"
+            :aria-selected="activeTab === 'following'"
+            id="following-tab"
+            aria-controls="following-panel"
+          >
+            <div class="flex items-center">
+              <span>Following</span>
+              <span class="ml-1.5 px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium rounded-full">
+                {{ followingCount }}
+              </span>
+            </div>
+            <div v-if="activeTab === 'following'" class="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500"></div>
+          </button>
+          
+          <!-- New Search toggle button -->
+          <div class="ml-auto flex items-center">
+            <button 
+              @click="toggleSearch" 
+              class="p-1.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+              :class="{ 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300': isSearchOpen }"
+              aria-label="Toggle search"
+            >
+              <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+        
+        <!-- Expandable Search Input -->
+        <div 
+          v-if="isSearchOpen"
+          class="px-4 py-3 border-b border-gray-100 dark:border-slate-700/50"
+          v-show="isSearchOpen"
+          :class="{ 'animate-fadeIn': isSearchOpen }"
+        >
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 text-gray-400" aria-hidden="true" />
+            </div>
+            <input
+              type="text"
+              class="bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white text-sm rounded-lg block w-full pl-10 pr-4 py-2.5 focus:border-blue-300 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 focus:ring-opacity-20 transition-all"
+              placeholder="Search by name or username"
+              v-model="searchTerm"
+              aria-label="Search users"
+              ref="searchInputRef"
+              @keydown.escape="closeSearch"
+            />
+            <button 
+              v-if="searchTerm" 
+              @click="clearSearch" 
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <UIcon name="i-heroicons-x-circle" class="w-4 h-4" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      </div>
+      
       <!-- Loading Skeleton -->
-      <div v-if="isLoading" class="overflow-y-auto flex-1 px-6 py-3">
+      <div v-if="isLoading" class="overflow-y-auto flex-1 px-4 py-3">
         <p class="sr-only" role="status">Loading users, please wait...</p>
         <div v-for="i in 5" :key="`skeleton-${i}`" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0">
           <div class="w-12 h-12 rounded-full bg-gray-200 dark:bg-slate-600 overflow-hidden">
             <!-- Simple skeleton circle -->
           </div>
           <div class="ml-3 flex-1">
-            <div class="h-4 bg-gray-200 dark:bg-slate-600 rounded w-1/3 mb-2">
-            </div>
-            <div class="h-3 bg-gray-200 dark:bg-slate-600 rounded w-1/4">
-            </div>
+            <div class="h-4 bg-gray-200 dark:bg-slate-600 rounded w-1/3 mb-2"></div>
+            <div class="h-3 bg-gray-200 dark:bg-slate-600 rounded w-1/4"></div>
           </div>
-          <div class="w-24 h-8 bg-gray-200 dark:bg-slate-600 rounded-md">
-          </div>
+          <div class="w-24 h-8 bg-gray-200 dark:bg-slate-600 rounded-md"></div>
         </div>
-      </div>    
-      <!-- User List -->
-      <div v-else class="overflow-y-auto flex-1 px-4 py-2" style="min-height: 200px; max-height: 60vh;" 
+      </div>
+      
+      <!-- User List with Infinity Scroll -->
+      <div 
+        v-else 
+        class="overflow-y-auto flex-1 px-4 py-2 scroll-smooth" 
+        ref="userListRef"
+        @scroll="handleScroll"
         :role="activeTab === 'followers' ? 'tabpanel' : 'tabpanel'" 
         :id="activeTab === 'followers' ? 'followers-panel' : 'following-panel'" 
         :aria-labelledby="activeTab === 'followers' ? 'followers-tab' : 'following-tab'"
         aria-live="polite"
-      ><div v-if="filteredUsers.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
+      >
+        <div v-if="filteredUsers.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
           <p class="sr-only" role="status">{{ activeTab === 'followers' ? 'No followers found' : 'Not following anyone' }}</p>
           <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center mb-4">
             <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-gray-300 dark:text-gray-600" aria-hidden="true" />
@@ -105,11 +161,11 @@
           </p>
         </div>
         <div v-else>          
-          <div v-for="user in filteredUsers" :key="user.id" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 px-2">
+          <div v-for="user in filteredUsers" :key="user.id" class="flex items-center py-3 border-b border-gray-100 dark:border-slate-700/50 last:border-0 px-2 hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors rounded-md">
             <!-- Clickable area that navigates to profile (wraps image and text) -->
             <div class="flex items-center flex-1 cursor-pointer" @click="navigateToProfile(user)">
               <div class="flex-shrink-0">                
-              <div class="w-12 h-12 rounded-full overflow-hidden border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
+                <div class="w-12 h-12 rounded-full overflow-hidden border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
                   <!-- Show user icon when no image is available -->
                   <div v-if="!user.profile_image" class="w-full h-full flex items-center justify-center">
                     <UIcon name="i-heroicons-user" class="w-7 h-7 text-gray-400" />
@@ -146,40 +202,32 @@
             <div>                
               <button 
                 v-if="user.id !== currentUserId && currentUser?.value?.user?.id"
-                :class="[
-                  'text-sm font-medium px-3 py-1 rounded-md min-w-[90px] text-center',
-                  user.is_following
-                    ? 'border border-gray-200 dark:border-slate-600 text-gray-800 dark:text-white'
-                    : 'bg-blue-500 text-white'
-                ]"
+                :class="
+                  [
+                    'text-sm font-medium px-3 py-1 rounded-full min-w-[90px] text-center transition-all',
+                    user.is_following
+                      ? 'border border-gray-200 dark:border-slate-600 text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-slate-700'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  ]"
                 @click.stop="toggleFollow(user)"
                 :disabled="user.isFollowLoading"
                 aria-label="Toggle follow status"
               >
                 <span class="flex items-center justify-center gap-1">
-                  <!-- Loading indicator - fixed width to prevent layout shift -->
-                  <div v-if="user.isFollowLoading" class="h-3 w-3 border-2 border-t-transparent border-current rounded-full">
-                  </div>
-                  <!-- Text for button -->
-                  <span>{{ user.isFollowLoading ? 'Loading...' : (user.is_following ? 'Following' : 'Follow') }}
-                  </span>
+                  <!-- Loading indicator -->
+                  <span v-if="user.isFollowLoading" class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
+                  <!-- Button text -->
+                  <span>{{ user.isFollowLoading ? '' : (user.is_following ? 'Following' : 'Follow') }}</span>
                 </span>
               </button>
             </div>
           </div>
+          
+          <!-- Loading indicator for infinity scroll -->
+          <div v-if="loadingMore" class="py-4 flex justify-center">
+            <div class="h-6 w-6 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+          </div>
         </div>
-      </div>        
-      <!-- Load More -->
-      <div v-if="hasMoreUsers && !isLoading && filteredUsers.length > 0" class="px-6 py-3 border-t border-gray-100 dark:border-slate-700 flex justify-center bg-gray-50 dark:bg-slate-800/80">
-        <button 
-          @click="loadMoreUsers" 
-          class="text-blue-600 dark:text-blue-400 text-sm font-medium px-4 py-2 bg-white dark:bg-slate-700 rounded-md border border-gray-200 dark:border-slate-600 min-w-[100px] text-center"
-          :disabled="loadingMore"
-          aria-label="Load more users"
-        >
-          <span v-if="loadingMore">Loading...</span>
-          <span v-else>Load More</span>
-        </button>
       </div>
     </div>
   </div>
@@ -221,6 +269,7 @@ const emit = defineEmits(['close', 'follow-changed']);
 const modalRef = ref(null);
 const closeButtonRef = ref(null);
 const previousFocus = ref(null);
+const searchInputRef = ref(null);
 
 // Focus management
 onMounted(() => {
@@ -260,6 +309,9 @@ const page = ref(1);
 const hasMoreUsers = ref(true);
 const currentUserId = computed(() => currentUser?.value?.user?.id);
 const totalCountValue = ref(0);
+const userListRef = ref(null);
+const scrollThreshold = 200; // Pixels from bottom to trigger next page load
+const isSearchOpen = ref(false);
 
 // Get total count based on active tab
 const totalCount = computed(() => {
@@ -324,11 +376,10 @@ async function fetchUsers() {
     const endpoint = activeTab.value === 'followers' 
       ? `/bn/users/${props.userId}/followers/` 
       : `/bn/users/${props.userId}/following/`;
-    
-    console.log('Fetching from endpoint:', endpoint);
+      console.log('Fetching from endpoint:', endpoint);
     
     const { data } = await get(endpoint, {
-      params: { page: page.value, page_size: 20 }
+      params: { page: page.value, page_size: 15 }
     });
     
     console.log('User data from API:', data);
@@ -387,6 +438,19 @@ async function fetchUsers() {
   } finally {
     isLoading.value = false;
     loadingMore.value = false;
+  }
+}
+
+// Handle infinity scroll
+function handleScroll(event) {
+  if (loadingMore.value || !hasMoreUsers.value || isLoading.value) return;
+  
+  const element = event.target;
+  const scrollBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+  
+  // Load more when close to bottom
+  if (scrollBottom < scrollThreshold) {
+    loadMoreUsers();
   }
 }
 
@@ -507,9 +571,53 @@ function formatImageUrl(url) {
 function closeModal() {
   emit('close');
 }
+
+// Toggle search input visibility
+function toggleSearch() {
+  isSearchOpen.value = !isSearchOpen.value;
+  
+  // Focus the search input when opened
+  if (isSearchOpen.value) {
+    nextTick(() => {
+      if (searchInputRef.value) {
+        searchInputRef.value.focus();
+      }
+    });
+  }
+}
+
+// Close search input
+function closeSearch() {
+  isSearchOpen.value = false;
+  searchTerm.value = '';
+}
+
+// Clear search term but keep search input open
+function clearSearch() {
+  searchTerm.value = '';
+  if (searchInputRef.value) {
+    searchInputRef.value.focus();
+  }
+}
 </script>
 
 <style scoped>
+/* Animation for search panel */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
 /* Basic styling for scrollbars */
 .overflow-y-auto::-webkit-scrollbar {
   width: 6px;
@@ -538,5 +646,21 @@ function closeModal() {
 /* Make sure the modal is keyboard navigable */
 [role="dialog"] {
   outline: none;
+}
+
+/* Animation for fading in search input */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
 }
 </style>

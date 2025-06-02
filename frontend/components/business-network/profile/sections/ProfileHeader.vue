@@ -56,7 +56,7 @@
             title="View QR Code"
           >
             <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-            <UIcon name="i-mdi:qrcode" class="size-6 relative z-10" />
+            <UIcon name="i-mdi:qrcode" class="size-5 relative z-10" />
           </button>
           
           <!-- Action buttons for mobile -->              
