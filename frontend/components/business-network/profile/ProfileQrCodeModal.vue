@@ -26,15 +26,13 @@
         >
           <span class="sr-only">Close</span>
           <UIcon name="i-heroicons-x-mark" class="h-5 w-5" />
-        </button>
-
-        <!-- QR Code Container with updated styling -->
+        </button>        <!-- QR Code Container with updated styling -->
         <div class="bg-white rounded-t-xl pt-4 px-6 text-center">
           <h3 class="text-xl font-semibold text-gray-900 mb-1">
-            My ABN Profile QR Code
+            {{ props.user?.first_name || props.user?.name || props.user?.full_name || props.user?.username || 'User' }}'s ABN Profile QR Code
           </h3>
           <p class="text-gray-600 text-sm mb-5">
-            Scan this QR code to view your profile
+            Scan this QR code to view profile
           </p>
 
           <!-- QR Code with enhanced styling -->
@@ -60,7 +58,7 @@
           </div>
             <!-- Business Network branding with improved design -->
           <div class="flex items-center justify-center mb-4">
-            <div class="flex items-center gap-1.5 text-xs text-gray-600 bg-white/80 px-3 py-1.5 rounded-full shadow-sm">
+            <div class="flex items-center gap-1.5 text-xs text-gray-600 bg-gray-100 px-3 py-1.5 rounded-full shadow-sm">
               <UIcon name="i-heroicons-globe-alt" class="w-4 h-4 text-blue-500" aria-hidden="true" />
               <span class="font-medium">AdsyClub</span>
               <span>Business Network</span>
@@ -231,7 +229,7 @@ const generateQrCode = async () => {
 };
 
 // Download QR code
-const downloadQrCode = () => {
+const downloadQrCode = async () => {
   if (!qrCodeUrl.value) return;
   
   // Add subtle feedback animation
@@ -243,16 +241,48 @@ const downloadQrCode = () => {
     }, 150);
   }
   
-  const link = document.createElement('a');
-  link.href = qrCodeUrl.value;
-  
-  // Set appropriate extension based on format
-  const extension = selectedFormat.value.toLowerCase();
-  link.download = `${props.user?.name || 'profile'}-qr-code.${extension}`;
-  
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  try {
+    // Fetch the QR code image as blob to handle CORS
+    const response = await fetch(qrCodeUrl.value);
+    if (!response.ok) {
+      throw new Error('Failed to fetch QR code');
+    }
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    
+    // Create download link
+    const link = document.createElement('a');
+    link.href = url;
+      // Create filename based on the user's name or username
+    const userName = props.user?.first_name || props.user?.name || props.user?.full_name || props.user?.username || 'profile';
+    const sanitizedName = userName.replace(/[^a-zA-Z0-9-_]/g, '-').toLowerCase();
+    const extension = selectedFormat.value.toLowerCase();
+    link.download = `${sanitizedName}-qr-code.${extension}`;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    // Show success feedback (optional)
+    console.log(`QR code downloaded as: ${link.download}`);
+    
+  } catch (error) {
+    console.error('Error downloading QR code:', error);    // Fallback: try the old method
+    const link = document.createElement('a');
+    link.href = qrCodeUrl.value;
+    const userName = props.user?.first_name || props.user?.name || props.user?.full_name || props.user?.username || 'profile';
+    const sanitizedName = userName.replace(/[^a-zA-Z0-9-_]/g, '-').toLowerCase();
+    const extension = selectedFormat.value.toLowerCase();
+    link.download = `${sanitizedName}-qr-code.${extension}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 };
 
 // Share profile
@@ -266,11 +296,10 @@ const shareProfile = async () => {
         shareButton.classList.remove('scale-95');
       }, 150);
     }
-    
-    const profileUrl = `${window.location.origin}/business-network/profile/${props.user?.id}`;
+      const profileUrl = `${window.location.origin}/business-network/profile/${props.user?.id}`;
     const shareData = {
-      title: `${props.user?.name}'s Profile`,
-      text: `Check out ${props.user?.name}'s profile on our platform!`,
+      title: `${props.user?.first_name || props.user?.name || props.user?.username}'s Profile`,
+      text: `Check out ${props.user?.first_name || props.user?.name || props.user?.username}'s profile on our platform!`,
       url: profileUrl
     };
 
