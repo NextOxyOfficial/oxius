@@ -94,7 +94,37 @@ async function loadBatches() {
   try {
     loading.value = true;
     error.value = null;
-    batches.value = await fetchBatches(config.public.baseURL);
+    const fetchedBatches = await fetchBatches(config.public.baseURL);
+
+    // Sort batches by class number (extract number from name and sort)
+    batches.value = fetchedBatches.sort((a, b) => {
+      // Extract numbers from batch names (e.g., "Class 6" -> 6, "SSC" -> 999 for end)
+      const getClassNumber = (name) => {
+        // Look for patterns like "Class 6", "Class 7", etc.
+        const classMatch = name.match(/class\s+(\d+)/i);
+        if (classMatch) {
+          return parseInt(classMatch[1]);
+        }
+        
+        // Handle special cases - put them at the end
+        if (name.toLowerCase().includes('ssc')) return 998;
+        if (name.toLowerCase().includes('hsc')) return 999;
+        
+        // For any other format, try to extract first number
+        const numberMatch = name.match(/(\d+)/);
+        if (numberMatch) {
+          return parseInt(numberMatch[1]);
+        }
+        
+        // If no number found, put at the very end
+        return 1000;
+      };
+      
+      const aNumber = getClassNumber(a.name);
+      const bNumber = getClassNumber(b.name);
+      
+      return aNumber - bNumber;
+    });
 
     // If API call is successful but returned no batches, show the error
     if (batches.value.length === 0) {
