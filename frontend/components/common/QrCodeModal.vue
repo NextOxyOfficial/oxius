@@ -1,4 +1,5 @@
-<template>  <UModal
+<template>  
+<UModal
     v-model="isOpen"
     :ui="{ 
       width: 'w-full sm:max-w-md', 
@@ -8,8 +9,9 @@
     }"
   >
     <div
-      class="px-6 py-8 flex flex-col gap-6 items-center justify-center relative rounded-2xl overflow-hidden bg-gradient-to-br from-white to-gray-50"
-    >      <UButton
+      class="px-6 py-8 flex flex-col items-center justify-center relative rounded-2xl overflow-hidden bg-gradient-to-br from-white to-gray-50"
+    >      
+    <UButton
         icon="i-heroicons-x-mark"
         size="sm"
         color="gray"
@@ -111,7 +113,7 @@
           >
             <div v-if="activeTab === 'send'" key="send" class="text-center w-full">
               <div class="animate-in slide-in-from-left-4 duration-300">
-                <div class="flex flex-col items-center gap-6">
+                <div class="flex flex-col items-center">
                   <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-105">
                     <UIcon name="i-heroicons-banknotes" class="w-10 h-10 text-blue-600" />
                   </div>
