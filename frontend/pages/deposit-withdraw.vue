@@ -1429,9 +1429,9 @@
                       >                        {{
                           selectedTransaction
                             ? formatAmount(
-                                selectedTransaction.amount || 
-                                (selectedTransaction.transaction_type?.toLowerCase() !== 'withdraw' ? selectedTransaction.payable_amount : null) || 
-                                selectedTransaction.cost,
+                                selectedTransaction.amount !== '0.00' ? 
+                                selectedTransaction.amount : 
+                                (selectedTransaction.payable_amount || selectedTransaction.cost || 0),
                                 selectedTransaction.transaction_type?.toLowerCase()
                               )
                             : ""
