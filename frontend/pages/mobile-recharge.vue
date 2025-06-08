@@ -96,12 +96,11 @@
           >
             <div class="p-2 relative">
               <div class="flex justify-between items-start">
-                <div class="w-full">
-                  <span
+                <div class="w-full">                  <span
                     class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full capitalize"
                     :class="getTagClass(pack.type)"
                   >
-                    {{ pack.type }}
+                    {{ capitalizeFirstLetter(pack.type) }}
                   </span>
                   <div class="flex justify-between px-0.5 mt-1">
                     <h3 class="mt-1 text-base font-semibold text-gray-800">
@@ -179,12 +178,11 @@
           >
             <div class="p-2 relative">
               <div class="flex justify-between items-start">
-                <div class="w-full">
-                  <span
+                <div class="w-full">                  <span
                     class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full capitalize"
                     :class="getTagClass(pack.type)"
                   >
-                    {{ pack.type }}
+                    {{ capitalizeFirstLetter(pack.type) }}
                   </span>
                   <div class="flex justify-between px-0.5 mt-1">
                     <h3 class="mt-1 text-base font-semibold text-gray-800">
@@ -275,10 +273,9 @@
 
         <div class="space-y-4">
           <!-- Package Details -->
-          <div class="p-4 bg-gray-50 rounded-lg">
-            <div class="flex justify-between mb-2">
+          <div class="p-4 bg-gray-50 rounded-lg">            <div class="flex justify-between mb-2">
               <span class="text-gray-600">Package</span>
-              <span class="font-medium">{{ selectedPackage?.type }}</span>
+              <span class="font-medium">{{ capitalizeFirstLetter(selectedPackage?.type) }}</span>
             </div>
             <div class="flex justify-between mb-2">
               <span class="text-gray-600">Amount</span>
@@ -461,6 +458,10 @@ onMounted(() => {
   fetchOperators();
   fetchPackages();
 });
+
+function capitalizeFirstLetter(str) {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+}
 
 function getTagClass(type) {
   switch (type) {

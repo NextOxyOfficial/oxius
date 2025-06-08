@@ -969,14 +969,6 @@ watch(showAllUsers, () => {
 function handleGiftSent(giftData) {
   console.log("Gift sent event received:", giftData);
 
-  // Display a toast notification
-  useToast().add({
-    title: "Gift Sent!",
-    description: `${giftData.giftAmount} diamonds sent successfully`,
-    color: "green",
-    timeout: 3000,
-  });
-
   // Reload posts after a short delay to ensure backend is updated
   setTimeout(() => {
     // Reset state and reload posts
