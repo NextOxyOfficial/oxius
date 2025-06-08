@@ -19,7 +19,7 @@
           </div>          <!-- Animated gradient overlay -->
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent dark:via-white/10 animate-pulse rounded-2xl sm:rounded-3xl"></div>
             <!-- Main content container -->
-          <div class="relative p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md overflow-hidden">
+          <div class="relative px-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md overflow-hidden">
             <!-- Dynamic Background Pattern -->
             <div class="absolute inset-0 opacity-40 dark:opacity-20">
               <!-- Subtle grid pattern -->
