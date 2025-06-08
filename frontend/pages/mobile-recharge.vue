@@ -384,8 +384,16 @@
       color="green"
       :timeout="3000"
       @close="showToast = false"
-      class="fixed bottom-4 right-4 z-50 shadow-lg"
-    /><UModal v-model="isHistory">
+      class="fixed bottom-4 right-4 z-50 shadow-lg"    />      <UModal 
+        v-model="isHistory"
+        :ui="{
+          wrapper: 'fixed inset-0 z-50 overflow-y-auto',
+          inner: 'fixed inset-0 overflow-y-auto',
+          container: 'flex min-h-full items-start justify-center p-4 text-center sm:p-0',
+          padding: 'p-4 sm:p-6',
+          margin: 'mt-20 sm:mt-16'
+        }"
+      >
       <UCard
         :ui="{
           ring: '',
