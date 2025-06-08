@@ -86,15 +86,14 @@
             </div>
           </div>
         </div>
-      </div>      <!-- Elegant Filter Container -->
-      <div
-        class="bg-white/70 dark:bg-gray-800/40 backdrop-blur-[2px] rounded-xl px-2 py-2 border border-gray-100 dark:border-gray-700/50 shadow-sm"
-      >
+      </div>      
+      <!-- Elegant Filter Container -->
         <!-- Active Filters with elegantly styled badges -->
         <div
           v-if="hasActiveFilters"
           class="flex flex-wrap items-center gap-2 mt-6 pt-5 border-t border-gray-100 dark:border-gray-700/30"
-        >          <span class="text-sm text-gray-600 dark:text-gray-600 font-medium"
+        >          
+          <span class="text-sm text-gray-600 dark:text-gray-600 font-medium"
             >Active filters:</span
           >
 
@@ -124,7 +123,7 @@
             Clear all
           </UButton>
         </div>
-      </div>
+      
 
       <!-- Enhanced Loading State -->
       <div v-if="isLoading" class="py-20">
