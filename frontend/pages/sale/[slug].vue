@@ -824,10 +824,20 @@ const handleTouchEnd = () => {
 
 // Download image
 const downloadImage = () => {
+  // Get the current image URL from the product images array
+  const currentImage = product.value?.images?.[currentImageIndex.value];
+  const imageUrl = currentImage?.image;
+  
+  if (!imageUrl) {
+    console.error('No image URL found for download');
+    return;
+  }
+  
   // Create a download link for the current image
   const link = document.createElement("a");
-  link.href = product.images[currentImageIndex.value];
+  link.href = imageUrl;
   link.download = `product-image-${currentImageIndex.value + 1}.jpg`;
+  link.setAttribute('target', '_blank'); // Open in new tab if direct download fails
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
