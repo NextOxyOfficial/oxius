@@ -33,6 +33,22 @@
                 >
               </div>
             </div>
+          </div>          <!-- Free Delivery Badge -->
+          <div
+            v-if="product.is_free_delivery"
+            class="absolute bottom-3 left-3 z-20"
+          >
+            <div class="relative">
+              <div
+                class="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg blur-[1px]"
+              ></div>
+              <div
+                class="relative px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg text-white text-xs font-semibold flex items-center"
+              >
+                <UIcon name="i-heroicons-truck" class="size-3 mr-1" />
+                <span>FREE DELIVERY</span>
+              </div>
+            </div>
           </div>
 
           <!-- Image with Gradient Overlay -->
