@@ -1,83 +1,111 @@
-<template>
-  <UContainer class="relative py-2">
-    <!-- Header with Premium Styling -->
-    <div class="flex items-center justify-between mt-1 mb-4">
-      <div class="flex items-center gap-2">
-        <div
-          class="p-1.5 rounded bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/30 text-primary relative overflow-hidden"
-        >
-          <!-- Shimmer effect -->
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 dark:via-white/10 to-transparent -translate-x-full animate-shimmer"
-          ></div>
-          <UIcon
-            name="i-heroicons-shopping-bag"
-            class="w-5 h-5 relative z-10 text-green-500"
-          />
+<template>  <UContainer class="relative">
+    <!-- Professional App-like Header -->
+    <div class="relative mb-4 sm:mb-6">
+      <!-- Mobile-First Background Design -->
+      <div class="relative p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border border-slate-200/60 dark:border-slate-700/60 shadow-sm backdrop-blur-sm overflow-hidden">
+        
+        <!-- Dynamic Background Pattern -->
+        <div class="absolute inset-0 opacity-40 dark:opacity-20">
+          <!-- Subtle grid pattern -->
+          <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"></div>
+          <div class="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(0deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"></div>
+          
+          <!-- Floating elements for visual interest -->
+          <div class="absolute top-2 right-4 w-2 h-2 rounded-full bg-blue-400/20 animate-pulse"></div>
+          <div class="absolute bottom-3 left-6 w-1 h-1 rounded-full bg-emerald-400/30 animate-ping"></div>
+          <div class="absolute top-1/2 right-1/4 w-1.5 h-1.5 rounded-full bg-purple-400/20"></div>
         </div>
-        <h2 class="font-semibold text-lg md:text-xl text-gray-800 dark:text-white">
-          <span class="relative inline-block">
-            {{ $t("eshop") }}
-            <span
-              class="absolute -bottom-0.5 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-primary-400"
-            ></span>
-          </span>
-        </h2>
-      </div>
 
-      <NuxtLink
-        to="/shop-manager"
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 md:hover:bg-gradient-to-r md:hover:from-primary-50 md:hover:to-blue-50 dark:hover:from-primary-900/20 dark:hover:to-blue-900/20 transition-all duration-300 text-sm font-medium group"
-      >
-        <span>{{ $t("sell_on_eshop") }}</span>
-        <UIcon
-          name="i-heroicons-arrow-right"
-          class="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
-        />
-      </NuxtLink>
+        <!-- Header Content -->
+        <div class="relative z-10">
+          <!-- Top section with icon and title -->
+          <div class="flex items-center justify-between mb-3 sm:mb-0">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <!-- App-style Icon -->
+              <div class="relative">
+                <!-- Icon background with modern design -->
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                  <UIcon
+                    name="i-heroicons-shopping-bag"
+                    class="w-5 h-5 sm:w-6 sm:h-6 text-white"
+                  />
+                  <!-- Subtle shine effect -->
+                  <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent"></div>
+                </div>
+                <!-- Active indicator dot -->
+                <div class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-800 animate-pulse"></div>
+              </div>
+
+              <!-- Title and description -->
+              <div class="flex-1 min-w-0">
+                <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">
+                  {{ $t("eshop") }}
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  Discover amazing products
+                </p>
+              </div>
+            </div>            <!-- Action button - mobile optimized -->
+            <NuxtLink
+              to="/shop-manager"
+              class="flex-shrink-0 group relative inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+            >
+              <!-- Button shimmer effect -->
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+              
+              <span class="relative z-10 truncate">{{ $t("sell_on_eshop") }}</span>
+              <UIcon
+                name="i-heroicons-arrow-right"
+                class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 group-hover:translate-x-0.5 transition-transform flex-shrink-0"
+              />
+            </NuxtLink>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <CommonCategoryLayout/>
-
-    <!-- Product Carousel Section -->
-    <div v-if="isLoading" class="flex justify-center py-8">
-      <!-- Premium Loading Animation -->
+    <CommonCategoryLayout/>    <!-- Professional Loading State -->
+    <div v-if="isLoading" class="flex justify-center py-12">
       <div class="relative">
-        <div
-          class="w-10 h-10 rounded-full border-2 border-primary-200 dark:border-primary-800/50 opacity-30"
-        ></div>
-        <div
-          class="w-10 h-10 rounded-full border-t-2 border-primary-600 dark:border-primary-400 animate-spin absolute top-0"
-        ></div>
+        <!-- Modern spinner -->
+        <div class="w-12 h-12 rounded-full border-4 border-slate-200 dark:border-slate-700"></div>
+        <div class="w-12 h-12 rounded-full border-t-4 border-blue-600 animate-spin absolute top-0"></div>
+        <!-- Pulsing dots -->
+        <div class="flex justify-center gap-1 mt-4">
+          <div class="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+          <div class="w-2 h-2 bg-blue-600 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+          <div class="w-2 h-2 bg-blue-600 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+        </div>
       </div>
     </div>
 
-    <div v-else-if="productsCount > 0" class="relative product-slider-container">
-      <!-- Navigation Arrows with Premium Styling -->
+    <!-- Professional Product Slider -->
+    <div v-else-if="productsCount > 0" class="relative product-slider-container group">
+      <!-- App-style Navigation Arrows -->
       <button
         @click="scrollSlider('left')"
-        class="absolute -left-3 md:-left-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 opacity-0 group-hover:opacity-100"
+        class="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 opacity-0 group-hover:opacity-100"
       >
         <UIcon
           name="i-heroicons-chevron-left"
-          class="w-5 h-5 text-gray-600 dark:text-slate-300"
+          class="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 dark:text-slate-300"
         />
       </button>
 
       <button
         @click="scrollSlider('right')"
-        class="absolute -right-3 md:-right-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 opacity-0 group-hover:opacity-100"
+        class="absolute -right-2 sm:-right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 opacity-0 group-hover:opacity-100"
       >
         <UIcon
           name="i-heroicons-chevron-right"
-          class="w-5 h-5 text-gray-600 dark:text-slate-300"
+          class="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 dark:text-slate-300"
         />
       </button>
 
-      <!-- Smooth Scrollable Product Slider -->
+      <!-- Modern Product Container -->
       <div
         ref="sliderContainer"
-        class="overflow-x-auto custom-scrollbar rounded-lg bg-white/30 dark:bg-slate-800/30 backdrop-blur-sm select-none scroll-smooth hide-scrollbar"
+        class="overflow-x-auto custom-scrollbar rounded-2xl bg-gradient-to-br from-slate-50/80 to-white dark:from-slate-900/80 dark:to-slate-800 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 select-none scroll-smooth hide-scrollbar shadow-sm"
         @mousedown="handleSliderClick"
         @touchstart="handleSliderTouch"
       >
@@ -116,68 +144,84 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Scroll indicator dots -->
-      <div class="flex justify-center gap-1.5 mt-3">
+      </div>      <!-- Modern Scroll Indicators -->
+      <div class="flex justify-center gap-2 mt-4 sm:mt-6">
         <div
           v-for="(_, i) in scrollPositions"
           :key="i"
           @click="scrollToPosition(i)"
-          class="w-2 h-2 rounded-full cursor-pointer transition-all duration-200 hover:scale-110"
+          class="cursor-pointer transition-all duration-300 hover:scale-125 active:scale-95"
           :class="
             currentScrollIndex === i
-              ? 'bg-green-500 w-6'
-              : 'bg-slate-300 dark:bg-slate-600'
+              ? 'w-6 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full'
+              : 'w-2 h-2 bg-slate-300 dark:bg-slate-600 rounded-full hover:bg-slate-400 dark:hover:bg-slate-500'
           "
         ></div>
       </div>
 
-      <!-- Bottom "All Products" button -->
-      <div class="text-center mt-5 mb-2">
+      <!-- Professional CTA Section -->
+      <div class="text-center mt-6 sm:mt-8">
+        <!-- Mobile: Compact button -->
         <NuxtLink
           to="/eshop"
-          class="group relative text-sm inline-flex items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
+          class="sm:hidden group relative inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
         >
-          <!-- Premium shine effect -->
-          <span
-            class="absolute inset-0 w-full h-full bg-gradient-to-r from-emerald-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          ></span>
-          <span class="relative z-10 font-medium">{{
-            $t("all_product")
-          }}</span>
+          <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <span class="relative z-10">{{ $t("all_product") }}</span>
+          <UIcon
+            name="i-heroicons-arrow-right"
+            class="w-4 h-4 relative z-10 group-hover:translate-x-0.5 transition-transform"
+          />
+        </NuxtLink>
+
+        <!-- Desktop: Enhanced button -->
+        <NuxtLink
+          to="/eshop"
+          class="hidden sm:inline-flex group relative items-center justify-center gap-2 px-8 py-4 font-semibold text-base text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+        >
+          <!-- Enhanced shine effect -->
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+          <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
+          <span class="relative z-10">{{ $t("all_product") }}</span>
           <UIcon
             name="i-heroicons-arrow-long-right"
-            class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+            class="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform"
           />
         </NuxtLink>
       </div>
-    </div>
-
+    </div>    <!-- Professional Empty State -->
     <div
       v-else
-      class="py-10 flex flex-col items-center justify-center text-center bg-slate-50 dark:bg-slate-800/50 rounded-lg"
+      class="py-12 sm:py-16 flex flex-col items-center justify-center text-center bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-slate-200/50 dark:border-slate-700/50"
     >
-      <div
-        class="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-4 relative overflow-hidden"
-      >
-        <div
-          class="absolute inset-0 bg-gradient-to-r from-transparent via-slate-200/20 to-transparent animate-shimmer"
-        ></div>
-        <UIcon name="i-heroicons-shopping-bag" class="w-8 h-8 text-slate-400" />
+      <!-- Modern Empty State Icon -->
+      <div class="relative mb-6">
+        <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-3xl flex items-center justify-center shadow-inner">
+          <UIcon name="i-heroicons-shopping-bag" class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 dark:text-slate-500" />
+        </div>
+        <!-- Floating elements around the icon -->
+        <div class="absolute -top-1 -right-1 w-4 h-4 bg-blue-400/20 rounded-full animate-ping"></div>
+        <div class="absolute -bottom-2 -left-2 w-3 h-3 bg-purple-400/20 rounded-full animate-pulse"></div>
       </div>
-      <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-2">
-        No products available
+
+      <!-- Professional messaging -->
+      <h3 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white mb-2">
+        No Products Available
       </h3>
-      <UButton
+      <p class="text-slate-600 dark:text-slate-400 mb-6 max-w-sm">
+        We're working to bring you amazing products. Check back soon!
+      </p>
+
+      <!-- Modern refresh button -->
+      <button
         @click="fetchProducts"
-        class="mt-3"
-        color="primary"
-        variant="soft"
+        class="group inline-flex items-center gap-2 px-6 py-3 font-semibold text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
       >
-        <UIcon name="i-heroicons-arrow-path" class="mr-1.5" />
-        Refresh
-      </UButton>
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 relative z-10 group-hover:rotate-180 transition-transform duration-500" />
+        <span class="relative z-10">Refresh</span>
+      </button>
     </div>
 
     <!-- Product Quick View Modal -->
@@ -766,9 +810,109 @@ watch(
   transition: all 0.3s ease;
 }
 
+/* Professional app-like animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Component entrance animations */
+.product-slider-container {
+  animation: slideUp 0.6s ease-out;
+}
+
+/* Modern focus states */
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid rgb(59 130 246);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Enhanced touch interactions for mobile */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Better touch feedback */
+  .product-card-wrapper {
+    transition: transform 0.1s ease;
+  }
+  
+  .product-card-wrapper:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Professional gradient backgrounds */
+.gradient-bg-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-bg-secondary {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+/* Improved scrollbar for webkit browsers */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, rgb(59 130 246), rgb(147 51 234));
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, rgb(37 99 235), rgb(126 34 206));
+}
+
+/* Professional loading states */
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
 /* Custom colors */
 :root {
-  --primary-400: #38bdf8;
-  --primary-500: #0ea5e9;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --secondary-400: #c084fc;
+  --secondary-500: #a855f7;
+  --secondary-600: #9333ea;
 }
 </style>
