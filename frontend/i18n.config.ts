@@ -423,7 +423,7 @@ export default defineI18nConfig(() => ({
       recharge_now: "রিচার্জ করুন",
       search_packages: "প্যাকেজ খুঁজুন",
       mobile_recharge_transactions:
-        "আপনার সাম্প্রতিক মোবাইল রিচার্জ লেনদেন দেখুন",
+        "আপনার সাম্প্রতিক মোবাইল রিচার্জ দেখুন",
       support_our_mission: "আমাদের মিশন সমর্থন করুন",
       donate_today: "প্রতিটি অবদান পার্থক্য তৈরি করে",
       donate_now: "এখনই দান করুন",
