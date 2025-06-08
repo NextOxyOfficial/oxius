@@ -92,7 +92,7 @@
               </h1>
               <!-- Service buttons grid with cool design -->
               <div
-                class="grid grid-cols-4 gap-0 my-4 hidden md:grid border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100"
+                class="grid grid-cols-4 gap-0 my-4 hidden md:grid border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-200/80"
               >
                 <!-- Business Network -->
                 <NuxtLink
@@ -242,7 +242,7 @@
       class="md:hidden text-center px-0.5 py-3 bg-gradient-to-br from-green-50 to-blue-50 rounded-sm shadow-sm relative overflow-hidden"
     >
       <div
-        class="grid grid-cols-4 gap-0 border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-100 shadow-sm relative z-10"
+        class="grid grid-cols-4 gap-0 border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-200 shadow-sm relative z-10"
       >
         <!-- Business Network -->
         <NuxtLink to="/business-network" class="mobile-btn bg-white">
