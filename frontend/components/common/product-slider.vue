@@ -1,8 +1,8 @@
 <template>  <UContainer class="relative">
     <!-- Professional App-like Header -->
-    <div class="relative mb-4 sm:mb-6">
+    <div class="relative sm:mb-6">
       <!-- Mobile-First Background Design -->
-      <div class="relative p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-sm overflow-hidden">
+      <div class="relative p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 backdrop-blur-sm overflow-hidden">
         
         <!-- Dynamic Background Pattern -->
         <div class="absolute inset-0 opacity-40 dark:opacity-20">
