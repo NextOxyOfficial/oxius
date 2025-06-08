@@ -609,34 +609,12 @@
                   class="size-6 text-green-600 dark:text-green-400"
                 />
               </div>
-            </div>
-
-            <!-- QR Code Modal -->
-            <UModal
+            </div>            <!-- QR Code Modal -->
+            <CommonQrCodeModal
               v-model="showQr"
-              :ui="{ width: 'w-full sm:max-w-md', background: 'bg-slate-100' }"
-            >
-              <div
-                class="px-4 py-12 flex flex-col gap-4 items-center justify-center relative rounded-3xl overflow-hidden"
-              >
-                <UButton
-                  icon="i-heroicons-x-mark"
-                  size="sm"
-                  color="primary"
-                  variant="solid"
-                  @click="showQr = false"
-                  class="absolute top-2 right-2 rounded-full"
-                />
-                <h3 class="text-xl font-semibold text-green-700">AdsyPay</h3>
-                <h3 class="text-xl font-semibold">Scan My QR Code</h3>
-                <div class="border p-4 rounded-lg shadow-sm bg-white">
-                  <NuxtImg
-                    class="w-[250px]"
-                    :src="`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${user.user.phone}`"
-                  />
-                </div>
-              </div>
-            </UModal>
+              title="Scan My QR Code"
+              :qr-data="user.user.phone"
+            />
           </div>
 
           <!-- Mobile User Profile Avatar with Tailwind -->
