@@ -322,7 +322,7 @@
                   class="px-2 py-2.5 mb-2 rounded-lg bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 cursor-pointer transition-colors duration-300 hover:from-emerald-100 hover:to-blue-100 dark:hover:from-emerald-900/30 dark:hover:to-blue-900/30"
                   @click.prevent="selectedCategory = null"
                 >
-                  <p class="px-2 font-medium flex items-center gap-2">
+                  <p class="px-2 flex items-center gap-2">
                     <UIcon
                       name="i-heroicons-home"
                       class="size-4 text-emerald-500"

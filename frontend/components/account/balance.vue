@@ -10,13 +10,12 @@
       ring: '',
       base: 'bg-gradient-to-br from-green-100 to-teal-100/60   border border-dashed border-emerald-400/70',
     }"
-  >
-    <!-- Decorative elements -->
+  >    <!-- Decorative elements -->
     <div
-      class="absolute top-0 right-0 w-32 h-32 bg-emerald-100/30 rounded-full blur-2xl -z-10"
+      class="absolute top-0 right-0 w-32 h-32 bg-emerald-100/20 rounded-full -z-10"
     ></div>
     <div
-      class="absolute bottom-0 left-0 w-40 h-40 bg-teal-300/10 rounded-full blur-2xl -z-10"
+      class="absolute bottom-0 left-0 w-40 h-40 bg-teal-300/10 rounded-full -z-10"
     ></div>
 
     <!-- Header with balance info -->
@@ -136,13 +135,14 @@
           size="md"
           color="emerald"
           variant="soft"
-          :label="t('deposit_withdraw')"
+          :label="t('transaction')"
           to="/deposit-withdraw/"
           class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5"
           :ui="{
             base: 'font-medium',
           }"
-        />        <UButton
+        />        
+        <UButton
           icon="i-material-symbols:mark-email-unread-outline"
           size="md"
           color="blue"
@@ -212,27 +212,21 @@
               class="text-emerald-600 dark:text-emerald-400"
             />
             {{ $t("refer") }}
-          </h3>
-
-          <div class="relative w-full max-w-md mx-auto group">
+          </h3>          <div class="relative w-full max-w-md mx-auto">
             <div
-              class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg blur opacity-30"
-            ></div>
-            <div
-              class="relative flex items-center bg-white dark:bg-slate-800 rounded-lg overflow-hidden shadow-sm"
+              class="flex items-center bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-emerald-200 dark:border-emerald-700"
             >
               <input
                 type="text"
                 class="text-sm py-3 px-4 w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-700 dark:text-slate-200"
                 readonly
                 :value="`https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`"
-              />
-              <UButton
+              />              <UButton
                 size="sm"
                 color="emerald"
                 icon="i-iconamoon-copy-light"
                 variant="solid"
-                class="m-1 hover:scale-105 transition-transform duration-300"
+                class="m-1"
                 @click="
                   CopyToClip(
                     `https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`
@@ -246,11 +240,9 @@
               </UButton>
             </div>
           </div>
-        </div>
-
-        <!-- Referral stats -->
+        </div>        <!-- Referral stats -->
         <div
-          class="flex gap-6 justify-center items-center bg-white/80 rounded-xl p-3 shadow-xs"
+          class="flex gap-6 justify-center items-center bg-white/80 rounded-xl p-3"
         >
           <div class="flex flex-col items-center">
             <p class="text-sm text-slate-500 dark:text-slate-400">
