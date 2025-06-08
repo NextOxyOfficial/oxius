@@ -1,25 +1,25 @@
 <template>
-  <div class="py-12 px-4 relative">
+  <div class="py-12 px-4 relative">    
     <!-- Subtle background effect -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none -z-10">
       <div
-        class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary-200/20 blur-3xl animate-float"
+        class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary-200/20 blur-3xl"
       ></div>
       <div
-        class="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-blue-200/20 blur-3xl animate-float-reverse"
+        class="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-blue-200/20 blur-3xl"
       ></div>
     </div>
 
-    <div class="container mx-auto max-w-4xl">
+    <div class="container mx-auto max-w-4xl">      
       <!-- Centered Header -->
-      <div class="text-center mb-12 animate-fade-in">
+      <div class="text-center mb-12">
         <h1
           class="text-2xl md:text-2xl font-semibold text-gray-800 dark:text-white mb-2"
         >
           {{ $t("refer_friend") }}
         </h1>
         <div
-          class="h-1 w-24 bg-primary-500 mx-auto rounded-full mb-3 animate-width"
+          class="h-1 w-24 bg-primary-500 mx-auto rounded-full mb-3"
         ></div>
         <p class="text-xl text-gray-600 dark:text-gray-400">
           {{ $t("refer") }}
@@ -28,7 +28,7 @@
 
       <!-- Referral Link Box -->
       <div
-        class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-10 shadow-sm border border-gray-100 dark:border-gray-700 animate-fade-in-up"
+        class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-10 shadow-sm border border-gray-100 dark:border-gray-700"
       >
         <p class="text-center text-gray-600 dark:text-gray-600 mb-3">
           {{ $t("refer_text") }}
@@ -623,10 +623,8 @@
       </div>
 
       <!-- Replace both history sections with this single tabbed component -->
-      <div class="mt-12">
-        <div
-          class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden animate-fade-in-up"
-          style="animation-delay: 0.2s"
+      <div class="mt-12">        <div
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden"
         >
           <div class="tab-navigation overflow-hidden relative">
             <div class="flex border-b border-gray-100 dark:border-gray-700">
@@ -745,7 +743,8 @@
                   </thead>
                   <tbody
                     class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-                  >                    <!-- Loading Skeleton -->
+                  >                    
+                  <!-- Loading Skeleton -->
                     <tr
                       v-if="isLoadingCommissions"
                       v-for="i in 5"
@@ -790,7 +789,8 @@
                             {{ earning.name }}
                           </div>
                         </div>
-                      </td>                      <td class="px-6 py-4 whitespace-nowrap">
+                      </td>                      
+                      <td class="px-6 py-4 whitespace-nowrap">
                         <UBadge
                           :color="
                             getServiceTypeColor(
@@ -928,7 +928,8 @@
                           {{ user.is_active ? "Active" : "Inactive" }}
                         </UBadge>
                       </td>
-                    </tr>                    <tr v-if="referredUsers.length === 0">
+                    </tr>                    
+                    <tr v-if="referredUsers.length === 0">
                       <td
                         colspan="3"
                         class="px-6 py-8 text-center text-gray-600 dark:text-gray-600"
