@@ -2047,6 +2047,15 @@ async function sendToUser() {
     transferErrors.value.transfer = "* Insufficient Balance";
   }
 
+  // Check if user is trying to transfer to themselves
+  const currentUserEmail = user.value?.user?.email;
+  const currentUserPhone = user.value?.user?.phone;
+  const transferContact = transfer.value.contact;
+
+  if (transferContact && (transferContact === currentUserEmail || transferContact === currentUserPhone)) {
+    transferErrors.value.contact = "You cannot transfer money to yourself";
+  }
+
   if (!policy.value) {
     depositErrors.value.policy = true;
   }
