@@ -134,10 +134,9 @@
             </div>
           </div>
         </div>
-      </TransitionGroup>
-
+      </TransitionGroup>      
       <!-- Load more button with enhanced styling -->
-      <div v-if="hasMoreNotifications" class="flex justify-center pt-4 pb-8">
+      <div v-if="hasMoreNotifications" class="flex justify-center pt-4 pb-24 mb-8">
         <button
           @click="loadMoreNotifications"
           class="inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-200 bg-white hover:bg-blue-50 h-10 px-6 py-2 shadow-sm hover:shadow-sm transform hover:translate-y-[-2px]"
