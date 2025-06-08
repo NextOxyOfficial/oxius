@@ -277,32 +277,30 @@
               >
                 Clear All Filters
               </button>
-            </div>
-
-            <!-- Grid View -->
+            </div>            <!-- Grid View -->
             <div v-if="viewMode === 'grid'" class="grid grid-cols-2 gap-2">
               <div
                 v-for="product in products"
                 :key="product.id"
-                class="bg-white rounded-lg overflow-hidden"
-              >                <div class="relative aspect-video">
+                class="bg-white rounded-lg overflow-hidden border border-gray-200"
+              >
+                <div class="relative aspect-video">
                   <NuxtLink :to="`/sale/${product.slug}`">
                     <img
-                      :src="product.main_image"
+                      :src="product.main_image || '/static/frontend/images/placeholder.jpg'"
                       :alt="product.title"
                       class="absolute inset-0 w-full h-full object-contain"
                     />
                   </NuxtLink>
-                </div><div class="p-4">
+                </div>
+                <div class="p-4">
                   <h3 class="font-semibold text-gray-800 mb-1 line-clamp-2">
                     <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
                       {{ product.title }}
                     </NuxtLink>
-                  </h3>
-
-                  <div class="flex items-center justify-between mt-2">
+                  </h3>                  <div class="flex items-center justify-between mt-2">
                     <span class="font-bold text-emerald-700"
-                      >${{ product.price.toLocaleString() }}</span
+                      >৳{{ product.price.toLocaleString() }}</span
                     >
                     <span class="text-sm text-gray-600">{{
                       formatDate(product.created_at)
@@ -353,11 +351,9 @@
                     <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
                       {{ product.title }}
                     </NuxtLink>
-                  </h3>
-
-                  <div class="flex items-center justify-between mt-2">
+                  </h3>                  <div class="flex items-center justify-between mt-2">
                     <span class="font-bold text-emerald-700"
-                      >${{ product.price.toLocaleString() }}</span
+                      >৳{{ product.price.toLocaleString() }}</span
                     >
                     <span class="text-sm text-gray-600">{{
                       formatDate(product.created_at)
@@ -378,17 +374,17 @@
 
                   <p class="text-sm text-gray-600 mt-2 line-clamp-2">
                     {{ product.description || "No description available." }}
-                  </p>
-
+                  </p>                  
                   <div
                     class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100"
                   >
-                    <button
+                    <NuxtLink
+                      :to="`/sale/${product.slug}`"
                       class="text-emerald-600 hover:text-emerald-700 text-sm flex items-center"
                     >
                       View Details
                       <ChevronRight class="h-3 w-3 ml-1" />
-                    </button>
+                    </NuxtLink>
                   </div>
                 </div>
               </div>
