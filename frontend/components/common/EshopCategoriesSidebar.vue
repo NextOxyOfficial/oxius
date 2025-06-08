@@ -257,8 +257,10 @@ function getCategoryIcon(categoryName) {
 
 // Handle category selection
 function handleCategorySelect(categoryId) {
+  console.log('Sidebar component: handleCategorySelect called with categoryId:', categoryId);
   emit('categorySelect', categoryId)
-  emit('close')
+  // Remove the automatic close emit - let the parent handle closing
+  // emit('close')
 }
 </script>
 
