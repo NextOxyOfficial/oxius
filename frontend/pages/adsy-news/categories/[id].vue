@@ -1,106 +1,11 @@
-<template>
-  <div class="min-h-screen bg-gray-50">
+<template>  <div class="min-h-screen bg-gray-50">
     <main class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pb-4">
-      <!-- Trending News Carousel -->
-      <div class="mb-12">
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-semibold text-gray-800">Trending News</h2>
-          <div class="flex space-x-2">
-            <button
-              @click="prevTrending"
-              @mouseenter="pauseCarousel"
-              class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-            >
-              <ChevronLeftIcon class="h-5 w-5 text-gray-800" />
-            </button>
-            <button
-              @click="nextTrending"
-              @mouseenter="pauseCarousel"
-              class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-            >
-              <ChevronRightIcon class="h-5 w-5 text-gray-800" />
-            </button>
-          </div>
-        </div>
-
-        <div class="relative overflow-hidden">
-          <div
-            class="flex transition-transform duration-500 ease-in-out"
-            :style="{
-              transform: `translateX(-${
-                (trendingIndex * 100) / trendingPerPage
-              }%)`,
-            }"
-            @mouseenter="pauseCarousel"
-            @mouseleave="resumeCarousel"
-          >
-            <div
-              v-for="article in trendingArticles"
-              :key="article.id"
-              class="flex-shrink-0 mb-2 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-3"
-            >
-              <div
-                class="bg-white rounded-lg shadow-sm overflow-hidden h-full hover:shadow-sm transition-shadow duration-300"
-              >
-                <div class="relative h-40">
-                  <img
-                    :src="article.image"
-                    :alt="article.title"
-                    class="w-full h-full object-cover"
-                  />
-                  <div class="absolute top-0 left-0 m-2">
-                    <span
-                      v-for="tag in article.tags"
-                      :key="tag"
-                      class="bg-primary/90 text-white text-xs font-semibold px-2 py-1 rounded"
-                    >
-                      {{ tag }}
-                    </span>
-                  </div>
-                </div>
-                <div class="p-4">
-                  <NuxtLink :to="`/adsy-news/${article.slug}/`">
-                    <h3
-                      class="text-sm font-medium mb-2 text-gray-800 hover:text-primary cursor-pointer line-clamp-2"
-                    >
-                      {{ article.title }}
-                    </h3>
-                  </NuxtLink>
-                  <div
-                    class="flex justify-between items-center text-sm text-gray-600"
-                  >
-                    <span>{{ article.date }}</span>
-                    <span class="flex items-center">
-                      <MessageSquareIcon class="h-4 w-4 mr-1" />
-                      {{ article.comments.length }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-center mt-6 space-x-2">
-          <button
-            v-for="(_, i) in Math.ceil(
-              trendingArticles.length / trendingPerPage
-            )"
-            :key="i"
-            @click="trendingIndex = i"
-            :class="[
-              'w-2 h-2 rounded-full transition-colors',
-              trendingIndex === i
-                ? 'bg-primary'
-                : 'bg-gray-300 hover:bg-gray-400',
-            ]"
-          ></button>
-        </div>
-      </div>
-
       <!-- Category Title -->
       <div class="flex justify-between items-center mb-8">
-        <h2 class="text-xl font-semibold text-gray-800">All News</h2>
+        <h2 class="text-xl font-semibold text-gray-800">
+          <span v-if="isCategoryLoading">Loading...</span>
+          <span v-else>{{ categoryName }}</span>
+        </h2>
         <div class="flex space-x-2">
           <button
             v-for="layout in layouts"
@@ -196,9 +101,7 @@
               </div>
             </div>
           </article>
-        </div>
-
-        <!-- Load More Button -->
+        </div>        <!-- Load More Button -->
         <div v-if="filteredArticles.length > 12" class="mt-12 text-center">
           <button
             @click="loadMoreArticles"
@@ -209,6 +112,104 @@
             <span v-else>Load More Articles</span>
           </button>
         </div>
+
+        <!-- Trending News Carousel -->
+        <div class="mt-12 mb-12">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-gray-800">Trending News</h2>
+            <div class="flex space-x-2">
+              <button
+                @click="prevTrending"
+                @mouseenter="pauseCarousel"
+                class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                <ChevronLeftIcon class="h-5 w-5 text-gray-800" />
+              </button>
+              <button
+                @click="nextTrending"
+                @mouseenter="pauseCarousel"
+                class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                <ChevronRightIcon class="h-5 w-5 text-gray-800" />
+              </button>
+            </div>
+          </div>
+
+          <div class="relative overflow-hidden">
+            <div
+              class="flex transition-transform duration-500 ease-in-out"
+              :style="{
+                transform: `translateX(-${
+                  (trendingIndex * 100) / trendingPerPage
+                }%)`,
+              }"
+              @mouseenter="pauseCarousel"
+              @mouseleave="resumeCarousel"
+            >
+              <div
+                v-for="article in trendingArticles"
+                :key="article.id"
+                class="flex-shrink-0 mb-2 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 px-3"
+              >
+                <div
+                  class="bg-white rounded-lg shadow-sm overflow-hidden h-full hover:shadow-sm transition-shadow duration-300"
+                >
+                  <div class="relative h-40">
+                    <img
+                      :src="article.image"
+                      :alt="article.title"
+                      class="w-full h-full object-cover"
+                    />
+                    <div class="absolute top-0 left-0 m-2">
+                      <span
+                        v-for="tag in article.tags"
+                        :key="tag"
+                        class="bg-primary/90 text-white text-xs font-semibold px-2 py-1 rounded"
+                      >
+                        {{ tag }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="p-4">
+                    <NuxtLink :to="`/adsy-news/${article.slug}/`">
+                      <h3
+                        class="text-sm font-medium mb-2 text-gray-800 hover:text-primary cursor-pointer line-clamp-2"
+                      >
+                        {{ article.title }}
+                      </h3>
+                    </NuxtLink>
+                    <div
+                      class="flex justify-between items-center text-sm text-gray-600"
+                    >
+                      <span>{{ article.date }}</span>
+                      <span class="flex items-center">
+                        <MessageSquareIcon class="h-4 w-4 mr-1" />
+                        {{ article.comments.length }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-center mt-6 space-x-2">
+            <button
+              v-for="(_, i) in Math.ceil(
+                trendingArticles.length / trendingPerPage
+              )"
+              :key="i"
+              @click="trendingIndex = i"
+              :class="[
+                'w-2 h-2 rounded-full transition-colors',
+                trendingIndex === i
+                  ? 'bg-primary'
+                  : 'bg-gray-300 hover:bg-gray-400',
+              ]"
+            ></button>
+          </div>
+        </div>
+
         <!-- Trending Topics Section -->
         <div class="mt-10 bg-gray-100 rounded-xl p-3 sm:p-8">
           <h2 class="text-xl font-semibold text-gray-800 mb-4">
@@ -346,6 +347,10 @@ const hasMoreArticles = ref(true);
 const currentPage = ref(1);
 const allArticlesLoaded = ref(false);
 
+// Category state
+const categoryName = ref("All News");
+const isCategoryLoading = ref(false);
+
 // Layout options
 const layouts = ref([
   { id: "grid", name: "Grid View" },
@@ -411,7 +416,26 @@ async function getArticlesByCategory(page = 1, append = false) {
   }
 }
 
-// Load initial articles
+// Get category details by slug/id
+async function getCategoryDetails() {
+  try {
+    isCategoryLoading.value = true;
+    const res = await get(`/news/categories/${route.params.id}/`);
+    
+    if (res.data && res.data.title) {
+      categoryName.value = res.data.title;
+    }
+  } catch (error) {
+    console.error("Error fetching category details:", error);
+    // Keep default "All News" if API call fails
+    categoryName.value = "All News";
+  } finally {
+    isCategoryLoading.value = false;
+  }
+}
+
+// Load initial data
+await getCategoryDetails();
 await getArticlesByCategory();
 // Load initial articles
 await getArticles();
@@ -692,6 +716,14 @@ onMounted(() => {
 
   startCarousel();
 });
+
+// Watch for route parameter changes
+watch(() => route.params.id, async (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    await getCategoryDetails();
+    await getArticlesByCategory();
+  }
+}, { immediate: false });
 
 onUnmounted(() => {
   stopCarousel();
