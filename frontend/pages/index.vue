@@ -250,7 +250,7 @@
     <!-- Micro gigs section with premium styling -->
     <PublicSection
       id="micro-gigs"
-      class="bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/90 py-8"
+      class="bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/90 py-4"
     >
       <UContainer>
         <h2

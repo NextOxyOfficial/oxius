@@ -1,27 +1,91 @@
-<template>
-  <div id="sale-category" class="for-sale-section py-6 bg-white rounded-lg mt-3">
+<template>  <div id="sale-category" class="for-sale-section py-6 bg-white rounded-lg mt-3">
     <div class="container mx-auto px-1">
       <!-- Updated section header with linked buttons -->
-      <div
-        class="section-header max-sm:flex max-sm:flex-col max-sm:gap-3 sm:mb-8 mb-5 flex justify-between items-center"
-      >
-        <div class="flex items-center gap-3">
-          <h2 class="text-xl md:text-xl font-medium text-gray-800">{{$t("sale_listing")}}</h2>
-        </div>
-        <div v-if="user" class="flex gap-2 sm:gap-3">          <button
-            class="my-post-btn border border-gray-300 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-sm sm:text-sm flex items-center gap-1"
-            @click="openMyPostsModal"
-          >
-            <Icon name="heroicons:document-text" size="16px" />
-            {{ $t('my_post') }}
-          </button>
-          <button
-            class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"
-            @click="openPostSaleModal"
-          >
-            <Icon name="heroicons:plus-circle" size="16px" />
-            {{ $t('post_a_sale') }}
-          </button>
+      <div class="relative mb-4 sm:mb-6">
+        <!-- Enhanced Background with Gradient and Dotted Effects -->
+        <div class="relative">
+          <!-- Background gradient layers -->
+          <div class="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-900/20 dark:via-green-900/20 dark:to-teal-900/20 rounded-2xl sm:rounded-3xl"></div>
+          <div class="absolute inset-0 bg-gradient-to-tr from-blue-50/50 via-transparent to-purple-50/50 dark:from-blue-900/10 dark:via-transparent dark:to-purple-900/10 rounded-2xl sm:rounded-3xl"></div>
+          
+          <!-- Dotted gradient patterns -->
+          <div class="absolute inset-0 opacity-60 dark:opacity-40 rounded-2xl sm:rounded-3xl overflow-hidden">
+            <!-- Large dotted pattern -->
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(34,197,94,0.15)_1px,transparent_0)] bg-[size:24px_24px] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(134,239,172,0.1)_1px,transparent_0)]"></div>
+            <!-- Medium dotted pattern -->
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(59,130,246,0.1)_1px,transparent_0)] bg-[size:16px_16px] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(147,197,253,0.08)_1px,transparent_0)]"></div>
+            <!-- Small dotted pattern -->
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(168,85,247,0.08)_1px,transparent_0)] bg-[size:8px_8px] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(196,181,253,0.06)_1px,transparent_0)]"></div>
+          </div>          <!-- Animated gradient overlay -->
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent dark:via-white/10 animate-pulse rounded-2xl sm:rounded-3xl"></div>
+            <!-- Main content container -->
+          <div class="relative p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md overflow-hidden">
+            <!-- Dynamic Background Pattern -->
+            <div class="absolute inset-0 opacity-40 dark:opacity-20">
+              <!-- Subtle grid pattern -->
+              <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"></div>
+              <div class="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(0deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"></div>
+              
+              <!-- Floating elements for visual interest -->
+              <div class="absolute top-2 right-4 w-2 h-2 rounded-full bg-emerald-400/20 animate-pulse"></div>
+              <div class="absolute bottom-3 left-6 w-1 h-1 rounded-full bg-blue-400/30 animate-ping"></div>
+              <div class="absolute top-1/2 right-1/4 w-1.5 h-1.5 rounded-full bg-green-400/20"></div>
+            </div>
+
+            <!-- Header Content -->
+            <div
+              class="section-header max-sm:flex max-sm:flex-col max-sm:gap-4 sm:mb-0 mb-0 flex justify-between items-center relative z-10"
+            >
+              <div class="flex items-center gap-4">
+                <!-- App-style Icon -->
+                <div class="relative">                    <!-- Icon background with modern design -->
+                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                    <Icon
+                      name="heroicons:tag"
+                      class="w-5 h-5 sm:w-6 sm:h-6 text-white"
+                    />
+                    <!-- Subtle shine effect -->
+                    <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent"></div>
+                  </div>
+                  <!-- Active indicator dot -->
+                  <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white dark:border-slate-800 animate-pulse"></div>
+                </div>
+
+                <!-- Title with enhanced styling -->
+                <div class="flex-1 min-w-0">
+                  <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">
+                    {{$t("sale_listing")}}
+                  </h2>
+                  <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    Buy & sell amazing products
+                  </p>
+                </div>
+              </div>
+              
+              <div v-if="user" class="flex gap-5 sm:gap-4">                <!-- My Posts Button - Enhanced -->
+                <button
+                  class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs sm:text-sm hover:bg-slate-50 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+                  @click="openMyPostsModal"
+                >
+                  <!-- Button hover effect -->
+                  <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
+                  <Icon name="heroicons:document-text" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
+                  <span class="relative z-10 truncate">{{ $t('my_post') }}</span>
+                </button>                  <!-- Post Sale Button - Enhanced -->
+                <button
+                  class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-medium text-xs sm:text-sm transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+                  @click="openPostSaleModal"
+                >
+                  <!-- Button shimmer effect -->
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                  
+                  <Icon name="heroicons:plus-circle" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
+                  <span class="relative z-10 truncate">{{ $t('post_a_sale') }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -233,7 +297,7 @@
           <div
             v-for="i in isMobile ? 4 : 5"
             :key="i"
-            class="item-card bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 animate-pulse"
+            class="item-card bg-white rounded-lg overflow-hidden border border-gray-100 animate-pulse"
           >
             <div class="h-32 bg-gray-200"></div>
             <div class="p-3">
@@ -256,13 +320,13 @@
             v-for="post in categoryPosts"
             :key="post.id"
             :to="`/sale/${post.slug}`"
-            class="item-card bg-white rounded-lg shadow-sm transition-shadow overflow-hidden border border-gray-100 flex flex-col h-full transform"
+            class="item-card bg-white rounded-lg transition-all overflow-hidden border border-gray-100 flex flex-col h-full transform"
           >
             <div class="relative">
               <!-- Price overlay in top right -->
               <div class="absolute top-0 right-0 m-2 z-10">
                 <div
-                  class="px-2 py-1 bg-primary text-white text-sm font-semibold rounded shadow-sm"
+                  class="px-2 py-1 bg-primary text-white text-sm font-semibold rounded"
                 >
                   ৳{{ post.price?.toLocaleString() || "Negotiable" }}
                 </div>
@@ -370,7 +434,7 @@
 
       <div
         v-if="user?.user"
-        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl w-full"
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl w-full"
       >
         <div class="bg-white p-2">
           <div class="sm:flex sm:items-start">
@@ -414,7 +478,7 @@
 
         <div
           v-if="user?.user"
-          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
+          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
         >
           <div class="bg-white p-2">
             <div class="sm:flex sm:items-start">

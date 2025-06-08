@@ -17,7 +17,7 @@
       <!-- Action Link -->
       <NuxtLink
         :to="viewAllLink"
-        class="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gradient-to-r hover:from-primary-50 hover:to-blue-50 dark:hover:from-primary-900/20 dark:hover:to-blue-900/20 hover:border-primary-200 dark:hover:border-primary-800/30 transition-all duration-300 shadow-sm hover:shadow text-sm font-medium text-slate-700 dark:text-slate-200"
+        class="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gradient-to-r hover:from-primary-50 hover:to-blue-50 dark:hover:from-primary-900/20 dark:hover:to-blue-900/20 hover:border-primary-200 dark:hover:border-primary-800/30 transition-all duration-300 text-sm font-medium text-slate-700 dark:text-slate-200"
       >
         <span>{{ viewAllLabel }}</span>
         <div
@@ -61,7 +61,7 @@
             :style="{ '--delay': `${index * 50}ms` }"
           >
             <div
-              class="bg-white dark:bg-slate-800 h-full rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-primary-200 dark:hover:border-primary-700/50 shadow-sm hover:shadow-sm transition-all duration-300 flex flex-col"
+              class="bg-white dark:bg-slate-800 h-full rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-primary-200 dark:hover:border-primary-700/50 transition-all duration-300 flex flex-col"
             >
               <!-- Product Image Area -->
               <div class="aspect-square relative overflow-hidden group">
@@ -101,7 +101,7 @@
                   class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex flex-col items-center justify-center gap-2 transition-all duration-300 opacity-0 group-hover:opacity-100"
                 >
                   <button
-                    class="w-32 py-1.5 bg-white/90 dark:bg-slate-800/90 text-sm font-medium text-gray-800 dark:text-white rounded-md shadow-sm transform transition-all hover:scale-105"
+                    class="w-32 py-1.5 bg-white/90 dark:bg-slate-800/90 text-sm font-medium text-gray-800 dark:text-white rounded-md transform transition-all hover:scale-105"
                     @click="openProductModal(product)"
                   >
                     <UIcon name="i-heroicons-eye" class="w-3.5 h-3.5 mr-1" />
@@ -109,7 +109,7 @@
                   </button>
 
                   <button
-                    class="w-32 py-1.5 bg-primary/90 text-sm font-medium text-white rounded-md shadow-sm transform transition-all hover:scale-105"
+                    class="w-32 py-1.5 bg-primary/90 text-sm font-medium text-white rounded-md transform transition-all hover:scale-105"
                     @click="addToCart(product)"
                   >
                     <UIcon
@@ -187,7 +187,7 @@
 
     <!-- Navigation Buttons -->
     <button
-      class="absolute top-1/2 -translate-y-1/2 -left-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-gray-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+      class="absolute top-1/2 -translate-y-1/2 -left-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-gray-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
       :disabled="scrollPosition <= 0"
       @click="scrollLeft"
     >
@@ -195,7 +195,7 @@
     </button>
 
     <button
-      class="absolute top-1/2 -translate-y-1/2 -right-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm hover:shadow-sm flex items-center justify-center text-gray-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+      class="absolute top-1/2 -translate-y-1/2 -right-4 z-20 w-8 h-8 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-gray-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
       :disabled="scrollPosition >= maxScroll"
       @click="scrollRight"
     >
@@ -418,7 +418,7 @@
                       <div
                         v-for="(review, i) in selectedProduct.reviews"
                         :key="i"
-                        class="p-3 bg-white dark:bg-slate-800 rounded-lg shadow-sm mb-3"
+                        class="p-3 bg-white dark:bg-slate-800 rounded-lg mb-3"
                       >
                         <div class="flex justify-between mb-2">
                           <div class="flex items-center gap-2">

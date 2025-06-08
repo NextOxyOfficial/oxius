@@ -2,7 +2,7 @@
     <!-- Professional App-like Header -->
     <div class="relative mb-4 sm:mb-6">
       <!-- Mobile-First Background Design -->
-      <div class="relative p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border border-slate-200/60 dark:border-slate-700/60 shadow-sm backdrop-blur-sm overflow-hidden">
+      <div class="relative p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-sm overflow-hidden">
         
         <!-- Dynamic Background Pattern -->
         <div class="absolute inset-0 opacity-40 dark:opacity-20">
@@ -24,7 +24,7 @@
               <!-- App-style Icon -->
               <div class="relative">
                 <!-- Icon background with modern design -->
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                   <UIcon
                     name="i-heroicons-shopping-bag"
                     class="w-5 h-5 sm:w-6 sm:h-6 text-white"
@@ -48,7 +48,7 @@
             </div>            <!-- Action button - mobile optimized -->
             <NuxtLink
               to="/shop-manager"
-              class="flex-shrink-0 group relative inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+              class="flex-shrink-0 group relative inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-xs sm:text-sm transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
             >
               <!-- Button shimmer effect -->
               <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
@@ -84,7 +84,7 @@
       <!-- App-style Navigation Arrows -->
       <button
         @click="scrollSlider('left')"
-        class="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 opacity-0 group-hover:opacity-100"
+        class="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 opacity-0 group-hover:opacity-100"
       >
         <UIcon
           name="i-heroicons-chevron-left"
@@ -94,7 +94,7 @@
 
       <button
         @click="scrollSlider('right')"
-        class="absolute -right-2 sm:-right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 opacity-0 group-hover:opacity-100"
+        class="absolute -right-2 sm:-right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full transition-all duration-300 hover:scale-110 active:scale-95 opacity-0 group-hover:opacity-100"
       >
         <UIcon
           name="i-heroicons-chevron-right"
@@ -105,7 +105,7 @@
       <!-- Modern Product Container -->
       <div
         ref="sliderContainer"
-        class="overflow-x-auto custom-scrollbar rounded-2xl bg-gradient-to-br from-slate-50/80 to-white dark:from-slate-900/80 dark:to-slate-800 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 select-none scroll-smooth hide-scrollbar shadow-sm"
+        class="overflow-x-auto custom-scrollbar rounded-2xl bg-gradient-to-br from-slate-50/80 to-white dark:from-slate-900/80 dark:to-slate-800 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 select-none scroll-smooth hide-scrollbar"
         @mousedown="handleSliderClick"
         @touchstart="handleSliderTouch"
       >
@@ -144,49 +144,33 @@
             </div>
           </div>
         </div>
-      </div>      <!-- Modern Scroll Indicators -->
-      <div class="flex justify-center gap-2 mt-4 sm:mt-6">
-        <div
-          v-for="(_, i) in scrollPositions"
-          :key="i"
-          @click="scrollToPosition(i)"
-          class="cursor-pointer transition-all duration-300 hover:scale-125 active:scale-95"
-          :class="
-            currentScrollIndex === i
-              ? 'w-6 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full'
-              : 'w-2 h-2 bg-slate-300 dark:bg-slate-600 rounded-full hover:bg-slate-400 dark:hover:bg-slate-500'
-          "
-        ></div>
-      </div>
+      </div>  
 
       <!-- Professional CTA Section -->
-      <div class="text-center mt-6 sm:mt-8">
-        <!-- Mobile: Compact button -->
+      <div class="text-center mt-6 sm:mt-8">        <!-- Mobile: Compact button -->
         <NuxtLink
           to="/eshop"
-          class="sm:hidden group relative inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+          class="sm:hidden group relative inline-flex items-center justify-center gap-2 px-4 py-2 font-semibold text-xs text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
         >
-          <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <span class="relative z-10">{{ $t("all_product") }}</span>
           <UIcon
             name="i-heroicons-arrow-right"
-            class="w-4 h-4 relative z-10 group-hover:translate-x-0.5 transition-transform"
+            class="w-3 h-3 relative z-10 group-hover:translate-x-0.5 transition-transform"
           />
-        </NuxtLink>
-
-        <!-- Desktop: Enhanced button -->
+        </NuxtLink>        <!-- Desktop: Enhanced button -->
         <NuxtLink
           to="/eshop"
-          class="hidden sm:inline-flex group relative items-center justify-center gap-2 px-8 py-4 font-semibold text-base text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+          class="hidden sm:inline-flex group relative items-center justify-center gap-2 px-6 py-3 font-semibold text-sm text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
         >
           <!-- Enhanced shine effect -->
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-          <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div class="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           
           <span class="relative z-10">{{ $t("all_product") }}</span>
           <UIcon
             name="i-heroicons-arrow-long-right"
-            class="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform"
+            class="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform"
           />
         </NuxtLink>
       </div>
@@ -197,7 +181,7 @@
     >
       <!-- Modern Empty State Icon -->
       <div class="relative mb-6">
-        <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-3xl flex items-center justify-center shadow-inner">
+        <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-3xl flex items-center justify-center">
           <UIcon name="i-heroicons-shopping-bag" class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 dark:text-slate-500" />
         </div>
         <!-- Floating elements around the icon -->
@@ -216,7 +200,7 @@
       <!-- Modern refresh button -->
       <button
         @click="fetchProducts"
-        class="group inline-flex items-center gap-2 px-6 py-3 font-semibold text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
+        class="group inline-flex items-center gap-2 px-6 py-3 font-semibold text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
       >
         <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 relative z-10 group-hover:rotate-180 transition-transform duration-500" />
