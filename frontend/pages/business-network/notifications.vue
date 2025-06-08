@@ -1,75 +1,10 @@
-<template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1">
-    <!-- Enhanced header with premium glass morphism effect -->
-    <div
-      class="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 p-4 sm:p-6 mb-6 shadow-sm"
-    >
-      <div
-        class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 z-10 relative"
-      >
-        <div class="text-white">
-          <div class="animate-fade-in-up">
-            <h1 class="text-lg sm:text-xl font-medium flex items-center">
-              <Bell class="size-5 mr-2" />
-              Notifications
-              <div
-                class="shimmer-badge ml-3 h-5 px-2 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-xs"
-              >
-                <span v-if="unreadCount > 0" class="font-medium"
-                  >{{ unreadCount }} new</span
-                >
-                <span v-else class="font-medium">All caught up</span>
-              </div>
-            </h1>
-            <p class="text-blue-100 mt-1 text-sm">
-              Stay up-to-date with all activities in your business network
-            </p>
-          </div>
-        </div>
-        <!-- Mark all as read button with better hover effects -->
-        <div class="animate-fade-in">
-          <button
-            v-if="unreadCount > 0"
-            @click="markAllAsRead"
-            class="inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-200 bg-white hover:bg-blue-50 h-10 px-4 py-2 shadow-sm hover:shadow-sm transform hover:scale-105 group relative overflow-hidden"
-          >
-            <span class="relative z-10 flex items-center">
-              <Check
-                class="size-3 mr-2 group-hover:scale-110 transition-transform"
-              />
-              <span class="text-sm">Mark all as read</span>
-            </span>
-            <span
-              class="absolute inset-0 bg-gradient-to-r from-blue-100 to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity"
-            ></span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Decorative elements with animation -->
-      <div
-        class="absolute top-0 right-0 -mt-16 -mr-16 h-64 w-64 rounded-full bg-blue-400 opacity-20 blur-3xl animate-pulse-slow"
-      ></div>
-      <div
-        class="absolute bottom-0 left-0 -mb-16 -ml-16 h-64 w-64 rounded-full bg-indigo-400 opacity-20 blur-3xl animate-float"
-      ></div>
-      <!-- Additional decorative elements -->
-      <div class="absolute inset-0 bg-grid-pattern opacity-5"></div>
-    </div>
-
-    <!-- Filter tabs - simplified to only All Notifications -->
+<template>  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1">    <!-- Filter tabs - simplified to only All Notifications -->
     <div class="border-b border-gray-200 mb-4">
       <div class="flex space-x-4">
         <button
           class="px-3 py-2 text-sm font-medium transition-colors relative text-blue-600 border-b-2 border-blue-500"
         >
           All Notifications
-          <span
-            v-if="unreadCount > 0"
-            class="ml-1.5 inline-flex items-center justify-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700"
-          >
-            {{ unreadCount }}
-          </span>
         </button>
       </div>
     </div>
@@ -265,6 +200,10 @@ const filteredNotifications = computed(() => notifications.value);
 // Load notifications on mount
 onMounted(async () => {
   await fetchNotifications();
+  // Automatically mark all notifications as read when visiting the page
+  if (unreadCount.value > 0) {
+    await markAllAsRead();
+  }
 });
 
 // Fetch notifications from API
@@ -345,17 +284,8 @@ async function markAllAsRead() {
     });
 
     unreadCount.value = 0;
-
-    toast.add({
-      title: "All notifications marked as read",
-      color: "green",
-    });
   } catch (error) {
     console.error("Error marking all notifications as read:", error);
-    toast.add({
-      title: "Failed to mark all as read",
-      color: "red",
-    });
   }
 }
 
