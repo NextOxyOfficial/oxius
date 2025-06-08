@@ -71,10 +71,7 @@
                   {{ article.title }}
                 </h3>
               </NuxtLink>
-              <div
-                class="text-gray-600 text-sm mb-3 line-clamp-3"
-                v-html="article.content.substring(0, 150) + '...'"
-              ></div>
+             
               <div class="flex justify-between items-center">
                 <div class="flex items-center">
                   <img

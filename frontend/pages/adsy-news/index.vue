@@ -231,11 +231,6 @@
                   {{ article.title.substring(0, 50) + "..." }}
                 </h3>
               </NuxtLink>
-              <div
-                class="text-gray-600 text-sm mb-3 line-clamp-3"
-                v-html="article.content.substring(0, 150) + '...'"
-              ></div>
-              
             </div>
           </article>
         </div>

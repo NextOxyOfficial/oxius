@@ -2,40 +2,34 @@
   <div
     class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20"
   >
-    <UContainer>      <!-- Categories Sidebar Component -->
-      <CommonEshopCategoriesSidebar
-        :isOpen="isSidebarOpen"
-        :displayedCategories="displayedCategories"
-        :selectedCategory="selectedCategory"
-        :hasMoreCategoriesToLoad="hasMoreCategoriesToLoad"
-        @close="closeSidebar"
-        @categorySelect="selectCategoryAndCloseSidebar"
-        @loadMore="loadMoreCategories"
-        @sellerRegistration="goToSellerRegistration"
-        @contactSupport="contactSupport"
-        @eshopManager="navigateToEshopManager"
-      />
-
+    <UContainer>
       <!-- <CommonHotDealsSection /> -->
       <!-- Premium Search & Filters Section -->
       <div class="mb-5">
         <!-- Elegant Search Bar & Price Range - Responsive Layout -->
         <div class="flex flex-col lg:flex-row gap-3 mt-4">          
-        <!-- Search Section -->
-          <div class="flex gap-3 items-center lg:flex-1">
-            <!-- Sidebar Toggle Button -->
+        <!-- Search Section -->          <div class="flex gap-3 items-center lg:flex-1">
+            <!-- App-like Back Button for Mobile -->
             <button
-              @click="toggleSidebar"
-              class="inline-flex items-center justify-center p-2 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-all duration-200 shadow-sm hover:shadow flex-shrink-0 group"
-              :class="{
-                'text-emerald-500 border-emerald-200 dark:border-emerald-800/50':
-                  isSidebarOpen,
-              }"
+              @click="$router.push('/eshop')"
+              class="md:hidden inline-flex items-center justify-center p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors duration-200 flex-shrink-0"
             >
-              <span class="sr-only">Toggle categories</span>
+              <span class="sr-only">Back to eShop</span>
               <UIcon
-                name="i-heroicons-bars-3"
-                class="size-5 transition-transform group-hover:scale-110"
+                name="i-heroicons-arrow-left-20-solid"
+                class="size-6"
+              />
+            </button>
+
+            <!-- Desktop Back Button -->
+            <button
+              @click="$router.push('/eshop')"
+              class="hidden md:inline-flex items-center justify-center p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors duration-200 flex-shrink-0"
+            >
+              <span class="sr-only">Back to eShop</span>
+              <UIcon
+                name="i-heroicons-arrow-uturn-left"
+                class="size-5"
               />
             </button>
 
@@ -125,22 +119,6 @@
           <span class="text-sm text-gray-600 dark:text-gray-600 font-medium"
             >Active filters:</span
           >
-
-          <!-- Category filter badge -->
-          <UBadge
-            v-if="selectedCategoryName"
-            color="blue"
-            variant="soft"
-            class="pl-3 pr-2 py-1 group"
-            @click.stop="clearCategoryFilter"
-          >
-            Category: {{ selectedCategoryName }}
-            <span
-              class="ml-1.5 bg-blue-200/50 dark:bg-blue-800/30 rounded-full p-0.5 group-hover:bg-blue-300/50 dark:group-hover:bg-blue-700/30 transition-colors"
-            >
-              <UIcon name="i-heroicons-x-mark" class="size-3" />
-            </span>
-          </UBadge>
 
           <UBadge
             v-if="minPrice || maxPrice"
@@ -268,7 +246,7 @@
 
 <script setup>
 import { CommonHotDealsSection } from "#components";
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 const { get } = useApi();
 const products = ref({});
 const isLoading = ref(true);
@@ -276,13 +254,6 @@ const toast = useToast();
 const viewMode = ref("grid");
 const route = useRoute();
 const router = useRouter();
-
-// Categories data
-const categories = ref([]);
-const displayedCategories = ref([]);
-const isSidebarOpen = ref(false);
-const selectedCategory = ref(null);
-const hasMoreCategoriesToLoad = ref(false);
 
 // Pagination and infinite scroll variables
 const currentPage = ref(1);
@@ -299,118 +270,14 @@ const searchQuery = ref("");
 const minPrice = ref("");
 const maxPrice = ref("");
 
-// Computed property for selected category name
-const selectedCategoryName = computed(() => {
-  if (!selectedCategory.value) return null;
-  const category = displayedCategories.value.find(cat => cat.id === selectedCategory.value);
-  return category ? category.name : null;
-});
-
 // Computed property to check if any filters are active
 const hasActiveFilters = computed(() => {
   return (
     minPrice.value ||
     maxPrice.value ||
-    searchQuery.value ||
-    selectedCategory.value
+    searchQuery.value
   );
 });
-
-// Sidebar functions
-function toggleSidebar() {
-  isSidebarOpen.value = !isSidebarOpen.value;
-}
-
-function closeSidebar() {
-  console.log('closeSidebar called, sidebar was:', isSidebarOpen.value);
-  isSidebarOpen.value = false;
-  console.log('closeSidebar set sidebar to:', isSidebarOpen.value);
-}
-
-// Select category and close sidebar
-async function selectCategoryAndCloseSidebar(categoryId) {
-  console.log('Category selected:', categoryId);
-  console.log('Sidebar open before:', isSidebarOpen.value);
-  
-  // Close sidebar immediately - this is the most important part
-  isSidebarOpen.value = false;
-  
-  // Force Vue to update the DOM
-  await nextTick();
-  
-  console.log('Sidebar open after:', isSidebarOpen.value);
-  
-  const category = displayedCategories.value.find(cat => cat.id === categoryId);
-  
-  // If selecting a different category, navigate to that category page
-  if (category && category.slug && category.slug !== route.params.slug) {
-    console.log('Navigating to different category:', category.slug);
-    router.push(`/eshop/category/${category.slug}`);
-    return;
-  }
-  
-  // If selecting the same category or applying a cross-category filter
-  console.log('Applying filter for category:', categoryId);
-  selectedCategory.value = categoryId;
-  currentPage.value = 1; // Reset pagination
-  fetchProducts();
-}
-
-// Load more categories
-async function loadMoreCategories() {
-  try {
-    const res = await get("/product-categories/", {
-      params: { offset: displayedCategories.value.length },
-    });
-    displayedCategories.value.push(...res.data.results || []);
-    hasMoreCategoriesToLoad.value = (res.data.results || []).length > 0;
-  } catch (error) {
-    console.error("Error loading more categories:", error);
-    toast.add({
-      title: "Error loading categories",
-      description: "Could not load more categories. Please try again later.",
-      color: "red",
-      timeout: 3000,
-    });
-  }
-}
-
-// Navigation functions
-function goToSellerRegistration() {
-  router.push("/seller-registration");
-}
-
-function contactSupport(type) {
-  if (type === 'chat') {
-    // Open chat widget or navigate to chat page
-    console.log("Opening live chat...");
-  } else if (type === 'email') {
-    // Open email client or navigate to contact form
-    window.location.href = "mailto:support@adsyclub.com";
-  }
-}
-
-function navigateToEshopManager() {
-  router.push("/eshop-manager");
-}
-
-// Fetch categories
-async function fetchCategories() {
-  try {
-    const res = await get("/product-categories/");
-    categories.value = res.data.results || [];
-    displayedCategories.value = categories.value.slice(0, 10); // Show first 10
-    hasMoreCategoriesToLoad.value = categories.value.length > 10;
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    toast.add({
-      title: "Error loading categories",
-      description: "Could not load categories. Please try again later.",
-      color: "red",
-      timeout: 3000,
-    });
-  }
-}
 
 // Debounce search
 let searchTimeout = null;
@@ -419,12 +286,6 @@ function debouncedSearch() {
   searchTimeout = setTimeout(() => {
     fetchProducts();
   }, 500);
-}
-
-// Clear category filter
-function clearCategoryFilter() {
-  selectedCategory.value = null;
-  fetchProducts();
 }
 
 async function getCategoryDetails() {
@@ -445,7 +306,7 @@ async function getCategoryDetails() {
   }
 }
 
-await Promise.all([fetchCategories(), getCategoryDetails()]);
+await getCategoryDetails();
 
 function clearPriceFilter() {
   minPrice.value = "";
@@ -467,7 +328,6 @@ function clearAllFilters() {
   minPrice.value = "";
   maxPrice.value = "";
   searchQuery.value = "";
-  selectedCategory.value = null;
   currentPage.value = 1;
   fetchProducts();
 }
@@ -499,10 +359,6 @@ async function fetchProducts() {
 
     if (maxPrice.value) {
       queryParams += `&max_price=${maxPrice.value}`;
-    }
-
-    if (selectedCategory.value) {
-      queryParams += `&category=${selectedCategory.value}`;
     }
 
     const res = await get(`/all-products/?${queryParams}`);
@@ -555,10 +411,6 @@ async function loadMoreProducts() {
 
     if (maxPrice.value) {
       queryParams += `&max_price=${maxPrice.value}`;
-    }
-
-    if (selectedCategory.value) {
-      queryParams += `&category=${selectedCategory.value}`;
     }
 
     const res = await get(`/all-products/?${queryParams}`);
@@ -641,17 +493,6 @@ onUnmounted(() => {
   100% {
     transform: translateX(100%);
   }
-}
-
-/* Sidebar slide animation */
-.slide-enter-active,
-.slide-leave-active {
-  transition: transform 0.3s ease;
-}
-
-.slide-enter-from,
-.slide-leave-to {
-  transform: translateX(-100%);
 }
 
 .animate-fade-up {
