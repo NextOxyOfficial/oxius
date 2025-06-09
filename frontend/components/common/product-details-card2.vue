@@ -841,10 +841,22 @@ async function fetchProductReviews() {
 // Fetch product rating statistics from API  
 async function fetchProductRatingStats() {
   if (!currentProduct?.id) return;
-    try {
+  
+  try {
     const response = await get(`/reviews/products/${currentProduct.id}/stats/`);
     if (response.data) {
       productRatingStats.value = response.data;
+    } else {
+      // Set default stats if no data returned
+      productRatingStats.value = {
+        total_reviews: 0,
+        average_rating: 0,
+        rating_5_count: 0,
+        rating_4_count: 0,
+        rating_3_count: 0,
+        rating_2_count: 0,
+        rating_1_count: 0
+      };
     }
   } catch (error) {
     console.error('Error fetching rating stats:', error);
@@ -1047,8 +1059,17 @@ watch(currentReviewPage, () => {
 
 // Submit review function updated to use API
 async function submitReview() {
-  if (!isReviewValid.value || !isLoggedIn.value || !currentProduct?.id) return;
+  console.log('=== submitReview started ===');
+  console.log('isReviewValid:', isReviewValid.value);
+  console.log('isLoggedIn:', isLoggedIn.value);
+  console.log('currentProduct.id:', currentProduct?.id);
+  
+  if (!isReviewValid.value || !isLoggedIn.value || !currentProduct?.id) {
+    console.log('Early return due to validation failure');
+    return;
+  }
 
+  console.log('Setting isSubmittingReview to true');
   isSubmittingReview.value = true;
 
   try {
@@ -1057,10 +1078,13 @@ async function submitReview() {
       comment: reviewForm.value.comment.trim(),
       // Don't send name - it will be set from the authenticated user
     };
-
+    
+    console.log('Submitting review data:', reviewData);
     const response = await post(`/reviews/products/${currentProduct.id}/reviews/`, reviewData);
-      if (response.data) {
-      // Successfully submitted review
+    console.log('Review submission response:', response);
+    
+    if (response.data) {
+      console.log('Review submitted successfully');
       
       // Show success message using Nuxt UI toast
       const toast = useToast();
@@ -1071,11 +1095,24 @@ async function submitReview() {
         timeout: 5000
       });
       
-      // Refresh the reviews list and stats
-      await Promise.all([
-        fetchProductReviews(),
-        fetchProductRatingStats()
-      ]);      // Reset form
+      // Refresh the reviews list and stats with individual error handling
+      console.log('Refreshing reviews and stats...');
+      try {
+        await fetchProductReviews();
+        console.log('Reviews refreshed successfully');
+      } catch (reviewsError) {
+        console.error('Error refreshing reviews:', reviewsError);
+      }
+      
+      try {
+        await fetchProductRatingStats();
+        console.log('Stats refreshed successfully');
+      } catch (statsError) {
+        console.error('Error refreshing rating stats:', statsError);
+      }
+      
+      // Reset form
+      console.log('Resetting form...');
       reviewForm.value = {
         name: "",
         rating: 0,
@@ -1084,6 +1121,7 @@ async function submitReview() {
 
       // Reset to first page to potentially show the newly added review
       currentReviewPage.value = 1;
+      console.log('Form reset and page set to 1');
     }
   } catch (error) {
     console.error('Error submitting review:', error);
@@ -1105,9 +1143,11 @@ async function submitReview() {
       description: errorMessage,
       color: 'red',
       timeout: 5000
-    });
-  } finally {
+    });  } finally {
+    // Ensure this always runs regardless of what happens above
+    console.log('FINALLY BLOCK: Setting isSubmittingReview to false');
     isSubmittingReview.value = false;
+    console.log('FINALLY BLOCK: isSubmittingReview is now:', isSubmittingReview.value);
   }
 }
 
