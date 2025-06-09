@@ -945,7 +945,7 @@
           >
             <div class="border p-4 bg-slate-50 rounded-xl">
               <!-- Title -->
-              <h2 class="text-lg font-semibold text-gray-800 mb-4">Confirm Transfer</h2>
+              <h2 class="text-lg font-medium text-gray-800 mb-4">Confirm Transfer</h2>
 
               <!-- Transfer Details -->
               <div class="space-y-4 mb-6">

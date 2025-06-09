@@ -260,7 +260,7 @@
       
       <!-- Users Section - Always displayed first when available -->      <div v-if="!usersLoading && userResults.length > 0" class="mb-8">
         <div class="flex justify-between items-center mb-4 px-1">
-          <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+          <h2 class="text-lg font-medium text-gray-800 flex items-center">
             <UsersRound class="h-4 w-4 text-blue-600 mr-2" />
             People
           </h2>
@@ -295,7 +295,7 @@
       <div>
         <!-- Post header with improved styling -->
         <div class="flex justify-between items-center mb-4 px-1" v-if="allPosts.length > 0">
-          <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+          <h2 class="text-lg font-medium text-gray-800 flex items-center">
             <MessageSquare class="h-4 w-4 text-blue-600 mr-2" />
             Posts
           </h2>
@@ -423,7 +423,7 @@
         </div>
       </div>
 
-      <h3 class="text-lg font-semibold text-gray-800 mb-1">
+      <h3 class="text-lg font-medium text-gray-800 mb-1">
         End of Search Results
       </h3>
       <p class="text-gray-600 mb-4 max-w-md">
@@ -483,7 +483,7 @@
         <Search class="h-8 w-8 text-gray-600" />
       </div>
 
-      <h3 class="text-lg font-semibold text-gray-800 mb-2">No results found</h3>
+      <h3 class="text-lg font-medium text-gray-800 mb-2">No results found</h3>
       <p class="text-gray-600 mb-6 max-w-md">
         We couldn't find any posts matching "{{ $route.params.search }}". Try
         adjusting your search terms or filters.

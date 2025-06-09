@@ -131,7 +131,7 @@
               name="i-heroicons-rectangle-stack"
               class="w-7 h-7 text-emerald-500"
             />
-            <span class="text-lg font-semibold text-gray-800 dark:text-white"
+            <span class="text-lg font-medium text-gray-800 dark:text-white"
               >Admin Center</span
             >
           </div>

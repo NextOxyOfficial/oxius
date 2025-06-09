@@ -359,7 +359,7 @@
 
       <!-- Commission Breakdown Section -->
       <div class="mt-8 mb-8">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-4">
           Commission Breakdown by Service
         </h3>
 
@@ -447,7 +447,7 @@
                 >Total Earned</span
               >
               <div
-                class="text-lg font-semibold text-gray-800 dark:text-white flex items-center"
+                class="text-lg font-medium text-gray-800 dark:text-white flex items-center"
               >
                 <UIcon name="i-mdi:currency-bdt" class="mr-0.5 text-sm" />
                 {{ service.amount.toFixed(2) }}
@@ -508,7 +508,7 @@
 
       <!-- Advanced Analytics Section -->
       <div v-if="commissionData.total_commissions > 0" class="mt-8 mb-8">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+        <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-4">
           Performance Analytics
         </h3>
 
@@ -521,7 +521,7 @@
                 <p class="text-xs text-gray-600 dark:text-gray-400">
                   Conversion Rate
                 </p>
-                <p class="text-lg font-semibold text-gray-800 dark:text-white">
+                <p class="text-lg font-medium text-gray-800 dark:text-white">
                   {{ conversionRate.toFixed(1) }}%
                 </p>
               </div>
@@ -540,7 +540,7 @@
                 <p class="text-xs text-gray-600 dark:text-gray-400">
                   Avg Commission
                 </p>
-                <p class="text-lg font-semibold text-gray-800 dark:text-white">
+                <p class="text-lg font-medium text-gray-800 dark:text-white">
                   ৳{{ averageCommission.toFixed(2) }}
                 </p>
               </div>
@@ -559,7 +559,7 @@
                 <p class="text-xs text-gray-600 dark:text-gray-400">
                   Best Performing
                 </p>
-                <p class="text-lg font-semibold text-gray-800 dark:text-white">
+                <p class="text-lg font-medium text-gray-800 dark:text-white">
                   {{ bestPerformingService }}
                 </p>
               </div>
@@ -578,7 +578,7 @@
                 <p class="text-xs text-gray-600 dark:text-gray-400">
                   This Month
                 </p>
-                <p class="text-lg font-semibold text-gray-800 dark:text-white">
+                <p class="text-lg font-medium text-gray-800 dark:text-white">
                   ৳{{ thisMonthEarnings.toFixed(2) }}
                 </p>
               </div>

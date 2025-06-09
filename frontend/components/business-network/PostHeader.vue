@@ -162,7 +162,7 @@
         >
           <div class="flex items-center justify-between mb-4">
             <h3
-              class="text-lg font-semibold text-gray-800 dark:text-white flex items-center"
+              class="text-lg font-medium text-gray-800 dark:text-white flex items-center"
             >
               <UIcon
                 name="i-heroicons-exclamation-triangle"

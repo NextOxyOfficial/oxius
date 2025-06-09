@@ -4,7 +4,7 @@
     class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-3"
   >
     <div class="flex items-center justify-between mb-3">
-      <h2 class="text-lg font-semibold text-gray-800">
+      <h2 class="text-lg font-medium text-gray-800">
         {{ $t("select_your_division") }}
       </h2>
       <span class="bg-blue-100 text-blue-700 text-sm px-2 py-1 rounded-full">{{

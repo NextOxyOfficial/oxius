@@ -326,7 +326,7 @@
                         class="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3"
                       >
                         <h2
-                          class="text-lg font-semibold text-gray-800 flex items-center"
+                          class="text-lg font-medium text-gray-800 flex items-center"
                         >
                           <Truck class="mr-2 h-5 w-5 text-indigo-500" />
                           Delivery Options
@@ -418,7 +418,7 @@
                         class="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-3"
                       >
                         <h2
-                          class="text-lg font-semibold text-gray-800 flex items-center"
+                          class="text-lg font-medium text-gray-800 flex items-center"
                         >
                           <CreditCard class="mr-2 h-5 w-5 text-indigo-500" />
                           Payment Method

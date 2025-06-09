@@ -10,7 +10,7 @@
           class="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white/95 dark:bg-gray-900/95 backdrop-blur-md mt-[60px] sm:mt-0"
         >
           <h2
-            class="text-lg font-semibold text-gray-800 dark:text-gray-300 flex items-center"
+            class="text-lg font-medium text-gray-800 dark:text-gray-300 flex items-center"
           >
             <UIcon
               name="i-heroicons-circle-stack"

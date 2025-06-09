@@ -1,7 +1,7 @@
 <template>
   <div class="user-sponsors-section">
     <div class="flex justify-between items-center mb-4">
-      <h3 class="text-lg font-semibold text-gray-800">My Sponsors</h3>
+      <h3 class="text-lg font-medium text-gray-800">My Sponsors</h3>
       <button 
         @click="openCreateModal"
         class="px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white text-sm rounded-lg hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 shadow-md"

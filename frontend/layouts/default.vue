@@ -1,5 +1,19 @@
 <template>
-  <div class="font-AnekBangla">
+  <div 
+    class="font-AnekBangla pull-to-refresh-container" 
+    :class="{ 'pulling': isPulling }"
+    ref="layoutContainer"
+  >
+    <!-- Pull-to-Refresh Indicator -->
+    <PullToRefreshIndicator
+      :visible="isPulling || isRefreshing"
+      :is-refreshing="isRefreshing"
+      :pull-distance="pullDistance"
+      :pull-progress="pullProgress"
+      :will-refresh="willRefresh"
+      :pull-percentage="pullPercentage"
+    />
+    
     <PublicHeader />
     <slot />
     <PublicFooter />
@@ -129,11 +143,80 @@
 
 <script setup>
 const { jwtLogin, user, getValidToken } = useAuth();
+const { triggerGlobalRefresh } = useRefreshCoordinator();
 const toast = useToast();
+const router = useRouter();
+const route = useRoute();
 
 const loader = ref(true);
 const showMobileAppPopup = ref(false);
 const appSize = ref(''); // Will be populated from API
+const layoutContainer = ref(null);
+
+// Pull-to-refresh setup
+const {
+  isPulling,
+  isRefreshing,
+  pullDistance,
+  pullProgress,
+  willRefresh,
+  pullPercentage,
+  triggerRefresh
+} = usePullToRefresh({
+  element: layoutContainer,
+  threshold: 80,
+  maxPullDistance: 120,
+  onRefresh: async () => {
+    try {
+      // Trigger global refresh for all registered components using the refresh coordinator
+      await triggerGlobalRefresh();
+      
+      // Add a small delay to ensure all refreshes complete
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Show success feedback
+      toast.add({
+        title: 'Refreshed',
+        description: 'Content has been updated successfully',
+        color: 'green',
+        icon: 'i-heroicons-check-circle',
+        timeout: 2000
+      });
+    } catch (error) {
+      console.error('Pull-to-refresh error:', error);
+      
+      // Show error feedback
+      toast.add({
+        title: 'Refresh Failed',
+        description: 'Failed to refresh content. Please try again.',
+        color: 'red',
+        icon: 'i-heroicons-exclamation-triangle',
+        timeout: 3000
+      });
+    }
+  },
+  onPullStart: () => {
+    // Optional: Add haptic feedback if available
+    if (process.client && 'vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
+  },
+  onPullEnd: ({ willRefresh: willRefreshEnd }) => {
+    // Optional: Add different haptic feedback for release
+    if (process.client && 'vibrate' in navigator && willRefreshEnd) {
+      navigator.vibrate([10, 50, 10]);
+    }
+  }
+});
+
+// Watch for route changes and reset pull state
+watch(() => route.path, () => {
+  // Reset pull state when navigating to prevent stuck states
+  if (isPulling.value) {
+    // Force reset if stuck in pulling state
+    triggerRefresh();
+  }
+});
 
 // Cookie utility functions
 const setCookie = (name, value, hours = 24) => {

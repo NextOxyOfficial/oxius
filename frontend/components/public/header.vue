@@ -223,7 +223,7 @@
           <!-- Navigation Links -->
           <div class="px-4 py-6">
             <h3
-              class="text-lg font-semibold text-gray-800 dark:text-gray-300 mb-2 px-4"
+              class="text-lg font-medium text-gray-800 dark:text-gray-300 mb-2 px-4"
             >
               {{ $t("menu") }}
             </h3>
@@ -370,7 +370,7 @@
           </div>          <!-- Download App Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
             <h3
-              class="text-lg font-semibold text-gray-800 dark:text-gray-300 mb-4"
+              class="text-lg font-medium text-gray-800 dark:text-gray-300 mb-4"
             >
               {{ $t("download_our_app") }}
             </h3>
@@ -406,7 +406,7 @@
           <!-- Social Media Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
             <h3
-              class="text-lg font-semibold text-gray-800 dark:text-gray-300 mb-4"
+              class="text-lg font-medium text-gray-800 dark:text-gray-300 mb-4"
             >
               {{ $t("follow_us") }}
             </h3>

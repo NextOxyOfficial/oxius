@@ -57,7 +57,7 @@
           </div>
           <div class="text-left ml-2">
             <h2
-              class="text-lg font-semibold text-gray-800 flex items-center gap-1"
+              class="text-lg font-medium text-gray-800 flex items-center gap-1"
             >
               {{ userProfile.first_name }} {{ userProfile.last_name }}
             </h2>

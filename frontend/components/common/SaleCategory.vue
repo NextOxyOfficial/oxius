@@ -1,4 +1,4 @@
-<template>  <div id="sale-category" class="for-sale-section py-6 bg-white rounded-lg mt-3">
+<template>  <div id="sale-category" class="for-sale-section py-4 bg-white rounded-lg mt-3">
     <div class="container mx-auto px-1">
       <!-- Updated section header with linked buttons -->
       <div class="relative mb-4 sm:mb-6">
@@ -54,7 +54,7 @@
 
                 <!-- Title with enhanced styling -->
                 <div class="flex-1 min-w-0">
-                  <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate">
+                  <h2 class="text-lg sm:text-xl font-medium text-slate-900 dark:text-white truncate">
                     {{$t("sale_listing")}}
                   </h2>
                   <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
@@ -453,7 +453,7 @@
       >
         <div class="bg-white p-2">
           <div class="sm:flex sm:items-start">
-            <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+            <div class="text-center sm:text-left w-full">
               <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="text-lg leading-6 font-medium text-gray-800 py-2">
                   Post a Sale
@@ -497,7 +497,7 @@
         >
           <div class="bg-white p-2">
             <div class="sm:flex sm:items-start">
-              <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+              <div class="text-center sm:text-left w-full">
                 <div
                   class="flex justify-between items-center border-b mb-2"
                 >

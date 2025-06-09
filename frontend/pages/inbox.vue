@@ -302,7 +302,7 @@
                             class="text-primary-600 text-xl"
                           />
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800">
+                        <h3 class="text-lg font-medium text-gray-800">
                           Open New Ticket
                         </h3>
                       </div>
@@ -417,7 +417,7 @@
                             class="text-blue-600 text-xl"
                           />
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800">
+                        <h3 class="text-lg font-medium text-gray-800">
                           Reply to Ticket
                         </h3>
                       </div>
@@ -579,7 +579,7 @@
                           </div>
                           <div>
                             <div class="flex items-center gap-2 mb-1">
-                              <h3 class="text-lg font-semibold text-gray-800">
+                              <h3 class="text-lg font-medium text-gray-800">
                                 Ticket #{{
                                   activeTicket.id.toString().padStart(10, "0")
                                 }}

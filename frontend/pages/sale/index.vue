@@ -791,7 +791,7 @@
         >
           <div class="bg-white px-2 pb-4 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
-              <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+              <div class="text-center sm:text-left w-full">
                 <div
                   class="flex justify-between items-center border-b pb-3 mb-4"
                 >
