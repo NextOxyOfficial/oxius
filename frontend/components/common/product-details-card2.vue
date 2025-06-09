@@ -210,7 +210,7 @@
 
     <!-- Key Benefits Section -->
     <section class="py-2 w-full">
-      <h2 class="text-xl md:text-2xl font-semibold text-center mb-12">
+      <h2 class="text-xl md:text-2xl font-semibold text-center mb-6">
         {{ currentProduct.benefits_title }}
         <span class="text-primary-600 dark:text-primary-400">{{
           currentProduct.name
@@ -234,7 +234,7 @@
         </div>
       </div>
 
-      <div class="text-center mt-12">
+      <div class="text-center mt-6">
         <button
           @click="addToCart(currentProduct, 1)"
           class="px-8 py-3 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white font-semibold rounded-xl shadow-sm transition-all duration-300"
@@ -358,7 +358,7 @@
         <h2 class="text-xl md:text-2xl font-semibold text-center mb-4">
           Customer Reviews
         </h2>
-        <p class="text-center text-gray-600 dark:text-slate-300 mb-12">
+        <p class="text-center text-gray-600 dark:text-slate-300 mb-6">
           Join thousands of satisfied customers who have experienced the
           difference
         </p>
@@ -686,7 +686,7 @@
         <h2 class="text-xl md:text-2xl font-semibold text-center mb-4">
           {{ currentProduct.faqs_title }}
         </h2>
-        <p class="text-center text-gray-600 dark:text-slate-300 mb-12">
+        <p class="text-center text-gray-600 dark:text-slate-300 mb-6">
           {{ currentProduct.faqs_subtitle }}
         </p>
 
