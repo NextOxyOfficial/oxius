@@ -1,16 +1,15 @@
-<template>
-  <div
-    class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20 -mt-2"
+<template>  <div
+    class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20 pt-4"
   >
     <UContainer>
         <!-- Modern Header Section -->
-      <div class="my-4">        
+      <div class="mb-4">        
         <!-- Main Header Card -->
-        <div class="relative mt-2 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+        <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
           <!-- Subtle gradient overlay -->
           <div class="absolute inset-0 bg-gradient-to-br from-emerald-100/30 via-transparent to-blue-100/30 dark:from-emerald-900/10 dark:via-transparent dark:to-blue-900/10"></div>
           
-          <div class="relative py-2 px-4 ">
+          <div class="relative pb-2 px-4 ">
             <!-- Header Row -->
             <div class="flex items-center justify-between">
               <!-- Left: Back Button + Category Name -->
