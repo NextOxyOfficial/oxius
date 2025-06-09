@@ -7,7 +7,7 @@
       <!-- Premium Search & Filters Section -->
       <div class="mb-5">
         <!-- Elegant Search Bar & Price Range - Responsive Layout -->
-        <div class="flex flex-col lg:flex-row gap-3 mt-4">          
+        <div class="flex flex-col lg:flex-row gap-3">          
         <!-- Search Section -->          
          <div class="flex gap-3 items-center lg:flex-1">
             <!-- App-like Back Button for Mobile -->
