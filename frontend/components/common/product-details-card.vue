@@ -136,9 +136,7 @@
             <div v-if="currentProduct.weight" class="text-xs text-slate-500">
               Weight: {{ currentProduct.weight }}kg
             </div>
-          </div>
-
-          <!-- Ratings section remains the same -->
+          </div>          <!-- Ratings section with dynamic data -->
           <div class="flex items-center gap-2 mb-4">
             <div class="rating-stars relative inline-block">
               <!-- Background stars -->
@@ -155,7 +153,7 @@
               <div
                 class="absolute top-0 left-0 flex overflow-hidden"
                 :style="{
-                  width: `${(currentProduct.rating / 5) * 100}%`,
+                  width: `${(displayRating / 5) * 100}%`,
                 }"
               >
                 <UIcon
@@ -170,10 +168,7 @@
             <span
               class="text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              {{ currentProduct.rating }} ({{
-                currentProduct.reviews?.length || 0
-              }}
-              reviews)
+              {{ averageRating }} ({{ reviewCount }} reviews)
             </span>
           </div>
 
@@ -380,7 +375,7 @@
           >
             <div class="flex-shrink-0 relative">
               <div
-                class="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"
+                class="w-14 h-14 rounded-xl bg-slate-200 dark:bg-slate-700 overflow-hidden"
               >
                 <img
                   v-if="currentProduct.owner_details?.image"
@@ -401,8 +396,7 @@
               >
                 <UIcon name="i-heroicons-check" class="w-3 h-3" />
               </div>
-            </div>            
-            <div class="ml-3 flex-1 min-w-0">
+            </div>              <div class="ml-3 flex-1 min-w-0">
               <div class="flex items-center gap-2">                
                 <NuxtLink 
                   v-if="currentProduct.owner_details?.store_username || currentProduct.owner_details?.id"
@@ -425,6 +419,33 @@
                     "Anonymous Seller"
                   }}
                 </h4>
+              </div>
+              
+              <!-- Pro and Verified Badges -->
+              <div class="flex items-center gap-2 mt-1">
+                <!-- Pro Badge -->
+                <UBadge
+                  v-if="currentProduct.owner_details?.is_pro || currentProduct.owner_details?.subscription_type === 'pro'"
+                  color="amber"
+                  variant="solid"
+                  size="xs"
+                  class="font-semibold"
+                >
+                  <UIcon name="i-heroicons-star-solid" class="w-3 h-3 mr-1" />
+                  Pro
+                </UBadge>
+                
+                <!-- Verified Badge -->
+                <UBadge
+                  v-if="currentProduct.owner_details?.kyc || currentProduct.owner_details?.is_verified"
+                  color="blue"
+                  variant="solid"
+                  size="xs"
+                  class="font-semibold"
+                >
+                  <UIcon name="i-heroicons-check-badge-solid" class="w-3 h-3 mr-1" />
+                  Verified
+                </UBadge>
               </div>
             </div>
 
@@ -535,7 +556,7 @@
         <!-- You may also like Section -->
         <div class="mb-8 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
           <h3
-            class="text-base font-medium my-3 px-2 text-gray-800 dark:text-white flex items-center"
+            class="text-base font-medium py-3 px-2 text-gray-800 dark:text-white flex items-center"
           >
             <UIcon
               name="i-heroicons-squares-2x2"
@@ -654,6 +675,55 @@ const quantity = ref(1);
 const similarProducts = ref([]);
 const isSimilarProductsLoading = ref(false);
 
+// Dynamic rating stats
+const productRatingStats = ref({
+  total_reviews: 0,
+  average_rating: 0,
+  rating_5_count: 0,
+  rating_4_count: 0,
+  rating_3_count: 0,
+  rating_2_count: 0,
+  rating_1_count: 0
+});
+
+// API composable
+const { get } = useApi();
+
+// Fetch product rating statistics from API  
+async function fetchProductRatingStats() {
+  if (!currentProduct?.id) return;
+  
+  try {
+    const response = await get(`/reviews/products/${currentProduct.id}/stats/`);
+    if (response.data) {
+      productRatingStats.value = response.data;
+    } else {
+      // Set default stats if no data returned
+      productRatingStats.value = {
+        total_reviews: 0,
+        average_rating: 0,
+        rating_5_count: 0,
+        rating_4_count: 0,
+        rating_3_count: 0,
+        rating_2_count: 0,
+        rating_1_count: 0
+      };
+    }
+  } catch (error) {
+    console.error('Error fetching rating stats:', error);
+    // Set default stats if API fails
+    productRatingStats.value = {
+      total_reviews: 0,
+      average_rating: 0,
+      rating_5_count: 0,
+      rating_4_count: 0,
+      rating_3_count: 0,
+      rating_2_count: 0,
+      rating_1_count: 0
+    };
+  }
+}
+
 function closeModal() {
   emit("close-modal");
 }
@@ -715,6 +785,22 @@ function calculateSavings(sale_price, regular_price) {
   return (regular - current).toLocaleString();
 }
 
+// Dynamic rating computations
+const reviewCount = computed(() => {
+  return productRatingStats.value?.total_reviews || 0;
+});
+
+const averageRating = computed(() => {
+  if (productRatingStats.value?.average_rating) {
+    return parseFloat(productRatingStats.value.average_rating).toFixed(1);
+  }
+  return "0.0";
+});
+
+const displayRating = computed(() => {
+  return parseFloat(averageRating.value);
+});
+
 // Reset selected image when product changes
 watch(
   () => currentProduct?.id,
@@ -722,28 +808,9 @@ watch(
     selectedImageIndex.value = 0;
     quantity.value = 1;
     fetchSimilarProducts(); // Fetch similar products when current product changes
+    fetchProductRatingStats(); // Fetch rating stats when current product changes
   },
   { immediate: true } // Fetch immediately on component creation
-);
-
-// Fetch similar products when product changes
-watch(
-  () => currentProduct?.id,
-  async () => {
-    if (!currentProduct?.id) return;
-    isSimilarProductsLoading.value = true;
-    try {
-      const response = await fetch(
-        `/api/similar-products/${currentProduct.id}`
-      );
-      similarProducts.value = await response.json();
-    } catch (error) {
-      console.error("Failed to fetch similar products:", error);
-      similarProducts.value = [];
-    } finally {
-      isSimilarProductsLoading.value = false;
-    }
-  }
 );
 </script>
 
