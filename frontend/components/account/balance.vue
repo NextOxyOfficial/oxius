@@ -205,14 +205,15 @@
       <div class="flex flex-col gap-4">
         <div class="text-center w-full flex flex-col items-center gap-3">
           <h3
-            class="text-xl font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-2"
+            class="font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-2"
           >
             <UIcon
               name="i-heroicons-user-group"
               class="text-emerald-600 dark:text-emerald-400"
             />
             {{ $t("refer") }}
-          </h3>          <div class="relative w-full max-w-md mx-auto">
+          </h3>          
+          <div class="relative w-full max-w-md mx-auto">
             <div
               class="flex items-center bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-emerald-200 dark:border-emerald-700"
             >
@@ -221,7 +222,8 @@
                 class="text-sm py-3 px-4 w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-700 dark:text-slate-200"
                 readonly
                 :value="`https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`"
-              />              <UButton
+              />              
+              <UButton
                 size="sm"
                 color="emerald"
                 icon="i-iconamoon-copy-light"
@@ -240,7 +242,8 @@
               </UButton>
             </div>
           </div>
-        </div>        <!-- Referral stats -->
+        </div>        
+        <!-- Referral stats -->
         <div
           class="flex gap-6 justify-center items-center bg-white/80 rounded-xl p-3"
         >
