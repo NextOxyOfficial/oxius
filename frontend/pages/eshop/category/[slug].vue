@@ -1,6 +1,6 @@
 <template>
   <div
-    class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20"
+    class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20 pt-4"
   >
     <UContainer>
       <!-- <CommonHotDealsSection /> -->
@@ -8,7 +8,8 @@
       <div class="mb-5">
         <!-- Elegant Search Bar & Price Range - Responsive Layout -->
         <div class="flex flex-col lg:flex-row gap-3 mt-4">          
-        <!-- Search Section -->          <div class="flex gap-3 items-center lg:flex-1">
+        <!-- Search Section -->          
+         <div class="flex gap-3 items-center lg:flex-1">
             <!-- App-like Back Button for Mobile -->
             <button
               @click="$router.push('/eshop')"
