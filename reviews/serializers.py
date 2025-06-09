@@ -17,9 +17,19 @@ class ReviewUserSerializer(serializers.ModelSerializer):
         return obj.name or obj.first_name or obj.username
 
 
+class ReviewProductSerializer(serializers.ModelSerializer):
+    """Serializer for product information in reviews"""
+    
+    class Meta:
+        from base.models import Product
+        model = Product
+        fields = ['id', 'name', 'slug', 'regular_price', 'sale_price']
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     """Serializer for Review model"""
     user = ReviewUserSerializer(read_only=True)
+    product = ReviewProductSerializer(read_only=True)
     reviewer_name = serializers.ReadOnlyField()
     is_helpful = serializers.SerializerMethodField()
     formatted_date = serializers.SerializerMethodField()

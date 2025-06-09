@@ -398,17 +398,18 @@
             Cancel
           </UButton>        </div>
       </div>
-    </UModal>
-
-    <!-- Store Reviews Modal -->
-    <UModal v-model="showReviewsModal" :ui="{ width: 'max-w-4xl' }">
-      <div class="p-0">
+    </UModal>    <!-- Store Reviews Modal -->
+    <UModal v-model="showReviewsModal" fullscreen>
+      <div class="flex flex-col h-full bg-white">
         <!-- Modal Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <div class="flex items-center space-x-2">
-            <UIcon name="i-heroicons-star" class="w-5 h-5 text-yellow-500" />
-            <h3 class="text-lg font-semibold text-gray-800">Store Reviews</h3>
-            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
+          <div class="flex items-center space-x-3">
+            <UIcon name="i-heroicons-star" class="w-6 h-6 text-yellow-500" />
+            <div>
+              <h3 class="text-xl font-semibold text-gray-900">Store Reviews</h3>
+              <p class="text-sm text-gray-600">Reviews for your products</p>
+            </div>
+            <span class="bg-primary-100 text-primary-800 text-sm font-medium px-3 py-1 rounded-full">
               {{ storeReviewsCount }} {{ storeReviewsCount === 1 ? 'Review' : 'Reviews' }}
             </span>
           </div>
@@ -417,131 +418,169 @@
             variant="ghost"
             icon="i-heroicons-x-mark"
             @click="showReviewsModal = false"
-            class="rounded-full"
+            class="rounded-full w-10 h-10"
           />
-        </div>
-
-        <!-- Modal Content -->
-        <div class="max-h-96 overflow-y-auto">
+        </div>        <!-- Modal Content -->
+        <div class="flex-1 overflow-y-auto bg-gray-50">
           <!-- Loading State -->
-          <div v-if="isLoadingStoreReviews" class="flex justify-center items-center py-12">
-            <div class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full"></div>
-            <span class="ml-3 text-gray-600">Loading reviews...</span>
+          <div v-if="isLoadingStoreReviews" class="flex justify-center items-center py-32">
+            <div class="flex flex-col items-center">
+              <div class="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full"></div>
+              <span class="text-gray-600 mt-4 text-lg">Loading reviews...</span>
+            </div>
           </div>
 
           <!-- Reviews List -->
-          <div v-else-if="storeReviews.length > 0" class="p-6 space-y-4">
-            <div
-              v-for="(review, index) in storeReviews"
-              :key="review.id || index"
-              class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
-            >
-              <!-- Review Header -->
-              <div class="flex items-start justify-between mb-3">
-                <div class="flex items-center space-x-3">
-                  <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center text-primary-700 dark:text-primary-300 font-medium">
-                    {{ review.user?.display_name?.charAt(0) || review.reviewer_name?.charAt(0) || "U" }}
-                  </div>
-                  <div>
-                    <div class="font-medium text-gray-800">
-                      {{ review.user?.display_name || review.reviewer_name || "Anonymous" }}
+          <div v-else-if="storeReviews.length > 0" class="p-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div
+                v-for="(review, index) in storeReviews"
+                :key="review.id || index"
+                class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-sm transition-all duration-300"
+              >                <!-- Review Header -->
+                <div class="flex items-start justify-between mb-4">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center text-primary-700 font-semibold text-lg">
+                      {{ review.user?.display_name?.charAt(0) || review.reviewer_name?.charAt(0) || "U" }}
                     </div>
-                    <div class="text-xs text-gray-500">
-                      {{ review.formatted_date || "Recently" }}
-                      <span v-if="review.is_verified_purchase" class="ml-2 text-green-600">
-                        ✓ Verified Purchase
-                      </span>
+                    <div>
+                      <div class="font-semibold text-gray-900 text-lg">
+                        {{ review.user?.display_name || review.reviewer_name || "Anonymous" }}
+                      </div>
+                      <div class="text-sm text-gray-500 flex items-center">
+                        <UIcon name="i-heroicons-clock" class="w-4 h-4 mr-1" />
+                        {{ review.formatted_date || "Recently" }}
+                        <span v-if="review.is_verified_purchase" class="ml-3 text-green-600 flex items-center">
+                          <UIcon name="i-heroicons-check-badge" class="w-4 h-4 mr-1" />
+                          Verified Purchase
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <!-- Rating Stars -->
-                <div class="flex text-yellow-400">
-                  <UIcon
-                    v-for="star in 5"
-                    :key="star"
-                    :name="star <= review.rating ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
-                    class="w-4 h-4"
-                    :class="star <= review.rating ? 'text-yellow-400' : 'text-gray-300'"
-                  />
-                </div>
-              </div>
-
-              <!-- Product Info -->
-              <div class="mb-3 p-2 bg-gray-50 rounded text-sm">
-                <span class="font-medium text-gray-700">Product:</span>
-                <span class="text-gray-600 ml-1">{{ review.product?.name || 'Unknown Product' }}</span>
-              </div>
-
-              <!-- Review Content -->
-              <div v-if="review.title" class="font-medium text-gray-800 mb-1">
-                {{ review.title }}
-              </div>
-              <p class="text-gray-600 text-sm">
-                "{{ review.comment }}"
-              </p>
-
-              <!-- Review Actions -->
-              <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                <div class="flex items-center space-x-2 text-xs text-gray-500">
-                  <span v-if="review.helpful_count > 0">
-                    {{ review.helpful_count }} {{ review.helpful_count === 1 ? 'person found' : 'people found' }} this helpful
+                  
+                  <!-- Rating Stars -->
+                  <div class="flex text-yellow-400">
+                    <UIcon
+                      v-for="star in 5"
+                      :key="star"
+                      :name="star <= review.rating ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                      class="w-5 h-5"
+                      :class="star <= review.rating ? 'text-yellow-400' : 'text-gray-300'"
+                    />
+                  </div>
+                </div><!-- Product Info -->
+                <div class="mb-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <UIcon name="i-heroicons-cube" class="w-5 h-5 text-gray-500 mr-2" />
+                      <span class="font-medium text-gray-700">Product:</span>
+                    </div>
+                    <UIcon name="i-heroicons-arrow-top-right-on-square" class="w-4 h-4 text-gray-400" />
+                  </div>
+                  <NuxtLink
+                    v-if="review.product?.slug"
+                    :to="`/product-details/${review.product.slug}`"
+                    class="font-semibold text-primary-600 hover:text-primary-800 transition-colors duration-200 text-lg mt-1 block cursor-pointer"
+                  >
+                    {{ review.product?.name || 'Unknown Product' }}
+                  </NuxtLink>
+                  <span v-else class="font-semibold text-gray-600 text-lg mt-1 block">
+                    {{ review.product?.name || 'Product no longer available' }}
                   </span>
+                  <div v-if="review.product?.sale_price || review.product?.regular_price" class="text-sm text-gray-600 mt-1">
+                    ৳{{ review.product?.sale_price || review.product?.regular_price }}
+                  </div>
+                </div>
+
+                <!-- Review Content -->
+                <div v-if="review.title" class="font-semibold text-gray-800 mb-2 text-lg">
+                  "{{ review.title }}"
+                </div>
+                <p class="text-gray-600 leading-relaxed mb-4">
+                  "{{ review.comment }}"
+                </p>
+
+                <!-- Review Actions -->
+                <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                  
+                  <div class="flex items-center text-sm text-gray-400">
+                    <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="w-4 h-4 mr-1" />
+                    Review #{{ index + 1 + (currentStoreReviewPage - 1) * storeReviewsPerPage }}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Empty State -->
-          <div v-else class="text-center py-12">
-            <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 class="text-lg font-medium text-gray-800 mb-2">No Reviews Yet</h3>
-            <p class="text-gray-600">
-              Your products haven't received any reviews yet. Encourage customers to leave feedback!
-            </p>
+          <div v-else class="text-center py-24">
+            <div class="max-w-md mx-auto">
+              <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="w-24 h-24 text-gray-300 mx-auto mb-6" />
+              <h3 class="text-2xl font-semibold text-gray-800 mb-4">No Reviews Yet</h3>
+              <p class="text-gray-600 text-lg leading-relaxed">
+                Your products haven't received any reviews yet. Encourage customers to leave feedback after their purchase!
+              </p>
+              <div class="mt-6">
+                <UButton
+                  color="primary"
+                  variant="outline"
+                  @click="showReviewsModal = false"
+                  icon="i-heroicons-arrow-left"
+                >
+                  Back to Products
+                </UButton>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Modal Footer -->
-        <div v-if="totalStoreReviewPages > 1" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-          <div class="flex justify-center items-center gap-2">
-            <!-- Previous button -->
-            <UButton
-              icon="i-heroicons-chevron-left"
-              color="gray"
-              variant="ghost"
-              :disabled="currentStoreReviewPage === 1 || isLoadingStoreReviews"
-              @click="previousStoreReviewPage"
-              size="sm"
-              class="rounded-full"
-            />
-
-            <!-- Page numbers -->
-            <div class="flex gap-1">
-              <UButton
-                v-for="page in storeReviewPaginationRange"
-                :key="page"
-                :variant="currentStoreReviewPage === page ? 'solid' : 'ghost'"
-                :color="currentStoreReviewPage === page ? 'primary' : 'gray'"
-                :disabled="page === '...' || isLoadingStoreReviews"
-                @click="page !== '...' && goToStoreReviewPage(page)"
-                size="sm"
-                class="rounded-full min-w-[32px]"
-              >
-                {{ page }}
-              </UButton>
+        <!-- Modal Footer with Pagination -->
+        <div v-if="totalStoreReviewPages > 1" class="px-6 py-4 border-t border-gray-200 bg-white flex-shrink-0">
+          <div class="flex justify-between items-center">
+            <div class="text-sm text-gray-600">
+              Showing {{ ((currentStoreReviewPage - 1) * storeReviewsPerPage) + 1 }} to 
+              {{ Math.min(currentStoreReviewPage * storeReviewsPerPage, storeReviewsCount) }} 
+              of {{ storeReviewsCount }} reviews
             </div>
+            <div class="flex items-center gap-2">
+              <!-- Previous button -->
+              <UButton
+                icon="i-heroicons-chevron-left"
+                color="gray"
+                variant="ghost"
+                :disabled="currentStoreReviewPage === 1 || isLoadingStoreReviews"
+                @click="previousStoreReviewPage"
+                size="sm"
+                class="rounded-full"
+              />
 
-            <!-- Next button -->
-            <UButton
-              icon="i-heroicons-chevron-right"
-              color="gray"
-              variant="ghost"
-              :disabled="currentStoreReviewPage === totalStoreReviewPages || isLoadingStoreReviews"
-              @click="nextStoreReviewPage"
-              size="sm"
-              class="rounded-full"
-            />
+              <!-- Page numbers -->
+              <div class="flex gap-1">
+                <UButton
+                  v-for="page in storeReviewPaginationRange"
+                  :key="page"
+                  :variant="currentStoreReviewPage === page ? 'solid' : 'ghost'"
+                  :color="currentStoreReviewPage === page ? 'primary' : 'gray'"
+                  :disabled="page === '...' || isLoadingStoreReviews"
+                  @click="page !== '...' && goToStoreReviewPage(page)"
+                  size="sm"
+                  class="rounded-full min-w-[36px] h-9"
+                >
+                  {{ page }}
+                </UButton>
+              </div>
+
+              <!-- Next button -->
+              <UButton
+                icon="i-heroicons-chevron-right"
+                color="gray"
+                variant="ghost"
+                :disabled="currentStoreReviewPage === totalStoreReviewPages || isLoadingStoreReviews"
+                @click="nextStoreReviewPage"
+                size="sm"
+                class="rounded-full"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -571,7 +610,7 @@ const isLoadingReviewsCount = ref(false);
 const isLoadingStoreReviews = ref(false);
 const currentStoreReviewPage = ref(1);
 const totalStoreReviewPages = ref(1);
-const storeReviewsPerPage = 6;
+const storeReviewsPerPage = 10;
 
 // Filters and search
 const productFilter = ref("all");

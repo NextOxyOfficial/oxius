@@ -15,7 +15,7 @@ from base.models import Product
 
 
 class ReviewPagination(PageNumberPagination):
-    page_size = 6  # Show 6 reviews per page (2 rows of 3 in the frontend)
+    page_size = 10  # Show 10 reviews per page for store reviews
     page_size_query_param = 'page_size'
     max_page_size = 50
 
