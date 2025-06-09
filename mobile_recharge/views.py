@@ -97,21 +97,11 @@ class RechargeListCreateView(generics.ListCreateAPIView):
             bank_status='completed',
             description=f"Mobile recharge for {serializer.validated_data['phone_number']}"
         )
-        
-        # Create the recharge record
+          # Create the recharge record with pending status
         recharge = serializer.save(user=user)
         
-        # Create notification for successful recharge
-        try:
-            from base.views import create_mobile_recharge_notification
-            create_mobile_recharge_notification(
-                user=user,
-                amount=amount,
-                phone_number=serializer.validated_data['phone_number']
-            )
-        except Exception as e:
-            # Log error but don't fail the transaction
-            print(f"Error creating recharge notification: {e}")
+        # Note: Notification will be created when admin approves the recharge
+        # No immediate notification as recharge needs admin approval
         
         return recharge
 
