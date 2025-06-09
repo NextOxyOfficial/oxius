@@ -1,131 +1,208 @@
 <template>
   <div
-    class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20 pt-4"
+    class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20"
   >
     <UContainer>
-      <!-- <CommonHotDealsSection /> -->
-      <!-- Premium Search & Filters Section -->
-      <div class="mb-5">
-        <!-- Elegant Search Bar & Price Range - Responsive Layout -->
-        <div class="flex flex-col lg:flex-row gap-3">          
-        <!-- Search Section -->          
-         <div class="flex gap-3 items-center lg:flex-1">
-            <!-- App-like Back Button for Mobile -->
-            <button
-              @click="$router.push('/eshop')"
-              class="md:hidden inline-flex items-center justify-center p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors duration-200 flex-shrink-0"
-            >
-              <span class="sr-only">Back to eShop</span>
-              <UIcon
-                name="i-heroicons-arrow-left-20-solid"
-                class="size-6"
-              />
-            </button>
-
-            <!-- Desktop Back Button -->
-            <button
-              @click="$router.push('/eshop')"
-              class="hidden md:inline-flex items-center justify-center p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors duration-200 flex-shrink-0"
-            >
-              <span class="sr-only">Back to eShop</span>
-              <UIcon
-                name="i-heroicons-arrow-uturn-left"
-                class="size-5"
-              />
-            </button>
-
-            <div class="relative flex-1">
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Search products, brands, categories..."
-                class="text-base w-full px-5 py-2 pl-12 pr-10 rounded-lg border border-gray-200/80 dark:border-gray-700/70 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-sm placeholder:text-gray-600 dark:placeholder:text-gray-600"
-                @input="debouncedSearch"
-              />
-              <UIcon
-                name="i-heroicons-magnifying-glass"
-                class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-600 size-5"
-              />
-              <button
-                v-if="searchQuery"
-                @click="clearSearch"
-                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 dark:hover:text-gray-300 transition-colors"
-              >
-                <UIcon name="i-heroicons-x-mark" class="size-5" />
-              </button>
-            </div>
-          </div>
-
-          <!-- Price Range Section - Desktop: Right side of search -->
-          <div
-            class="flex flex-col sm:flex-row lg:w-[55%] gap-3 sm:items-center"
-          >
-            <h3
-              class="text-base px-2 font-medium text-gray-800 dark:text-gray-400 flex items-center lg:whitespace-nowrap"
-            >
-              <UIcon
-                name="i-heroicons-banknotes"
-                class="mr-2 size-4.5 text-emerald-500"
-              />
-              Price Range
-            </h3>
-
-            <div class="flex items-center gap-3 flex-1">
-              <div class="relative flex-1">
-                <span
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 dark:text-gray-600 font-medium"
-                  >৳</span
+        <!-- Modern Header Section -->
+      <div class="mb-6">        
+        <!-- Main Header Card -->
+        <div class="relative mt-2 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+          <!-- Subtle gradient overlay -->
+          <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/30 via-transparent to-blue-50/30 dark:from-emerald-900/10 dark:via-transparent dark:to-blue-900/10"></div>
+          
+          <div class="relative py-2">
+            <!-- Header Row -->
+            <div class="flex items-center justify-between">
+              <!-- Left: Back Button + Category Name -->
+              <div class="flex items-center gap-3 flex-1 min-w-0">                
+                <!-- Back Button -->
+                <button
+                  @click="$router.push('/eshop')"
+                  class="flex-shrink-0 inline-flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all duration-200"
                 >
-                <input
-                  v-model="minPrice"
-                  type="number"
-                  placeholder="Min"
-                  class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
-                  @change="applyPriceFilter"
-                />
-              </div>
+                  <span class="sr-only">Back to eShop</span>
+                  <UIcon name="material-symbols-light-arrow-back-ios-rounded" class="size-5" />
+                </button>
 
-              <div class="flex-shrink-0 text-gray-600">—</div>
+                <!-- Category Name -->
+                <div class="flex-1 min-w-0">
+                  <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                    {{ categoryDetails.name || 'Category' }}
+                  </h1>
+                </div>
+              </div>              
+              <!-- Right: Search & Share -->
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <!-- Search Button/Field -->
+                <div class="relative search-container">
+                  <!-- Search Icon -->
+                  <button
+                    v-if="!isSearchOpen"
+                    @click="toggleSearch"
+                    class="inline-flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all duration-200"
+                  >
+                    <span class="sr-only">Search</span>
+                    <UIcon name="i-heroicons-magnifying-glass" class="size-5" />
+                  </button>
 
-              <div class="relative flex-1">
-                <span
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 dark:text-gray-600 font-medium"
-                  >৳</span
+                  <!-- Expanded Search Field -->
+                  <div
+                    v-if="isSearchOpen"
+                    class="absolute right-0 top-0 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 z-50"
+                    @click.stop
+                  >
+                    <div class="relative">
+                      <UIcon
+                        name="i-heroicons-magnifying-glass"
+                        class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4"
+                      />
+                      <input
+                        ref="searchInput"
+                        v-model="searchQuery"
+                        type="text"
+                        placeholder="Search in this category..."
+                        class="w-full pl-10 pr-10 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all text-sm"
+                        @input="debouncedSearch"
+                        @keydown.escape="closeSearch"
+                      />
+                      <button
+                        @click="closeSearch"
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      >
+                        <UIcon name="i-heroicons-x-mark" class="size-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>                
+                <!-- Share Button -->
+                <button
+                  @click="shareCategory"
+                  class="inline-flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200"
                 >
-                <input
-                  v-model="maxPrice"
-                  type="number"
-                  placeholder="Max"
-                  class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
-                  @change="applyPriceFilter"
-                />
+                  <span class="sr-only">Share Category</span>
+                  <UIcon name="i-heroicons-share" class="size-5" />
+                </button>                
+                <!-- Filter Dropdown Button -->
+                <button
+                  @click="togglePriceRange"
+                  class="inline-flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-all duration-200"
+                >
+                  <span class="sr-only">Price Filters</span>
+                  <UIcon 
+                    name="mdi-filter-multiple-outline" 
+                    class="size-5 transition-transform duration-200" 
+                  />
+                </button>
               </div>
-              <UButton
-                color="emerald"
-                variant="soft"
-                @click="applyPriceFilter"
-                class="whitespace-nowrap px-4 py-1.5 shadow-sm hover:shadow font-medium"
-              >
-                Apply Filter
-              </UButton>
-            </div>
+            </div>            <!-- Search Bar (when expanded on mobile) -->
+            <div v-if="isSearchOpen && isMobile" class="mb-4 search-container">
+              <div class="relative">
+                <UIcon
+                  name="i-heroicons-magnifying-glass"
+                  class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4"
+                />
+                <input
+                  ref="mobileSearchInput"
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Search in this category..."
+                  class="w-full pl-10 pr-10 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all text-sm"
+                  @input="debouncedSearch"
+                  @keydown.escape="closeSearch"
+                />
+                <button
+                  @click="closeSearch"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  <UIcon name="i-heroicons-x-mark" class="size-4" />
+                </button>
+              </div>
+            </div>            <!-- Price Range Section -->
+            <transition
+              enter-active-class="transition-all duration-300 ease-out"
+              enter-from-class="opacity-0 max-h-0 overflow-hidden"
+              enter-to-class="opacity-100 max-h-20"
+              leave-active-class="transition-all duration-300 ease-in"
+              leave-from-class="opacity-100 max-h-20"
+              leave-to-class="opacity-0 max-h-0 overflow-hidden"
+            >
+              <div v-if="isPriceRangeOpen" class="flex flex-col sm:flex-row gap-3 sm:items-center py-2 px-2 sm:px-6 border-t border-gray-100 dark:border-gray-700/30">
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 flex-shrink-0">
+                  <UIcon name="i-heroicons-banknotes" class="size-4 text-emerald-500" />
+                  Price Range
+                </label>
+
+                <div class="flex items-center gap-3 flex-1">
+                  <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 text-sm font-medium">
+                      ৳
+                    </span>
+                    <input
+                      v-model="minPrice"
+                      type="number"
+                      placeholder="Min"
+                      class="w-full pl-7 pr-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all text-sm"
+                      @change="applyPriceFilter"
+                    />
+                  </div>
+
+                  <span class="text-gray-400 flex-shrink-0">—</span>
+
+                  <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 text-sm font-medium">
+                      ৳
+                    </span>
+                    <input
+                      v-model="maxPrice"
+                      type="number"
+                      placeholder="Max"
+                      class="w-full pl-7 pr-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all text-sm"
+                      @change="applyPriceFilter"
+                    />
+                  </div>
+
+                  <UButton
+                    color="emerald"
+                    variant="soft"
+                    @click="applyPriceFilter"
+                    class="whitespace-nowrap px-4 py-2 shadow-sm hover:shadow font-medium"
+                  >
+                    Apply
+                  </UButton>
+                </div>
+              </div>
+            </transition>
           </div>
         </div>
-      </div>      
-        <!-- Active Filters with elegantly styled badges -->
+      </div><!-- Active Filters with elegantly styled badges -->
         <div
           v-if="hasActiveFilters"
-          class="flex flex-wrap items-center gap-2 pt-1 sm:pt-4 border-t border-gray-100 dark:border-gray-700/30"
+          class="flex flex-wrap items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700/30 mt-4"
         >          
           <span class="text-sm text-gray-600 dark:text-gray-600 font-medium"
             >Active filters:</span
           >
 
           <UBadge
+            v-if="searchQuery"
+            color="blue"
+            variant="soft"
+            class="pl-3 pr-2 py-1 group cursor-pointer"
+            @click.stop="clearSearch"
+          >
+            Search: "{{ searchQuery }}"
+            <span
+              class="ml-1.5 bg-blue-200/50 dark:bg-blue-800/30 rounded-full p-0.5 group-hover:bg-blue-300/50 dark:group-hover:bg-blue-700/30 transition-colors"
+            >
+              <UIcon name="i-heroicons-x-mark" class="size-3" />
+            </span>
+          </UBadge>
+
+          <UBadge
             v-if="minPrice || maxPrice"
             color="emerald"
             variant="soft"
-            class="pl-3 pr-2 py-1 group"
+            class="pl-3 pr-2 py-1 group cursor-pointer"
             @click.stop="clearPriceFilter"
           >
             Price: {{ minPrice || "0" }} - {{ maxPrice || "∞" }}
@@ -247,7 +324,7 @@
 
 <script setup>
 import { CommonHotDealsSection } from "#components";
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 const { get } = useApi();
 const products = ref({});
 const isLoading = ref(true);
@@ -271,6 +348,15 @@ const searchQuery = ref("");
 const minPrice = ref("");
 const maxPrice = ref("");
 
+// Search functionality state
+const isSearchOpen = ref(false);
+const isMobile = ref(false);
+const isPriceRangeOpen = ref(false);
+
+// Search input references
+const searchInput = ref(null);
+const mobileSearchInput = ref(null);
+
 // Computed property to check if any filters are active
 const hasActiveFilters = computed(() => {
   return (
@@ -279,6 +365,72 @@ const hasActiveFilters = computed(() => {
     searchQuery.value
   );
 });
+
+// Search functionality
+async function toggleSearch() {
+  isSearchOpen.value = !isSearchOpen.value;
+  if (isSearchOpen.value) {
+    await nextTick();
+    if (isMobile.value) {
+      mobileSearchInput.value?.focus();
+    } else {
+      searchInput.value?.focus();
+    }
+  }
+}
+
+function closeSearch() {
+  isSearchOpen.value = false;
+  // Don't clear the search query when closing, just hide the UI
+}
+
+// Price range toggle functionality
+function togglePriceRange() {
+  isPriceRangeOpen.value = !isPriceRangeOpen.value;
+}
+
+// Share functionality
+async function shareCategory() {
+  const shareData = {
+    title: `${categoryDetails.value.name || 'Category'} - AdsyClub eShop`,
+    text: `Check out ${categoryDetails.value.name || 'this category'} with ${totalProducts.value} amazing products!`,
+    url: window.location.href
+  };
+
+  try {
+    if (navigator.share && navigator.canShare(shareData)) {
+      await navigator.share(shareData);
+    } else {
+      // Fallback: copy to clipboard
+      await navigator.clipboard.writeText(window.location.href);
+      toast.add({
+        title: "Link copied!",
+        description: "Category link has been copied to your clipboard.",
+        color: "emerald",
+        timeout: 3000,
+      });
+    }
+  } catch (error) {
+    console.error('Error sharing:', error);
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.add({
+        title: "Link copied!",
+        description: "Category link has been copied to your clipboard.",
+        color: "emerald",
+        timeout: 3000,
+      });
+    } catch (clipboardError) {
+      toast.add({
+        title: "Share failed",
+        description: "Unable to share or copy link. Please try again.",
+        color: "red",
+        timeout: 3000,
+      });
+    }
+  }
+}
 
 // Debounce search
 let searchTimeout = null;
@@ -467,11 +619,30 @@ function initInfiniteScroll() {
 await fetchProducts();
 onMounted(() => {
   initInfiniteScroll();
+  
+  // Detect mobile device
+  const checkMobile = () => {
+    isMobile.value = window.innerWidth < 768; // Tailwind md breakpoint
+  };
+  
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  
+  // Close search when clicking outside
+  const handleClickOutside = (event) => {
+    if (isSearchOpen.value && !event.target.closest('.search-container')) {
+      closeSearch();
+    }
+  };
+  
+  document.addEventListener('click', handleClickOutside);
 });
 
 // Clean up on unmount
 onUnmounted(() => {
-  // Cleanup any observers or listeners if needed
+  // Cleanup event listeners
+  window.removeEventListener('resize', () => {});
+  document.removeEventListener('click', () => {});
 });
 </script>
 
@@ -487,6 +658,17 @@ onUnmounted(() => {
   }
 }
 
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);
@@ -496,12 +678,42 @@ onUnmounted(() => {
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.05);
+  }
+}
+
+@keyframes float-delayed {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(10px) scale(0.95);
+  }
+}
+
 .animate-fade-up {
   animation: fadeUp 0.5s ease-out forwards;
 }
 
+.animate-fade-in-scale {
+  animation: fadeInScale 0.3s ease-out forwards;
+}
+
 .animate-shimmer {
   animation: shimmer 3s infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
 }
 
 .premium-product-card {
