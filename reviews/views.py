@@ -160,4 +160,49 @@ class UserReviewsListView(generics.ListAPIView):
         ).select_related('product').order_by('-created_at')
 
 
+class StoreReviewsListView(generics.ListAPIView):
+    """
+    List all reviews for products owned by the current user (store owner)
+    """
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = ReviewPagination
+    
+    def get_queryset(self):
+        # Get all reviews for products owned by the current user
+        return Review.objects.filter(
+            product__owner=self.request.user,
+            is_approved=True
+        ).select_related('product', 'user').order_by('-created_at')
+        
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            result = self.get_paginated_response(serializer.data)
+            result.data['total_count'] = queryset.count()
+            return result
+        
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            'results': serializer.data,
+            'total_count': queryset.count()
+        })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def store_reviews_count(request):
+    """
+    Get the total count of reviews for products owned by the current user
+    """
+    count = Review.objects.filter(
+        product__owner=request.user,
+        is_approved=True
+    ).count()
+    
+    return Response({'count': count})
+
+
 # Create your views here.

@@ -91,13 +91,24 @@
     </div>
 
     <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div class="flex items-center space-x-2">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between">        <div class="flex items-center space-x-2">
           <UIcon
             name="i-heroicons-shopping-cart"
             class="h-5 w-5 text-indigo-600"
           />
           <h2 class="text-xl font-semibold text-gray-800">My Products</h2>
+          <UButton
+            v-if="storeReviewsCount > 0"
+            variant="outline"
+            color="blue"
+            size="xs"
+            @click="showReviewsModal = true"
+            :loading="isLoadingReviewsCount"
+            class="ml-2"
+          >
+            <UIcon name="i-heroicons-star" class="w-3 h-3 mr-1" />
+            {{ storeReviewsCount }} {{ storeReviewsCount === 1 ? 'Review' : 'Reviews' }}
+          </UButton>
         </div>
         <div class="mt-3 md:mt-0 flex items-center space-x-4">
           <div class="relative">
@@ -385,7 +396,153 @@
             icon="i-heroicons-x-mark"
           >
             Cancel
-          </UButton>
+          </UButton>        </div>
+      </div>
+    </UModal>
+
+    <!-- Store Reviews Modal -->
+    <UModal v-model="showReviewsModal" :ui="{ width: 'max-w-4xl' }">
+      <div class="p-0">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div class="flex items-center space-x-2">
+            <UIcon name="i-heroicons-star" class="w-5 h-5 text-yellow-500" />
+            <h3 class="text-lg font-semibold text-gray-800">Store Reviews</h3>
+            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+              {{ storeReviewsCount }} {{ storeReviewsCount === 1 ? 'Review' : 'Reviews' }}
+            </span>
+          </div>
+          <UButton
+            color="gray"
+            variant="ghost"
+            icon="i-heroicons-x-mark"
+            @click="showReviewsModal = false"
+            class="rounded-full"
+          />
+        </div>
+
+        <!-- Modal Content -->
+        <div class="max-h-96 overflow-y-auto">
+          <!-- Loading State -->
+          <div v-if="isLoadingStoreReviews" class="flex justify-center items-center py-12">
+            <div class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full"></div>
+            <span class="ml-3 text-gray-600">Loading reviews...</span>
+          </div>
+
+          <!-- Reviews List -->
+          <div v-else-if="storeReviews.length > 0" class="p-6 space-y-4">
+            <div
+              v-for="(review, index) in storeReviews"
+              :key="review.id || index"
+              class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+            >
+              <!-- Review Header -->
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center text-primary-700 dark:text-primary-300 font-medium">
+                    {{ review.user?.display_name?.charAt(0) || review.reviewer_name?.charAt(0) || "U" }}
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-800">
+                      {{ review.user?.display_name || review.reviewer_name || "Anonymous" }}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                      {{ review.formatted_date || "Recently" }}
+                      <span v-if="review.is_verified_purchase" class="ml-2 text-green-600">
+                        ✓ Verified Purchase
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Rating Stars -->
+                <div class="flex text-yellow-400">
+                  <UIcon
+                    v-for="star in 5"
+                    :key="star"
+                    :name="star <= review.rating ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                    class="w-4 h-4"
+                    :class="star <= review.rating ? 'text-yellow-400' : 'text-gray-300'"
+                  />
+                </div>
+              </div>
+
+              <!-- Product Info -->
+              <div class="mb-3 p-2 bg-gray-50 rounded text-sm">
+                <span class="font-medium text-gray-700">Product:</span>
+                <span class="text-gray-600 ml-1">{{ review.product?.name || 'Unknown Product' }}</span>
+              </div>
+
+              <!-- Review Content -->
+              <div v-if="review.title" class="font-medium text-gray-800 mb-1">
+                {{ review.title }}
+              </div>
+              <p class="text-gray-600 text-sm">
+                "{{ review.comment }}"
+              </p>
+
+              <!-- Review Actions -->
+              <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                <div class="flex items-center space-x-2 text-xs text-gray-500">
+                  <span v-if="review.helpful_count > 0">
+                    {{ review.helpful_count }} {{ review.helpful_count === 1 ? 'person found' : 'people found' }} this helpful
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else class="text-center py-12">
+            <UIcon name="i-heroicons-chat-bubble-bottom-center-text" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 class="text-lg font-medium text-gray-800 mb-2">No Reviews Yet</h3>
+            <p class="text-gray-600">
+              Your products haven't received any reviews yet. Encourage customers to leave feedback!
+            </p>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div v-if="totalStoreReviewPages > 1" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div class="flex justify-center items-center gap-2">
+            <!-- Previous button -->
+            <UButton
+              icon="i-heroicons-chevron-left"
+              color="gray"
+              variant="ghost"
+              :disabled="currentStoreReviewPage === 1 || isLoadingStoreReviews"
+              @click="previousStoreReviewPage"
+              size="sm"
+              class="rounded-full"
+            />
+
+            <!-- Page numbers -->
+            <div class="flex gap-1">
+              <UButton
+                v-for="page in storeReviewPaginationRange"
+                :key="page"
+                :variant="currentStoreReviewPage === page ? 'solid' : 'ghost'"
+                :color="currentStoreReviewPage === page ? 'primary' : 'gray'"
+                :disabled="page === '...' || isLoadingStoreReviews"
+                @click="page !== '...' && goToStoreReviewPage(page)"
+                size="sm"
+                class="rounded-full min-w-[32px]"
+              >
+                {{ page }}
+              </UButton>
+            </div>
+
+            <!-- Next button -->
+            <UButton
+              icon="i-heroicons-chevron-right"
+              color="gray"
+              variant="ghost"
+              :disabled="currentStoreReviewPage === totalStoreReviewPages || isLoadingStoreReviews"
+              @click="nextStoreReviewPage"
+              size="sm"
+              class="rounded-full"
+            />
+          </div>
         </div>
       </div>
     </UModal>
@@ -393,7 +550,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useApi } from "~/composables/useApi";
 // import { useToast } from "~/composables/useToast";
@@ -405,6 +562,16 @@ const toast = useToast();
 // UI state
 const showDeleteConfirmModal = ref(false);
 const isProcessing = ref(false);
+
+// Reviews state
+const showReviewsModal = ref(false);
+const storeReviews = ref([]);
+const storeReviewsCount = ref(0);
+const isLoadingReviewsCount = ref(false);
+const isLoadingStoreReviews = ref(false);
+const currentStoreReviewPage = ref(1);
+const totalStoreReviewPages = ref(1);
+const storeReviewsPerPage = 6;
 
 // Filters and search
 const productFilter = ref("all");
@@ -496,11 +663,121 @@ const filteredProducts = computed(() => {
           product.short_description.toLowerCase().includes(search))
     );
   }
-
   return result;
 });
 
+// Store reviews pagination
+const storeReviewPaginationRange = computed(() => {
+  if (totalStoreReviewPages.value <= 5) {
+    return Array.from({ length: totalStoreReviewPages.value }, (_, i) => i + 1);
+  }
+
+  if (currentStoreReviewPage.value <= 3) {
+    return [1, 2, 3, 4, "...", totalStoreReviewPages.value];
+  }
+
+  if (currentStoreReviewPage.value >= totalStoreReviewPages.value - 2) {
+    return [
+      1,
+      "...",
+      totalStoreReviewPages.value - 3,
+      totalStoreReviewPages.value - 2,
+      totalStoreReviewPages.value - 1,
+      totalStoreReviewPages.value,
+    ];
+  }
+
+  return [
+    1,
+    "...",
+    currentStoreReviewPage.value - 1,
+    currentStoreReviewPage.value,
+    currentStoreReviewPage.value + 1,
+    "...",
+    totalStoreReviewPages.value,
+  ];
+});
+
 // Methods
+// Reviews functions
+async function getStoreReviewsCount() {
+  try {
+    isLoadingReviewsCount.value = true;
+    const res = await get("/reviews/store-reviews/count/");
+    if (res && res.data) {
+      storeReviewsCount.value = res.data.count || 0;
+    }
+  } catch (error) {
+    console.error("Error fetching store reviews count:", error);
+    storeReviewsCount.value = 0;
+  } finally {
+    isLoadingReviewsCount.value = false;
+  }
+}
+
+async function getStoreReviews(page = 1) {
+  try {
+    isLoadingStoreReviews.value = true;
+    const res = await get("/reviews/store-reviews/", {
+      params: {
+        page: page,
+        page_size: storeReviewsPerPage
+      }
+    });
+    
+    if (res && res.data) {
+      if (res.data.results) {
+        storeReviews.value = res.data.results;
+        totalStoreReviewPages.value = Math.ceil((res.data.count || 0) / storeReviewsPerPage);
+      } else if (Array.isArray(res.data)) {
+        storeReviews.value = res.data;
+        totalStoreReviewPages.value = Math.ceil(res.data.length / storeReviewsPerPage);
+      } else {
+        storeReviews.value = [];
+        totalStoreReviewPages.value = 1;
+      }
+    } else {
+      storeReviews.value = [];
+      totalStoreReviewPages.value = 1;
+    }
+  } catch (error) {
+    console.error("Error fetching store reviews:", error);
+    storeReviews.value = [];
+    totalStoreReviewPages.value = 1;
+    toast.add({
+      title: "Error loading reviews",
+      description: "Could not load store reviews. Please try again later.",
+      color: "red",
+    });
+  } finally {
+    isLoadingStoreReviews.value = false;
+  }
+}
+
+// Reviews pagination functions
+async function goToStoreReviewPage(page) {
+  if (page !== currentStoreReviewPage.value) {
+    currentStoreReviewPage.value = page;
+    await getStoreReviews(page);
+  }
+}
+
+async function previousStoreReviewPage() {
+  if (currentStoreReviewPage.value > 1) {
+    const newPage = currentStoreReviewPage.value - 1;
+    currentStoreReviewPage.value = newPage;
+    await getStoreReviews(newPage);
+  }
+}
+
+async function nextStoreReviewPage() {
+  if (currentStoreReviewPage.value < totalStoreReviewPages.value) {
+    const newPage = currentStoreReviewPage.value + 1;    currentStoreReviewPage.value = newPage;
+    await getStoreReviews(newPage);
+  }
+}
+
+// Product methods
 async function getProducts() {
   try {
     const res = await get("/my-products/");
@@ -593,14 +870,24 @@ const deleteProduct = async () => {
       title: "Deletion Failed",
       description: "There was an error deleting the product.",
       color: "red",
-    });
-  } finally {
+    });  } finally {
     isProcessing.value = false;
   }
 };
 
+// Watch for modal opening to load reviews
+watch(showReviewsModal, (newValue) => {
+  if (newValue && storeReviews.value.length === 0) {
+    currentStoreReviewPage.value = 1;
+    getStoreReviews(1);
+  }
+});
+
 // Initialize component
 onMounted(async () => {
-  await getProducts();
+  await Promise.all([
+    getProducts(),
+    getStoreReviewsCount()
+  ]);
 });
 </script>

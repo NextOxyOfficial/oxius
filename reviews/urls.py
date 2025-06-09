@@ -33,4 +33,14 @@ urlpatterns = [
     path('my-reviews/', 
          views.UserReviewsListView.as_view(), 
          name='user-reviews'),
+    
+    # Store owner's reviews (reviews on their products)
+    path('store-reviews/', 
+         views.StoreReviewsListView.as_view(), 
+         name='store-reviews'),
+    
+    # Store reviews count
+    path('store-reviews/count/', 
+         views.store_reviews_count, 
+         name='store-reviews-count'),
 ]
