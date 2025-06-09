@@ -1067,10 +1067,9 @@ async function submitReview() {
   if (!isReviewValid.value || !isLoggedIn.value || !currentProduct?.id) {
     console.log('Early return due to validation failure');
     return;
-  }
-
-  console.log('Setting isSubmittingReview to true');
-  isSubmittingReview.value = true;
+  }    console.log('Setting isSubmittingReview to true');
+    isSubmittingReview.value = true;
+    console.log('After setting to true:', isSubmittingReview.value);
 
   try {
     const reviewData = {
