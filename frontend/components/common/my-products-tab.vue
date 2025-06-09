@@ -396,48 +396,69 @@
             icon="i-heroicons-x-mark"
           >
             Cancel
-          </UButton>        </div>
+          </UButton>        
+        </div>
       </div>
-    </UModal>    <!-- Store Reviews Modal -->
-    <UModal v-model="showReviewsModal" fullscreen>
-      <div class="flex flex-col h-full bg-white">
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
-          <div class="flex items-center space-x-3">
-            <UIcon name="i-heroicons-star" class="w-6 h-6 text-yellow-500" />
-            <div>
-              <h3 class="text-xl font-semibold text-gray-900">Store Reviews</h3>
-              <p class="text-sm text-gray-600">Reviews for your products</p>
-            </div>
-            <span class="bg-primary-100 text-primary-800 text-sm font-medium px-3 py-1 rounded-full">
-              {{ storeReviewsCount }} {{ storeReviewsCount === 1 ? 'Review' : 'Reviews' }}
-            </span>
-          </div>
-          <UButton
-            color="gray"
-            variant="ghost"
-            icon="i-heroicons-x-mark"
+    </UModal>    
+    <!-- Store Reviews Modal -->
+    <Teleport to="body">
+      <div
+        v-if="showReviewsModal"
+        class="fixed inset-0 z-50 overflow-y-auto pt-14 md:pt-16"
+      >
+        <!-- Modal backdrop -->
+        <div
+          class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
+        >
+          <div
+            class="fixed inset-0 transition-opacity"
             @click="showReviewsModal = false"
-            class="rounded-full w-10 h-10"
-          />
-        </div>        <!-- Modal Content -->
-        <div class="flex-1 overflow-y-auto bg-gray-50">
-          <!-- Loading State -->
-          <div v-if="isLoadingStoreReviews" class="flex justify-center items-center py-32">
-            <div class="flex flex-col items-center">
-              <div class="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full"></div>
-              <span class="text-gray-600 mt-4 text-lg">Loading reviews...</span>
-            </div>
+          >
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
           </div>
 
-          <!-- Reviews List -->
-          <div v-else-if="storeReviews.length > 0" class="p-6">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div
-                v-for="(review, index) in storeReviews"
-                :key="review.id || index"
-                class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-sm transition-all duration-300"
-              >                <!-- Review Header -->
+          <div
+            class="inline-block w-full align-bottom bg-white rounded-lg text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle sm:w-2xl sm:max-w-2xl"
+          >
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white">
+              <div class="flex items-center space-x-3">
+                <UIcon name="i-heroicons-star" class="w-6 h-6 text-yellow-500" />
+                <div>
+                  <h3 class="text-xl font-semibold text-gray-900">Store Reviews</h3>
+                  <p class="text-sm text-gray-600">Reviews for your products</p>
+                </div>
+                <span class="bg-primary-100 text-primary-800 text-sm font-medium px-3 py-1 rounded-full">
+                  {{ storeReviewsCount }} {{ storeReviewsCount === 1 ? 'Review' : 'Reviews' }}
+                </span>
+              </div>
+              <button
+                type="button"
+                class="text-gray-600 hover:text-gray-600"
+                @click="showReviewsModal = false"
+              >
+                <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
+              </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="bg-gray-50 max-h-[70vh] overflow-y-auto">
+              <!-- Loading State -->
+              <div v-if="isLoadingStoreReviews" class="flex justify-center items-center py-32">
+                <div class="flex flex-col items-center">
+                  <div class="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full"></div>
+                  <span class="text-gray-600 mt-4 text-lg">Loading reviews...</span>
+                </div>
+              </div>
+
+              <!-- Reviews List -->
+              <div v-else-if="storeReviews.length > 0" class="p-6">
+                <div>
+                  <div
+                    v-for="(review, index) in storeReviews"
+                    :key="review.id || index"
+                    class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-sm transition-all duration-300"
+                  ><!-- Review Header -->
                 <div class="flex items-start justify-between mb-4">
                   <div class="flex items-center space-x-3">
                     <div class="w-12 h-12 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center text-primary-700 font-semibold text-lg">
@@ -480,7 +501,7 @@
                   <NuxtLink
                     v-if="review.product?.slug"
                     :to="`/product-details/${review.product.slug}`"
-                    class="font-semibold text-primary-600 hover:text-primary-800 transition-colors duration-200 text-lg mt-1 block cursor-pointer"
+                    class="font-medium text-primary-600 hover:text-primary-800 transition-colors duration-200 mt-1 block cursor-pointer"
                   >
                     {{ review.product?.name || 'Unknown Product' }}
                   </NuxtLink>
@@ -530,61 +551,61 @@
                   Back to Products
                 </UButton>
               </div>
-            </div>
-          </div>
-        </div>
+            </div>          
+          </div>        </div>
 
-        <!-- Modal Footer with Pagination -->
-        <div v-if="totalStoreReviewPages > 1" class="px-6 py-4 border-t border-gray-200 bg-white flex-shrink-0">
-          <div class="flex justify-between items-center">
-            <div class="text-sm text-gray-600">
-              Showing {{ ((currentStoreReviewPage - 1) * storeReviewsPerPage) + 1 }} to 
-              {{ Math.min(currentStoreReviewPage * storeReviewsPerPage, storeReviewsCount) }} 
-              of {{ storeReviewsCount }} reviews
-            </div>
-            <div class="flex items-center gap-2">
-              <!-- Previous button -->
-              <UButton
-                icon="i-heroicons-chevron-left"
-                color="gray"
-                variant="ghost"
-                :disabled="currentStoreReviewPage === 1 || isLoadingStoreReviews"
-                @click="previousStoreReviewPage"
-                size="sm"
-                class="rounded-full"
-              />
+            <!-- Modal Footer with Pagination -->
+            <div v-if="totalStoreReviewPages > 1" class="px-6 py-4 border-t border-gray-200 bg-white flex-shrink-0">
+              <div class="flex justify-between items-center">
+                <div class="text-sm text-gray-600">
+                  Showing {{ ((currentStoreReviewPage - 1) * storeReviewsPerPage) + 1 }} to 
+                  {{ Math.min(currentStoreReviewPage * storeReviewsPerPage, storeReviewsCount) }} 
+                  of {{ storeReviewsCount }} reviews
+                </div>
+                <div class="flex items-center gap-2">
+                  <!-- Previous button -->
+                  <UButton
+                    icon="i-heroicons-chevron-left"
+                    color="gray"
+                    variant="ghost"
+                    :disabled="currentStoreReviewPage === 1 || isLoadingStoreReviews"
+                    @click="previousStoreReviewPage"
+                    size="sm"
+                    class="rounded-full"
+                  />
 
-              <!-- Page numbers -->
-              <div class="flex gap-1">
-                <UButton
-                  v-for="page in storeReviewPaginationRange"
-                  :key="page"
-                  :variant="currentStoreReviewPage === page ? 'solid' : 'ghost'"
-                  :color="currentStoreReviewPage === page ? 'primary' : 'gray'"
-                  :disabled="page === '...' || isLoadingStoreReviews"
-                  @click="page !== '...' && goToStoreReviewPage(page)"
-                  size="sm"
-                  class="rounded-full min-w-[36px] h-9"
-                >
-                  {{ page }}
-                </UButton>
+                  <!-- Page numbers -->
+                  <div class="flex gap-1">
+                    <UButton
+                      v-for="page in storeReviewPaginationRange"
+                      :key="page"
+                      :variant="currentStoreReviewPage === page ? 'solid' : 'ghost'"
+                      :color="currentStoreReviewPage === page ? 'primary' : 'gray'"
+                      :disabled="page === '...' || isLoadingStoreReviews"
+                      @click="page !== '...' && goToStoreReviewPage(page)"
+                      size="sm"
+                      class="rounded-full min-w-[36px] h-9"
+                    >
+                      {{ page }}
+                    </UButton>
+                  </div>              
+                  <!-- Next button -->
+                  <UButton
+                    icon="i-heroicons-chevron-right"
+                    color="gray"
+                    variant="ghost"
+                    :disabled="currentStoreReviewPage === totalStoreReviewPages || isLoadingStoreReviews"
+                    @click="nextStoreReviewPage"
+                    size="sm"
+                    class="rounded-full"
+                  />
+                </div>
               </div>
-
-              <!-- Next button -->
-              <UButton
-                icon="i-heroicons-chevron-right"
-                color="gray"
-                variant="ghost"
-                :disabled="currentStoreReviewPage === totalStoreReviewPages || isLoadingStoreReviews"
-                @click="nextStoreReviewPage"
-                size="sm"
-                class="rounded-full"
-              />
             </div>
           </div>
         </div>
       </div>
-    </UModal>
+    </Teleport>
   </div>
 </template>
 
