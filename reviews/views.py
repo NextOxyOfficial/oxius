@@ -2,6 +2,7 @@ from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from .models import Review, ReviewHelpful, ProductRatingStats
@@ -12,11 +13,18 @@ from .serializers import (
 from base.models import Product
 
 
+class ReviewPagination(PageNumberPagination):
+    page_size = 6  # Show 6 reviews per page (2 rows of 3 in the frontend)
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
+
 class ProductReviewListCreateView(generics.ListCreateAPIView):
     """
     List reviews for a product or create a new review
     """
     permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = ReviewPagination
     
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -143,6 +151,7 @@ class UserReviewsListView(generics.ListAPIView):
     """
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = ReviewPagination
     
     def get_queryset(self):
         return Review.objects.filter(

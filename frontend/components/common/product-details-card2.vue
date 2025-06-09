@@ -488,9 +488,7 @@
             <p class="text-gray-600 dark:text-gray-400 mb-4">
               Be the first to share your experience with this product!
             </p>
-          </div>
-
-          <!-- Pagination controls -->
+          </div>          <!-- Pagination controls -->
           <div
             class="flex justify-center items-center mt-8 gap-2"
             v-if="totalReviewPages > 1"
@@ -500,10 +498,11 @@
               icon="i-heroicons-chevron-left"
               color="gray"
               variant="ghost"
-              :disabled="currentReviewPage === 1"
+              :disabled="currentReviewPage === 1 || isLoadingReviews"
               @click="previousReviewPage"
               size="sm"
               class="rounded-full"
+              :loading="isLoadingReviews"
             />
 
             <!-- Page numbers -->
@@ -517,6 +516,8 @@
                 class="w-8 h-8"
                 @click="goToReviewPage(page)"
                 v-if="page !== '...'"
+                :disabled="isLoadingReviews"
+                :loading="isLoadingReviews && currentReviewPage === page"
               >
                 {{ page }}
               </UButton>
@@ -534,10 +535,11 @@
               icon="i-heroicons-chevron-right"
               color="gray"
               variant="ghost"
-              :disabled="currentReviewPage === totalReviewPages"
+              :disabled="currentReviewPage === totalReviewPages || isLoadingReviews"
               @click="nextReviewPage"
               size="sm"
               class="rounded-full"
+              :loading="isLoadingReviews"
             />
           </div>
         </div>        <!-- Write a Review Section (Updated) -->
@@ -852,6 +854,12 @@ const isSubmittingReview = ref(false);
 const userExistingReview = ref(null);
 const isCheckingUserReview = ref(false);
 
+// Reviews pagination state  
+const currentReviewPage = ref(1);
+const totalReviewPages = ref(1);
+const totalReviewCount = ref(0);
+const reviewsPerPage = 6; // Match backend pagination
+
 // Review form data - must be declared before the watcher
 const reviewForm = ref({
   name: "",
@@ -859,23 +867,45 @@ const reviewForm = ref({
   comment: "",
 });
 
-// Fetch product reviews from API
-async function fetchProductReviews() {
+// Fetch product reviews from API with pagination
+async function fetchProductReviews(page = 1) {
   if (!currentProduct?.id) return;
   
-  isLoadingReviews.value = true;  try {
-    const response = await get(`/reviews/products/${currentProduct.id}/reviews/`);
-    if (response.data && response.data.results) {
-      productReviews.value = response.data.results;
-    } else if (response.data && Array.isArray(response.data)) {
-      // Handle non-paginated response
-      productReviews.value = response.data;
+  isLoadingReviews.value = true;
+  try {
+    const response = await get(`/reviews/products/${currentProduct.id}/reviews/`, {
+      params: {
+        page: page,
+        page_size: reviewsPerPage
+      }
+    });
+    
+    if (response.data) {
+      // Handle paginated response
+      if (response.data.results) {
+        productReviews.value = response.data.results;
+        totalReviewCount.value = response.data.count || 0;
+        totalReviewPages.value = Math.ceil(totalReviewCount.value / reviewsPerPage);
+      } else if (Array.isArray(response.data)) {
+        // Handle non-paginated response (fallback)
+        productReviews.value = response.data;
+        totalReviewCount.value = response.data.length;
+        totalReviewPages.value = Math.ceil(totalReviewCount.value / reviewsPerPage);
+      } else {
+        productReviews.value = [];
+        totalReviewCount.value = 0;
+        totalReviewPages.value = 1;
+      }
     } else {
       productReviews.value = [];
+      totalReviewCount.value = 0;
+      totalReviewPages.value = 1;
     }
   } catch (error) {
     console.error('Error fetching reviews:', error);
     productReviews.value = [];
+    totalReviewCount.value = 0;
+    totalReviewPages.value = 1;
   } finally {
     isLoadingReviews.value = false;
   }
@@ -947,7 +977,7 @@ async function checkUserExistingReview() {
 // Load reviews and stats when component mounts
 onMounted(async () => {
   await Promise.all([
-    fetchProductReviews(),
+    fetchProductReviews(1), // Start from page 1
     fetchProductRatingStats(),
     checkUserExistingReview()
   ]);
@@ -1047,31 +1077,14 @@ function getRatingCount(rating) {
   return productRatingStats.value[`rating_${rating}_count`] || 0;
 }
 
-// Reviews pagination
-const reviewsPerPage = 3;
-const currentReviewPage = ref(1);
-
-// Modified to support pagination with API data
+// Modified to support direct display with API pagination
 const displayedReviews = computed(() => {
   if (isLoadingReviews.value) {
     return []; // Show loading state
   }
   
-  // Use API data if available, otherwise show empty array
-  const allReviews = productReviews.value || [];
-
-  // Calculate the start and end index for the current page
-  const startIndex = (currentReviewPage.value - 1) * reviewsPerPage;
-  const endIndex = startIndex + reviewsPerPage;
-
-  // Return the reviews for the current page
-  return allReviews.slice(startIndex, endIndex);
-});
-
-// Calculate total number of pages using API data
-const totalReviewPages = computed(() => {
-  const totalReviews = productReviews.value?.length || 0;
-  return Math.ceil(totalReviews / reviewsPerPage);
+  // Use API data directly since pagination is handled by backend
+  return productReviews.value || [];
 });
 
 // Generate pagination range with ellipsis for many pages
@@ -1107,30 +1120,37 @@ const paginationRange = computed(() => {
 });
 
 // Navigation functions
-function goToReviewPage(page) {
-  currentReviewPage.value = page;
-}
-
-function previousReviewPage() {
-  if (currentReviewPage.value > 1) {
-    currentReviewPage.value--;
+async function goToReviewPage(page) {
+  if (page !== currentReviewPage.value) {
+    currentReviewPage.value = page;
+    await fetchProductReviews(page);
   }
 }
 
-function nextReviewPage() {
+async function previousReviewPage() {
+  if (currentReviewPage.value > 1) {
+    const newPage = currentReviewPage.value - 1;
+    currentReviewPage.value = newPage;
+    await fetchProductReviews(newPage);
+  }
+}
+
+async function nextReviewPage() {
   if (currentReviewPage.value < totalReviewPages.value) {
-    currentReviewPage.value++;
+    const newPage = currentReviewPage.value + 1;
+    currentReviewPage.value = newPage;
+    await fetchProductReviews(newPage);
   }
 }
 
 // Auto-scroll to reviews when page changes
 watch(currentReviewPage, () => {
-  // Optional: Smooth scroll to the reviews section on page change
+  // Smooth scroll to the reviews section on page change
   const reviewsSection = document.querySelector(".customer-reviews-section");
   if (reviewsSection) {
     setTimeout(() => {
       reviewsSection.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
+    }, 300); // Increased timeout to allow for API response
   }
 });
 
@@ -1178,11 +1198,10 @@ async function submitReview() {
         description: 'Thank you for your feedback! Your review has been submitted successfully.',
         color: 'green',
         timeout: 5000
-      });
-        // Refresh the reviews list and stats with individual error handling
+      });      // Refresh the reviews list and stats with individual error handling
       console.log('Refreshing reviews and stats...');
       try {
-        await fetchProductReviews();
+        await fetchProductReviews(1); // Go back to first page to show the new review
         console.log('Reviews refreshed successfully');
       } catch (reviewsError) {
         console.error('Error refreshing reviews:', reviewsError);
