@@ -743,7 +743,7 @@ import UserDropdownMenu from "./user-dropdown-menu.vue";
 const { t } = useI18n();
 const { user, logout } = useAuth();
 const { get } = useApi();
-const { unreadTicketCount, fetchUnreadCount } = useTickets();
+const { unreadTicketCount, totalUnreadCount, fetchUnreadCount } = useTickets();
 const toast = useToast();
 const badgeCount = ref(0);
 const openMenu = ref(false);
@@ -789,9 +789,9 @@ const downloadAndroidApp = async () => {
   }
 };
 
-// Update badge count when unreadTicketCount changes
+// Update badge count when totalUnreadCount changes
 watch(
-  () => unreadTicketCount.value,
+  () => totalUnreadCount.value,
   (newCount) => {
     badgeCount.value = newCount;
   }
@@ -800,7 +800,7 @@ watch(
 // Fetch unread ticket count when component mounts
 onMounted(async () => {
   await fetchUnreadCount();
-  badgeCount.value = unreadTicketCount.value;
+  badgeCount.value = totalUnreadCount.value;
 });
 
 // Calculate days remaining before subscription expiration

@@ -1101,6 +1101,11 @@ const { t } = useI18n();
 const { user } = useAuth();
 const { get, post, put } = useApi();
 const { formatDate } = useUtils();
+const { 
+  markTicketAsRead: markTicketAsReadGlobal, 
+  markUpdateAsRead: markUpdateAsReadGlobal, 
+  fetchUnreadCount 
+} = useTickets();
 const toast = useToast();
 
 // State variables
@@ -1223,16 +1228,18 @@ async function markAsRead(id) {
     try {
       // Update the local message to show as read immediately
       messageToMark.is_unread = false;
-      // Update read status on the server
-      await post(`/tickets/${id}/mark-read/`, {});
-
-      // Update the count immediately
-      newMessageCount.value = messages.value.filter(
-        (msg) => !readMessages.value[msg.id]
-      ).length;
-      newTicketCount.value = messages.value.filter(
-        (msg) => msg.is_ticket && !readMessages.value[msg.id]
-      ).length;
+        // Use the composable function which will also update the global count
+      const success = await markTicketAsReadGlobal(id);
+      
+      if (success) {
+        // Update the local counts
+        newMessageCount.value = messages.value.filter(
+          (msg) => !readMessages.value[msg.id]
+        ).length;
+        newTicketCount.value = messages.value.filter(
+          (msg) => msg.is_ticket && !readMessages.value[msg.id]
+        ).length;
+      }
     } catch (error) {
       console.error("Error marking ticket as read:", error);
       // Revert local changes if server update failed
@@ -1340,18 +1347,22 @@ async function markUpdateAsRead(update) {
   if (update.is_read) return;
   
   try {
-    await post(`/admin-notice/${update.id}/mark-read/`, {});
-    update.is_read = true;
+    // Use the composable function which will also update the global count
+    const success = await markUpdateAsReadGlobal(update.id);
     
-    // Update counts
-    newMessageCount.value = Math.max(0, newMessageCount.value - 1);
-    
-    toast.add({
-      title: "Marked as Read",
-      description: "Update has been marked as read",
-      color: "green",
-      timeout: 2000,
-    });
+    if (success) {
+      update.is_read = true;
+      
+      // Update local counts
+      newMessageCount.value = Math.max(0, newMessageCount.value - 1);
+      
+      toast.add({
+        title: "Marked as Read",
+        description: "Update has been marked as read",
+        color: "green",
+        timeout: 2000,
+      });
+    }
   } catch (error) {
     console.error("Error marking update as read:", error);
     toast.add({
@@ -1780,6 +1791,8 @@ async function getMessages(preserveState = false) {
 
 async function refreshMessages() {
   await getMessages(true); // Preserve UI state when refreshing
+  // Also refresh the global unread count to keep header/balance in sync
+  await fetchUnreadCount();
 }
 
 // Clear notifications banner
@@ -1912,6 +1925,8 @@ let autoRefreshInterval;
 
 onMounted(async () => {
   await getMessages();
+  // Refresh the global unread count to keep header/balance in sync
+  await fetchUnreadCount();
 
   // Auto-refresh disabled - users can manually refresh by pulling down
   // autoRefreshInterval = setInterval(async () => {

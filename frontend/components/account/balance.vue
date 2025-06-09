@@ -279,18 +279,18 @@
 const { user } = useAuth();
 const { t } = useI18n();
 const toast = useToast();
-const { unreadTicketCount, fetchUnreadCount } = useTickets();
+const { unreadTicketCount, totalUnreadCount, fetchUnreadCount } = useTickets();
 const badgeCount = ref(0);
 
-// Update badge count when unreadTicketCount changes
-watch(() => unreadTicketCount.value, (newCount) => {
+// Update badge count when totalUnreadCount changes
+watch(() => totalUnreadCount.value, (newCount) => {
   badgeCount.value = newCount;
 });
 
 // Fetch unread ticket count when component mounts
 onMounted(async () => {
   await fetchUnreadCount();
-  badgeCount.value = unreadTicketCount.value;
+  badgeCount.value = totalUnreadCount.value;
 });
 
 defineProps({
