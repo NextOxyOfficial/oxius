@@ -38,7 +38,8 @@
             >
               <div class="flex items-center gap-4">
                 <!-- App-style Icon -->
-                <div class="relative">                    <!-- Icon background with modern design -->
+                <div class="relative">                    
+                  <!-- Icon background with modern design -->
                   <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                     <Icon
                       name="heroicons:tag"
@@ -104,7 +105,8 @@
 
       <!-- Dynamic banner ads with responsive layout -->
       <div class="banner-container mb-4 sm:mb-8">
-        <div class="flex flex-col md:flex-row gap-2">          <!-- Show loading placeholder when banners are loading -->
+        <div class="flex flex-col md:flex-row gap-2">          
+          <!-- Show loading placeholder when banners are loading -->
           <template v-if="isLoadingBanners && !bannersFetched">
             <div class="main-banner rounded-lg overflow-hidden md:w-1/2">
               <div
@@ -166,7 +168,7 @@
               <img
                 src="https://via.placeholder.com/1200x80/3B82F6/FFFFFF?text=Special+Promotion"
                 alt="Promotion"
-                class="w-full h-16 sm:h-20 md:h-32 object-contain"
+                class="w-full h-16 sm:h-20 md:h-32 object-cover"
               />
             </div>
 
@@ -177,7 +179,7 @@
               <img
                 src="https://via.placeholder.com/1200x80/4F46E5/FFFFFF?text=Limited+Time+Offer"
                 alt="Offer"
-                class="w-full h-16 sm:h-20 md:h-32 object-contain"
+                class="w-full h-16 sm:h-20 md:h-32 object-cover"
               />
             </div>
           </template>
@@ -260,7 +262,7 @@
                           v-if="category.icon"
                           :src="getImageUrl(category.icon)"
                           :alt="category.name"
-                          class="size-8 object-contain"
+                          class="size-8 object-cover"
                         />
                         <Icon
                           v-else
@@ -367,7 +369,7 @@
                 <img
                   :src="post.main_image"
                   :alt="post.title"
-                  class="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+                  class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                   loading="lazy"
                 />
               </div>
