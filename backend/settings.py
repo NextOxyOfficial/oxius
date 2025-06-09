@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'news',
     'sale',  # Add the sale app here
     'support',  # Support ticket system
+    'reviews',  # Reviews system
     'django_filters',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -76,6 +77,7 @@ CSRF_TRUSTED_ORIGINS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
 }
 USE_X_FORWARDED_HOST = True

@@ -29,8 +29,10 @@
                     {{ categoryDetails.name || 'Category' }}
                   </h1>
                 </div>
-              </div>                <!-- Right: Search, Filter & Share -->
-              <div class="flex items-center gap-2 flex-shrink-0">                <!-- Search Button -->
+              </div>                
+              <!-- Right: Search, Filter & Share -->
+              <div class="flex items-center gap-2 flex-shrink-0">                
+                <!-- Search Button -->
                 <button
                   @click="toggleSearch"
                   class="inline-flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all duration-200 search-container"

@@ -33,6 +33,7 @@ urlpatterns = urlpatterns + [
     path('api/sale/', include('sale.urls')),  # Add the sale app URLs here
     path('api/bn/', include('business_network.urls')),
     path('api/news/', include('news.urls')),    path('api/', include('support.urls')),  # Support ticket system URLs
+    path('api/reviews/', include('reviews.urls')),  # Reviews system URLs
     path('api/elearning/', include('elearning.urls')),  # eLearning system URLs
     # for frontend
     path('', index, name='index'),

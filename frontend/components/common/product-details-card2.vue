@@ -412,15 +412,35 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Featured Reviews with Pagination -->
+        </div>        <!-- Featured Reviews with Pagination -->
         <div class="max-w-6xl mx-auto mb-10">
+          <!-- Loading state -->
+          <div v-if="isLoadingReviews" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div 
+              v-for="n in 3" 
+              :key="n"
+              class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 animate-pulse"
+            >
+              <div class="flex mb-3">
+                <div v-for="i in 5" :key="i" class="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded mr-1"></div>
+              </div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-3/4"></div>
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full mr-3"></div>
+                <div>
+                  <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1 w-20"></div>
+                  <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Reviews grid -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div v-else-if="displayedReviews.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div
               v-for="(review, index) in displayedReviews"
-              :key="index"
+              :key="review.id || index"
               class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 transition-transform hover:translate-y-[-5px]"
             >
               <div class="flex text-amber-400 mb-3">
@@ -437,26 +457,37 @@
                     star <= review.rating ? 'text-amber-400' : 'text-gray-300'
                   "
                 />
-              </div>
-              <p class="text-gray-600 dark:text-slate-300 mb-4">
+              </div>              <p class="text-gray-600 dark:text-slate-300 mb-4">
                 "{{ review.comment }}"
               </p>
-              <div class="flex items-center">
-                <div
+              <div class="flex items-center">                <div
                   class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mr-3 text-primary-700 dark:text-primary-300 font-medium"
                 >
-                  {{ review.name?.charAt(0) || "U" }}
+                  {{ review.user?.display_name?.charAt(0) || review.reviewer_name?.charAt(0) || "U" }}
                 </div>
                 <div>
                   <div class="font-medium text-gray-800 dark:text-white">
-                    {{ review.name }}
+                    {{ review.user?.display_name || review.reviewer_name || "Anonymous" }}
                   </div>
                   <div class="text-xs text-slate-500 dark:text-slate-400">
-                    {{ review.date || "Verified Purchase" }}
-                  </div>
-                </div>
+                    {{ review.formatted_date || "Verified Purchase" }}
+                  </div></div>
               </div>
             </div>
+          </div>
+
+          <!-- Empty state -->
+          <div v-else class="text-center py-12">
+            <UIcon 
+              name="i-heroicons-chat-bubble-bottom-center-text" 
+              class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4"
+            />
+            <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-2">
+              No Reviews Yet
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+              Be the first to share your experience with this product!
+            </p>
           </div>
 
           <!-- Pagination controls -->
@@ -552,17 +583,15 @@
                     />
                   </UButton>
                 </div>
-              </div>
-              <div>
+              </div>              <div>
                 <label
                   class="block text-sm mb-1 text-gray-600 dark:text-slate-300"
                 >
                   Your Name
                 </label>
-                <UInput
-                  v-model="reviewForm.name"
-                  placeholder="Enter your name"
-                />
+                <div class="px-3 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-md text-gray-800 dark:text-white font-medium">
+                  {{ displayName }}
+                </div>
               </div>
               <div>
                 <label
@@ -576,14 +605,17 @@
                   rows="3"
                 />
               </div>
-              <UButton
-                color="primary"
-                @click="submitReview"
-                :disabled="!isReviewValid"
-                block
-              >
-                Submit Review
-              </UButton>
+              <div class="mt-4">
+                <UButton
+                  color="primary"
+                  @click="submitReview"
+                  :disabled="!isReviewValid || isSubmittingReview"
+                  :loading="isSubmittingReview"
+                  block
+                >
+                  {{ isSubmittingReview ? 'Submitting...' : 'Submit Review' }}
+                </UButton>
+              </div>
             </div>
           </div>
 
@@ -748,15 +780,103 @@ const { currentProduct, modal } = defineProps({
   modal: { type: Boolean, required: false },
 });
 
-console.log("currentProduct:", currentProduct);
-
 const emit = defineEmits(["close-modal"]);
 
 const cart = useStoreCart();
 const user = useState("user"); // Access user state
+const { get, post } = useApi(); // Add API composable
 
 // Check if user is logged in
-const isLoggedIn = computed(() => !!user.value);
+const isLoggedIn = computed(() => !!(user.value && (user.value.user || user.value.username)));
+
+// Computed property for display name
+const displayName = computed(() => {
+  if (!user.value) return 'Guest';
+  
+  // Handle nested user object structure
+  const userData = user.value.user || user.value;
+  
+  if (userData.first_name) {
+    return `${userData.first_name} ${userData.last_name || ''}`.trim();
+  }
+  
+  return userData.username || user.value.username || 'User';
+});
+
+// Reviews state
+const productReviews = ref([]);
+const productRatingStats = ref(null);
+const isLoadingReviews = ref(false);
+const isSubmittingReview = ref(false);
+
+// Review form data - must be declared before the watcher
+const reviewForm = ref({
+  name: "",
+  rating: 0,
+  comment: "",
+});
+
+// Fetch product reviews from API
+async function fetchProductReviews() {
+  if (!currentProduct?.id) return;
+  
+  isLoadingReviews.value = true;  try {
+    const response = await get(`/reviews/products/${currentProduct.id}/reviews/`);
+    if (response.data && response.data.results) {
+      productReviews.value = response.data.results;
+    } else if (response.data && Array.isArray(response.data)) {
+      // Handle non-paginated response
+      productReviews.value = response.data;
+    } else {
+      productReviews.value = [];
+    }
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    productReviews.value = [];
+  } finally {
+    isLoadingReviews.value = false;
+  }
+}
+
+// Fetch product rating statistics from API  
+async function fetchProductRatingStats() {
+  if (!currentProduct?.id) return;
+    try {
+    const response = await get(`/reviews/products/${currentProduct.id}/stats/`);
+    if (response.data) {
+      productRatingStats.value = response.data;
+    }
+  } catch (error) {
+    console.error('Error fetching rating stats:', error);
+    // Set default stats if API fails
+    productRatingStats.value = {
+      total_reviews: 0,
+      average_rating: 0,
+      rating_5_count: 0,
+      rating_4_count: 0,
+      rating_3_count: 0,
+      rating_2_count: 0,
+      rating_1_count: 0
+    };
+  }
+}
+
+// Load reviews and stats when component mounts
+onMounted(async () => {
+  await Promise.all([
+    fetchProductReviews(),
+    fetchProductRatingStats()
+  ]);
+  
+  // Optional: Track product views after 70 seconds
+  setTimeout(() => {
+    try {
+      // increaseProductViews(); // Function not defined, removing for now
+    } catch (error) {
+      console.log('Product view tracking not available');
+    }
+  }, 70000);
+});
 
 function addToCart(product, quantity) {
   cart.addProduct(product, quantity);
@@ -795,121 +915,61 @@ function calculateSavings(sale_price, regular_price) {
   return (regular - current).toLocaleString();
 }
 
-const reviewForm = ref({
-  name: "",
-  rating: 0,
-  comment: "",
-});
-
-// Review calculations
+// Review calculations updated to use API data
 const reviewCount = computed(() => {
-  return currentProduct?.reviews?.length || 125;
+  return productRatingStats.value?.total_reviews || 0;
 });
 
 const averageRating = computed(() => {
-  if (!currentProduct?.reviews?.length) return "4.9";
-
-  const sum = currentProduct.reviews.reduce(
-    (total, review) => total + review.rating,
-    0
-  );
-  return (sum / currentProduct.reviews.length).toFixed(1);
+  if (productRatingStats.value?.average_rating) {
+    return productRatingStats.value.average_rating.toFixed(1);
+  }
+  return "0.0";
 });
 
 // Computed for review validity
 const isReviewValid = computed(() => {
-  return (
-    reviewForm.value.name &&
-    reviewForm.value.rating > 0 &&
-    reviewForm.value.comment.trim().length > 0
-  );
+  const hasRating = reviewForm.value.rating > 0;
+  const hasComment = reviewForm.value.comment.trim().length > 0;
+  
+  // For logged-in users, only need rating and comment (name is auto-filled)
+  if (isLoggedIn.value) {
+    return hasRating && hasComment;
+  }
+  
+  // For non-logged-in users, also need name (though they won't see the form)
+  const hasName = reviewForm.value.name.trim().length > 0;
+  return hasRating && hasComment && hasName;
 });
 
-// Rating distribution functions
+// Rating distribution functions updated to use API data
 function getRatingPercentage(rating) {
-  if (!currentProduct?.reviews?.length) {
-    // Default distribution if no reviews
-    if (rating === 5) return "78%";
-    if (rating === 4) return "18%";
-    if (rating === 3) return "3%";
-    return "1%";
-  }
-
-  const total = currentProduct.reviews.length;
-  const count = currentProduct.reviews.filter(
-    (r) => Math.round(r.rating) === rating
-  ).length;
-
-  return `${(count / total) * 100}%`;
+  if (!productRatingStats.value) return "0%";
+  
+  const total = productRatingStats.value.total_reviews;
+  if (total === 0) return "0%";
+  
+  const count = productRatingStats.value[`rating_${rating}_count`] || 0;
+  return `${((count / total) * 100).toFixed(1)}%`;
 }
 
 function getRatingCount(rating) {
-  if (!currentProduct?.reviews?.length) {
-    // Default counts if no reviews
-    if (rating === 5) return "98";
-    if (rating === 4) return "22";
-    if (rating === 3) return "4";
-    return "1";
-  }
-
-  return currentProduct.reviews.filter((r) => Math.round(r.rating) === rating)
-    .length;
+  if (!productRatingStats.value) return 0;
+  return productRatingStats.value[`rating_${rating}_count`] || 0;
 }
 
 // Reviews pagination
 const reviewsPerPage = 3;
 const currentReviewPage = ref(1);
 
-// Modified to support pagination
+// Modified to support pagination with API data
 const displayedReviews = computed(() => {
-  // Get all available reviews (actual or sample)
-  const allReviews =
-    currentProduct?.reviews?.length > 0
-      ? currentProduct.reviews
-      : [
-          {
-            name: "Ahmed Khan",
-            rating: 5,
-            date: "2 weeks ago",
-            comment:
-              "This product exceeded my expectations! The quality is outstanding and it arrived quickly. Would definitely recommend to anyone looking for a premium solution.",
-          },
-          {
-            name: "Priya Sharma",
-            rating: 5,
-            date: "1 month ago",
-            comment:
-              "I've tried many similar products but this one stands out. The attention to detail is impressive and the performance is consistently reliable.",
-          },
-          {
-            name: "Mohammad Ali",
-            rating: 4,
-            date: "3 weeks ago",
-            comment:
-              "Great product overall. Shipping was fast and the quality is as advertised. Only giving 4 stars because the instructions could be clearer.",
-          },
-          {
-            name: "Sarah Johnson",
-            rating: 5,
-            date: "2 months ago",
-            comment:
-              "Absolutely love this! It's made such a difference in my daily routine. The design is beautiful and functionality is perfect.",
-          },
-          {
-            name: "Rahul Patel",
-            rating: 5,
-            date: "3 months ago",
-            comment:
-              "Best purchase I've made this year! The product is durable, well-designed and performs exactly as described. Customer service was also excellent.",
-          },
-          {
-            name: "Lisa Wong",
-            rating: 4,
-            date: "1 month ago",
-            comment:
-              "Very satisfied with my purchase. The product is high quality and the delivery was quick. Would buy from this store again.",
-          },
-        ];
+  if (isLoadingReviews.value) {
+    return []; // Show loading state
+  }
+  
+  // Use API data if available, otherwise show empty array
+  const allReviews = productReviews.value || [];
 
   // Calculate the start and end index for the current page
   const startIndex = (currentReviewPage.value - 1) * reviewsPerPage;
@@ -919,9 +979,9 @@ const displayedReviews = computed(() => {
   return allReviews.slice(startIndex, endIndex);
 });
 
-// Calculate total number of pages
+// Calculate total number of pages using API data
 const totalReviewPages = computed(() => {
-  const totalReviews = currentProduct?.reviews?.length || 6; // Use 6 if no reviews
+  const totalReviews = productReviews.value?.length || 0;
   return Math.ceil(totalReviews / reviewsPerPage);
 });
 
@@ -985,33 +1045,70 @@ watch(currentReviewPage, () => {
   }
 });
 
-// Submit review function
-function submitReview() {
-  if (!isReviewValid.value || !isLoggedIn.value) return;
+// Submit review function updated to use API
+async function submitReview() {
+  if (!isReviewValid.value || !isLoggedIn.value || !currentProduct?.id) return;
 
-  // Add review to product
-  if (!currentProduct.reviews) {
-    currentProduct.reviews = [];
+  isSubmittingReview.value = true;
+
+  try {
+    const reviewData = {
+      rating: reviewForm.value.rating,
+      comment: reviewForm.value.comment.trim(),
+      // Don't send name - it will be set from the authenticated user
+    };
+
+    const response = await post(`/reviews/products/${currentProduct.id}/reviews/`, reviewData);
+      if (response.data) {
+      // Successfully submitted review
+      
+      // Show success message using Nuxt UI toast
+      const toast = useToast();
+      toast.add({
+        title: 'Review Submitted',
+        description: 'Thank you for your feedback! Your review has been submitted successfully.',
+        color: 'green',
+        timeout: 5000
+      });
+      
+      // Refresh the reviews list and stats
+      await Promise.all([
+        fetchProductReviews(),
+        fetchProductRatingStats()
+      ]);      // Reset form
+      reviewForm.value = {
+        name: "",
+        rating: 0,
+        comment: "",
+      };
+
+      // Reset to first page to potentially show the newly added review
+      currentReviewPage.value = 1;
+    }
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    
+    // Show error message using Nuxt UI toast
+    const toast = useToast();
+    let errorMessage = 'Failed to submit review. Please try again.';
+    
+    if (error.response?.data?.detail) {
+      errorMessage = error.response.data.detail;
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.response?.data?.non_field_errors) {
+      errorMessage = error.response.data.non_field_errors[0];
+    }
+    
+    toast.add({
+      title: 'Error Submitting Review',
+      description: errorMessage,
+      color: 'red',
+      timeout: 5000
+    });
+  } finally {
+    isSubmittingReview.value = false;
   }
-
-  currentProduct.reviews.unshift({
-    name: reviewForm.value.name || user.value?.name || "Anonymous",
-    rating: reviewForm.value.rating,
-    date: "Just now",
-    comment: reviewForm.value.comment.trim(),
-    avatar: user.value?.avatar || "",
-    verified: false, // Changed from hasPurchased.value
-  });
-
-  // Reset form
-  reviewForm.value = {
-    name: "",
-    rating: 0,
-    comment: "",
-  };
-
-  // Reset to first page to show the newly added review
-  currentReviewPage.value = 1;
 }
 
 onMounted(() => {
@@ -1062,14 +1159,44 @@ function handleScroll() {
 }
 
 .benefit-card {
-  @apply bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm text-center;
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  text-align: center;
+}
+
+.dark .benefit-card {
+  background-color: rgb(30 41 59);
 }
 
 .icon-container {
-  @apply w-16 h-16 mx-auto bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mb-4;
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto;
+  background-color: rgb(239 246 255);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.dark .icon-container {
+  background-color: rgb(30 58 138 / 0.3);
 }
 
 .feature-item {
-  @apply flex items-center gap-2 bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: white;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.dark .feature-item {
+  background-color: rgb(30 41 59);
 }
 </style>
