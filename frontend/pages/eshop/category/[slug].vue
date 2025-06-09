@@ -8,9 +8,9 @@
         <!-- Main Header Card -->
         <div class="relative mt-2 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
           <!-- Subtle gradient overlay -->
-          <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/30 via-transparent to-blue-50/30 dark:from-emerald-900/10 dark:via-transparent dark:to-blue-900/10"></div>
+          <div class="absolute inset-0 bg-gradient-to-br from-emerald-100/30 via-transparent to-blue-100/30 dark:from-emerald-900/10 dark:via-transparent dark:to-blue-900/10"></div>
           
-          <div class="relative py-2 px-4">
+          <div class="relative py-2 px-4 ">
             <!-- Header Row -->
             <div class="flex items-center justify-between">
               <!-- Left: Back Button + Category Name -->
@@ -30,8 +30,7 @@
                     {{ categoryDetails.name || 'Category' }}
                   </h1>
                 </div>
-              </div>              
-              <!-- Right: Search & Share -->
+              </div>                <!-- Right: Search, Filter & Share -->
               <div class="flex items-center gap-2 flex-shrink-0">                <!-- Search Button -->
                 <button
                   @click="toggleSearch"
@@ -40,14 +39,6 @@
                   <span class="sr-only">Search</span>
                   <UIcon name="i-heroicons-magnifying-glass" class="size-5" />
                 </button>
-                <!-- Share Button -->
-                <button
-                  @click="shareCategory"
-                  class="inline-flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200"
-                >
-                  <span class="sr-only">Share Category</span>
-                  <UIcon name="i-heroicons-share" class="size-5" />
-                </button>                
                 <!-- Filter Dropdown Button -->
                 <button
                   @click="togglePriceRange"
@@ -59,7 +50,15 @@
                     class="size-5 transition-transform duration-200" 
                   />
                 </button>
-              </div>            </div>
+                <!-- Share Button -->
+                <button
+                  @click="shareCategory"
+                  class="inline-flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200"
+                >
+                  <span class="sr-only">Share Category</span>
+                  <UIcon name="i-heroicons-share" class="size-5" />
+                </button>
+              </div></div>
 
             <!-- Search Dropdown Section -->
             <transition
