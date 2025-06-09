@@ -294,7 +294,7 @@
 
       <!-- Display section for selected category items with lazy loading -->
       <div class="selected-category-items mt-4" v-if="selectedCategory">
-        <div class="flex justify-between items-center mb-3 sm:px-6">
+        <div class="flex justify-between items-center my-4 sm:px-6">
           <div>
             <h3 class="text-lg font-semibold">
               {{ getSelectedCategoryName() }}

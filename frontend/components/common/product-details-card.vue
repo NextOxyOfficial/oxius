@@ -1050,10 +1050,15 @@ const reviewForm = ref({
 async function fetchProductRatingStats() {
   if (!currentProduct?.id) return;
   
+  console.log('Fetching rating stats for product:', currentProduct.id);
+  
   try {
     const response = await get(`/reviews/products/${currentProduct.id}/stats/`);
+    console.log('Rating stats response:', response);
+    
     if (response.data) {
       productRatingStats.value = response.data;
+      console.log('Updated productRatingStats:', productRatingStats.value);
     } else {
       // Set default stats if no data returned
       productRatingStats.value = {
@@ -1146,18 +1151,25 @@ function calculateSavings(sale_price, regular_price) {
 
 // Dynamic rating computations
 const reviewCount = computed(() => {
-  return productRatingStats.value?.total_reviews || 0;
+  const count = productRatingStats.value?.total_reviews || 0;
+  console.log('reviewCount computed (for main display):', count);
+  return count;
 });
 
 const averageRating = computed(() => {
   if (productRatingStats.value?.average_rating) {
-    return parseFloat(productRatingStats.value.average_rating).toFixed(1);
+    const rating = parseFloat(productRatingStats.value.average_rating).toFixed(1);
+    console.log('averageRating computed (for main display):', rating);
+    return rating;
   }
+  console.log('averageRating computed: 0.0 (default)');
   return "0.0";
 });
 
 const displayRating = computed(() => {
-  return parseFloat(averageRating.value);
+  const rating = parseFloat(averageRating.value);
+  console.log('displayRating computed (for stars):', rating);
+  return rating;
 });
 
 // Review-specific computed properties
@@ -1182,13 +1194,18 @@ const displayName = computed(() => {
 });
 
 const reviewsCount = computed(() => {
-  return productRatingStats.value?.total_reviews || 0;
+  const count = productRatingStats.value?.total_reviews || 0;
+  console.log('reviewsCount computed:', count);
+  return count;
 });
 
 const reviewsAverageRating = computed(() => {
   if (productRatingStats.value?.average_rating) {
-    return parseFloat(productRatingStats.value.average_rating).toFixed(1);
+    const rating = parseFloat(productRatingStats.value.average_rating).toFixed(1);
+    console.log('reviewsAverageRating computed:', rating);
+    return rating;
   }
+  console.log('reviewsAverageRating computed: 0.0 (default)');
   return "0.0";
 });
 
@@ -1207,7 +1224,14 @@ const isReviewValid = computed(() => {
 });
 
 const canSubmitReview = computed(() => {
-  return isLoggedIn.value && !userExistingReview.value && !isCheckingUserReview.value;
+  const result = isLoggedIn.value && !userExistingReview.value && !isCheckingUserReview.value;
+  console.log('canSubmitReview calculation:', {
+    isLoggedIn: isLoggedIn.value,
+    userExistingReview: userExistingReview.value,
+    isCheckingUserReview: isCheckingUserReview.value,
+    result
+  });
+  return result;
 });
 
 const displayedReviews = computed(() => {
@@ -1254,6 +1278,7 @@ const paginationRange = computed(() => {
 async function fetchProductReviews(page = 1) {
   if (!currentProduct?.id) return;
   
+  console.log('Fetching reviews for product:', currentProduct.id, 'page:', page);
   isLoadingReviews.value = true;
   try {
     const response = await get(`/reviews/products/${currentProduct.id}/reviews/`, {
@@ -1263,26 +1288,37 @@ async function fetchProductReviews(page = 1) {
       }
     });
     
+    console.log('Reviews API response:', response);
+    
     if (response.data) {
       // Handle paginated response
       if (response.data.results) {
         productReviews.value = response.data.results;
         totalReviewCount.value = response.data.count || 0;
         totalReviewPages.value = Math.ceil(totalReviewCount.value / reviewsPerPage);
+        console.log('Paginated reviews loaded:', {
+          count: totalReviewCount.value,
+          pages: totalReviewPages.value,
+          currentPage: page,
+          reviewsLength: productReviews.value.length
+        });
       } else if (Array.isArray(response.data)) {
         // Handle non-paginated response (fallback)
         productReviews.value = response.data;
         totalReviewCount.value = response.data.length;
         totalReviewPages.value = Math.ceil(totalReviewCount.value / reviewsPerPage);
+        console.log('Non-paginated reviews loaded:', totalReviewCount.value);
       } else {
         productReviews.value = [];
         totalReviewCount.value = 0;
         totalReviewPages.value = 1;
+        console.log('No reviews data found');
       }
     } else {
       productReviews.value = [];
       totalReviewCount.value = 0;
       totalReviewPages.value = 1;
+      console.log('Empty response data');
     }
   } catch (error) {
     console.error('Error fetching reviews:', error);
@@ -1296,22 +1332,28 @@ async function fetchProductReviews(page = 1) {
 
 async function checkUserExistingReview() {
   if (!currentProduct?.id || !isLoggedIn.value) {
+    console.log('Not checking user review - no product ID or not logged in');
     userExistingReview.value = null;
     return;
   }
   
+  console.log('Checking if user has existing review for product:', currentProduct.id);
   isCheckingUserReview.value = true;
   try {
     const response = await get(`/reviews/products/${currentProduct.id}/my-review/`);
+    console.log('User review check response:', response);
     if (response.data) {
       userExistingReview.value = response.data;
+      console.log('User has existing review:', userExistingReview.value);
     } else {
       userExistingReview.value = null;
+      console.log('User has no existing review');
     }
   } catch (error) {
     // 404 means no existing review found, which is expected
     if (error.response?.status === 404) {
       userExistingReview.value = null;
+      console.log('User has no existing review (404)');
     } else {
       console.error('Error checking user review:', error);
       userExistingReview.value = null;
@@ -1322,21 +1364,34 @@ async function checkUserExistingReview() {
 }
 
 async function submitReview() {
+  console.log('=== submitReview started ===');
+  console.log('isReviewValid:', isReviewValid.value);
+  console.log('isLoggedIn:', isLoggedIn.value);
+  console.log('currentProduct.id:', currentProduct?.id);
+  
   if (!isReviewValid.value || !isLoggedIn.value || !currentProduct?.id) {
+    console.log('Early return due to validation failure');
     return;
   }
 
+  console.log('Setting isSubmittingReview to true');
   isSubmittingReview.value = true;
+  console.log('After setting to true:', isSubmittingReview.value);
 
   try {
     const reviewData = {
       rating: reviewForm.value.rating,
       comment: reviewForm.value.comment.trim(),
+      // Don't send name - it will be set from the authenticated user
     };
     
+    console.log('Submitting review data:', reviewData);
     const response = await post(`/reviews/products/${currentProduct.id}/reviews/`, reviewData);
+    console.log('Review submission response:', response);
     
     if (response.data) {
+      console.log('Review submitted successfully');
+      
       // Show success message using Nuxt UI toast
       const toast = useToast();
       toast.add({
@@ -1346,26 +1401,31 @@ async function submitReview() {
         timeout: 5000
       });
 
-      // Refresh the reviews list and stats
+      // Refresh the reviews list and stats with individual error handling
+      console.log('Refreshing reviews and stats...');
       try {
         await fetchProductReviews(1); // Go back to first page to show the new review
+        console.log('Reviews refreshed successfully');
       } catch (reviewsError) {
         console.error('Error refreshing reviews:', reviewsError);
       }
       
       try {
         await fetchProductRatingStats();
+        console.log('Stats refreshed successfully');
       } catch (statsError) {
         console.error('Error refreshing rating stats:', statsError);
       }
       
       try {
         await checkUserExistingReview();
+        console.log('User review status refreshed successfully');
       } catch (userReviewError) {
         console.error('Error refreshing user review status:', userReviewError);
       }
       
       // Reset form
+      console.log('Resetting form...');
       reviewForm.value = {
         name: "",
         rating: 0,
@@ -1374,6 +1434,7 @@ async function submitReview() {
 
       // Reset to first page to potentially show the newly added review
       currentReviewPage.value = 1;
+      console.log('Form reset and page set to 1');
     }
   } catch (error) {
     console.error('Error submitting review:', error);
@@ -1397,7 +1458,15 @@ async function submitReview() {
       timeout: 5000
     });
   } finally {
+    // Ensure this always runs regardless of what happens above
+    console.log('FINALLY BLOCK: Setting isSubmittingReview to false');
     isSubmittingReview.value = false;
+    console.log('FINALLY BLOCK: isSubmittingReview is now:', isSubmittingReview.value);
+    
+    // Force reactivity update
+    nextTick(() => {
+      console.log('After nextTick, isSubmittingReview:', isSubmittingReview.value);
+    });
   }
 }
 
@@ -1443,17 +1512,20 @@ async function nextReviewPage() {
 // Reset selected image when product changes
 watch(
   () => currentProduct?.id,
-  async () => {
+  async (newId, oldId) => {
+    console.log('Product changed from', oldId, 'to', newId);
     selectedImageIndex.value = 0;
     quantity.value = 1;
     
     // Fetch data for the new product
+    console.log('Fetching similar products and review data...');
     fetchSimilarProducts(); // Fetch similar products when current product changes
     await Promise.all([
       fetchProductReviews(1), // Start from page 1
       fetchProductRatingStats(),
       checkUserExistingReview()
     ]);
+    console.log('All product data loaded successfully');
   },
   { immediate: true } // Fetch immediately on component creation
 );
