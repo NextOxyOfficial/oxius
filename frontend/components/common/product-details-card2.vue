@@ -477,7 +477,7 @@
           </div>
 
           <!-- Empty state -->
-          <div v-else class="text-center py-12">
+          <div v-else class="text-center">
             <UIcon 
               name="i-heroicons-chat-bubble-bottom-center-text" 
               class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4"
@@ -540,18 +540,58 @@
               class="rounded-full"
             />
           </div>
-        </div>
-
-        <!-- Write a Review Section (Updated) -->
+        </div>        <!-- Write a Review Section (Updated) -->
         <div
-          class="mt-12 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2 max-w-3xl mx-auto"
+          class=" bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2 max-w-3xl mx-auto"
         >
-          <h3 class="text-xl font-semibold mb-4 text-center">
+          <!-- Only show title if user can submit a review or needs to log in -->
+          <h3 
+            v-if="!isLoggedIn || (!userExistingReview && !isCheckingUserReview)" 
+            class="text-xl font-semibold mb-4 text-center"
+          >
             Share Your Experience
           </h3>
 
-          <!-- Conditionally show review form or login message -->
-          <div v-if="isLoggedIn">
+          <!-- Loading state for checking user review -->
+          <div v-if="isCheckingUserReview" class="text-center p-6">
+            <div class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p class="text-gray-600 dark:text-slate-400">Checking your review status...</p>
+          </div>
+
+          <!-- User has already submitted a review -->
+          <div v-else-if="isLoggedIn && userExistingReview" class="text-center p-6">
+            <UIcon
+              name="i-heroicons-check-circle"
+              class="w-12 h-12 text-green-500 mx-auto mb-4"
+            />
+            <h4 class="text-lg font-medium mb-2 text-green-700 dark:text-green-400">Thank You for Your Review!</h4>
+            <p class="text-gray-600 dark:text-slate-400 mb-4">
+              You have already submitted a review for this product.
+            </p>
+            
+            <!-- Show the user's existing review -->
+            <div class="bg-white dark:bg-slate-700 rounded-lg p-4 text-left max-w-md mx-auto">
+              <div class="flex text-amber-400 mb-2">
+                <UIcon
+                  v-for="star in 5"
+                  :key="star"
+                  :name="star <= userExistingReview.rating ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                  class="w-4 h-4"
+                  :class="star <= userExistingReview.rating ? 'text-amber-400' : 'text-gray-300'"
+                />
+                <span class="ml-2 text-sm text-gray-600 dark:text-slate-400">Your Rating</span>
+              </div>
+              <p class="text-gray-700 dark:text-slate-300 text-sm">
+                "{{ userExistingReview.comment }}"
+              </p>
+              <p class="text-xs text-gray-500 dark:text-slate-500 mt-2">
+                Submitted {{ userExistingReview.formatted_date || 'recently' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- User can submit a review -->
+          <div v-else-if="canSubmitReview">
             <div class="space-y-4">
               <div>
                 <label
@@ -619,6 +659,7 @@
             </div>
           </div>
 
+          <!-- User needs to log in -->
           <div v-else class="text-center p-6">
             <UIcon
               name="i-heroicons-lock-closed"
@@ -808,6 +849,8 @@ const productReviews = ref([]);
 const productRatingStats = ref(null);
 const isLoadingReviews = ref(false);
 const isSubmittingReview = ref(false);
+const userExistingReview = ref(null);
+const isCheckingUserReview = ref(false);
 
 // Review form data - must be declared before the watcher
 const reviewForm = ref({
@@ -873,11 +916,40 @@ async function fetchProductRatingStats() {
   }
 }
 
+// Check if current user has already reviewed this product
+async function checkUserExistingReview() {
+  if (!currentProduct?.id || !isLoggedIn.value) {
+    userExistingReview.value = null;
+    return;
+  }
+  
+  isCheckingUserReview.value = true;
+  try {
+    const response = await get(`/reviews/products/${currentProduct.id}/my-review/`);
+    if (response.data) {
+      userExistingReview.value = response.data;
+    } else {
+      userExistingReview.value = null;
+    }
+  } catch (error) {
+    // 404 means no existing review found, which is expected
+    if (error.response?.status === 404) {
+      userExistingReview.value = null;
+    } else {
+      console.error('Error checking user review:', error);
+      userExistingReview.value = null;
+    }
+  } finally {
+    isCheckingUserReview.value = false;
+  }
+}
+
 // Load reviews and stats when component mounts
 onMounted(async () => {
   await Promise.all([
     fetchProductReviews(),
-    fetchProductRatingStats()
+    fetchProductRatingStats(),
+    checkUserExistingReview()
   ]);
   
   // Optional: Track product views after 70 seconds
@@ -952,6 +1024,11 @@ const isReviewValid = computed(() => {
   // For non-logged-in users, also need name (though they won't see the form)
   const hasName = reviewForm.value.name.trim().length > 0;
   return hasRating && hasComment && hasName;
+});
+
+// Computed to check if user can submit a review (not already submitted)
+const canSubmitReview = computed(() => {
+  return isLoggedIn.value && !userExistingReview.value && !isCheckingUserReview.value;
 });
 
 // Rating distribution functions updated to use API data
@@ -1057,6 +1134,15 @@ watch(currentReviewPage, () => {
   }
 });
 
+// Watch for user login status changes to check for existing review
+watch(isLoggedIn, async (newValue) => {
+  if (newValue) {
+    await checkUserExistingReview();
+  } else {
+    userExistingReview.value = null;
+  }
+});
+
 // Submit review function updated to use API
 async function submitReview() {
   console.log('=== submitReview started ===');
@@ -1093,8 +1179,7 @@ async function submitReview() {
         color: 'green',
         timeout: 5000
       });
-      
-      // Refresh the reviews list and stats with individual error handling
+        // Refresh the reviews list and stats with individual error handling
       console.log('Refreshing reviews and stats...');
       try {
         await fetchProductReviews();
@@ -1108,6 +1193,13 @@ async function submitReview() {
         console.log('Stats refreshed successfully');
       } catch (statsError) {
         console.error('Error refreshing rating stats:', statsError);
+      }
+      
+      try {
+        await checkUserExistingReview();
+        console.log('User review status refreshed successfully');
+      } catch (userReviewError) {
+        console.error('Error refreshing user review status:', userReviewError);
       }
       
       // Reset form
@@ -1147,6 +1239,11 @@ async function submitReview() {
     console.log('FINALLY BLOCK: Setting isSubmittingReview to false');
     isSubmittingReview.value = false;
     console.log('FINALLY BLOCK: isSubmittingReview is now:', isSubmittingReview.value);
+    
+    // Force reactivity update
+    nextTick(() => {
+      console.log('After nextTick, isSubmittingReview:', isSubmittingReview.value);
+    });
   }
 }
 
