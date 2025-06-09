@@ -248,8 +248,7 @@
         </div>
 
         <!-- Unified Content List with Stripe Design -->
-        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <!-- Support Tickets Content -->
+        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">          <!-- Support Tickets Content -->
           <div v-if="activeTab === 'support'">
             <div v-if="supportTickets && supportTickets.length">
               <TransitionGroup name="message-list" tag="div">
@@ -338,6 +337,28 @@
                   </div>
                 </div>
               </TransitionGroup>
+              
+              <!-- Load More Button for Support Tickets -->
+              <div v-if="hasMoreItems" class="p-4 text-center border-t border-gray-100">
+                <UButton
+                  color="primary"
+                  variant="outline"
+                  :loading="isLoadingMore"
+                  @click="loadMoreItems"
+                  size="sm"
+                  icon="i-heroicons-arrow-down-circle"
+                >
+                  <template v-if="isLoadingMore">
+                    Loading more...
+                  </template>
+                  <template v-else>
+                    Load More Tickets
+                  </template>
+                </UButton>
+                <p class="text-xs text-gray-500 mt-2">
+                  Showing {{ Math.min(currentPage * itemsPerPage, allSupportTickets.length) }} of {{ allSupportTickets.length }} tickets
+                </p>
+              </div>
             </div>
 
             <!-- Empty state for support tickets -->
@@ -353,9 +374,7 @@
                 Open Your First Ticket
               </UButton>
             </div>
-          </div>
-
-          <!-- Updates Content -->
+          </div><!-- Updates Content -->
           <div v-if="activeTab === 'updates'">
             <div v-if="updates && updates.length">
               <TransitionGroup name="message-list" tag="div">
@@ -434,6 +453,28 @@
                   </div>
                 </div>
               </TransitionGroup>
+              
+              <!-- Load More Button -->
+              <div v-if="hasMoreItems" class="p-4 text-center border-t border-gray-100">
+                <UButton
+                  color="primary"
+                  variant="outline"
+                  :loading="isLoadingMore"
+                  @click="loadMoreItems"
+                  size="sm"
+                  icon="i-heroicons-arrow-down-circle"
+                >
+                  <template v-if="isLoadingMore">
+                    Loading more...
+                  </template>
+                  <template v-else>
+                    Load More Notifications
+                  </template>
+                </UButton>
+                <p class="text-xs text-gray-500 mt-2">
+                  Showing {{ Math.min(currentPage * itemsPerPage, allUpdates.length) }} of {{ allUpdates.length }} notifications
+                </p>
+              </div>
             </div>
 
             <!-- Empty state for updates -->
@@ -1123,9 +1164,17 @@ const isTicketDetailModalOpen = ref(false);
 const activeTab = ref('updates');
 const updatesFilter = ref('all');
 
+// Pagination state
+const currentPage = ref(1);
+const itemsPerPage = 10;
+const isLoadingMore = ref(false);
+const hasMoreItems = ref(true);
+
 // Separate data for updates and support tickets
 const updates = ref([]);
 const supportTickets = ref([]);
+const allUpdates = ref([]); // Store all updates for pagination
+const allSupportTickets = ref([]); // Store all support tickets for pagination
 const filteredMessages = computed(() => {
   let filtered = messages.value.filter((msg) => msg.is_ticket);
 
@@ -1141,31 +1190,47 @@ const filteredMessages = computed(() => {
 
 // Computed properties for tabbed interface
 const updatesCount = computed(() => {
-  return updates.value.filter(update => !update.is_read).length;
+  return allUpdates.value.filter(update => !update.is_read).length;
 });
 
 const supportTicketsCount = computed(() => {
-  return supportTickets.value.filter(ticket => !readMessages.value[ticket.id]).length;
+  return allSupportTickets.value.filter(ticket => !readMessages.value[ticket.id]).length;
 });
 
 const filteredUpdates = computed(() => {
-  let filtered = updates.value;
+  let filtered = allUpdates.value;
   
   if (updatesFilter.value !== 'all') {
     filtered = filtered.filter(update => update.notification_type === updatesFilter.value);
   }
   
-  return filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  // Apply pagination - show only items for current page
+  const startIndex = 0;
+  const endIndex = currentPage.value * itemsPerPage;
+  const paginatedFiltered = filtered.slice(startIndex, endIndex);
+  
+  // Update hasMoreItems based on whether there are more items to load
+  hasMoreItems.value = filtered.length > endIndex;
+  
+  return paginatedFiltered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 });
 
 const filteredSupportTickets = computed(() => {
-  let filtered = supportTickets.value;
+  let filtered = allSupportTickets.value;
   
   if (ticketStatusFilter.value !== 'all') {
     filtered = filtered.filter(ticket => ticket.status === ticketStatusFilter.value);
   }
   
-  return filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  // Apply pagination - show only items for current page
+  const startIndex = 0;
+  const endIndex = currentPage.value * itemsPerPage;
+  const paginatedFiltered = filtered.slice(startIndex, endIndex);
+  
+  // Update hasMoreItems based on whether there are more items to load
+  hasMoreItems.value = filtered.length > endIndex;
+  
+  return paginatedFiltered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 });
 
 // Ticket handling
@@ -1275,16 +1340,47 @@ function setFilter(filter) {
 
 function setTicketStatusFilter(status) {
   ticketStatusFilter.value = status;
+  // Reset pagination when filter changes
+  currentPage.value = 1;
 }
 
 // Tab switching functions
 function setActiveTab(tab) {
   activeTab.value = tab;
+  // Reset pagination when switching tabs
+  currentPage.value = 1;
 }
 
 // Updates filter functions
 function setUpdatesFilter(filter) {
   updatesFilter.value = filter;
+  // Reset pagination when filter changes
+  currentPage.value = 1;
+}
+
+// Load more function
+async function loadMoreItems() {
+  if (isLoadingMore.value || !hasMoreItems.value) return;
+  
+  isLoadingMore.value = true;
+  
+  try {
+    // Simulate loading delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Increase the page count to show more items
+    currentPage.value += 1;
+  } catch (error) {
+    console.error('Error loading more items:', error);
+    toast.add({
+      title: "Error",
+      description: "Failed to load more items. Please try again.",
+      color: "red",
+      timeout: 3000,
+    });
+  } finally {
+    isLoadingMore.value = false;
+  }
 }
 
 // Helper functions for updates
@@ -1709,9 +1805,11 @@ async function getMessages(preserveState = false) {
     const supportTicketsData = ticketsRes.data.map((ticket) => ({
       ...ticket,
       is_ticket: true,
-    }));
-
-    // Update separate arrays
+    }));    // Update separate arrays and store all data for pagination
+    allUpdates.value = adminNotices; // Store all updates
+    allSupportTickets.value = supportTicketsData; // Store all support tickets
+    
+    // Keep the current arrays for backward compatibility
     updates.value = adminNotices;
     supportTickets.value = supportTicketsData;
 
@@ -1766,13 +1864,11 @@ async function getMessages(preserveState = false) {
           readMessages.value[msg.id] = msg.is_read; // Admin notices have is_read field
         }
       });
-    }
-
-    // Count new messages based on read status
+    }    // Count new messages based on read status
     newMessageCount.value = messages.value.filter(
       (msg) => !readMessages.value[msg.id] && (msg.is_ticket ? !msg.is_read : !msg.is_read)
     ).length;
-    newTicketCount.value = supportTickets.value.filter(
+    newTicketCount.value = allSupportTickets.value.filter(
       (ticket) => !readMessages.value[ticket.id]
     ).length;
   } catch (error) {
