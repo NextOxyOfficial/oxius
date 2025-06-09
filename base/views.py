@@ -89,7 +89,30 @@ def getAuthenticationBanner(request):
 
 @api_view(["GET"])
 def getAdminNotice(request):
-    serializer = AdminNoticeSerializer(AdminNotice.objects.all(),many=True)
+    # Get query parameters
+    notification_type = request.GET.get('type', None)
+    user_id = request.user.id if request.user.is_authenticated else None
+    
+    # Base queryset - include global notices and user-specific notices
+    queryset = AdminNotice.objects.all()
+    
+    if user_id:
+        # Include global notices (user=None) and user-specific notices
+        queryset = queryset.filter(
+            models.Q(user=None) | models.Q(user_id=user_id)
+        )
+    else:
+        # For anonymous users, only show global notices
+        queryset = queryset.filter(user=None)
+    
+    # Filter by notification type if specified
+    if notification_type and notification_type != 'all':
+        queryset = queryset.filter(notification_type=notification_type)
+    
+    # Order by creation date
+    queryset = queryset.order_by('-created_at')
+    
+    serializer = AdminNoticeSerializer(queryset, many=True)
     return Response(serializer.data)
 
 @api_view(['POST'])
@@ -493,9 +516,9 @@ def post_micro_gigs(request):
         if user.balance < data['total_cost']:
             # raise ValueError("Insufficient balance")
             return Response(
-        {'message': 'Insufficient balance', 'errors': 'Insufficient balance'},
-        status=status.HTTP_400_BAD_REQUEST
-    )
+                {'message': 'Insufficient balance', 'errors': 'Insufficient balance'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         user.balance -= Decimal(data['total_cost'])
         user.save()
         new_micro_gig_post = serializer.save(user=user)
@@ -504,6 +527,17 @@ def post_micro_gigs(request):
                 image = base64ToFile(file)
             )
             new_micro_gig_post.medias.add(nm)
+        
+        # Create notification for successful gig posting
+        try:
+            create_gig_posted_notification(
+                user=user,
+                gig_title=new_micro_gig_post.title,
+                gig_id=str(new_micro_gig_post.id)
+            )
+        except Exception as e:
+            print(f"Error creating gig posted notification: {str(e)}")
+        
         return Response(
             {'message': 'Person Updated successfully', 'data': serializer.data},
             status=status.HTTP_201_CREATED
@@ -979,8 +1013,7 @@ def postBalance(request):
     #         {"error": "The 'merchant_invoice_no' field is required."},
     #         status=status.HTTP_400_BAD_REQUEST
     #     )
-    
-    # Proceed with the operations if 'merchant_invoice_no' is valid
+      # Proceed with the operations if 'merchant_invoice_no' is valid
     if 'contact' in data and data['contact']:
         to_user = User.objects.get(Q(email=data['contact']) | Q(phone=data['contact']))
         del data['contact']
@@ -988,10 +1021,11 @@ def postBalance(request):
     
     if serializer.is_valid():
         # Save the new Balance instance
-        new_b = serializer.save(user=request.user)
-        if to_user:
-            new_b.to_user = to_user
-            new_b.save()
+        new_b = serializer.save(user=request.user)        
+    if to_user:
+        new_b.to_user = to_user
+        new_b.save()
+        
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     # Print errors if validation fails
@@ -1337,11 +1371,20 @@ def subscribeToPro(request):
                 bank_status='completed',
                 description=f"Referral commission from {user.name or user.email}'s first Pro subscription"
             )
-            
             commission_processed = True
             print(f"Referral commission of {commission_amount} credited to {referrer.email}")
         except Exception as e:
             print(f"Error processing referral commission: {str(e)}")
+    
+    # Create notification for pro subscription
+    try:
+        create_pro_subscription_notification(
+            user=user,
+            months=int(months),
+            amount=total_decimal
+        )
+    except Exception as e:
+        print(f"Error creating subscription notification: {str(e)}")
     
     resp = {
         'message': 'Subscription successful',
@@ -2024,8 +2067,7 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                     bank_status='completed',
                     description=f"Payment for order #{order.id}"
                 )
-                
-                # 3. Distribute payments to each seller (product owner)
+                  # 3. Distribute payments to each seller (product owner)
                 for seller_id, payment_amount in seller_payment_amounts.items():
                     try:
                         # Get the seller account
@@ -2046,7 +2088,17 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         #     description=f"Payment received for order #{order.id}"
                         # )
                     except User.DoesNotExist:
-                        Response({"error": f"Failed to credit seller {seller_id} for order {order.id}"})
+                        return Response({"error": f"Failed to credit seller {seller_id} for order {order.id}"})
+            
+            # Create notification for successful order
+            try:
+                create_order_notification(
+                    user=buyer,
+                    order_id=str(order.id),
+                    amount=total_amount
+                )
+            except Exception as e:
+                print(f"Error creating order notification: {str(e)}")
             
             # Return the complete order details
             return Response(
@@ -2212,7 +2264,7 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                     
                     # Deduct additional amount from buyer's balance
                     buyer.balance -= total_additional_amount
-                    buyer.save()                    # Create transaction record for additional payment
+                    buyer.save()                    # Create transaction record for the buyer's payment
                     Balance.objects.create(
                         user=buyer,
                         to_user=None,  # No specific seller at this point
@@ -2840,7 +2892,120 @@ class AILinkView(generics.ListAPIView):
     serializer_class = AILinkSerializer
     permission_classes = [AllowAny]
 
+# Utility functions for creating notifications
+def create_notification(user, notification_type, title, message, amount=None, reference_id=None):
+    """
+    Create a notification for a specific user or global notification
+    """
+    return AdminNotice.objects.create(
+        user=user,
+        notification_type=notification_type,
+        title=title,
+        message=message,
+        amount=amount,
+        reference_id=reference_id
+    )
+
+def create_order_notification(user, order_id, total_amount):
+    """Create notification for new order received"""
+    title = f"New Order Received #{order_id}"
+    message = f"You have received a new order worth ৳{total_amount}. Check your shop manager for details."
+    return create_notification(
+        user=user,
+        notification_type='order_received',
+        title=title,
+        message=message,
+        amount=total_amount,
+        reference_id=str(order_id)
+    )
+
+def create_withdraw_notification(user, amount, transaction_id):
+    """Create notification for successful withdrawal"""
+    title = "Withdrawal Successful"
+    message = f"Your withdrawal of ৳{amount} has been processed successfully."
+    return create_notification(
+        user=user,
+        notification_type='withdraw_successful',
+        title=title,
+        message=message,
+        amount=amount,
+        reference_id=transaction_id
+    )
+
+def create_mobile_recharge_notification(user, amount, phone_number):
+    """Create notification for successful mobile recharge"""
+    title = "Mobile Recharge Successful"
+    message = f"Your mobile recharge of ৳{amount} for {phone_number} has been completed successfully."
+    return create_notification(
+        user=user,
+        notification_type='mobile_recharge_successful',
+        title=title,
+        message=message,
+        amount=amount,
+        reference_id=phone_number
+    )
+
+def create_pro_subscription_notification(user, months, amount):
+    """Create notification for pro subscription activation"""
+    title = "Pro Subscription Activated"
+    message = f"Your Pro subscription for {months} month(s) has been activated successfully. Enjoy premium features!"
+    return create_notification(
+        user=user,
+        notification_type='pro_subscribed',
+        title=title,
+        message=message,
+        amount=amount,
+        reference_id=f"{months}_months"
+    )
+
+def create_pro_expiring_notification(user, days_remaining):
+    """Create notification for pro subscription expiring warning"""
+    title = "Pro Subscription Expiring Soon"
+    message = f"Your Pro subscription will expire in {days_remaining} days. Renew now to continue enjoying premium features."
+    return create_notification(
+        user=user,
+        notification_type='pro_expiring',
+        title=title,
+        message=message,
+        reference_id=str(days_remaining)
+    )
+
+def create_gig_posted_notification(user, gig_id, gig_title):
+    """Create notification for successfully posted gig"""
+    title = "Gig Posted Successfully"
+    message = f"Your gig '{gig_title}' has been posted successfully and is now live for workers to apply."
+    return create_notification(
+        user=user,
+        notification_type='gig_posted',
+        title=title,
+        message=message,
+        reference_id=str(gig_id)
+    )
+
 # for frontend
 
 def index(request, **args):
     return render(request, 'index.html')
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def markAdminNoticeAsRead(request, notice_id):
+    try:
+        notice = AdminNotice.objects.get(id=notice_id)
+        
+        # Check if user can mark this notice as read (either global or user-specific)
+        if notice.user and notice.user != request.user:
+            return Response(
+                {"error": "You don't have permission to mark this notice as read"}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        notice.is_read = True
+        notice.save()
+        
+        return Response({"message": "Notice marked as read"}, status=status.HTTP_200_OK)
+    except AdminNotice.DoesNotExist:
+        return Response(
+            {"error": "Notice not found"}, 
+            status=status.HTTP_404_NOT_FOUND
+        )

@@ -182,15 +182,37 @@ class AuthenticationBanner(models.Model):
         return f"Site Authentication Banner"
     
 class AdminNotice(models.Model):
+    NOTIFICATION_TYPES = (
+        ('system', 'System Notice'),
+        ('order_received', 'New Order Received'),
+        ('withdraw_successful', 'Withdraw Successful'),
+        ('mobile_recharge_successful', 'Mobile Recharge Successful'),
+        ('pro_subscribed', 'Pro Subscription Activated'),
+        ('pro_expiring', 'Pro Subscription Expiring'),
+        ('gig_posted', 'Gig Posted Successfully'),
+        ('general', 'General Update'),
+    )
+    
     title = models.CharField(max_length=256)
     message = models.TextField()
+    notification_type = models.CharField(max_length=30, choices=NOTIFICATION_TYPES, default='general')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, 
+                           help_text="Leave blank for global notices, specify user for personalized notifications")
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True,
+                               help_text="Amount for financial notifications")
+    reference_id = models.CharField(max_length=100, null=True, blank=True,
+                                  help_text="Reference ID (order ID, transaction ID, etc.)")
+    is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created_at']  
+        ordering = ['-created_at']
+        
     def __str__(self):
-        return self.title
+        if self.user:
+            return f"{self.title} - {self.user.name or self.user.email}"
+        return f"{self.title} (Global)"
 
 class ClassifiedCategory(models.Model):
   user = models.ForeignKey(User,on_delete=models.SET_NULL, null=True, related_name='classified_categories')
@@ -515,8 +537,7 @@ class Balance(models.Model):
 
     def __str__(self):
         return f"{self.user}'s Service: {self.payable_amount}"
-    def save(self, *args, **kwargs):
-        # Normalize transaction_type to lowercase for consistency
+    def save(self, *args, **kwargs):        # Normalize transaction_type to lowercase for consistency
         self.transaction_type = (self.transaction_type or '').lower()
         # Handle withdrawal
         if self.transaction_type == 'transfer' and  self.to_user and not self.completed:
@@ -533,6 +554,17 @@ class Balance(models.Model):
             self.completed = True
             self.approved = True
             self.user.save()
+            
+            # Create notification for successful withdrawal approval
+            try:
+                from .views import create_withdraw_notification
+                create_withdraw_notification(
+                    user=self.user,
+                    amount=self.payable_amount,
+                    transaction_id=str(self.id)
+                )
+            except Exception as e:
+                print(f"Error creating withdraw notification: {str(e)}")
         if self.transaction_type == 'withdraw' and self.rejected and not self.completed:
             self.completed = True
             self.user.balance += self.amount

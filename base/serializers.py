@@ -188,23 +188,17 @@ class AuthenticationBannerSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AdminNoticeSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.name', read_only=True)
+    
     class Meta:
         model = AdminNotice
-        fields = '__all__'
-        def to_representation(self, instance):
-            representation = super().to_representation(instance)
-            return representation
-
-    # def validate_category(self, value):
-    #     try:
-    #         category = ClassifiedCategory.objects.get(id=value)
-    #     except ClassifiedCategory.DoesNotExist:
-    #         raise serializers.ValidationError("Invalid category ID")
-    #     return category
-
-    # def create(self, validated_data):
-    #     validated_data['category'] = validated_data.pop('category')
-    #     return super().create(validated_data)
+        fields = ['id', 'title', 'message', 'notification_type', 'user', 'user_name', 
+                 'amount', 'reference_id', 'is_read', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+        
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        return representation
 
 
 

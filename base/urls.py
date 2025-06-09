@@ -61,9 +61,9 @@ urlpatterns = [
   
   path('add-user-balance/',postBalance),
   path('get-user-nid/',get_nid),
-  path('add-user-nid/',add_nid),
-  path('update-user-nid/',update_nid),
+  path('add-user-nid/',add_nid),  path('update-user-nid/',update_nid),
   path('admin-notice/',AdminMessage.as_view()),
+  path('admin-notice/<int:notice_id>/mark-read/', markAdminNoticeAsRead, name='mark-admin-notice-read'),
   path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
   path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
   path('auth/validate-token/', TokenValidationView.as_view(), name='validate_token'),

@@ -99,7 +99,21 @@ class RechargeListCreateView(generics.ListCreateAPIView):
         )
         
         # Create the recharge record
-        return serializer.save(user=user)
+        recharge = serializer.save(user=user)
+        
+        # Create notification for successful recharge
+        try:
+            from base.views import create_mobile_recharge_notification
+            create_mobile_recharge_notification(
+                user=user,
+                amount=amount,
+                phone_number=serializer.validated_data['phone_number']
+            )
+        except Exception as e:
+            # Log error but don't fail the transaction
+            print(f"Error creating recharge notification: {e}")
+        
+        return recharge
 
 class RechargeDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = RechargeSerializer

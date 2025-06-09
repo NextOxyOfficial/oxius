@@ -93,8 +93,7 @@
             @click="clearNotifications"
           />
         </div>
-      </transition>
-      <!-- Open Ticket button -->
+      </transition>      <!-- Open Ticket button -->
       <div class="flex justify-start mb-4 px-4">
         <UButton
           color="primary"
@@ -104,156 +103,351 @@
         />
       </div>
 
-      <!-- Message filtering options -->
-      <div class="flex flex-wrap gap-2 mb-6">
-        <UButton
-          variant="soft"
-          :class="{ active: ticketStatusFilter === 'all' }"
-          @click="setTicketStatusFilter('all')"
-          label="All Tickets"
-        />
-        <UButton
-          variant="soft"
-          color="amber"
-          :class="{ active: ticketStatusFilter === 'open' }"
-          @click="setTicketStatusFilter('open')"
-          label="Open"
-        />
-        <UButton
-          variant="soft"
-          color="blue"
-          :class="{ active: ticketStatusFilter === 'in_progress' }"
-          @click="setTicketStatusFilter('in_progress')"
-          label="In Progress"
-        />
-        <UButton
-          variant="soft"
-          color="green"
-          :class="{ active: ticketStatusFilter === 'resolved' }"
-          @click="setTicketStatusFilter('resolved')"
-          label="Resolved"
-        />
-        <UButton
-          variant="soft"
-          color="gray"
-          :class="{ active: ticketStatusFilter === 'closed' }"
-          @click="setTicketStatusFilter('closed')"
-          label="Closed"
-        />
-        <UButton
-          class="ml-auto"
-          color="gray"
-          variant="soft"
-          icon="i-heroicons-arrow-path"
-          :loading="isLoading"
-          @click="refreshMessages"
-          title="Refresh messages"
-        />
-      </div>
-      <!-- Messages List -->
-      <div v-if="messages && messages.length" class="space-y-4">
-        <TransitionGroup name="message-list" tag="div" class="space-y-5">
-          <div
-            v-for="message in filteredMessages"
-            :key="message.id"
-            class="message-card"
-            :class="{ unread: !readMessages[message.id] }"
+      <!-- Tabbed Navigation -->
+      <div class="mb-6 border-b border-gray-200">
+        <nav class="flex space-x-8 px-4">
+          <button
+            @click="setActiveTab('updates')"
+            :class="[
+              'py-2 px-1 border-b-2 font-medium text-sm transition-colors',
+              activeTab === 'updates'
+                ? 'border-primary-500 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ]"
           >
-            <!-- Message header -->
-            <div
-              class="message-header cursor-pointer"
-              @click="openTicketDetail(message)"
+            <UIcon name="i-heroicons-bell" class="mr-2" />
+            Updates
+            <span
+              v-if="updatesCount > 0"
+              class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
             >
-              <!-- Status indicator -->
+              {{ updatesCount }}
+            </span>
+          </button>
+          <button
+            @click="setActiveTab('support')"
+            :class="[
+              'py-2 px-1 border-b-2 font-medium text-sm transition-colors',
+              activeTab === 'support'
+                ? 'border-primary-500 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ]"
+          >
+            <UIcon name="i-heroicons-chat-bubble-left-right" class="mr-2" />
+            Support Tickets
+            <span
+              v-if="supportTicketsCount > 0"
+              class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
+            >
+              {{ supportTicketsCount }}
+            </span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Support Tickets Tab Content -->
+      <div v-show="activeTab === 'support'">
+        <!-- Ticket filtering options -->
+        <div class="flex flex-wrap gap-2 mb-6 px-4">
+          <UButton
+            variant="soft"
+            :class="{ active: ticketStatusFilter === 'all' }"
+            @click="setTicketStatusFilter('all')"
+            label="All Tickets"
+          />
+          <UButton
+            variant="soft"
+            color="amber"
+            :class="{ active: ticketStatusFilter === 'open' }"
+            @click="setTicketStatusFilter('open')"
+            label="Open"
+          />
+          <UButton
+            variant="soft"
+            color="blue"
+            :class="{ active: ticketStatusFilter === 'in_progress' }"
+            @click="setTicketStatusFilter('in_progress')"
+            label="In Progress"
+          />
+          <UButton
+            variant="soft"
+            color="green"
+            :class="{ active: ticketStatusFilter === 'resolved' }"
+            @click="setTicketStatusFilter('resolved')"
+            label="Resolved"
+          />
+          <UButton
+            variant="soft"
+            color="gray"
+            :class="{ active: ticketStatusFilter === 'closed' }"
+            @click="setTicketStatusFilter('closed')"
+            label="Closed"
+          />
+          <UButton
+            class="ml-auto"
+            color="gray"
+            variant="soft"
+            icon="i-heroicons-arrow-path"
+            :loading="isLoading"
+            @click="refreshMessages"
+            title="Refresh messages"
+          />
+        </div>
+
+        <!-- Support Tickets List -->
+        <div v-if="supportTickets && supportTickets.length" class="space-y-4 px-4">
+          <TransitionGroup name="message-list" tag="div" class="space-y-5">
+            <div
+              v-for="ticket in filteredSupportTickets"
+              :key="ticket.id"
+              class="message-card"
+              :class="{ unread: !readMessages[ticket.id] }"
+            >
+              <!-- Support ticket content here -->
               <div
-                class="status-indicator"
-                :class="{ active: !readMessages[message.id] }"
-              ></div>
+                class="message-header cursor-pointer"
+                @click="openTicketDetail(ticket)"
+              >
+                <!-- Status indicator -->
+                <div
+                  class="status-indicator"
+                  :class="{ active: !readMessages[ticket.id] }"
+                ></div>
 
-              <div class="flex items-center gap-3 flex-1 min-w-0">
-                <div class="flex-shrink-0">
-                  <div
-                    class="message-icon-circle"
-                    :class="{
-                      'admin-notice': !message.is_ticket,
-                      'support-ticket': message.is_ticket,
-                      resolved:
-                        message.is_ticket &&
-                        ['resolved', 'closed'].includes(message.status),
-                    }"
-                  >
-                    <UIcon
-                      :name="
-                        message.is_ticket
-                          ? 'i-heroicons-chat-bubble-left-right'
-                          : readMessages[message.id]
-                          ? 'i-heroicons-envelope-open'
-                          : 'i-heroicons-envelope'
-                      "
-                      class="message-type-icon"
-                      :class="readMessages[message.id] ? 'read' : 'unread'"
-                    />
-                  </div>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div
-                    class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
-                  >
-                    <div class="flex items-center gap-2">
-                      <span class="message-id"
-                        >#{{ message.id.toString().padStart(10, "0") }}</span
-                      >
-                      <div class="flex items-center gap-1.5">
-                        <UBadge
-                          :color="readMessages[message.id] ? 'gray' : 'primary'"
-                          class="new-badge cursor-pointer"
-                          @click="toggleReadStatus(message.id, $event)"
-                          >{{ readMessageLabel(message.id) }}</UBadge
-                        >
-                        <UBadge
-                          v-if="message.is_ticket"
-                          :color="getTicketStatusColor(message.status)"
-                          class="status-badge"
-                          >{{ formatTicketStatus(message.status) }}</UBadge
-                        >
-                      </div>
-                    </div>
-                    <h3
-                      class="message-title line-clamp-1"
-                      :class="{ 'font-semibold': !readMessages[message.id] }"
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                  <div class="flex-shrink-0">
+                    <div
+                      class="message-icon-circle support-ticket"
+                      :class="{
+                        resolved:
+                          ['resolved', 'closed'].includes(ticket.status),
+                      }"
                     >
-                      {{ message.title }}
-                    </h3>
+                      <UIcon
+                        name="i-heroicons-chat-bubble-left-right"
+                        class="message-type-icon"
+                        :class="readMessages[ticket.id] ? 'read' : 'unread'"
+                      />
+                    </div>
                   </div>
+                  <div class="flex-1 min-w-0">
+                    <div
+                      class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
+                    >
+                      <div class="flex items-center gap-2">
+                        <span class="message-id"
+                          >#{{ ticket.id.toString().padStart(10, "0") }}</span
+                        >
+                        <div class="flex items-center gap-1.5">
+                          <UBadge
+                            :color="readMessages[ticket.id] ? 'gray' : 'primary'"
+                            class="new-badge cursor-pointer"
+                            @click="toggleReadStatus(ticket.id, $event)"
+                            >{{ readMessageLabel(ticket.id) }}</UBadge
+                          >
+                          <UBadge
+                            :color="getTicketStatusColor(ticket.status)"
+                            class="status-badge"
+                            >{{ formatTicketStatus(ticket.status) }}</UBadge
+                          >
+                        </div>
+                      </div>
+                      <h3
+                        class="message-title line-clamp-1"
+                        :class="{ 'font-semibold': !readMessages[ticket.id] }"
+                      >
+                        {{ ticket.title }}
+                      </h3>
+                    </div>
 
-                  <div class="message-meta">
-                    <span>{{ formatDate(message.created_at) }}</span>
-                    <span class="message-meta-dot">•</span>
-                    <span>{{ message.is_ticket ? "Ticket" : "System" }}</span>
+                    <div class="message-meta">
+                      <span>{{ formatDate(ticket.created_at) }}</span>
+                      <span class="message-meta-dot">•</span>
+                      <span>Ticket</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </TransitionGroup>
-      </div>
+          </TransitionGroup>
+        </div>
 
-      <!-- Empty state -->
-      <transition name="scale-fade">
-        <div v-if="!messages.length && !isLoading" class="empty-inbox">
+        <!-- Empty state for support tickets -->
+        <div v-else-if="!isLoading && activeTab === 'support'" class="empty-inbox px-4">
           <div class="empty-animation">
             <div class="empty-paper"></div>
             <div class="empty-paper"></div>
             <div class="empty-inbox-icon">
-              <UIcon name="i-heroicons-inbox" class="text-2xl text-white" />
+              <UIcon name="i-heroicons-chat-bubble-left-right" class="text-2xl text-white" />
             </div>
           </div>
-          <h3 class="empty-title">{{ $t("inbox_empty") }}</h3>
+          <h3 class="empty-title">No Support Tickets</h3>
           <p class="empty-description">
-            {{ $t("inbox_empty_message") }}
+            You haven't created any support tickets yet. Click "Open Ticket" to get started.
           </p>
         </div>
-      </transition>
+      </div>
+
+      <!-- Updates Tab Content -->
+      <div v-show="activeTab === 'updates'">
+        <!-- Updates filtering options -->
+        <div class="flex flex-wrap gap-2 mb-6 px-4">
+          <UButton
+            variant="soft"
+            :class="{ active: updatesFilter === 'all' }"
+            @click="setUpdatesFilter('all')"
+            label="All Updates"
+          />
+          <UButton
+            variant="soft"
+            color="green"
+            :class="{ active: updatesFilter === 'order_received' }"
+            @click="setUpdatesFilter('order_received')"
+            label="Orders"
+          />
+          <UButton
+            variant="soft"
+            color="blue"
+            :class="{ active: updatesFilter === 'withdraw_successful' }"
+            @click="setUpdatesFilter('withdraw_successful')"
+            label="Withdrawals"
+          />
+          <UButton
+            variant="soft"
+            color="orange"
+            :class="{ active: updatesFilter === 'mobile_recharge_successful' }"
+            @click="setUpdatesFilter('mobile_recharge_successful')"
+            label="Recharges"
+          />
+          <UButton
+            variant="soft"
+            color="purple"
+            :class="{ active: updatesFilter === 'pro_subscribed' }"
+            @click="setUpdatesFilter('pro_subscribed')"
+            label="Pro"
+          />
+          <UButton
+            variant="soft"
+            color="amber"
+            :class="{ active: updatesFilter === 'pro_expiring' }"
+            @click="setUpdatesFilter('pro_expiring')"
+            label="Expiring"
+          />
+          <UButton
+            variant="soft"
+            color="gray"
+            :class="{ active: updatesFilter === 'gig_posted' }"
+            @click="setUpdatesFilter('gig_posted')"
+            label="Gigs"
+          />
+          <UButton
+            class="ml-auto"
+            color="gray"
+            variant="soft"
+            icon="i-heroicons-arrow-path"
+            :loading="isLoading"
+            @click="refreshMessages"
+            title="Refresh updates"
+          />
+        </div>
+
+        <!-- Updates List -->
+        <div v-if="updates && updates.length" class="space-y-4 px-4">
+          <TransitionGroup name="message-list" tag="div" class="space-y-5">
+            <div
+              v-for="update in filteredUpdates"
+              :key="update.id"
+              class="message-card"
+              :class="{ unread: !update.is_read }"
+            >
+              <!-- Update content here -->
+              <div
+                class="message-header cursor-pointer"
+                @click="markUpdateAsRead(update)"
+              >
+                <!-- Status indicator -->
+                <div
+                  class="status-indicator"
+                  :class="{ active: !update.is_read }"
+                ></div>
+
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                  <div class="flex-shrink-0">
+                    <div
+                      class="message-icon-circle"
+                      :class="getUpdateIconClass(update.notification_type)"
+                    >
+                      <UIcon
+                        :name="getUpdateIcon(update.notification_type)"
+                        class="message-type-icon"
+                        :class="update.is_read ? 'read' : 'unread'"
+                      />
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div
+                      class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
+                    >
+                      <div class="flex items-center gap-2">
+                        <UBadge
+                          :color="update.is_read ? 'gray' : 'primary'"
+                          class="new-badge"
+                          >{{ update.is_read ? 'Read' : 'New' }}</UBadge
+                        >
+                        <UBadge
+                          :color="getUpdateTypeColor(update.notification_type)"
+                          class="status-badge"
+                          >{{ formatUpdateType(update.notification_type) }}</UBadge
+                        >
+                        <span
+                          v-if="update.amount"
+                          class="text-sm font-medium text-green-600"
+                        >
+                          ৳{{ update.amount }}
+                        </span>
+                      </div>
+                      <h3
+                        class="message-title line-clamp-1"
+                        :class="{ 'font-semibold': !update.is_read }"
+                      >
+                        {{ update.title }}
+                      </h3>
+                    </div>                    <div class="message-meta">
+                      <span>{{ formatDate(update.created_at) }}</span>
+                      <span class="message-meta-dot">•</span>
+                      <span>{{ formatUpdateType(update.notification_type) }}</span>
+                      <span v-if="update.reference_id" class="message-meta-dot">•</span>
+                      <span v-if="update.reference_id" class="text-xs text-gray-500">
+                        Transaction ID: {{ update.reference_id }}
+                      </span>
+                    </div>
+                    
+                    <!-- Message preview -->
+                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">
+                      {{ update.message }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TransitionGroup>
+        </div>
+
+        <!-- Empty state for updates -->
+        <div v-else-if="!isLoading && activeTab === 'updates'" class="empty-inbox px-4">
+          <div class="empty-animation">
+            <div class="empty-paper"></div>
+            <div class="empty-paper"></div>
+            <div class="empty-inbox-icon">
+              <UIcon name="i-heroicons-bell" class="text-2xl text-white" />
+            </div>
+          </div>
+          <h3 class="empty-title">No Updates</h3>
+          <p class="empty-description">
+            You'll see notifications about orders, withdrawals, recharges, and more here.
+          </p>        
+        </div>
+      </div>
 
       <!-- Loading state -->
       <div v-if="isLoading" class="loading-state">
@@ -918,6 +1112,14 @@ const ticketStatusFilter = ref("all");
 const newMessageCount = ref(0);
 const newTicketCount = ref(0);
 const isTicketDetailModalOpen = ref(false);
+
+// Tab state
+const activeTab = ref('updates');
+const updatesFilter = ref('all');
+
+// Separate data for updates and support tickets
+const updates = ref([]);
+const supportTickets = ref([]);
 const filteredMessages = computed(() => {
   let filtered = messages.value.filter((msg) => msg.is_ticket);
 
@@ -929,6 +1131,35 @@ const filteredMessages = computed(() => {
   }
 
   return filtered;
+});
+
+// Computed properties for tabbed interface
+const updatesCount = computed(() => {
+  return updates.value.filter(update => !update.is_read).length;
+});
+
+const supportTicketsCount = computed(() => {
+  return supportTickets.value.filter(ticket => !readMessages.value[ticket.id]).length;
+});
+
+const filteredUpdates = computed(() => {
+  let filtered = updates.value;
+  
+  if (updatesFilter.value !== 'all') {
+    filtered = filtered.filter(update => update.notification_type === updatesFilter.value);
+  }
+  
+  return filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+});
+
+const filteredSupportTickets = computed(() => {
+  let filtered = supportTickets.value;
+  
+  if (ticketStatusFilter.value !== 'all') {
+    filtered = filtered.filter(ticket => ticket.status === ticketStatusFilter.value);
+  }
+  
+  return filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 });
 
 // Ticket handling
@@ -1036,6 +1267,100 @@ function setFilter(filter) {
 
 function setTicketStatusFilter(status) {
   ticketStatusFilter.value = status;
+}
+
+// Tab switching functions
+function setActiveTab(tab) {
+  activeTab.value = tab;
+}
+
+// Updates filter functions
+function setUpdatesFilter(filter) {
+  updatesFilter.value = filter;
+}
+
+// Helper functions for updates
+function getUpdateIcon(notificationType) {
+  const iconMap = {
+    system: 'i-heroicons-cog-6-tooth',
+    order_received: 'i-heroicons-shopping-bag',
+    withdraw_successful: 'i-heroicons-banknotes',
+    mobile_recharge_successful: 'i-heroicons-device-phone-mobile',
+    pro_subscribed: 'i-heroicons-star',
+    pro_expiring: 'i-heroicons-exclamation-triangle',
+    gig_posted: 'i-heroicons-briefcase',
+    general: 'i-heroicons-bell'
+  };
+  return iconMap[notificationType] || 'i-heroicons-bell';
+}
+
+function getUpdateIconClass(notificationType) {
+  const classMap = {
+    system: 'system-update',
+    order_received: 'order-update',
+    withdraw_successful: 'withdraw-update',
+    mobile_recharge_successful: 'recharge-update',
+    pro_subscribed: 'pro-update',
+    pro_expiring: 'expiring-update',
+    gig_posted: 'gig-update',
+    general: 'general-update'
+  };
+  return classMap[notificationType] || 'general-update';
+}
+
+function getUpdateTypeColor(notificationType) {
+  const colorMap = {
+    system: 'gray',
+    order_received: 'green',
+    withdraw_successful: 'blue',
+    mobile_recharge_successful: 'orange',
+    pro_subscribed: 'purple',
+    pro_expiring: 'amber',
+    gig_posted: 'gray',
+    general: 'blue'
+  };
+  return colorMap[notificationType] || 'blue';
+}
+
+function formatUpdateType(notificationType) {
+  const formatMap = {
+    system: 'System',
+    order_received: 'Order',
+    withdraw_successful: 'Withdrawal',
+    mobile_recharge_successful: 'Recharge',
+    pro_subscribed: 'Pro Subscription',
+    pro_expiring: 'Pro Expiring',
+    gig_posted: 'Gig Posted',
+    general: 'General'
+  };
+  return formatMap[notificationType] || 'Notification';
+}
+
+async function markUpdateAsRead(update) {
+  if (update.is_read) return;
+  
+  try {
+    await post(`/admin-notice/${update.id}/mark-read/`, {});
+    update.is_read = true;
+    
+    // Update counts
+    newMessageCount.value = Math.max(0, newMessageCount.value - 1);
+    
+    toast.add({
+      title: "Marked as Read",
+      description: "Update has been marked as read",
+      color: "green",
+      timeout: 2000,
+    });
+  } catch (error) {
+    console.error("Error marking update as read:", error);
+    toast.add({
+      title: "Error",
+      description: "Failed to mark update as read",
+      color: "red",
+      timeout: 3000,
+    });
+  }
 }
 
 function getTicketStatusColor(status) {
@@ -1353,9 +1678,15 @@ async function getMessages(preserveState = false) {
   try {
     // Save current messages for comparison
     const oldMessages = [...messages.value];
+    const oldUpdates = [...updates.value];
+    const oldSupportTickets = [...supportTickets.value];
 
-    // Get admin notices
-    const noticesRes = await get("/admin-notice/");
+    // Get admin notices (updates) with user filtering
+    const noticesRes = await get("/admin-notice/", {
+      params: {
+        user_specific: true
+      }
+    });
     const adminNotices = noticesRes.data.map((notice) => ({
       ...notice,
       is_ticket: false,
@@ -1363,19 +1694,25 @@ async function getMessages(preserveState = false) {
 
     // Get support tickets
     const ticketsRes = await get("/tickets/");
-    const supportTickets = ticketsRes.data.map((ticket) => ({
+    const supportTicketsData = ticketsRes.data.map((ticket) => ({
       ...ticket,
       is_ticket: true,
     }));
 
-    // Combine messages and sort by date
-    const newMessages = [...supportTickets, ...adminNotices].sort(
+    // Update separate arrays
+    updates.value = adminNotices;
+    supportTickets.value = supportTicketsData;
+
+    // Combine messages and sort by date (for backward compatibility)
+    const newMessages = [...supportTicketsData, ...adminNotices].sort(
       (a, b) => new Date(b.created_at) - new Date(a.created_at)
     );
 
     // If preserving state, check for new messages and notify
     if (preserveState && oldMessages.length > 0) {
       checkForNewMessages(oldMessages, newMessages);
+      checkForNewUpdates(oldUpdates, adminNotices);
+      checkForNewTickets(oldSupportTickets, supportTicketsData);
 
       // Save current expanded and read states
       const currentExpandedState = { ...expandedMessages.value };
@@ -1399,12 +1736,8 @@ async function getMessages(preserveState = false) {
             readMessages.value[msg.id] = !msg.is_unread;
           }
         } else {
-          // For admin notices, preserve the previous read state
-          if (currentReadState[msg.id]) {
-            readMessages.value[msg.id] = true;
-          } else {
-            readMessages.value[msg.id] = false;
-          }
+          // For admin notices, use server data (is_read field)
+          readMessages.value[msg.id] = msg.is_read;
         }
       });
     } else {
@@ -1414,24 +1747,30 @@ async function getMessages(preserveState = false) {
       // Initialize expanded and read states based on server data
       messages.value.forEach((msg) => {
         expandedMessages.value[msg.id] = false;
-        // For tickets, use server-side read status; for admin notices, default to unread
+        // For tickets, use server-side read status; for admin notices, use server is_read field
         if (msg.is_ticket) {
           readMessages.value[msg.id] = !msg.is_unread; // If is_unread is false, then it's read
         } else {
-          readMessages.value[msg.id] = false; // Admin notices default to unread
+          readMessages.value[msg.id] = msg.is_read; // Admin notices have is_read field
         }
       });
     }
 
     // Count new messages based on read status
     newMessageCount.value = messages.value.filter(
-      (msg) => !readMessages.value[msg.id]
+      (msg) => !readMessages.value[msg.id] && (msg.is_ticket ? !msg.is_read : !msg.is_read)
     ).length;
-    newTicketCount.value = messages.value.filter(
-      (msg) => msg.is_ticket && !readMessages.value[msg.id]
+    newTicketCount.value = supportTickets.value.filter(
+      (ticket) => !readMessages.value[ticket.id]
     ).length;
   } catch (error) {
     console.error("Error fetching messages:", error);
+    toast.add({
+      title: "Error",
+      description: "Failed to load messages. Please try refreshing.",
+      color: "red",
+      timeout: 5000,
+    });
   } finally {
     setTimeout(() => {
       isLoading.value = false;
@@ -1536,6 +1875,36 @@ function checkForNewMessages(oldMessages, newMessages) {
       });
     }
   });
+}
+
+// Check for new updates
+function checkForNewUpdates(oldUpdates, newUpdates) {
+  const oldIds = oldUpdates.map((update) => update.id);
+  const newItems = newUpdates.filter((update) => !oldIds.includes(update.id));
+
+  if (newItems.length > 0) {
+    toast.add({
+      title: `${newItems.length} New Update${newItems.length > 1 ? 's' : ''}`,
+      description: `You have new ${formatUpdateType(newItems[0].notification_type).toLowerCase()} notifications`,
+      color: "primary",
+      timeout: 5000,
+    });
+  }
+}
+
+// Check for new tickets
+function checkForNewTickets(oldTickets, newTickets) {
+  const oldIds = oldTickets.map((ticket) => ticket.id);
+  const newItems = newTickets.filter((ticket) => !oldIds.includes(ticket.id));
+
+  if (newItems.length > 0) {
+    toast.add({
+      title: `${newItems.length} New Support Ticket${newItems.length > 1 ? 's' : ''}`,
+      description: "You have new support ticket activity",
+      color: "primary",
+      timeout: 5000,
+    });
+  }
 }
 
 // Auto-refresh interval
@@ -2175,6 +2544,47 @@ onBeforeUnmount(() => {
 .message-icon-circle.admin-notice {
   background-color: #f3f4f6;
   border-color: #e5e7eb;
+}
+
+/* Update type specific styles */
+.message-icon-circle.system-update {
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.message-icon-circle.order-update {
+  background-color: #dcfce7;
+  border-color: #bbf7d0;
+}
+
+.message-icon-circle.withdraw-update {
+  background-color: #dbeafe;
+  border-color: #bfdbfe;
+}
+
+.message-icon-circle.recharge-update {
+  background-color: #fed7aa;
+  border-color: #fdba74;
+}
+
+.message-icon-circle.pro-update {
+  background-color: #e9d5ff;
+  border-color: #d8b4fe;
+}
+
+.message-icon-circle.expiring-update {
+  background-color: #fef3c7;
+  border-color: #fde68a;
+}
+
+.message-icon-circle.gig-update {
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.message-icon-circle.general-update {
+  background-color: #dbeafe;
+  border-color: #bfdbfe;
 }
 
 .status-badge {

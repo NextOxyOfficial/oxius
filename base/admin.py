@@ -204,7 +204,27 @@ admin.site.register(AuthenticationBanner)
 
 
 class AdminNoticeAdmin(admin.ModelAdmin):
-    list_display = ('title','message', 'created_at', 'updated_at')
+    list_display = ('title', 'notification_type', 'user', 'amount', 'is_read', 'created_at', 'updated_at')
+    list_filter = ('notification_type', 'is_read', 'created_at', 'user')
+    search_fields = ('title', 'message', 'user__email', 'user__username', 'reference_id')
+    list_editable = ('is_read',)
+    fieldsets = (
+        ('Notification Information', {
+            'fields': ('title', 'message', 'notification_type')
+        }),
+        ('Targeting', {
+            'fields': ('user',),
+            'description': 'Leave user blank for global notifications visible to all users'
+        }),
+        ('Additional Details', {
+            'fields': ('amount', 'reference_id', 'is_read'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related('user')
 admin.site.register(AdminNotice, AdminNoticeAdmin)
 
 admin.site.register(ClassifiedCategoryPostMedia)
