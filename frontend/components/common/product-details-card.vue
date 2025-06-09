@@ -535,7 +535,7 @@
       <!-- Product Full Description - Replaced tabs with direct content -->
       <div class="mt-8 border-t border-slate-200 dark:border-slate-700 pt-6">
         <!-- Full Description Section -->
-        <div class="mb-8">
+        <div class="">
           <h3
             class="text-base font-Medium my-3 text-gray-800 dark:text-white flex items-center"
           >
@@ -544,17 +544,351 @@
               class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400"
             />
             Detailed Description
-          </h3>
-
-          <div
+          </h3>          <div
             class="prose prose-slate max-w-none dark:prose-invert prose-img:rounded-xl prose-headings:font-medium prose-a:text-primary-600 dark:prose-a:text-primary-400 text-left px-4"
             v-html="
               currentProduct.description || 'No detailed description available.'
             "
           ></div>
         </div>
+
+        <!-- Customer Reviews Section -->
+        <div class="mt-8 border-t border-slate-200 dark:border-slate-700 pt-6 customer-reviews-section">
+          <h3
+            class="text-base font-medium mb-6 text-gray-800 dark:text-white flex items-center"
+          >
+            <UIcon
+              name="i-heroicons-star"
+              class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400"
+            />
+            Customer Reviews
+          </h3>
+
+          <!-- Reviews Summary -->
+          <div
+            class=" bg-white dark:bg-slate-800/80 rounded-xl shadow-sm p-6"
+          >
+            <div class="flex flex-col md:flex-row gap-6 md:items-center">
+              <div
+                class="text-center md:border-r md:border-slate-200 dark:md:border-slate-700 md:pr-6"
+              >
+                <div
+                  class="text-2xl font-semibold text-gray-800 dark:text-white mb-2"
+                >
+                  {{ reviewsAverageRating }}
+                </div>                <div class="flex justify-center text-amber-400 my-1">
+                  <UIcon
+                    v-for="i in 5"
+                    :key="i"
+                    :name="i <= Math.round(parseFloat(reviewsAverageRating)) ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                    class="w-6 h-6"
+                    :class="i <= Math.round(parseFloat(reviewsAverageRating)) ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600'"
+                  />
+                </div>
+                <div class="text-sm text-slate-500 dark:text-slate-400">
+                  Based on {{ reviewsCount }} reviews
+                </div>
+              </div>
+
+              <div class="flex-1 space-y-2">
+                <div v-for="n in 5" :key="n" class="flex items-center">
+                  <div class="text-sm w-5 text-right mr-3">
+                    {{ 6 - n }}
+                  </div>
+                  <UIcon
+                    name="i-heroicons-star-solid"
+                    class="w-4 h-4 text-amber-400 mr-2"
+                  />
+                  <div
+                    class="flex-1 h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"
+                  >
+                    <div
+                      class="h-full bg-amber-400"
+                      :style="{ width: getRatingPercentage(6 - n) }"
+                    ></div>
+                  </div>
+                  <div class="text-sm w-10 text-left ml-3">
+                    {{ getRatingCount(6 - n) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Featured Reviews with Pagination -->
+          <div class="max-w-6xl mx-auto mb-10">
+            <!-- Loading state -->
+            <div v-if="isLoadingReviews" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div 
+                v-for="n in 3" 
+                :key="n"
+                class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 animate-pulse"
+              >
+                <div class="flex mb-3">
+                  <div v-for="i in 5" :key="i" class="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded mr-1"></div>
+                </div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-3/4"></div>
+                <div class="flex items-center">
+                  <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full mr-3"></div>
+                  <div>
+                    <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1 w-20"></div>
+                    <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reviews grid -->
+            <div v-else-if="displayedReviews.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div
+                v-for="(review, index) in displayedReviews"
+                :key="review.id || index"
+                class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 transition-transform hover:translate-y-[-5px]"
+              >
+                <div class="flex text-amber-400 mb-3">
+                  <UIcon
+                    v-for="star in 5"
+                    :key="star"
+                    :name="
+                      star <= review.rating
+                        ? 'i-heroicons-star-solid'
+                        : 'i-heroicons-star'
+                    "
+                    class="w-5 h-5"
+                    :class="
+                      star <= review.rating ? 'text-amber-400' : 'text-gray-300'
+                    "
+                  />
+                </div>
+                <p class="text-gray-600 dark:text-slate-300 mb-4">
+                  "{{ review.comment }}"
+                </p>
+                <div class="flex items-center">
+                  <div
+                    class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mr-3 text-primary-700 dark:text-primary-300 font-medium"
+                  >
+                    {{ review.user?.display_name?.charAt(0) || review.reviewer_name?.charAt(0) || "U" }}
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-800 dark:text-white">
+                      {{ review.user?.display_name || review.reviewer_name || "Anonymous" }}
+                    </div>
+                    <div class="text-xs text-slate-500 dark:text-slate-400">
+                      {{ review.formatted_date || "Verified Purchase" }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty state -->
+            <div v-else class="text-center">
+              <UIcon 
+                name="i-heroicons-chat-bubble-bottom-center-text" 
+                class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto my-2"
+              />
+              <p class="text-gray-500 dark:text-gray-400 text-lg">No reviews yet</p>
+              <p class="text-gray-400 dark:text-gray-500 text-sm">Be the first to share your experience!</p>
+            </div>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div v-if="totalReviewPages > 1" class="flex justify-center ">
+            <div class="flex items-center gap-2">
+              <!-- Previous button -->
+              <UButton
+                icon="i-heroicons-chevron-left"
+                color="gray"
+                variant="ghost"
+                :disabled="currentReviewPage === 1 || isLoadingReviews"
+                @click="previousReviewPage"
+                size="sm"
+                class="rounded-full"
+                :loading="isLoadingReviews"
+              />
+
+              <!-- Page numbers -->
+              <div class="flex gap-1">
+                <UButton
+                  v-for="page in paginationRange"
+                  :key="page"
+                  :variant="currentReviewPage === page ? 'solid' : 'ghost'"
+                  :color="currentReviewPage === page ? 'primary' : 'gray'"
+                  size="sm"
+                  class="w-8 h-8"
+                  @click="goToReviewPage(page)"
+                  v-if="page !== '...'"
+                  :disabled="isLoadingReviews"
+                  :loading="isLoadingReviews && currentReviewPage === page"
+                >
+                  {{ page }}
+                </UButton>
+                <!-- Ellipsis -->
+                <div
+                  v-if="paginationRange.includes('...')"
+                  class="w-8 h-8 flex items-center justify-center text-slate-500"
+                >
+                  ...
+                </div>
+              </div>
+
+              <!-- Next button -->
+              <UButton
+                icon="i-heroicons-chevron-right"
+                color="gray"
+                variant="ghost"
+                :disabled="currentReviewPage === totalReviewPages || isLoadingReviews"
+                @click="nextReviewPage"
+                size="sm"
+                class="rounded-full"
+                :loading="isLoadingReviews"
+              />
+            </div>
+          </div>
+
+          <!-- Write a Review Section -->
+          <div
+            class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 max-w-3xl mx-auto"
+          >
+            <!-- Only show title if user can submit a review or needs to log in -->
+            <h3 
+              v-if="!isLoggedIn || (!userExistingReview && !isCheckingUserReview)" 
+              class="text-xl font-semibold mb-4 text-center"
+            >
+              Share Your Experience
+            </h3>
+
+            <!-- Loading state for checking user review -->
+            <div v-if="isCheckingUserReview" class="text-center p-6">
+              <div class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p class="text-gray-600 dark:text-slate-400">Checking your review status...</p>
+            </div>
+
+            <!-- User has already submitted a review -->
+            <div v-else-if="isLoggedIn && userExistingReview" class="text-center p-6">
+              <UIcon
+                name="i-heroicons-check-circle"
+                class="w-12 h-12 text-green-500 mx-auto mb-4"
+              />
+              <h4 class="text-lg font-medium mb-2 text-green-700 dark:text-green-400">Thank You for Your Review!</h4>
+              <p class="text-gray-600 dark:text-slate-400 mb-4">
+                You have already submitted a review for this product.
+              </p>
+              
+              <!-- Show the user's existing review -->
+              <div class="bg-white dark:bg-slate-700 rounded-lg p-4 text-left max-w-md mx-auto">
+                <div class="flex text-amber-400 mb-2">
+                  <UIcon
+                    v-for="star in 5"
+                    :key="star"
+                    :name="star <= userExistingReview.rating ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                    class="w-4 h-4"
+                    :class="star <= userExistingReview.rating ? 'text-amber-400' : 'text-gray-300'"
+                  />
+                  <span class="ml-2 text-sm text-gray-600 dark:text-slate-400">Your Rating</span>
+                </div>
+                <p class="text-gray-700 dark:text-slate-300 text-sm">
+                  "{{ userExistingReview.comment }}"
+                </p>
+                <p class="text-xs text-gray-500 dark:text-slate-500 mt-2">
+                  Submitted {{ userExistingReview.formatted_date || 'recently' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- User can submit a review -->
+            <div v-else-if="canSubmitReview">
+              <div class="space-y-4">
+                <div>
+                  <label
+                    class="block text-sm mb-1 text-gray-600 dark:text-slate-300"
+                  >
+                    Your Rating
+                  </label>
+                  <div class="flex gap-1">
+                    <UButton
+                      v-for="star in 5"
+                      :key="star"
+                      variant="ghost"
+                      color="gray"
+                      class="p-1"
+                      @click="reviewForm.rating = star"
+                    >
+                      <UIcon
+                        :name="
+                          star <= reviewForm.rating
+                            ? 'i-heroicons-star-solid'
+                            : 'i-heroicons-star'
+                        "
+                        class="w-6 h-6 transition-colors duration-200"
+                        :class="
+                          star <= reviewForm.rating
+                            ? 'text-amber-400'
+                            : 'text-slate-300 dark:text-gray-600'
+                        "
+                      />
+                    </UButton>
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    class="block text-sm mb-1 text-gray-600 dark:text-slate-300"
+                  >
+                    Your Name
+                  </label>
+                  <div class="px-3 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-md text-gray-800 dark:text-white font-medium">
+                    {{ displayName }}
+                  </div>
+                </div>
+                <div>
+                  <label
+                    class="block text-sm mb-1 text-gray-600 dark:text-slate-300"
+                  >
+                    Your Review
+                  </label>
+                  <UTextarea
+                    v-model="reviewForm.comment"
+                    placeholder="Share your experience with this product..."
+                    rows="3"
+                  />
+                </div>
+                <div class="mt-4">
+                  <UButton
+                    color="primary"
+                    @click="submitReview"
+                    :disabled="!isReviewValid || isSubmittingReview"
+                    :loading="isSubmittingReview"
+                    block
+                  >
+                    {{ isSubmittingReview ? 'Submitting...' : 'Submit Review' }}
+                  </UButton>
+                </div>
+              </div>
+            </div>
+
+            <!-- User needs to log in -->
+            <div v-else class="text-center p-6">
+              <UIcon
+                name="i-heroicons-lock-closed"
+                class="w-12 h-12 text-slate-300 dark:text-gray-600 mx-auto mb-4"
+              />
+              <h4 class="text-lg font-medium mb-2">Please Log In to Review</h4>
+              <p class="text-gray-600 dark:text-slate-400 mb-4">
+                You need to be logged in to share your experience with this
+                product.
+              </p>
+              <div class="flex justify-center">
+                <UButton to="/login" color="primary">
+                  Log in to continue
+                </UButton>
+              </div>
+            </div>
+          </div>
+        </div>
         <!-- You may also like Section -->
-        <div class="mb-8 bg-slate-50 dark:bg-slate-800/30 rounded-xl">
+        <div class=" bg-slate-50 dark:bg-slate-800/30 rounded-xl">
           <h3
             class="text-base font-medium py-3 px-2 text-gray-800 dark:text-white flex items-center"
           >
@@ -675,6 +1009,12 @@ const quantity = ref(1);
 const similarProducts = ref([]);
 const isSimilarProductsLoading = ref(false);
 
+// API composable
+const { get, post } = useApi();
+
+// User state for reviews
+const user = useState("user");
+
 // Dynamic rating stats
 const productRatingStats = ref({
   total_reviews: 0,
@@ -686,8 +1026,25 @@ const productRatingStats = ref({
   rating_1_count: 0
 });
 
-// API composable
-const { get } = useApi();
+// Reviews state
+const productReviews = ref([]);
+const isLoadingReviews = ref(false);
+const isSubmittingReview = ref(false);
+const userExistingReview = ref(null);
+const isCheckingUserReview = ref(false);
+
+// Reviews pagination state  
+const currentReviewPage = ref(1);
+const totalReviewPages = ref(1);
+const totalReviewCount = ref(0);
+const reviewsPerPage = 6; // Match backend pagination
+
+// Review form data
+const reviewForm = ref({
+  name: "",
+  rating: 0,
+  comment: "",
+});
 
 // Fetch product rating statistics from API  
 async function fetchProductRatingStats() {
@@ -724,10 +1081,12 @@ async function fetchProductRatingStats() {
   }
 }
 
+// Close modal function
 function closeModal() {
   emit("close-modal");
 }
 
+// Open message modal function
 function openMessageModal() {
   emit("open-message-modal", {
     sellerId: currentProduct.seller?.id,
@@ -801,17 +1160,323 @@ const displayRating = computed(() => {
   return parseFloat(averageRating.value);
 });
 
+// Review-specific computed properties
+const isLoggedIn = computed(() => {
+  if (!user.value) return false;
+  
+  // Check for nested user object or direct user object
+  return !!(user.value.user?.id || user.value.id || user.value.username);
+});
+
+const displayName = computed(() => {
+  if (!user.value) return 'Guest';
+  
+  // Handle nested user object structure
+  const userData = user.value.user || user.value;
+  
+  if (userData.first_name) {
+    return `${userData.first_name} ${userData.last_name || ''}`.trim();
+  }
+  
+  return userData.username || user.value.username || 'User';
+});
+
+const reviewsCount = computed(() => {
+  return productRatingStats.value?.total_reviews || 0;
+});
+
+const reviewsAverageRating = computed(() => {
+  if (productRatingStats.value?.average_rating) {
+    return parseFloat(productRatingStats.value.average_rating).toFixed(1);
+  }
+  return "0.0";
+});
+
+const isReviewValid = computed(() => {
+  const hasRating = reviewForm.value.rating > 0;
+  const hasComment = reviewForm.value.comment.trim().length > 0;
+  
+  // For logged-in users, only need rating and comment (name is auto-filled)
+  if (isLoggedIn.value) {
+    return hasRating && hasComment;
+  }
+  
+  // For non-logged-in users, also need name (though they won't see the form)
+  const hasName = reviewForm.value.name.trim().length > 0;
+  return hasRating && hasComment && hasName;
+});
+
+const canSubmitReview = computed(() => {
+  return isLoggedIn.value && !userExistingReview.value && !isCheckingUserReview.value;
+});
+
+const displayedReviews = computed(() => {
+  if (isLoadingReviews.value) {
+    return []; // Show loading state
+  }
+  
+  // Use API data directly since pagination is handled by backend
+  return productReviews.value || [];
+});
+
+const paginationRange = computed(() => {
+  if (totalReviewPages.value <= 5) {
+    return Array.from({ length: totalReviewPages.value }, (_, i) => i + 1);
+  }
+
+  if (currentReviewPage.value <= 3) {
+    return [1, 2, 3, 4, "...", totalReviewPages.value];
+  }
+
+  if (currentReviewPage.value >= totalReviewPages.value - 2) {
+    return [
+      1,
+      "...",
+      totalReviewPages.value - 3,
+      totalReviewPages.value - 2,
+      totalReviewPages.value - 1,
+      totalReviewPages.value,
+    ];
+  }
+
+  return [
+    1,
+    "...",
+    currentReviewPage.value - 1,
+    currentReviewPage.value,
+    currentReviewPage.value + 1,
+    "...",
+    totalReviewPages.value,
+  ];
+});
+
+// Review API functions
+async function fetchProductReviews(page = 1) {
+  if (!currentProduct?.id) return;
+  
+  isLoadingReviews.value = true;
+  try {
+    const response = await get(`/reviews/products/${currentProduct.id}/reviews/`, {
+      params: {
+        page: page,
+        page_size: reviewsPerPage
+      }
+    });
+    
+    if (response.data) {
+      // Handle paginated response
+      if (response.data.results) {
+        productReviews.value = response.data.results;
+        totalReviewCount.value = response.data.count || 0;
+        totalReviewPages.value = Math.ceil(totalReviewCount.value / reviewsPerPage);
+      } else if (Array.isArray(response.data)) {
+        // Handle non-paginated response (fallback)
+        productReviews.value = response.data;
+        totalReviewCount.value = response.data.length;
+        totalReviewPages.value = Math.ceil(totalReviewCount.value / reviewsPerPage);
+      } else {
+        productReviews.value = [];
+        totalReviewCount.value = 0;
+        totalReviewPages.value = 1;
+      }
+    } else {
+      productReviews.value = [];
+      totalReviewCount.value = 0;
+      totalReviewPages.value = 1;
+    }
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    productReviews.value = [];
+    totalReviewCount.value = 0;
+    totalReviewPages.value = 1;
+  } finally {
+    isLoadingReviews.value = false;
+  }
+}
+
+async function checkUserExistingReview() {
+  if (!currentProduct?.id || !isLoggedIn.value) {
+    userExistingReview.value = null;
+    return;
+  }
+  
+  isCheckingUserReview.value = true;
+  try {
+    const response = await get(`/reviews/products/${currentProduct.id}/my-review/`);
+    if (response.data) {
+      userExistingReview.value = response.data;
+    } else {
+      userExistingReview.value = null;
+    }
+  } catch (error) {
+    // 404 means no existing review found, which is expected
+    if (error.response?.status === 404) {
+      userExistingReview.value = null;
+    } else {
+      console.error('Error checking user review:', error);
+      userExistingReview.value = null;
+    }
+  } finally {
+    isCheckingUserReview.value = false;
+  }
+}
+
+async function submitReview() {
+  if (!isReviewValid.value || !isLoggedIn.value || !currentProduct?.id) {
+    return;
+  }
+
+  isSubmittingReview.value = true;
+
+  try {
+    const reviewData = {
+      rating: reviewForm.value.rating,
+      comment: reviewForm.value.comment.trim(),
+    };
+    
+    const response = await post(`/reviews/products/${currentProduct.id}/reviews/`, reviewData);
+    
+    if (response.data) {
+      // Show success message using Nuxt UI toast
+      const toast = useToast();
+      toast.add({
+        title: 'Review Submitted',
+        description: 'Thank you for your feedback! Your review has been submitted successfully.',
+        color: 'green',
+        timeout: 5000
+      });
+
+      // Refresh the reviews list and stats
+      try {
+        await fetchProductReviews(1); // Go back to first page to show the new review
+      } catch (reviewsError) {
+        console.error('Error refreshing reviews:', reviewsError);
+      }
+      
+      try {
+        await fetchProductRatingStats();
+      } catch (statsError) {
+        console.error('Error refreshing rating stats:', statsError);
+      }
+      
+      try {
+        await checkUserExistingReview();
+      } catch (userReviewError) {
+        console.error('Error refreshing user review status:', userReviewError);
+      }
+      
+      // Reset form
+      reviewForm.value = {
+        name: "",
+        rating: 0,
+        comment: "",
+      };
+
+      // Reset to first page to potentially show the newly added review
+      currentReviewPage.value = 1;
+    }
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    
+    // Show error message using Nuxt UI toast
+    const toast = useToast();
+    let errorMessage = 'Failed to submit review. Please try again.';
+    
+    if (error.response?.data?.detail) {
+      errorMessage = error.response.data.detail;
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.response?.data?.non_field_errors) {
+      errorMessage = error.response.data.non_field_errors[0];
+    }
+    
+    toast.add({
+      title: 'Error Submitting Review',
+      description: errorMessage,
+      color: 'red',
+      timeout: 5000
+    });
+  } finally {
+    isSubmittingReview.value = false;
+  }
+}
+
+function getRatingPercentage(rating) {
+  if (!productRatingStats.value) return "0%";
+  
+  const total = productRatingStats.value.total_reviews;
+  if (total === 0) return "0%";
+  
+  const count = productRatingStats.value[`rating_${rating}_count`] || 0;
+  return `${((count / total) * 100).toFixed(1)}%`;
+}
+
+function getRatingCount(rating) {
+  if (!productRatingStats.value) return 0;
+  return productRatingStats.value[`rating_${rating}_count`] || 0;
+}
+
+// Pagination navigation functions
+async function goToReviewPage(page) {
+  if (page !== currentReviewPage.value) {
+    currentReviewPage.value = page;
+    await fetchProductReviews(page);
+  }
+}
+
+async function previousReviewPage() {
+  if (currentReviewPage.value > 1) {
+    const newPage = currentReviewPage.value - 1;
+    currentReviewPage.value = newPage;
+    await fetchProductReviews(newPage);
+  }
+}
+
+async function nextReviewPage() {
+  if (currentReviewPage.value < totalReviewPages.value) {
+    const newPage = currentReviewPage.value + 1;
+    currentReviewPage.value = newPage;
+    await fetchProductReviews(newPage);
+  }
+}
+
 // Reset selected image when product changes
 watch(
   () => currentProduct?.id,
-  () => {
+  async () => {
     selectedImageIndex.value = 0;
     quantity.value = 1;
+    
+    // Fetch data for the new product
     fetchSimilarProducts(); // Fetch similar products when current product changes
-    fetchProductRatingStats(); // Fetch rating stats when current product changes
+    await Promise.all([
+      fetchProductReviews(1), // Start from page 1
+      fetchProductRatingStats(),
+      checkUserExistingReview()
+    ]);
   },
   { immediate: true } // Fetch immediately on component creation
 );
+
+// Auto-scroll to reviews when page changes
+watch(currentReviewPage, () => {
+  // Smooth scroll to the reviews section on page change
+  const reviewsSection = document.querySelector(".customer-reviews-section");
+  if (reviewsSection) {
+    setTimeout(() => {
+      reviewsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 300); // Increased timeout to allow for API response
+  }
+});
+
+// Watch for user login status changes to check for existing review
+watch(isLoggedIn, async (newValue) => {
+  if (newValue) {
+    await checkUserExistingReview();
+  } else {
+    userExistingReview.value = null;
+  }
+});
 </script>
 
 <style scoped>
