@@ -143,309 +143,310 @@
             </span>
           </button>
         </nav>
-      </div>
+      </div>      <!-- Unified Content Area with Filtering -->
+      <div class="px-4">
+        <!-- Unified Filtering Bar -->
+        <div class="flex flex-wrap gap-2 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <!-- Tab specific filters -->
+          <div v-if="activeTab === 'support'" class="flex flex-wrap gap-2 flex-1">
+            <UButton
+              variant="soft"
+              :class="{ active: ticketStatusFilter === 'all' }"
+              @click="setTicketStatusFilter('all')"
+              label="All Tickets"
+            />
+            <UButton
+              variant="soft"
+              color="amber"
+              :class="{ active: ticketStatusFilter === 'open' }"
+              @click="setTicketStatusFilter('open')"
+              label="Open"
+            />
+            <UButton
+              variant="soft"
+              color="blue"
+              :class="{ active: ticketStatusFilter === 'in_progress' }"
+              @click="setTicketStatusFilter('in_progress')"
+              label="In Progress"
+            />
+            <UButton
+              variant="soft"
+              color="green"
+              :class="{ active: ticketStatusFilter === 'resolved' }"
+              @click="setTicketStatusFilter('resolved')"
+              label="Resolved"
+            />
+            <UButton
+              variant="soft"
+              color="gray"
+              :class="{ active: ticketStatusFilter === 'closed' }"
+              @click="setTicketStatusFilter('closed')"
+              label="Closed"
+            />
+          </div>
 
-      <!-- Support Tickets Tab Content -->
-      <div v-show="activeTab === 'support'">
-        <!-- Ticket filtering options -->
-        <div class="flex flex-wrap gap-2 mb-6 px-4">
+          <div v-if="activeTab === 'updates'" class="flex flex-wrap gap-2 flex-1">
+            <UButton
+              variant="soft"
+              :class="{ active: updatesFilter === 'all' }"
+              @click="setUpdatesFilter('all')"
+              label="All Updates"
+            />
+            <UButton
+              variant="soft"
+              color="green"
+              :class="{ active: updatesFilter === 'order_received' }"
+              @click="setUpdatesFilter('order_received')"
+              label="Orders"
+            />
+            <UButton
+              variant="soft"
+              color="blue"
+              :class="{ active: updatesFilter === 'withdraw_successful' }"
+              @click="setUpdatesFilter('withdraw_successful')"
+              label="Withdrawals"
+            />
+            <UButton
+              variant="soft"
+              color="orange"
+              :class="{ active: updatesFilter === 'mobile_recharge_successful' }"
+              @click="setUpdatesFilter('mobile_recharge_successful')"
+              label="Recharges"
+            />
+            <UButton
+              variant="soft"
+              color="purple"
+              :class="{ active: updatesFilter === 'pro_subscribed' }"
+              @click="setUpdatesFilter('pro_subscribed')"
+              label="Pro"
+            />
+            <UButton
+              variant="soft"
+              color="amber"
+              :class="{ active: updatesFilter === 'pro_expiring' }"
+              @click="setUpdatesFilter('pro_expiring')"
+              label="Expiring"
+            />
+            <UButton
+              variant="soft"
+              color="gray"
+              :class="{ active: updatesFilter === 'gig_posted' }"
+              @click="setUpdatesFilter('gig_posted')"
+              label="Gigs"
+            />
+          </div>
+
+          <!-- Refresh button (always visible) -->
           <UButton
-            variant="soft"
-            :class="{ active: ticketStatusFilter === 'all' }"
-            @click="setTicketStatusFilter('all')"
-            label="All Tickets"
-          />
-          <UButton
-            variant="soft"
-            color="amber"
-            :class="{ active: ticketStatusFilter === 'open' }"
-            @click="setTicketStatusFilter('open')"
-            label="Open"
-          />
-          <UButton
-            variant="soft"
-            color="blue"
-            :class="{ active: ticketStatusFilter === 'in_progress' }"
-            @click="setTicketStatusFilter('in_progress')"
-            label="In Progress"
-          />
-          <UButton
-            variant="soft"
-            color="green"
-            :class="{ active: ticketStatusFilter === 'resolved' }"
-            @click="setTicketStatusFilter('resolved')"
-            label="Resolved"
-          />
-          <UButton
-            variant="soft"
-            color="gray"
-            :class="{ active: ticketStatusFilter === 'closed' }"
-            @click="setTicketStatusFilter('closed')"
-            label="Closed"
-          />
-          <UButton
-            class="ml-auto"
             color="gray"
             variant="soft"
             icon="i-heroicons-arrow-path"
             :loading="isLoading"
             @click="refreshMessages"
-            title="Refresh messages"
+            :title="`Refresh ${activeTab === 'support' ? 'tickets' : 'updates'}`"
           />
         </div>
 
-        <!-- Support Tickets List -->
-        <div v-if="supportTickets && supportTickets.length" class="space-y-4 px-4">
-          <TransitionGroup name="message-list" tag="div" class="space-y-5">
-            <div
-              v-for="ticket in filteredSupportTickets"
-              :key="ticket.id"
-              class="message-card"
-              :class="{ unread: !readMessages[ticket.id] }"
-            >
-              <!-- Support ticket content here -->
-              <div
-                class="message-header cursor-pointer"
-                @click="openTicketDetail(ticket)"
-              >
-                <!-- Status indicator -->
+        <!-- Unified Content List with Stripe Design -->
+        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <!-- Support Tickets Content -->
+          <div v-if="activeTab === 'support'">
+            <div v-if="supportTickets && supportTickets.length">
+              <TransitionGroup name="message-list" tag="div">
                 <div
-                  class="status-indicator"
-                  :class="{ active: !readMessages[ticket.id] }"
-                ></div>
-
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                  <div class="flex-shrink-0">
-                    <div
-                      class="message-icon-circle support-ticket"
+                  v-for="(ticket, index) in filteredSupportTickets"
+                  :key="ticket.id"
+                  class="unified-message-item border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
+                  :class="{ 
+                    'unread': !readMessages[ticket.id],
+                    'border-b-0': index === filteredSupportTickets.length - 1
+                  }"
+                >
+                  <div
+                    class="flex items-center gap-4 p-4 cursor-pointer"
+                    @click="openTicketDetail(ticket)"
+                  >
+                    <!-- Left Status Stripe -->
+                    <div 
+                      class="w-1 h-12 rounded-full"
                       :class="{
-                        resolved:
-                          ['resolved', 'closed'].includes(ticket.status),
+                        'bg-red-500': !readMessages[ticket.id],
+                        'bg-gray-300': readMessages[ticket.id]
                       }"
-                    >
-                      <UIcon
-                        name="i-heroicons-chat-bubble-left-right"
-                        class="message-type-icon"
-                        :class="readMessages[ticket.id] ? 'read' : 'unread'"
-                      />
+                    ></div>
+
+                    <!-- Icon -->
+                    <div class="flex-shrink-0">
+                      <div
+                        class="w-10 h-10 rounded-full flex items-center justify-center border-2"
+                        :class="{
+                          'bg-amber-50 border-amber-200': ticket.status === 'open',
+                          'bg-blue-50 border-blue-200': ticket.status === 'in_progress',
+                          'bg-green-50 border-green-200': ['resolved', 'closed'].includes(ticket.status),
+                          'bg-gray-50 border-gray-200': !ticket.status
+                        }"
+                      >
+                        <UIcon
+                          name="i-heroicons-chat-bubble-left-right"
+                          class="w-5 h-5"
+                          :class="{
+                            'text-amber-600': ticket.status === 'open',
+                            'text-blue-600': ticket.status === 'in_progress',
+                            'text-green-600': ['resolved', 'closed'].includes(ticket.status),
+                            'text-gray-600': !ticket.status
+                          }"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div
-                      class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
-                    >
-                      <div class="flex items-center gap-2">
-                        <span class="message-id"
-                          >#{{ ticket.id.toString().padStart(10, "0") }}</span
-                        >
-                        <div class="flex items-center gap-1.5">
+
+                    <!-- Content -->
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-mono text-gray-500">
+                            #{{ ticket.id.toString().padStart(10, "0") }}
+                          </span>
                           <UBadge
                             :color="readMessages[ticket.id] ? 'gray' : 'primary'"
-                            class="new-badge cursor-pointer"
+                            size="xs"
+                            class="cursor-pointer"
                             @click="toggleReadStatus(ticket.id, $event)"
-                            >{{ readMessageLabel(ticket.id) }}</UBadge
                           >
+                            {{ readMessageLabel(ticket.id) }}
+                          </UBadge>
                           <UBadge
                             :color="getTicketStatusColor(ticket.status)"
-                            class="status-badge"
-                            >{{ formatTicketStatus(ticket.status) }}</UBadge
+                            size="xs"
                           >
+                            {{ formatTicketStatus(ticket.status) }}
+                          </UBadge>
                         </div>
+                        <span class="text-xs text-gray-500">
+                          {{ formatDate(ticket.created_at) }}
+                        </span>
                       </div>
-                      <h3
-                        class="message-title line-clamp-1"
+                      <h3 
+                        class="text-sm font-medium text-gray-900 line-clamp-1 mb-1"
                         :class="{ 'font-semibold': !readMessages[ticket.id] }"
                       >
                         {{ ticket.title }}
                       </h3>
-                    </div>
-
-                    <div class="message-meta">
-                      <span>{{ formatDate(ticket.created_at) }}</span>
-                      <span class="message-meta-dot">•</span>
-                      <span>Ticket</span>
+                      <p class="text-xs text-gray-600 line-clamp-1">
+                        Support Ticket
+                      </p>
                     </div>
                   </div>
                 </div>
-              </div>
+              </TransitionGroup>
             </div>
-          </TransitionGroup>
-        </div>
 
-        <!-- Empty state for support tickets -->
-        <div v-else-if="!isLoading && activeTab === 'support'" class="empty-inbox px-4">
-          <div class="empty-animation">
-            <div class="empty-paper"></div>
-            <div class="empty-paper"></div>
-            <div class="empty-inbox-icon">
-              <UIcon name="i-heroicons-chat-bubble-left-right" class="text-2xl text-white" />
+            <!-- Empty state for support tickets -->
+            <div v-else-if="!isLoading" class="p-8 text-center">
+              <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <UIcon name="i-heroicons-chat-bubble-left-right" class="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">No Support Tickets</h3>
+              <p class="text-gray-600 mb-4">
+                You haven't created any support tickets yet.
+              </p>
+              <UButton color="primary" @click="openNewTicketModal">
+                Open Your First Ticket
+              </UButton>
             </div>
           </div>
-          <h3 class="empty-title">No Support Tickets</h3>
-          <p class="empty-description">
-            You haven't created any support tickets yet. Click "Open Ticket" to get started.
-          </p>
-        </div>
-      </div>
 
-      <!-- Updates Tab Content -->
-      <div v-show="activeTab === 'updates'">
-        <!-- Updates filtering options -->
-        <div class="flex flex-wrap gap-2 mb-6 px-4">
-          <UButton
-            variant="soft"
-            :class="{ active: updatesFilter === 'all' }"
-            @click="setUpdatesFilter('all')"
-            label="All Updates"
-          />
-          <UButton
-            variant="soft"
-            color="green"
-            :class="{ active: updatesFilter === 'order_received' }"
-            @click="setUpdatesFilter('order_received')"
-            label="Orders"
-          />
-          <UButton
-            variant="soft"
-            color="blue"
-            :class="{ active: updatesFilter === 'withdraw_successful' }"
-            @click="setUpdatesFilter('withdraw_successful')"
-            label="Withdrawals"
-          />
-          <UButton
-            variant="soft"
-            color="orange"
-            :class="{ active: updatesFilter === 'mobile_recharge_successful' }"
-            @click="setUpdatesFilter('mobile_recharge_successful')"
-            label="Recharges"
-          />
-          <UButton
-            variant="soft"
-            color="purple"
-            :class="{ active: updatesFilter === 'pro_subscribed' }"
-            @click="setUpdatesFilter('pro_subscribed')"
-            label="Pro"
-          />
-          <UButton
-            variant="soft"
-            color="amber"
-            :class="{ active: updatesFilter === 'pro_expiring' }"
-            @click="setUpdatesFilter('pro_expiring')"
-            label="Expiring"
-          />
-          <UButton
-            variant="soft"
-            color="gray"
-            :class="{ active: updatesFilter === 'gig_posted' }"
-            @click="setUpdatesFilter('gig_posted')"
-            label="Gigs"
-          />
-          <UButton
-            class="ml-auto"
-            color="gray"
-            variant="soft"
-            icon="i-heroicons-arrow-path"
-            :loading="isLoading"
-            @click="refreshMessages"
-            title="Refresh updates"
-          />
-        </div>
-
-        <!-- Updates List -->
-        <div v-if="updates && updates.length" class="space-y-4 px-4">
-          <TransitionGroup name="message-list" tag="div" class="space-y-5">
-            <div
-              v-for="update in filteredUpdates"
-              :key="update.id"
-              class="message-card"
-              :class="{ unread: !update.is_read }"
-            >
-              <!-- Update content here -->
-              <div
-                class="message-header cursor-pointer"
-                @click="markUpdateAsRead(update)"
-              >
-                <!-- Status indicator -->
+          <!-- Updates Content -->
+          <div v-if="activeTab === 'updates'">
+            <div v-if="updates && updates.length">
+              <TransitionGroup name="message-list" tag="div">
                 <div
-                  class="status-indicator"
-                  :class="{ active: !update.is_read }"
-                ></div>
+                  v-for="(update, index) in filteredUpdates"
+                  :key="update.id"
+                  class="unified-message-item border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200"
+                  :class="{ 
+                    'unread': !update.is_read,
+                    'border-b-0': index === filteredUpdates.length - 1
+                  }"
+                >
+                  <div
+                    class="flex items-center gap-4 p-4 cursor-pointer"
+                    @click="markUpdateAsRead(update)"
+                  >
+                    <!-- Left Status Stripe -->
+                    <div 
+                      class="w-1 h-12 rounded-full"
+                      :class="{
+                        'bg-primary-500': !update.is_read,
+                        'bg-gray-300': update.is_read
+                      }"
+                    ></div>
 
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                  <div class="flex-shrink-0">
-                    <div
-                      class="message-icon-circle"
-                      :class="getUpdateIconClass(update.notification_type)"
-                    >
-                      <UIcon
-                        :name="getUpdateIcon(update.notification_type)"
-                        class="message-type-icon"
-                        :class="update.is_read ? 'read' : 'unread'"
-                      />
+                    <!-- Icon -->
+                    <div class="flex-shrink-0">
+                      <div
+                        class="w-10 h-10 rounded-full flex items-center justify-center border-2"
+                        :class="getUpdateIconClass(update.notification_type)"
+                      >
+                        <UIcon
+                          :name="getUpdateIcon(update.notification_type)"
+                          class="w-5 h-5"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div
-                      class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
-                    >
-                      <div class="flex items-center gap-2">
-                        <UBadge
-                          :color="update.is_read ? 'gray' : 'primary'"
-                          class="new-badge"
-                          >{{ update.is_read ? 'Read' : 'New' }}</UBadge
-                        >
-                        <UBadge
-                          :color="getUpdateTypeColor(update.notification_type)"
-                          class="status-badge"
-                          >{{ formatUpdateType(update.notification_type) }}</UBadge
-                        >
-                        <span
-                          v-if="update.amount"
-                          class="text-sm font-medium text-green-600"
-                        >
-                          ৳{{ update.amount }}
+
+                    <!-- Content -->
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center gap-2">
+                          <UBadge
+                            :color="update.is_read ? 'gray' : 'primary'"
+                            size="xs"
+                          >
+                            {{ update.is_read ? 'Read' : 'New' }}
+                          </UBadge>
+                          <UBadge
+                            :color="getUpdateTypeColor(update.notification_type)"
+                            size="xs"
+                          >
+                            {{ formatUpdateType(update.notification_type) }}
+                          </UBadge>
+                          <span
+                            v-if="update.amount"
+                            class="text-xs font-medium text-green-600"
+                          >
+                            ৳{{ update.amount }}
+                          </span>
+                        </div>
+                        <span class="text-xs text-gray-500">
+                          {{ formatDate(update.created_at) }}
                         </span>
                       </div>
-                      <h3
-                        class="message-title line-clamp-1"
+                      <h3 
+                        class="text-sm font-medium text-gray-900 line-clamp-1 mb-1"
                         :class="{ 'font-semibold': !update.is_read }"
                       >
                         {{ update.title }}
                       </h3>
-                    </div>                    <div class="message-meta">
-                      <span>{{ formatDate(update.created_at) }}</span>
-                      <span class="message-meta-dot">•</span>
-                      <span>{{ formatUpdateType(update.notification_type) }}</span>
-                      <span v-if="update.reference_id" class="message-meta-dot">•</span>
-                      <span v-if="update.reference_id" class="text-xs text-gray-500">
-                        Transaction ID: {{ update.reference_id }}
-                      </span>
+                      <p class="text-xs text-gray-600 line-clamp-1">
+                        {{ update.message }}
+                      </p>
                     </div>
-                    
-                    <!-- Message preview -->
-                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">
-                      {{ update.message }}
-                    </p>
                   </div>
                 </div>
-              </div>
+              </TransitionGroup>
             </div>
-          </TransitionGroup>
-        </div>
 
-        <!-- Empty state for updates -->
-        <div v-else-if="!isLoading && activeTab === 'updates'" class="empty-inbox px-4">
-          <div class="empty-animation">
-            <div class="empty-paper"></div>
-            <div class="empty-paper"></div>
-            <div class="empty-inbox-icon">
-              <UIcon name="i-heroicons-bell" class="text-2xl text-white" />
+            <!-- Empty state for updates -->
+            <div v-else-if="!isLoading" class="p-8 text-center">
+              <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <UIcon name="i-heroicons-bell" class="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">No Updates</h3>
+              <p class="text-gray-600">
+                You'll see notifications about orders, withdrawals, recharges, and more here.
+              </p>
             </div>
           </div>
-          <h3 class="empty-title">No Updates</h3>
-          <p class="empty-description">
-            You'll see notifications about orders, withdrawals, recharges, and more here.
-          </p>        
         </div>
       </div>
 
