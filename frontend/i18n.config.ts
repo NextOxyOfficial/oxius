@@ -163,6 +163,7 @@ export default defineI18nConfig(() => ({
       adsy_news: "Adsy News",
       verification: "Verification",
       gold_sponsors: "Gold Sponsors",
+      marketplace: "Marketplace",
       // PWA Installation translations
       add_to_home_screen: "Add AdsyClub to Home Screen",
       install_app_message:
@@ -296,7 +297,7 @@ export default defineI18nConfig(() => ({
       registration_error: "An error occurred during registration",
       get_started: "Get Started",
       explore_features: "Explore Features",      // Sale category translations
-      my_posts: "My Posts",
+      my_post: "My Posts",
       post_a_sale: "Post a Sale",
       no_listings_found: "No listings found",
       no_items_currently_listed: "There are no items currently listed in this category",
@@ -625,11 +626,13 @@ export default defineI18nConfig(() => ({
       already_have_account: "ইতিমধ্যে অ্যাকাউন্ট আছে? সাইন ইন করুন",
       registration_success: "রেজিস্ট্রেশন সফল!",
       welcome_to_adsy: "AdsyClub এ স্বাগতম!",
-      registration_error: "রেজিস্ট্রেশনের সময় একটি সমস্যা হয়েছে",      // Sale category translations in Bangla      my_posts: "আমার পোস্ট",
+      registration_error: "রেজিস্ট্রেশনের সময় একটি সমস্যা হয়েছে",      // Sale category translations in Bangla      
       post_a_sale: "সেল পোস্ট করি",
       no_listings_found: "কোনো লিস্ট পাওয়া যায়নি",
       no_items_currently_listed: "এই ক্যাটাগরিতে বর্তমানে কোনো আইটেম নেই",
       no_gigs_available_category: "এই ক্যাটাগরিতে কোনো গিগ নেই",
+      marketplace: "মার্কেটপ্লেস",
+
 
       // Form validation messages (Bengali)
       first_name_required: "প্রথম নাম প্রয়োজন",
