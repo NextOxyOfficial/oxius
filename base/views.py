@@ -2076,8 +2076,7 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         # Add payment to seller's balance
                         product_owner.balance += payment_amount
                         product_owner.save()
-                        
-                        # Create transaction record for the seller's receipt
+                          # Create transaction record for the seller's receipt
                         # Balance.objects.create(
                         #     user=product_owner,  # The seller receiving the payment
                         #     to_user=buyer,  # The buyer who made the payment
@@ -2087,18 +2086,20 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         #     bank_status='completed',
                         #     description=f"Payment received for order #{order.id}"
                         # )
+                        
+                        # Create notification for each seller who received an order
+                        try:
+                            create_order_notification(
+                                user=product_owner,  # Send to seller, not buyer
+                                order_id=str(order.id),
+                                total_amount=payment_amount  # Amount this seller received
+                            )
+                            print(f"✓ Order notification created for seller {product_owner.email}: ৳{payment_amount}")
+                        except Exception as e:
+                            print(f"Error creating order notification for seller {seller_id}: {str(e)}")
+                            
                     except User.DoesNotExist:
                         return Response({"error": f"Failed to credit seller {seller_id} for order {order.id}"})
-            
-            # Create notification for successful order
-            try:
-                create_order_notification(
-                    user=buyer,
-                    order_id=str(order.id),
-                    amount=total_amount
-                )
-            except Exception as e:
-                print(f"Error creating order notification: {str(e)}")
             
             # Return the complete order details
             return Response(
