@@ -9,7 +9,7 @@
           <!-- Subtle gradient overlay -->
           <div class="absolute inset-0 bg-gradient-to-br from-emerald-100/30 via-transparent to-blue-100/30 dark:from-emerald-900/10 dark:via-transparent dark:to-blue-900/10"></div>
           
-          <div class="relative pb-2 px-4 ">
+          <div class="relative py-2 px-4 ">
             <!-- Header Row -->
             <div class="flex items-center justify-between">
               <!-- Left: Back Button + Category Name -->
