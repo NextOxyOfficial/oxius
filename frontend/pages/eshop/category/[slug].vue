@@ -1,10 +1,10 @@
 <template>
   <div
-    class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20"
+    class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20 -mt-2"
   >
     <UContainer>
         <!-- Modern Header Section -->
-      <div class="mb-6">        
+      <div class="my-4">        
         <!-- Main Header Card -->
         <div class="relative mt-2 bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
           <!-- Subtle gradient overlay -->
@@ -43,12 +43,10 @@
                   >
                     <span class="sr-only">Search</span>
                     <UIcon name="i-heroicons-magnifying-glass" class="size-5" />
-                  </button>
-
-                  <!-- Expanded Search Field -->
+                  </button>                  <!-- Expanded Search Field -->
                   <div
                     v-if="isSearchOpen"
-                    class="absolute right-0 top-0 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 z-50"
+                    class="absolute right-0 top-0 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-3 z-50"
                     @click.stop
                   >
                     <div class="relative">
@@ -95,7 +93,7 @@
                 </button>
               </div>
             </div>            <!-- Search Bar (when expanded on mobile) -->
-            <div v-if="isSearchOpen && isMobile" class="mb-4 search-container">
+            <div v-if="isSearchOpen && isMobile" class="mb-4 px-4 search-container">
               <div class="relative">
                 <UIcon
                   name="i-heroicons-magnifying-glass"
@@ -126,7 +124,7 @@
               leave-from-class="opacity-100 max-h-20"
               leave-to-class="opacity-0 max-h-0 overflow-hidden"
             >
-              <div v-if="isPriceRangeOpen" class="flex flex-col sm:flex-row gap-3 sm:items-center py-2 px-2 sm:px-6 border-t border-gray-100 dark:border-gray-700/30">
+              <div v-if="isPriceRangeOpen" class="flex flex-col sm:flex-row gap-3 sm:items-center px-4 py-4 border-t border-gray-100 dark:border-gray-700/30">
                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 flex-shrink-0">
                   <UIcon name="i-heroicons-banknotes" class="size-4 text-emerald-500" />
                   Price Range
@@ -368,18 +366,25 @@ const hasActiveFilters = computed(() => {
 
 // Search functionality
 async function toggleSearch() {
+  console.log('Toggle search clicked, current state:', isSearchOpen.value);
   isSearchOpen.value = !isSearchOpen.value;
+  
   if (isSearchOpen.value) {
     await nextTick();
-    if (isMobile.value) {
-      mobileSearchInput.value?.focus();
-    } else {
-      searchInput.value?.focus();
+    try {
+      if (isMobile.value && mobileSearchInput.value) {
+        mobileSearchInput.value.focus();
+      } else if (searchInput.value) {
+        searchInput.value.focus();
+      }
+    } catch (error) {
+      console.error('Error focusing search input:', error);
     }
   }
 }
 
 function closeSearch() {
+  console.log('Closing search');
   isSearchOpen.value = false;
   // Don't clear the search query when closing, just hide the UI
 }
@@ -630,19 +635,61 @@ onMounted(() => {
   
   // Close search when clicking outside
   const handleClickOutside = (event) => {
-    if (isSearchOpen.value && !event.target.closest('.search-container')) {
-      closeSearch();
+    if (isSearchOpen.value) {
+      const searchContainer = document.querySelector('.search-container');
+      if (searchContainer && !searchContainer.contains(event.target)) {
+        closeSearch();
+      }
     }
   };
   
   document.addEventListener('click', handleClickOutside);
+  
+  // Also listen for escape key globally
+  const handleEscapeKey = (event) => {
+    if (event.key === 'Escape') {
+      if (isSearchOpen.value) {
+        closeSearch();
+      }
+      if (isPriceRangeOpen.value) {
+        isPriceRangeOpen.value = false;
+      }
+    }
+  };
+  
+  document.addEventListener('keydown', handleEscapeKey);
 });
 
 // Clean up on unmount
 onUnmounted(() => {
   // Cleanup event listeners
-  window.removeEventListener('resize', () => {});
-  document.removeEventListener('click', () => {});
+  const checkMobile = () => {
+    isMobile.value = window.innerWidth < 768;
+  };
+  
+  const handleClickOutside = (event) => {
+    if (isSearchOpen.value) {
+      const searchContainer = document.querySelector('.search-container');
+      if (searchContainer && !searchContainer.contains(event.target)) {
+        closeSearch();
+      }
+    }
+  };
+  
+  const handleEscapeKey = (event) => {
+    if (event.key === 'Escape') {
+      if (isSearchOpen.value) {
+        closeSearch();
+      }
+      if (isPriceRangeOpen.value) {
+        isPriceRangeOpen.value = false;
+      }
+    }
+  };
+  
+  window.removeEventListener('resize', checkMobile);
+  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener('keydown', handleEscapeKey);
 });
 </script>
 
@@ -778,5 +825,15 @@ onUnmounted(() => {
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Search container specific styles */
+.search-container {
+  position: relative;
+  z-index: 50;
+}
+
+.search-container .absolute {
+  z-index: 51 !important;
 }
 </style>
