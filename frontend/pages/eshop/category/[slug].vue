@@ -10,11 +10,11 @@
           <!-- Subtle gradient overlay -->
           <div class="absolute inset-0 bg-gradient-to-br from-emerald-50/30 via-transparent to-blue-50/30 dark:from-emerald-900/10 dark:via-transparent dark:to-blue-900/10"></div>
           
-          <div class="relative py-2">
+          <div class="relative py-2 px-4">
             <!-- Header Row -->
             <div class="flex items-center justify-between">
               <!-- Left: Back Button + Category Name -->
-              <div class="flex items-center gap-3 flex-1 min-w-0">                
+              <div class="flex items-center gap-1 flex-1 min-w-0">                
                 <!-- Back Button -->
                 <button
                   @click="$router.push('/eshop')"
@@ -32,46 +32,14 @@
                 </div>
               </div>              
               <!-- Right: Search & Share -->
-              <div class="flex items-center gap-2 flex-shrink-0">
-                <!-- Search Button/Field -->
-                <div class="relative search-container">
-                  <!-- Search Icon -->
-                  <button
-                    v-if="!isSearchOpen"
-                    @click="toggleSearch"
-                    class="inline-flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all duration-200"
-                  >
-                    <span class="sr-only">Search</span>
-                    <UIcon name="i-heroicons-magnifying-glass" class="size-5" />
-                  </button>                  <!-- Expanded Search Field -->
-                  <div
-                    v-if="isSearchOpen"
-                    class="absolute right-0 top-0 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-3 z-50"
-                    @click.stop
-                  >
-                    <div class="relative">
-                      <UIcon
-                        name="i-heroicons-magnifying-glass"
-                        class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4"
-                      />
-                      <input
-                        ref="searchInput"
-                        v-model="searchQuery"
-                        type="text"
-                        placeholder="Search in this category..."
-                        class="w-full pl-10 pr-10 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all text-sm"
-                        @input="debouncedSearch"
-                        @keydown.escape="closeSearch"
-                      />
-                      <button
-                        @click="closeSearch"
-                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                      >
-                        <UIcon name="i-heroicons-x-mark" class="size-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>                
+              <div class="flex items-center gap-2 flex-shrink-0">                <!-- Search Button -->
+                <button
+                  @click="toggleSearch"
+                  class="inline-flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all duration-200 search-container"
+                >
+                  <span class="sr-only">Search</span>
+                  <UIcon name="i-heroicons-magnifying-glass" class="size-5" />
+                </button>
                 <!-- Share Button -->
                 <button
                   @click="shareCategory"
@@ -91,31 +59,48 @@
                     class="size-5 transition-transform duration-200" 
                   />
                 </button>
-              </div>
-            </div>            <!-- Search Bar (when expanded on mobile) -->
-            <div v-if="isSearchOpen && isMobile" class="mb-4 px-4 search-container">
-              <div class="relative">
-                <UIcon
-                  name="i-heroicons-magnifying-glass"
-                  class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4"
-                />
-                <input
-                  ref="mobileSearchInput"
-                  v-model="searchQuery"
-                  type="text"
-                  placeholder="Search in this category..."
-                  class="w-full pl-10 pr-10 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all text-sm"
-                  @input="debouncedSearch"
-                  @keydown.escape="closeSearch"
-                />
-                <button
-                  @click="closeSearch"
-                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                >
-                  <UIcon name="i-heroicons-x-mark" class="size-4" />
-                </button>
-              </div>
-            </div>            <!-- Price Range Section -->
+              </div>            </div>
+
+            <!-- Search Dropdown Section -->
+            <transition
+              enter-active-class="transition-all duration-300 ease-out"
+              enter-from-class="opacity-0 max-h-0 overflow-hidden"
+              enter-to-class="opacity-100 max-h-20"
+              leave-active-class="transition-all duration-300 ease-in"
+              leave-from-class="opacity-100 max-h-20"
+              leave-to-class="opacity-0 max-h-0 overflow-hidden"
+            >
+              <div v-if="isSearchOpen" class="flex flex-col gap-3 px-4 py-4 border-t border-gray-100 dark:border-gray-700/30 search-container">
+                <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 flex-shrink-0">
+                  <UIcon name="i-heroicons-magnifying-glass" class="size-4 text-emerald-500" />
+                  Search Products
+                </label>
+
+                <div class="relative">
+                  <UIcon
+                    name="i-heroicons-magnifying-glass"
+                    class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4"
+                  />
+                  <input
+                    ref="searchInput"
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Search in this category..."
+                    class="w-full pl-10 pr-10 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 transition-all text-sm"
+                    @input="debouncedSearch"
+                    @keydown.escape="closeSearch"
+                  />
+                  <button
+                    @click="clearSearch"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  >
+                    <UIcon name="i-heroicons-x-mark" class="size-4" />
+                  </button>
+                </div>
+              </div>            
+            </transition>
+
+            <!-- Price Range Section -->
             <transition
               enter-active-class="transition-all duration-300 ease-out"
               enter-from-class="opacity-0 max-h-0 overflow-hidden"
@@ -353,7 +338,6 @@ const isPriceRangeOpen = ref(false);
 
 // Search input references
 const searchInput = ref(null);
-const mobileSearchInput = ref(null);
 
 // Computed property to check if any filters are active
 const hasActiveFilters = computed(() => {
@@ -372,9 +356,7 @@ async function toggleSearch() {
   if (isSearchOpen.value) {
     await nextTick();
     try {
-      if (isMobile.value && mobileSearchInput.value) {
-        mobileSearchInput.value.focus();
-      } else if (searchInput.value) {
+      if (searchInput.value) {
         searchInput.value.focus();
       }
     } catch (error) {
@@ -632,12 +614,11 @@ onMounted(() => {
   
   checkMobile();
   window.addEventListener('resize', checkMobile);
-  
-  // Close search when clicking outside
+    // Close search when clicking outside
   const handleClickOutside = (event) => {
     if (isSearchOpen.value) {
-      const searchContainer = document.querySelector('.search-container');
-      if (searchContainer && !searchContainer.contains(event.target)) {
+      const searchContainer = event.target.closest('.search-container');
+      if (!searchContainer) {
         closeSearch();
       }
     }
@@ -663,33 +644,9 @@ onMounted(() => {
 // Clean up on unmount
 onUnmounted(() => {
   // Cleanup event listeners
-  const checkMobile = () => {
-    isMobile.value = window.innerWidth < 768;
-  };
-  
-  const handleClickOutside = (event) => {
-    if (isSearchOpen.value) {
-      const searchContainer = document.querySelector('.search-container');
-      if (searchContainer && !searchContainer.contains(event.target)) {
-        closeSearch();
-      }
-    }
-  };
-  
-  const handleEscapeKey = (event) => {
-    if (event.key === 'Escape') {
-      if (isSearchOpen.value) {
-        closeSearch();
-      }
-      if (isPriceRangeOpen.value) {
-        isPriceRangeOpen.value = false;
-      }
-    }
-  };
-  
-  window.removeEventListener('resize', checkMobile);
-  document.removeEventListener('click', handleClickOutside);
-  document.removeEventListener('keydown', handleEscapeKey);
+  window.removeEventListener('resize', () => {});
+  document.removeEventListener('click', () => {});
+  document.removeEventListener('keydown', () => {});
 });
 </script>
 
