@@ -2051,8 +2051,7 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         {"detail": "Invalid item data", "errors": item_serializer.errors},
                         status=status.HTTP_400_BAD_REQUEST
                     )
-            
-            # Process payment if using balance
+              # Process payment if using balance
             if payment_method == 'balance':
                 # 1. Deduct total amount from buyer's balance
                 buyer.balance -= total_amount
@@ -2086,20 +2085,29 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         #     bank_status='completed',
                         #     description=f"Payment received for order #{order.id}"
                         # )
-                        
-                        # Create notification for each seller who received an order
-                        try:
-                            create_order_notification(
-                                user=product_owner,  # Send to seller, not buyer
-                                order_id=str(order.id),
-                                total_amount=payment_amount  # Amount this seller received
-                            )
-                            print(f"✓ Order notification created for seller {product_owner.email}: ৳{payment_amount}")
-                        except Exception as e:
-                            print(f"Error creating order notification for seller {seller_id}: {str(e)}")
                             
                     except User.DoesNotExist:
                         return Response({"error": f"Failed to credit seller {seller_id} for order {order.id}"})
+            
+            # Create notifications for all sellers regardless of payment method
+            for seller_id, payment_amount in seller_payment_amounts.items():
+                try:
+                    # Get the seller account
+                    product_owner = User.objects.get(id=seller_id)
+                    
+                    # Create notification for each seller who received an order
+                    try:
+                        create_order_notification(
+                            user=product_owner,  # Send to seller, not buyer
+                            order_id=str(order.id),
+                            total_amount=payment_amount  # Amount this seller received
+                        )
+                        print(f"✓ Order notification created for seller {product_owner.email}: ৳{payment_amount}")
+                    except Exception as e:
+                        print(f"Error creating order notification for seller {seller_id}: {str(e)}")
+                        
+                except User.DoesNotExist:
+                    print(f"Error: Seller with id {seller_id} does not exist for order {order.id}")
             
             # Return the complete order details
             return Response(
