@@ -465,16 +465,12 @@
                       {{ review.user?.display_name?.charAt(0) || review.reviewer_name?.charAt(0) || "U" }}
                     </div>
                     <div>
-                      <div class="font-semibold text-gray-900 text-lg">
+                      <div class="font-medium text-gray-900">
                         {{ review.user?.display_name || review.reviewer_name || "Anonymous" }}
                       </div>
                       <div class="text-sm text-gray-500 flex items-center">
                         <UIcon name="i-heroicons-clock" class="w-4 h-4 mr-1" />
                         {{ review.formatted_date || "Recently" }}
-                        <span v-if="review.is_verified_purchase" class="ml-3 text-green-600 flex items-center">
-                          <UIcon name="i-heroicons-check-badge" class="w-4 h-4 mr-1" />
-                          Verified Purchase
-                        </span>
                       </div>
                     </div>
                   </div>
