@@ -407,7 +407,7 @@
 
       <!-- Transaction Tabs -->
       <div
-        class="flex justify-center mb-4"
+        class="flex justify-center my-4"
         v-if="statements?.length || receivedTransactions?.length"
       >
         <div class="inline-flex rounded-md shadow-sm bg-gray-100" role="group">

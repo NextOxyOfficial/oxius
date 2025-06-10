@@ -167,14 +167,12 @@
                 class="text-emerald-600"
               />
               Instructions & Details
-            </h2>
-
-            <UFormGroup label="Task URL" class="mb-5">
+            </h2>            <UFormGroup label="Task URL" class="mb-5">
               <UInput
                 type="text"
                 size="md"
                 color="white"
-                placeholder="Task URL"
+                placeholder="https://example.com (optional)"
                 v-model="form.action_link"
                 class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
               >
@@ -182,6 +180,9 @@
                   <UIcon name="i-heroicons-link" />
                 </template>
               </UInput>
+              <p class="text-sm text-gray-500 mt-1">
+                Optional: Provide a link to the website or page where the task should be completed
+              </p>
             </UFormGroup>
 
             <UFormGroup
@@ -499,11 +500,25 @@ const form = ref({
   target_network: "",
   category: "",
   active_gig: true,
-  action_link: "",
+  action_link: null,
 });
 
 function updateContent(p) {
   form.value.instructions = p;
+}
+
+function isValidUrl(string) {
+  try {
+    // Add protocol if missing
+    let url = string;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    new URL(url);
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 function handleFileUpload(event) {
@@ -579,10 +594,33 @@ async function handlePostGig() {
     toast.add({ title: "Please fill in all required fields." });
     return;
   }
+
+  // Validate action_link if provided
+  if (form.value.action_link && form.value.action_link.trim() && !isValidUrl(form.value.action_link.trim())) {
+    toast.add({ 
+      title: "Invalid URL format", 
+      description: "Please enter a valid URL (e.g., https://example.com)" 
+    });
+    return;
+  }
+
   isLoading.value = true;
   const balance = form.value.required_quantity * form.value.price;
   const total_cost = balance + (balance * 10) / 100;
-  const submitValue = { ...form.value, total_cost, balance };
+  
+  // Handle action_link - if empty, set to null, otherwise validate URL format
+  let action_link = form.value.action_link;
+  if (action_link && action_link.trim()) {
+    // Add protocol if missing
+    if (!action_link.startsWith('http://') && !action_link.startsWith('https://')) {
+      action_link = 'https://' + action_link;
+    }
+  } else {
+    // Set to null if empty
+    action_link = null;
+  }
+  
+  const submitValue = { ...form.value, action_link, total_cost, balance };
   console.log(submitValue);
 
   try {

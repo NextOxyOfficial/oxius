@@ -190,6 +190,8 @@ class AdminNotice(models.Model):
         ('pro_subscribed', 'Pro Subscription Activated'),
         ('pro_expiring', 'Pro Subscription Expiring'),
         ('gig_posted', 'Gig Posted Successfully'),
+        ('gig_approved', 'Gig Approved by Admin'),
+        ('gig_rejected', 'Gig Rejected by Admin'),
         ('general', 'General Update'),
     )
     
@@ -345,7 +347,7 @@ class MicroGigPost(models.Model):
     stop_gig = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    action_link = models.URLField(blank=True, null=True,default='')
+    action_link = models.URLField(blank=True, null=True)
     GIG_STATUS = [
       ('pending', 'Pending'),
       ('approved', 'Approved'),

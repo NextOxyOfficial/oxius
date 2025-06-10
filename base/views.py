@@ -2108,7 +2108,7 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         
                 except User.DoesNotExist:
                     print(f"Error: Seller with id {seller_id} does not exist for order {order.id}")
-            
+
             # Return the complete order details
             return Response(
                 OrderSerializer(order).data,
@@ -2991,8 +2991,31 @@ def create_gig_posted_notification(user, gig_id, gig_title):
         reference_id=str(gig_id)
     )
 
-# for frontend
+def create_gig_approved_notification(user, gig_id, gig_title, reference_id=None):
+    """Create notification for approved gig"""
+    title = "Gig Approved by Admin"
+    message = f"Great news! Your gig '{gig_title}' has been approved by our admin team and is now live for workers to apply."
+    return create_notification(
+        user=user,
+        notification_type='gig_approved',
+        title=title,
+        message=message,
+        reference_id=reference_id or str(gig_id)
+    )
 
+def create_gig_rejected_notification(user, gig_id, gig_title, reference_id=None):
+    """Create notification for rejected gig"""
+    title = "Gig Rejected by Admin"
+    message = f"We're sorry, but your gig '{gig_title}' has been rejected by our admin team. Please review our gig posting guidelines and try again."
+    return create_notification(
+        user=user,
+        notification_type='gig_rejected',
+        title=title,
+        message=message,
+        reference_id=reference_id or str(gig_id)
+    )
+
+# for frontend
 def index(request, **args):
     return render(request, 'index.html')
 
