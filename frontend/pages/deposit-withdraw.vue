@@ -2662,7 +2662,7 @@ function getTransactionTypeName(transactionType) {
 }
 
 /* Toast Actions Enhancement */
-:deep(.u-toast .gap-1.5 button) {
+:deep(.u-toast .gap-1\.5 button) {
   font-size: 0.8rem !important;
   font-weight: 500 !important;
   padding: 0.375rem 0.75rem !important;
@@ -2674,7 +2674,7 @@ function getTransactionTypeName(transactionType) {
   backdrop-filter: blur(8px);
 }
 
-:deep(.u-toast .gap-1.5 button:hover) {
+:deep(.u-toast .gap-1\.5 button:hover) {
   background: var(--toast-accent-color, #374151) !important;
   color: white !important;
   transform: translateY(-1px);
