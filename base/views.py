@@ -2933,7 +2933,7 @@ def create_withdraw_notification(user, amount, transaction_id):
         reference_id=transaction_id
     )
 
-def create_mobile_recharge_notification(user, amount, phone_number):
+def create_mobile_recharge_notification(user, amount, phone_number, reference_id=None):
     """Create notification for successful mobile recharge"""
     title = "Mobile Recharge Successful"
     message = f"Your mobile recharge of ৳{amount} for {phone_number} has been completed successfully."
@@ -2943,7 +2943,7 @@ def create_mobile_recharge_notification(user, amount, phone_number):
         title=title,
         message=message,
         amount=amount,
-        reference_id=phone_number
+        reference_id=reference_id or phone_number
     )
 
 def create_pro_subscription_notification(user, months, amount):

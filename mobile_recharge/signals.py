@@ -35,16 +35,28 @@ def handle_recharge_status_change(sender, instance, created, **kwargs):
         current_status = instance.status
         
         print(f"Processing status change: {previous_status} -> {current_status}")
-        
-        # Check if status changed from pending to completed
+          # Check if status changed from pending to completed
         if previous_status == 'pending' and current_status == 'completed':
             print(f"✅ Status changed to completed! Creating notification...")
             try:
+                # Check if notification already exists for this recharge to prevent duplicates
+                from base.models import AdminNotice
+                existing_notification = AdminNotice.objects.filter(
+                    user=instance.user,
+                    notification_type='mobile_recharge_successful',
+                    reference_id=str(instance.id)
+                ).first()
+                
+                if existing_notification:
+                    print(f"⚠️ Notification already exists for recharge {instance.id}, skipping creation")
+                    return
+                
                 from base.views import create_mobile_recharge_notification
                 notification = create_mobile_recharge_notification(
                     user=instance.user,
                     amount=instance.amount,
-                    phone_number=instance.phone_number
+                    phone_number=instance.phone_number,
+                    reference_id=str(instance.id)  # Pass recharge ID as reference
                 )
                 print(f"✅ Successfully created notification: {notification.title}")
                 print(f"Notification ID: {notification.id}")
