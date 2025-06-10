@@ -2982,7 +2982,7 @@ def create_pro_expiring_notification(user, days_remaining):
 def create_gig_posted_notification(user, gig_id, gig_title):
     """Create notification for successfully posted gig"""
     title = "Gig Posted Successfully"
-    message = f"Your gig '{gig_title}' has been posted successfully and is now live for workers to apply."
+    message = f"Your gig '{gig_title}' has been posted successfully and is pending for review by our admin team."
     return create_notification(
         user=user,
         notification_type='gig_posted',
