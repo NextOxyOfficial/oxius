@@ -1528,12 +1528,17 @@ async function receivedTransactionsFetch() {
   try {
     const { data } = await get("/received-transfers/");
     console.log(data, "received");
-    receivedTransactions.value = data;
-  } catch (error) {
+    receivedTransactions.value = data;  } catch (error) {
     toast.add({
-      title: "Failed to load received transactions",
-      description: error.message,
+      title: "📊 Failed to Load Data",
+      description: `Unable to load received transactions. Please try again.`,
+      icon: "i-heroicons-exclamation-circle-20-solid",
       color: "red",
+      timeout: 6000,
+      actions: [{
+        label: 'Retry',
+        click: () => receivedTransactionsFetch()
+      }]
     });
     console.error("Error fetching received transactions:", error);
   }
@@ -1846,12 +1851,17 @@ const getTransactionHistory = async () => {
     });
     
     console.log("All transactions:", statements.value);
-    currentPage.value = 1;
-  } catch (error) {
+    currentPage.value = 1;  } catch (error) {
     toast.add({
-      title: "Failed to load transaction history",
-      description: error.message,
+      title: "📈 Transaction History Error",
+      description: `Unable to load transaction history. Please refresh the page.`,
+      icon: "i-heroicons-exclamation-triangle-20-solid",
       color: "red",
+      timeout: 6000,
+      actions: [{
+        label: 'Retry',
+        click: () => getTransactionHistory()
+      }]
     });
     console.error("Error fetching transactions:", error);
   } finally {
@@ -1881,11 +1891,13 @@ const deposit = async () => {
   if (!policy.value) {
     depositErrors.value.policy = true;
   }
-
   if (!amount.value || !policy.value) {
     toast.add({
-      title: "Please fill in all required fields",
-      color: "orange",
+      title: "⚠️ Missing Information",
+      description: "Please fill in all required fields and accept the terms & conditions",
+      icon: "i-heroicons-information-circle-20-solid",
+      color: "amber",
+      timeout: 5000,
     });
     return;
   }
@@ -1938,12 +1950,16 @@ const deposit = async () => {
     
     // Try to extract more specific error information if available
     const errorMessage = error.response?.data?.error || error.message || "Unknown error";
-    
-    toast.add({
-      title: "Payment initiation failed",
+      toast.add({
+      title: "💳 Payment Gateway Error",
       description: errorMessage,
+      icon: "i-heroicons-exclamation-triangle-20-solid",
       color: "red",
       timeout: 8000,
+      actions: [{
+        label: 'Try Again',
+        click: () => deposit()
+      }]
     });
     
     // If the error is related to missing user info, suggest profile completion
@@ -1952,12 +1968,16 @@ const deposit = async () => {
       !user.value.user.address || 
       !user.value.user.phone
     ) {
-      setTimeout(() => {
-        toast.add({
-          title: "Profile information may be incomplete",
-          description: "Please ensure your profile information is complete with address, phone, and other details.",
+      setTimeout(() => {        toast.add({
+          title: "📝 Profile Incomplete",
+          description: "Please complete your profile with address, phone, and other required details.",
+          icon: "i-heroicons-user-circle-20-solid",
           color: "orange",
           timeout: 8000,
+          actions: [{
+            label: 'Complete Profile',
+            click: () => navigateTo('/my-account')
+          }]
         });
       }, 1000);
     }
@@ -2015,10 +2035,19 @@ const withdraw = async () => {
     }
 
     // Check if response indicates success
-    if (res.data || res.status === 201) {
-      toast.add({
-        title: "Withdrawal request submitted",
+    if (res.data || res.status === 201) {      toast.add({
+        title: "✅ Withdrawal Submitted",
+        description: "Your withdrawal request has been submitted successfully and is being processed.",
+        icon: "i-heroicons-check-circle-20-solid",
         color: "green",
+        timeout: 6000,
+        actions: [{
+          label: 'View History',
+          click: () => {
+            currentTab.value = 1;
+            getTransactionHistory();
+          }
+        }]
       });
 
       // Reset form and update data
@@ -2034,11 +2063,19 @@ const withdraw = async () => {
     
     // Extract error message from response or error object
     const errorMessage = error.response?.data?.error || error.message || "Unknown error occurred";
-    
-    toast.add({
-      title: "Withdrawal failed",
+      toast.add({
+      title: "❌ Withdrawal Failed",
       description: errorMessage,
+      icon: "i-heroicons-x-circle-20-solid",
       color: "red",
+      timeout: 8000,
+      actions: [{
+        label: 'Try Again',
+        click: () => withdraw()
+      }, {
+        label: 'Contact Support',
+        click: () => navigateTo('/support')
+      }]
     });
     console.error("Withdraw error:", error);
   } finally {
@@ -2099,12 +2136,20 @@ async function sendToUser() {
     transfer.value.to_user = data.name;
     isOpenTransfer.value = true;
 
-    isLoading.value = false;
-  } catch (error) {
+    isLoading.value = false;  } catch (error) {
     toast.add({
-      title: "Error finding user",
-      description: error.message,
+      title: "👤 User Not Found",
+      description: "The user you're trying to find doesn't exist. Please check the email or phone number.",
+      icon: "i-heroicons-user-minus-20-solid",
       color: "red",
+      timeout: 6000,
+      actions: [{
+        label: 'Try Again',
+        click: () => {
+          transfer.value.contact = '';
+          transferErrors.value = {};
+        }
+      }]
     });
     console.error("User search error:", error);
   } finally {
@@ -2118,20 +2163,42 @@ async function handleTransfer() {
 
     const { to_user, ...rest } = transfer.value;
 
-    const { data, error } = await post(`/add-user-balance/`, rest);
-
-    if (error) {
+    const { data, error } = await post(`/add-user-balance/`, rest);    if (error) {
       throw new Error(error);
     }
 
+    // Show success toast for transfer
+    toast.add({
+      title: "💸 Transfer Successful!",
+      description: `Successfully transferred ৳${transfer.value.payable_amount} to ${transfer.value.to_user}`,
+      icon: "i-heroicons-check-circle-20-solid",
+      color: "green",
+      timeout: 6000,
+      actions: [{
+        label: 'View History',
+        click: () => {
+          reset();
+          getTransactionHistory();
+        }
+      }]
+    });
+
     showSuccess.value = true;
     await getTransactionHistory();
-    await jwtLogin();
-  } catch (error) {
+    await jwtLogin();} catch (error) {
     toast.add({
-      title: "Transfer failed",
-      description: error.message,
+      title: "💸 Transfer Failed",
+      description: "Unable to complete the transfer. Please try again or contact support.",
+      icon: "i-heroicons-exclamation-triangle-20-solid",
       color: "red",
+      timeout: 8000,
+      actions: [{
+        label: 'Retry Transfer',
+        click: () => handleTransfer()
+      }, {
+        label: 'Contact Support',
+        click: () => navigateTo('/support')
+      }]
     });
     console.error("Transfer error:", error);
     isOpenTransfer.value = false;
@@ -2511,5 +2578,146 @@ function getTransactionTypeName(transactionType) {
 .backdrop-blur-lg {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+/* Professional Toast Enhancements */
+:deep(.u-toast) {
+  border-radius: 0.75rem !important;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+              0 10px 10px -5px rgba(0, 0, 0, 0.04),
+              0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+:deep(.u-toast::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    var(--toast-accent-color, #10b981) 0%, 
+    color-mix(in srgb, var(--toast-accent-color, #10b981) 80%, white) 100%);
+  z-index: 1;
+}
+
+/* Success Toast Styling */
+:deep(.u-toast[data-color="green"]) {
+  --toast-accent-color: #10b981;
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.05) 0%, 
+    rgba(5, 150, 105, 0.02) 100%);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+/* Error Toast Styling */
+:deep(.u-toast[data-color="red"]) {
+  --toast-accent-color: #ef4444;
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.05) 0%, 
+    rgba(220, 38, 38, 0.02) 100%);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Warning Toast Styling */
+:deep(.u-toast[data-color="amber"]) {
+  --toast-accent-color: #f59e0b;
+  background: linear-gradient(135deg, 
+    rgba(245, 158, 11, 0.05) 0%, 
+    rgba(217, 119, 6, 0.02) 100%);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+/* Orange Toast Styling */
+:deep(.u-toast[data-color="orange"]) {
+  --toast-accent-color: #f97316;
+  background: linear-gradient(135deg, 
+    rgba(249, 115, 22, 0.05) 0%, 
+    rgba(234, 88, 12, 0.02) 100%);
+  border-color: rgba(249, 115, 22, 0.2);
+}
+
+/* Toast Title Enhancement */
+:deep(.u-toast .font-medium) {
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.25rem;
+}
+
+/* Toast Description Enhancement */
+:deep(.u-toast .text-sm) {
+  font-size: 0.875rem !important;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+/* Toast Icon Enhancement */
+:deep(.u-toast .shrink-0) {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Toast Actions Enhancement */
+:deep(.u-toast .gap-1.5 button) {
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
+  padding: 0.375rem 0.75rem !important;
+  border-radius: 0.5rem !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: var(--toast-accent-color, #374151) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.2s ease !important;
+  backdrop-filter: blur(8px);
+}
+
+:deep(.u-toast .gap-1.5 button:hover) {
+  background: var(--toast-accent-color, #374151) !important;
+  color: white !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Toast Animation Enhancement */
+:deep(.u-toast) {
+  animation: toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Mobile Toast Positioning */
+@media (max-width: 640px) {
+  :deep(.u-notifications) {
+    padding: 1rem !important;
+    bottom: calc(env(safe-area-inset-bottom) + 1rem) !important;
+  }
+  
+  :deep(.u-toast) {
+    margin-bottom: 0.75rem !important;
+    max-width: calc(100vw - 2rem) !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :deep(.u-toast) {
+    background: linear-gradient(135deg, 
+      rgba(17, 24, 39, 0.95) 0%, 
+      rgba(31, 41, 55, 0.95) 100%) !important;
+    border-color: rgba(75, 85, 99, 0.3) !important;
+    color: #e5e7eb !important;
+  }
 }
 </style>
