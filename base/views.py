@@ -997,13 +997,19 @@ def postBalance(request):
     data['user'] = request.user.id
     print(data)
     to_user = None
-    data['payable_amount'] = Decimal(data['payable_amount']).quantize(Decimal('0.01'))
-
-    # Check minimum deposit amount for deposit transactions
+    data['payable_amount'] = Decimal(data['payable_amount']).quantize(Decimal('0.01'))    # Check minimum deposit amount for deposit transactions
     if data.get('transaction_type', '').lower() == 'deposit':
         if data['payable_amount'] < Decimal('100.00'):
             return Response(
                 {"error": "Minimum deposit amount is ৳100.00"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    # Check minimum withdrawal amount for withdrawal transactions
+    if data.get('transaction_type', '').lower() == 'withdraw':
+        if data['payable_amount'] < Decimal('200.00'):
+            return Response(
+                {"error": "Minimum withdrawal amount is ৳200.00"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -1020,20 +1026,20 @@ def postBalance(request):
     #     return Response(
     #         {"error": "The 'merchant_invoice_no' field is required."},
     #         status=status.HTTP_400_BAD_REQUEST
-    #     )
-      # Proceed with the operations if 'merchant_invoice_no' is valid
+    #     )      # Proceed with the operations if 'merchant_invoice_no' is valid
     if 'contact' in data and data['contact']:
         to_user = User.objects.get(Q(email=data['contact']) | Q(phone=data['contact']))
         del data['contact']
+    
     serializer = BalanceSerializer(data=data)
     
     if serializer.is_valid():
         # Save the new Balance instance
         new_b = serializer.save(user=request.user)        
-    if to_user:
-        new_b.to_user = to_user
-        new_b.save()
-        
+        if to_user:
+            new_b.to_user = to_user
+            new_b.save()
+            
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     # Print errors if validation fails

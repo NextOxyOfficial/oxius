@@ -2002,36 +2002,42 @@ const withdraw = async () => {
   try {
     isWithdrawLoading.value = true;
 
-    const totalAmount = withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100;
-
-    const res = await post(`/add-user-balance/`, {
+    const totalAmount = withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100;    const res = await post(`/add-user-balance/`, {
       payment_method: selected.value,
       card_number: payment_number.value,
       payable_amount: totalAmount,
       transaction_type: "Withdraw",
     });
 
+    // Check for errors in the response
     if (res.error) {
       throw new Error(res.error);
     }
 
-    toast.add({
-      title: "Withdrawal request submitted",
-      color: "green",
-    });
+    // Check if response indicates success
+    if (res.data || res.status === 201) {
+      toast.add({
+        title: "Withdrawal request submitted",
+        color: "green",
+      });
 
-    // Reset form and update data
-    withdrawAmount.value = "";
-    payment_number.value = "";
-    policy.value = false;
-    await getTransactionHistory();
-    await jwtLogin();
-    isWithdrawLoading.value = false;
-  } catch (error) {
+      // Reset form and update data
+      withdrawAmount.value = "";
+      payment_number.value = "";
+      policy.value = false;
+      await getTransactionHistory();
+      await jwtLogin();
+    } else {
+      throw new Error("Unexpected response format");
+    }} catch (error) {
     console.log(error);
+    
+    // Extract error message from response or error object
+    const errorMessage = error.response?.data?.error || error.message || "Unknown error occurred";
+    
     toast.add({
       title: "Withdrawal failed",
-      description: error.txt,
+      description: errorMessage,
       color: "red",
     });
     console.error("Withdraw error:", error);
