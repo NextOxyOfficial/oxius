@@ -1004,12 +1004,19 @@ def postBalance(request):
                 {"error": "Minimum deposit amount is ৳100.00"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-    
-    # Check minimum withdrawal amount for withdrawal transactions
+      # Check minimum withdrawal amount for withdrawal transactions
     if data.get('transaction_type', '').lower() == 'withdraw':
         if data['payable_amount'] < Decimal('200.00'):
             return Response(
                 {"error": "Minimum withdrawal amount is ৳200.00"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    # Check minimum transfer amount for transfer transactions
+    if data.get('transaction_type', '').lower() == 'transfer':
+        if data['payable_amount'] < Decimal('50.00'):
+            return Response(
+                {"error": "Minimum transfer amount is ৳50.00"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 

@@ -102,7 +102,7 @@
           <p v-if="depositErrors.min_deposit" class="text-sm text-red-500">
             Minimum deposit amount is ৳{{ min_deposit }}
           </p>
-          <p class="text-sm pt-2">
+          <p class="text-sm py-2">
             <span class="text-green-600">* </span>
             <span class="inline-flex items-center">
               Minimum deposit
@@ -221,7 +221,7 @@
               Total Deduction:
               {{ withdrawAmount * 1 + (withdrawAmount * 2.95) / 100 }}
             </p>
-            <p class="text-sm pt-2">
+            <p class="text-sm py-2">
               <span class="text-red-500">* </span>
               <span class="inline-flex items-center">
                 Minimum withdrawal
@@ -357,12 +357,21 @@
               placeholder="Amount"
               class="my-3"
               v-model="transfer.payable_amount"
-            />
-            <p class="text-sm text-red-500 mb-2" v-if="transferErrors.transfer">
+            />            <p class="text-sm text-red-500 mb-2" v-if="transferErrors.transfer">
               {{ transferErrors.limit || transferErrors.transfer }}
+            </p>
+            <p class="text-sm text-red-500" v-if="transferErrors.min_transfer">
+              {{ transferErrors.min_transfer }}
             </p>
             <p class="text-sm text-red-500">
               {{ transferErrors.payable_amount }}
+            </p>
+            <p class="text-sm py-2">
+              <span class="text-blue-600">* </span>
+              <span class="inline-flex items-center">
+                Minimum transfer
+                <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ min_transfer }}</span
+              >
             </p>
             <UFormGroup
               class="flex flex-row-reverse justify-end gap-2"
@@ -1512,6 +1521,7 @@ const amount = ref(null);
 const withdrawAmount = ref(null);
 const min_withdrawal = ref(200);
 const min_deposit = ref(100);
+const min_transfer = ref(50);
 const currentTab = ref(1);
 const transactionTab = ref("sent"); // 'sent' or 'received'
 const selected = ref("nagad");
@@ -2094,9 +2104,13 @@ async function sendToUser() {
   if (!transfer.value.payable_amount) {
     transferErrors.value.payable_amount = "Amount is required";
   }
-
   if (Number(transfer.value.payable_amount) > 25000) {
     transferErrors.value.limit = "Maximum single transfer limit is 25,000/=";
+  }
+
+  // Check minimum transfer amount
+  if (Number(transfer.value.payable_amount) < Number(min_transfer.value)) {
+    transferErrors.value.min_transfer = "Minimum transfer amount is ৳50";
   }
 
   const transferAmount = Number(transfer.value.payable_amount);
