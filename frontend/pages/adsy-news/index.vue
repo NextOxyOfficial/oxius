@@ -45,22 +45,6 @@
                 :alt="latestArticle.author"
                 class="h-10 w-10 rounded-full mr-3 border-2 border-white"
               />
-              <div>
-                <p class="font-medium">
-                  Posted by:
-                  <span class="text-primary">{{ latestArticle.author }}</span>
-                </p>
-                <p class="text-sm opacity-80">
-                  {{ latestArticle.authorTitle }}
-                </p>
-              </div>
-              <UButton
-                :to="`/adsy-news/${latestArticle.slug}/`"
-                class="ml-auto bg-white text-gray-800 hover:bg-gray-100 px-5 py-2 rounded-full font-medium transition-colors duration-200 flex items-center"
-              >
-                Read
-                <ArrowRightIcon class="h-4 w-4 ml-2" />
-              </UButton>
             </div>
           </div>
         </div>
@@ -226,7 +210,7 @@
             <div :class="[currentLayout === 'list' ? 'md:w-2/3 p-2' : 'p-2']">
               <NuxtLink :to="`/adsy-news/${article.slug}/`">
                 <h3
-                  class="font-medium text-sm sm:text-base mb-2 text-gray-800 hover:text-primary cursor-pointer transition-colors duration-200 clamp-2 overflow-hidden"
+                  class="font-medium text-sm sm:text-base text-gray-800 hover:text-primary cursor-pointer transition-colors duration-200 clamp-2 overflow-hidden"
                 >
                   {{ article.title.substring(0, 50) + "..." }}
                 </h3>

@@ -1165,9 +1165,21 @@ def smsSend(request):
         'contact_number' : phone,
         'message' : message,
     }
-    response = requests.get(url, params = payload)
-    print(response.text)
-    return Response(response.text, status=status.HTTP_200_OK)
+    
+    try:
+        # Add timeout to prevent ECONNABORTED errors
+        response = requests.get(url, params=payload, timeout=10)
+        print(response.text)
+        return Response(response.text, status=status.HTTP_200_OK)
+    except requests.exceptions.Timeout:
+        print("SMS API request timed out")
+        return Response({'error': 'SMS service timeout'}, status=status.HTTP_408_REQUEST_TIMEOUT)
+    except requests.exceptions.ConnectionError:
+        print("SMS API connection error")
+        return Response({'error': 'SMS service unavailable'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+    except requests.exceptions.RequestException as e:
+        print(f"SMS API request failed: {str(e)}")
+        return Response({'error': 'SMS service error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 import json
 @api_view(['POST'])
@@ -1193,11 +1205,23 @@ def sendOTP(request):
         'contact_number' : phone,
         'message' : message,
     }
-    response = requests.get(url, params=payload)
+    
     try:
+        # Add timeout to prevent ECONNABORTED errors
+        response = requests.get(url, params=payload, timeout=10)
         response_data = response.json()  # Convert the response to a dictionary
+    except requests.exceptions.Timeout:
+        print("SMS API request timed out")
+        return Response({'error': 'SMS service timeout. Please try again later.'}, status=status.HTTP_408_REQUEST_TIMEOUT)
+    except requests.exceptions.ConnectionError:
+        print("SMS API connection error")
+        return Response({'error': 'SMS service unavailable. Please try again later.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     except json.JSONDecodeError:
+        print("Failed to parse SMS API response")
         return Response({'error': 'Failed to parse response from SMS provider'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except requests.exceptions.RequestException as e:
+        print(f"SMS API request failed: {str(e)}")
+        return Response({'error': 'SMS service error. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     if response_data.get('status') == 'success':
         return Response({
