@@ -96,10 +96,19 @@
                 amount
               />
               <label class="floating-label">Enter Amount</label>
-              
-            </div>
+                </div>
           </div>
           <p v-if="depositErrors.amount" class="text-sm text-red-500">Please enter an amount</p>
+          <p v-if="depositErrors.min_deposit" class="text-sm text-red-500">
+            Minimum deposit amount is ৳{{ min_deposit }}
+          </p>
+          <p class="text-sm pt-2">
+            <span class="text-green-600">* </span>
+            <span class="inline-flex items-center">
+              Minimum deposit
+              <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ min_deposit }}</span
+            >
+          </p>
           <div class="mt-4">
             <img src="/static/frontend/images/payment.png" class="w-60" alt="Payment Method" />
           </div>
@@ -1502,6 +1511,7 @@ const policy = ref(false);
 const amount = ref(null);
 const withdrawAmount = ref(null);
 const min_withdrawal = ref(200);
+const min_deposit = ref(100);
 const currentTab = ref(1);
 const transactionTab = ref("sent"); // 'sent' or 'received'
 const selected = ref("nagad");
@@ -1877,6 +1887,12 @@ const deposit = async () => {
       title: "Please fill in all required fields",
       color: "orange",
     });
+    return;
+  }
+
+  // Check minimum deposit amount
+  if (Number(amount.value) < Number(min_deposit.value)) {
+    depositErrors.value.min_deposit = true;
     return;
   }
   try {

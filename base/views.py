@@ -999,6 +999,14 @@ def postBalance(request):
     to_user = None
     data['payable_amount'] = Decimal(data['payable_amount']).quantize(Decimal('0.01'))
 
+    # Check minimum deposit amount for deposit transactions
+    if data.get('transaction_type', '').lower() == 'deposit':
+        if data['payable_amount'] < Decimal('100.00'):
+            return Response(
+                {"error": "Minimum deposit amount is ৳100.00"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
     # Check if 'merchant_invoice_no' exists in the data
     if 'merchant_invoice_no' in data:
         # Check if Balance with the given merchant_invoice_no exists
