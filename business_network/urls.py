@@ -1,9 +1,11 @@
 from django.urls import path, include
 from .views import *
+from .prioritized_feed import PrioritizedFeedView
 
 urlpatterns = [
     # Post endpoints
     path('posts/', BusinessNetworkPostListCreateView.as_view(), name='post-list-create'),
+    path('posts/prioritized-feed/', PrioritizedFeedView.as_view(), name='prioritized-feed'),
     path('posts/save/', UserSavedPostListCreateView.as_view(), name='user-saved-posts'),
     path('posts/search/', BusinessNetworkPostSearchView.as_view(), name='post-search'),
     path('saved-posts/delete/<str:post_id>/', delete_saved_post, name='delete-saved-posts'),
