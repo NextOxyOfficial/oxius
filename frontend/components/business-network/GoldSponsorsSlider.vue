@@ -253,7 +253,7 @@
                   </div>
                 </div>
                 <!-- Sponsor Profile -->
-                <div class="py-6 px-2 bg-white dark:bg-slate-800">
+                <div class="py-6 px-4 bg-white dark:bg-slate-800">
                   <!-- Description area first -->
                   <div class="space-y-4 mb-4 md:mb-6">
                     <div

@@ -5,10 +5,9 @@
       <div
         class="relative bg-white rounded-xl md:rounded-2xl shadow-sm mb-8 md:mb-10 overflow-hidden"
       >
-        <div class="absolute inset-0 z-0">
-          <!-- Banner Background with Blurred Bottom Edge -->
+        <div class="absolute inset-0 z-0">          <!-- Banner Background -->
           <div
-            class="h-40 sm:h-48 md:h-60 w-full bg-cover bg-center relative after:absolute after:bottom-0 after:left-0 after:w-full after:h-16 sm:after:h-24 after:bg-gradient-to-t after:from-white after:to-transparent"
+            class="h-40 sm:h-48 md:h-60 w-full bg-cover bg-center relative"
             :style="{
               backgroundImage: storeDetails?.store_banner
                 ? `url(${storeDetails?.store_banner})`
@@ -44,7 +43,7 @@
                     v-if="storeDetails?.image"
                     :src="storeDetails?.image"
                     alt="Store Logo"
-                    class="w-full h-full object-contain"
+                    class="w-full h-full object-cover"
                   />
                   <div
                     v-else
