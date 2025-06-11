@@ -93,19 +93,18 @@
               </div>
 
               <!-- Description textarea with character count (renamed from Content) -->
-              <div class="relative group">
-                <label
+              <div class="relative group">                <label
                   class="block text-sm font-medium text-gray-800 dark:text-gray-400 mb-1.5 flex items-center gap-1.5"
                 >
                   <AlignLeft class="h-4 w-4 text-blue-500" />
-                  Description
+                  Description (Optional)
                 </label>
                 <div class="relative">
                   <CommonEditor
                     v-model="form.content"
                     @updateContent="updateContent"
                     class="editor-container text-left"
-                    placeholder="Write your post description here..."
+                    placeholder="Write your post description here (optional)..."
                   />
                   <div
                     class="absolute right-2 bottom-2 text-xs bg-white dark:bg-gray-800 px-2 py-1 rounded-full shadow-sm border border-gray-100 dark:border-gray-700"
@@ -449,17 +448,16 @@
               @click="closeModalWithConfirm"
             >
               Cancel
-            </button>
-            <button
+            </button>            <button
               :disabled="
-                !form.title.trim() || !form.content.trim() || isSubmitting
+                !form.title.trim() || isSubmitting
               "
               @click="handleCreatePost"
               :class="[
                 'px-4 py-2 rounded-md text-white transition-all duration-300 flex items-center gap-2 shadow-sm',
                 isSubmitting
                   ? 'bg-indigo-600 cursor-not-allowed'
-                  : !form.title.trim() || !form.content.trim()
+                  : !form.title.trim()
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-sm',
               ]"
