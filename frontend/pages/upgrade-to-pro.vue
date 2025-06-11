@@ -1,6 +1,6 @@
 <template>  <UContainer>
     <div
-      class="min-h-screen py-16 px-4 sm:px-6 bg-gradient-to-b from-slate-100 via-blue-50 to-white dark:from-slate-900 dark:via-blue-950/20 dark:to-slate-800"
+      class="min-h-screen py-4 px-4 sm:px-6 bg-gradient-to-b from-slate-100 via-blue-50 to-white dark:from-slate-900 dark:via-blue-950/20 dark:to-slate-800"
     >
       <div class="max-w-5xl mx-auto">
         <!-- Section Header -->
@@ -592,51 +592,6 @@
             <div class="absolute w-10 h-10 rounded-full border-6 border-indigo-200 dark:border-indigo-700 animate-ping-slow"></div>
             <div class="absolute w-12 h-12 top-4 -left-4 rounded-full border-6 border-purple-200 dark:border-purple-700"
                  style="animation: ping-slow 3.5s cubic-bezier(0, 0, 0.2, 1) infinite 0.7s"></div>
-          </div>
-        </div>
-        
-        <!-- Trust Indicators Section -->
-        <div class="mt-6 flex flex-col items-center relative">
-          <p
-            class="text-center text-sm font-medium text-slate-600 dark:text-slate-300 mb-6"
-          >
-            Trusted by thousands of businesses worldwide
-          </p>          <div
-            class="flex flex-wrap justify-center gap-8 items-center"
-          >
-            <!-- Enhanced brand logos with gradient borders -->
-            <div
-              class="h-12 w-28 bg-white dark:bg-slate-800 rounded-md flex items-center justify-center p-2 border border-sky-100 dark:border-sky-800/30 hover:border-sky-200 dark:hover:border-sky-700 transition-all duration-300 hover:shadow-sm"
-            >
-              <div class="text-lg font-bold bg-gradient-to-r from-sky-500 to-blue-500 bg-clip-text text-transparent">Brand 1</div>
-            </div>
-            <div
-              class="h-12 w-28 bg-white dark:bg-slate-800 rounded-md flex items-center justify-center p-2 border border-sky-100 dark:border-sky-800/30 hover:border-sky-200 dark:hover:border-sky-700 transition-all duration-300 hover:shadow-sm"
-            >
-              <div class="text-lg font-bold bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">Brand 2</div>
-            </div>
-            <div
-              class="h-12 w-28 bg-white dark:bg-slate-800 rounded-md flex items-center justify-center p-2 border border-sky-100 dark:border-sky-800/30 hover:border-sky-200 dark:hover:border-sky-700 transition-all duration-300 hover:shadow-sm"
-            >
-              <div class="text-lg font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">Brand 3</div>
-            </div>
-            <div
-              class="h-12 w-28 bg-white dark:bg-slate-800 rounded-md flex items-center justify-center p-2 border border-sky-100 dark:border-sky-800/30 hover:border-sky-200 dark:hover:border-sky-700 transition-all duration-300 hover:shadow-sm"
-            >
-              <div class="text-lg font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">Brand 4</div>
-            </div>
-          </div>
-
-          <!-- Enhanced Footer -->
-          <div class="mt-12 text-center max-w-2xl mx-auto">
-            <p class="text-xs text-slate-400 dark:text-slate-500">
-              Cancel anytime. Questions?
-              <NuxtLink
-                href="/contact-us"
-                class="text-sky-500 dark:text-sky-400 hover:underline"
-                >Contact our team</NuxtLink
-              >
-            </p>
           </div>
         </div>
       </div>

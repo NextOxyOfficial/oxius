@@ -83,8 +83,7 @@
               <!-- <UIcon
                 name="i-heroicons-banknotes"
                 class="input-icon text-primary-400"
-              /> -->
-              <UInput
+              /> -->              <UInput
                 icon="i-heroicons-banknotes"
                 placeholder=""
                 size="lg"
@@ -93,12 +92,17 @@
                 }"
                 class="text-green-800"
                 v-model="amount"
-                amount
+                type="number"
+                min="0"
+                step="0.01"
+                @input="validateAmountInput('amount')"
               />
               <label class="floating-label">Enter Amount</label>
                 </div>
           </div>
-          <p v-if="depositErrors.amount" class="text-sm text-red-500">Please enter an amount</p>
+          <p v-if="depositErrors.amount" class="text-sm text-red-500">
+            {{ typeof depositErrors.amount === 'string' ? depositErrors.amount : 'Please enter an amount' }}
+          </p>
           <p v-if="depositErrors.min_deposit" class="text-sm text-red-500">
             Minimum deposit amount is ৳{{ min_deposit }}
           </p>
@@ -202,8 +206,7 @@
               Please enter a payment number
             </p>
           </div>
-          <div class="space-y-2">
-            <UInput
+          <div class="space-y-2">            <UInput
               icon="i-heroicons-banknotes"
               placeholder="Enter Amount"
               size="md"
@@ -212,10 +215,12 @@
                 placeholder: 'placeholder-gray-400 dark:placeholder-gray-200',
               }"
               v-model="withdrawAmount"
-              amount
-            />
-            <p v-if="errors?.withdrawAmount" class="text-sm text-red-500">
-              Please enter an amount
+              type="number"
+              min="0"
+              step="0.01"
+              @input="validateAmountInput('withdraw')"
+            />            <p v-if="errors?.withdrawAmount" class="text-sm text-red-500">
+              {{ typeof errors.withdrawAmount === 'string' ? errors.withdrawAmount : 'Please enter an amount' }}
             </p>
             <p class="text-sm">
               Total Deduction:
@@ -348,15 +353,17 @@
               placeholder="Enter Email/Phone Or Scan Code"
               v-model="transfer.contact"
             />
-            <p class="text-sm text-red-500">{{ transferErrors.contact }}</p>
-            <UInput
+            <p class="text-sm text-red-500">{{ transferErrors.contact }}</p>            <UInput
               icon="i-heroicons-banknotes"
-              type="text"
+              type="number"
               size="md"
               color="white"
               placeholder="Amount"
               class="my-3"
+              min="0"
+              step="0.01"
               v-model="transfer.payable_amount"
+              @input="validateAmountInput('transfer')"
             />            <p class="text-sm text-red-500 mb-2" v-if="transferErrors.transfer">
               {{ transferErrors.limit || transferErrors.transfer }}
             </p>
@@ -1890,6 +1897,315 @@ function clearFilters() {
   currentPage.value = 1;
 }
 
+// Helper function to format error messages for user display
+const formatErrorMessage = (error) => {
+  // If error has a response with data
+  if (error.response?.data) {
+    const errorData = error.response.data;
+    
+    // Handle validation errors for specific fields
+    if (typeof errorData === 'object' && errorData !== null) {
+      // Check for amount validation errors
+      if (errorData.amount) {
+        const amountError = Array.isArray(errorData.amount) ? errorData.amount[0] : errorData.amount;
+        
+        // Convert common API error messages to user-friendly ones
+        if (typeof amountError === 'string') {
+          if (amountError.toLowerCase().includes('invalid') || amountError.toLowerCase().includes('not a valid number')) {
+            return "Please enter a valid amount (numbers only)";
+          }
+          if (amountError.toLowerCase().includes('required') || amountError.toLowerCase().includes('field may not be blank')) {
+            return "Amount is required";
+          }
+          if (amountError.toLowerCase().includes('minimum')) {
+            return `Minimum amount is ৳${min_deposit.value}`;
+          }
+          if (amountError.toLowerCase().includes('maximum')) {
+            return "Amount exceeds maximum limit";
+          }
+        }
+        
+        return amountError;
+      }
+      
+      // Check for contact/user validation errors
+      if (errorData.contact) {
+        const contactError = Array.isArray(errorData.contact) ? errorData.contact[0] : errorData.contact;
+        if (typeof contactError === 'string' && contactError.toLowerCase().includes('not found')) {
+          return "User not found. Please check the email or phone number";
+        }
+        return contactError;
+      }
+      
+      // Check for payment method errors
+      if (errorData.payment_method) {
+        const paymentError = Array.isArray(errorData.payment_method) ? errorData.payment_method[0] : errorData.payment_method;
+        if (typeof paymentError === 'string' && paymentError.toLowerCase().includes('required')) {
+          return "Please select a payment method";
+        }
+        return paymentError;
+      }
+      
+      // Check for general validation errors
+      if (errorData.error) {
+        return errorData.error;
+      }
+      
+      // Check for non_field_errors (common in Django REST framework)
+      if (errorData.non_field_errors && Array.isArray(errorData.non_field_errors)) {
+        const nonFieldError = errorData.non_field_errors[0];
+        
+        // Convert common non-field errors to user-friendly messages
+        if (typeof nonFieldError === 'string') {
+          if (nonFieldError.toLowerCase().includes('insufficient')) {
+            return "Insufficient balance for this transaction";
+          }
+          if (nonFieldError.toLowerCase().includes('limit')) {
+            return "Transaction limit exceeded";
+          }
+          if (nonFieldError.toLowerCase().includes('user not found')) {
+            return "Recipient not found. Please check the contact information";
+          }
+        }
+        
+        return nonFieldError;
+      }
+      
+      // Check for detail field
+      if (errorData.detail) {
+        const detailError = errorData.detail;
+        
+        // Convert common detail errors to user-friendly messages
+        if (typeof detailError === 'string') {
+          if (detailError.toLowerCase().includes('not found')) {
+            return "The requested information was not found";
+          }
+          if (detailError.toLowerCase().includes('permission')) {
+            return "You don't have permission to perform this action";
+          }
+          if (detailError.toLowerCase().includes('authentication')) {
+            return "Please log in again to continue";
+          }
+        }
+        
+        return detailError;
+      }
+      
+      // Handle field-specific validation errors
+      const fieldErrors = [];
+      const errorFields = {
+        'payable_amount': 'Please enter a valid transfer amount',
+        'card_number': 'Please enter a valid payment number',
+        'phone': 'Please enter a valid phone number',
+        'email': 'Please enter a valid email address'
+      };
+      
+      Object.keys(errorData).forEach(field => {
+        if (Array.isArray(errorData[field])) {
+          errorData[field].forEach(msg => {
+            // Convert field-specific errors to user-friendly messages
+            if (errorFields[field] && typeof msg === 'string' && msg.toLowerCase().includes('invalid')) {
+              fieldErrors.push(errorFields[field]);
+            } else {
+              fieldErrors.push(msg);
+            }
+          });
+        } else if (typeof errorData[field] === 'string') {
+          if (errorFields[field] && errorData[field].toLowerCase().includes('invalid')) {
+            fieldErrors.push(errorFields[field]);
+          } else {
+            fieldErrors.push(errorData[field]);
+          }
+        }
+      });
+      
+      if (fieldErrors.length > 0) {
+        return fieldErrors[0]; // Return the first error message
+      }
+    }
+    
+    // If errorData is a string
+    if (typeof errorData === 'string') {
+      // Convert common string errors to user-friendly messages
+      if (errorData.toLowerCase().includes('invalid characters')) {
+        return "Please enter valid characters only";
+      }
+      if (errorData.toLowerCase().includes('network')) {
+        return "Network error. Please check your connection and try again";
+      }
+      if (errorData.toLowerCase().includes('timeout')) {
+        return "Request timeout. Please try again";
+      }
+      
+      return errorData;
+    }
+  }
+  
+  // Handle specific error types
+  if (error.message) {
+    // Check for common validation patterns
+    if (error.message.includes('amount') && error.message.includes('invalid')) {
+      return "Please enter a valid amount (numbers only)";
+    }
+    if (error.message.includes('required')) {
+      return "Please fill in all required fields";
+    }
+    if (error.message.includes('minimum')) {
+      return `Minimum amount is ৳${min_deposit.value}`;
+    }
+    if (error.message.includes('balance')) {
+      return "Insufficient balance for this transaction";
+    }
+    if (error.message.includes('not found') || error.message.includes('404')) {
+      return "Information not found. Please check your input";
+    }
+    if (error.message.includes('network') || error.message.includes('fetch')) {
+      return "Network error. Please check your connection and try again";
+    }
+    if (error.message.includes('timeout')) {
+      return "Request timeout. Please try again";
+    }
+    if (error.message.includes('500') || error.message.includes('server')) {
+      return "Server error. Please try again later";
+    }
+    if (error.message.includes('unauthorized') || error.message.includes('401')) {
+      return "Session expired. Please log in again";
+    }
+    if (error.message.includes('forbidden') || error.message.includes('403')) {
+      return "You don't have permission to perform this action";
+    }
+    
+    // Return the error message if it's user-friendly (doesn't contain technical details)
+    if (!error.message.includes('http://') && 
+        !error.message.includes('https://') && 
+        !error.message.includes('API') && 
+        !error.message.toLowerCase().includes('fetch') &&
+        !error.message.includes('XMLHttpRequest') &&
+        !error.message.includes('TypeError') &&
+        !error.message.includes('ReferenceError')) {
+      return error.message;
+    }
+  }
+  
+  // Handle network errors
+  if (error.code === 'NETWORK_ERROR' || error.name === 'NetworkError') {
+    return "Network error. Please check your internet connection and try again";
+  }
+  
+  // Handle timeout errors
+  if (error.code === 'TIMEOUT' || error.name === 'TimeoutError') {
+    return "Request timeout. Please try again";
+  }
+  
+  // Default user-friendly message for unknown errors
+  return "Something went wrong. Please check your input and try again.";
+};
+
+// Input validation function
+const validateAmountInput = (type) => {
+  let value;
+  let errorField;
+  
+  switch(type) {
+    case 'amount':
+      value = amount.value;
+      errorField = 'amount';
+      break;
+    case 'withdraw':
+      value = withdrawAmount.value;
+      errorField = 'withdrawAmount';
+      break;
+    case 'transfer':
+      value = transfer.value.payable_amount;
+      errorField = 'payable_amount';
+      break;
+  }
+  
+  // Clear previous errors for this field
+  if (type === 'transfer') {
+    if (transferErrors.value[errorField]) {
+      delete transferErrors.value[errorField];
+    }
+  } else {
+    if (errors.value[errorField]) {
+      delete errors.value[errorField];
+    }
+    if (depositErrors.value[errorField]) {
+      delete depositErrors.value[errorField];
+    }
+  }
+  
+  // Validate the input
+  if (value !== null && value !== undefined && value !== '') {
+    // Check if it's a valid number
+    if (isNaN(value) || value < 0) {
+      const errorMessage = "Please enter a valid amount (numbers only)";
+      
+      if (type === 'transfer') {
+        transferErrors.value[errorField] = errorMessage;
+      } else if (type === 'amount') {
+        depositErrors.value[errorField] = errorMessage;
+      } else {
+        errors.value[errorField] = errorMessage;
+      }
+      
+      // Show toast for immediate feedback
+      toast.add({
+        title: "❌ Invalid Input",
+        description: errorMessage,
+        icon: "i-heroicons-exclamation-triangle-20-solid",
+        color: "amber",
+        timeout: 3000,
+      });
+      return;
+    }
+    
+    // Check for decimal places (max 2)
+    const decimalPlaces = (value.toString().split('.')[1] || '').length;
+    if (decimalPlaces > 2) {
+      const errorMessage = "Amount can have maximum 2 decimal places";
+      
+      if (type === 'transfer') {
+        transferErrors.value[errorField] = errorMessage;
+      } else if (type === 'amount') {
+        depositErrors.value[errorField] = errorMessage;
+      } else {
+        errors.value[errorField] = errorMessage;
+      }
+      
+      toast.add({
+        title: "❌ Invalid Format",
+        description: errorMessage,
+        icon: "i-heroicons-exclamation-triangle-20-solid",
+        color: "amber",
+        timeout: 3000,
+      });
+      return;
+    }
+    
+    // Check for very large amounts (optional safeguard)
+    if (parseFloat(value) > 1000000) {
+      const errorMessage = "Amount cannot exceed 1,000,000";
+      
+      if (type === 'transfer') {
+        transferErrors.value[errorField] = errorMessage;
+      } else if (type === 'amount') {
+        depositErrors.value[errorField] = errorMessage;
+      } else {
+        errors.value[errorField] = errorMessage;
+      }
+      
+      toast.add({
+        title: "❌ Amount Too Large",
+        description: errorMessage,
+        icon: "i-heroicons-exclamation-triangle-20-solid",
+        color: "amber",
+        timeout: 3000,
+      });
+    }
+  }
+};
+
 // Deposit function
 const deposit = async () => {
   depositErrors.value = {};
@@ -1901,6 +2217,19 @@ const deposit = async () => {
   if (!policy.value) {
     depositErrors.value.policy = true;
   }
+  
+  // Validate amount format
+  if (amount.value && (isNaN(amount.value) || amount.value <= 0)) {
+    toast.add({
+      title: "❌ Invalid Amount",
+      description: "Please enter a valid amount (numbers only)",
+      icon: "i-heroicons-exclamation-triangle-20-solid",
+      color: "red",
+      timeout: 5000,
+    });
+    return;
+  }
+  
   if (!amount.value || !policy.value) {
     toast.add({
       title: "⚠️ Missing Information",
@@ -1958,11 +2287,12 @@ const deposit = async () => {
     await getTransactionHistory();  } catch (error) {
     console.error("Deposit error:", error);
     
-    // Try to extract more specific error information if available
-    const errorMessage = error.response?.data?.error || error.message || "Unknown error";
-      toast.add({
+    // Use the formatted error message helper
+    const userFriendlyMessage = formatErrorMessage(error);
+      
+    toast.add({
       title: "💳 Payment Gateway Error",
-      description: errorMessage,
+      description: userFriendlyMessage,
       icon: "i-heroicons-exclamation-triangle-20-solid",
       color: "red",
       timeout: 8000,
@@ -1974,7 +2304,7 @@ const deposit = async () => {
     
     // If the error is related to missing user info, suggest profile completion
     if (
-      errorMessage.includes("Missing mandatory parameters") || 
+      userFriendlyMessage.includes("Missing mandatory parameters") || 
       !user.value.user.address || 
       !user.value.user.phone
     ) {
@@ -2018,6 +2348,18 @@ const withdraw = async () => {
 
   if (!policy.value) {
     errors.value.policy = true;
+  }
+
+  // Validate withdrawal amount format
+  if (withdrawAmount.value && (isNaN(withdrawAmount.value) || withdrawAmount.value <= 0)) {
+    toast.add({
+      title: "❌ Invalid Amount",
+      description: "Please enter a valid withdrawal amount (numbers only)",
+      icon: "i-heroicons-exclamation-triangle-20-solid",
+      color: "red",
+      timeout: 5000,
+    });
+    return;
   }
 
   if (Object.keys(errors.value).length > 0) {
@@ -2065,17 +2407,17 @@ const withdraw = async () => {
       payment_number.value = "";
       policy.value = false;
       await getTransactionHistory();
-      await jwtLogin();
-    } else {
+      await jwtLogin();    } else {
       throw new Error("Unexpected response format");
     }} catch (error) {
     console.log(error);
     
-    // Extract error message from response or error object
-    const errorMessage = error.response?.data?.error || error.message || "Unknown error occurred";
-      toast.add({
+    // Use the formatted error message helper
+    const userFriendlyMessage = formatErrorMessage(error);
+      
+    toast.add({
       title: "❌ Withdrawal Failed",
-      description: errorMessage,
+      description: userFriendlyMessage,
       icon: "i-heroicons-x-circle-20-solid",
       color: "red",
       timeout: 8000,
@@ -2104,6 +2446,13 @@ async function sendToUser() {
   if (!transfer.value.payable_amount) {
     transferErrors.value.payable_amount = "Amount is required";
   }
+  
+  // Validate transfer amount format
+  if (transfer.value.payable_amount && (isNaN(transfer.value.payable_amount) || transfer.value.payable_amount <= 0)) {
+    transferErrors.value.payable_amount = "Please enter a valid amount (numbers only)";
+    return;
+  }
+  
   if (Number(transfer.value.payable_amount) > 25000) {
     transferErrors.value.limit = "Maximum single transfer limit is 25,000/=";
   }
@@ -2148,12 +2497,13 @@ async function sendToUser() {
     }
 
     transfer.value.to_user = data.name;
-    isOpenTransfer.value = true;
-
-    isLoading.value = false;  } catch (error) {
+    isOpenTransfer.value = true;    isLoading.value = false;  } catch (error) {
+    // Use the formatted error message helper
+    const userFriendlyMessage = formatErrorMessage(error);
+    
     toast.add({
-      title: "👤 User Not Found",
-      description: "The user you're trying to find doesn't exist. Please check the email or phone number.",
+      title: "👤 User Search Failed",
+      description: userFriendlyMessage,
       icon: "i-heroicons-user-minus-20-solid",
       color: "red",
       timeout: 6000,
@@ -2195,14 +2545,15 @@ async function handleTransfer() {
           getTransactionHistory();
         }
       }]
-    });
-
-    showSuccess.value = true;
+    });    showSuccess.value = true;
     await getTransactionHistory();
     await jwtLogin();} catch (error) {
+    // Use the formatted error message helper
+    const userFriendlyMessage = formatErrorMessage(error);
+    
     toast.add({
       title: "💸 Transfer Failed",
-      description: "Unable to complete the transfer. Please try again or contact support.",
+      description: userFriendlyMessage,
       icon: "i-heroicons-exclamation-triangle-20-solid",
       color: "red",
       timeout: 8000,
