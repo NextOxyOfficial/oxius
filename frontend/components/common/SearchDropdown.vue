@@ -166,7 +166,7 @@
         <!-- Enhanced Search Results with Improved Rendering and Keyword Highlighting -->
         <div
           v-if="searchQuery && filteredResults.length > 0"
-          class="max-h-[57vh] overflow-y-auto search-results-container"
+          class="max-h-[52vh] overflow-y-auto search-results-container"
         >
           <div class="py-2 px-1">
             <p class="text-xs text-gray-600 dark:text-gray-600 mb-1.5 px-3">
