@@ -64,12 +64,12 @@
               </Transition>
 
               <!-- Title input with character count -->
-              <div class="relative group">
+              <div class="relative group">                
                 <label
                   class="block text-sm font-medium text-gray-800 dark:text-gray-400 mb-1.5 flex items-center gap-1.5"
                 >
                   <Type class="h-4 w-4 text-blue-500" />
-                  Post Title
+                  Post Title <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                   <input
@@ -448,7 +448,8 @@
               @click="closeModalWithConfirm"
             >
               Cancel
-            </button>            <button
+            </button>            
+            <button
               :disabled="
                 !form.title.trim() || isSubmitting
               "
