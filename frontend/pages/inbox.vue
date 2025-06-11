@@ -116,10 +116,9 @@
             ]"
           >
             <UIcon name="i-heroicons-bell" class="mr-2" />
-            Updates
-            <span
+            Updates            <span
               v-if="updatesCount > 0"
-              class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
+              class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800"
             >
               {{ updatesCount }}
             </span>
@@ -134,10 +133,9 @@
             ]"
           >
             <UIcon name="i-heroicons-chat-bubble-left-right" class="mr-2" />
-            Support Tickets
-            <span
+            Support Tickets            <span
               v-if="supportTicketsCount > 0"
-              class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
+              class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800"
             >
               {{ supportTicketsCount }}
             </span>
