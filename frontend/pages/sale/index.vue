@@ -259,11 +259,11 @@
                 class="flex items-center border-l border-gray-200 pl-4 gap-2"
               >
                 <NuxtLink
-                  to="/sale/post"
+                  to="/sale/my-posts?tab=post-sale"
                   class="whitespace-nowrap flex items-center gap-1 px-3 py-2 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors"
                 >
                   <UIcon name="i-heroicons-plus-circle" />
-                  Post Ad
+                  Post Sale Ad
                 </NuxtLink>
               </div>
             </div>

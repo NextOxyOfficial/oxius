@@ -106,7 +106,7 @@
             area.
           </p>
           <UButton
-            to="/sale/post"
+            to="/sale/my-posts?tab=post-sale"
             color="primary"
             size="sm"
             class="w-full flex items-center justify-center gap-1 shadow-sm"
@@ -201,7 +201,7 @@
     </div>    <!-- Fixed bottom CTA for mobile -->
     <div class="lg:hidden sticky bottom-0 p-4 bg-white border-t border-gray-100 shadow-sm z-20">
       <UButton
-        to="/sale/post"
+        to="/sale/my-posts?tab=post-sale"
         color="primary"
         size="sm"
         class="w-full flex items-center justify-center gap-1 shadow-sm"

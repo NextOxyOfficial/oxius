@@ -82,10 +82,9 @@
                   
                   <Icon name="heroicons:document-text" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
                   <span class="relative z-10 truncate">{{ $t('my_post') }}</span>
-                </NuxtLink>
-                <!-- Post Sale Button - Enhanced (Outlined) - Always visible -->
+                </NuxtLink>                <!-- Post Sale Button - Enhanced (Outlined) - Always visible -->
                 <NuxtLink
-                  to="/sale/post"
+                  to="/sale/my-posts?tab=post-sale"
                   class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-medium text-xs sm:text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
                 >
                   <!-- Button hover effect -->
