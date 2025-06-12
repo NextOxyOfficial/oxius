@@ -1,5 +1,5 @@
 <template>
-  <div v-if="selectedBatch" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-4">
+  <div v-if="selectedBatch && (loading || error || products.length > 0)" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-4">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-medium text-gray-800">
         <Icon name="heroicons:shopping-bag" class="w-5 h-5 inline mr-2 text-emerald-600" />
