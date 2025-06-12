@@ -427,19 +427,32 @@ class ClassifiedCategoryPagination(PageNumberPagination):
     #         return 14
     #     return self.page_size
 
-class GetClassifiedCategories(generics.ListCreateAPIView):
+class GetClassifiedCategories(generics.ListCreateAPIView):    
     queryset = ClassifiedCategory.objects.all().order_by('-is_featured', '-updated_at')
     serializer_class = ClassifiedServicesSerializer
     permission_classes = [AllowAny]
     pagination_class = ClassifiedCategoryPagination
+    
     def get_queryset(self):
         """
-        Optionally filter the queryset by title.
+        Filter the queryset by title or search keywords.
         """
         queryset = ClassifiedCategory.objects.all().order_by('-is_featured', '-updated_at')
-        title = self.request.query_params.get('title', None)
-        if title:
-            queryset = queryset.filter(title__icontains=title)
+        search_term = self.request.query_params.get('title', None)
+        
+        if search_term:
+            # Create a Q object for OR conditions in the filter
+            from django.db.models import Q
+            
+            # Search in title
+            title_query = Q(title__icontains=search_term)
+            
+            # Search in search_keywords (looking for individual keywords)
+            keyword_query = Q(search_keywords__icontains=search_term)
+            
+            # Combine queries with OR
+            queryset = queryset.filter(title_query | keyword_query).distinct()
+            
         return queryset
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset()

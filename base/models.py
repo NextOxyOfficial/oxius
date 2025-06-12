@@ -224,6 +224,7 @@ class ClassifiedCategory(models.Model):
   business_type = models.CharField(max_length=256, default="shop")
   image = models.ImageField(upload_to='images/', blank=True, null=True)
   is_featured = models.BooleanField(default=False)
+  search_keywords = models.TextField(blank=True, null=True, help_text="Comma-separated keywords to help with search functionality")
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 
@@ -997,5 +998,4 @@ class AndroidAppVersion(models.Model):
 class AILink(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     link = models.URLField()
-    
-    
+

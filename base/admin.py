@@ -113,6 +113,8 @@ admin.site.register(User, CustomUserAdmin)
 
 class ClassifiedCategoryAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_at', 'updated_at')
+    search_fields = ('title', 'search_keywords')
+    fields = ('user', 'title', 'slug', 'business_type', 'image', 'is_featured', 'search_keywords')
 admin.site.register(ClassifiedCategory, ClassifiedCategoryAdmin)
 
 
