@@ -1,670 +1,385 @@
 <template>
-  <div
-    class="relative bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 py-6 sm:py-10"
-  >
-    <!-- Decorative background elements -->
-    <div class="absolute top-0 left-0 w-full h-64 overflow-hidden">
-      <div
-        class="absolute -top-10 -left-10 w-72 h-72 bg-primary-500/10 dark:bg-primary-500/5 rounded-full blur-3xl"
-      ></div>
-      <div
-        class="absolute top-20 right-10 w-96 h-96 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl"
-      ></div>
-    </div>
-
-    <div class="relative max-w-4xl mx-auto">
-      <!-- Form Title with Animation -->
-
-      <form
+  <div class="min-h-screen py-8 bg-gradient-to-b from-gray-50 to-gray-100">
+    <UContainer>
+      <!-- Enhanced Header -->
+      <div class="text-center mb-10">        <h1
+          class="text-2xl font-semibold mb-2 bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent"
+        >
+          Add Product
+        </h1>
+        <p class="text-lg text-gray-600 max-w-lg mx-auto">
+          List your product and reach more customers
+        </p>
+      </div>
+        <form
         @submit.prevent="handleAddProduct"
-        class="relative bg-white dark:bg-slate-800 overflow-hidden border border-slate-200/50 dark:border-slate-700/30 shadow-sm dark:shadow-slate-900/30 rounded-xl"
+        class="bg-white rounded-xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100"
       >
         <!-- Form Sections Container -->
-        <div class="py-8">
+        <div>
           <!-- Product Basic Info Section -->
           <div
-            class="form-section transition-all duration-500"
-            :class="{ 'shadow-sm': currentStep === 0 }"
+            class="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
-            <div class="section-header">
-              <div class="section-icon-wrapper">
-                <UIcon
-                  name="i-heroicons-information-circle"
-                  class="section-icon"
-                />
-              </div>
-              <h3 class="section-title">Basic Information</h3>
-            </div>
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+            >
+              <UIcon
+                name="i-heroicons-information-circle"
+                class="text-emerald-600"              />
+              Basic Information
+            </h2>
 
-            <div class="grid grid-cols-1 gap-6 mt-6">
-              <!-- Product Name -->
-              <div class="form-floating-group">
-                <div class="relative">
-                  <input
-                    id="productName"
-                    type="text"
-                    v-model="form.name"
-                    class="form-input py-2 px-4 block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500"
-                    placeholder="Product Name"
-                    :class="{ 'border-red-500': !form.name && checkSubmit }"
-                  />
-                  <label
-                    for="productName"
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
-                  >
-                    Product Name <span class="text-red-500">*</span>
-                  </label>
-                </div>
-                <p v-if="!form.name && checkSubmit" class="form-error">
-                  <UIcon
-                    name="i-heroicons-exclamation-circle"
-                    class="w-3.5 h-3.5 mr-1"
-                  />
-                  You must enter a product name
-                </p>
-              </div>
+            <UFormGroup
+              label="Product Name"
+              required
+              :error="
+                !form.name && checkSubmit && 'You must enter a product name'
+              "
+              class="mb-5"
+            >
+              <UInput
+                type="text"
+                size="md"
+                color="white"
+                class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                placeholder="Enter a descriptive name for your product"
+                v-model="form.name"
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-pencil-square" />
+                </template>              </UInput>
+            </UFormGroup>
 
-              <!-- Categories -->
-              <div class="form-floating-group">
-                <div class="relative">
-                  <USelectMenu
-                    v-model="form.category"
-                    :options="categories"
-                    option-attribute="name"
-                    multiple
-                    value-attribute="id"
-                    placeholder="Select Category"
-                    class="relative block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500 py-2"
-                    :class="
-                      !form.category && checkSubmit ? 'border-red-500' : ''
-                    "
-                  >
-                    <template #leading>
-                      <UIcon
-                        name="i-heroicons-squares-2x2"
-                        class="text-slate-400 dark:text-slate-500 w-5 h-5"
-                      />
-                    </template>
-                  </USelectMenu>
-                  <label
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
-                  >
-                    Category <span class="text-red-500">*</span>
-                  </label>
-                </div>
-                <p v-if="!form.category && checkSubmit" class="form-error">
-                  <UIcon
-                    name="i-heroicons-exclamation-circle"
-                    class="w-3.5 h-3.5 mr-1"
-                  />
-                  Please select a category
-                </p>
-              </div>
-            </div>
+            <UFormGroup
+              label="Category"
+              required
+              :error="
+                !form.category && checkSubmit && 'You must select a category'
+              "
+              class="mb-5"
+            >
+              <USelectMenu
+                v-model="form.category"
+                color="white"
+                size="md"
+                :options="categories"
+                placeholder="Select Category"
+                class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                option-attribute="name"
+                value-attribute="id"
+                multiple
+              >
+                <template #leading>
+                  <UIcon name="i-heroicons-squares-2x2" />
+                </template>              </USelectMenu>
+            </UFormGroup>
           </div>
 
           <!-- Product Details Section -->
           <div
-            class="form-section sm:mt-12 transition-all duration-500"
-            :class="{ 'shadow-sm': currentStep === 1 }"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
-            <div class="section-header">
-              <div class="section-icon-wrapper">
-                <UIcon name="i-heroicons-document-text" class="section-icon" />
-              </div>
-              <h3 class="section-title">Product Details</h3>
-            </div>
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+            >
+              <UIcon name="i-heroicons-document-text" class="text-emerald-600" />
+              Product Details
+            </h2>
 
-            <div class="mt-6 space-y-6">
-              <!-- Rich Text Editor -->
-              <div class="form-group">
-                <label class="form-label mb-3 flex items-center">
-                  <span>Description <span class="text-red-500">*</span></span>
-                  <div
-                    class="ml-2 text-sm px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 rounded-full"
-                  >
-                    Rich Text
-                  </div>
-                </label>
-                <div class="relative premium-editor-container group">
-                  <div
-                    class="absolute inset-x-0 -top-0.5 h-0.5 bg-gradient-to-r from-primary-500 to-blue-500 transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300"
-                  ></div>
-                  <div
-                    class="absolute inset-x-0 -bottom-0.5 h-0.5 bg-gradient-to-r from-blue-500 to-primary-500 transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300"
-                  ></div>
-                  <div
-                    class="absolute inset-y-0 -left-0.5 w-0.5 bg-gradient-to-b from-primary-500 to-blue-500 transform scale-y-0 group-focus-within:scale-y-100 transition-transform duration-300"
-                  ></div>
-                  <div
-                    class="absolute inset-y-0 -right-0.5 w-0.5 bg-gradient-to-b from-blue-500 to-primary-500 transform scale-y-0 group-focus-within:scale-y-100 transition-transform duration-300"
-                  ></div>
-
-                  <CommonEditor
-                    v-if="router.query.id && form.description"
-                    :content="form.description"
-                    @updateContent="
-                      (content) => {
-                        form.description = content;
-                      }
-                    "
-                    class="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden transition-all duration-300 group-focus-within:border-primary-400 text-left p-2"
-                  />
-                  <CommonEditor
-                    v-else
-                    v-model="form.description"
-                    @updateContent="updateContent"
-                    class="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden transition-all duration-300 group-focus-within:border-primary-400 text-left p-2"
-                  />
-                </div>
+            <UFormGroup label="Description" required class="mb-5">
+              <p class="text-sm text-gray-600 mb-3">
+                Provide detailed information about your product
+              </p>              <div
+                class="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-100 focus-within:border-emerald-500 transition-all"
+              >
+                <CommonEditor
+                  v-if="router.query.id && form.description"
+                  :content="form.description"
+                  @updateContent="
+                    (content) => {
+                      form.description = content;
+                    }
+                  "
+                  class="text-left"
+                />
+                <CommonEditor
+                  v-else
+                  v-model="form.description"
+                  @updateContent="updateContent"
+                  class="text-left px-2"
+                />
               </div>
+            </UFormGroup>
 
-              <!-- Short Description -->
-              <div class="form-floating-group">
-                <div class="relative">
-                  <textarea
-                    id="shortDescription"
-                    v-model="form.short_description"
-                    rows="3"
-                    class="premium-textarea peer"
-                    placeholder=" "
-                  ></textarea>
-                  <label for="shortDescription" class="floating-label-textarea">
-                    Short Description
-                  </label>
-                </div>
-                <p class="form-hint">
-                  <UIcon
-                    name="i-heroicons-light-bulb"
-                    class="w-3.5 h-3.5 mr-1"
-                  />
-                  A brief overview that appears in product listings (150
-                  characters max)
-                </p>
-              </div>
-            </div>
+            <UFormGroup label="Short Description" class="mb-5">
+              <UTextarea
+                v-model="form.short_description"
+                color="white"
+                variant="outline"
+                class="w-full min-h-20 border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                resize
+                placeholder="A brief overview that appears in product listings (150 characters max)"
+              />            </UFormGroup>
           </div>
 
           <!-- Product Media Section -->
           <div
-            class="form-section sm:mt-12 transition-all duration-500"
-            :class="{ 'shadow-sm': currentStep === 2 }"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
-            <div class="section-header">
-              <div class="section-icon-wrapper">
-                <UIcon name="i-heroicons-photo" class="section-icon" />
-              </div>
-              <h3 class="section-title">Media Gallery</h3>
-            </div>
-
-            <p class="text-sm text-gray-600 dark:text-slate-400 mt-4 mb-6">
-              <UIcon
-                name="i-heroicons-light-bulb"
-                class="w-4 h-4 mr-1 text-amber-500"
-                inline
-              />
-              High-quality images increase sales. Add up to 5 photos
-              (recommended size: 1000×1000px)
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+            >
+              <UIcon name="i-heroicons-photo" class="text-emerald-600" />
+              Media Gallery
+            </h2>
+            <p class="text-sm text-gray-600 mb-4">
+              Add photos to showcase your product (up to 5 images)
             </p>
 
-            <!-- Upload Container with Side-by-Side Layout -->
-            <div
-              class="premium-upload-container p-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50/50 dark:bg-slate-800/20 relative group"
-            >
+            <div class="flex flex-wrap gap-4 mt-4">
+              <!-- Uploaded images -->
               <div
-                class="absolute inset-0 bg-primary-500/5 dark:bg-primary-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"
-              ></div>
-
-              <!-- Animation lines -->
-              <div
-                class="absolute inset-0 overflow-hidden rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                v-for="(img, i) in form.images"
+                :key="i"
+                class="w-32 h-32 rounded-lg overflow-hidden relative border border-gray-200 bg-gray-50 group"
               >
+                <img
+                  v-if="img.image"
+                  :src="img.image"
+                  :alt="`Uploaded file ${i}`"
+                  class="w-full h-full object-contain transition-transform group-hover:scale-105"
+                />
+                <img
+                  v-else
+                  :src="img"
+                  :alt="`Uploaded file ${i}`"
+                  class="w-full h-full object-contain transition-transform group-hover:scale-105"
+                />
                 <div
-                  class="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary-500 to-transparent animate-line-scroll"
+                  class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all"
                 ></div>
-                <div
-                  class="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary-500 to-transparent animate-line-scroll-reverse"
-                ></div>
-                <div
-                  class="absolute left-0 top-0 h-full w-0.5 bg-gradient-to-b from-transparent via-primary-500 to-transparent animate-line-scroll"
-                ></div>
-                <div
-                  class="absolute right-0 top-0 h-full w-0.5 bg-gradient-to-b from-transparent via-primary-500 to-transparent animate-line-scroll-reverse"
-                ></div>
-              </div>
-
-              <!-- Image Gallery with Side-by-Side Layout -->
-              <div
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 relative"
-              >
-                <!-- Uploaded images with premium hover effects -->
-                <template v-if="form.images && form.images.length > 0">
-                  <div
-                    v-for="(img, i) in form.images"
-                    :key="i"
-                    class="aspect-square rounded-lg overflow-hidden relative group/img flex items-center justify-center bg-slate-100 dark:bg-slate-800"
-                  >
-                    <div
-                      class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 z-10"
-                    ></div>
-                    <img
-                      v-if="img.image"
-                      :src="img.image"
-                      :alt="`Uploaded file ${i + 1}`"
-                      class="object-contain w-full h-full transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
-                    />
-                    <img
-                      v-else
-                      :src="img"
-                      :alt="`Uploaded file ${i + 1}`"
-                      class="object-contain w-full h-full transition-all duration-500 group-hover/img:scale-110 group-hover/img:rotate-1"
-                    />
-
-                    <!-- Premium overlay controls -->
-                    <div
-                      class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2"
-                    >
-                      <div class="flex justify-between items-center">
-                        <div class="text-sm text-white opacity-90">
-                          Image {{ i + 1 }}
-                        </div>
-                        <button
-                          type="button"
-                          class="w-7 h-7 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 z-10"
-                          @click="deleteUpload(i)"
-                        >
-                          <UIcon name="i-heroicons-trash" class="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-
-                <!-- Upload button with clearer feedback and animations -->
-                <div
-                  v-if="!form.images || form.images.length < 5"
-                  class="aspect-square rounded-lg relative border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-100/50 dark:bg-slate-700/30 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50/30 dark:hover:bg-primary-900/10 transition-colors flex items-center justify-center cursor-pointer group/upload"
-                  :class="{ 'opacity-50 pointer-events-none': isUploading }"
+                <button
+                  type="button"
+                  class="absolute top-2 right-2 bg-white rounded-full w-8 h-8 flex items-center justify-center text-red-500 shadow-sm hover:bg-red-50 hover:scale-110 transition-all"
+                  @click="deleteUpload(i)"
+                  aria-label="Delete image"
                 >
-                  <input
-                    type="file"
-                    ref="fileInput"
-                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    @change="handleFileUpload"
-                    accept="image/*"
-                    :disabled="isUploading"
-                  />
-
-                  <!-- Pulse animation on hover -->
-                  <div
-                    class="absolute inset-0 rounded-lg pulse-animation opacity-0 group-hover/upload:opacity-100"
-                  ></div>
-
-                  <div
-                    class="flex flex-col items-center gap-2 text-slate-500 dark:text-slate-400 text-sm text-center p-2 group-hover/upload:text-primary-600 dark:group-hover/upload:text-primary-400 transition-colors z-0"
-                  >
-                    <div
-                      class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center group-hover/upload:bg-primary-100 dark:group-hover/upload:bg-primary-900/30 transition-colors"
-                    >
-                      <UIcon
-                        v-if="!isUploading"
-                        name="i-heroicons-plus"
-                        class="w-5 h-5 group-hover/upload:scale-110 transition-transform"
-                      />
-                      <UIcon
-                        v-else
-                        name="i-heroicons-arrow-path"
-                        class="w-5 h-5 animate-spin"
-                      />
-                    </div>
-                    <span class="text-sm font-medium">
-                      {{ isUploading ? "Uploading..." : "Add Photo" }}
-                    </span>
-                    <span
-                      v-if="!isUploading"
-                      class="text-xs text-slate-400 dark:text-slate-500"
-                    >
-                      {{ form.images ? `${form.images.length}/5` : "0/5" }}
-                      images
-                    </span>
-                  </div>
-                </div>
+                  <UIcon name="i-heroicons-trash" />
+                </button>
               </div>
 
-              <!-- Upload status with premium styles -->
-              <div class="mt-4">
-                <p
-                  v-if="uploadError"
-                  class="text-sm flex items-center text-red-500"
+              <!-- Upload button -->
+              <div
+                class="w-32 h-32 rounded-lg relative border-2 border-dashed border-gray-300 bg-gray-50 hover:border-emerald-500 hover:bg-emerald-50/20 transition-colors flex items-center justify-center cursor-pointer group"
+                v-if="!form.images || form.images.length < 5"
+              >
+                <input
+                  type="file"
+                  ref="fileInput"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  @change="handleFileUpload"
+                  accept="image/*"
+                />
+                <div
+                  class="flex flex-col items-center gap-2 text-gray-600 text-sm text-center p-2 group-hover:text-emerald-600"
                 >
                   <UIcon
-                    name="i-heroicons-exclamation-circle"
-                    class="w-4 h-4 mr-1.5"
+                    name="i-heroicons-arrow-up-tray"
+                    class="text-xl text-emerald-500"
                   />
-                  {{ uploadError }}
-                </p>
-                <div
-                  v-if="isUploading"
-                  class="text-sm flex items-center text-primary-600 dark:text-primary-400"
-                >
-                  <p
-                    class="mr-2 w-4 h-4 border-2 border-primary-500 border-l-transparent rounded-full animate-spin"
-                  ></p>
-                  Uploading image...
+                  <span>Add Photo</span>
                 </div>
               </div>
             </div>
+
+            <!-- Upload status -->
+            <p v-if="uploadError" class="mt-3 text-red-500 text-sm">
+              {{ uploadError }}
+            </p>
+            <p
+              v-if="isUploading"
+              class="mt-3 text-emerald-600 text-sm flex items-center"
+            >
+              <UIcon name="i-heroicons-arrow-path" class="animate-spin mr-1" />
+              Uploading image...            </p>
           </div>
 
           <!-- Product Pricing Section -->
           <div
-            class="form-section sm:mt-12 transition-all duration-500"
-            :class="{ 'shadow-sm': currentStep === 3 }"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
-            <div class="section-header">
-              <div class="section-icon-wrapper">
-                <UIcon
-                  name="i-heroicons-currency-bangladeshi"
-                  class="section-icon"
-                />
-              </div>
-              <h3 class="section-title">Pricing & Inventory</h3>
-            </div>
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
+            >
+              <UIcon
+                name="i-heroicons-currency-dollar"
+                class="text-emerald-600"
+              />
+              Pricing & Inventory
+            </h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-              <!-- Regular Price with premium styling -->
-              <div class="form-floating-group">
-                <div class="relative">
-                  <div
-                    class="absolute left-3 top-3.5 text-slate-500 dark:text-slate-400"
-                  >
-                    ৳
-                  </div>
-                  <input
-                    id="regularPrice"
-                    v-model="form.regular_price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    class="form-input py-3 pl-8 px-4 block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500"
-                    placeholder="0.00"
-                    :class="{
-                      'border-red-500': !form.regular_price && checkSubmit,
-                    }"
-                  />
-                  <label
-                    for="regularPrice"
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
-                  >
-                    Regular Price <span class="text-red-500">*</span>
-                  </label>
-                </div>
-                <p v-if="!form.regular_price && checkSubmit" class="form-error">
-                  <UIcon
-                    name="i-heroicons-exclamation-circle"
-                    class="w-3.5 h-3.5 mr-1"
-                  />
-                  Regular price is required
-                </p>
-              </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <UFormGroup
+                label="Regular Price"
+                required
+                :error="
+                  !form.regular_price && checkSubmit && 'Regular price is required'
+                "
+                class="mb-5"
+              >
+                <UInput
+                  type="number"
+                  size="md"
+                  color="white"
+                  placeholder="e.g. 1000"
+                  class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                  v-model="form.regular_price"
+                  min="0"
+                  step="0.01"
+                >
+                  <template #leading>
+                    <UIcon name="i-mdi:currency-bdt" />
+                  </template>
+                </UInput>
+              </UFormGroup>
 
-              <!-- Discounted Price -->
-              <div class="form-floating-group">
-                <div class="relative">
-                  <div
-                    class="absolute left-3 top-3.5 text-slate-500 dark:text-slate-400"
-                  >
-                    ৳
-                  </div>
-                  <input
-                    id="salePrice"
-                    v-model="form.sale_price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    class="form-input py-3 pl-8 px-4 block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500"
-                    placeholder="0.00"
-                  />
-                  <label
-                    for="salePrice"
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
-                  >
-                    Discounted Price
-                  </label>
-                </div>
-                <p class="form-hint">
-                  <UIcon name="i-heroicons-tag" class="w-3.5 h-3.5 mr-1" />
-                  Leave empty if not on sale
-                </p>
-              </div>
+              <UFormGroup label="Discounted Price" class="mb-5">
+                <UInput
+                  type="number"
+                  size="md"
+                  color="white"
+                  placeholder="e.g. 800"
+                  class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                  v-model="form.sale_price"
+                  min="0"
+                  step="0.01"
+                >
+                  <template #leading>
+                    <UIcon name="i-mdi:currency-bdt" />
+                  </template>
+                </UInput>
+              </UFormGroup>
 
-              <!-- Stock Quantity -->
-              <div class="form-floating-group">
-                <div class="relative">
-                  <input
-                    id="stockQuantity"
-                    v-model="form.quantity"
-                    type="number"
-                    min="0"
-                    step="1"
-                    class="form-input py-3 px-4 block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500"
-                    placeholder="0"
-                    :class="{ 'border-red-500': !form.quantity && checkSubmit }"
-                  />
-                  <label
-                    for="stockQuantity"
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
-                  >
-                    Stock Quantity <span class="text-red-500">*</span>
-                  </label>
-                </div>
-                <p v-if="!form.quantity && checkSubmit" class="form-error">
-                  <UIcon
-                    name="i-heroicons-exclamation-circle"
-                    class="w-3.5 h-3.5 mr-1"
-                  />
-                  Stock quantity is required
-                </p>
-              </div>
+              <UFormGroup
+                label="Stock Quantity"
+                required
+                :error="
+                  !form.quantity && checkSubmit && 'Stock quantity is required'
+                "
+                class="mb-5"
+              >
+                <UInput
+                  type="number"
+                  size="md"
+                  color="white"
+                  placeholder="e.g. 50"
+                  class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                  v-model="form.quantity"
+                  min="0"
+                  step="1"
+                >
+                  <template #leading>
+                    <UIcon name="i-heroicons-cube" />
+                  </template>
+                </UInput>              </UFormGroup>
             </div>
           </div>
 
           <!-- Delivery Information Section -->
           <div
-            class="form-section sm:mt-12 transition-all duration-500"
-            :class="{ 'shadow-sm': currentStep === 4 }"
+            class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
           >
-            <div class="section-header">
-              <div class="section-icon-wrapper">
-                <UIcon name="i-heroicons-truck" class="section-icon" />
-              </div>
-              <h3 class="section-title">Delivery Information</h3>
-            </div>
-
-            <!-- Weight with premium styling -->
-            <div class="mt-6">
-              <div class="form-floating-group">
-                <div class="relative">
-                  <input
-                    id="productWeight"
-                    v-model="form.weight"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    class="form-input py-3 px-4 block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500"
-                    placeholder="0.00"
-                  />
-                  <label
-                    for="productWeight"
-                    class="absolute -top-2.5 left-3 px-1 bg-white dark:bg-slate-800 text-sm font-medium text-primary-600 dark:text-primary-400"
-                  >
-                    Weight (kg)
-                  </label>
-                </div>
-                <p class="form-hint">
-                  <UIcon
-                    name="i-heroicons-light-bulb"
-                    class="w-3.5 h-3.5 mr-1 text-amber-500"
-                  />
-                  Required for accurate shipping calculation
-                </p>
-              </div>
-            </div>
-
-            <!-- Enhanced Delivery Methods Section -->
-            <div
-              class="mt-6 p-5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700"
+            <h2
+              class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
             >
-              <h4
-                class="text-sm font-medium text-slate-700 dark:text-slate-300 mb-4 flex items-center"
+              <UIcon name="i-heroicons-truck" class="text-emerald-600" />
+              Delivery Information
+            </h2>
+
+            <UFormGroup label="Weight (kg)" class="mb-5">
+              <UInput
+                type="number"
+                size="md"
+                color="white"
+                placeholder="e.g. 1.5"
+                class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                v-model="form.weight"
+                min="0"
+                step="0.01"
               >
-                <UIcon
-                  name="i-heroicons-truck"
-                  class="w-4 h-4 mr-2 text-primary-500"
-                />
-                Delivery Method <span class="text-red-500 ml-0.5">*</span>
-              </h4>
+                <template #leading>
+                  <UIcon name="i-heroicons-scale" />
+                </template>
+              </UInput>
+            </UFormGroup>
 
-              <div class="space-y-4">
-                <!-- Free Shipping Option with Radio button -->
-                <div
-                  class="relative bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-300"
-                  :class="{
-                    'ring-2 ring-primary-500/30':
-                      form.deliveryMethod === 'free',
-                  }"
-                >
-                  <label class="p-4 flex items-start cursor-pointer">
-                    <div class="flex items-center h-5 mt-0.5">
-                      <input
-                        type="radio"
-                        v-model="form.deliveryMethod"
-                        value="free"
-                        class="form-radio border-slate-400 dark:border-slate-600"
-                        name="deliveryMethod"
-                      />
-                    </div>
-                    <div class="ml-3">
-                      <span
-                        class="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center"
-                      >
-                        Free Delivery All Over Bangladesh
-                        <span
-                          class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-full text-sm font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white"
-                        >
-                          <UIcon
-                            name="i-heroicons-sparkles"
-                            class="w-3 h-3 mr-0.5 text-white"
-                          />
-                          FREE
-                        </span>
-                      </span>
-                      <p
-                        class="text-sm text-slate-500 dark:text-slate-400 mt-1"
-                      >
-                        Your customers won't pay any delivery charges
-                      </p>
-                    </div>
-                  </label>
-                </div>
-
-                <!-- Standard Shipping Option with Radio button -->
-                <div
-                  class="relative bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden transition-all duration-300"
-                  :class="{
-                    'ring-2 ring-primary-500/30':
-                      form.deliveryMethod === 'standard',
-                  }"
-                >
-                  <label class="px-4 pt-4 pb-2 flex cursor-pointer">
-                    <div class="flex items-center h-5 mt-0.5">
-                      <input
-                        type="radio"
-                        v-model="form.deliveryMethod"
-                        value="standard"
-                        class="form-radio border-slate-400 dark:border-slate-600"
-                        name="deliveryMethod"
-                      />
-                    </div>
-                    <p class="ml-3 inline-flex flex-col items-start">
-                      <span
-                        class="text-sm font-medium text-slate-700 dark:text-slate-300"
-                      >
-                        Standard Shipping (Location Based)
-                      </span>
-                      <span
-                        class="text-sm text-slate-500 dark:text-slate-400 mt-1"
-                      >
-                        Set different rates for inside and outside Dhaka
-                      </span>
-                    </p>
-                  </label>
-
-                  <!-- Rate inputs (only shown when standard is selected) -->
-                  <div
-                    v-if="form.deliveryMethod === 'standard'"
-                    class="mt-2 pl-12 pr-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-4"
-                  >
-                    <!-- Inside Dhaka Rate -->
-                    <div class="relative">
-                      <label
-                        class="block text-sm font-medium text-gray-600 dark:text-slate-400 mb-1.5"
-                      >
-                        Inside Dhaka Rate
-                      </label>
-                      <div class="relative">
-                        <span
-                          class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 dark:text-slate-400"
-                          >৳</span
-                        >
-                        <input
-                          v-model="form.delivery_fee_inside_dhaka"
-                          type="number"
-                          min="0"
-                          class="form-input pl-7 py-2 block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500"
-                          placeholder="100"
-                        />
-                      </div>
-                    </div>
-
-                    <!-- Outside Dhaka Rate -->
-                    <div class="relative">
-                      <label
-                        class="block text-sm font-medium text-gray-600 dark:text-slate-400 mb-1.5"
-                      >
-                        Outside Dhaka Rate
-                      </label>
-                      <div class="relative">
-                        <span
-                          class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 dark:text-slate-400"
-                          >৳</span
-                        >
-                        <input
-                          v-model="form.delivery_fee_outside_dhaka"
-                          type="number"
-                          min="0"
-                          class="form-input pl-7 py-2 block w-full border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:border-primary-500 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-primary-500"
-                          placeholder="150"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <p
-                  v-if="!form.deliveryMethod && checkSubmit"
-                  class="form-error mt-2"
-                >
-                  <UIcon
-                    name="i-heroicons-exclamation-circle"
-                    class="w-3.5 h-3.5 mr-1"
+            <UFormGroup
+              label="Delivery Method"
+              required
+              :error="
+                !form.deliveryMethod && checkSubmit && 'Please select a delivery method'
+              "
+              class="mb-5"
+            >              <div class="space-y-3">
+                <div class="flex items-center">
+                  <URadio
+                    v-model="form.deliveryMethod"
+                    value="free"
+                    name="delivery"
+                    label="Free Delivery All Over Bangladesh"
+                    color="emerald"
                   />
-                  Please select a delivery method
-                </p>
+                </div>
+                <div class="flex items-center">
+                  <URadio
+                    v-model="form.deliveryMethod"
+                    value="standard"
+                    name="delivery"
+                    label="Standard Shipping (Location Based)"
+                    color="emerald"
+                  />
+                </div>
               </div>
-            </div>
-          </div>
-          <UCard class="mx-2 sm:mx-6">
+
+              <div
+                v-if="form.deliveryMethod === 'standard'"
+                class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"
+              >
+                <UFormGroup label="Inside Dhaka Rate">
+                  <UInput
+                    type="number"
+                    size="md"
+                    color="white"
+                    placeholder="e.g. 100"
+                    class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                    v-model="form.delivery_fee_inside_dhaka"
+                    min="0"
+                  >
+                    <template #leading>
+                      <UIcon name="i-mdi:currency-bdt" />
+                    </template>
+                  </UInput>
+                </UFormGroup>
+
+                <UFormGroup label="Outside Dhaka Rate">
+                  <UInput
+                    type="number"
+                    size="md"
+                    color="white"
+                    placeholder="e.g. 150"
+                    class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                    v-model="form.delivery_fee_outside_dhaka"
+                    min="0"
+                  >
+                    <template #leading>
+                      <UIcon name="i-mdi:currency-bdt" />
+                    </template>
+                  </UInput>
+                </UFormGroup>
+              </div>
+            </UFormGroup>
+          </div>          <UCard class="mx-2 sm:mx-6">
             <UCheckbox
               name="notifications"
               v-model="advanceEditMode"
@@ -677,44 +392,35 @@
               @update:content="handleEditorUpdate"
             />
           </UCard>
-          <!-- Form Actions -->
-          <div
-            class="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 sm:mt-12 pt-6 border-t border-slate-200 dark:border-slate-700/60 px-2 sm:px-6"
-          >
-            <!-- Left side buttons -->
-            <div class="flex flex-wrap gap-4">
+
+          <!-- Form Submit Section -->
+          <div class="p-6">
+            <div class="flex flex-col sm:flex-row gap-4 justify-between">
               <UButton
                 color="gray"
-                variant="ghost"
-                class="rounded-lg"
+                variant="outline"
                 @click="resetForm"
+                class="flex-shrink-0"
               >
-                <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 mr-1.5" />
+                <UIcon name="i-heroicons-arrow-path" class="mr-2" />
                 Reset Form
               </UButton>
+
+              <UButton
+                type="submit"
+                color="primary"
+                size="lg"
+                :loading="isSubmitting"
+                class="bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-100"
+              >
+                <UIcon name="i-heroicons-plus-circle" class="mr-2" />
+                {{ router.query.id ? 'Update Product' : 'Add Product' }}
+              </UButton>
             </div>
-
-            <!-- Right side submit button -->
-            <UButton
-              type="submit"
-              color="primary"
-              class="rounded-lg relative overflow-hidden group"
-              :loading="isSubmitting"
-            >
-              <span class="flex items-center gap-1.5 relative z-10">
-                <UIcon name="i-heroicons-check" class="w-4 h-4" />
-                <span>Publish Product</span>
-              </span>
-
-              <!-- Fixed Shimmer Effect -->
-              <div
-                class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
-              ></div>
-            </UButton>
           </div>
         </div>
       </form>
-    </div>
+    </UContainer>
   </div>
 </template>
 
@@ -737,8 +443,10 @@ const form = ref(
     images: [],
     discount_price: null,
     sale_price: null,
+    regular_price: null,
     quantity: null,
     weight: null,
+    deliveryMethod: "",
     is_free_delivery: false,
     delivery_fee_free: 0,
     delivery_fee_inside_dhaka: 0,
