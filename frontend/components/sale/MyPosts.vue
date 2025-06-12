@@ -108,23 +108,9 @@
     >      <!-- Header with Filters and controls -->
       <div
         class="flex justify-between items-center px-6 py-4 bg-white border-b border-gray-200"
-      >
-        <!-- Left side - Post count -->
-        <div class="flex items-center">
-          <div
-            class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg text-sm font-medium text-gray-700"
-          >
-            <Icon
-              name="heroicons:document-text"
-              class="h-4 w-4 text-gray-500"
-            />
-            <span>{{ posts.length }}</span>
-            <span>{{ posts.length === 1 ? "post" : "posts" }}</span>
-          </div>
-        </div>
-
-        <!-- Right side - Filter and Refresh -->
-        <div class="flex items-center gap-3">
+      >        <!-- Left side - Filter and Refresh -->
+        <div class="flex items-center gap-4">
+          <!-- Filter dropdown -->
           <div class="relative">
             <select
               v-model="statusFilter"
@@ -148,6 +134,7 @@
             />
           </div>
           
+          <!-- Refresh button -->
           <button
             @click="refreshPosts"
             class="p-2 text-gray-500 flex hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
@@ -159,6 +146,11 @@
               :class="{ 'animate-spin': isRefreshing }"
             />
           </button>
+        </div>
+
+        <!-- Right side - Empty for now or future controls -->
+        <div class="flex items-center gap-3">
+          <!-- Space for future controls if needed -->
         </div>
       </div>
       <!-- Post items -->

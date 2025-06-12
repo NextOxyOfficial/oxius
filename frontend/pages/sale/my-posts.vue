@@ -2,7 +2,7 @@
     <div class="bg-white rounded-xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100">
       <div class="mx-auto max-w-7xl">        
         <!-- Enhanced Header -->
-        <div class="text-center mb-10">
+        <div class="text-center my-6">
           <h1
             class="text-2xl font-semibold mb-2 bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent"
           >
@@ -10,8 +10,7 @@
           </h1>
           <p class="text-lg text-gray-600 max-w-lg mx-auto mb-4">
             View, edit, and manage all your sale listings in one place
-          </p>
-          <UButton
+          </p>          <UButton
             @click="navigateToMarketplace"
             color="emerald"
             variant="outline"
@@ -22,52 +21,53 @@
             </template>
             Go to Marketplace          
         </UButton>
-        </div>          <!-- Quick Stats -->
-        <div v-if="activeTab === 'my-posts'" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div class="bg-white rounded-lg p-4 border border-gray-100">
+        </div>
+          <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div class="bg-white rounded-lg p-3 border border-gray-100">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <UIcon name="i-heroicons-document-text" class="h-6 w-6 text-blue-600" />
+                <UIcon name="i-heroicons-document-text" class="h-5 w-5 text-blue-600" />
               </div>
-              <div class="ml-3">
-                <p class="text-sm font-medium text-gray-900">Total Posts</p>
-                <p class="text-lg font-semibold text-blue-600">{{ stats.total || 0 }}</p>
+              <div class="ml-2">
+                <p class="text-xs font-medium text-gray-900">Total Posts</p>
+                <p class="text-base font-semibold text-blue-600">{{ stats.total || 0 }}</p>
               </div>
             </div>
           </div>
           
-          <div class="bg-white rounded-lg p-4 border border-gray-100">
+          <div class="bg-white rounded-lg p-3 border border-gray-100">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <UIcon name="i-heroicons-eye" class="h-6 w-6 text-green-600" />
+                <UIcon name="i-heroicons-eye" class="h-5 w-5 text-green-600" />
               </div>
-              <div class="ml-3">
-                <p class="text-sm font-medium text-gray-900">Active</p>
-                <p class="text-lg font-semibold text-green-600">{{ stats.active || 0 }}</p>
+              <div class="ml-2">
+                <p class="text-xs font-medium text-gray-900">Active</p>
+                <p class="text-base font-semibold text-green-600">{{ stats.active || 0 }}</p>
               </div>
             </div>
           </div>
           
-          <div class="bg-white rounded-lg p-4 border border-gray-100">
+          <div class="bg-white rounded-lg p-3 border border-gray-100">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <UIcon name="i-heroicons-check-circle" class="h-6 w-6 text-emerald-600" />
+                <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-emerald-600" />
               </div>
-              <div class="ml-3">
-                <p class="text-sm font-medium text-gray-900">Sold</p>
-                <p class="text-lg font-semibold text-emerald-600">{{ stats.sold || 0 }}</p>
+              <div class="ml-2">
+                <p class="text-xs font-medium text-gray-900">Sold</p>
+                <p class="text-base font-semibold text-emerald-600">{{ stats.sold || 0 }}</p>
               </div>
             </div>
           </div>
           
-          <div class="bg-white rounded-lg p-4 border border-gray-100">
+          <div class="bg-white rounded-lg p-3 border border-gray-100">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <UIcon name="i-heroicons-clock" class="h-6 w-6 text-amber-600" />
+                <UIcon name="i-heroicons-clock" class="h-5 w-5 text-amber-600" />
               </div>
-              <div class="ml-3">
-                <p class="text-sm font-medium text-gray-900">Pending</p>
-                <p class="text-lg font-semibold text-amber-600">{{ stats.pending || 0 }}</p>
+              <div class="ml-2">
+                <p class="text-xs font-medium text-gray-900">Pending</p>
+                <p class="text-base font-semibold text-amber-600">{{ stats.pending || 0 }}</p>
               </div>
             </div>
           </div>
@@ -87,8 +87,8 @@
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
                   'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg'
                 ]"
-              >
-                <div class="flex items-center gap-2">
+              >                
+              <div class="flex items-center gap-2">
                   <UIcon :name="tab.icon" class="w-4 h-4" />
                   {{ tab.name }}
                   <span
