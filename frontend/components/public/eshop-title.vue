@@ -1,30 +1,12 @@
-<template>
-  <div class="flex items-center justify-between mb-2">
+<template>  <div class="flex items-center justify-between mb-2">
     <div class="inline-flex items-center">
       <UIcon name="i-heroicons-shopping-bag" class="w-8 h-8 text-emerald-600" />
-      <div class="py-4 text-start relative">
+      <div class="py-4 text-start">
         <h1
-          class="text-xl md:text-xl ml-2 font-semibold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 inline-block"
+          class="text-xl md:text-xl ml-2 font-semibold text-gray-800"
         >
           {{ $t("eshop_manager") }}
         </h1>
-        <!-- Header underline -->
-        <div
-          class="h-1 ml-2 w-44 mx-auto mt-2 rounded-full bg-gradient-to-r from-emerald-400 to-teal-400"
-        ></div>
-
-        <!-- Floating particles around header - FIXED -->
-        <div
-          v-for="n in 5"
-          :key="`header-particle-${n}`"
-          class="absolute w-1.5 h-1.5 rounded-full bg-emerald-400/50 service-particle"
-          :style="{
-            top: `${50 + (Math.random() * 30 - 15)}%`,
-            left: `${50 + (Math.random() * 60 - 30)}%`,
-            animationDelay: `${Math.random() * 2}s`,
-            animationDuration: `${3 + Math.random() * 2}s`,
-          }"
-        ></div>
       </div>
     </div>
   </div>

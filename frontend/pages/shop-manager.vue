@@ -126,39 +126,50 @@
                 name="i-heroicons-chevron-down"
                 class="h-5 w-5 text-white ml-2 relative z-10 transition-transform duration-300"
                 :class="{ 'rotate-180': !isStoreDetailsCollapsed }"
-              />
-
-              <!-- Edit Button -->
-              <button
+              />              <!-- Edit Button -->
+              <UButton
                 v-if="!isEditing"
-                @click.stop="isEditing = true"
-                class="ml-auto inline-flex items-center px-3 py-1.5 bg-white/20 rounded text-xs font-medium text-white hover:bg-white/30 focus:outline-none transition-colors duration-300 relative z-10"
+                @click.stop="startEdit()"
+                color="white"
+                variant="ghost" 
+                size="xs"
+                class="ml-auto relative z-10 bg-white/20 hover:bg-white/30 text-white border-white/30 transition-all duration-200"
               >
-                <UIcon
-                  :name="
-                    isEditing
-                      ? 'i-heroicons-check'
-                      : 'i-heroicons-pencil-square'
-                  "
-                  class="h-3.5 w-3.5 mr-1.5"
-                />
-                {{ isEditing ? "Save" : "Edit" }}
-              </button>
-              <button
-                v-else
-                @click.stop="(isEditing = false), updateStoreInfo()"
-                class="ml-auto inline-flex items-center px-3 py-1.5 bg-white/20 rounded text-xs font-medium text-white hover:bg-white/30 focus:outline-none transition-colors duration-300 relative z-10"
-              >
-                <UIcon
-                  :name="
-                    isEditing
-                      ? 'i-heroicons-check'
-                      : 'i-heroicons-pencil-square'
-                  "
-                  class="h-3.5 w-3.5 mr-1.5"
-                />
-                {{ isEditing ? "Save" : "Edit" }}
-              </button>
+                <template #leading>
+                  <UIcon name="i-heroicons-pencil-square" class="w-3 h-3" />
+                </template>
+                Edit
+              </UButton>
+                <!-- Save and Cancel Buttons -->
+              <div v-else class="ml-auto flex items-center space-x-2 relative z-10">
+                <UButton
+                  @click.stop="updateStoreInfo()"
+                  color="emerald"
+                  variant="solid"
+                  size="xs"
+                  :loading="isSavingStore"
+                  :disabled="isSavingStore"
+                  class="bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
+                >
+                  <template #leading v-if="!isSavingStore">
+                    <UIcon name="i-heroicons-check" class="w-3 h-3" />
+                  </template>
+                  {{ isSavingStore ? 'Saving...' : 'Save' }}
+                </UButton>
+                <UButton
+                  @click.stop="cancelEdit()"
+                  color="white"
+                  variant="ghost"
+                  size="xs"
+                  :disabled="isSavingStore"
+                  class="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                >
+                  <template #leading>
+                    <UIcon name="i-heroicons-x-mark" class="w-3 h-3" />
+                  </template>
+                  Cancel
+                </UButton>
+              </div>
             </div>
             <!-- Collapsible Content -->
             <Transition
@@ -188,11 +199,14 @@
                     <div class="ml-3 overflow-hidden flex-1">
                       <p class="text-xs font-medium text-gray-600 mb-1">
                         Shop Name
-                      </p>
-                      <input
+                      </p>                      <UInput
                         v-if="isEditing"
                         v-model="editedUser.store_name"
-                        class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
+                        placeholder="Enter shop name"
+                        size="sm"
+                        color="emerald"
+                        :disabled="isSavingStore"
+                        class="text-sm font-semibold"
                       />
                       <p
                         v-else
@@ -278,11 +292,14 @@
                     <div class="ml-3 overflow-hidden flex-1">
                       <p class="text-xs font-medium text-gray-600 mb-1">
                         Shop Address
-                      </p>
-                      <input
+                      </p>                      <UInput
                         v-if="isEditing"
                         v-model="editedUser.store_address"
-                        class="text-sm font-semibold text-gray-800 w-full border-b border-emerald-200 focus:outline-none px-2 py-1"
+                        placeholder="Enter shop address"
+                        size="sm"
+                        color="emerald"
+                        :disabled="isSavingStore"
+                        class="text-sm font-semibold"
                       />
                       <p
                         v-else
@@ -291,9 +308,7 @@
                         {{ storeDetails?.store_address || "Not set" }}
                       </p>
                     </div>
-                  </div>
-
-                  <!-- Shop Description -->
+                  </div>                  <!-- Shop Description -->
                   <div class="flex items-start group">
                     <div class="flex-shrink-0 mt-1">
                       <div
@@ -309,12 +324,18 @@
                       <p class="text-xs font-medium text-gray-600 mb-1">
                         Description
                       </p>
-                      <textarea
+                      <UTextarea
                         v-if="isEditing"
                         v-model="editedUser.store_description"
-                        rows="2"
-                        class="text-sm text-gray-800 w-full border border-emerald-200 rounded focus:outline-none py-1 px-2 resize-none"
-                      ></textarea>
+                        placeholder="Enter shop description"
+                        :rows="2"
+                        size="sm"
+                        color="emerald"
+                        :disabled="isSavingStore"
+                        :loading="isSavingStore"
+                        resize="none"
+                        class="text-sm"
+                      />
                       <p v-else class="text-sm text-gray-800 line-clamp-2">
                         {{
                           storeDetails?.store_description ||
@@ -1300,6 +1321,10 @@ const isProcessing = ref(false);
 const showProductLimitModal = ref(false);
 const showBuySlotsModal = ref(false); // State for Buy Slots modal
 
+// Store editing states
+const isEditing = ref(false);
+const isSavingStore = ref(false);
+
 // Watch for user data changes to ensure product limit is updated
 watch(user, (newUser) => {
   if (newUser && newUser.user) {
@@ -1534,7 +1559,6 @@ const removeToast = (id) => {
   }
 };
 
-const isEditing = ref(false);
 const isStoreDetailsCollapsed = ref(true); // State for collapsible store details - starts closed by default
 const editedUser = reactive({
   store_name: user.value?.user?.store_name || "",
@@ -1614,18 +1638,48 @@ async function getStoreDetails() {
 }
 
 async function updateStoreInfo() {
+  if (isSavingStore.value) return; // Prevent double-clicking
+  
+  isSavingStore.value = true;
   try {
     const { data } = await patch(`/store/${user.value.user.store_username}/`, {
       store_name: editedUser.store_name,
       store_address: editedUser.store_address,
       store_description: editedUser.store_description,
     });
+    
     if (data) {
-      getStoreDetails();
+      await getStoreDetails();
+      isEditing.value = false;
+      showToast(
+        "success",
+        "✅ Store Updated Successfully",
+        "Your store information has been saved and updated.",
+        { timeout: 4000 }
+      );
     }
   } catch (error) {
-    console.log(error);
+    console.error("Error updating store:", error);
+    showToast(
+      "error",
+      "❌ Update Failed", 
+      error.response?.data?.message || "Failed to update store information. Please check your connection and try again.",
+      { timeout: 6000 }
+    );
+  } finally {
+    isSavingStore.value = false;
   }
+}
+
+// Cancel edit with optional confirmation for unsaved changes
+function cancelEdit() {
+  // Reset to original values
+  if (storeDetails.value) {
+    editedUser.store_name = storeDetails.value.store_name || '';
+    editedUser.store_address = storeDetails.value.store_address || '';
+    editedUser.store_description = storeDetails.value.store_description || '';
+  }
+  isEditing.value = false;
 }
 
 // Initialize data on mount
