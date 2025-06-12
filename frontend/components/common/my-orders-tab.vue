@@ -16,12 +16,11 @@
             name="i-heroicons-arrow-path"
             class="h-6 w-6 animate-spin text-gray-600"
           />
-        </div>
-        <div class="flex items-center justify-between">
+        </div>        <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Total Orders</p>
             <p class="text-xl font-semibold text-gray-800">
-              {{ orders.length }}
+              {{ orderStats.total }}
             </p>
           </div>
           <div
@@ -34,7 +33,7 @@
           </div>
         </div>
         <p class="mt-2 text-sm font-medium text-indigo-600">
-          ৳{{ formatAmount(totalOrdersAmount) }}
+          ৳{{ formatAmount(orderStats.total_amount) }}
         </p>
       </div>
 
@@ -50,12 +49,11 @@
             name="i-heroicons-arrow-path"
             class="h-6 w-6 animate-spin text-gray-600"
           />
-        </div>
-        <div class="flex items-center justify-between">
+        </div>        <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Pending Orders</p>
             <p class="text-xl font-semibold text-gray-800">
-              {{ pendingOrders.length }}
+              {{ orderStats.pending }}
             </p>
           </div>
           <div
@@ -65,7 +63,7 @@
           </div>
         </div>
         <p class="mt-2 text-sm font-medium text-yellow-600">
-          ৳{{ formatAmount(pendingOrdersAmount) }}
+          ৳{{ formatAmount(orderStats.pending_amount) }}
         </p>
       </div>
 
@@ -81,12 +79,11 @@
             name="i-heroicons-arrow-path"
             class="h-6 w-6 animate-spin text-gray-600"
           />
-        </div>
-        <div class="flex items-center justify-between">
+        </div>        <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Processing Orders</p>
             <p class="text-xl font-semibold text-gray-800">
-              {{ processingOrders.length }}
+              {{ orderStats.processing }}
             </p>
           </div>
           <div
@@ -98,6 +95,9 @@
             />
           </div>
         </div>
+        <p class="mt-2 text-sm font-medium text-blue-600">
+          ৳{{ formatAmount(orderStats.processing_amount) }}
+        </p>
         <p class="mt-2 text-sm font-medium text-blue-600">
           ৳{{ formatAmount(processingOrdersAmount) }}
         </p>
@@ -115,12 +115,11 @@
             name="i-heroicons-arrow-path"
             class="h-6 w-6 animate-spin text-gray-600"
           />
-        </div>
-        <div class="flex items-center justify-between">
+        </div>        <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Delivered Orders</p>
             <p class="text-xl font-semibold text-gray-800">
-              {{ deliveredOrders.length }}
+              {{ orderStats.delivered }}
             </p>
           </div>
           <div
@@ -133,7 +132,7 @@
           </div>
         </div>
         <p class="mt-2 text-sm font-medium text-green-600">
-          ৳{{ formatAmount(deliveredOrdersAmount) }}
+          ৳{{ formatAmount(orderStats.delivered_amount) }}
         </p>
       </div>
     </div>
@@ -272,8 +271,7 @@
                 </button>
               </div>
             </td>
-          </tr>
-          <tr v-if="paginatedOrders.length === 0">
+          </tr>          <tr v-if="orders.length === 0">
             <td colspan="6" class="px-6 py-10 text-center text-gray-600">
               <div class="flex flex-col items-center justify-center">
                 <PackageX class="h-10 w-10 text-gray-400 mb-2" />
@@ -289,13 +287,12 @@
     <div
       class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
     >
-      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-        <div>
+      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">        <div>
           <p class="text-sm text-gray-800">
             Showing
             <span class="font-medium">{{ paginationStart }}</span> to
             <span class="font-medium">{{ paginationEnd }}</span> of
-            <span class="font-medium">{{ filteredOrders.length }}</span>
+            <span class="font-medium">{{ pagination?.count || 0 }}</span>
             results
           </p>
         </div>
@@ -303,8 +300,7 @@
           <nav
             class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
             aria-label="Pagination"
-          >
-            <button
+          >            <button
               @click="prevPage"
               :disabled="currentPage === 1"
               class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1186,6 +1182,14 @@ const showOrderDetailsModal = ref(false);
 const isProcessing = ref(false);
 const editCustomerInfo = ref(false);
 const editOrderItems = ref(false);
+const isOrdersLoading = ref(false);
+
+// Pagination state
+const currentPage = ref(1);
+const hasMoreOrders = ref(false);
+const pagination = ref(null);
+const pageSize = 10; // Display 10 orders per page
+const searchTimeout = ref(null);
 
 // Order items editing
 const editingOrderItems = ref([]);
@@ -1197,9 +1201,9 @@ const newItemQuantity = ref(1);
 const orderFilter = ref("all");
 const orderSearch = ref("");
 
-// Pagination for orders
-const itemsPerPage = 5;
-const currentPage = ref(1);
+// Pagination for orders (removed old frontend pagination)
+// const itemsPerPage = 5;
+// const currentPage = ref(1);
 
 // Selected items
 const selectedOrder = ref(null);
@@ -1218,24 +1222,140 @@ const orderItemAddition = ref({});
 
 // Data
 const orders = ref([]);
-const isOrdersLoading = ref(false);
+const allOrders = ref([]); // Store all orders for statistics
+const orderStats = ref({
+  total: 0,
+  pending: 0,
+  processing: 0,
+  delivered: 0,
+  total_amount: 0,
+  pending_amount: 0,
+  processing_amount: 0,
+  delivered_amount: 0
+});
 const products = ref([]);
 
-async function getOrders() {
-  isOrdersLoading.value = true;
+async function getOrders(page = 1) {
+  if (page === 1) {
+    isOrdersLoading.value = true;
+    orders.value = [];
+  }
+
   try {
-    const res = await get("/seller-orders/");
-    orders.value = res.data.map((order) => ({
-      ...order,
-      id: Array.isArray(order.id) ? order.id[0] : order.id,
-    }));
+    // Build query parameters for pagination
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('page_size', pageSize.toString());
+
+    // Add filters to API call if they exist
+    if (orderFilter.value && orderFilter.value !== 'all') {
+      params.append('status', orderFilter.value);
+    }
+
+    if (orderSearch.value) {
+      params.append('search', orderSearch.value);
+    }
+
+    const res = await get(`/seller-orders/?${params.toString()}`, {}, {
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+    });
+
+    if (res && res.data) {
+      if ("results" in res.data) {
+        // Paginated response
+        pagination.value = {
+          count: res.data.count,
+          next: res.data.next,
+          previous: res.data.previous,
+        };
+
+        const processedOrders = res.data.results.map((order) => ({
+          ...order,
+          id: Array.isArray(order.id) ? order.id[0] : order.id,
+        }));
+
+        if (page === 1) {
+          orders.value = processedOrders;
+          allOrders.value = processedOrders;
+        } else {
+          orders.value = [...orders.value, ...processedOrders];
+          allOrders.value = [...allOrders.value, ...processedOrders];
+        }
+
+        hasMoreOrders.value = !!res.data.next;
+        console.log(`Loaded ${res.data.results.length} orders (page ${page})`);
+      } else if (Array.isArray(res.data)) {
+        // Non-paginated response - handle fallback
+        const processedOrders = res.data.map((order) => ({
+          ...order,
+          id: Array.isArray(order.id) ? order.id[0] : order.id,
+        }));
+        orders.value = processedOrders;
+        allOrders.value = processedOrders;
+        hasMoreOrders.value = false;
+        console.log(`Loaded ${res.data.length} orders (non-paginated)`);
+      } else {
+        console.warn("Unexpected data format received");
+        orders.value = [];
+        allOrders.value = [];
+        hasMoreOrders.value = false;
+      }
+    } else {
+      console.warn("No order data received");
+      orders.value = [];
+      allOrders.value = [];
+      hasMoreOrders.value = false;
+    }
   } catch (error) {
     console.error("Error fetching orders:", error);
     showToast("error", "Failed to load orders", "Please try again later");
-  } finally {
+    orders.value = [];
+    allOrders.value = [];
+    hasMoreOrders.value = false;  } finally {
     isOrdersLoading.value = false;
   }
 }
+
+// Load order statistics
+const loadOrderStats = async () => {
+  try {
+    const res = await get("/seller-orders/stats/");
+    if (res && res.data) {
+      orderStats.value = res.data;
+    }
+  } catch (error) {
+    console.error("Error loading order statistics:", error);
+  }
+};
+
+// Refresh statistics only (for when orders are updated)
+const refreshOrderStats = async () => {
+  try {
+    const res = await get("/seller-orders/stats/", {}, {
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+    });
+
+    if (res && res.data) {
+      orderStats.value = res.data;
+    }
+  } catch (error) {
+    console.error("Error refreshing order statistics:", error);
+  }
+};
+
+// Load more orders
+const loadMoreOrders = () => {
+  if (hasMoreOrders.value) {
+    currentPage.value++;
+    getOrders(currentPage.value);
+  }
+};
 
 async function getProducts() {
   try {
@@ -1291,7 +1411,7 @@ function formatAmount(amount) {
   return parseFloat(amount).toFixed(2);
 }
 
-// Computed properties
+// Computed properties - keep for backwards compatibility but not used for stats
 const pendingOrders = computed(() => {
   return orders.value.filter((order) => order.order_status === "pending");
 });
@@ -1304,77 +1424,21 @@ const deliveredOrders = computed(() => {
   return orders.value.filter((order) => order.order_status === "delivered");
 });
 
-const totalOrdersAmount = computed(() => {
-  return orders.value.reduce((total, order) => {
-    const orderTotal = parseFloat(order.total || 0);
-    return total + orderTotal;
-  }, 0);
-});
-
-const pendingOrdersAmount = computed(() => {
-  return pendingOrders.value.reduce((total, order) => {
-    const orderTotal = parseFloat(order.total || 0);
-    return total + orderTotal;
-  }, 0);
-});
-
-const processingOrdersAmount = computed(() => {
-  return processingOrders.value.reduce((total, order) => {
-    const orderTotal = parseFloat(order.total || 0);
-    return total + orderTotal;
-  }, 0);
-});
-
-const deliveredOrdersAmount = computed(() => {
-  return deliveredOrders.value.reduce((total, order) => {
-    const orderTotal = parseFloat(order.total || 0);
-    return total + orderTotal;
-  }, 0);
-});
-
-const filteredOrders = computed(() => {
-  let result = orders.value;
-
-  // Apply status filter
-  if (orderFilter.value !== "all") {
-    result = result.filter((order) => order.status === orderFilter.value);
-  }
-
-  // Apply search filter
-  if (orderSearch.value) {
-    const search = orderSearch.value.toLowerCase();
-    result = result.filter(
-      (order) =>
-        order.id?.toLowerCase().includes(search) ||
-        order.customer?.toLowerCase().includes(search) ||
-        order.email?.toLowerCase().includes(search)
-    );
-  }
-
-  return result;
-});
-
+// Backend pagination computed properties
 const totalPages = computed(() => {
-  return Math.ceil(filteredOrders.value.length / itemsPerPage);
-});
-
-const paginatedOrders = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filteredOrders.value.slice(start, end);
+  if (!pagination.value || !pagination.value.count) return 1;
+  return Math.ceil(pagination.value.count / pageSize);
 });
 
 const paginationStart = computed(() => {
-  return filteredOrders.value.length === 0
-    ? 0
-    : (currentPage.value - 1) * itemsPerPage + 1;
+  if (!pagination.value || pagination.value.count === 0) return 0;
+  return (currentPage.value - 1) * pageSize + 1;
 });
 
 const paginationEnd = computed(() => {
-  return Math.min(
-    currentPage.value * itemsPerPage,
-    filteredOrders.value.length
-  );
+  if (!pagination.value) return 0;
+  const end = currentPage.value * pageSize;
+  return Math.min(end, pagination.value.count);
 });
 
 const displayedPages = computed(() => {
@@ -1563,10 +1627,12 @@ const saveCustomerChanges = async () => {
         email: editingCustomer.email,
         phone: editingCustomer.phone,
         address: editingCustomer.address,
-      });
-      if (res.data) {
+      });      if (res.data) {
         selectedOrder.value = res.data;
-        await getOrders();
+        await Promise.all([
+          getOrders(currentPage.value),
+          refreshOrderStats()
+        ]);
         showToast(
           "success",
           "Customer Updated",
@@ -1864,15 +1930,16 @@ const saveOrderItemChanges = async () => {
 
     const res2 = await put(`/orders/${selectedOrder.value.id}/update/`, {
       items: editingOrderItems.value,
-    });
-
-    if (res.data) {
+    });    if (res.data) {
       showToast(
         "success",
         "Order Items Updated",
         "Order items have been successfully updated."
       );
-      await getOrders();
+      await Promise.all([
+        getOrders(currentPage.value),
+        refreshOrderStats()
+      ]);
     } else {
       showToast(
         "error",
@@ -1911,7 +1978,10 @@ const updateOrderStatus = async (id) => {
     );
   } finally {
     isProcessing.value = false;
-    await getOrders();
+    await Promise.all([
+      getOrders(currentPage.value),
+      refreshOrderStats()
+    ]);
   }
 };
 
@@ -2042,20 +2112,23 @@ const printOrder = async (order) => {
 
 // Pagination methods
 const goToPage = (page) => {
-  if (typeof page === "number") {
+  if (typeof page === "number" && page !== currentPage.value) {
     currentPage.value = page;
+    getOrders(page);
   }
 };
 
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++;
+    getOrders(currentPage.value);
   }
 };
 
 const prevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--;
+    getOrders(currentPage.value);
   }
 };
 
@@ -2117,15 +2190,43 @@ watch(selectedProductToAdd, (productId) => {
   }
 });
 
+// Watch for filter changes to trigger backend search
+watch(orderFilter, () => {
+  currentPage.value = 1;
+  getOrders(1);
+});
+
+// Watch for search changes with debounce
+watch(orderSearch, () => {
+  // Clear previous timeout
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value);
+  }
+  
+  // Set new timeout for debounced search
+  searchTimeout.value = setTimeout(() => {
+    currentPage.value = 1;
+    getOrders(1);
+  }, 500); // 500ms debounce
+});
+
 // Initialize data on mount
 let orderUpdateInterval;
 onMounted(async () => {
-  await getOrders();
-  await getProducts();
+  await Promise.all([
+    getOrders(),
+    getProducts(),
+    loadOrderStats()
+  ]);
 });
 
 onBeforeUnmount(() => {
   // Clear interval when component is destroyed
   if (orderUpdateInterval) clearInterval(orderUpdateInterval);
+  
+  // Clear search timeout
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value);
+  }
 });
 </script>

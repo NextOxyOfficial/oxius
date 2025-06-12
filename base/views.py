@@ -1954,6 +1954,11 @@ class UserProductPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+class SellerOrderPagination(PageNumberPagination):
+    page_size = 10  # Default to 10 orders per page for my-orders
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 class UserProductsListView(generics.ListAPIView):
     """View for retrieving products owned by the current authenticated user"""
     serializer_class = ProductSerializer
@@ -2494,10 +2499,11 @@ class SellerOrdersView(generics.ListAPIView):
     """View for retrieving orders containing products owned by the authenticated user"""
     serializer_class = SellerOrderSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = SellerOrderPagination
     
     def get_queryset(self):
         """
-        Return orders that contain at least one product owned by the current user
+        Return orders that contain at least one product owned by the current user with filtering
         """
         # Get IDs of products owned by the current user
         user_product_ids = Product.objects.filter(owner=self.request.user).values_list('id', flat=True)
@@ -2505,8 +2511,65 @@ class SellerOrdersView(generics.ListAPIView):
         # Find order items that contain these products
         order_ids = OrderItem.objects.filter(product_id__in=user_product_ids).values_list('order_id', flat=True).distinct()
         
-        # Return the corresponding orders
-        return Order.objects.filter(id__in=order_ids).order_by('-created_at')
+        # Get the base queryset
+        queryset = Order.objects.filter(id__in=order_ids).order_by('-created_at')
+        
+        # Filter by status
+        status_filter = self.request.query_params.get('status', None)
+        if status_filter and status_filter != 'all':
+            queryset = queryset.filter(order_status=status_filter)
+        
+        # Search functionality
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(
+                Q(order_number__icontains=search) | 
+                Q(name__icontains=search) |
+                Q(email__icontains=search)
+            )
+        return queryset
+
+class SellerOrderStatsView(APIView):
+    """View for retrieving order statistics for the current authenticated user's products"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Return order statistics for the current user's products"""
+        # Get IDs of products owned by the current user
+        user_product_ids = Product.objects.filter(owner=request.user).values_list('id', flat=True)
+        
+        # Find order items that contain these products
+        order_ids = OrderItem.objects.filter(product_id__in=user_product_ids).values_list('order_id', flat=True).distinct()
+        
+        # Get all orders containing user's products
+        all_orders = Order.objects.filter(id__in=order_ids)
+        
+        # Calculate statistics
+        from django.db.models import Sum, Count, DecimalField
+        
+        stats = {
+            'total': all_orders.count(),
+            'pending': all_orders.filter(order_status='pending').count(),
+            'processing': all_orders.filter(order_status='processing').count(),
+            'delivered': all_orders.filter(order_status='delivered').count(),
+        }
+          # Calculate amounts
+        amounts = all_orders.aggregate(
+            total_amount=Sum('total'),
+            pending_amount=Sum('total', filter=Q(order_status='pending')),
+            processing_amount=Sum('total', filter=Q(order_status='processing')),
+            delivered_amount=Sum('total', filter=Q(order_status='delivered')),
+        )
+        
+        # Handle None values from aggregation
+        stats.update({
+            'total_amount': float(amounts['total_amount'] or 0),
+            'pending_amount': float(amounts['pending_amount'] or 0),
+            'processing_amount': float(amounts['processing_amount'] or 0),
+            'delivered_amount': float(amounts['delivered_amount'] or 0),
+        })
+        
+        return Response(stats)
     
 
 class OrderWithItemsUpdate(generics.UpdateAPIView):
