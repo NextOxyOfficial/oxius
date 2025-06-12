@@ -371,10 +371,9 @@
               </div>
             </div>
 
-            <div class="p-3 flex-grow flex flex-col">
-              <!-- Title with truncation -->
+            <div class="p-3 flex-grow flex flex-col">              <!-- Title with truncation -->
               <h4 class="font-medium text-gray-800 line-clamp-1 text-sm">
-                {{ post.title }}
+                {{ capitalizeTitle(post.title) }}
               </h4>
               <!-- Address with location icon -->
               <div class="flex items-start mt-1 mb-2 text-xs text-gray-600">
@@ -880,6 +879,17 @@ const formatDate = (dateString) => {
   if (diffDays < 7) return `${diffDays}d ago`;
 
   return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+};
+
+// Helper function for capitalizing the first letter of each word in titles
+const capitalizeTitle = (title) => {
+  if (!title) return "";
+  
+  return title
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 </script>
 
