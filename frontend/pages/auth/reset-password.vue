@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+  <div class=" bg-gradient-to-br from-gray-50 to-gray-100">
     <UContainer class="py-8 md:py-12">
-      <div class="flex items-center justify-center min-h-[calc(100vh-200px)]">
+      <div class="flex items-center justify-center">
         <div class="max-w-md w-full">
-          <div class="bg-white rounded-2xl shadow-xl p-8">
+          <div class="bg-white rounded-2xl shadow-sm p-8">
             <!-- Header -->
             <div class="text-center mb-8">
               <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
@@ -411,8 +411,7 @@ const handleSendOtp = async () => {
   }
   
   loading.value = true;
-  
-  try {
+    try {
     const payload = {
       method: form.value.method,
       [form.value.method]: form.value.value,
@@ -420,14 +419,19 @@ const handleSendOtp = async () => {
     
     const response = await post('/send-otp/', payload);
     
+    // Check if there's an error in the response
     if (response.error) {
-      // Handle different types of errors
-      if (response.error.message) {
-        error.value = response.error.message;
+      console.error('Send OTP API error:', response.error);
+      
+      // Handle different error response structures
+      if (response.error.data?.error) {
+        error.value = response.error.data.error;
+      } else if (response.error.data?.message) {
+        error.value = response.error.data.message;
+      } else if (response.error.statusMessage) {
+        error.value = response.error.statusMessage;
       } else if (typeof response.error === 'string') {
         error.value = response.error;
-      } else if (response.error.error) {
-        error.value = response.error.error;
       } else {
         error.value = 'Failed to send verification code. Please try again.';
       }
@@ -444,16 +448,7 @@ const handleSendOtp = async () => {
     }
   } catch (err) {
     console.error('Send OTP error:', err);
-    // Handle different error structures
-    if (err.response?.data?.error) {
-      error.value = err.response.data.error;
-    } else if (err.response?.data?.message) {
-      error.value = err.response.data.message;
-    } else if (err.message) {
-      error.value = err.message;
-    } else {
-      error.value = 'Failed to send verification code. Please check your connection and try again.';
-    }
+    error.value = 'Failed to send verification code. Please check your connection and try again.';
   } finally {
     loading.value = false;
   }
@@ -468,30 +463,40 @@ const handleVerifyOtp = async () => {
   }
   
   loading.value = true;
-    try {
+  try {
     const payload = {
       method: form.value.method,
       [form.value.method]: form.value.value,
       otp: otpForm.value.otp,
     };
-    
-    const response = await post('/verify-otp/', payload);
+      const response = await post('/verify-otp/', payload);
     
     if (response.error) {
-      // Handle different types of errors
-      if (response.error.message) {
-        error.value = response.error.message;
+      console.error('Verify OTP API error:', response.error);
+      
+      // Handle different error response structures
+      if (response.error.data?.error) {
+        error.value = response.error.data.error;
+        
+        // Check for reset required or attempt limits
+        if (response.error.data.reset_required) {
+          setTimeout(() => {
+            step.value = 1;
+            otpForm.value.otp = '';
+          }, 3000);
+        }
+      } else if (response.error.data?.message) {
+        error.value = response.error.data.message;
+      } else if (response.error.statusMessage) {
+        error.value = response.error.statusMessage;
       } else if (typeof response.error === 'string') {
         error.value = response.error;
-      } else if (response.error.error) {
-        error.value = response.error.error;
       } else {
         error.value = 'Invalid verification code. Please try again.';
       }
       return;
     }
-    
-    if (response.data?.token) {
+      if (response.data?.token) {
       resetToken.value = response.data.token;
       success.value = response.data.message;
       step.value = 3;
@@ -500,16 +505,7 @@ const handleVerifyOtp = async () => {
     }
   } catch (err) {
     console.error('Verify OTP error:', err);
-    // Handle different error structures
-    if (err.response?.data?.error) {
-      error.value = err.response.data.error;
-    } else if (err.response?.data?.message) {
-      error.value = err.response.data.message;
-    } else if (err.message) {
-      error.value = err.message;
-    } else {
-      error.value = 'Invalid verification code. Please check your connection and try again.';
-    }
+    error.value = 'Invalid verification code. Please check your connection and try again.';
   } finally {
     loading.value = false;
   }
@@ -546,47 +542,63 @@ const handleResetPassword = async () => {
     const response = await post('/reset-password/', payload);
     
     console.log('Reset password response:', response);
-    
-    if (response.error) {
-      // Handle different types of errors
-      if (response.error.message) {
-        error.value = response.error.message;
+      if (response.error) {
+      console.error('Reset password API error:', response.error);
+      
+      // Handle different error response structures
+      if (response.error.data?.error) {
+        error.value = response.error.data.error;
+      } else if (response.error.data?.message) {
+        error.value = response.error.data.message;
+      } else if (response.error.statusMessage) {
+        error.value = response.error.statusMessage;
       } else if (typeof response.error === 'string') {
         error.value = response.error;
-      } else if (response.error.error) {
-        error.value = response.error.error;
       } else {
         error.value = 'Failed to reset password. Please try again.';
       }
       return;
     }
-    
-    if (response.data?.message) {
-      toast.add({
-        title: 'Success!',
-        description: response.data.message,
-        color: 'green',
-      });
-      
-      // Redirect to login after a short delay
-      setTimeout(() => {
-        navigateTo('/auth/login');
-      }, 2000);
+      if (response.data?.message) {
+      // Check if auto_login is enabled and tokens are provided
+      if (response.data.auto_login && response.data.tokens) {
+        // Get auth composable to handle login
+        const { setTokens, setUser } = useAuth();
+        
+        // Set the tokens and user data
+        await setTokens(response.data.tokens.access, response.data.tokens.refresh);
+        if (response.data.user) {
+          setUser(response.data.user);
+        }
+        
+        toast.add({
+          title: 'Success!',
+          description: response.data.message,
+          color: 'green',
+        });
+        
+        // Redirect to dashboard after successful auto-login
+        setTimeout(() => {
+          navigateTo('/#home');
+        }, 1500);
+      } else {
+        // Traditional success without auto-login
+        toast.add({
+          title: 'Success!',
+          description: response.data.message,
+          color: 'green',
+        });
+        
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          navigateTo('/auth/login');
+        }, 2000);
+      }
     } else {
       error.value = 'Failed to reset password. Please try again.';
-    }
-  } catch (err) {
+    }  } catch (err) {
     console.error('Reset password error:', err);
-    // Handle different error structures
-    if (err.response?.data?.error) {
-      error.value = err.response.data.error;
-    } else if (err.response?.data?.message) {
-      error.value = err.response.data.message;
-    } else if (err.message) {
-      error.value = err.message;
-    } else {
-      error.value = 'Failed to reset password. Please check your connection and try again.';
-    }
+    error.value = 'Failed to reset password. Please check your connection and try again.';
   } finally {
     loading.value = false;
   }

@@ -1221,13 +1221,19 @@ def sendOTP(request):
     
     else:
         return Response({'error': 'Invalid method. Use phone or email'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Generate secure 6-digit OTP
+      # Generate secure 6-digit OTP
     otp = str(random.randint(100000, 999999))
     
-    # Save OTP to user with timestamp for expiration (optional enhancement)
+    # Save OTP to user and clear any existing attempt counters
     user.otp = otp
     user.save()
+    
+    # Clear any existing OTP attempt counters for this contact
+    from django.core.cache import cache
+    if method == 'phone':
+        cache.delete(f"otp_attempts_{phone}")
+    elif method == 'email':
+        cache.delete(f"otp_attempts_{email}")
     
     if method == 'phone':
         message = f'Your AdsyClub password reset OTP is: {otp}. Valid for 10 minutes. Do not share this code.'
@@ -1319,8 +1325,7 @@ def verifyOTP(request):
         if method == 'phone':
             if not phone:
                 return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Normalize phone number (same as in sendOTP)
+              # Normalize phone number (same as in sendOTP)
             phone = phone.strip()
             if phone.startswith('+88'):
                 phone = phone[3:]
@@ -1328,17 +1333,26 @@ def verifyOTP(request):
                 phone = phone[2:]
                 
             user = User.objects.get(phone=phone)
+            contact_key = f"otp_attempts_{phone}"
         elif method == 'email':
             if not email:
                 return Response({'error': 'Email address is required'}, status=status.HTTP_400_BAD_REQUEST)
             user = User.objects.get(email=email)
+            contact_key = f"otp_attempts_{email}"
         else:
             return Response({'error': 'Invalid method'}, status=status.HTTP_400_BAD_REQUEST)
     except User.DoesNotExist:
         return Response({'error': 'User not found. Please check your details and try again.'}, status=status.HTTP_404_NOT_FOUND)
     
+    # Check OTP attempts using Django cache (temporary storage)
+    from django.core.cache import cache
+    attempts = cache.get(contact_key, 0)
+    
     # Check if OTP matches
     if str(user.otp) == otp_str:
+        # Clear attempts on successful verification
+        cache.delete(contact_key)
+        
         # Generate reset token
         from rest_framework.authtoken.models import Token
         # Delete any existing tokens for this user
@@ -1348,9 +1362,29 @@ def verifyOTP(request):
         return Response({
             'message': 'OTP verified successfully', 
             'token': token.key,
-            'user_id': str(user.id)        }, status=status.HTTP_200_OK)
+            'user_id': str(user.id)
+        }, status=status.HTTP_200_OK)
     else:
-        return Response({'error': 'Invalid OTP code. Please check the code and try again.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Increment attempt counter
+        attempts += 1
+        cache.set(contact_key, attempts, timeout=600)  # Store for 10 minutes
+        
+        if attempts >= 5:
+            # Reset OTP and require new code
+            user.otp = "000000"
+            user.save()
+            cache.delete(contact_key)
+            
+            return Response({
+                'error': 'Too many invalid attempts. Your verification code has been reset. Please request a new code to continue.',
+                'reset_required': True
+            }, status=status.HTTP_429_TOO_MANY_REQUESTS)
+        else:
+            remaining_attempts = 5 - attempts
+            return Response({
+                'error': f'Invalid verification code. You have {remaining_attempts} attempt(s) remaining.',
+                'attempts_remaining': remaining_attempts
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -1405,7 +1439,6 @@ def resetPassword(request):
     
     if not re.search(r'[0-9]', new_password):
         return Response({'error': 'Password must contain at least one number'}, status=status.HTTP_400_BAD_REQUEST)
-    
     try:
         from rest_framework.authtoken.models import Token
         token = Token.objects.get(key=token_key)
@@ -1424,8 +1457,23 @@ def resetPassword(request):
         # Delete the token to prevent reuse
         token.delete()
         
+        # Generate new JWT tokens for automatic login
+        from rest_framework_simplejwt.tokens import RefreshToken
+        from .serializers import UserSerializerGet
+        
+        refresh = RefreshToken.for_user(user)
+        user_data = UserSerializerGet(user).data
+        
         print(f"Password reset successful for user: {user.email}")
-        return Response({'message': 'Password reset successfully. You can now log in with your new password.'}, status=status.HTTP_200_OK)
+        return Response({
+            'message': 'Password reset successfully. You are now logged in.',
+            'auto_login': True,
+            'tokens': {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            },
+            'user': user_data
+        }, status=status.HTTP_200_OK)
     except Exception as e:
         print(f"Error during password reset: {str(e)}")
         return Response({'error': 'An error occurred while resetting password. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

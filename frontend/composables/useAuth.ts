@@ -437,7 +437,24 @@ export function useAuth() {
       await clearAuthData();
       await navigateTo("/");
     }
+  };  // Set tokens manually (for password reset auto-login)
+  const setTokens = async (accessToken: string, refreshTokenValue: string) => {
+    jwt.value = accessToken;
+    refreshToken.value = refreshTokenValue;
+    
+    // Persist the tokens
+    await persistAuthData({
+      access: accessToken,
+      refresh: refreshTokenValue,
+      user: user.value
+    });
   };
+
+  // Set user data manually
+  const setUser = (userData: any) => {
+    user.value = userData;
+  };
+
   return {
     user,
     isAuthenticated,
@@ -448,5 +465,7 @@ export function useAuth() {
     refreshTokens,
     getValidToken,
     clearAuthData,
+    setTokens,
+    setUser,
   };
 }
