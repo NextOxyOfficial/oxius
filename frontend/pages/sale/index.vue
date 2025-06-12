@@ -155,7 +155,7 @@
             </UButtonGroup>
           </div>
         </div>
-        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4">
+        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-4 ">
           <UInput
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
@@ -463,7 +463,8 @@
                         : `All Over Bangladesh`
                     }}
                   </div>
-                </div>              </NuxtLink>
+                </div>              
+              </NuxtLink>
             </div>
             
             <!-- Load More Button -->
@@ -506,12 +507,11 @@
                 <UIcon name="i-heroicons-clock" class="mr-2 h-5 w-5" />
                 Recent Listings
               </h2>
-            </div>
-            <!-- Recent Listings Horizontal Scroll -->
-            <div class="overflow-x-auto pb-4 -mx-1 px-1">
-              <div class="flex gap-4 flex-wrap">
+            </div>            <!-- Recent Listings Horizontal Scroll -->
+            <div class="overflow-x-auto scrollbar-hide pb-4 -mx-1 px-1">
+              <div class="flex gap-4 min-w-max">
                 <NuxtLink
-                  v-for="(listing, i) in recentListings"
+                  v-for="(listing, i) in recentListings.slice(0, 5)"
                   :key="`listing-${i}+${i}`"
                   :to="`/sale/${listing.slug}`"
                   class="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-amber-100 overflow-hidden hover:shadow-sm transition-shadow group"
@@ -1393,6 +1393,7 @@ async function loadRecentListings() {
   try {
     const params = new URLSearchParams();
     params.append("page", "1");
+    params.append("page_size", "5"); // Limit to 5 items for single row display
     params.append("sort", "-created_at"); // Always sort by newest
 
     const response = await get(API_ENDPOINTS.POSTS);
@@ -1523,5 +1524,15 @@ watch(
 
 .animate-bounce-slow {
   animation: bounce-slow 3s infinite;
+}
+
+/* Hide scrollbar for recent listings */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
 }
 </style>
