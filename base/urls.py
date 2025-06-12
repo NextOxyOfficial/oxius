@@ -91,10 +91,10 @@ urlpatterns = [
   path('api/auth/reset-password/', reset_password_request),
   path('api/auth/verify-reset-otp/', verify_reset_otp),
   path('api/auth/set-new-password/', set_new_password),
-  #product 
-      # Product URLs
+  #product      # Product URLs
   path('all-products/', AllProductsListView.as_view(), name='all-products'),
   path('my-products/', UserProductsListView.as_view(), name='user-products'),
+  path('my-products/stats/', UserProductStatsView.as_view(), name='user-product-stats'),
   path('store/<str:store_username>/', StoreDetailsView.as_view(), name='store-details'),
   path('store/<str:store_username>/products/', StoreProductsListView.as_view(), name='store-products'),
   path('products/', ProductListCreateView.as_view(), name='product-list-create'),

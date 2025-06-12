@@ -8,7 +8,7 @@
         <div class="flex items-center justify-between">
           <div>            <p class="text-sm font-medium text-gray-600">Total Products</p>
             <p class="text-xl font-semibold text-gray-800">
-              {{ pagination?.count || allProducts.length }}
+              {{ productStats.total }}
             </p>
           </div>
           <div
@@ -692,58 +692,44 @@ const selectedProduct = ref(null);
 // Component state
 const products = ref([]);
 const allProducts = ref([]); // Store all products for filtering
+const productStats = ref({
+  total: 0,
+  active: 0,
+  inactive: 0,
+  out_of_stock: 0,
+  total_value: 0,
+  active_value: 0,
+  inactive_value: 0,
+  out_of_stock_value: 0
+});
 
-// Product summary computed properties
+// Product summary computed properties (now using API statistics)
 const activeProducts = computed(() => {
-  return allProducts.value.filter(
-    (product) => product.is_active && product.quantity > 0
-  );
+  return { length: productStats.value.active };
 });
 
 const inactiveProducts = computed(() => {
-  return allProducts.value.filter((product) => !product.is_active);
+  return { length: productStats.value.inactive };
 });
 
 const outOfStockProducts = computed(() => {
-  return allProducts.value.filter(
-    (product) => product.is_active && product.quantity <= 0
-  );
+  return { length: productStats.value.out_of_stock };
 });
 
 const totalProductsValue = computed(() => {
-  return allProducts.value.reduce(
-    (total, product) =>
-      total +
-      (parseFloat(product.sale_price) || 0) * (parseInt(product.quantity) || 0),
-    0
-  );
+  return productStats.value.total_value || 0;
 });
 
 const activeProductsValue = computed(() => {
-  return activeProducts.value.reduce(
-    (total, product) =>
-      total +
-      (parseFloat(product.sale_price) || 0) * (parseInt(product.quantity) || 0),
-    0
-  );
+  return productStats.value.active_value || 0;
 });
 
 const inactiveProductsValue = computed(() => {
-  return inactiveProducts.value.reduce(
-    (total, product) =>
-      total +
-      (parseFloat(product.sale_price) || 0) * (parseInt(product.quantity) || 0),
-    0
-  );
+  return productStats.value.inactive_value || 0;
 });
 
 const outOfStockProductsValue = computed(() => {
-  return outOfStockProducts.value.reduce(
-    (total, product) =>
-      total +
-      (parseFloat(product.sale_price) || 0) * (parseInt(product.quantity) || 0),
-    0
-  );
+  return productStats.value.out_of_stock_value || 0;
 });
 
 // Product filtering and display
@@ -929,18 +915,14 @@ async function getProducts(page = 1) {
         "Cache-Control": "no-cache",
         Pragma: "no-cache",
       },
-    });
-
-    if (res && res.data) {
+    });    if (res && res.data) {
       if ("results" in res.data) {
         // Paginated response
         pagination.value = {
           count: res.data.count,
           next: res.data.next,
           previous: res.data.previous,
-        };
-
-        if (page === 1) {
+        };        if (page === 1) {
           products.value = res.data.results;
           allProducts.value = res.data.results;
         } else {
@@ -992,6 +974,36 @@ const loadMoreProducts = () => {
   }
 };
 
+// Refresh statistics only (for when products are updated)
+const refreshProductStats = async () => {
+  try {
+    const res = await get("/my-products/stats/", {}, {
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+    });
+
+    if (res && res.data) {
+      productStats.value = res.data;
+    }
+  } catch (error) {
+    console.error("Error refreshing product statistics:", error);
+  }
+};
+
+// Load product statistics
+const loadProductStats = async () => {
+  try {
+    const res = await get("/my-products/stats/");
+    if (res && res.data) {
+      productStats.value = res.data;
+    }
+  } catch (error) {
+    console.error("Error loading product statistics:", error);
+  }
+};
+
 const toggleProductStatus = async (product) => {
   if (isProcessing.value) return;
 
@@ -1011,15 +1023,16 @@ const toggleProductStatus = async (product) => {
       };
 
       updateProduct(products.value);
-      updateProduct(allProducts.value);
-
-      toast.add({
+      updateProduct(allProducts.value);      toast.add({
         title: "Status Changed",
         description: `${product.name} is now ${
           res.data.is_active ? "visible" : "hidden"
         } to customers.`,
         color: "green",
       });
+
+      // Refresh statistics after status change
+      await refreshProductStats();
     }
   } catch (error) {
     console.error("Error toggling product status:", error);
@@ -1053,13 +1066,14 @@ const deleteProduct = async () => {
       );
       allProducts.value = allProducts.value.filter(
         (p) => p.id !== selectedProduct.value.id
-      );
-
-      toast.add({
+      );      toast.add({
         title: "Product Deleted",
         description: `${selectedProduct.value.name} has been successfully deleted.`,
         color: "green",
       });
+
+      // Refresh statistics after deletion
+      await refreshProductStats();
     }
 
     // Close the modal
@@ -1110,7 +1124,8 @@ watch(productSearch, (newSearch) => {
 onMounted(async () => {
   await Promise.all([
     getProducts(1),
-    getStoreReviewsCount()
+    getStoreReviewsCount(),
+    loadProductStats()
   ]);
 });
 
