@@ -189,9 +189,7 @@
                   </button>
                 </div>
               </div>
-            </div>
-
-            <!-- Filter Bar -->
+            </div>            <!-- Filter Bar -->
             <div
               class="flex flex-wrap items-center gap-2 mb-4 pb-4 border-b border-gray-100"
             >
@@ -200,6 +198,7 @@
               <select
                 v-model="categoryFilter"
                 class="text-sm border border-gray-200 rounded-md px-2 py-1 text-gray-600 bg-white"
+                @change="applyFilters"
               >
                 <option value="">All Categories</option>
                 <option
@@ -214,6 +213,7 @@
               <select
                 v-model="conditionFilter"
                 class="text-sm border border-gray-200 rounded-md px-2 py-1 text-gray-600 bg-white"
+                @change="applyFilters"
               >
                 <option value="">All Conditions</option>
                 <option
@@ -228,10 +228,28 @@
               <button
                 class="ml-1 text-sm text-emerald-600 hover:text-emerald-700"
                 @click="clearFilters"
+                v-if="categoryFilter || conditionFilter"
               >
                 Clear All Filters
               </button>
-            </div>            <!-- Grid View -->
+            </div>
+
+            <!-- Active Filters Display -->
+            <div v-if="categoryFilter || conditionFilter" class="flex flex-wrap items-center gap-2 mb-4">
+              <span class="text-xs text-gray-500">Active filters:</span>
+              <span v-if="categoryFilter" class="inline-flex items-center px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded-full">
+                Category: {{ categoryFilter }}
+                <button @click="clearCategoryFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
+                  <X class="h-3 w-3" />
+                </button>
+              </span>
+              <span v-if="conditionFilter" class="inline-flex items-center px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded-full">
+                Condition: {{ getConditionName(conditionFilter) }}
+                <button @click="clearConditionFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
+                  <X class="h-3 w-3" />
+                </button>
+              </span>
+            </div><!-- Grid View -->
             <div v-if="viewMode === 'grid'" class="grid grid-cols-2 gap-2">
               <div
                 v-for="product in products"
@@ -694,9 +712,14 @@ async function getProducts(page = 1) {
 
     // Add filters if they exist
     if (categoryFilter.value) {
-      queryParams.append('category', categoryFilter.value);
+      // Find category by name and use its ID
+      const category = categories.value.find(cat => cat.name === categoryFilter.value);
+      if (category) {
+        queryParams.append('category', category.id.toString());
+      }
     }
     if (conditionFilter.value) {
+      // Use the condition value directly 
       queryParams.append('condition', conditionFilter.value);
     }
 
@@ -711,7 +734,8 @@ async function getProducts(page = 1) {
 
     const response = await get(`/sale/posts/?${queryParams.toString()}`);
     
-    console.log("prod", response.data);
+    console.log("API Request URL:", `/sale/posts/?${queryParams.toString()}`);
+    console.log("API Response:", response.data);
     
     if (response.data) {
       if ("results" in response.data) {
@@ -855,10 +879,32 @@ const clearFilters = () => {
   getProducts(1);
 };
 
-// Watch filters and sort option to reload data
-watch([categoryFilter, conditionFilter, sortOption], () => {
+// Individual filter clear functions
+const clearCategoryFilter = () => {
+  categoryFilter.value = "";
+  applyFilters();
+};
+
+const clearConditionFilter = () => {
+  conditionFilter.value = "";
+  applyFilters();
+};
+
+// Apply filters function
+const applyFilters = () => {
   currentPage.value = 1;
   getProducts(1);
+};
+
+// Get condition name by value
+const getConditionName = (value) => {
+  const condition = conditions.value.find(c => c.value === value);
+  return condition ? condition.name : value;
+};
+
+// Watch filters and sort option to reload data
+watch([categoryFilter, conditionFilter, sortOption], () => {
+  applyFilters();
 });
 
 // Report dialog methods
