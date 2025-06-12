@@ -114,11 +114,13 @@
               <UIcon
                 name="i-heroicons-shopping-bag"
                 class="h-5 w-5 text-white mr-2 relative z-10"
-              />
-              <h3
+              />              <h3
                 class="text-base font-semibold text-white relative z-10 truncate"
               >
                 My Store Details
+                <span v-if="isEditing" class="ml-2 text-xs bg-yellow-500/90 text-yellow-900 px-2 py-0.5 rounded-full font-medium">
+                  Editing
+                </span>
               </h3>
 
               <!-- Arrow Icon -->
@@ -141,18 +143,20 @@
                 Edit
               </UButton>
                 <!-- Save and Cancel Buttons -->
-              <div v-else class="ml-auto flex items-center space-x-2 relative z-10">
-                <UButton
+              <div v-else class="ml-auto flex items-center space-x-2 relative z-10">                <UButton
                   @click.stop="updateStoreInfo()"
                   color="emerald"
                   variant="solid"
                   size="xs"
                   :loading="isSavingStore"
                   :disabled="isSavingStore"
-                  class="bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
+                  class="bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm transition-all duration-200"
                 >
                   <template #leading v-if="!isSavingStore">
                     <UIcon name="i-heroicons-check" class="w-3 h-3" />
+                  </template>
+                  <template #trailing v-if="isSavingStore">
+                    <UIcon name="i-heroicons-arrow-path" class="w-3 h-3 animate-spin" />
                   </template>
                   {{ isSavingStore ? 'Saving...' : 'Save' }}
                 </UButton>
@@ -196,16 +200,16 @@
                         />
                       </div>
                     </div>
-                    <div class="ml-3 overflow-hidden flex-1">
-                      <p class="text-xs font-medium text-gray-600 mb-1">
-                        Shop Name
+                    <div class="ml-3 overflow-hidden flex-1">                      <p class="text-xs font-medium text-gray-600 mb-1">
+                        Shop Name <span class="text-red-500">*</span>
                       </p>                      <UInput
                         v-if="isEditing"
                         v-model="editedUser.store_name"
-                        placeholder="Enter shop name"
+                        placeholder="Enter shop name (required)"
                         size="sm"
                         color="emerald"
                         :disabled="isSavingStore"
+                        :required="true"
                         class="text-sm font-semibold"
                       />
                       <p
@@ -308,7 +312,8 @@
                         {{ storeDetails?.store_address || "Not set" }}
                       </p>
                     </div>
-                  </div>                  <!-- Shop Description -->
+                  </div>                  
+                  <!-- Shop Description -->
                   <div class="flex items-start group">
                     <div class="flex-shrink-0 mt-1">
                       <div
@@ -319,23 +324,27 @@
                           class="h-4 w-4 text-emerald-600"
                         />
                       </div>
-                    </div>
+                    </div>                    
                     <div class="ml-3 overflow-hidden flex-1">
                       <p class="text-xs font-medium text-gray-600 mb-1">
                         Description
-                      </p>
-                      <UTextarea
-                        v-if="isEditing"
-                        v-model="editedUser.store_description"
-                        placeholder="Enter shop description"
-                        :rows="2"
-                        size="sm"
-                        color="emerald"
-                        :disabled="isSavingStore"
-                        :loading="isSavingStore"
-                        resize="none"
-                        class="text-sm"
-                      />
+                      </p>                      
+                      <div v-if="isEditing">
+                        <UTextarea
+                          v-model="editedUser.store_description"
+                          placeholder="Enter a brief description of your shop..."
+                          :rows="3"
+                          size="sm"
+                          color="emerald"
+                          :disabled="isSavingStore"
+                          resize="none"
+                          class="text-sm"
+                          maxlength="500"
+                        />
+                        <p class="text-xs text-gray-500 mt-1 text-right">
+                          {{ (editedUser.store_description || '').length }}/500 characters
+                        </p>
+                      </div>
                       <p v-else class="text-sm text-gray-800 line-clamp-2">
                         {{
                           storeDetails?.store_description ||
@@ -928,14 +937,6 @@
             class="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-white/10 blur-xl"
           ></div>
 
-          <div class="flex items-center justify-center mb-2 relative z-10">
-            <div class="bg-white/20 p-3 rounded-full backdrop-blur-sm">
-              <UIcon
-                name="i-heroicons-shield-exclamation"
-                class="h-8 w-8 text-white"
-              />
-            </div>
-          </div>
           <h3
             class="text-xl font-semibold text-center text-white mb-1 relative z-10"
           >
@@ -1028,14 +1029,6 @@
             class="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-white/10 blur-xl"
           ></div>
 
-          <div class="flex items-center justify-center mb-2 relative z-10">
-            <div class="bg-white/20 p-3 rounded-full backdrop-blur-sm">
-              <UIcon
-                name="i-heroicons-shopping-bag-plus"
-                class="h-8 w-8 text-white"
-              />
-            </div>
-          </div>
           <h3
             class="text-xl font-semibold text-center text-white mb-1 relative z-10"
           >
@@ -1326,13 +1319,12 @@ const isEditing = ref(false);
 const isSavingStore = ref(false);
 
 // Watch for user data changes to ensure product limit is updated
-watch(user, (newUser) => {
-  if (newUser && newUser.user) {
+watch(user, (newUser) => {  if (newUser && newUser.user) {
     console.log('User data updated:', newUser.user);
     console.log('Product limit from updated user:', newUser.user.product_limit);
     
-    // Reload products when user data becomes available
-    if (newUser.user.product_limit && products.value.length === 0) {
+    // Reload products when user data becomes available (only if not already loaded)
+    if (newUser.user.product_limit && products.value.length === 0 && !mounted.value) {
       console.log('User data now available, reloading products...');
       getProducts();
     }
@@ -1347,6 +1339,8 @@ watch(productLimit, (newLimit) => {
 // Watch for products changes
 watch(products, (newProducts) => {
   console.log('Products updated, count:', newProducts?.length || 0);
+  // Reset toast flag when products change so we can show limit warnings again
+  hasShownProductLimitToast.value = false;
 }, { deep: true });
 
 // Watch for active tab changes to handle product limit
@@ -1360,6 +1354,7 @@ watch(activeTab, (newTab) => {
 
 // Component state
 const mounted = ref(false);
+const hasShownProductLimitToast = ref(false); // Flag to prevent duplicate toasts
 
 // Sparkles configuration
 const sparkles = [
@@ -1496,15 +1491,15 @@ async function getProducts() {
         console.warn("Unexpected products data structure:", res.data);
         products.value = [];
       }
-      
-      // Check product limit and show notification if close to limit
-      if (products.value.length >= productLimit.value) {
+        // Check product limit and show notification if close to limit
+      if (products.value.length >= productLimit.value && !hasShownProductLimitToast.value) {
         showToast(
           "info",
           "Product Limit Reached",
           `You've reached the maximum limit of ${productLimit.value} products for your shop. Delete an existing product or buy additional product slots.`
         );
-      } else if (products.value.length >= productLimit.value - 2) {
+        hasShownProductLimitToast.value = true;
+      } else if (products.value.length >= productLimit.value - 2 && !hasShownProductLimitToast.value) {
         // Show warning when approaching limit (within 2 products)
         showToast(
           "warning",
@@ -1513,6 +1508,7 @@ async function getProducts() {
             productLimit.value - products.value.length
           } more product(s) before reaching your shop's limit. Consider buying additional slots.`
         );
+        hasShownProductLimitToast.value = true;
       }
     } else {
       console.warn("No product data received");
@@ -1640,12 +1636,23 @@ async function getStoreDetails() {
 async function updateStoreInfo() {
   if (isSavingStore.value) return; // Prevent double-clicking
   
+  // Basic validation
+  if (!editedUser.store_name?.trim()) {
+    showToast("error", "Validation Error", "Store name is required.");
+    return;
+  }
+  
+  if (editedUser.store_name.trim().length < 2) {
+    showToast("error", "Validation Error", "Store name must be at least 2 characters long.");
+    return;
+  }
+  
   isSavingStore.value = true;
   try {
     const { data } = await patch(`/store/${user.value.user.store_username}/`, {
-      store_name: editedUser.store_name,
-      store_address: editedUser.store_address,
-      store_description: editedUser.store_description,
+      store_name: editedUser.store_name.trim(),
+      store_address: editedUser.store_address?.trim() || '',
+      store_description: editedUser.store_description?.trim() || '',
     });
     
     if (data) {
@@ -1660,10 +1667,13 @@ async function updateStoreInfo() {
     }
   } catch (error) {
     console.error("Error updating store:", error);
+    const errorMessage = error.response?.data?.store_name?.[0] || 
+                        error.response?.data?.message || 
+                        "Failed to update store information. Please check your connection and try again.";
     showToast(
       "error",
       "❌ Update Failed", 
-      error.response?.data?.message || "Failed to update store information. Please check your connection and try again.",
+      errorMessage,
       { timeout: 6000 }
     );
   } finally {
@@ -1673,6 +1683,23 @@ async function updateStoreInfo() {
 
 // Cancel edit with optional confirmation for unsaved changes
 function cancelEdit() {
+  // Check if there are unsaved changes
+  const hasChanges = storeDetails.value && (
+    editedUser.store_name !== storeDetails.value.store_name ||
+    editedUser.store_address !== storeDetails.value.store_address ||
+    editedUser.store_description !== storeDetails.value.store_description
+  );
+  
+  if (hasChanges && isSavingStore.value === false) {
+    // Show confirmation toast
+    showToast(
+      "info",
+      "Changes Discarded",
+      "Your unsaved changes have been discarded.",
+      { timeout: 3000 }
+    );
+  }
+  
   // Reset to original values
   if (storeDetails.value) {
     editedUser.store_name = storeDetails.value.store_name || '';
