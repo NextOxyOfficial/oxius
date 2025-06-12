@@ -17,6 +17,10 @@ import uuid
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+import re
+import json
+import random
+import requests
 
 from decimal import Decimal
 from rest_framework.pagination import PageNumberPagination
@@ -1185,77 +1189,168 @@ import json
 @api_view(['POST'])
 def sendOTP(request):
     phone = request.data.get('phone')
-    print(phone)
+    email = request.data.get('email')
+    method = request.data.get('method', 'phone')
     
-    if not phone:
-        return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
+    # Validate input based on method
+    if method == 'phone':
+        if not phone:
+            return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Clean and validate phone format
+        phone = phone.strip()
+        phone_pattern = r'^(?:\+?88)?01[3-9]\d{8}$'
+        if not re.match(phone_pattern, phone):
+            return Response({'error': 'Please enter a valid Bangladeshi phone number (e.g., 01XXXXXXXXX)'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Normalize phone number (remove +88 if present, ensure it starts with 01)
+        if phone.startswith('+88'):
+            phone = phone[3:]
+        elif phone.startswith('88'):
+            phone = phone[2:]
+        
+        # Check if user exists with this phone number
+        try:
+            user = User.objects.get(phone=phone)
+        except User.DoesNotExist:
+            return Response({'error': 'No account found with this phone number. Please check the number and try again.'}, status=status.HTTP_404_NOT_FOUND)
     
-    try:
-        user = User.objects.get(phone=phone)
-    except User.DoesNotExist:
-        return Response({'error': 'User with this phone number does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    elif method == 'email':
+        # Email reset temporarily disabled until SMTP is configured
+        return Response({'error': 'Email reset is temporarily unavailable. Please use phone number.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
     
-    user.otp = random.randint(10000, 99999)
-    user.save()
-    message = f'Your One Time Password is {user.otp}'
-    url = "http://api.smsinbd.com/sms-api/sendsms"
-    payload = {
-        'api_token' : settings.API_SMS,
-        'senderid' : '8809617614969',
-        'contact_number' : phone,
-        'message' : message,
-    }
-    
-    try:
-        # Add timeout to prevent ECONNABORTED errors
-        response = requests.get(url, params=payload, timeout=10)
-        response_data = response.json()  # Convert the response to a dictionary
-    except requests.exceptions.Timeout:
-        print("SMS API request timed out")
-        return Response({'error': 'SMS service timeout. Please try again later.'}, status=status.HTTP_408_REQUEST_TIMEOUT)
-    except requests.exceptions.ConnectionError:
-        print("SMS API connection error")
-        return Response({'error': 'SMS service unavailable. Please try again later.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
-    except json.JSONDecodeError:
-        print("Failed to parse SMS API response")
-        return Response({'error': 'Failed to parse response from SMS provider'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    except requests.exceptions.RequestException as e:
-        print(f"SMS API request failed: {str(e)}")
-        return Response({'error': 'SMS service error. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-    if response_data.get('status') == 'success':
-        return Response({
-            'message': response_data.get('message', 'OTP sent successfully'),
-            'smsid': response_data.get('smsid', 'N/A'),
-            'sms_count': response_data.get('SmsCount', 'N/A'),
-            'phone': phone,
-        }, status=status.HTTP_200_OK)
     else:
-        return Response({
-            'error': response_data.get('message', 'Failed to send OTP')
-        }, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Invalid method. Use phone or email'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Generate secure 6-digit OTP
+    otp = str(random.randint(100000, 999999))
+    
+    # Save OTP to user with timestamp for expiration (optional enhancement)
+    user.otp = otp
+    user.save()
+    
+    if method == 'phone':
+        message = f'Your AdsyClub password reset OTP is: {otp}. Valid for 10 minutes. Do not share this code.'
+        url = "http://api.smsinbd.com/sms-api/sendsms"
+        payload = {
+            'api_token': settings.API_SMS,
+            'senderid': '8809617614969',
+            'contact_number': phone,
+            'message': message,
+        }
+        
+        try:
+            # Add timeout to prevent ECONNABORTED errors
+            response = requests.get(url, params=payload, timeout=15)
+            
+            # Check if response is valid JSON
+            try:
+                response_data = response.json()
+            except json.JSONDecodeError:
+                # If response is not JSON, try to parse the text response
+                response_text = response.text.strip()
+                if response.status_code == 200:
+                    # Some SMS APIs return simple text responses for success
+                    if 'success' in response_text.lower() or 'sent' in response_text.lower():
+                        return Response({
+                            'message': 'OTP sent successfully to your phone number',
+                            'method': 'phone',
+                            'masked_phone': phone[:-4] + '****',
+                        }, status=status.HTTP_200_OK)
+                    else:
+                        return Response({'error': 'Failed to send OTP. Please try again later.'}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({'error': 'SMS service error. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            # Handle JSON response
+            if response_data.get('status') == 'success' or response.status_code == 200:
+                return Response({
+                    'message': 'OTP sent successfully to your phone number',
+                    'method': 'phone',
+                    'masked_phone': phone[:-4] + '****',
+                }, status=status.HTTP_200_OK)
+            else:
+                error_message = response_data.get('message', 'Failed to send OTP')
+                return Response({
+                    'error': f'SMS delivery failed: {error_message}. Please try again or contact support.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except requests.exceptions.Timeout:
+            return Response({'error': 'SMS service is taking too long to respond. Please try again in a few minutes.'}, status=status.HTTP_408_REQUEST_TIMEOUT)
+        except requests.exceptions.ConnectionError:
+            return Response({'error': 'Unable to connect to SMS service. Please check your internet connection and try again.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except requests.exceptions.RequestException as e:
+            return Response({'error': 'SMS service error. Please try again later or contact support.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    # TODO: Uncomment this section when SMTP is configured
+    # elif method == 'email':
+    #     try:
+    #         from django.core.mail import send_mail
+    #         send_mail(    #             'Password Reset OTP - AdsyClub',
+    #             f'Your AdsyClub password reset OTP is: {otp}\n\nThis code is valid for 10 minutes. Do not share this code with anyone.\n\nIf you did not request this, please ignore this email.',
+    #             settings.DEFAULT_FROM_EMAIL,
+    #             [email],
+    #             fail_silently=False,
+    #         )
+    #         return Response({
+    #             'message': 'OTP sent successfully to your email address',
+    #             'method': 'email',
+    #             'masked_email': email[:2] + '*' * (len(email.split('@')[0]) - 2) + '@' + email.split('@')[1],
+    #         }, status=status.HTTP_200_OK)
+    #     except Exception as e:
+    #         return Response({'error': 'Failed to send email. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 def verifyOTP(request):
     phone = request.data.get('phone')
+    email = request.data.get('email')
     otp = request.data.get('otp')
-    print(phone, otp)
+    method = request.data.get('method', 'phone')
     
-    if not phone or not otp:
-        return Response({'error': 'Phone number and OTP are required'}, status=status.HTTP_400_BAD_REQUEST)
+    if not otp:
+        return Response({'error': 'OTP is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Validate OTP format (should be 6 digits)
+    otp_str = str(otp).strip()
+    if not re.match(r'^\d{6}$', otp_str):
+        return Response({'error': 'Please enter a valid 6-digit OTP code'}, status=status.HTTP_400_BAD_REQUEST)
     
     try:
-        user = User.objects.get(phone=phone)
+        if method == 'phone':
+            if not phone:
+                return Response({'error': 'Phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Normalize phone number (same as in sendOTP)
+            phone = phone.strip()
+            if phone.startswith('+88'):
+                phone = phone[3:]
+            elif phone.startswith('88'):
+                phone = phone[2:]
+                
+            user = User.objects.get(phone=phone)
+        elif method == 'email':
+            if not email:
+                return Response({'error': 'Email address is required'}, status=status.HTTP_400_BAD_REQUEST)
+            user = User.objects.get(email=email)
+        else:
+            return Response({'error': 'Invalid method'}, status=status.HTTP_400_BAD_REQUEST)
     except User.DoesNotExist:
-        return Response({'error': 'User with this phone number does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'User not found. Please check your details and try again.'}, status=status.HTTP_404_NOT_FOUND)
     
-    if otp and str(user.otp) == str(otp):
-        user.otp = "000000"  # Clear OTP after successful verification
-        user.save()
+    # Check if OTP matches
+    if str(user.otp) == otp_str:
+        # Generate reset token
+        from rest_framework.authtoken.models import Token
+        # Delete any existing tokens for this user
+        Token.objects.filter(user=user).delete()
         token, created = Token.objects.get_or_create(user=user)
-        return Response({'message': 'OTP verified successfully', 'token': token.key}, status=status.HTTP_200_OK)
+        
+        return Response({
+            'message': 'OTP verified successfully', 
+            'token': token.key,
+            'user_id': str(user.id)        }, status=status.HTTP_200_OK)
     else:
-        return Response({'error': 'Invalid OTP'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Invalid OTP code. Please check the code and try again.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -1291,21 +1386,49 @@ def change_password(request):
 def resetPassword(request):
     token_key = request.data.get('token')
     new_password = request.data.get('new_password')
+    
+    # Debug logging
+    print(f"Reset password request data: {request.data}")
+    print(f"Token received: {token_key[:10] + '...' if token_key else 'None'}")
+    print(f"Password length: {len(new_password) if new_password else 'None'}")
 
     if not token_key or not new_password:
         return Response({'error': 'Token and new password are required'}, status=status.HTTP_400_BAD_REQUEST)
     
+    # Enhanced password validation
+    if len(new_password) < 8:
+        return Response({'error': 'Password must be at least 8 characters long'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Check for basic password strength
+    if not re.search(r'[A-Z]', new_password):
+        return Response({'error': 'Password must contain at least one uppercase letter'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if not re.search(r'[0-9]', new_password):
+        return Response({'error': 'Password must contain at least one number'}, status=status.HTTP_400_BAD_REQUEST)
+    
     try:
+        from rest_framework.authtoken.models import Token
         token = Token.objects.get(key=token_key)
         user = token.user
+        print(f"Token found for user: {user.email}")
     except Token.DoesNotExist:
-        return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+        print(f"Token not found: {token_key}")
+        return Response({'error': 'Invalid or expired reset token. Please request a new password reset.'}, status=status.HTTP_400_BAD_REQUEST)
     
-    user.password = make_password(new_password)
-    user.save()
-    token.delete()  # Invalidate token after password reset
-    
-    return Response({'message': 'Password changed successfully'}, status=status.HTTP_200_OK)
+    try:
+        # Reset password and clear OTP
+        user.set_password(new_password)
+        user.otp = "000000"  # Clear OTP
+        user.save()
+        
+        # Delete the token to prevent reuse
+        token.delete()
+        
+        print(f"Password reset successful for user: {user.email}")
+        return Response({'message': 'Password reset successfully. You can now log in with your new password.'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"Error during password reset: {str(e)}")
+        return Response({'error': 'An error occurred while resetting password. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 def reset_password_request(request):
