@@ -314,9 +314,7 @@
               <div
                 class="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-slate-400/20 blur-sm"
               ></div>
-            </button>
-
-            <!-- Delete Button -->
+            </button>            <!-- Delete Button -->
             <button
               @click="confirmDeleteProduct(product)"
               class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 text-red-600 hover:shadow-sm transition-all duration-300"
@@ -326,11 +324,7 @@
                 class="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               ></div>
 
-              <!-- Icon and text -->
-              <UIcon
-                name="i-heroicons-trash"
-                class="h-4 w-4 relative z-10 group-hover:text-white transition-colors duration-300"
-              />
+              <!-- Text only, no icon -->
               <span
                 class="font-medium text-sm relative z-10 group-hover:text-white transition-colors duration-300"
                 >Delete</span
