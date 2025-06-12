@@ -353,7 +353,7 @@
                               remainingProductLimit <= 2,
                             'text-emerald-600': remainingProductLimit > 2,
                           }"                        >
-                          {{ products.length }}/{{ isUserDataLoaded ? productLimit : '...' }}
+                          {{ productsDebugInfo.productsLength }}/{{ isUserDataLoaded ? productLimit : '...' }}
                         </span>
                         <button
                           v-if="isUserDataLoaded && remainingProductLimit <= 3"
@@ -1243,6 +1243,9 @@ import {
 // Tab state
 const activeTab = ref("orders");
 
+// Products management - needs to be declared early for computed properties
+const products = ref([]);
+
 // Product limit configuration (dynamic from user data)
 const productLimit = computed(() => {
   const limit = user.value?.user?.product_limit;
@@ -1256,6 +1259,17 @@ const remainingProductLimit = computed(
 // Add computed property to check if user data is fully loaded
 const isUserDataLoaded = computed(() => {
   return user.value && user.value.user && user.value.user.product_limit !== undefined;
+});
+
+// Debug computed property for products
+const productsDebugInfo = computed(() => {
+  return {
+    productsLength: products.value?.length || 0,
+    productsArray: products.value,
+    isArray: Array.isArray(products.value),
+    productLimit: productLimit.value,
+    isUserDataLoaded: isUserDataLoaded.value
+  };
 });
 
 // Tabs configuration
@@ -1291,6 +1305,12 @@ watch(user, (newUser) => {
   if (newUser && newUser.user) {
     console.log('User data updated:', newUser.user);
     console.log('Product limit from updated user:', newUser.user.product_limit);
+    
+    // Reload products when user data becomes available
+    if (newUser.user.product_limit && products.value.length === 0) {
+      console.log('User data now available, reloading products...');
+      getProducts();
+    }
   }
 }, { deep: true });
 
@@ -1298,6 +1318,11 @@ watch(user, (newUser) => {
 watch(productLimit, (newLimit) => {
   console.log('Product limit changed to:', newLimit);
 });
+
+// Watch for products changes
+watch(products, (newProducts) => {
+  console.log('Products updated, count:', newProducts?.length || 0);
+}, { deep: true });
 
 // Watch for active tab changes to handle product limit
 watch(activeTab, (newTab) => {
@@ -1324,7 +1349,14 @@ onMounted(async () => {
   
   console.log('Shop manager mounted, user data:', user.value);
   
+  // Wait a bit for user data to be available if it's not loaded yet
+  if (!user.value || !user.value.user) {
+    console.log('User data not available yet, waiting...');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  
   // Load initial data
+  console.log('Loading initial data...');
   await Promise.all([
     getOrders(),
     getProducts()
@@ -1410,22 +1442,35 @@ const lastOrderDate = computed(() => {
     (a, b) => new Date(b.created_at) - new Date(a.created_at)
   );
 
-  console.log('Most recent order:', sortedOrders[0]?.created_at);
-  return new Date(sortedOrders[0].created_at);
+  console.log('Most recent order:', sortedOrders[0]?.created_at);  return new Date(sortedOrders[0].created_at);
 });
 
-// Products management
-const products = ref([]);
-
+// Products management functions
 async function getProducts() {
   try {
     console.log('Fetching products for shop manager...');
-    const res = await get("/my-products/");
+    const res = await get("/my-products/", {}, {
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+    });
     console.log('Products API response:', res);
     
     if (res && res.data) {
-      products.value = res.data;
-      console.log(`Loaded ${products.value.length} products`); 
+      // Handle both paginated and non-paginated responses
+      if ("results" in res.data) {
+        // Paginated response
+        products.value = res.data.results;
+        console.log(`Loaded ${products.value.length} products (paginated)`);
+      } else if (Array.isArray(res.data)) {
+        // Direct array response
+        products.value = res.data;
+        console.log(`Loaded ${products.value.length} products (direct array)`);
+      } else {
+        console.warn("Unexpected products data structure:", res.data);
+        products.value = [];
+      }
       
       // Check product limit and show notification if close to limit
       if (products.value.length >= productLimit.value) {
@@ -1686,8 +1731,7 @@ async function purchaseProductSlots() {
       "Could not complete the purchase. Please try again."
     );
   } finally {
-    isPurchasing.value = false;
-  }
+    isPurchasing.value = false;  }
 }
 </script>
 
