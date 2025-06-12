@@ -1,17 +1,7 @@
 <template>
   <div class="min-h-screen py-8 bg-gradient-to-b from-gray-50 to-gray-100">
     <UContainer>
-      <!-- Enhanced Header -->
-      <div class="text-center mb-10">        <h1
-          class="text-2xl font-semibold mb-2 bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent"
-        >
-          Add Product
-        </h1>
-        <p class="text-lg text-gray-600 max-w-lg mx-auto">
-          List your product and reach more customers
-        </p>
-      </div>
-        <form
+      <form
         @submit.prevent="handleAddProduct"
         class="bg-white rounded-xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100"
       >
@@ -92,9 +82,8 @@
                 Provide detailed information about your product
               </p>              <div
                 class="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-100 focus-within:border-emerald-500 transition-all"
-              >
-                <CommonEditor
-                  v-if="router.query.id && form.description"
+              >                <CommonEditor
+                  v-if="route.query.id && form.description"
                   :content="form.description"
                   @updateContent="
                     (content) => {
@@ -412,9 +401,8 @@
                 size="lg"
                 :loading="isSubmitting"
                 class="bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-100"
-              >
-                <UIcon name="i-heroicons-plus-circle" class="mr-2" />
-                {{ router.query.id ? 'Update Product' : 'Add Product' }}
+              >                <UIcon name="i-heroicons-plus-circle" class="mr-2" />
+                {{ route.query.id ? 'Update Product' : 'Add Product' }}
               </UButton>
             </div>
           </div>
@@ -429,7 +417,8 @@ const props = defineProps({
   product: Object,
 });
 const { get, post, put } = useApi();
-const router = useRoute();
+const route = useRoute();
+const router = useRouter();
 const toast = useToast();
 const currentStep = ref(0); // Track current step for highlighting
 const categories = ref([]);
@@ -570,7 +559,7 @@ async function handleAddProduct() {
   // Check product limit before submission (only for new products)
   if (!props.product?.id) {
     try {
-      const { data: userProducts } = await get("/my-products/");
+      const { data: userProducts } = await get("/shop-manager/");
       const currentProductCount = userProducts ? userProducts.length : 0;
       const productLimit = user.value?.user?.product_limit || 10;
 
@@ -641,8 +630,7 @@ async function handleAddProduct() {
     }
 
     if (res.data) {
-      console.log("API response:", res.data);
-      toast.add({
+      console.log("API response:", res.data);      toast.add({
         title: "Success",
         description: successMessage.value,
         color: "green",
@@ -654,6 +642,11 @@ async function handleAddProduct() {
         resetForm(false);
         checkSubmit.value = false;
         currentStep.value = 1;
+        
+        // Navigate to my-products page after successful creation
+        setTimeout(() => {
+          router.push('/my-products');
+        }, 2000); // Wait 2 seconds to show success message
       }
     }
   } catch (error) {
@@ -717,17 +710,17 @@ function handleFileUpload(event) {
       return;
     }
 
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
+    const reader = new FileReader();    reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
         let width = img.width;
         let height = img.height;
-
-        // Resize while maintaining aspect ratio
-        const maxSize = 1000;
+        
+        // Calculate original file size for comparison
+        const originalSize = file.size;        // Enhanced compression: resize while maintaining aspect ratio
+        // Increased max size for better product image quality
+        const maxSize = 1600; // Higher max size for product photos
         if (width > maxSize || height > maxSize) {
           if (width > height) {
             height = height * (maxSize / width);
@@ -742,9 +735,20 @@ function handleFileUpload(event) {
         canvas.height = height;
 
         const ctx = canvas.getContext("2d");
+        // Enable image smoothing for better quality
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
-        const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.8); // 80% quality
+        // Higher quality settings for product images
+        let quality = 0.9; // High quality for product photos
+        if (originalSize > 10 * 1024 * 1024) { // > 10MB
+          quality = 0.85;
+        } else if (originalSize > 5 * 1024 * 1024) { // > 5MB
+          quality = 0.88;
+        }
+
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
 
         form.value.images.push(compressedDataUrl);
         isUploading.value = false;
