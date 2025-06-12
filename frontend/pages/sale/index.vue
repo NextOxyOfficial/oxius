@@ -242,7 +242,7 @@
                   }}</span>
                 </span>
               </p>
-            </div>
+            </div>            
             <div class="flex gap-6 items-center">
               <div class="flex items-center gap-2">
                 <span class="text-sm text-gray-600">Sort by:</span>
@@ -252,17 +252,23 @@
                   option-attribute="label"
                   value-attribute="value"
                   size="sm"
-                  class="w-40"
+                  class="w-40 h-10 flex"
+                  :ui="{
+                    padding: {
+                      sm: 'px-3 py-2'
+                    }
+                  }"
                   @update:modelValue="applyFilters"
                 />
-              </div>              <div
+              </div>
+              <div
                 class="flex items-center border-l border-gray-200 pl-4 gap-2"
               >
                 <NuxtLink
                   to="/sale/my-posts?tab=post-sale"
-                  class="whitespace-nowrap flex items-center gap-1 px-3 py-2 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors"
+                  class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-sm"
                 >
-                  <UIcon name="i-heroicons-plus-circle" />
+                  <UIcon name="i-heroicons-plus-circle" class="h-4 w-4" />
                   Post Sale Ad
                 </NuxtLink>
               </div>
