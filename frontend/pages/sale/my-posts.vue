@@ -1,7 +1,6 @@
-<template>
-  <PublicSection>
+<template>  <PublicSection>
     <div class="bg-white rounded-xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100">
-      <UContainer>        
+      <div class="mx-auto max-w-7xl">        
         <!-- Enhanced Header -->
         <div class="text-center mb-10">
           <h1
@@ -26,7 +25,7 @@
         </div>
 
         <!-- Tabs Navigation -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div class="border-b border-gray-200">
             <nav class="flex space-x-8" aria-label="Tabs">
               <button
@@ -121,9 +120,8 @@
                 <p class="text-lg font-semibold text-amber-600">{{ stats.pending || 0 }}</p>
               </div>
             </div>
-          </div>
-        </div>
-      </UContainer>
+          </div>        </div>
+      </div>
     </div>
   </PublicSection>
 </template>
