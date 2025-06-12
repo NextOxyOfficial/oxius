@@ -63,20 +63,18 @@
         <div class="text-right text-sm text-gray-500 mt-1">
           {{ formData.title.length }}/100
         </div>
-      </UFormGroup>
-
-      <UFormGroup label="Description" required class="mt-4">
-        <UTextarea
-          v-model="formData.description"
-          color="white"
-          size="md"
-          :rows="4"
-          placeholder="Describe your item in detail..."
-          maxlength="1000"
-          class="resize-none"
+      </UFormGroup>        <UFormGroup 
+        label="Description" 
+        required 
+        class="mt-4"
+        :error="getTextLength(formData.description) === 0 && checkSubmit && 'Please provide a description of your item'"
+      >
+        <Editor 
+          :content="formData.description"
+          @updateContent="formData.description = $event"
         />
         <div class="text-right text-sm text-gray-500 mt-1">
-          {{ formData.description.length }}/1000
+          {{ getTextLength(formData.description) }}/1000
         </div>
       </UFormGroup>
     </div>
@@ -381,6 +379,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useSalePost } from "~/composables/useSalePost";
+import Editor from "~/components/common/editor.vue";
 
 const emit = defineEmits(['post-created']);
 
@@ -722,11 +721,19 @@ const getCompressionSettings = (fileSize, imageWidth, imageHeight) => {
 
 // Format file size utility
 const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
+  if (bytes === 0) return '0 Bytes';  const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
+
+// Get text length from HTML content
+const getTextLength = (htmlContent) => {
+  if (!htmlContent) return 0;
+  // Create a temporary div to strip HTML tags and get text content
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = htmlContent;
+  return tempDiv.textContent?.length || 0;
 };
 
 // Form submission
@@ -734,12 +741,11 @@ const submitForm = async () => {
   checkSubmit.value = true;
 
   if (isSubmitting.value) return;
-
   // Validate required fields
   const requiredFields = {
     category: formData.category,
     title: formData.title?.trim(),
-    description: formData.description?.trim(),
+    description: getTextLength(formData.description) > 0 ? formData.description : null,
     condition: formData.condition,
     detailed_address: formData.detailedAddress?.trim(),
     phone: formData.phone?.trim(),
@@ -774,6 +780,16 @@ const submitForm = async () => {
     toast.add({
       title: "Validation Error",
       description: "Please enter a valid price or mark as negotiable",
+      color: "red",
+      timeout: 5000,
+    });    return;
+  }
+
+  // Validate description length
+  if (getTextLength(formData.description) > 1000) {
+    toast.add({
+      title: "Validation Error",
+      description: "Description must be less than 1000 characters",
       color: "red",
       timeout: 5000,
     });
