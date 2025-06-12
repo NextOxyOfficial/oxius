@@ -1074,8 +1074,8 @@ const searchPlaceholder = computed(() => {
   }
 });
 
-// Get the current locale
-const { locale } = useI18n();
+// Get the current locale and translation function
+const { locale, t: $t } = useI18n();
 
 // Check if the current locale is Bengali
 const isBengaliLocale = computed(() => {
