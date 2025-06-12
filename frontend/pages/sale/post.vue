@@ -43,11 +43,10 @@
               </button>
             </div>
           </div>
-        </div>
-
+        </div>        
         <form
           @submit.prevent="submitForm"
-          class="bg-white rounded-xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100"
+          class="bg-white rounded-xl shadow-sm max-w-5xl mx-auto overflow-hidden border border-gray-100"
         >
           <!-- Basic Details Section -->
           <div

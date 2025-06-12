@@ -1,6 +1,6 @@
 <template>
   <PublicSection>
-    <div class="min-h-screen py-8 bg-gradient-to-b from-gray-50 to-gray-100">
+    <div class="bg-white rounded-xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100">
       <UContainer>        
         <!-- Enhanced Header -->
         <div class="text-center mb-10">
