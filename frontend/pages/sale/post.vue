@@ -283,9 +283,7 @@
                 >
                   Main
                 </div>
-              </div>
-
-              <!-- Upload button -->
+              </div>              <!-- Upload button -->
               <div
                 class="w-32 h-32 rounded-lg relative border-2 border-dashed border-gray-300 bg-gray-50 hover:border-emerald-500 hover:bg-emerald-50/20 transition-colors flex items-center justify-center cursor-pointer group"
                 v-if="formData.images.filter(img => img).length < 8"
@@ -294,12 +292,12 @@
                 <input
                   type="file"
                   ref="fileInput"
-                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  class="hidden"
                   @change="handleFileUpload"
                   accept="image/*"
                 />
                 <div
-                  class="flex flex-col items-center gap-2 text-gray-600 text-sm text-center p-2 group-hover:text-emerald-600"
+                  class="flex flex-col items-center gap-2 text-gray-600 text-sm text-center p-2 group-hover:text-emerald-600 pointer-events-none"
                 >
                   <UIcon
                     name="i-heroicons-arrow-up-tray"
@@ -721,13 +719,25 @@ watch(
 // File upload functions
 const openFileUpload = () => {
   if (fileInput.value) {
+    // Clear any previous selection to ensure fresh state
+    fileInput.value.value = "";
+    // Trigger the file picker
     fileInput.value.click();
+    console.log("File picker opened");
+  } else {
+    console.error("File input reference not found");
   }
 };
 
 const handleFileUpload = async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+  const files = event.target.files;
+  if (!files || files.length === 0) {
+    console.warn("No files selected");
+    return;
+  }
+
+  const file = files[0];
+  console.log("File selected:", file.name, file.type, file.size);
 
   // Validate file
   if (!file.type.match("image.*")) {
@@ -740,8 +750,7 @@ const handleFileUpload = async (event) => {
     return;
   }
 
-  isUploading.value = true;
-  uploadError.value = "";
+  isUploading.value = true;  uploadError.value = "";
 
   try {
     const compressedImage = await processImageWithCompression(file);
@@ -752,6 +761,9 @@ const handleFileUpload = async (event) => {
       if (emptyIndex !== -1) {
         imagePreviewUrls.value[emptyIndex] = compressedImage;
         formData.images[emptyIndex] = compressedImage;
+        console.log("Image added to slot:", emptyIndex);
+      } else {
+        uploadError.value = "Maximum 8 images allowed";
       }
     }
   } catch (error) {
@@ -759,7 +771,7 @@ const handleFileUpload = async (event) => {
     uploadError.value = "Failed to process image. Please try again.";
   } finally {
     isUploading.value = false;
-    // Reset file input
+    // Reset file input to allow selecting the same file again
     if (fileInput.value) {
       fileInput.value.value = "";
     }
