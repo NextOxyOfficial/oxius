@@ -22,24 +22,22 @@
             Report
           </button>
         </div>
-      </div>
-
-      <div class="px-6 pb-6 relative">          
+      </div>      <div class="px-6 pb-6 relative">          
         <!-- Profile Avatar -->
         <div
-          class="relative -top-16 left-6 h-32 w-32 rounded-full border-4 border-white bg-white overflow-hidden cursor-pointer"
+          class="relative -top-8 left-6 h-24 w-24 rounded-full border-4 border-white bg-white overflow-hidden cursor-pointer"
           @click="openProfilePhotoModal"
         >
           <img
             :src="seller.image || '/static/frontend/images/placeholder.jpg'"
             :alt="seller.name"
-            class="h-full w-full object-contain"
+            class="h-full w-full object-cover"
           />
         </div>
 
         <!-- Profile Info -->
         <div
-          class="flex flex-col md:flex-row md:items-end justify-between"
+          class="flex flex-col md:flex-row md:items-end justify-between -mt-4"
         >
           <div>
             <div class="flex items-center">
