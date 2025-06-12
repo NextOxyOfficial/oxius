@@ -1012,34 +1012,58 @@
           </div>
         </div>
       </div>
-    </UModal>
-
-    <!-- Buy More Slots Modal -->
-    <UModal v-model="showBuySlotsModal">
-      <div class="bg-white rounded-xl shadow-sm overflow-hidden w-full">
-        <!-- Header -->
+    </UModal>    <!-- Buy More Slots Modal -->
+    <UModal 
+      v-model="showBuySlotsModal"
+      :ui="{
+        fullscreen: 'w-full sm:max-w-lg h-auto',
+      }"
+      fullscreen
+    >
+      <div
+        class="flex items-center justify-center min-h-screen py-20 text-center sm:block"
+      >
         <div
-          class="bg-gradient-to-r from-emerald-600 to-emerald-500 p-6 text-white relative overflow-hidden"
+          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
+          aria-hidden="true"
+          @click="showBuySlotsModal = false"
+        ></div>
+        <span
+          class="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+          >&#8203;</span
         >
-          <!-- Decorative elements -->
+        <div
+          class="inline-block align-bottom bg-white rounded-xl text-left shadow-sm transform transition-all sm:my-24 sm:align-middle sm:max-w-lg w-full animate-slide-up overflow-auto"
+        >
+          <!-- Gradient top bar -->
           <div
-            class="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-white/10 blur-xl"
+            class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600"
           ></div>
+          
+          <!-- Header -->
           <div
-            class="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-white/10 blur-xl"
-          ></div>
-
-          <h3
-            class="text-xl font-semibold text-center text-white mb-1 relative z-10"
+            class="bg-gradient-to-r from-emerald-600 to-emerald-500 p-6 text-white relative overflow-hidden"
           >
-            Buy Additional Product Slots
-          </h3>
-          <p class="text-sm text-center text-white/90 relative z-10">
-            Expand your store capacity
-          </p>
-        </div>
+            <!-- Decorative elements -->
+            <div
+              class="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-white/10 blur-xl"
+            ></div>
+            <div
+              class="absolute -right-4 -bottom-4 h-16 w-16 rounded-full bg-white/10 blur-xl"
+            ></div>
 
-        <div class="p-6">
+            <h3
+              class="text-xl font-semibold text-center text-white mb-1 relative z-10"
+            >
+              Buy Additional Product Slots
+            </h3>
+            <p class="text-sm text-center text-white/90 relative z-10">
+              Expand your store capacity
+            </p>
+          </div>
+
+          <div class="p-6">
           <!-- Current slots info -->
           <div class="flex items-center mb-6 bg-emerald-50 rounded-lg p-4">
             <UIcon
@@ -1219,9 +1243,9 @@
               @click="showBuySlotsModal = false"
               class="flex-1"
             >
-              Cancel
-            </UButton>
+              Cancel            </UButton>
           </div>
+        </div>
         </div>
       </div>
     </UModal>
