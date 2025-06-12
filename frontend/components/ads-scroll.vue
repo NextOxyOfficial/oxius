@@ -93,7 +93,7 @@
                 <!-- Content area -->
                 <div class="flex flex-col flex-grow p-3">
                   <NuxtLink
-                    :to="`/classified-categories/details/${ad.id}`"
+                    :to="`/classified-categories/details/${ad.slug || ad.id}`"
                     class="group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors"
                   >
                     <h3

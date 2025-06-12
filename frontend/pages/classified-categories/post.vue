@@ -469,7 +469,7 @@ const router = useRoute();
 
 async function fetchServices() {
   const response = await $fetch(
-    `${baseURL}/classified-categories/post/${router.query.id}/`
+    `${baseURL}/classified-categories/post/${router.query.slug || router.query.id}/`
   );
   console.log(response);
   const {

@@ -30,7 +30,7 @@ urlpatterns = [
 
   path('classified-categories-all/',GetClassifiedCategoriesAll.as_view()),
   path('classified-categories/<str:cid>/',classifiedCategoryPosts),
-  path('classified-categories/post/<str:pk>/',classifiedCategoryPost),
+  path('classified-categories/post/<str:slug>/',classifiedCategoryPost, name='classified-post-detail'),
   path('classified-categories-post/',post_classified_service),
   path('user-classified-categories-post/',UserClassifiedCategoryPosts),
   path('classified-posts/', GetClassifiedPosts.as_view(), name='get-classified-posts'),

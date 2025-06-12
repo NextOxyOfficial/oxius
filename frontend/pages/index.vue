@@ -135,7 +135,7 @@
             >
               <NuxtLink
                 class="p-2.5 border border-emerald-200 hover:border-emerald-400 flex gap-2 items-center rounded-lg bg-emerald-50/80 hover:bg-emerald-50 shadow-sm hover:shadow transition-all duration-300"
-                :to="`/classified-categories/${service.id}?business_type=${service.business_type}`"
+                :to="`/classified-categories/${service.slug}`"
               >
                 <NuxtImg
                   :src="service?.image"
@@ -167,7 +167,7 @@
               class="transition-all duration-300 hover:translate-x-1"
             >
               <NuxtLink
-                :to="`/classified-categories/details/${service.id}?business_type=${service.business_type}`"
+                :to="`/classified-categories/details/${service.slug}`"
                 class="capitalize p-2.5 hover:bg-blue-50/80 flex gap-2 items-center rounded-lg transition-colors duration-300"
               >
                 <div

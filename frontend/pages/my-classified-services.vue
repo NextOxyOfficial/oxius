@@ -150,7 +150,7 @@
             </div>
 
             <!-- Card Content -->
-            <NuxtLink :to="`/classified-categories/details/${service.id}`">
+            <NuxtLink :to="`/classified-categories/details/${service.slug || service.id}`">
               <div class="flex flex-col md:flex-row p-4">
                 <!-- Image Section - Decreased Size -->
                 <div class="md:w-[120px] mb-4 md:mb-0 md:mr-6 flex-shrink-0">
@@ -293,7 +293,7 @@
                   color="primary"
                   variant="outline"
                   v-if="service.service_status !== 'completed'"
-                  :to="`/classified-categories/post/?id=${service.id}`"
+                  :to="`/classified-categories/post/?slug=${service.slug || service.id}`"
                   class="group relative overflow-hidden"
                 >
                   <!-- Button Shimmer Effect -->

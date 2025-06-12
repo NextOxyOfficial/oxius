@@ -293,11 +293,10 @@
           class="service-card border even:border-t-0 even:border-b-0 bg-white rounded-md"
           v-for="(service, i) in search.filter(
             (service) => service.service_status.toLowerCase() === 'approved'
-          )"
-          :key="{ i }"
+          )"          :key="{ i }"
           data-aos="zoom-out-right"
         >
-          <NuxtLink :to="`/classified-categories/details/${service.id}`">
+          <NuxtLink :to="`/classified-categories/details/${service.slug}`">
             <div
               class="flex flex-col pl-3 pr-3 py-2.5 sm:flex-row sm:items-center w-full"
             >
@@ -490,7 +489,7 @@
           )"
           :key="{ i }"
         >
-          <NuxtLink :to="`/classified-categories/details/${service.id}`">
+          <NuxtLink :to="`/classified-categories/details/${service.slug}`">
             <div
               class="flex flex-col pl-3 pr-3 py-2.5 sm:flex-row sm:items-center w-full"
             >

@@ -719,9 +719,19 @@ def UserClassifiedCategoryPosts(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
-def classifiedCategoryPost(request, pk):
-    serializer = ClassifiedPostSerializer(ClassifiedCategoryPost.objects.get(id=pk))
-    return Response(serializer.data, status=status.HTTP_200_OK)
+def classifiedCategoryPost(request, slug):
+    try:
+        post = ClassifiedCategoryPost.objects.get(slug=slug)
+        serializer = ClassifiedPostSerializer(post)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except ClassifiedCategoryPost.DoesNotExist:
+        # Fallback to ID in case slug is not found (for backwards compatibility)
+        try:
+            post = ClassifiedCategoryPost.objects.get(id=slug)
+            serializer = ClassifiedPostSerializer(post)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ClassifiedCategoryPost.DoesNotExist:
+            return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])

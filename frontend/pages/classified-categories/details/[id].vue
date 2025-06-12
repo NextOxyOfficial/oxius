@@ -231,8 +231,7 @@ const { baseURL } = useApi();
 const service = ref({});
 const router = useRoute();
 
-async function fetchServices() {
-  const response = await $fetch(
+async function fetchServices() {  const response = await $fetch(
     `${baseURL}/classified-categories/post/${router.params.id}/`
   );
 
@@ -252,7 +251,7 @@ setTimeout(() => {
 // Get the actual domain for sharing instead of using localhost
 const runtimeConfig = useRuntimeConfig();
 const domain = runtimeConfig.public.domain || 'https://adsyclub.com';
-const pageLink = `${domain}/classified-categories/details/${router.params.id}`;
+const pageLink = `${domain}/classified-categories/details/${service.slug || router.params.id}`;
 const pageTitle = String(document.title).replace(/\&/g, "%26");
 
 function fbs_click() {
