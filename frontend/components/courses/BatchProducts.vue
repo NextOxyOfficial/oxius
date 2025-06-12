@@ -36,28 +36,43 @@
     >
       <Icon name="heroicons:shopping-bag" class="w-12 h-12 mx-auto mb-2 text-gray-300" />
       <p class="text-sm">{{ $t('no_products_available') }}</p>
-    </div>
+    </div>    <!-- Products horizontal scroll -->
+    <div v-else class="relative">
+      <!-- Scroll buttons for desktop -->
+      <button
+        v-if="canScrollLeft"
+        @click="scrollLeft"
+        class="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-8 h-8 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200"
+        aria-label="Scroll left"
+      >
+        <Icon name="heroicons:chevron-left" class="w-4 h-4 text-gray-600" />
+      </button>
+      
+      <button
+        v-if="canScrollRight"
+        @click="scrollRight"
+        class="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-8 h-8 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md transition-all duration-200"
+        aria-label="Scroll right"
+      >
+        <Icon name="heroicons:chevron-right" class="w-4 h-4 text-gray-600" />
+      </button>
 
-    <!-- Products grid -->
-    <div v-else>
-      <!-- Mobile: 2x2 grid -->
-      <div class="grid grid-cols-2 gap-3 sm:hidden">
-        <ProductCard 
-          v-for="product in products.slice(0, 4)" 
-          :key="product.id" 
-          :product="product"
-          :compact="true"
-        />
-      </div>
-
-      <!-- Desktop: 1x5 grid -->
-      <div class="hidden sm:grid sm:grid-cols-5 gap-4">
-        <ProductCard 
-          v-for="product in products.slice(0, 5)" 
-          :key="product.id" 
-          :product="product"
-          :compact="true"
-        />
+      <!-- Scrollable products container -->
+      <div 
+        ref="scrollContainer"
+        class="flex gap-4 overflow-x-auto scroll-smooth scrollbar-hide px-2 py-2"
+        @scroll="updateScrollButtons"
+      >
+        <div 
+          v-for="product in randomizedProducts" 
+          :key="product.id"
+          class="flex-shrink-0 w-48 sm:w-52"
+        >
+          <ProductCard 
+            :product="product"
+            :compact="true"
+          />
+        </div>
       </div>
 
       <!-- View all products link -->
@@ -75,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onMounted, nextTick } from 'vue'
 import { fetchBatchProducts } from '~/services/elearningApi'
 import ProductCard from '~/components/common/product-card.vue'
 
@@ -90,6 +105,51 @@ const config = useRuntimeConfig()
 const products = ref([])
 const loading = ref(false)
 const error = ref(null)
+const scrollContainer = ref(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+
+// Randomize products array
+const randomizedProducts = computed(() => {
+  if (!products.value.length) return []
+  
+  // Create a copy and shuffle it
+  const shuffled = [...products.value]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+})
+
+// Scroll functions
+function scrollLeft() {
+  if (scrollContainer.value) {
+    const scrollAmount = 240 // Approximate width of one product card
+    scrollContainer.value.scrollBy({ 
+      left: -scrollAmount, 
+      behavior: 'smooth' 
+    })
+  }
+}
+
+function scrollRight() {
+  if (scrollContainer.value) {
+    const scrollAmount = 240 // Approximate width of one product card
+    scrollContainer.value.scrollBy({ 
+      left: scrollAmount, 
+      behavior: 'smooth' 
+    })
+  }
+}
+
+function updateScrollButtons() {
+  if (!scrollContainer.value) return
+  
+  const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value
+  canScrollLeft.value = scrollLeft > 0
+  canScrollRight.value = scrollLeft < scrollWidth - clientWidth - 1
+}
 
 // Load products when batch changes
 watch(() => props.selectedBatch, (newBatch) => {
@@ -108,10 +168,14 @@ async function loadProducts() {
     error.value = null
 
     const fetchedProducts = await fetchBatchProducts(config.public.baseURL, props.selectedBatch, {
-      limit: 10 // Get enough products for mobile and desktop display
+      limit: 50 // Get all available products for the batch
     })
 
     products.value = fetchedProducts || []
+    
+    // Update scroll buttons after products are loaded
+    await nextTick()
+    updateScrollButtons()
   } catch (err) {
     console.error('Error loading batch products:', err)
     error.value = 'Failed to load products'
@@ -120,4 +184,29 @@ async function loadProducts() {
     loading.value = false
   }
 }
+
+// Initialize scroll buttons on mount
+onMounted(() => {
+  if (scrollContainer.value) {
+    updateScrollButtons()
+  }
+})
 </script>
+
+<style scoped>
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Smooth scrolling behavior */
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+</style>
