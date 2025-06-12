@@ -741,12 +741,14 @@ const fetchPosts = async (page = 1) => {
         hasMorePosts.value = !!response.data.next;
       } else if (Array.isArray(response.data)) {
         // Non-paginated response
-        posts.value = response.data;
-        hasMorePosts.value = false;
+        posts.value = response.data;        hasMorePosts.value = false;
       }
 
       // Emit posts-updated event for statistics calculation
-      emit('posts-updated', posts.value);
+      emit('posts-updated', {
+        posts: posts.value,
+        pagination: pagination.value
+      });
     }
   } catch (error) {
     console.error("Error fetching posts:", error);
@@ -795,12 +797,14 @@ const refreshPosts = async () => {
         hasMorePosts.value = !!response.data.next;
       } else if (Array.isArray(response.data)) {
         // Non-paginated response
-        posts.value = response.data;
-        hasMorePosts.value = false;
+        posts.value = response.data;        hasMorePosts.value = false;
       }
 
       // Emit posts-updated event for statistics calculation
-      emit('posts-updated', posts.value);
+      emit('posts-updated', {
+        posts: posts.value,
+        pagination: pagination.value
+      });
 
       // Show success message only if we actually got some posts
       if (posts.value.length > 0) {

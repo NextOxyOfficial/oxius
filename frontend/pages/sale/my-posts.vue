@@ -203,13 +203,20 @@ const handlePostCreated = (post) => {
   });
 };
 
-const updatePostsCount = (postsData) => {
-  if (postsData) {
-    myPostsCount.value = postsData.length;
+const updatePostsCount = (data) => {
+  if (data && data.posts) {
+    const postsData = data.posts;
+    const pagination = data.pagination;
     
-    // Calculate stats
+    // Use pagination count if available, otherwise fall back to posts length
+    const totalCount = pagination?.count || postsData.length;
+    
+    myPostsCount.value = totalCount;
+    
+    // Calculate stats based on actual loaded posts for status counts
+    // but use total count from pagination for total
     stats.value = {
-      total: postsData.length,
+      total: totalCount,
       active: postsData.filter(p => p.status === 'active').length,
       sold: postsData.filter(p => p.status === 'sold').length,
       pending: postsData.filter(p => p.status === 'pending').length,
