@@ -700,11 +700,14 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     is_science = models.BooleanField(default=False)
     is_commerce = models.BooleanField(default=False)
-    is_humanities = models.BooleanField(default=False)
-    # New marketing fields
+    is_humanities = models.BooleanField(default=False)    # New marketing fields
     benefits = models.ManyToManyField(ProductBenefit, blank=True, related_name='products')
     faqs = models.ManyToManyField(ProductFAQ, blank=True, related_name='products')
     trust_badges = models.ManyToManyField(ProductTrustBadge, blank=True, related_name='products')
+    
+    # Educational batch relationship
+    batches = models.ManyToManyField('elearning.Batch', blank=True, related_name='products', 
+                                   help_text='Select batches where this product should be displayed')
     
     # Marketing section titles
     benefits_title = models.CharField(max_length=200, blank=True, null=True)

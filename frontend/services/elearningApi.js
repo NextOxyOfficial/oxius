@@ -293,3 +293,43 @@ export const clearCache = (type = "all", id = null) => {
       console.warn(`Unknown cache type: ${type}`);
   }
 };
+
+/**
+ * Fetch products for a specific batch
+ * @param {string} baseURL - API base URL
+ * @param {string} batchCode - Batch code to fetch products for
+ * @param {Object} options - Optional parameters
+ * @param {number} options.limit - Maximum number of products to fetch
+ * @returns {Promise<Array>} Array of products
+ */
+export const fetchBatchProducts = async (baseURL, batchCode, options = {}) => {
+  const { limit = 10 } = options;
+  
+  const cacheKey = `batch_products_${batchCode}_${limit}`;
+  
+  // Return cached data if available
+  if (cache.has(cacheKey)) {
+    console.log(`Returning cached batch products for ${batchCode}`);
+    return cache.get(cacheKey);
+  }
+
+  try {
+    console.log(`Fetching products for batch: ${batchCode} with limit: ${limit}`);
+    
+    const data = await $fetch(`${baseURL}/api/elearning/batches/${batchCode}/products/`, {
+      method: 'GET',
+      params: {
+        limit
+      }
+    });
+
+    // Cache the data for 30 minutes (shorter cache for products since they might change more frequently)
+    cache.set(cacheKey, data, 30 * 60 * 1000);
+    console.log(`Batch products for ${batchCode} cached successfully`);
+    
+    return data;
+  } catch (error) {
+    console.error(`Error fetching products for batch ${batchCode}:`, error);
+    throw error;
+  }
+};

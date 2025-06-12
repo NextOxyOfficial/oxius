@@ -163,12 +163,14 @@
 
   <!-- Content section -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <div class="space-y-3">
-      <!-- Selection Components -->
+    <div class="space-y-3">      <!-- Selection Components -->
       <BatchSelector
         :selectedBatch="selectedBatch"
         @select-batch="handleBatchSelection"
       />
+
+      <!-- Products for selected batch -->
+      <BatchProducts :selectedBatch="selectedBatch" />
 
       <DivisionSelector
         :batch="selectedBatch"
@@ -240,6 +242,7 @@
 <script setup>
 import { ref } from "vue";
 import BatchSelector from "~/components/courses/BatchSelector.vue";
+import BatchProducts from "~/components/courses/BatchProducts.vue";
 import DivisionSelector from "~/components/courses/DivisionSelector.vue";
 import SubjectSelector from "~/components/courses/SubjectSelector.vue";
 import VideoLessons from "~/components/courses/VideoLessons.vue";

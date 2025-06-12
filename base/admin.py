@@ -289,6 +289,39 @@ admin.site.register(ProductMedia)
 
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name','owner__store_name', 'sale_price','regular_price','created_at', 'updated_at')
+    filter_horizontal = ('batches', 'category', 'benefits', 'faqs', 'trust_badges')
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('owner', 'name', 'slug', 'description', 'short_description')
+        }),
+        ('Pricing & Inventory', {
+            'fields': ('regular_price', 'sale_price', 'quantity', 'weight')
+        }),
+        ('Categories & Organization', {
+            'fields': ('category', 'batches', 'is_featured', 'is_active')
+        }),
+        ('Educational Classification', {
+            'fields': ('is_science', 'is_commerce', 'is_humanities', 'is_advanced'),
+            'classes': ('collapse',)
+        }),
+        ('Delivery Information', {
+            'fields': ('is_free_delivery', 'delivery_fee_free', 'delivery_fee_inside_dhaka', 
+                      'delivery_fee_outside_dhaka', 'delivery_information'),
+            'classes': ('collapse',)
+        }),
+        ('Marketing Content', {
+            'fields': ('benefits_title', 'benefits_cta', 'benefits', 
+                      'faqs_title', 'faqs_subtitle', 'faqs',
+                      'trust_badges'),
+            'classes': ('collapse',)
+        }),
+        ('Call to Action', {
+            'fields': ('cta_title', 'cta_subtitle', 'cta_button_text', 'cta_button_subtext',
+                      'cta_badge1', 'cta_badge2', 'cta_badge3'),
+            'classes': ('collapse',)
+        }),
+    )
 
 admin.site.register(Product, ProductAdmin)
 

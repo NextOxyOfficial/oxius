@@ -19,6 +19,26 @@ class BatchViewSet(viewsets.ReadOnlyModelViewSet):
         divisions = batch.divisions.filter(is_active=True)
         serializer = DivisionSerializer(divisions, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def products(self, request, code=None):
+        """Fetch products associated with this batch"""
+        from base.serializers import ProductSerializer
+        
+        batch = self.get_object()
+        products = batch.products.filter(is_active=True).select_related('owner').prefetch_related('image', 'category')
+        
+        # Limit products for performance (can be made configurable)
+        limit = request.query_params.get('limit', 10)
+        try:
+            limit = int(limit)
+        except (ValueError, TypeError):
+            limit = 10
+            
+        products = products[:limit]
+        
+        serializer = ProductSerializer(products, many=True, context={'request': request})
+        return Response(serializer.data)
 
 
 class DivisionViewSet(viewsets.ReadOnlyModelViewSet):

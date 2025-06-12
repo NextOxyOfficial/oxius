@@ -5,7 +5,7 @@ export default defineI18nConfig(() => ({
     en: {
       welcome: "Welcome",
       home: "Home",
-      ad: "Ads",
+      ad: "Free Service Ads",
       nearby_location: "Nearby Location Ads",
       eshop: "eShop",
       eshop_manager: "E-Shop Manager",
@@ -16,7 +16,7 @@ export default defineI18nConfig(() => ({
       my_account: "My Account",
       profile: "Profile",
       post_classified: "Post A Classified Ad",
-      post_free_ad: "Post Free Ad",      
+      post_free_ad: "Post Free Service",      
       post_classified_text: "Create your listing and reach potential customers",
       basic_details: "Basic Details",
       pricing: "Pricing",
@@ -151,8 +151,10 @@ export default defineI18nConfig(() => ({
       follow_us: "Follow Us",
       bangladesh_first_title: "Bangladesh's 1st Social Business Network",
       bangladesh_first_text:
-        "Connect, collaborate, and grow with our all-in-one platform that helps you earn money, sell products, and find services you need.",
-      sell_products: "Sell Products",
+        "Connect, collaborate, and grow with our all-in-one platform that helps you earn money, sell products, and find services you need.",      sell_products: "Sell Products",
+      recommended_products: "Recommended Products",
+      no_products_available: "No products available for this batch",
+      view_all_products: "View All Products",
       division: "Division",
       select_division: "Select your division",
       city: "City",
@@ -291,12 +293,14 @@ export default defineI18nConfig(() => ({
       zip_postal_code: "Zip/Postal Code",
       full_address: "Full Address",
       referral_code_optional: "Referral code (optional)",
-      complete_registration: "Complete Registration",      already_have_account: "Already have an account? Sign in",
+      complete_registration: "Complete Registration",      
+      already_have_account: "Already have an account? Sign in",
       registration_success: "Registration Successful!",
       welcome_to_adsy: "Welcome to ADSY Club!",
       registration_error: "An error occurred during registration",
       get_started: "Get Started",
-      explore_features: "Explore Features",      // Sale category translations
+      explore_features: "Explore Features",      
+      // Sale category translations
       my_post: "My Posts",
       post_a_sale: "Post a Sale",
       no_listings_found: "No listings found",
@@ -334,7 +338,7 @@ export default defineI18nConfig(() => ({
     bn: {
       welcome: "স্বাগতম",
       home: "হোম",
-      ad: "ফ্রি বিজ্ঞাপন ",
+      ad: "ফ্রি সেবা বিজ্ঞাপন ",
       eshop: "ই-শপ",
       eshop_manager: "ই-শপ ম্যানেজার",
       classified_service: "আমার সেবা",
@@ -351,7 +355,7 @@ export default defineI18nConfig(() => ({
       logout: "লগ আউট",
       my_post: "মাই পোস্ট",
       post_classified: "অ্যাড পোস্ট করি",
-      post_free_ad: "ফ্রি বিজ্ঞাপন দিই",
+      post_free_ad: "সেবা বিজ্ঞাপন দিই",
       post_classified_text: "আপনার কাস্টোমারের জন্য লিস্টিং করুন",
       basic_details: "বেসিক বর্ণনা",
       pricing: "প্রাইচ",
@@ -484,6 +488,9 @@ export default defineI18nConfig(() => ({
       bangladesh_first_title: "বাংলাদেশের প্রথম সোশাল বিজনেস নেটওয়ার্ক",
       bangladesh_first_text: "",
       sell_products: "ই-শপে সেল করি",
+      recommended_products: "গুরুত্বপূর্ণ বই ও শিক্ষা সামগ্রী",
+      no_products_available: "এই ব্যাচের জন্য কোনো প্রোডাক্ট পাওয়া যায়নি",
+      view_all_products: "সব প্রোডাক্ট দেখুন",
       division: "বিভাগ",
       select_division: "বিভাগ সিলেক্ট করুন",
       city: "জেলা ",
@@ -626,8 +633,9 @@ export default defineI18nConfig(() => ({
       already_have_account: "ইতিমধ্যে অ্যাকাউন্ট আছে? সাইন ইন করুন",
       registration_success: "রেজিস্ট্রেশন সফল!",
       welcome_to_adsy: "AdsyClub এ স্বাগতম!",
-      registration_error: "রেজিস্ট্রেশনের সময় একটি সমস্যা হয়েছে",      // Sale category translations in Bangla      
-      post_a_sale: "সেল পোস্ট করি",
+      registration_error: "রেজিস্ট্রেশনের সময় একটি সমস্যা হয়েছে",      
+      // Sale category translations in Bangla      
+      post_a_sale: "বিক্রয় পোস্ট করি",
       no_listings_found: "কোনো লিস্ট পাওয়া যায়নি",
       no_items_currently_listed: "এই ক্যাটাগরিতে বর্তমানে কোনো আইটেম নেই",
       no_gigs_available_category: "এই ক্যাটাগরিতে কোনো গিগ নেই",
@@ -664,3 +672,4 @@ export default defineI18nConfig(() => ({
     },
   },
 }));
+  
