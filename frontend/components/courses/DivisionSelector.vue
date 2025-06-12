@@ -44,17 +44,18 @@
             selectedDivision === division.id,
           'border-gray-200': selectedDivision !== division.id,
         }"
-      >
-        <div class="flex flex-col items-center text-center">
-          <div class="p-2 mb-1 flex size-7 rounded-full" :class="division.bgColor">
+      >          
+      <div class="flex flex-col items-center text-center">
+          <div class="p-2 mb-1 flex size-11 rounded-full items-center justify-center" :class="division.bgColor">
             <UIcon
               v-if="division.icon"
               :name="String(division.icon)"
               :class="division.iconColor"
+              class="size-7"
             />
           </div>
           <h3 class="font-medium text-sm">{{ division.name }}</h3>
-          <p class="text-sm text-gray-600 size-7 mt-0.5 line-clamp-1">
+          <p class="text-sm text-gray-600 mt-0.5 line-clamp-1">
           </p>
         </div>
       </div>
