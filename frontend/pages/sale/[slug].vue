@@ -89,11 +89,10 @@
       </div>
 
       <!-- Product Info - 2 columns on large screens -->
-      <div class="lg:col-span-2">
-        <div class="bg-white rounded-lg p-3 border border-gray-200">
+      <div class="lg:col-span-2">        <div class="bg-white rounded-lg p-3 border border-gray-200">
           <div class="flex justify-between items-start">
             <h1 class="text-xl font-bold text-gray-800">
-              {{ product?.title }}
+              {{ capitalizeTitle(product?.title) }}
             </h1>
             <div class="flex space-x-2">
               <button
@@ -464,12 +463,11 @@
               :alt="item?.title"
               class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-          </div>
-          <div class="p-4">
+          </div>          <div class="p-4">
             <h3
               class="font-semibold truncate text-sm text-gray-800 hover:text-emerald-600"
             >
-              {{ item.title }}
+              {{ capitalizeTitle(item.title) }}
             </h3>
             <div class="flex items-start mt-1 mb-2 text-xs text-gray-600">
               <UIcon
@@ -907,6 +905,12 @@ const openReportDialog = () => {
 
 const closeReportDialog = () => {
   showReportDialog.value = false;
+};
+
+// Function to capitalize first letter of title
+const capitalizeTitle = (title) => {
+  if (!title) return "";
+  return title.charAt(0).toUpperCase() + title.slice(1);
 };
 
 const submitReport = () => {

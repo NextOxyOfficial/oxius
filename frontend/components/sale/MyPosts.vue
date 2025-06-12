@@ -197,12 +197,11 @@
             <!-- Post details -->
             <div class="flex-1 min-w-0">
               <div class="flex items-start">
-                <div>
-                  <NuxtLink :to="`/sale/${post.slug}`">
+                <div>                  <NuxtLink :to="`/sale/${post.slug}`">
                     <h3
                       class="text-base line-clamp-2 px-2 text-start text-gray-800 hover:text-primary transition-colors group-hover:text-primary"
                     >
-                      {{ post.title }}
+                      {{ capitalizeTitle(post.title) }}
                     </h3>
                   </NuxtLink>
                   <!-- Action buttons for mobile -->
@@ -692,6 +691,12 @@ const formatDate = (dateString) => {
   } else {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   }
+};
+
+// Function to capitalize first letter of title
+const capitalizeTitle = (title) => {
+  if (!title) return "";
+  return title.charAt(0).toUpperCase() + title.slice(1);
 };
 
 // Fetch user's posts

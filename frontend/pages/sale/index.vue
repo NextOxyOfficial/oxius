@@ -441,11 +441,10 @@
                       {{ formatDate(post.created_at) }}
                     </p>
                   </div>
-                </div>
-                <!-- Title and Location -->
+                </div>                <!-- Title and Location -->
                 <div class="p-2">
                   <div class="text-gray-600 text-sm font-semibold line-clamp-2">
-                    {{ post?.title || `Post title` }}
+                    {{ capitalizeTitle(post?.title) || `Post title` }}
                   </div>
                   <div class="flex items-start mt-1 text-xs text-gray-600">
                     <UIcon
@@ -524,13 +523,11 @@
                         {{ getCategoryName(listing.category) }}
                       </span>
                     </div>
-                  </div>
-
-                  <div class="p-3">
+                  </div>                  <div class="p-3">
                     <h3
                       class="font-medium text-gray-800 line-clamp-1 group-hover:text-amber-700"
                     >
-                      {{ listing?.title || `Title` }}
+                      {{ capitalizeTitle(listing?.title) || `Title` }}
                     </h3>
 
                     <div
@@ -1167,6 +1164,12 @@ function getCateogryPostCount(categoryId) {
   if (!categoryId) return 0;
   const category = categories.value.find((c) => c.id === parseInt(categoryId));
   return category ? category.post_count : 0;
+}
+
+// Function to capitalize first letter of title
+function capitalizeTitle(title) {
+  if (!title) return "";
+  return title.charAt(0).toUpperCase() + title.slice(1);
 }
 
 function getConditionLabel(condition) {
