@@ -192,21 +192,17 @@
           :disabled="isAtStart"
         >
           <Icon name="heroicons:chevron-left" size="18px" />
-        </button>
-
-        <!-- Categories slider with touch events -->
+        </button>        <!-- Categories slider with touch events -->
         <div
-          class="overflow-hidden"
+          class="overflow-hidden overflow-x-auto scroll-smooth"
           ref="sliderContainer"
-          @touchstart="handleTouchStart"
-          @touchmove="handleTouchMove"
-          @touchend="handleTouchEnd"
+          @scroll="handleScroll"
+          style="scrollbar-width: none; -ms-overflow-style: none;"
         >
           <div
-            class="categories-wrapper flex transition-all duration-500 ease-out mt-3"
-            :style="{ transform: `translateX(-${scrollPosition}px)` }"
+            class="categories-wrapper flex mt-3"
             ref="categoriesWrapper"
-          >            <!-- Show category loading placeholders when categories are loading -->
+          ><!-- Show category loading placeholders when categories are loading -->
             <template v-if="isLoadingCategories && !categoriesFetched">
               <div
                 v-for="index in 6"
@@ -437,7 +433,6 @@ const { get } = useApi();
 const categories = ref([]);
 const banners = ref([]);
 const selectedCategory = ref(null);
-const scrollPosition = ref(0);
 const sliderContainer = ref(null);
 const categoriesWrapper = ref(null);
 const isLoading = ref(false);
@@ -451,22 +446,9 @@ const isLoadingBanners = ref(true);
 const categoriesFetched = ref(false);
 const bannersFetched = ref(false);
 
-// Touch handling variables
-const touchStartX = ref(0);
-const touchEndX = ref(0);
-const touchMoveX = ref(0);
-const isHandlingTouch = ref(false);
-const swipeThreshold = 8; // Minimum distance to start visual feedback
-const minSwipeDistance = 50; // Minimum distance to trigger swipe action
-
-const isAtStart = computed(() => scrollPosition.value <= 0);
-const isAtEnd = computed(() => {
-  if (!categoriesWrapper.value || !sliderContainer.value) return true;
-  return (
-    scrollPosition.value + sliderContainer.value.clientWidth >=
-    categoriesWrapper.value.scrollWidth
-  );
-});
+// Scroll state for navigation buttons
+const isAtStart = ref(true);
+const isAtEnd = ref(false);
 
 // Helper function to construct full image URL
 const getImageUrl = (path) => {
@@ -524,167 +506,65 @@ const getSelectedCategoryName = () => {
 
 // Slide the categories left
 const slideLeft = () => {
-  if (scrollPosition.value <= 0) return;
+  if (!sliderContainer.value || isAtStart.value) return;
 
-  // On mobile, we show 4 categories at once
   const containerWidth = sliderContainer.value.clientWidth;
-
-  // Calculate width of single item based on container width
   const itemWidth = isMobile.value
     ? containerWidth / 4 // Show 4 items on mobile
     : containerWidth / 6; // Show 6 items on desktop
 
-  // Smooth scrolling by precisely calculating the scroll position
-  // Using Math.ceil to ensure we always scroll to complete item boundaries
-  const targetPosition = Math.max(0, scrollPosition.value - itemWidth * 2); // Scroll 2 items at once for better UX
+  // Scroll left by 2 items width
+  const scrollAmount = itemWidth * 2;
+  const currentScroll = sliderContainer.value.scrollLeft;
+  const targetScroll = Math.max(0, currentScroll - scrollAmount);
 
-  // Apply smooth transition
-  if (categoriesWrapper.value) {
-    categoriesWrapper.value.style.transition =
-      "transform 500ms cubic-bezier(0.25, 0.1, 0.25, 1)";
-  }
-
-  scrollPosition.value = targetPosition;
-
-  // Add animation feedback
-  if (sliderContainer.value) {
-    sliderContainer.value.classList.add("sliding");
-    setTimeout(() => {
-      sliderContainer.value.classList.remove("sliding");
-    }, 500);
-  }
+  sliderContainer.value.scrollTo({
+    left: targetScroll,
+    behavior: 'smooth'
+  });
 };
 
 // Slide the categories right
 const slideRight = () => {
-  if (!categoriesWrapper.value || !sliderContainer.value) return;
+  if (!sliderContainer.value || isAtEnd.value) return;
 
   const containerWidth = sliderContainer.value.clientWidth;
-  const maxScroll = categoriesWrapper.value.scrollWidth - containerWidth;
-
-  if (scrollPosition.value >= maxScroll) return;
-
-  // Calculate width of single item based on container width
   const itemWidth = isMobile.value
     ? containerWidth / 4 // Show 4 items on mobile
     : containerWidth / 6; // Show 6 items on desktop
 
-  // Smooth scrolling by precisely calculating the scroll position
-  // Using Math.floor to ensure we always scroll to complete item boundaries
-  const targetPosition = Math.min(
-    maxScroll,
-    scrollPosition.value + itemWidth * 2
-  ); // Scroll 2 items at once for better UX
+  // Scroll right by 2 items width
+  const scrollAmount = itemWidth * 2;
+  const currentScroll = sliderContainer.value.scrollLeft;
+  const maxScroll = sliderContainer.value.scrollWidth - containerWidth;
+  const targetScroll = Math.min(maxScroll, currentScroll + scrollAmount);
 
-  // Apply smooth transition
-  if (categoriesWrapper.value) {
-    categoriesWrapper.value.style.transition =
-      "transform 500ms cubic-bezier(0.25, 0.1, 0.25, 1)";
-  }
+  sliderContainer.value.scrollTo({
+    left: targetScroll,
+    behavior: 'smooth'
+  });
+};
 
-  scrollPosition.value = targetPosition;
+// Handle scroll events to update navigation button states
+const handleScroll = () => {
+  if (!sliderContainer.value) return;
 
-  // Add animation feedback
-  if (sliderContainer.value) {
-    sliderContainer.value.classList.add("sliding");
-    setTimeout(() => {
-      sliderContainer.value.classList.remove("sliding");
-    }, 500);
-  }
+  const scrollLeft = sliderContainer.value.scrollLeft;
+  const maxScroll = sliderContainer.value.scrollWidth - sliderContainer.value.clientWidth;
+
+  isAtStart.value = scrollLeft <= 5; // Small tolerance for precision
+  isAtEnd.value = scrollLeft >= maxScroll - 5; // Small tolerance for precision
 };
 
 // Touch event handlers
-const handleTouchStart = (e) => {
-  isHandlingTouch.value = true;
-  touchStartX.value = e.touches[0].clientX;
-  touchEndX.value = touchStartX.value;
+// Handle screen resize
+const checkIfMobile = () => {
+  isMobile.value = window.innerWidth < 768;
 
-  // Remove any transition during drag for immediate response
-  if (categoriesWrapper.value) {
-    categoriesWrapper.value.style.transition = "none";
-  }
-};
-
-const handleTouchMove = (e) => {
-  if (!isHandlingTouch.value) return;
-
-  touchMoveX.value = e.touches[0].clientX;
-  const swipeDiff = touchMoveX.value - touchStartX.value;
-
-  // Only prevent default if significant swipe detected to allow normal scrolling
-  if (Math.abs(swipeDiff) > swipeThreshold) {
-    e.preventDefault();
-
-    // Don't allow further swiping if at the edges
-    if (
-      (swipeDiff > 0 && isAtStart.value) ||
-      (swipeDiff < 0 && isAtEnd.value)
-    ) {
-      return;
-    }
-
-    // Real-time movement of the slider with finger
-    const moveOffset = swipeDiff / 2; // Dampen the movement for better control
-
-    if (categoriesWrapper.value) {
-      const currentTransform = scrollPosition.value - moveOffset;
-      categoriesWrapper.value.style.transform = `translateX(-${currentTransform}px)`;
-    }
-
-    // Visual feedback classes
-    if (sliderContainer.value) {
-      sliderContainer.value.classList.remove("swiping-left", "swiping-right");
-      if (swipeDiff > 0) {
-        sliderContainer.value.classList.add("swiping-right");
-      } else {
-        sliderContainer.value.classList.add("swiping-left");
-      }
-    }
-  }
-};
-
-const handleTouchEnd = (e) => {
-  if (!isHandlingTouch.value) return;
-
-  touchEndX.value = e.changedTouches[0].clientX;
-
-  // Reset the transition for smooth animation after touch
-  if (categoriesWrapper.value) {
-    categoriesWrapper.value.style.transition = "transform 500ms ease-out";
-  }
-
-  // Remove swiping classes
-  if (sliderContainer.value) {
-    sliderContainer.value.classList.remove("swiping-left", "swiping-right");
-  }
-
-  handleSwipe();
-  isHandlingTouch.value = false;
-};
-
-const handleSwipe = () => {
-  const distance = touchStartX.value - touchEndX.value;
-
-  if (Math.abs(distance) < minSwipeDistance) {
-    // If swipe was too small, snap back to original position
-    if (categoriesWrapper.value) {
-      categoriesWrapper.value.style.transform = `translateX(-${scrollPosition.value}px)`;
-    }
-    return;
-  }
-
-  if (distance > 0 && !isAtEnd.value) {
-    // Swipe left (show more categories to the right)
-    slideRight();
-  } else if (distance < 0 && !isAtStart.value) {
-    // Swipe right (show previous categories to the left)
-    slideLeft();
-  } else {
-    // If at the edge, snap back to current position with animation
-    if (categoriesWrapper.value) {
-      categoriesWrapper.value.style.transform = `translateX(-${scrollPosition.value}px)`;
-    }
-  }
+  // Update scroll states when switching between mobile and desktop
+  nextTick(() => {
+    handleScroll();
+  });
 };
 
 // Fetch categories from the backend
@@ -813,16 +693,6 @@ const fetchCategoryPosts = async () => {
 
 watch(selectedCategory, fetchCategoryPosts);
 
-// Handle screen resize
-const checkIfMobile = () => {
-  isMobile.value = window.innerWidth < 768;
-
-  // Reset scroll position when switching between mobile and desktop
-  if (!isMobile.value) {
-    scrollPosition.value = 0;
-  }
-};
-
 // Initialize on mount
 onMounted(async () => {
   // Check if categories and banners are already loaded to prevent duplicates
@@ -833,22 +703,13 @@ onMounted(async () => {
   if (!bannersFetched.value) {
     await fetchBanners();
   }
-
   // Check device type initially
   checkIfMobile();
 
-  // Add proper event listeners for touch events with passive: false for better performance
-  if (sliderContainer.value) {
-    sliderContainer.value.addEventListener("touchstart", handleTouchStart, {
-      passive: true,
-    });
-    sliderContainer.value.addEventListener("touchmove", handleTouchMove, {
-      passive: false,
-    });
-    sliderContainer.value.addEventListener("touchend", handleTouchEnd, {
-      passive: true,
-    });
-  }
+  // Initialize scroll state
+  nextTick(() => {
+    handleScroll();
+  });
 
   // Add resize event listener
   window.addEventListener("resize", checkIfMobile);
@@ -857,13 +718,6 @@ onMounted(async () => {
 // Clean up event listeners
 onUnmounted(() => {
   window.removeEventListener("resize", checkIfMobile);
-
-  // Remove touch event listeners to prevent memory leaks
-  if (sliderContainer.value) {
-    sliderContainer.value.removeEventListener("touchstart", handleTouchStart);
-    sliderContainer.value.removeEventListener("touchmove", handleTouchMove);
-    sliderContainer.value.removeEventListener("touchend", handleTouchEnd);
-  }
 });
 
 // Helper function for formatting dates
@@ -953,51 +807,18 @@ const capitalizeTitle = (title) => {
 }
 
 .categories-wrapper {
-  touch-action: pan-x;
-  will-change: transform; /* Optimize for animation performance */
+  display: flex;
 }
 
-/* Visual feedback classes for swipe direction */
-.swiping-left {
-  position: relative;
-}
-.swiping-left::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 100%;
-  width: 30px;
-  background: linear-gradient(to left, rgba(59, 130, 246, 0.2), transparent);
-  border-radius: 0 8px 8px 0;
-  pointer-events: none;
+/* Hide scrollbar for webkit browsers */
+.overflow-x-auto::-webkit-scrollbar {
+  display: none;
 }
 
-.swiping-right {
-  position: relative;
-}
-.swiping-right::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 30px;
-  background: linear-gradient(to right, rgba(59, 130, 246, 0.2), transparent);
-  border-radius: 8px 0 0 8px;
-  pointer-events: none;
-}
-
-/* Sliding animation class */
-.sliding {
-  position: relative;
-}
-.sliding::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-color: rgba(255, 255, 255, 0.1);
-  pointer-events: none;
+/* Hide scrollbar for IE, Edge and Firefox */
+.overflow-x-auto {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
 
 /* Animation for loading skeleton */
