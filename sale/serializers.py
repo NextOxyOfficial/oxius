@@ -133,8 +133,7 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
         fields = [
             'title', 'description', 'condition', 'category', 'child_category',
             'price', 'negotiable', 'detailed_address', 'phone', 'email',
-            'division', 'district', 'area'
-        ]
+            'division', 'district', 'area'        ]
             
     def validate(self, data):
         """Validate required fields"""
@@ -145,10 +144,15 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
         if not data.get('price') and not data.get('negotiable'):
             raise serializers.ValidationError({"price": "Either price or negotiable must be provided"})
 
-        # Check all required fields
+        # Check all required fields - be more lenient with whitespace
         for field in required_fields:
-            if field not in data or data[field] is None or data[field] == '':
-                raise serializers.ValidationError({field: f"{field} is required"})            
+            if field not in data or data[field] is None:
+                raise serializers.ValidationError({field: f"{field} is required"})
+            
+            # For string fields, check if they're empty after stripping whitespace
+            if isinstance(data[field], str) and not data[field].strip():
+                raise serializers.ValidationError({field: f"{field} cannot be empty"})
+                
         return data
     
     def create(self, validated_data):

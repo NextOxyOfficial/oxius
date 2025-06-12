@@ -360,7 +360,7 @@
     </div>
 
     <!-- Submit Button -->
-    <div class="flex justify-end">
+    <div class="flex justify-end p-4">
       <UButton
         type="submit"
         :loading="isSubmitting"
@@ -599,7 +599,7 @@ const removeImage = (index) => {
   uploadError.value = "";
 };
 
-// Image compression function
+// Enhanced image compression function with aggressive optimization
 const processImageWithCompression = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -613,19 +613,21 @@ const processImageWithCompression = (file) => {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
 
-        // Calculate new dimensions with better optimization
+        // Calculate new dimensions with more aggressive optimization
         let { width, height } = img;
-        const maxDimension = 1600; // Larger max for better quality
+        
+        // Get optimized settings based on file size and image dimensions
+        const settings = getCompressionSettings(file.size, width, height);
         
         // Smart resizing with aspect ratio preservation
-        if (width > maxDimension || height > maxDimension) {
+        if (width > settings.maxDimension || height > settings.maxDimension) {
           const aspectRatio = width / height;
           
           if (width > height) {
-            width = maxDimension;
+            width = settings.maxDimension;
             height = Math.round(width / aspectRatio);
           } else {
-            height = maxDimension;
+            height = settings.maxDimension;
             width = Math.round(height * aspectRatio);
           }
         }
@@ -639,21 +641,40 @@ const processImageWithCompression = (file) => {
         ctx.filter = "none";
 
         // Progressive compression with quality optimization
-        let quality = 0.85; // Start with higher quality
+        let quality = settings.initialQuality;
         let resultImage = canvas.toDataURL("image/jpeg", quality);
         let resultSize = Math.round((resultImage.length * 3) / 4);
-        
-        const targetSize = 150 * 1024; // 150KB target
-        const minQuality = 0.60;
 
-        // Optimize compression
-        while (resultSize > targetSize && quality > minQuality) {
+        // Phase 1: Fine quality reduction
+        while (resultSize > settings.targetSize && quality > settings.minQuality + 0.1) {
+          quality -= 0.02;
+          resultImage = canvas.toDataURL("image/jpeg", quality);
+          resultSize = Math.round((resultImage.length * 3) / 4);
+        }
+
+        // Phase 2: Dimensional reduction if needed
+        if (resultSize > settings.targetSize && quality <= settings.minQuality + 0.1) {
+          const scaleFactor = Math.sqrt(settings.targetSize / resultSize) * 0.9;
+          const newWidth = Math.max(400, Math.round(width * scaleFactor));
+          const newHeight = Math.max(400, Math.round(height * scaleFactor));
+          
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+          
+          quality = Math.max(settings.minQuality, 0.65);
+          resultImage = canvas.toDataURL("image/jpeg", quality);
+          resultSize = Math.round((resultImage.length * 3) / 4);
+        }
+
+        // Final quality fine-tuning
+        while (resultSize > settings.targetSize && quality > settings.minQuality) {
           quality -= 0.05;
           resultImage = canvas.toDataURL("image/jpeg", quality);
           resultSize = Math.round((resultImage.length * 3) / 4);
         }
 
-        console.log(`Image compressed: ${formatFileSize(file.size)} → ${formatFileSize(resultSize)} (${quality * 100}% quality)`);
+        console.log(`Image compressed: ${formatFileSize(file.size)} → ${formatFileSize(resultSize)} (${(quality * 100).toFixed(0)}% quality)`);
         resolve(resultImage);
       };
       img.onerror = reject;
@@ -662,6 +683,41 @@ const processImageWithCompression = (file) => {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+};
+
+// Get optimized compression settings based on image characteristics
+const getCompressionSettings = (fileSize, imageWidth, imageHeight) => {
+  const settings = {
+    maxDimension: 1200,
+    targetSize: 80 * 1024, // 80KB aggressive target
+    initialQuality: 0.78,
+    minQuality: 0.45
+  };
+
+  // Adjust for large files (>5MB) - more aggressive
+  if (fileSize > 5 * 1024 * 1024) {
+    settings.maxDimension = 1000;
+    settings.targetSize = 75 * 1024; // 75KB for large files
+    settings.initialQuality = 0.75;
+    settings.minQuality = 0.40;
+  }
+
+  // Adjust for very large images (>4000px) - prioritize size reduction
+  if (imageWidth > 4000 || imageHeight > 4000) {
+    settings.maxDimension = 800;
+    settings.targetSize = 70 * 1024; // 70KB
+    settings.initialQuality = 0.70;
+    settings.minQuality = 0.35;
+  }
+
+  // Adjust for small files (<1MB) - maintain reasonable quality
+  if (fileSize < 1024 * 1024) {
+    settings.targetSize = 85 * 1024; // 85KB for small files
+    settings.minQuality = 0.50;
+    settings.initialQuality = 0.80;
+  }
+
+  return settings;
 };
 
 // Format file size utility
@@ -746,8 +802,14 @@ const submitForm = async () => {
     });
     return;
   }
-
   try {
+    // Log image information for debugging
+    const imageSizes = validImages.map(img => {
+      const size = Math.round((img.length * 3) / 4);
+      return formatFileSize(size);
+    });
+    console.log(`Submitting ${validImages.length} images with sizes:`, imageSizes);
+
     // Prepare submission data following business network pattern
     const submissionData = {
       category: parseInt(formData.category),
@@ -779,7 +841,7 @@ const submitForm = async () => {
       submissionData.price = parseFloat(formData.price);
     }
 
-    console.log("Submitting data:", submissionData);
+    console.log("Submitting data with payload size:", JSON.stringify(submissionData).length, "bytes");
 
     const result = await createSalePost(submissionData);
     console.log("Submission successful:", result);
@@ -792,11 +854,31 @@ const submitForm = async () => {
 
   } catch (error) {
     console.error("Error submitting form:", error);
-
-    let errorMessage = "Failed to submit your listing. Please try again.";
+    console.error("Error details:", {
+      status: error?.response?.status,
+      statusText: error?.response?.statusText,
+      data: error?.response?.data,
+      message: error?.message
+    });    let errorMessage = "Failed to submit your listing. Please try again.";
 
     if (error?.response?.status === 400) {
-      errorMessage = "Please check your form data and try again.";
+      // Check for specific validation errors
+      const errorData = error.response.data;
+      if (errorData?.detail) {
+        errorMessage = `Validation Error: ${errorData.detail}`;
+      } else if (errorData?.non_field_errors) {
+        errorMessage = `Validation Error: ${errorData.non_field_errors.join(', ')}`;
+      } else if (typeof errorData === 'object') {
+        // Extract field-specific errors
+        const fieldErrors = Object.entries(errorData)
+          .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+          .join('; ');
+        errorMessage = fieldErrors ? `Validation Errors: ${fieldErrors}` : "Please check your form data and try again.";
+      } else {
+        errorMessage = "Please check your form data and try again.";
+      }
+    } else if (error?.response?.status === 413) {
+      errorMessage = "Request too large. Please try uploading smaller images.";
     } else if (error?.message?.includes("network")) {
       errorMessage = "Network error. Please check your connection.";
     }

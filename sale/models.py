@@ -167,11 +167,9 @@ class SalePost(models.Model):
     
     def __str__(self):
         return self.title
-    
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = generate_unique_slug(SalePost, self.title, self)
-        super(SalePost, self).save(*args, **kwargs)
         
         # Link to condition object if available
         if self.condition and not self.condition_object:
