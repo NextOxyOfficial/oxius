@@ -21,52 +21,51 @@
             </template>
             Go to Marketplace          
         </UButton>
-        </div>
-          <!-- Quick Stats -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <div class="bg-white rounded-lg p-3 border border-gray-100">
+        </div>        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 px-2 sm:px-4">
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3 shadow-sm">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <UIcon name="i-heroicons-document-text" class="h-5 w-5 text-blue-600" />
               </div>
               <div class="ml-2">
-                <p class="text-xs font-medium text-gray-900">Total Posts</p>
+                <p class="text-xs font-medium text-blue-800">Total Posts</p>
                 <p class="text-base font-semibold text-blue-600">{{ stats.total || 0 }}</p>
               </div>
             </div>
           </div>
           
-          <div class="bg-white rounded-lg p-3 border border-gray-100">
+          <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-3 shadow-sm">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <UIcon name="i-heroicons-eye" class="h-5 w-5 text-green-600" />
               </div>
               <div class="ml-2">
-                <p class="text-xs font-medium text-gray-900">Active</p>
+                <p class="text-xs font-medium text-green-800">Active</p>
                 <p class="text-base font-semibold text-green-600">{{ stats.active || 0 }}</p>
               </div>
             </div>
           </div>
           
-          <div class="bg-white rounded-lg p-3 border border-gray-100">
+          <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-3 shadow-sm">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-emerald-600" />
               </div>
               <div class="ml-2">
-                <p class="text-xs font-medium text-gray-900">Sold</p>
+                <p class="text-xs font-medium text-emerald-800">Sold</p>
                 <p class="text-base font-semibold text-emerald-600">{{ stats.sold || 0 }}</p>
               </div>
             </div>
           </div>
           
-          <div class="bg-white rounded-lg p-3 border border-gray-100">
+          <div class="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-3 shadow-sm">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <UIcon name="i-heroicons-clock" class="h-5 w-5 text-amber-600" />
               </div>
               <div class="ml-2">
-                <p class="text-xs font-medium text-gray-900">Pending</p>
+                <p class="text-xs font-medium text-amber-800">Pending</p>
                 <p class="text-base font-semibold text-amber-600">{{ stats.pending || 0 }}</p>
               </div>
             </div>
