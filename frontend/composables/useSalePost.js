@@ -17,13 +17,13 @@ export function useSalePost() {
     error.value = null;
 
     try {
-      console.log("Submitting sale post data...", formData);
-
-      // Log authentication state for debugging
+      console.log("Submitting sale post data...", formData);      // Log authentication state for debugging
       console.log(
         "Authentication state:",
         user.value ? "Logged in" : "Not logged in"
       );
+      console.log("API endpoint:", "/sale/posts/");
+      console.log("Request payload size:", JSON.stringify(formData).length, "bytes");
 
       // Send to server with explicit authentication headers
       const response = await api.post("/sale/posts/", formData, {

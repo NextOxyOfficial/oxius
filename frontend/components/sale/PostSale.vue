@@ -528,8 +528,41 @@
               >
                 Main
               </div>
+            </div>          </div>          <!-- Compression Progress Indicator -->
+          <transition
+            enter-active-class="transition-all duration-300 ease-out"
+            enter-from-class="opacity-0 -translate-y-4"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition-all duration-200 ease-in"
+            leave-from-class="opacity-100 translate-y-0"
+            leave-to-class="opacity-0 -translate-y-4"
+          >
+            <div
+              v-if="isCompressing"
+              class="bg-blue-50 rounded-lg p-4 space-y-3 mb-4 border border-blue-100"
+            >
+              <div class="flex items-center gap-3">
+                <div class="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                  <Icon name="heroicons:arrow-path" class="h-3 w-3 text-white animate-spin" />
+                </div>
+                <span class="text-sm font-medium text-blue-800">
+                  {{ compressionStatus }}
+                </span>
+              </div>
+              
+              <!-- Progress Bar -->
+              <div class="w-full bg-blue-200 rounded-full h-2 overflow-hidden">
+                <div 
+                  class="bg-blue-600 h-full rounded-full transition-all duration-300 ease-out"
+                  :style="{ width: `${compressionProgress}%` }"
+                ></div>
+              </div>
+              
+              <p class="text-xs text-blue-700">
+                Please wait while we optimize your image for the best quality and performance.
+              </p>
             </div>
-          </div>
+          </transition>
 
           <p v-if="errors.images" class="mt-2 text-red-500 text-sm">
             {{ errors.images }}
@@ -717,8 +750,10 @@ const loadConditions = async () => {
         value: condition.value,
         description: condition.description,
       }));
+      console.log("Conditions loaded successfully:", conditions.value.length);
     } else {
       // Fallback to hardcoded conditions if API fails
+      console.warn("API response invalid, using fallback conditions");
       conditions.value = [
         { label: "Brand New", value: "brand-new" },
         { label: "Like New", value: "like-new" },
@@ -730,6 +765,7 @@ const loadConditions = async () => {
   } catch (error) {
     console.error("Error loading conditions:", error);
     // Use fallback conditions
+    console.warn("Using fallback conditions due to error");
     conditions.value = [
       { label: "Brand New", value: "brand-new" },
       { label: "Like New", value: "like-new" },
@@ -833,6 +869,11 @@ const imagePreviewUrls = ref([]);
 // File input references
 const fileInputRefs = reactive({});
 
+// Compression progress tracking
+const isCompressing = ref(false);
+const compressionProgress = ref(0);
+const compressionStatus = ref("");
+
 // Open file upload dialog
 const openFileUpload = (index) => {
   if (fileInputRefs[`fileInput${index}`]) {
@@ -840,8 +881,8 @@ const openFileUpload = (index) => {
   }
 };
 
-// Handle file upload
-function handleFileUpload(event, index) {
+// Handle file upload with compression
+async function handleFileUpload(event, index) {
   const file = event.target.files[0];
   if (!file) return;
 
@@ -851,33 +892,54 @@ function handleFileUpload(event, index) {
     return;
   }
 
-  // Validate file size (max 5MB)
+  // Validate file size (max 12MB)
   if (file.size > 12 * 1024 * 1024) {
     errors.images = "Image size should be less than 12MB";
     return;
   }
 
-  const reader = new FileReader();
+  isCompressing.value = true;
+  compressionStatus.value = `Compressing ${file.name}...`;
+  compressionProgress.value = 0;
+  errors.images = "";
+  try {
+    // Update progress incrementally
+    compressionProgress.value = 20;
+    compressionStatus.value = "Analyzing image...";
+    
+    // Process image with compression
+    const compressedImage = await processImageWithCompression(file);
+    
+    if (compressedImage) {
+      compressionProgress.value = 80;
+      compressionStatus.value = "Finalizing...";
+      
+      // Update preview URL and store compressed base64 data
+      const newImagePreviewUrls = [...imagePreviewUrls.value];
+      newImagePreviewUrls[index] = compressedImage;
+      imagePreviewUrls.value = newImagePreviewUrls;
 
-  reader.onload = () => {
-    // Update preview URL and store base64 data
-    const newImagePreviewUrls = [...imagePreviewUrls.value];
-    newImagePreviewUrls[index] = reader.result;
-    imagePreviewUrls.value = newImagePreviewUrls;
+      // Store the compressed base64 data for API submission
+      formData.images[index] = compressedImage;
 
-    // Store the base64 data for API submission
-    formData.images[index] = reader.result;
+      compressionStatus.value = "Compression completed!";
+      compressionProgress.value = 100;
 
-    // Clear errors if any
-    errors.images = "";
-  };
+      // Log compression success
+      const originalSize = formatFileSize(file.size);
+      const compressedSize = Math.round((compressedImage.length * 3) / 4);
+      console.log(`Image compressed successfully: ${originalSize} → ${formatFileSize(compressedSize)}`);
 
-  reader.onerror = (error) => {
-    errors.images = "Failed to read image file.";
-    console.error("FileReader error:", error);
-  };
-
-  reader.readAsDataURL(file);
+      // Hide compression indicator after a short delay
+      setTimeout(() => {
+        isCompressing.value = false;
+      }, 1500);
+    }
+  } catch (error) {
+    console.error("Error compressing image:", error);
+    errors.images = "Failed to process image. Please try again.";
+    isCompressing.value = false;
+  }
 }
 
 // Remove image
@@ -960,10 +1022,24 @@ const validateStep = () => {
       errors.price = "Please enter a price or mark as negotiable";
     }
 
+    // Additional validation for location fields
     if (!allOverBangladesh.value) {
-      if (!formData.division) errors.division = "Please select division";
-      if (!formData.district) errors.district = "Please select district";
-      if (!formData.area) errors.area = "Please select area";
+      if (!formData.division || !formData.district || !formData.area) {
+        console.error("Location validation failed:", {
+          division: formData.division,
+          district: formData.district,
+          area: formData.area,
+          allOverBangladesh: allOverBangladesh.value
+        });
+        const toast = useToast();
+        toast.add({
+          title: "Validation Error",
+          description: "Please select division, district, and area when not targeting all over Bangladesh",
+          color: "red",
+          timeout: 5000,
+        });
+        return;
+      }
     }
     if (!formData.detailedAddress)
       errors.detailedAddress = "Please enter detailed address";
@@ -1007,51 +1083,225 @@ const submitForm = async () => {
     );
     return;
   }
-
+  
   try {
     console.log("Starting form submission process...");
+    
+    // Clear all previous errors at the start of submission
+    Object.keys(errors).forEach((key) => (errors[key] = ""));    // Wait for conditions to be loaded if they're not ready yet
+    if (conditions.value.length === 0) {
+      console.log("Conditions not loaded yet, loading them now...");
+      try {
+        await loadConditions();
+        
+        // Wait a bit more to ensure they're properly set
+        if (conditions.value.length === 0) {
+          console.error("Failed to load conditions, cannot proceed");
+          const toast = useToast();
+          toast.add({
+            title: "Initialization Error",
+            description: "Form data is still loading. Please try again in a moment.",
+            color: "red",
+            timeout: 5000,
+          });
+          return;
+        }
+      } catch (conditionError) {
+        console.error("Error loading conditions:", conditionError);
+        const toast = useToast();
+        toast.add({
+          title: "Loading Error",
+          description: "Failed to load required form data. Please refresh the page.",
+          color: "red",
+          timeout: 5000,
+        });
+        return;
+      }
+    }
 
-    // Prepare form data as a regular object (not FormData)
-    const formDataObj = {
+    // Validate condition is from available options
+    const validCondition = conditions.value.find(c => c.value === formData.condition);
+    if (!validCondition) {
+      console.error("Invalid condition selected:", formData.condition);
+      console.error("Available conditions:", conditions.value.map(c => c.value));
+      const toast = useToast();
+      toast.add({
+        title: "Validation Error",
+        description: "Please select a valid condition from the available options",
+        color: "red",
+        timeout: 5000,
+      });
+      return;
+    }// Validate all required fields before submission
+    const requiredFields = {
       category: formData.category,
-      title: formData.title,
-      description: formData.description,
+      title: formData.title?.trim(),
+      description: formData.description?.trim(),
       condition: formData.condition,
-      division: formData.division,
-      district: formData.district,
-      area: formData.area,
-      detailed_address: formData.detailedAddress,
-      phone: formData.phone,
-      negotiable: formData.negotiable,
+      // When "All over Bangladesh" is selected, location fields are optional, otherwise they're required
+      division: allOverBangladesh.value ? "optional" : formData.division,
+      district: allOverBangladesh.value ? "optional" : formData.district,
+      area: allOverBangladesh.value ? "optional" : formData.area,
+      detailed_address: formData.detailedAddress?.trim(),
+      phone: formData.phone?.trim()
+    };// Check for missing required fields
+    const missingFields = [];
+    Object.entries(requiredFields).forEach(([key, value]) => {
+      if (value !== "optional" && (!value || value === '')) {
+        missingFields.push(key);
+      }
+    });
+
+    if (missingFields.length > 0) {
+      console.error("Missing required fields:", missingFields);
+      const toast = useToast();
+      toast.add({
+        title: "Validation Error",
+        description: `Missing required fields: ${missingFields.join(', ')}`,
+        color: "red",
+        timeout: 5000,
+      });
+      return;
+    }    // Prepare form data as a regular object (not FormData)
+    const formDataObj = {
+      category: parseInt(formData.category), // Ensure category is always integer
+      title: formData.title.trim(), // Trim whitespace
+      description: formData.description.trim(), // Trim whitespace
+      condition: formData.condition, // String value from condition model
+      // Handle location fields - when "All over Bangladesh" is selected, omit location fields as they're optional
+      division: allOverBangladesh.value ? "" : formData.division,
+      district: allOverBangladesh.value ? "" : formData.district,
+      area: allOverBangladesh.value ? "" : formData.area,
+      detailed_address: formData.detailedAddress.trim(), // Trim whitespace
+      phone: formData.phone.trim(), // Trim whitespace
+      negotiable: Boolean(formData.negotiable), // Ensure boolean type
     };
 
     // Debug condition value
     console.log("Condition value being sent:", formData.condition);
-    console.log("Available conditions:", conditions.value);
-
-    // Add optional fields only if they have values
+    console.log("Available conditions:", conditions.value);    // Add optional fields only if they have values
     if (formData.childCategory) {
-      formDataObj.child_category = formData.childCategory;
+      formDataObj.child_category = parseInt(formData.childCategory);
     }
 
-    if (formData.email) {
-      formDataObj.email = formData.email;
+    if (formData.email && formData.email.trim()) {
+      formDataObj.email = formData.email.trim();
     }
 
-    if (!formData.negotiable && formData.price) {
-      formDataObj.price = formData.price;
+    // Validate category is a valid integer
+    if (!formDataObj.category || isNaN(formDataObj.category)) {
+      console.error("Invalid category ID:", formData.category);
+      const toast = useToast();
+      toast.add({
+        title: "Validation Error",
+        description: "Please select a valid category",
+        color: "red",
+        timeout: 5000,
+      });
+      return;
+    }// Handle price - always include price field for validation, but handle null case properly
+    if (formData.negotiable) {
+      // When negotiable, price can be null, but still send the field
+      formDataObj.price = formData.price && formData.price !== '' ? parseFloat(formData.price) : null;
+    } else {
+      // When not negotiable, price is required and must be > 0
+      if (!formData.price || formData.price === '' || parseFloat(formData.price) <= 0) {
+        console.error("Valid price is required when not negotiable");
+        const toast = useToast();
+        toast.add({
+          title: "Validation Error",
+          description: "Please enter a valid price when item is not negotiable",
+          color: "red",
+          timeout: 5000,
+        });
+        return;
+      }
+      formDataObj.price = parseFloat(formData.price);
     }
 
-    // Convert base64 image strings to array of image data
-    // This depends on how your backend API expects images
-    // For now, we'll include them as base64 strings
-    if (formData.images && formData.images.filter((img) => img).length > 0) {
-      formDataObj.images = formData.images.filter((img) => img);
+    // Validate that either price or negotiable is set
+    if (!formData.negotiable && (!formData.price || formData.price === '')) {
+      console.error("Either price must be provided or item must be marked as negotiable");
+      const toast = useToast();
+      toast.add({
+        title: "Validation Error",
+        description: "Either provide a price or mark the item as negotiable",
+        color: "red",
+        timeout: 5000,
+      });
+      return;
+    }// Filter and process images - ensure they're valid base64 strings and limit to 4 images
+    const validImages = formData.images.filter((img) => img && typeof img === 'string').slice(0, 4);
+    
+    if (validImages.length > 0) {
+      // Log image details for debugging
+      console.log(`Processing ${validImages.length} images for submission:`);
+      let totalImageSize = 0;
+      validImages.forEach((img, index) => {
+        const sizeEstimate = Math.round((img.length * 3) / 4);
+        totalImageSize += sizeEstimate;
+        console.log(`Image ${index + 1}: ${formatFileSize(sizeEstimate)}`);
+        
+        // Check if individual image is too large (over 200KB after compression)
+        if (sizeEstimate > 200 * 1024) {
+          console.warn(`Image ${index + 1} is still large after compression: ${formatFileSize(sizeEstimate)}`);
+        }
+      });
+      
+      console.log(`Total images size: ${formatFileSize(totalImageSize)}`);
+      
+      // Check total payload size
+      if (totalImageSize > 800 * 1024) { // 800KB limit for all images combined
+        throw new Error("Images are too large. Please use fewer or smaller images.");
+      }
+      
+      formDataObj.images = validImages;
     }
 
-    console.log("Submitting form data:", formDataObj);
-
-    let result;
+    // Enhanced debugging - log all form data before submission
+    console.log("=== FORM SUBMISSION DEBUG ===");
+    console.log("Raw form data:", {
+      category: formData.category,
+      childCategory: formData.childCategory,
+      title: formData.title,
+      description: formData.description?.substring(0, 50) + "...",
+      condition: formData.condition,
+      price: formData.price,
+      negotiable: formData.negotiable,
+      division: formData.division,
+      district: formData.district,
+      area: formData.area,
+      detailedAddress: formData.detailedAddress?.substring(0, 50) + "...",
+      phone: formData.phone,
+      email: formData.email,
+      images: formData.images?.filter(img => img)?.length || 0,
+      allOverBangladesh: allOverBangladesh.value
+    });
+    
+    // Debug conditions
+    console.log("Condition validation:");
+    console.log("- Selected condition:", formData.condition);
+    console.log("- Available conditions:", conditions.value.map(c => ({ value: c.value, label: c.label })));
+    
+    // Debug category
+    console.log("Category validation:");
+    console.log("- Selected category:", formData.category, typeof formData.category);
+    console.log("- Selected child category:", formData.childCategory, typeof formData.childCategory);
+    
+    // Log the final payload (without images for readability)
+    const logPayload = { ...formDataObj };
+    if (logPayload.images) {
+      logPayload.images = `[${logPayload.images.length} images - total size: ${formatFileSize(logPayload.images.reduce((total, img) => total + Math.round((img.length * 3) / 4), 0))}]`;
+    }
+    console.log("Final submission payload:", logPayload);
+    console.log("Payload size estimate:", JSON.stringify(logPayload).length, "bytes");
+    console.log("=== END DEBUG ===");
+    
+    // Ensure all reactive changes have settled
+    await nextTick();
+    
+    // Small delay to ensure form state is stable
+    await new Promise(resolve => setTimeout(resolve, 100));    let result;
     if (props.editPost) {
       result = await updateSalePost(props.editPost.id, formDataObj);
     } else {
@@ -1065,16 +1315,71 @@ const submitForm = async () => {
     }
 
     console.log("Server response:", result);
-    emit("post-saved", result);
-  } catch (error) {
+    emit("post-saved", result);  } catch (error) {
     console.error("Error submitting form:", error);
-    // Use toast instead of showNotification since it doesn't exist in your composable
+    
+    // Enhanced error handling with detailed logging
+    console.error("Full error object:", JSON.stringify(error, null, 2));
+    
+    let errorMessage = "Failed to submit your listing. Please try again.";
+    
+    if (error && typeof error === 'object') {
+      // Check if it's a network error
+      if (error.code === 'NETWORK_ERROR' || error.message?.includes('network')) {
+        errorMessage = "Network error. Please check your internet connection and try again.";
+      }      // Check if it's a server validation error
+      else if (error.response && error.response.status) {
+        console.error("Server error status:", error.response.status);
+        console.error("Server error data:", error.response.data);
+        
+        if (error.response.status === 400) {
+          // Try to extract specific validation errors
+          if (error.response.data && typeof error.response.data === 'object') {
+            const validationErrors = [];
+            Object.entries(error.response.data).forEach(([field, fieldErrors]) => {
+              if (Array.isArray(fieldErrors)) {
+                validationErrors.push(`${field}: ${fieldErrors.join(', ')}`);
+              } else {
+                validationErrors.push(`${field}: ${fieldErrors}`);
+              }
+            });
+            
+            if (validationErrors.length > 0) {
+              errorMessage = `Validation failed: ${validationErrors.join('; ')}`;
+            } else {
+              errorMessage = "Invalid data submitted. Please check your inputs and try again.";
+            }
+          } else {
+            errorMessage = `Validation error: ${error.response.data?.detail || error.response.data || 'Invalid data submitted'}`;
+          }
+        } else if (error.response.status === 401) {
+          errorMessage = "You need to be logged in to submit a listing.";
+        } else if (error.response.status === 413) {
+          errorMessage = "Request too large. Please use smaller images.";
+        } else if (error.response.status >= 500) {
+          errorMessage = "Server error. Please try again later.";
+        } else {
+          errorMessage = `Server error (${error.response.status}): ${error.response.data?.message || error.response.data?.detail || 'Unknown error'}`;
+        }
+      }
+      // Check for specific field errors
+      else if (error.images) {
+        errorMessage = "Image upload failed. Please try with smaller images or fewer images.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+    
+    console.error("Final error message:", errorMessage);
+    
     const toast = useToast();
     toast.add({
       title: "Error",
-      description: "Failed to submit your listing. Please try again.",
+      description: errorMessage,
       color: "red",
-      timeout: 5000,
+      timeout: 8000,
     });
   }
 };
@@ -1203,6 +1508,210 @@ const populateFormWithEditData = async () => {
 function updateContent(p) {
   formData.description = p;
 }
+
+// Advanced image compression function
+const processImageWithCompression = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const img = new Image();
+
+      img.onload = () => {
+        try {
+          // Apply advanced compression
+          const compressedImage = performAdvancedCompression(img, file.size);
+          resolve(compressedImage);
+        } catch (error) {
+          console.error(`Error compressing image ${file.name}:`, error);
+          reject(error);
+        }
+      };
+
+      img.onerror = () => {
+        reject(new Error(`Invalid image: ${file.name}`));
+      };
+
+      img.src = e.target.result;
+    };
+
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+// Advanced compression algorithm with enhanced optimization
+const performAdvancedCompression = (img, originalFileSize) => {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  
+  // Enable image smoothing for better quality
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  
+  // Get optimized settings based on image characteristics
+  const settings = optimizeCompressionSettings(originalFileSize, img.width, img.height);
+  
+  let width = img.width;
+  let height = img.height;
+
+  // Smart resizing with aspect ratio preservation
+  if (width > settings.maxDimension || height > settings.maxDimension) {
+    const aspectRatio = width / height;
+    
+    if (width > height) {
+      width = settings.maxDimension;
+      height = Math.round(width / aspectRatio);
+    } else {
+      height = settings.maxDimension;
+      width = Math.round(height * aspectRatio);
+    }
+  }
+  
+  canvas.width = width;
+  canvas.height = height;
+  
+  // Apply subtle sharpening for better perceived quality
+  ctx.filter = "contrast(1.05) saturate(1.02)";
+  ctx.drawImage(img, 0, 0, width, height);
+  ctx.filter = "none";
+
+  // Apply advanced preprocessing for better compression
+  preprocessImageForCompression(canvas, ctx, width, height);
+
+  // Progressive compression with quality optimization
+  let quality = settings.initialQuality;
+  let resultImage = canvas.toDataURL("image/jpeg", quality);
+  let resultSize = Math.round((resultImage.length * 3) / 4);
+  
+  // Phase 1: Gentle quality reduction with fine increments
+  while (resultSize > settings.targetSize && quality > settings.minQuality + 0.1) {
+    quality -= 0.01;
+    resultImage = canvas.toDataURL("image/jpeg", quality);
+    resultSize = Math.round((resultImage.length * 3) / 4);
+  }
+
+  // Phase 2: Moderate quality reduction if still over target
+  while (resultSize > settings.targetSize && quality > settings.minQuality + 0.05) {
+    quality -= 0.02;
+    resultImage = canvas.toDataURL("image/jpeg", quality);
+    resultSize = Math.round((resultImage.length * 3) / 4);
+  }
+
+  // Phase 3: Smart dimensional reduction if quality limit reached
+  if (resultSize > settings.targetSize && quality <= settings.minQuality + 0.05) {
+    const scaleFactor = Math.sqrt(settings.targetSize / resultSize) * 0.90;
+    const newWidth = Math.max(300, Math.round(width * scaleFactor));
+    const newHeight = Math.max(300, Math.round(height * scaleFactor));
+
+    if (newWidth >= width * 0.6 && newHeight >= height * 0.6) {
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.filter = "contrast(1.05) saturate(1.02)";
+      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+      ctx.filter = "none";
+
+      quality = Math.max(settings.minQuality + 0.10, 0.65);
+      resultImage = canvas.toDataURL("image/jpeg", quality);
+      resultSize = Math.round((resultImage.length * 3) / 4);
+
+      while (resultSize > settings.targetSize && quality > settings.minQuality) {
+        quality -= 0.015;
+        resultImage = canvas.toDataURL("image/jpeg", quality);
+        resultSize = Math.round((resultImage.length * 3) / 4);
+      }
+    }
+  }
+
+  // Final fallback: Try WebP format if supported
+  if (resultSize > settings.targetSize * 1.2) {
+    try {
+      const webpImage = canvas.toDataURL("image/webp", quality);
+      const webpSize = Math.round((webpImage.length * 3) / 4);
+      
+      if (webpSize < resultSize * 0.8) {
+        return webpImage;
+      }
+    } catch (e) {
+      // WebP not supported, continue with JPEG
+    }
+  }
+
+  return resultImage;
+};
+
+// Advanced pre-processing for optimal compression
+const preprocessImageForCompression = (canvas, ctx, width, height) => {
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const data = imageData.data;
+  
+  // Simple noise reduction while preserving edges
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    
+    data[i] = Math.round(r * 0.98 + (r > 200 ? 2 : 0));
+    data[i + 1] = Math.round(g * 0.98 + (g > 200 ? 2 : 0));
+    data[i + 2] = Math.round(b * 0.98 + (b > 200 ? 2 : 0));
+  }
+  
+  ctx.putImageData(imageData, 0, 0);
+};
+
+// Optimize compression settings based on image characteristics - More aggressive compression
+const optimizeCompressionSettings = (fileSize, imageWidth, imageHeight) => {
+  const settings = {
+    maxDimension: 1200, // Reduced from 1920
+    targetSize: 60 * 1024, // Reduced to 60KB target
+    initialQuality: 0.75, // Reduced from 0.82
+    minQuality: 0.40, // Reduced from 0.55
+  };
+
+  // Adjust for large files (>5MB) - very aggressive compression
+  if (fileSize > 5 * 1024 * 1024) {
+    settings.maxDimension = 1000; // Reduced from 1600
+    settings.targetSize = 50 * 1024; // Reduced to 50KB for large files
+    settings.initialQuality = 0.65; // Reduced from 0.78
+    settings.minQuality = 0.35; // Reduced from 0.50
+  }
+
+  // Adjust for very large images (>4000px) - prioritize size reduction
+  if (imageWidth > 4000 || imageHeight > 4000) {
+    settings.maxDimension = 800; // Reduced from 1400
+    settings.targetSize = 40 * 1024; // Reduced to 40KB
+    settings.initialQuality = 0.60; // Reduced from 0.72
+    settings.minQuality = 0.30; // Reduced from 0.45
+  }
+
+  // Adjust for small files (<1MB) - maintain quality while achieving tiny size
+  if (fileSize < 1024 * 1024) {
+    settings.targetSize = 50 * 1024; // Reduced to 50KB for small files
+    settings.minQuality = 0.45; // Reduced from 0.60
+    settings.initialQuality = 0.70; // Reduced from 0.85
+  }
+
+  // Special handling for mobile photos (typical sizes) - very aggressive
+  if (imageWidth >= 3000 && imageHeight >= 4000) {
+    settings.maxDimension = 800; // Reduced from 1080
+    settings.targetSize = 45 * 1024; // Reduced to 45KB
+    settings.initialQuality = 0.60; // Reduced from 0.75
+  }
+
+  return settings;
+};
+
+// Utility function to format file sizes
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+};
 </script>
 
 <style scoped>
@@ -1214,10 +1723,12 @@ function updateContent(p) {
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 input[type="number"] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* Editor Container */
