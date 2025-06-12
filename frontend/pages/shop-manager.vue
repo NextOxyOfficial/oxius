@@ -1337,10 +1337,14 @@ watch(productLimit, (newLimit) => {
 });
 
 // Watch for products changes
-watch(products, (newProducts) => {
+watch(products, (newProducts, oldProducts) => {
   console.log('Products updated, count:', newProducts?.length || 0);
-  // Reset toast flag when products change so we can show limit warnings again
-  hasShownProductLimitToast.value = false;
+  // Only reset toast flag if the number of products actually changed (not just a reload)
+  const oldCount = oldProducts?.length || 0;
+  const newCount = newProducts?.length || 0;
+  if (oldCount !== newCount) {
+    hasShownProductLimitToast.value = false;
+  }
 }, { deep: true });
 
 // Watch for active tab changes to handle product limit
@@ -1467,6 +1471,7 @@ const lastOrderDate = computed(() => {
 
 // Products management functions
 async function getProducts() {
+  console.log('getProducts() called, hasShownProductLimitToast:', hasShownProductLimitToast.value);
   try {
     console.log('Fetching products for shop manager...');
     const res = await get("/my-products/", {}, {
@@ -1490,8 +1495,7 @@ async function getProducts() {
       } else {
         console.warn("Unexpected products data structure:", res.data);
         products.value = [];
-      }
-        // Check product limit and show notification if close to limit
+      }      // Check product limit and show notification if close to limit
       if (products.value.length >= productLimit.value && !hasShownProductLimitToast.value) {
         showToast(
           "info",
@@ -1499,6 +1503,10 @@ async function getProducts() {
           `You've reached the maximum limit of ${productLimit.value} products for your shop. Delete an existing product or buy additional product slots.`
         );
         hasShownProductLimitToast.value = true;
+        // Reset flag after 30 seconds to allow showing again if needed
+        setTimeout(() => {
+          hasShownProductLimitToast.value = false;
+        }, 30000);
       } else if (products.value.length >= productLimit.value - 2 && !hasShownProductLimitToast.value) {
         // Show warning when approaching limit (within 2 products)
         showToast(
@@ -1509,6 +1517,10 @@ async function getProducts() {
           } more product(s) before reaching your shop's limit. Consider buying additional slots.`
         );
         hasShownProductLimitToast.value = true;
+        // Reset flag after 30 seconds to allow showing again if needed
+        setTimeout(() => {
+          hasShownProductLimitToast.value = false;
+        }, 30000);
       }
     } else {
       console.warn("No product data received");
@@ -1708,16 +1720,6 @@ function cancelEdit() {
   }
   isEditing.value = false;
 }
-
-// Initialize data on mount
-onMounted(async () => {
-  try {
-    await Promise.allSettled([getStoreDetails(), getProducts(), getOrders()]);
-    console.log("All data loading attempts completed");
-  } catch (error) {
-    console.error("Error during initialization:", error);
-  }
-});
 
 // Purchase product slots
 const selectedSlotPackage = ref(null); // Will be set to a package object
