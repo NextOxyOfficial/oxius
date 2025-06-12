@@ -26,14 +26,13 @@
         <p class="text-gray-600 mt-4 max-w-md mx-auto leading-relaxed">
           Create your first post to start selling items in the marketplace!
         </p>
-      </div>
-      <button
-        @click="$emit('create-post')"
-        class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium px-10 py-3.5 rounded-xl flex items-center gap-2 mx-auto shadow-sm hover:shadow-primary/20 transform hover:-translate-y-1"
+      </div>      <NuxtLink
+        to="/sale/post"
+        class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium px-10 py-3.5 rounded-xl flex items-center gap-2 mx-auto shadow-sm hover:shadow-primary/20 transform hover:-translate-y-1 transition-all duration-200"
       >
         <Icon name="heroicons:plus-circle" size="22px" />
         Create Post
-      </button>
+      </NuxtLink>
     </div>
 
     <!-- Loading state -->
@@ -647,7 +646,7 @@ const { get, post, del, patch } = useApi();
 const { user } = useAuth();
 const { showNotification } = useNotifications();
 
-const emit = defineEmits(["create-post", "edit-post", "delete-post"]);
+const emit = defineEmits(["edit-post", "delete-post"]);
 
 // State
 const posts = ref([]);

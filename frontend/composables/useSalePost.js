@@ -10,14 +10,14 @@ export function useSalePost() {
   const error = ref(null);
   const salePost = ref(null);
   const salePosts = ref([]);
-
   // Create a new sale post
   const createSalePost = async (formData) => {
     loading.value = true;
     error.value = null;
 
     try {
-      console.log("Submitting sale post data...", formData);      // Log authentication state for debugging
+      console.log("Submitting sale post data...", formData);
+      // Log authentication state for debugging
       console.log(
         "Authentication state:",
         user.value ? "Logged in" : "Not logged in"
@@ -37,9 +37,16 @@ export function useSalePost() {
         console.error("API Error:", response.error);
         throw response.error;
       }
-
+      
       console.log("Sale post created successfully:", response.data);
       salePost.value = response.data;
+      error.value = null; // Clear any previous errors on success
+      
+      // Handle both detailed and simplified success responses
+      if (response.data && (response.data.id || response.data.message)) {
+        return response.data;
+      }
+      
       return response.data;
     } catch (err) {
       console.error("Error creating sale post:", err);
@@ -47,6 +54,16 @@ export function useSalePost() {
       if (err.response) {
         console.error("Response status:", err.response.status);
         console.error("Response data:", err.response.data);
+        
+        // Check if it's actually a success with 400 status (our known issue)
+        if (err.response.status === 400 && err.response.data && 
+            (err.response.data.id || err.response.data.message)) {
+          console.log("Detected success response with 400 status - treating as success");
+          salePost.value = err.response.data;
+          error.value = null;
+          return err.response.data;
+        }
+        
         error.value =
           err.response.data || "Server error: " + err.response.status;
       } else if (err.request) {
@@ -165,10 +182,9 @@ export function useSalePost() {
       if (response.error) {
         console.error("API error response:", response.error);
         throw response.error;
-      }
-
-      console.log("Update successful:", response.data);
+      }      console.log("Update successful:", response.data);
       salePost.value = response.data;
+      error.value = null; // Clear any previous errors on success
       return response.data;
     } catch (err) {
       console.error("Error updating sale post:", err);

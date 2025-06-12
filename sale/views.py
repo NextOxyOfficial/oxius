@@ -23,6 +23,26 @@ from .serializers import (
 # Set up logger
 logger = logging.getLogger(__name__)
 
+def base64ToFile(base64_data):
+    """Convert base64 image data to Django ContentFile"""
+    # Remove the prefix if it exists (e.g., "data:image/png;base64,")
+    if base64_data.startswith('data:image'):
+        base64_data = base64_data.split('base64,')[1]
+        
+    # Decode the Base64 string into bytes
+    file_data = base64.b64decode(base64_data)
+        
+    # Create a Django ContentFile object from the bytes
+    file = ContentFile(file_data)
+        
+    # Create a filename with timestamp
+    import uuid
+    filename = f"sale_image_{uuid.uuid4().hex[:8]}.jpg"
+        
+    # Save the file to the appropriate storage
+    file.name = filename
+    return file
+
 class SaleCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for listing and retrieving sale categories"""
     queryset = SaleCategory.objects.all()
@@ -131,115 +151,69 @@ class SalePostViewSet(viewsets.ModelViewSet):
         
         # Increment view count atomically
         SalePost.objects.filter(pk=instance.pk).update(view_count=F('view_count') + 1)
-        
-        # Refresh the instance to get updated view count
+          # Refresh the instance to get updated view count
         instance.refresh_from_db()
         
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-    
+        
     def create(self, request, *args, **kwargs):
-        logger.info(f"Creating sale post with data: {request.data}")
+        logger.info(f"Creating sale post with data keys: {list(request.data.keys())}")
+        
         try:
-            # Handle base64 image data
-            data_copy = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
-            images_data = []
+            # Extract images data before processing
+            images_data = request.data.pop('images', None)
             
-            # Debug condition values
-            logger.info(f"Condition value received: {data_copy.get('condition')}")
+            # Create the serializer with the remaining data
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
             
-            # Check if the condition exists in the database
-            from .models import SaleCondition
-            condition_value = data_copy.get('condition')
-            if condition_value:
-                condition_obj = SaleCondition.objects.filter(value=condition_value).first()
-                logger.info(f"Found matching condition object: {condition_obj}")
-                if not condition_obj:
-                    logger.warning(f"No matching condition found in database for value: {condition_value}")
-                    # List all available conditions for debugging
-                    all_conditions = SaleCondition.objects.all()
-                    logger.info(f"Available conditions: {list(all_conditions.values_list('value', flat=True))}")
+            # Create the sale post
+            sale_post = serializer.save()
+            logger.info(f"Sale post created successfully with ID: {sale_post.id}")
             
-            # Process base64 images if they exist
-            if 'images' in data_copy:
-                # Handle both list and direct access for images
-                if hasattr(data_copy, 'getlist'):
-                    images = data_copy.getlist('images')
-                else:
-                    images = data_copy['images'] if isinstance(data_copy['images'], list) else [data_copy['images']]
-                
-                logger.info(f"Processing {len(images)} images")
-                
-                for image_data in images:
-                    if isinstance(image_data, str) and image_data.startswith('data:image'):
-                        # It's a base64 string
-                        try:
-                            format, imgstr = image_data.split(';base64,')
-                            ext = format.split('/')[-1]
-                            data = base64.b64decode(imgstr)
-                            file_name = f"sale_image_{timezone.now().strftime('%Y%m%d%H%M%S')}.{ext}"
-                            file_content = ContentFile(data, name=file_name)
-                            images_data.append(file_content)
-                            logger.info(f"Successfully processed base64 image: {file_name}")
-                        except Exception as e:
-                            logger.error(f"Error processing base64 image: {str(e)}")
-                    else:
-                        # It's a file upload
-                        images_data.append(image_data)
-                        logger.info("Added non-base64 image")
-                
-                # Remove images from data to avoid serializer errors
-                del data_copy['images']
-            
-            # Generate a submission hash to prevent duplicates
-            user_id = request.user.id
-            title = data_copy.get('title', '')
-            description = data_copy.get('description', '')[:100]  # Use first 100 chars of description
-            category = data_copy.get('category', '')
-            
-            hash_data = f"{user_id}:{title}:{description}:{category}"
-            
-            # Check if a post with this hash already exists (within 5 minutes)
-            time_threshold = timezone.now() - datetime.timedelta(minutes=5)
-            existing_post = SalePost.objects.filter(
-                user=request.user,
-                title=title,
-                created_at__gte=time_threshold
-            ).first()
-            
-            if existing_post:
-                logger.info(f"Detected duplicate submission. Returning existing post ID: {existing_post.id}")
-                response_serializer = SalePostDetailSerializer(existing_post, context={'request': request})
-                return Response(response_serializer.data, status=status.HTTP_200_OK)
-            
-            # Add images back to data if they exist
+            # Process images if provided
             if images_data:
-                data_copy['images'] = images_data
-            
-            # Ensure boolean fields are correctly parsed
-            if 'negotiable' in data_copy and isinstance(data_copy['negotiable'], str):
-                data_copy['negotiable'] = data_copy['negotiable'].lower() == 'true'
-            
-            logger.info(f"Final data being sent to serializer: {data_copy}")
-            
-            serializer = self.get_serializer(data=data_copy)
-            
-            if not serializer.is_valid():
-                logger.error(f"Serializer validation errors: {serializer.errors}")
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                # Handle both list of images and single image
+                if not isinstance(images_data, list):
+                    images_data = [images_data]
                 
-            self.perform_create(serializer)
-            
-            # Get the newly created post with full data
-            post = SalePost.objects.get(pk=serializer.instance.id)
-            response_serializer = SalePostDetailSerializer(post, context={'request': request})
+                successful_images = 0
+                failed_images = 0
+                
+                for i, image_data in enumerate(images_data):
+                    try:
+                        # Skip empty images
+                        if not image_data:
+                            continue
+                            
+                        if isinstance(image_data, str) and image_data.startswith('data:image'):
+                            # Process base64 image using the same pattern as business network
+                            image_file = base64ToFile(image_data)
+                            sale_image = SaleImage.objects.create(
+                                post=sale_post,
+                                image=image_file,
+                                is_main=(i == 0),  # First image is main
+                                order=i
+                            )
+                            successful_images += 1
+                            logger.info(f"Successfully created image {i+1} with ID: {sale_image.id}")
+                        else:
+                            logger.warning(f"Skipping non-base64 image at index {i}")
+                            
+                    except Exception as e:
+                        logger.error(f"Error processing image {i+1}: {str(e)}")
+                        failed_images += 1
+                        # Continue processing other images even if one fails
+                
+                logger.info(f"Image processing complete. Success: {successful_images}, Failed: {failed_images}")
             
             headers = self.get_success_headers(serializer.data)
-            return Response(response_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
             
         except Exception as e:
-            logger.exception(f"Error creating sale post: {str(e)}")
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            logger.exception(f"Error in sale post creation: {str(e)}")
+            return Response({"detail": f"Error creating post: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=['get'])
     def my_posts(self, request):

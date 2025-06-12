@@ -123,11 +123,6 @@ class SalePostDetailSerializer(serializers.ModelSerializer):
 
 class SalePostCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating a sale post"""
-    images = serializers.ListField(
-        child=serializers.ImageField(allow_empty_file=False),
-        required=False, write_only=True
-    )
-
     # Optional fields
     division = serializers.CharField(required=False, allow_blank=True)
     district = serializers.CharField(required=False, allow_blank=True)
@@ -138,15 +133,13 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
         fields = [
             'title', 'description', 'condition', 'category', 'child_category',
             'price', 'negotiable', 'detailed_address', 'phone', 'email',
-            'division', 'district', 'area', 'images'
+            'division', 'district', 'area'
         ]
             
     def validate(self, data):
         """Validate required fields"""
         required_fields = ['title', 'description', 'condition', 'category', 
                         'detailed_address', 'phone']
-
-        print("from serializer", data)
 
         # Validate price and negotiable (one must be present)
         if not data.get('price') and not data.get('negotiable'):
@@ -155,12 +148,13 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
         # Check all required fields
         for field in required_fields:
             if field not in data or data[field] is None or data[field] == '':
-                raise serializers.ValidationError({field: f"{field} is required"})
-            
+                raise serializers.ValidationError({field: f"{field} is required"})            
         return data
-
+    
     def create(self, validated_data):
-        images_data = validated_data.pop('images', [])
+        import logging
+        logger = logging.getLogger(__name__)
+        
         user = self.context['request'].user
         validated_data['user'] = user
 
@@ -176,19 +170,18 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
                 condition_object = SaleCondition.objects.filter(value=condition_value).first()
                 if condition_object:
                     validated_data['condition_object'] = condition_object
+                    logger.info(f"Found condition object: {condition_object}")
+                else:
+                    logger.warning(f"No condition object found for value: {condition_value}")
             except Exception as e:
-                print(f"Error finding condition object: {e}")
+                logger.error(f"Error finding condition object: {e}")
 
-        # Create the post
-        post = SalePost.objects.create(**validated_data)
-
-        # Process images
-        for i, image_data in enumerate(images_data):
-            SaleImage.objects.create(
-                post=post,
-                image=image_data,
-                is_main=(i == 0),  # First image is main
-                order=i
-            )
-
-        return post
+        try:
+            # Create the post (images will be handled in the view)
+            post = SalePost.objects.create(**validated_data)
+            logger.info(f"Created sale post with ID: {post.id}")
+            return post
+            
+        except Exception as e:
+            logger.error(f"Error creating sale post: {e}")
+            raise

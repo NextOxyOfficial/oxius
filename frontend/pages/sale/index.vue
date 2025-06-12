@@ -194,12 +194,9 @@
         v-if="isMobileFilterOpen"
         class="fixed inset-0 bg-black bg-opacity-60 z-40 lg:hidden"
         @click="toggleMobileSidebar"
-      ></div>
-
-      <div class="flex flex-col lg:flex-row gap-6">
+      ></div>      <div class="flex flex-col lg:flex-row gap-6">
         <!-- Sale Sidebar Component -->
         <SaleSidebar
-          @open-add-post-modal="openPostSaleModal"
           :is-mobile-filter-open="isMobileFilterOpen"
           :categories="categories"
           :total-listings="totalListings"
@@ -258,19 +255,16 @@
                   class="w-40"
                   @update:modelValue="applyFilters"
                 />
-              </div>
-              <div
+              </div>              <div
                 class="flex items-center border-l border-gray-200 pl-4 gap-2"
               >
-                <UButton
-                  color="primary"
-                  variant="outline"
-                  @click="openPostSaleModal"
-                  class="whitespace-nowrap flex items-center gap-1"
+                <NuxtLink
+                  to="/sale/post"
+                  class="whitespace-nowrap flex items-center gap-1 px-3 py-2 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors"
                 >
                   <UIcon name="i-heroicons-plus-circle" />
                   Post Ad
-                </UButton>
+                </NuxtLink>
               </div>
             </div>
           </div>
@@ -767,52 +761,7 @@
             </div>
           </div>
         </div>
-      </div>
-    </UContainer>
-    <!-- Post Sale Modal -->
-    <div
-      v-if="showPostSaleModal"
-      class="fixed inset-0 z-50 overflow-y-auto pt-16"
-    >
-      <!-- Added pt-16 for header spacing -->
-      <div
-        class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
-      >
-        <div
-          class="fixed inset-0 transition-opacity"
-          @click="closePostSaleModal"
-        >
-          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-        </div>
-
-        <div
-          v-if="user?.user"
-          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-sm transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl w-full"
-        >
-          <div class="bg-white px-2 pb-4 sm:p-6 sm:pb-4">
-            <div class="sm:flex sm:items-start">
-              <div class="text-center sm:text-left w-full">
-                <div
-                  class="flex justify-between items-center border-b pb-3 mb-4"
-                >
-                  <h3 class="text-lg leading-6 font-medium text-gray-800 py-2">
-                    Post a Sale
-                  </h3>
-                  <button
-                    type="button"
-                    class="text-gray-600 hover:text-gray-600"
-                    @click="closePostSaleModal"
-                  >
-                    <Icon name="heroicons:x-mark" size="24px" />
-                  </button>
-                </div>
-                <SalePostSale :categories="categories" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </div>    </UContainer>
   </div>
 </template>
 
@@ -835,8 +784,6 @@ const API_ENDPOINTS = {
   AREAS: "/geo/areas/",
   POSTS: "/sale/posts/",
 };
-
-const showPostSaleModal = ref(false);
 
 const currentPage = ref(1);
 const totalPages = ref(0);
@@ -1472,14 +1419,6 @@ async function goToPage(page) {
     loadPosts(currentPage.value);
   }
 }
-
-const openPostSaleModal = () => {
-  showPostSaleModal.value = true;
-};
-
-const closePostSaleModal = () => {
-  showPostSaleModal.value = false;
-};
 </script>
 
 <style>

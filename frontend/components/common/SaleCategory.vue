@@ -60,9 +60,9 @@
                   <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
                     Buy & sell amazing products
                   </p>
-                </div>
-              </div>
-                <div v-if="user" class="flex gap-2 sm:gap-3">                
+                </div>              </div>
+                <!-- Always show buttons, handle auth at page level -->
+                <div class="flex gap-2 sm:gap-3">                
                   <!-- Marketplace Button - Enhanced (Outlined) -->
                 <NuxtLink
                   to="/sale"
@@ -72,9 +72,7 @@
                   <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <Icon name="heroicons:shopping-bag" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
                   <span class="relative z-10 truncate">{{ $t('marketplace') }}</span>
-                </NuxtLink>
-
-                <!-- My Posts Button - Enhanced -->
+                </NuxtLink>                <!-- My Posts Button - Enhanced (Always show, handle auth in modal) -->
                 <button
                   class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs sm:text-sm hover:bg-slate-50 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
                   @click="openMyPostsModal"
@@ -84,19 +82,18 @@
                   
                   <Icon name="heroicons:document-text" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
                   <span class="relative z-10 truncate">{{ $t('my_post') }}</span>
-                </button>
-
-                <!-- Post Sale Button - Enhanced (Outlined) -->
-                <button
+                </button>                
+                <!-- Post Sale Button - Enhanced (Outlined) - Always visible -->
+                <NuxtLink
+                  to="/sale/post"
                   class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-medium text-xs sm:text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
-                  @click="openPostSaleModal"
                 >
                   <!-- Button hover effect -->
                   <div class="absolute inset-0 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   
                   <Icon name="heroicons:plus-circle" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
                   <span class="relative z-10 truncate">{{ $t('post_a_sale') }}</span>
-                </button>
+                </NuxtLink>
               </div>
             </div>
           </div>
@@ -434,45 +431,6 @@
     </div>
   </div>
 
-  <!-- Post Sale Modal -->
-  <div
-    v-if="showPostSaleModal"
-    class="fixed inset-0 z-50 overflow-y-auto pt-16"
-  >
-    <!-- Added pt-16 for header spacing -->
-    <div
-      class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
-    >
-      <div class="fixed inset-0 transition-opacity" @click="closePostSaleModal">
-        <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-      </div>
-
-      <div
-        v-if="user?.user"
-        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl w-full"
-      >
-        <div class="bg-white p-2">
-          <div class="sm:flex sm:items-start">
-            <div class="text-center sm:text-left w-full">
-              <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="text-lg leading-6 font-medium text-gray-800 py-2">
-                  Post a Sale
-                </h3>
-                <button
-                  type="button"
-                  class="text-gray-600 hover:text-gray-600"
-                  @click="closePostSaleModal"
-                >
-                  <Icon name="heroicons:x-mark" size="24px" />
-                </button>
-              </div>
-              <PostSale :categories="categories" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- My Posts Modal -->
   <Teleport to="body">
@@ -511,9 +469,8 @@
                   >
                     <Icon name="heroicons:x-mark" size="24px" />
                   </button>
-                </div>
-                <MyPosts
-                  @create-post="switchToPostSaleModal"
+                </div>                <MyPosts
+                  @create-post="goToPostPage"
                   @edit-post="handleEditPost"
                   @delete-post="handleDeletePost"
                 />
@@ -527,7 +484,7 @@
 </template>
 
 <script setup>
-import PostSale from "~/components/sale/PostSale.vue";
+import SalePostaSale from "~/components/sale/PostaSale.vue";
 import MyPosts from "~/components/sale/MyPosts.vue";
 const { user } = useAuth();
 
@@ -966,46 +923,41 @@ onUnmounted(() => {
   }
 });
 
-// Modal states
-const showPostSaleModal = ref(false);
+// Modal states - only keeping MyPosts modal
 const showMyPostsModal = ref(false);
 
-// Open modals for buttons
+// Modal functions
 const openMyPostsModal = () => {
+  // Check if user is authenticated, if not redirect to login
+  if (!user.value) {
+    // Redirect to login page or show login modal
+    navigateTo('/auth/login');
+    return;
+  }
   showMyPostsModal.value = true;
-  showPostSaleModal.value = false;
 };
 
 const closeMyPostsModal = () => {
   showMyPostsModal.value = false;
 };
 
-const openPostSaleModal = () => {
-  showPostSaleModal.value = true;
-  showMyPostsModal.value = false;
-};
-
-const closePostSaleModal = () => {
-  showPostSaleModal.value = false;
-};
-
-const switchToPostSaleModal = () => {
-  showMyPostsModal.value = false;
-  showPostSaleModal.value = true;
-};
-
 // Post actions
 const handleEditPost = (post) => {
-  // Here you would implement edit functionality, possibly pre-filling the PostSale form
+  // Navigate to edit page with post data
   console.log("Edit post:", post);
-  // For now, just open the post sale modal
-  openPostSaleModal();
+  // TODO: Implement edit navigation
+  navigateTo(`/sale/edit/${post.slug}`);
 };
 
 const handleDeletePost = (postId) => {
   // Here you would implement delete functionality, possibly making an API call
   console.log("Delete post with ID:", postId);
   // In a real app, you would remove the post from the listings after successful deletion
+};
+
+// Navigation helper
+const goToPostPage = () => {
+  navigateTo('/sale/post');
 };
 
 // Helper function for formatting dates

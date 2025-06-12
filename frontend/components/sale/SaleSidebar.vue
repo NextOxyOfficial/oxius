@@ -101,13 +101,12 @@
           >
             <UIcon name="i-heroicons-tag" class="w-4 h-4" />
             Looking to List a Sale?
-          </h3>
-          <p class="text-sm text-gray-600 mb-3">
+          </h3>          <p class="text-sm text-gray-600 mb-3">
             List your items easily and reach thousands of potential buyers in your
             area.
           </p>
           <UButton
-            @click="openAddPostModal"
+            to="/sale/post"
             color="primary"
             size="sm"
             class="w-full flex items-center justify-center gap-1 shadow-sm"
@@ -199,12 +198,10 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Fixed bottom CTA for mobile -->
+    </div>    <!-- Fixed bottom CTA for mobile -->
     <div class="lg:hidden sticky bottom-0 p-4 bg-white border-t border-gray-100 shadow-sm z-20">
       <UButton
-        @click="openAddPostModal"
+        to="/sale/post"
         color="primary"
         size="sm"
         class="w-full flex items-center justify-center gap-1 shadow-sm"
@@ -249,7 +246,6 @@ const emits = defineEmits([
   "select-category",
   "select-subcategory",
   "toggle-subcategories",
-  "open-add-post-modal",
 ]);
 
 // Function to toggle mobile sidebar
@@ -290,13 +286,8 @@ function getCategoryIcon(categoryId) {
     3: "i-heroicons-device-phone-mobile",
     4: "i-heroicons-trophy",
     5: "i-heroicons-building-office-2",
-    6: "i-heroicons-square-3-stack-3d",
-  };
+    6: "i-heroicons-square-3-stack-3d",  };
   return iconMapping[categoryId] || "i-heroicons-squares-2x2";
-}
-
-function openAddPostModal() {
-  emits("open-add-post-modal");
 }
 </script>
 
