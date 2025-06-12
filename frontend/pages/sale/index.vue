@@ -409,7 +409,7 @@
             </div>
             <div
               v-else
-              class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2"
+              class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2"
             >
               <NuxtLink
                 v-for="(post, i) in listings"
@@ -572,11 +572,149 @@
               class="animate-spin h-8 w-8 mx-auto text-amber-500"
             />
             <p class="mt-2 text-gray-600 text-sm">Loading recent listings...</p>
-          </div>          <!-- Enhanced Empty State with Professional Design -->
-          <div
-            v-else-if="recentListings?.length === 0"
-            class="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20 rounded-2xl border border-gray-200/60 shadow-lg"
-          >
+          </div>          <!-- Enhanced Empty State with Professional Design --><!-- Enhanced Tips & Safety Guide -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
+            <!-- Smart Buying Tips -->
+            <div class="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50 shadow-sm hover:shadow-sm transition-all duration-300">
+              <!-- Background Pattern -->
+              <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full -translate-y-16 translate-x-16"></div>
+              
+              <div class="relative z-10 p-8">
+                <div class="flex items-start mb-6">
+                  <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl shadow-sm mr-4 group-hover:scale-110 transition-transform duration-300">
+                    <UIcon name="i-heroicons-light-bulb" class="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 class="text-xl font-bold text-blue-900 mb-2">Smart Buying Tips</h3>
+                    <p class="text-blue-700/80 text-sm">Make informed purchases with confidence</p>
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="flex items-start group/item">
+                    <div class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
+                      <UIcon name="i-heroicons-eye" class="h-3 w-3 text-white" />
+                    </div>
+                    <div>
+                      <p class="text-gray-800 font-medium text-sm">Inspect Before You Buy</p>
+                      <p class="text-gray-600 text-xs mt-1">Always examine items thoroughly in person before making payment</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-start group/item">
+                    <div class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
+                      <UIcon name="i-heroicons-map-pin" class="h-3 w-3 text-white" />
+                    </div>
+                    <div>
+                      <p class="text-gray-800 font-medium text-sm">Meet in Public Places</p>
+                      <p class="text-gray-600 text-xs mt-1">Choose safe, well-lit locations for transactions</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-start group/item">
+                    <div class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
+                      <UIcon name="i-heroicons-document-check" class="h-3 w-3 text-white" />
+                    </div>
+                    <div>
+                      <p class="text-gray-800 font-medium text-sm">Verify Authenticity</p>
+                      <p class="text-gray-600 text-xs mt-1">Check documentation and authenticity before purchase</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-start group/item">
+                    <div class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
+                      <UIcon name="i-heroicons-scale" class="h-3 w-3 text-white" />
+                    </div>
+                    <div>
+                      <p class="text-gray-800 font-medium text-sm">Compare Market Prices</p>
+                      <p class="text-gray-600 text-xs mt-1">Research similar listings to ensure fair pricing</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-blue-200/50">
+                  <NuxtLink 
+                    to="/buyer-guide" 
+                    class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm group/link"
+                  >
+                    Complete Buyer's Guide
+                    <UIcon name="i-heroicons-arrow-right" class="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200" />
+                  </NuxtLink>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security & Safety -->
+            <div class="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl border border-emerald-200/50 shadow-sm hover:shadow-sm transition-all duration-300">
+              <!-- Background Pattern -->
+              <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/10 to-green-400/10 rounded-full -translate-y-16 translate-x-16"></div>
+              
+              <div class="relative z-10 p-8">
+                <div class="flex items-start mb-6">
+                  <div class="bg-gradient-to-br from-emerald-500 to-green-600 p-3 rounded-xl shadow-sm mr-4 group-hover:scale-110 transition-transform duration-300">
+                    <UIcon name="i-heroicons-shield-check" class="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 class="text-xl font-bold text-emerald-900 mb-2">Security & Safety</h3>
+                    <p class="text-emerald-700/80 text-sm">Stay protected while shopping online</p>
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="flex items-start group/item">
+                    <div class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
+                      <UIcon name="i-heroicons-lock-closed" class="h-3 w-3 text-white" />
+                    </div>
+                    <div>
+                      <p class="text-gray-800 font-medium text-sm">Protect Personal Info</p>
+                      <p class="text-gray-600 text-xs mt-1">Never share banking details or personal financial information</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-start group/item">
+                    <div class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
+                      <UIcon name="i-heroicons-exclamation-triangle" class="h-3 w-3 text-white" />
+                    </div>
+                    <div>
+                      <p class="text-gray-800 font-medium text-sm">Spot Red Flags</p>
+                      <p class="text-gray-600 text-xs mt-1">Be cautious of deals that seem unrealistically good</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-start group/item">
+                    <div class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
+                      <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="h-3 w-3 text-white" />
+                    </div>
+                    <div>
+                      <p class="text-gray-800 font-medium text-sm">Use Platform Messaging</p>
+                      <p class="text-gray-600 text-xs mt-1">Keep communications on our platform for better security</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-start group/item">
+                    <div class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
+                      <UIcon name="i-heroicons-user-group" class="h-3 w-3 text-white" />
+                    </div>
+                    <div>
+                      <p class="text-gray-800 font-medium text-sm">Trust Your Instincts</p>
+                      <p class="text-gray-600 text-xs mt-1">If something feels wrong, don't hesitate to walk away</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-emerald-200/50">                  <NuxtLink 
+                    to="/safety-guide" 
+                    class="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-medium text-sm group/link"
+                  >
+                    Complete Safety Guide
+                    <UIcon name="i-heroicons-arrow-right" class="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200" />                  </NuxtLink>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Marketplace Welcome Section (Always Visible) -->
+          <div class="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20 rounded-2xl border border-gray-200/60 shadow-sm mt-12">
             <!-- Background Pattern -->
             <div class="absolute inset-0 opacity-5">
               <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
@@ -594,7 +732,7 @@
               <!-- Icon with Floating Animation -->
               <div class="mb-8 flex justify-center">
                 <div class="relative">
-                  <div class="w-24 h-24 bg-gradient-to-br from-emerald-400 to-blue-500 rounded-full flex items-center justify-center shadow-xl animate-bounce-slow">
+                  <div class="w-24 h-24 bg-gradient-to-br from-emerald-400 to-blue-500 rounded-full flex items-center justify-center shadow-sm animate-bounce-slow">
                     <UIcon name="i-heroicons-shopping-bag" class="h-12 w-12 text-white" />
                   </div>
                   <!-- Floating circles animation -->
@@ -633,7 +771,7 @@
               <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <NuxtLink 
                   to="/sale?category=electronics"
-                  class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
+                  class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold px-6 py-3 rounded-lg shadow-sm hover:shadow-sm transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
                 >
                   <UIcon name="i-heroicons-magnifying-glass" class="h-5 w-5" />
                   Browse Electronics
@@ -641,7 +779,7 @@
                 
                 <NuxtLink 
                   to="/sale?category=vehicles"
-                  class="bg-white text-gray-700 font-semibold px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-50 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
+                  class="bg-white text-gray-700 font-semibold px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-50 shadow-sm hover:shadow-sm transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
                 >
                   <UIcon name="i-heroicons-truck" class="h-5 w-5" />
                   View Vehicles
@@ -661,146 +799,6 @@
                 <div class="flex items-center gap-2">
                   <UIcon name="i-heroicons-map-pin" class="h-5 w-5 text-purple-500" />
                   <span>Local Deals</span>
-                </div>
-              </div>
-            </div>
-          </div>          <!-- Enhanced Tips & Safety Guide -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
-            <!-- Smart Buying Tips -->
-            <div class="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50 shadow-sm hover:shadow-lg transition-all duration-300">
-              <!-- Background Pattern -->
-              <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full -translate-y-16 translate-x-16"></div>
-              
-              <div class="relative z-10 p-8">
-                <div class="flex items-start mb-6">
-                  <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl shadow-lg mr-4 group-hover:scale-110 transition-transform duration-300">
-                    <UIcon name="i-heroicons-light-bulb" class="h-8 w-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 class="text-xl font-bold text-blue-900 mb-2">Smart Buying Tips</h3>
-                    <p class="text-blue-700/80 text-sm">Make informed purchases with confidence</p>
-                  </div>
-                </div>
-
-                <div class="space-y-4">
-                  <div class="flex items-start group/item">
-                    <div class="bg-blue-500 rounded-full p-1 mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-eye" class="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">Inspect Before You Buy</p>
-                      <p class="text-gray-600 text-xs mt-1">Always examine items thoroughly in person before making payment</p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start group/item">
-                    <div class="bg-blue-500 rounded-full p-1 mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-map-pin" class="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">Meet in Public Places</p>
-                      <p class="text-gray-600 text-xs mt-1">Choose safe, well-lit locations for transactions</p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start group/item">
-                    <div class="bg-blue-500 rounded-full p-1 mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-document-check" class="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">Verify Authenticity</p>
-                      <p class="text-gray-600 text-xs mt-1">Check documentation and authenticity before purchase</p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start group/item">
-                    <div class="bg-blue-500 rounded-full p-1 mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-scale" class="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">Compare Market Prices</p>
-                      <p class="text-gray-600 text-xs mt-1">Research similar listings to ensure fair pricing</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mt-6 pt-4 border-t border-blue-200/50">
-                  <NuxtLink 
-                    to="/buyer-guide" 
-                    class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm group/link"
-                  >
-                    Complete Buyer's Guide
-                    <UIcon name="i-heroicons-arrow-right" class="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200" />
-                  </NuxtLink>
-                </div>
-              </div>
-            </div>
-
-            <!-- Security & Safety -->
-            <div class="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl border border-emerald-200/50 shadow-sm hover:shadow-lg transition-all duration-300">
-              <!-- Background Pattern -->
-              <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/10 to-green-400/10 rounded-full -translate-y-16 translate-x-16"></div>
-              
-              <div class="relative z-10 p-8">
-                <div class="flex items-start mb-6">
-                  <div class="bg-gradient-to-br from-emerald-500 to-green-600 p-3 rounded-xl shadow-lg mr-4 group-hover:scale-110 transition-transform duration-300">
-                    <UIcon name="i-heroicons-shield-check" class="h-8 w-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 class="text-xl font-bold text-emerald-900 mb-2">Security & Safety</h3>
-                    <p class="text-emerald-700/80 text-sm">Stay protected while shopping online</p>
-                  </div>
-                </div>
-
-                <div class="space-y-4">
-                  <div class="flex items-start group/item">
-                    <div class="bg-emerald-500 rounded-full p-1 mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-lock-closed" class="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">Protect Personal Info</p>
-                      <p class="text-gray-600 text-xs mt-1">Never share banking details or personal financial information</p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start group/item">
-                    <div class="bg-emerald-500 rounded-full p-1 mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-exclamation-triangle" class="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">Spot Red Flags</p>
-                      <p class="text-gray-600 text-xs mt-1">Be cautious of deals that seem unrealistically good</p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start group/item">
-                    <div class="bg-emerald-500 rounded-full p-1 mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">Use Platform Messaging</p>
-                      <p class="text-gray-600 text-xs mt-1">Keep communications on our platform for better security</p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start group/item">
-                    <div class="bg-emerald-500 rounded-full p-1 mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-user-group" class="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">Trust Your Instincts</p>
-                      <p class="text-gray-600 text-xs mt-1">If something feels wrong, don't hesitate to walk away</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="mt-6 pt-4 border-t border-emerald-200/50">
-                  <NuxtLink 
-                    to="/safety-guide" 
-                    class="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-medium text-sm group/link"
-                  >
-                    Complete Safety Guide
-                    <UIcon name="i-heroicons-arrow-right" class="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200" />                  </NuxtLink>
                 </div>
               </div>
             </div>

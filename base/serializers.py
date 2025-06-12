@@ -34,9 +34,9 @@ class UserSerializer(serializers.ModelSerializer):
     
     def get_follow_count(self, obj):
         return BusinessNetworkFollowerModel.objects.filter(follower=obj).count()
-    
     def get_sale_post_count(self, obj):
-        return SalePost.objects.filter(user=obj).count()
+        # Only count active sale posts, not pending or other statuses
+        return SalePost.objects.filter(user=obj, status='active').count()
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():

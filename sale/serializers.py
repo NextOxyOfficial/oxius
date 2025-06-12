@@ -14,7 +14,8 @@ class SaleCategorySerializerParent(serializers.ModelSerializer):
         fields = '__all__'
             
     def get_post_count(self, obj):
-        return obj.posts.count()
+        # Only count active posts, not pending or other statuses
+        return obj.posts.filter(status='active').count()
         
     def get_sub_categories_count(self, obj):
         return obj.child_categories.count()
@@ -35,7 +36,8 @@ class SaleCategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
         
     def get_post_count(self, obj):
-        return obj.posts.count()
+        # Only count active posts, not pending or other statuses
+        return obj.posts.filter(status='active').count()
     
     def get_sub_categories_count(self, obj):
         return obj.child_categories.count()
