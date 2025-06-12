@@ -105,65 +105,59 @@
     <div
       v-else
       class="bg-white/95 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 overflow-hidden"
-    >
-      <!-- Header with Filters and controls -->
+    >      <!-- Header with Filters and controls -->
       <div
-        class="flex flex-wrap justify-between items-center p-6 bg-gradient-to-r from-gray-50/80 via-white/60 to-white/80 border-b border-gray-100/70 backdrop-blur-sm"
+        class="flex justify-between items-center px-6 py-4 bg-white border-b border-gray-200"
       >
-        <div class="flex items-center gap-4">
+        <!-- Left side - Post count -->
+        <div class="flex items-center">
           <div
-            class="flex items-center gap-1.5 bg-gradient-to-r from-gray-50 to-gray-100/70 px-4 py-1.5 rounded-full text-sm font-medium text-gray-600 shadow-sm"
+            class="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg text-sm font-medium text-gray-700"
           >
             <Icon
               name="heroicons:document-text"
-              class="h-4 w-4 text-primary/70"
+              class="h-4 w-4 text-gray-500"
             />
             <span>{{ posts.length }}</span>
             <span>{{ posts.length === 1 ? "post" : "posts" }}</span>
           </div>
-          <button
-            @click="refreshPosts"
-            class="p-2.5 text-gray-600 hover:text-primary bg-white/80 hover:bg-blue-50 rounded-full shadow-sm hover:shadow border border-gray-100/70"
-            title="Refresh posts"
-          >
-            <Icon
-              name="heroicons:arrow-path"
-              size="18px"
-              :class="{ 'animate-spin': isRefreshing }"
-            />
-          </button>
         </div>
 
-        <div class="flex items-center gap-4 mt-3 sm:mt-0">
+        <!-- Right side - Filter and Refresh -->
+        <div class="flex items-center gap-3">
           <div class="relative">
             <select
               v-model="statusFilter"
-              class="border border-gray-200/80 rounded-lg py-2.5 text-sm font-medium pl-10 pr-10 text-gray-800 bg-white/90 shadow-sm hover:shadow focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none"
+              class="border border-gray-300 rounded-lg py-2 pl-9 pr-8 text-sm font-medium text-gray-700 bg-white hover:border-gray-400 focus:ring-2 focus:ring-primary/20 focus:border-primary appearance-none min-w-[140px]"
             >
               <option value="">All posts</option>
-              <option value="pending">Pending review</option>
+              <option value="pending">Pending</option>
               <option value="active">Active</option>
               <option value="sold">Sold</option>
               <option value="expired">Expired</option>
             </select>
             <Icon
               name="heroicons:funnel"
-              size="16px"
-              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary/70"
+              size="14px"
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
             />
             <Icon
               name="heroicons:chevron-down"
-              size="16px"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none"
+              size="14px"
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
             />
           </div>
-
+          
           <button
-            @click="$emit('create-post')"
-            class="bg-gradient-to-r from-primary to-primary/90 text-white font-medium text-sm px-2 py-1.5 rounded-lg flex items-center gap-2 shadow hover:shadow-primary/20 transform hover:-translate-y-0.5"
+            @click="refreshPosts"
+            class="p-2 text-gray-500 flex hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+            title="Refresh posts"
           >
-            <Icon name="heroicons:plus-circle" size="18px" />
-            New Post
+            <Icon
+              name="heroicons:arrow-path"
+              size="16px"
+              :class="{ 'animate-spin': isRefreshing }"
+            />
           </button>
         </div>
       </div>
@@ -646,7 +640,7 @@ const { get, post, del, patch } = useApi();
 const { user } = useAuth();
 const { showNotification } = useNotifications();
 
-const emit = defineEmits(["edit-post", "delete-post"]);
+const emit = defineEmits(["edit-post", "delete-post", "posts-updated", "create-post"]);
 
 // State
 const posts = ref([]);
@@ -727,9 +721,7 @@ const fetchPosts = async (page = 1) => {
           Pragma: "no-cache",
         },
       }
-    );
-
-    if (response.data) {
+    );    if (response.data) {
       if ("results" in response.data) {
         // Paginated response
         pagination.value = {
@@ -750,6 +742,9 @@ const fetchPosts = async (page = 1) => {
         posts.value = response.data;
         hasMorePosts.value = false;
       }
+
+      // Emit posts-updated event for statistics calculation
+      emit('posts-updated', posts.value);
     }
   } catch (error) {
     console.error("Error fetching posts:", error);
@@ -780,9 +775,7 @@ const refreshPosts = async () => {
           Pragma: "no-cache",
         },
       }
-    );
-
-    if (response.data) {
+    );    if (response.data) {
       if ("results" in response.data) {
         // Paginated response
         pagination.value = {
@@ -798,6 +791,9 @@ const refreshPosts = async () => {
         posts.value = response.data;
         hasMorePosts.value = false;
       }
+
+      // Emit posts-updated event for statistics calculation
+      emit('posts-updated', posts.value);
 
       // Show success message only if we actually got some posts
       if (posts.value.length > 0) {
@@ -1027,7 +1023,7 @@ onMounted(() => {
 }
 
 .my-posts-container {
-  max-width: 4xl;
+  max-width: 3xl;
   margin-left: auto;
   margin-right: auto;
 }

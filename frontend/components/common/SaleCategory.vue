@@ -72,17 +72,17 @@
                   <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <Icon name="heroicons:shopping-bag" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
                   <span class="relative z-10 truncate">{{ $t('marketplace') }}</span>
-                </NuxtLink>                <!-- My Posts Button - Enhanced (Always show, handle auth in modal) -->
-                <button
-                  class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs sm:text-sm hover:bg-slate-50 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
-                  @click="openMyPostsModal"
+                </NuxtLink>                <!-- My Posts Button - Enhanced (Navigate to page) -->
+                <NuxtLink
+                  to="/sale/my-posts"
+                  class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs sm:text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
                 >
                   <!-- Button hover effect -->
                   <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   
                   <Icon name="heroicons:document-text" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
                   <span class="relative z-10 truncate">{{ $t('my_post') }}</span>
-                </button>                
+                </NuxtLink>
                 <!-- Post Sale Button - Enhanced (Outlined) - Always visible -->
                 <NuxtLink
                   to="/sale/post"
@@ -426,68 +426,13 @@
           <p class="text-gray-600 text-sm text-center">
             {{ $t('no_items_currently_listed') }}
           </p>
-        </div>
-      </div>
+        </div>      </div>
     </div>
   </div>
-
-
-  <!-- My Posts Modal -->
-  <Teleport to="body">
-    <div
-      v-if="showMyPostsModal"
-      class="fixed inset-0 z-50 overflow-y-auto pt-14 md:pt-16"
-    >
-      <!-- Added pt-16 for header spacing -->
-      <div
-        class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
-      >
-        <div
-          class="fixed inset-0 transition-opacity"
-          @click="closeMyPostsModal"
-        >
-          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-        </div>
-
-        <div
-          v-if="user?.user"
-          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
-        >
-          <div class="bg-white p-2">
-            <div class="sm:flex sm:items-start">
-              <div class="text-center sm:text-left w-full">
-                <div
-                  class="flex justify-between items-center border-b mb-2"
-                >
-                  <h3 class="text-lg leading-6 font-medium text-gray-800 py-2">
-                    My Posts
-                  </h3>
-                  <button
-                    type="button"
-                    class="text-gray-600 hover:text-gray-600"
-                    @click="closeMyPostsModal"
-                  >
-                    <Icon name="heroicons:x-mark" size="24px" />
-                  </button>
-                </div>                <MyPosts
-                  @create-post="goToPostPage"
-                  @edit-post="handleEditPost"
-                  @delete-post="handleDeletePost"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </Teleport>
 </template>
 
 <script setup>
-import SalePostaSale from "~/components/sale/PostaSale.vue";
-import MyPosts from "~/components/sale/MyPosts.vue";
 const { user } = useAuth();
-
 const { get } = useApi();
 
 // State for categories and banners now from API
@@ -922,43 +867,6 @@ onUnmounted(() => {
     sliderContainer.value.removeEventListener("touchend", handleTouchEnd);
   }
 });
-
-// Modal states - only keeping MyPosts modal
-const showMyPostsModal = ref(false);
-
-// Modal functions
-const openMyPostsModal = () => {
-  // Check if user is authenticated, if not redirect to login
-  if (!user.value) {
-    // Redirect to login page or show login modal
-    navigateTo('/auth/login');
-    return;
-  }
-  showMyPostsModal.value = true;
-};
-
-const closeMyPostsModal = () => {
-  showMyPostsModal.value = false;
-};
-
-// Post actions
-const handleEditPost = (post) => {
-  // Navigate to edit page with post data
-  console.log("Edit post:", post);
-  // TODO: Implement edit navigation
-  navigateTo(`/sale/edit/${post.slug}`);
-};
-
-const handleDeletePost = (postId) => {
-  // Here you would implement delete functionality, possibly making an API call
-  console.log("Delete post with ID:", postId);
-  // In a real app, you would remove the post from the listings after successful deletion
-};
-
-// Navigation helper
-const goToPostPage = () => {
-  navigateTo('/sale/post');
-};
 
 // Helper function for formatting dates
 const formatDate = (dateString) => {
