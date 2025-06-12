@@ -1318,6 +1318,11 @@ const showBuySlotsModal = ref(false); // State for Buy Slots modal
 const isEditing = ref(false);
 const isSavingStore = ref(false);
 
+// Store editing functions
+function startEdit() {
+  isEditing.value = true;
+}
+
 // Watch for user data changes to ensure product limit is updated
 watch(user, (newUser) => {  if (newUser && newUser.user) {
     console.log('User data updated:', newUser.user);
