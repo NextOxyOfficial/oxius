@@ -76,7 +76,7 @@
         <!-- Tabs Navigation -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div class="border-b border-gray-200">
-            <nav class="flex space-x-8" aria-label="Tabs">
+            <nav class="flex space-x-4" aria-label="Tabs">
               <button
                 v-for="tab in tabs"
                 :key="tab.id"

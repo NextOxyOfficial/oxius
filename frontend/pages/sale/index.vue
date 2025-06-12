@@ -458,69 +458,37 @@
                         : `All Over Bangladesh`
                     }}
                   </div>
-                </div>
-              </NuxtLink>
+                </div>              </NuxtLink>
             </div>
-            <!-- Pagination Controls without Upagination component -->
-            <div class="flex justify-center mt-6" v-if="totalPages > 1">
-              <ul class="inline-flex items-center space-x-1">
-                <!-- Previous Button -->
-                <li>
-                  <button
-                    @click="goToPage(currentPage - 1)"
-                    :disabled="currentPage === 1"
-                    class="px-3 py-1 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
-                  >
-                    ‹
-                  </button>
-                </li>
-
-                <!-- Visible Page Numbers -->
-                <li v-for="page in visiblePages" :key="page">
-                  <button
-                    @click="goToPage(page)"
-                    :class="[
-                      'px-3 py-1 rounded-md border',
-                      currentPage === page
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'border-gray-300 text-gray-800 hover:bg-gray-100',
-                    ]"
-                  >
-                    {{ page }}
-                  </button>
-                </li>
-
-                <!-- Dots -->
-                <li v-if="shouldShowDots">
-                  <span class="px-2">...</span>
-                </li>
-
-                <!-- Last Page -->
-                <li v-if="totalPages > 5">
-                  <button
-                    @click="goToPage(totalPages)"
-                    :class="[
-                      'px-3 py-1 rounded-md border',
-                      currentPage === totalPages
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'border-gray-300 text-gray-800 hover:bg-gray-100',
-                    ]"
-                  >
-                    {{ totalPages }}
-                  </button>
-                </li>
-
-                <!-- Next Button -->
-                <li>
-                  <button
-                    @click="goToPage(currentPage + 1)"
-                    :disabled="currentPage === totalPages"
-                    class="px-3 py-1 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-50"
-                  >
-                    ›
-                  </button>
-                </li>
-              </ul>
+            
+            <!-- Load More Button -->
+            <div v-if="hasMoreListings && !loading" class="flex justify-center mt-8">
+              <button
+                @click="loadMorePosts"
+                :disabled="isLoadingMore"
+                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+              >
+                <UIcon 
+                  v-if="isLoadingMore" 
+                  name="i-heroicons-arrow-path" 
+                  class="animate-spin h-5 w-5" 
+                />
+                <span v-if="isLoadingMore">Loading more...</span>
+                <span v-else>Load More Posts</span>
+              </button>
+            </div>
+            
+            <!-- All Posts Loaded Message -->
+            <div v-if="!hasMoreListings && listings.length > 0 && !loading" class="text-center py-8">
+              <div class="flex flex-col items-center justify-center">
+                <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                  <UIcon name="i-heroicons-check-circle" class="h-8 w-8 text-green-600" />
+                </div>
+                <h3 class="text-lg font-medium text-gray-800 mb-1">All posts loaded!</h3>
+                <p class="text-gray-600 text-sm">
+                  You've seen all {{ totalListingsCount }} available listings
+                </p>
+              </div>
             </div>
           </div>
 
@@ -887,6 +855,11 @@ const listings = ref([]); // Renamed from posts to match template usage
 const viewMode = ref("grid");
 const isMobileFilterOpen = ref(false);
 
+// Pagination state
+const isLoadingMore = ref(false);
+const hasMoreListings = ref(false);
+const totalListingsCount = ref(0);
+
 // Function to toggle mobile sidebar visibility
 function toggleMobileSidebar() {
   isMobileFilterOpen.value = !isMobileFilterOpen.value;
@@ -902,9 +875,10 @@ function clearLocation() {
 async function filterSearch() {
   isLoading.value = true;
   searchQuery.value = form.value.title || "";
+  currentPage.value = 1;
 
   // Apply the search query filter
-  await loadPosts(1);
+  await loadPosts(1, false);
   isLoading.value = false;
 }
 
@@ -1053,13 +1027,21 @@ function handleEmptyCategories() {
   return [];
 }
 
-// Load posts based on current filters - modify the API path and add fallback data
-async function loadPosts(page = 1) {
-  loading.value = true;
+// Load posts based on current filters with proper pagination
+async function loadPosts(page = 1, isLoadMore = false) {
+  if (isLoadMore) {
+    isLoadingMore.value = true;
+  } else {
+    loading.value = true;
+  }
 
   try {
     // Build query parameters
     const params = new URLSearchParams();
+
+    // Add pagination with page size of 10
+    params.append("page", page.toString());
+    params.append("page_size", "10");
 
     // Add filters
     if (selectedCategory.value)
@@ -1078,7 +1060,6 @@ async function loadPosts(page = 1) {
     if (selectedDistrict.value)
       params.append("district", selectedDistrict.value);
     if (selectedArea.value) params.append("area", selectedArea.value);
-    if (page) params.append("page", page.toString());
 
     // Sort
     const sortMapping = {
@@ -1088,7 +1069,9 @@ async function loadPosts(page = 1) {
       price_high: "-price",
       most_viewed: "-views",
     };
-    params.append("sort", sortMapping[sortOption.value] || "-created_at"); // Get data from API
+    params.append("sort", sortMapping[sortOption.value] || "-created_at"); 
+
+    // Get data from API
     const response = await get(
       `${API_ENDPOINTS.LISTINGS}?${params.toString()}`
     );
@@ -1096,22 +1079,46 @@ async function loadPosts(page = 1) {
     if (response && response.data) {
       if (response.data.results) {
         // Paginated response
-        listings.value = mapListingsData(response.data.results);
-        totalPages.value = Math.ceil(
-          +response.data.count / +response.data.results.length
-        );
+        const newListings = mapListingsData(response.data.results);
+        
+        if (isLoadMore) {
+          // Append new listings to existing ones
+          listings.value = [...listings.value, ...newListings];
+        } else {
+          // Replace listings for fresh load
+          listings.value = newListings;
+        }
+        
+        // Update pagination info
+        totalPages.value = Math.ceil(response.data.count / 10);
+        hasMoreListings.value = !!response.data.next;
+        totalListingsCount.value = response.data.count;
+        
       } else if (Array.isArray(response.data)) {
         // Array response
-        listings.value = mapListingsData(response.data);
+        const newListings = mapListingsData(response.data);
+        if (isLoadMore) {
+          listings.value = [...listings.value, ...newListings];
+        } else {
+          listings.value = newListings;
+        }
+        hasMoreListings.value = false;
       }
     } else {
-      listings.value = [];
+      if (!isLoadMore) {
+        listings.value = [];
+      }
+      hasMoreListings.value = false;
     }
   } catch (error) {
     console.error("Error loading listings:", error);
-    listings.value = [];
+    if (!isLoadMore) {
+      listings.value = [];
+    }
+    hasMoreListings.value = false;
   } finally {
     loading.value = false;
+    isLoadingMore.value = false;
   }
 }
 
@@ -1257,32 +1264,45 @@ function selectSubcategory(subcategoryId) {
 async function selectCategory(catId) {
   selectedCategory.value = catId;
   selectedSubcategory.value = null;
-  await loadPosts(1);
+  currentPage.value = 1;
+  await loadPosts(1, false);
 }
 
 async function clearCategory() {
   selectedCategory.value = null;
   selectedSubcategory.value = null;
-  await loadPosts(1);
+  currentPage.value = 1;
+  await loadPosts(1, false);
 }
 
 async function clearSubcategory() {
   selectedSubcategory.value = null;
-  await loadPosts(1);
+  currentPage.value = 1;
+  await loadPosts(1, false);
 }
 
 async function clearPriceRange() {
   priceRange.value.min = "";
   priceRange.value.max = "";
-  await loadPosts(1);
+  currentPage.value = 1;
+  await loadPosts(1, false);
 }
 
 function applyFilters() {
-  loadPosts(1);
+  currentPage.value = 1;
+  loadPosts(1, false);
 }
 
 function onPageChange(page) {
   loadPosts(page);
+}
+
+// Load more posts function for pagination
+async function loadMorePosts() {
+  if (!hasMoreListings.value || isLoadingMore.value) return;
+  
+  currentPage.value++;
+  await loadPosts(currentPage.value, true);
 }
 
 // Location selection handlers
@@ -1457,46 +1477,9 @@ watch(
       } catch (error) {
         console.error(`Error loading areas for ${newDistrict}:`, error);
       }
-    } else {
-      upazilas.value = [];
-    }
-  }
+    } else {    upazilas.value = [];
+    }  }
 );
-
-const visiblePages = computed(() => {
-  const pages = [];
-
-  if (totalPages.value <= 6) {
-    // Show all if few pages
-    for (let i = 1; i <= totalPages.value; i++) pages.push(i);
-  } else {
-    const maxVisible = 5;
-
-    let start = currentPage.value;
-    if (currentPage.value <= 3) start = 1;
-    else if (currentPage.value > totalPages.value - 5)
-      start = totalPages.value - 5;
-
-    for (let i = start; i < start + maxVisible && i < totalPages; i++) {
-      pages.push(i);
-    }
-  }
-
-  return pages;
-});
-
-const shouldShowDots = computed(() => {
-  return (
-    totalPages.value > 6 && visiblePages.value.at(-1) < totalPages.value - 1
-  );
-});
-
-async function goToPage(page) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
-    loadPosts(currentPage.value);
-  }
-}
 </script>
 
 <style>
