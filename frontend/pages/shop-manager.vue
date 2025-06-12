@@ -352,12 +352,11 @@
                               remainingProductLimit > 0 &&
                               remainingProductLimit <= 2,
                             'text-emerald-600': remainingProductLimit > 2,
-                          }"
-                        >
-                          {{ products.length }}/{{ productLimit }}
+                          }"                        >
+                          {{ products.length }}/{{ isUserDataLoaded ? productLimit : '...' }}
                         </span>
                         <button
-                          v-if="remainingProductLimit <= 3"
+                          v-if="isUserDataLoaded && remainingProductLimit <= 3"
                           @click="showBuySlotsModal = true"
                           class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded-sm text-xs bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors"
                         >
@@ -1254,6 +1253,11 @@ const remainingProductLimit = computed(
   () => productLimit.value - products.value.length
 );
 
+// Add computed property to check if user data is fully loaded
+const isUserDataLoaded = computed(() => {
+  return user.value && user.value.user && user.value.user.product_limit !== undefined;
+});
+
 // Tabs configuration
 const tabs = computed(() => [
   {
@@ -1415,10 +1419,15 @@ const products = ref([]);
 
 async function getProducts() {
   try {
+    console.log('Fetching products for shop manager...');
     const res = await get("/my-products/");
+    console.log('Products API response:', res);
+    
     if (res && res.data) {
       products.value = res.data;
-      console.log(`Loaded ${products.value.length} products`); // Check product limit and show notification if close to limit
+      console.log(`Loaded ${products.value.length} products`); 
+      
+      // Check product limit and show notification if close to limit
       if (products.value.length >= productLimit.value) {
         showToast(
           "info",
