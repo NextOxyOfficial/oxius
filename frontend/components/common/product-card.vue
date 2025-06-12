@@ -1,6 +1,6 @@
 <template>
   <div ref="productCardRef">
-    <div class="md:hover:-translate-y-0.5 transition-all duration-300">
+    <div class="transition-all duration-300">
       <!-- Glass-like Card Container with Premium Shadows -->
       <div
         class="bg-slate-100/80 dark:bg-slate-800/90 border border-white/40 dark:border-slate-700/40 rounded-lg overflow-hidden shadow-custom transition-all duration-500 h-full flex flex-col backdrop-blur-sm hover:shadow-custom-hover"
@@ -50,28 +50,23 @@
             </div>
           </div>
 
-          <!-- Image with Gradient Overlay -->
-          <div
+          <!-- Image with Gradient Overlay -->          <div
             class="absolute inset-0 bg-gradient-to-br from-black/5 via-transparent to-black/30 dark:from-black/20 dark:to-black/40 z-10"
           ></div>
           <img
             :src="getProductImage(product)"
             :alt="product.name"
-            class="absolute inset-0 w-full h-full object-contain object-center transition-transform duration-700 ease-out-expo hover:scale-110"
+            class="absolute inset-0 w-full h-full object-contain object-center transition-transform duration-300"
             loading="lazy"
           />
 
           <!-- Quick View Button with Premium Effects -->
-          <div class="absolute inset-0 z-10 flex items-center justify-center">
-            <button
+          <div class="absolute inset-0 z-10 flex items-center justify-center">            <button
               @click="openProductModal(product)"
               class="quick-view-btn px-4 py-2.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-sm font-medium rounded-lg transform opacity-0 translate-y-8 transition-all duration-500 shadow-sm flex items-center"
             >
               <UIcon name="i-heroicons-eye" class="mr-2 size-4" />
               <span>Quick View</span>
-              <div
-                class="absolute inset-0 rounded-lg bg-gradient-to-r from-primary-500/10 to-primary-600/20 animate-pulse-subtle"
-              ></div>
             </button>
           </div>
         </div>
@@ -161,9 +156,7 @@
                 <span
                   class="absolute inset-0 rounded-lg bg-primary-400 blur-xl opacity-30"
                 ></span>
-              </span>
-
-              <!-- Content with custom spinner -->
+              </span>              <!-- Content with custom spinner -->
               <span class="relative z-10 flex items-center justify-center">
                 <template v-if="!loadingStates[product.id]">
                   <UIcon
@@ -180,11 +173,6 @@
                   </div>
                 </template>
               </span>
-
-              <!-- Shine effect -->
-              <span
-                class="absolute top-0 left-0 w-full h-full shine-effect"
-              ></span>
             </button>
           </div>
         </div>
@@ -380,42 +368,14 @@ onMounted(() => {
 
 /* Premium card hover effect */
 
-/* Premium button effects */
+/* Premium button effects - simplified for better performance */
 .premium-buy-button {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.premium-buy-button:hover {
-  transform: translateY(-2px);
-}
-
-.premium-buy-button:active {
-  transform: translateY(0);
-}
-
-/* Cart icon animation */
+/* Cart icon - simplified for better performance */
 .cart-icon {
-  transition: transform 0.3s ease;
-}
-
-.premium-buy-button:hover .cart-icon {
-  animation: cartBounce 0.75s ease;
-}
-
-@keyframes cartBounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-4px);
-  }
-  60% {
-    transform: translateY(2px);
-  }
-  80% {
-    transform: translateY(-1px);
-  }
+  transition: transform 0.2s ease;
 }
 
 /* Premium spinner animation */
@@ -460,56 +420,9 @@ onMounted(() => {
   }
 }
 
-/* Shine effect */
-.shine-effect {
-  position: absolute;
-  top: -300%;
-  left: -300%;
-  width: 500%;
-  height: 500%;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.3) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: rotate(30deg);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
+/* Shine effect - removed for better performance */
 
-.premium-buy-button:hover .shine-effect {
-  animation: shine 1.5s ease-in-out;
-}
-
-@keyframes shine {
-  0% {
-    opacity: 0;
-    transform: translate(-30%, -30%) rotate(30deg);
-  }
-  20% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-15%, -15%) rotate(30deg);
-  }
-}
-
-/* Subtle pulse animation */
-@keyframes pulse-subtle {
-  0%,
-  100% {
-    opacity: 0.7;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 3s infinite;
-}
+/* Subtle pulse animation - removed for better performance */
 
 /* Smoother easing for image hover effect */
 .ease-out-expo {
@@ -539,14 +452,9 @@ onMounted(() => {
   background-color: rgba(75, 85, 99, 0.5);
 }
 
-/* Quick view button hover animation */
+/* Quick view button - simplified for better performance */
 .quick-view-btn {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-.quick-view-btn:hover {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15), 0 3px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
 }
 
 /* Product image container hover effect for quick view button */
@@ -590,20 +498,5 @@ onMounted(() => {
   --primary-500: #0ea5e9;
   --primary-600: #0284c7;
   --primary-700: #0369a1;
-}
-
-/* Discount badge animation */
-.discount-badge {
-  animation: float 4s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
 }
 </style>

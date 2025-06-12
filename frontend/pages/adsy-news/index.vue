@@ -39,13 +39,6 @@
               class="text-sm sm:text-base opacity-90 mb-6 max-w-3xl line-clamp-2"
               v-html="latestArticle.summary"
             ></div>
-            <div class="flex items-center">
-              <img
-                :src="latestArticle.authorImage"
-                :alt="latestArticle.author"
-                class="h-10 w-10 rounded-full mr-3 border-2 border-white"
-              />
-            </div>
           </div>
         </div>
       </div>
