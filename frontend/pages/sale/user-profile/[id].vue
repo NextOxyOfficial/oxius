@@ -25,10 +25,10 @@
         </div>
       </div>
 
-      <div class="px-6 pb-6 relative">        
+      <div class="px-6 pb-6 relative">          
         <!-- Profile Avatar -->
         <div
-          class="relative -top-16 left-6 h-32 w-32 rounded-full border-4 border-white bg-white overflow-hidden group cursor-pointer"
+          class="relative -top-16 left-6 h-32 w-32 rounded-full border-4 border-white bg-white overflow-hidden cursor-pointer"
           @click="openProfilePhotoModal"
         >
           <img
@@ -36,50 +36,6 @@
             :alt="seller.name"
             class="h-full w-full object-contain"
           />
-
-          <!-- Persistent camera icon -->
-          <div class="absolute bottom-0 right-0 z-20">
-            <button
-              @click="toggleProfilePhotoMenu"
-              class="bg-white rounded-full p-2 shadow-sm hover:shadow-sm transition-all duration-300"
-              ref="cameraButtonRef"
-            >
-              <UIcon
-                name="i-heroicons-camera"
-                class="size-5 text-emerald-600"
-              />
-            </button>
-
-            <!-- Menu with options -->
-            <div
-              v-if="showProfilePhotoMenu"
-              class="absolute bottom-12 right-0 bg-white rounded-md shadow-sm p-2 w-40 border border-gray-200 z-30"
-              ref="profilePhotoMenuRef"
-            >
-              <div class="flex flex-col space-y-1">
-                <button
-                  @click="navigateToSettings"
-                  class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded-md text-sm text-gray-800 transition-colors"
-                >
-                  <UIcon
-                    name="i-heroicons-pencil-square"
-                    class="size-4 text-emerald-600"
-                  />
-                  <span>Change Photo</span>
-                </button>
-                <button
-                  @click="openProfilePhotoModal"
-                  class="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 rounded-md text-sm text-gray-800 transition-colors"
-                >
-                  <UIcon
-                    name="i-heroicons-eye"
-                    class="size-4 text-emerald-600"
-                  />
-                  <span>View Photo</span>
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Profile Info -->
@@ -115,11 +71,10 @@
                 <span class="text-sm text-gray-600">{{ seller.address }}</span>
               </div>
             </div>
-          </div>
-
-          <div class="mt-4 md:mt-0">
+          </div>          <div class="mt-4 md:mt-0">
             <button
               class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md text-sm transition-colors duration-200"
+              @click="contactSeller"
             >
               Contact Seller
             </button>
@@ -293,12 +248,11 @@
                     />
                   </NuxtLink>
                 </div>
-                <div class="p-4">
-                  <h3 class="font-semibold text-gray-800 mb-1 line-clamp-2">
+                <div class="p-4">                  <h3 class="font-semibold text-gray-800 mb-1 line-clamp-2">
                     <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
-                      {{ product.title }}
+                      {{ capitalizeTitle(product.title) }}
                     </NuxtLink>
-                  </h3>                  <div class="flex items-center justify-between mt-2">
+                  </h3><div class="flex items-center justify-between mt-2">
                     <span class="font-bold text-emerald-700"
                       >৳{{ product.price.toLocaleString() }}</span
                     >
@@ -349,9 +303,9 @@
 
                 <div class="p-4 sm:w-2/3 flex flex-col">                  <h3 class="font-semibold text-gray-800 mb-1">
                     <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
-                      {{ product.title }}
+                      {{ capitalizeTitle(product.title) }}
                     </NuxtLink>
-                  </h3>                  <div class="flex items-center justify-between mt-2">
+                  </h3><div class="flex items-center justify-between mt-2">
                     <span class="font-bold text-emerald-700"
                       >৳{{ product.price.toLocaleString() }}</span
                     >
@@ -552,9 +506,7 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Share Dialog -->
+    </div>    <!-- Share Dialog -->
     <div
       v-if="showShareDialog"
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
@@ -573,22 +525,27 @@
             <X class="h-5 w-5" />
           </button>
         </div>
-        <div class="p-5">
-          <div class="flex items-center space-x-2">
-            <div class="flex-1">
+        <div class="p-5" style="word-break: break-word">
+          <div
+            class="flex items-center space-x-2 overflow-hidden"
+            style="word-break: break-word"
+          >
+            <div class="flex-1 overflow-hidden" style="word-break: break-word">
               <div
-                class="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2"
+                class="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2 overflow-hidden"
+                style="word-break: break-word"
               >
-                <span class="text-sm truncate text-gray-600">{{
-                  shareUrl
-                }}</span>
+                <span class="text-sm text-gray-600">{{ shareUrl }}</span>
               </div>
             </div>
             <button
               class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm transition-colors duration-200"
               @click="copyToClipboard"
             >
-              Copy
+              <span class="flex items-center">
+                <UIcon name="i-heroicons-clipboard" class="w-4 h-4 mr-1" />
+                Copy
+              </span>
             </button>
           </div>
 
@@ -620,7 +577,7 @@
                 @click="shareViaMedia('whatsapp')"
               >
                 <span
-                  class="w-5 h-5 bg-green-500 text-white rounded flex items-center justify-center mr-2 text-sm"
+                  class="w-5 h-5 bg-emerald-500 text-white rounded flex items-center justify-center mr-2 text-sm"
                   >w</span
                 >
                 WhatsApp
@@ -639,7 +596,7 @@
           </div>
         </div>
       </div>
-    </div>    <!-- Profile Photo Modal -->
+    </div><!-- Profile Photo Modal -->
     <MediaViewer
       v-if="showProfilePhotoModal"
       :activeMedia="profilePhotoMedia"
@@ -677,6 +634,9 @@ import {
 const { get } = useApi();
 const { params } = useRoute();
 
+// Import toast functionality for notifications
+const toast = useToast();
+
 // State variables
 const showPhone = ref(false);
 const viewMode = ref("list"); // Changed from 'grid' to 'list' to show list view by default
@@ -689,10 +649,7 @@ const showReportDialog = ref(false);
 const showShareDialog = ref(false);
 const reportReason = ref("");
 const reportDetails = ref("");
-const shareUrl = ref(window.location.href);
-const showProfilePhotoMenu = ref(false);
-const cameraButtonRef = ref(null);
-const profilePhotoMenuRef = ref(null);
+const shareUrl = ref("");
 const showProfilePhotoModal = ref(false);
 const profilePhotoMedia = ref(null); // For MediaViewer
 const totalPages = ref(0);
@@ -775,6 +732,13 @@ const pages = computed(() => {
   }
   return pages;
 });
+
+// Contact seller function
+const contactSeller = () => {
+  if (seller.value?.phone) {
+    window.open(`tel:${seller.value.phone}`, '_self');
+  }
+};
 
 // Format date
 const formatDate = (dateString) => {
@@ -860,6 +824,10 @@ const submitReport = () => {
 // Share dialog methods
 const handleShare = () => {
   showShareDialog.value = true;
+  // Use the production domain for sharing
+  const productionDomain = 'https://adsyclub.com';
+  const pathname = window.location.pathname;
+  shareUrl.value = productionDomain + pathname;
 };
 
 const closeShareDialog = () => {
@@ -868,13 +836,19 @@ const closeShareDialog = () => {
 
 const copyToClipboard = () => {
   navigator.clipboard.writeText(shareUrl.value);
-  alert("Link copied to clipboard!");
+  // Show a toast message
+  toast.add({
+    title: 'Link Copied!',
+    description: 'Profile link has been copied to clipboard',
+    color: 'green',
+    icon: 'i-heroicons-check-circle'
+  });
 };
 
 const shareViaMedia = (platform) => {
   let url = "";
-  const currentUrl = encodeURIComponent(window.location.href);
-  const title = encodeURIComponent(`Check out ${seller.name}'s profile`);
+  const currentUrl = encodeURIComponent(shareUrl.value);
+  const title = encodeURIComponent(`Check out ${seller.value?.name}'s profile`);
 
   switch (platform) {
     case "facebook":
@@ -898,15 +872,7 @@ const shareViaMedia = (platform) => {
   closeShareDialog();
 };
 
-// Profile photo menu methods
-const toggleProfilePhotoMenu = () => {
-  showProfilePhotoMenu.value = !showProfilePhotoMenu.value;
-};
-
-const navigateToSettings = () => {
-  alert("Navigating to settings to change photo.");
-};
-
+// Profile photo modal methods
 const openProfilePhotoModal = () => {
   // Create a media object for the profile photo
   profilePhotoMedia.value = {
@@ -916,6 +882,12 @@ const openProfilePhotoModal = () => {
   };
   
   showProfilePhotoModal.value = true;
+};
+
+// Function to capitalize first letter of title
+const capitalizeTitle = (title) => {
+  if (!title) return "";
+  return title.charAt(0).toUpperCase() + title.slice(1);
 };
 </script>
 
