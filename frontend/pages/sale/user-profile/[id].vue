@@ -1,13 +1,12 @@
 <template>
   <div class="max-w-6xl mx-auto px-1 py-6">
-    <!-- Seller Profile Header -->
-
-    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <!-- Seller Profile Header -->    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <div
-        class="relative h-40 bg-gradient-to-r from-emerald-600 to-emerald-800"
+        class="relative h-40 bg-gradient-to-r from-emerald-600 to-emerald-800 overflow-hidden"
+        :style="seller.image ? `background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('${seller.image}'); background-size: cover; background-position: center;` : ''"
       >
         <!-- Profile Actions -->
-        <div class="absolute top-4 right-4 flex space-x-2">
+        <div class="absolute top-4 right-4 flex space-x-2 z-10">
           <button
             class="bg-white/90 hover:bg-white text-gray-800 px-3 py-1.5 rounded-md text-sm transition-colors duration-200 flex items-center"
             @click="handleShare"
