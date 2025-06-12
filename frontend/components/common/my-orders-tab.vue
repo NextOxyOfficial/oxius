@@ -139,8 +139,18 @@
         <div class="flex items-center space-x-2">
           <ShoppingBag class="h-5 w-5 text-indigo-600" />
           <h2 class="text-xl font-semibold text-gray-800">My Orders</h2>
-        </div>
-        <div class="mt-3 md:mt-0 flex items-center space-x-4">
+        </div>        <div class="mt-3 md:mt-0 flex items-center space-x-4">
+          <UButton
+            @click="retryLoadOrders"
+            color="gray"
+            variant="outline"
+            size="sm"
+            icon="i-heroicons-arrow-path"
+            :loading="isOrdersLoading"
+            title="Refresh orders"
+          >
+            Refresh
+          </UButton>
           <div class="relative">
             <select
               v-model="orderFilter"
@@ -268,11 +278,44 @@
                 </button>
               </div>
             </td>
-          </tr>          <tr v-if="orders.length === 0">
+          </tr>          <tr v-if="orders.length === 0 && !isOrdersLoading">
             <td colspan="6" class="px-6 py-10 text-center text-gray-600">
               <div class="flex flex-col items-center justify-center">
                 <PackageX class="h-10 w-10 text-gray-400 mb-2" />
-                No orders found matching your criteria
+                <div v-if="products.length > 0">
+                  <p class="mb-2 font-medium">No orders yet</p>
+                  <p class="text-sm text-gray-500 mb-3">
+                    You have {{ products.length }} product(s) available, but haven't received any orders yet.
+                  </p>
+                  <p class="text-sm text-gray-500 mb-3">
+                    Make sure your products are visible and promoted to attract customers.
+                  </p>
+                </div>
+                <div v-else>
+                  <p class="mb-2 font-medium">No orders found</p>
+                  <p class="text-sm text-gray-500 mb-3">
+                    You need to add products to your shop before you can receive orders.
+                  </p>
+                  <UButton 
+                    @click="$emit('switch-tab', 'add-product')"
+                    color="indigo"
+                    size="sm"
+                    icon="i-heroicons-plus"
+                  >
+                    Add Your First Product
+                  </UButton>
+                </div>
+                <UButton 
+                  v-if="retryCount > 0"
+                  @click="retryLoadOrders"
+                  color="indigo"
+                  variant="outline"
+                  size="sm"
+                  icon="i-heroicons-arrow-path"
+                  class="mt-3"
+                >
+                  Retry Loading Orders
+                </UButton>
               </div>
             </td>
           </tr>
@@ -1146,6 +1189,9 @@
 </template>
 
 <script setup>
+// Define emits
+defineEmits(['switch-tab']);
+
 const { user } = useAuth();
 const { get, patch, put } = useApi();
 const { formatDate } = useUtils();
@@ -1232,12 +1278,16 @@ const orderStats = ref({
 });
 const products = ref([]);
 
-async function getOrders(page = 1) {
-  if (page === 1) {
+// Add retry functionality for orders
+const retryCount = ref(0);
+const maxRetries = 3;
+
+async function getOrders(page = 1, isRetry = false) {
+  if (page === 1 && !isRetry) {
     isOrdersLoading.value = true;
     orders.value = [];
+    retryCount.value = 0;
   }
-
   try {
     // Build query parameters for pagination
     const params = new URLSearchParams();
@@ -1253,15 +1303,27 @@ async function getOrders(page = 1) {
       params.append('search', orderSearch.value);
     }
 
+    console.log('=== Orders API Call Debug ===');
+    console.log('Endpoint:', `/seller-orders/?${params.toString()}`);
+    console.log('User authenticated:', !!user.value);
+    console.log('User ID:', user.value?.user?.id);
+    console.log('JWT token present:', !!useCookie("adsyclub-jwt").value);
+
     const res = await get(`/seller-orders/?${params.toString()}`, {}, {
       headers: {
         "Cache-Control": "no-cache",
         Pragma: "no-cache",
       },
-    });
+    });    console.log('=== Orders API Response ===');
+    console.log('Response received:', !!res);
+    console.log('Response data:', res?.data);
+    console.log('Response error:', res?.error);
 
     if (res && res.data) {
+      console.log('=== Processing Orders Response ===');
       if ("results" in res.data) {
+        console.log('Paginated response detected');
+        console.log('Total count:', res.data.count);        console.log('Results length:', res.data.results?.length || 0);
         // Paginated response
         pagination.value = {
           count: res.data.count,
@@ -1280,10 +1342,9 @@ async function getOrders(page = 1) {
         } else {
           orders.value = [...orders.value, ...processedOrders];
           allOrders.value = [...allOrders.value, ...processedOrders];
-        }
-
-        hasMoreOrders.value = !!res.data.next;
-        console.log(`Loaded ${res.data.results.length} orders (page ${page})`);
+        }        hasMoreOrders.value = !!res.data.next;
+        console.log(`✅ Orders loaded successfully: ${res.data.results.length} orders (page ${page})`);
+        console.log(`Total orders in system: ${res.data.count}`);
       } else if (Array.isArray(res.data)) {
         // Non-paginated response - handle fallback
         const processedOrders = res.data.map((order) => ({
@@ -1301,20 +1362,67 @@ async function getOrders(page = 1) {
         hasMoreOrders.value = false;
       }
     } else {
-      console.warn("No order data received");
-      orders.value = [];
+      console.warn("No order data received");      orders.value = [];
       allOrders.value = [];
       hasMoreOrders.value = false;
     }
   } catch (error) {
     console.error("Error fetching orders:", error);
-    showToast("error", "Failed to load orders", "Please try again later");
+    
+    // Provide more specific error information
+    let errorMessage = "Please try again later";
+    if (error.response) {
+      // Server responded with error status
+      const status = error.response.status;
+      const data = error.response.data;
+      
+      if (status === 401) {
+        errorMessage = "Authentication required. Please log in again.";
+      } else if (status === 403) {
+        errorMessage = "You don't have permission to view orders.";
+      } else if (status === 404) {
+        errorMessage = "Orders endpoint not found.";
+      } else if (status === 500) {
+        errorMessage = "Server error. Please contact support.";
+      } else if (data && data.detail) {
+        errorMessage = data.detail;
+      } else if (data && data.error) {
+        errorMessage = data.error;      } else {
+        errorMessage = `Server error (${status}). Please try again.`;
+      }
+    } else {
+      // Network error or other issues that might be temporary
+      errorMessage = "Network error. Please check your internet connection.";
+      
+      // Auto-retry for network errors
+      if (retryCount.value < maxRetries && (error.request || error.code === 'NETWORK_ERROR')) {
+        retryCount.value++;
+        console.log(`Retrying orders fetch (attempt ${retryCount.value}/${maxRetries})...`);
+        
+        setTimeout(() => {
+          getOrders(page, true);
+        }, 1000 * retryCount.value); // Incremental delay
+        
+        return; // Don't show error toast yet
+      }
+    }
+    
+    showToast("error", "Failed to load orders", errorMessage);
     orders.value = [];
     allOrders.value = [];
-    hasMoreOrders.value = false;  } finally {
-    isOrdersLoading.value = false;
+    hasMoreOrders.value = false;
+  } finally {
+    if (!isRetry || retryCount.value >= maxRetries) {
+      isOrdersLoading.value = false;
+    }
   }
 }
+
+// Add retry function for manual retry
+const retryLoadOrders = async () => {
+  retryCount.value = 0;
+  await getOrders(1);
+};
 
 // Load order statistics
 const loadOrderStats = async () => {

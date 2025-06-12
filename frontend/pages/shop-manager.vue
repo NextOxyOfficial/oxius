@@ -369,11 +369,10 @@
                         </button>
                       </span>
                     </div>
-                    <span class="text-gray-400">|</span>
-                    <span>
+                    <span class="text-gray-400">|</span>                    <span>
                       Last order:
                       {{
-                        lastOrderDate
+                        orders.length > 0 && lastOrderDate
                           ? formatDate(lastOrderDate)
                           : "No orders yet"
                       }}
@@ -1246,7 +1245,11 @@ import {
 const activeTab = ref("orders");
 
 // Product limit configuration (dynamic from user data)
-const productLimit = computed(() => user.value?.user?.product_limit || 10);
+const productLimit = computed(() => {
+  const limit = user.value?.user?.product_limit;
+  console.log('Product limit from user:', limit);
+  return limit || 10;
+});
 const remainingProductLimit = computed(
   () => productLimit.value - products.value.length
 );
@@ -1279,6 +1282,19 @@ const isProcessing = ref(false);
 const showProductLimitModal = ref(false);
 const showBuySlotsModal = ref(false); // State for Buy Slots modal
 
+// Watch for user data changes to ensure product limit is updated
+watch(user, (newUser) => {
+  if (newUser && newUser.user) {
+    console.log('User data updated:', newUser.user);
+    console.log('Product limit from updated user:', newUser.user.product_limit);
+  }
+}, { deep: true });
+
+// Watch for productLimit changes
+watch(productLimit, (newLimit) => {
+  console.log('Product limit changed to:', newLimit);
+});
+
 // Watch for active tab changes to handle product limit
 watch(activeTab, (newTab) => {
   // Check if trying to access the add-product tab and product limit is reached
@@ -1299,8 +1315,16 @@ const sparkles = [
 ];
 
 // Lifecycle hooks
-onMounted(() => {
+onMounted(async () => {
   mounted.value = true;
+  
+  console.log('Shop manager mounted, user data:', user.value);
+  
+  // Load initial data
+  await Promise.all([
+    getOrders(),
+    getProducts()
+  ]);
 
   // Randomize sparkle animations
   const interval = setInterval(() => {
@@ -1321,13 +1345,24 @@ async function getOrders() {
   isOrdersLoading.value = true;
   try {
     const res = await get("/seller-orders/");
-    orders.value = res.data.map((order) => ({
-      ...order,
-      id: Array.isArray(order.id) ? order.id[0] : order.id,
-    }));
+    console.log('Orders API response:', res);
+    
+    if (res && res.data) {
+      // Handle both paginated and non-paginated responses
+      const orderData = res.data.results || res.data;
+      orders.value = Array.isArray(orderData) ? orderData.map((order) => ({
+        ...order,
+        id: Array.isArray(order.id) ? order.id[0] : order.id,
+      })) : [];
+      
+      console.log(`Loaded ${orders.value.length} orders for shop manager`);
+    } else {
+      orders.value = [];
+    }
   } catch (error) {
     console.error("Error fetching orders:", error);
     showToast("error", "Failed to load orders", "Please try again later");
+    orders.value = [];
   } finally {
     isOrdersLoading.value = false;
   }
@@ -1361,6 +1396,7 @@ const totalOrdersAmount = computed(() => {
 
 // Computed property to get the most recent order date
 const lastOrderDate = computed(() => {
+  console.log('Computing lastOrderDate, orders count:', orders.value.length);
   if (orders.value.length === 0) {
     return null;
   }
@@ -1370,6 +1406,7 @@ const lastOrderDate = computed(() => {
     (a, b) => new Date(b.created_at) - new Date(a.created_at)
   );
 
+  console.log('Most recent order:', sortedOrders[0]?.created_at);
   return new Date(sortedOrders[0].created_at);
 });
 
