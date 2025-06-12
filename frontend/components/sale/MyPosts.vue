@@ -708,9 +708,14 @@ const fetchPosts = async (page = 1) => {
   }
 
   try {
-    // Use my_posts action to get only the current user's posts
+    // Build query parameters for pagination
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('page_size', '10'); // Set page size
+
+    // Use my_posts action to get only the current user's posts with pagination
     const response = await get(
-      `/sale/posts/my_posts/`,
+      `/sale/posts/my_posts/?${params.toString()}`,
       {},
       {
         headers: {
@@ -718,7 +723,7 @@ const fetchPosts = async (page = 1) => {
           Pragma: "no-cache",
         },
       }
-    );    if (response.data) {
+    );if (response.data) {
       if ("results" in response.data) {
         // Paginated response
         pagination.value = {
@@ -762,9 +767,14 @@ const refreshPosts = async () => {
   currentPage.value = 1;
 
   try {
+    // Build query parameters for pagination
+    const params = new URLSearchParams();
+    params.append('page', '1');
+    params.append('page_size', '10');
+
     // Use my_posts action to get only the current user's posts
     const response = await get(
-      `/sale/posts/my_posts/`,
+      `/sale/posts/my_posts/?${params.toString()}`,
       {},
       {
         headers: {
@@ -772,7 +782,7 @@ const refreshPosts = async () => {
           Pragma: "no-cache",
         },
       }
-    );    if (response.data) {
+    );if (response.data) {
       if ("results" in response.data) {
         // Paginated response
         pagination.value = {

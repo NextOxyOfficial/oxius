@@ -41,7 +41,7 @@
               class="w-full text-left px-3 py-2 rounded-md flex items-center justify-between transition-colors duration-200"
               :class="
                 !selectedCategory
-                  ? 'bg-primary-200 text-primary-700 font-medium shadow-sm'
+                  ? 'bg-primary-100 text-primary-700 font-medium shadow-sm'
                   : 'text-gray-800 hover:bg-gray-50'
               "
             >
@@ -50,7 +50,7 @@
                 All Categories
               </span>
               <span
-                class="bg-primary-200 text-primary-600 text-xs px-2 py-0.5 rounded-full font-medium"
+                class="bg-primary-100 text-primary-600 text-xs px-2 py-0.5 rounded-full font-medium"
               >
                 {{ totalListings }}
               </span>
