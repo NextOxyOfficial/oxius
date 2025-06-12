@@ -20,60 +20,10 @@
             <template #leading>
               <UIcon name="i-heroicons-shopping-bag" />
             </template>
-            Go to Marketplace
-          </UButton>
-        </div>
-
-        <!-- Tabs Navigation -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div class="border-b border-gray-200">
-            <nav class="flex space-x-8" aria-label="Tabs">
-              <button
-                v-for="tab in tabs"
-                :key="tab.id"
-                @click="activeTab = tab.id"
-                :class="[
-                  activeTab === tab.id
-                    ? 'border-emerald-500 text-emerald-600 bg-emerald-50'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                  'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg'
-                ]"
-              >
-                <div class="flex items-center gap-2">
-                  <UIcon :name="tab.icon" class="w-4 h-4" />
-                  {{ tab.name }}
-                  <span
-                    v-if="tab.id === 'my-posts' && myPostsCount > 0"
-                    class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2 py-0.5 rounded-full"
-                  >
-                    {{ myPostsCount }}
-                  </span>
-                </div>
-              </button>
-            </nav>
-          </div>
-
-          <!-- Tab Content -->
-          <div class="px-2 py-4">              
-            <!-- My Posts Tab -->
-            <div v-if="activeTab === 'my-posts'">
-              <MyPosts
-                @create-post="activeTab = 'post-sale'"
-                @edit-post="handleEditPost"
-                @delete-post="handleDeletePost"
-                @posts-updated="updatePostsCount"
-              />
-            </div>            
-            <!-- Post Sale Tab -->
-            <div v-if="activeTab === 'post-sale'">
-              <!-- Embed the Post Sale Form -->
-              <SalePostForm @post-created="handlePostCreated" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div v-if="activeTab === 'my-posts'" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            Go to Marketplace          
+        </UButton>
+        </div>          <!-- Quick Stats -->
+        <div v-if="activeTab === 'my-posts'" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div class="bg-white rounded-lg p-4 border border-gray-100">
             <div class="flex items-center">
               <div class="flex-shrink-0">
@@ -120,7 +70,55 @@
                 <p class="text-lg font-semibold text-amber-600">{{ stats.pending || 0 }}</p>
               </div>
             </div>
-          </div>        </div>
+          </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="border-b border-gray-200">
+            <nav class="flex space-x-8" aria-label="Tabs">
+              <button
+                v-for="tab in tabs"
+                :key="tab.id"
+                @click="activeTab = tab.id"
+                :class="[
+                  activeTab === tab.id
+                    ? 'border-emerald-500 text-emerald-600 bg-emerald-50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+                  'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg'
+                ]"
+              >
+                <div class="flex items-center gap-2">
+                  <UIcon :name="tab.icon" class="w-4 h-4" />
+                  {{ tab.name }}
+                  <span
+                    v-if="tab.id === 'my-posts' && myPostsCount > 0"
+                    class="bg-emerald-100 text-emerald-800 text-xs font-medium px-2 py-0.5 rounded-full"
+                  >
+                    {{ myPostsCount }}
+                  </span>
+                </div>
+              </button>
+            </nav>
+          </div>
+
+          <!-- Tab Content -->
+          <div>              
+            <!-- My Posts Tab -->
+            <div v-if="activeTab === 'my-posts'">
+              <MyPosts
+                @create-post="activeTab = 'post-sale'"
+                @edit-post="handleEditPost"
+                @delete-post="handleDeletePost"
+                @posts-updated="updatePostsCount"
+              />
+            </div>            
+            <!-- Post Sale Tab -->
+            <div v-if="activeTab === 'post-sale'">
+              <!-- Embed the Post Sale Form -->
+              <SalePostForm @post-created="handlePostCreated" />
+            </div>          </div>
+        </div>
       </div>
     </div>
   </PublicSection>
