@@ -6,10 +6,9 @@
     >
       <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
         <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-gray-600">Total Products</p>
+          <div>            <p class="text-sm font-medium text-gray-600">Total Products</p>
             <p class="text-xl font-semibold text-gray-800">
-              {{ products.length }}
+              {{ pagination?.count || allProducts.length }}
             </p>
           </div>
           <div
@@ -140,12 +139,26 @@
           </div>
         </div>
       </div>
+    </div>    <!-- Products Grid -->
+    <div v-if="isLoading" class="p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div
+          v-for="i in 8"
+          :key="i"
+          class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden animate-pulse"
+        >
+          <div class="w-full h-48 bg-gray-200"></div>
+          <div class="p-4">
+            <div class="h-4 bg-gray-200 rounded mb-2"></div>
+            <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <!-- Products Grid -->
-    <div class="p-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+    <div v-else class="p-6 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
       <div
-        v-for="product in filteredProducts"
+        v-for="product in displayedProducts"
         :key="product.id"
         class="group bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-sm transition-all duration-300 transform hover:-translate-y-1"
       >
@@ -330,9 +343,8 @@
             </button>
           </div>
         </div>
-      </div>
-      <div
-        v-if="filteredProducts.length === 0"
+      </div>      <div
+        v-if="displayedProducts.length === 0 && !isLoading"
         class="col-span-full py-10 text-center text-gray-600"
       >
         <div class="flex flex-col items-center justify-center">
@@ -343,6 +355,26 @@
           No products found matching your criteria
         </div>
       </div>
+    </div>
+
+    <!-- Load More Button -->
+    <div
+      v-if="hasMoreProducts"
+      class="p-6 border-t border-gray-100 bg-gradient-to-b from-white/80 to-gray-50/60 text-center"
+    >
+      <UButton
+        @click="loadMoreProducts"
+        :loading="isLoadingMore"
+        variant="outline"
+        color="gray"
+        size="lg"
+        class="px-8 py-3"
+      >
+        <template #leading>
+          <UIcon name="i-heroicons-arrow-down" />
+        </template>
+        {{ isLoadingMore ? 'Loading more products...' : 'Load more products' }}
+      </UButton>
     </div>
 
     <!-- Delete Product Confirmation Modal -->
@@ -606,10 +638,22 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useApi } from "~/composables/useApi";
 // import { useToast } from "~/composables/useToast";
+
+/**
+ * My Products Tab Component with Pagination
+ * 
+ * Features:
+ * - Backend pagination (8 products per page)
+ * - Load more button (disappears when all products are loaded)
+ * - Real-time filtering (status, search)
+ * - Debounced search (300ms delay)
+ * - Product statistics summary
+ * - Product management (edit, activate/deactivate, delete)
+ */
 
 const { user } = useAuth();
 const { get, patch, del } = useApi();
@@ -618,6 +662,15 @@ const toast = useToast();
 // UI state
 const showDeleteConfirmModal = ref(false);
 const isProcessing = ref(false);
+const isLoading = ref(true);
+const isLoadingMore = ref(false);
+
+// Pagination state
+const currentPage = ref(1);
+const hasMoreProducts = ref(false);
+const pagination = ref(null);
+const pageSize = 8; // Display 8 products per page
+const searchTimeout = ref(null);
 
 // Reviews state
 const showReviewsModal = ref(false);
@@ -638,26 +691,27 @@ const selectedProduct = ref(null);
 
 // Component state
 const products = ref([]);
+const allProducts = ref([]); // Store all products for filtering
 
 // Product summary computed properties
 const activeProducts = computed(() => {
-  return products.value.filter(
+  return allProducts.value.filter(
     (product) => product.is_active && product.quantity > 0
   );
 });
 
 const inactiveProducts = computed(() => {
-  return products.value.filter((product) => !product.is_active);
+  return allProducts.value.filter((product) => !product.is_active);
 });
 
 const outOfStockProducts = computed(() => {
-  return products.value.filter(
+  return allProducts.value.filter(
     (product) => product.is_active && product.quantity <= 0
   );
 });
 
 const totalProductsValue = computed(() => {
-  return products.value.reduce(
+  return allProducts.value.reduce(
     (total, product) =>
       total +
       (parseFloat(product.sale_price) || 0) * (parseInt(product.quantity) || 0),
@@ -692,9 +746,9 @@ const outOfStockProductsValue = computed(() => {
   );
 });
 
-// Product filtering
+// Product filtering and display
 const filteredProducts = computed(() => {
-  let result = [...products.value];
+  let result = [...allProducts.value];
 
   // Apply status filter
   if (productFilter.value === "active") {
@@ -720,6 +774,11 @@ const filteredProducts = computed(() => {
     );
   }
   return result;
+});
+
+// Display products based on pagination
+const displayedProducts = computed(() => {
+  return products.value;
 });
 
 // Store reviews pagination
@@ -834,15 +893,80 @@ async function nextStoreReviewPage() {
 }
 
 // Product methods
-async function getProducts() {
+async function getProducts(page = 1) {
+  if (page === 1) {
+    isLoading.value = true;
+    products.value = [];
+  } else {
+    isLoadingMore.value = true;
+  }
+
   try {
-    const res = await get("/my-products/");
+    // Build query parameters for pagination
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('page_size', pageSize.toString());
+
+    // Add filters to API call if they exist
+    if (productFilter.value && productFilter.value !== 'all') {
+      if (productFilter.value === 'active') {
+        params.append('is_active', 'true');
+        params.append('has_stock', 'true');
+      } else if (productFilter.value === 'inactive') {
+        params.append('is_active', 'false');
+      } else if (productFilter.value === 'out-of-stock') {
+        params.append('is_active', 'true');
+        params.append('has_stock', 'false');
+      }
+    }
+
+    if (productSearch.value) {
+      params.append('search', productSearch.value);
+    }
+
+    const res = await get(`/my-products/?${params.toString()}`, {}, {
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+    });
+
     if (res && res.data) {
-      products.value = res.data;
-      console.log(`Loaded ${products.value.length} products`);
+      if ("results" in res.data) {
+        // Paginated response
+        pagination.value = {
+          count: res.data.count,
+          next: res.data.next,
+          previous: res.data.previous,
+        };
+
+        if (page === 1) {
+          products.value = res.data.results;
+          allProducts.value = res.data.results;
+        } else {
+          products.value = [...products.value, ...res.data.results];
+          allProducts.value = [...allProducts.value, ...res.data.results];
+        }
+
+        hasMoreProducts.value = !!res.data.next;
+        console.log(`Loaded ${res.data.results.length} products (page ${page})`);
+      } else if (Array.isArray(res.data)) {
+        // Non-paginated response - handle fallback
+        products.value = res.data;
+        allProducts.value = res.data;
+        hasMoreProducts.value = false;
+        console.log(`Loaded ${res.data.length} products (non-paginated)`);
+      } else {
+        console.warn("Unexpected data format received");
+        products.value = [];
+        allProducts.value = [];
+        hasMoreProducts.value = false;
+      }
     } else {
       console.warn("No product data received");
       products.value = [];
+      allProducts.value = [];
+      hasMoreProducts.value = false;
     }
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -851,9 +975,22 @@ async function getProducts() {
       description: "Could not load your products. Please try again later.",
       color: "red",
     });
-    products.value = []; // Ensure it's at least an empty array
+    products.value = [];
+    allProducts.value = [];
+    hasMoreProducts.value = false;
+  } finally {
+    isLoading.value = false;
+    isLoadingMore.value = false;
   }
 }
+
+// Load more products
+const loadMoreProducts = () => {
+  if (hasMoreProducts.value && !isLoadingMore.value) {
+    currentPage.value++;
+    getProducts(currentPage.value);
+  }
+};
 
 const toggleProductStatus = async (product) => {
   if (isProcessing.value) return;
@@ -865,11 +1002,16 @@ const toggleProductStatus = async (product) => {
     });
 
     if (res.data) {
-      // Update product status locally
-      const index = products.value.findIndex((p) => p.id === product.id);
-      if (index !== -1) {
-        products.value[index].is_active = res.data.is_active;
-      }
+      // Update product status in both arrays
+      const updateProduct = (products) => {
+        const index = products.findIndex((p) => p.id === product.id);
+        if (index !== -1) {
+          products[index].is_active = res.data.is_active;
+        }
+      };
+
+      updateProduct(products.value);
+      updateProduct(allProducts.value);
 
       toast.add({
         title: "Status Changed",
@@ -905,8 +1047,11 @@ const deleteProduct = async () => {
     const res = await del(`/products/${selectedProduct.value.slug}/`);
 
     if (res.status === 204 || res.status === 200) {
-      // Remove product from local array
+      // Remove product from both arrays
       products.value = products.value.filter(
+        (p) => p.id !== selectedProduct.value.id
+      );
+      allProducts.value = allProducts.value.filter(
         (p) => p.id !== selectedProduct.value.id
       );
 
@@ -939,11 +1084,40 @@ watch(showReviewsModal, (newValue) => {
   }
 });
 
+// Watch for filter changes to reset pagination
+watch(productFilter, () => {
+  currentPage.value = 1;
+  hasMoreProducts.value = false;
+  getProducts(1);
+});
+
+// Debounced search
+watch(productSearch, (newSearch) => {
+  // Clear existing timeout
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value);
+  }
+  
+  // Set new timeout
+  searchTimeout.value = setTimeout(() => {
+    currentPage.value = 1;
+    hasMoreProducts.value = false;
+    getProducts(1);
+  }, 300);
+});
+
 // Initialize component
 onMounted(async () => {
   await Promise.all([
-    getProducts(),
+    getProducts(1),
     getStoreReviewsCount()
   ]);
+});
+
+// Cleanup
+onUnmounted(() => {
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value);
+  }
 });
 </script>

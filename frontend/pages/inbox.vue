@@ -141,8 +141,9 @@
             </span>
           </button>
         </nav>
-      </div>      <!-- Unified Content Area with Filtering -->
-      <div class="px-4">
+      </div>      
+      <!-- Unified Content Area with Filtering -->
+      <div class="px-2 sm:px-4">
         <!-- Unified Filtering Bar -->
         <div class="flex flex-wrap gap-2 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <!-- Tab specific filters -->

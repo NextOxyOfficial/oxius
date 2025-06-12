@@ -1949,16 +1949,45 @@ class FeaturedProductsListView(generics.ListAPIView):
     queryset = Product.objects.filter(is_featured=True).order_by('-created_at')
     serializer_class = ProductSerializer
 
+class UserProductPagination(PageNumberPagination):
+    page_size = 8  # Default to 8 products per page for my-products
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
 class UserProductsListView(generics.ListAPIView):
     """View for retrieving products owned by the current authenticated user"""
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = UserProductPagination
     
     def get_queryset(self):
-        """Return only products owned by the current user"""
-        return Product.objects.filter(
+        """Return only products owned by the current user with filtering"""
+        queryset = Product.objects.filter(
             owner=self.request.user
         ).order_by('-created_at')
+        
+        # Filter by status
+        is_active = self.request.query_params.get('is_active', None)
+        if is_active is not None:
+            queryset = queryset.filter(is_active=is_active.lower() == 'true')
+        
+        # Filter by stock status
+        has_stock = self.request.query_params.get('has_stock', None)
+        if has_stock is not None:
+            if has_stock.lower() == 'true':
+                queryset = queryset.filter(quantity__gt=0)
+            else:
+                queryset = queryset.filter(quantity__lte=0)
+        
+        # Search functionality
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) | 
+                Q(short_description__icontains=search) |
+                Q(description__icontains=search)
+            )        
+        return queryset
 
 class ProductPagination(PageNumberPagination):
     page_size = 25
