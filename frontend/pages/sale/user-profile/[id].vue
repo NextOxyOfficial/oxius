@@ -341,11 +341,18 @@
                     </NuxtLink>
                   </div>
                 </div>
+              </div>            </div>
+
+            <!-- Loading State -->
+            <div v-if="isLoading" class="py-8 text-center">
+              <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                <div class="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
               </div>
+              <p class="text-gray-600 text-sm">Loading products...</p>
             </div>
 
             <!-- Empty State -->
-            <div v-if="products?.length === 0" class="py-8 text-center">
+            <div v-else-if="products?.length === 0" class="py-8 text-center">
               <div
                 class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4"
               >
@@ -361,10 +368,9 @@
               >
                 Clear all filters
               </button>
-            </div>
-
-            <!-- Pagination -->
+            </div>            <!-- Pagination -->
             <div
+              v-if="!isLoading && products?.length > 0"
               class="flex items-center justify-between mt-6 pt-4 border-t border-gray-100"
             >
               <button
@@ -609,7 +615,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from "vue";
+import { ref, reactive, computed, watch } from "vue";
 import MediaViewer from "~/components/business-network/MediaViewer.vue";
 import {
   User,
@@ -644,7 +650,7 @@ const sortOption = ref("recent");
 const categoryFilter = ref("");
 const conditionFilter = ref("");
 const currentPage = ref(1);
-const itemsPerPage = ref(4); // 2 rows of 2 items
+const itemsPerPage = ref(10); // Display maximum of 10 posts per page
 const showReportDialog = ref(false);
 const showShareDialog = ref(false);
 const reportReason = ref("");
@@ -653,6 +659,10 @@ const shareUrl = ref("");
 const showProfilePhotoModal = ref(false);
 const profilePhotoMedia = ref(null); // For MediaViewer
 const totalPages = ref(0);
+
+// Loading states for pagination
+const isLoading = ref(false);
+const pagination = ref(null);
 
 const seller = ref({});
 
@@ -672,23 +682,70 @@ await getSellerDetails();
 
 const products = ref([]);
 
-async function getProducts() {
+async function getProducts(page = 1) {
   try {
-    const response = await get(
-      `/sale/posts/?page=${currentPage.value}&seller=${params.id}`
-    );
+    // Set loading state
+    isLoading.value = true;
+
+    // Build query parameters
+    const queryParams = new URLSearchParams();
+    queryParams.append('page', page.toString());
+    queryParams.append('page_size', itemsPerPage.value.toString());
+    queryParams.append('seller', params.id);
+
+    // Add filters if they exist
+    if (categoryFilter.value) {
+      queryParams.append('category', categoryFilter.value);
+    }
+    if (conditionFilter.value) {
+      queryParams.append('condition', conditionFilter.value);
+    }
+
+    // Add sorting
+    const sortMapping = {
+      recent: '-created_at',
+      'price-low': 'price',
+      'price-high': '-price',
+      popular: '-views'
+    };
+    queryParams.append('ordering', sortMapping[sortOption.value] || '-created_at');
+
+    const response = await get(`/sale/posts/?${queryParams.toString()}`);
+    
     console.log("prod", response.data);
+    
     if (response.data) {
-      console.log(response.data);
-      if (!totalPages.value > 0) {
-        totalPages.value = Math.ceil(
-          response.data?.count / response.data?.results
-        );
+      if ("results" in response.data) {
+        // Paginated response
+        pagination.value = {
+          count: response.data.count,
+          next: response.data.next,
+          previous: response.data.previous,
+        };
+
+        // Replace products with current page results
+        products.value = response.data.results;
+
+        // Update pagination info
+        totalPages.value = Math.ceil(response.data.count / itemsPerPage.value);
+        
+        console.log(`Loaded ${response.data.results.length} products for page ${page}, total: ${response.data.count}`);
+      } else if (Array.isArray(response.data)) {
+        // Non-paginated response (fallback)
+        products.value = response.data;
+        totalPages.value = 1;
       }
-      products.value = response.data?.results;
     }
   } catch (error) {
     console.error("Error fetching products:", error);
+    toast.add({
+      title: "Error",
+      description: "Failed to load products. Please try again.",
+      color: "red",
+      timeout: 3000,
+    });
+  } finally {
+    isLoading.value = false;
   }
 }
 
@@ -775,28 +832,35 @@ const toggleShowPhone = () => {
 const prevPage = async () => {
   if (currentPage.value > 1) {
     currentPage.value--;
-    await getProducts();
+    await getProducts(currentPage.value);
   }
 };
 
 const nextPage = async () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++;
-    await getProducts();
+    await getProducts(currentPage.value);
   }
 };
 
 const goToPage = async (page) => {
   currentPage.value = page;
-  await getProducts();
+  await getProducts(currentPage.value);
 };
 
-// Clear filters
+// Clear filters and reload
 const clearFilters = () => {
   categoryFilter.value = "";
   conditionFilter.value = "";
   currentPage.value = 1;
+  getProducts(1);
 };
+
+// Watch filters and sort option to reload data
+watch([categoryFilter, conditionFilter, sortOption], () => {
+  currentPage.value = 1;
+  getProducts(1);
+});
 
 // Report dialog methods
 const toggleReportDialog = () => {
