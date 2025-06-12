@@ -93,13 +93,10 @@
               name="i-heroicons-cog-6-tooth"
               class="h-6 w-6 text-blue-500"
             />
-          </div>
+          </div>        
         </div>
         <p class="mt-2 text-sm font-medium text-blue-600">
           ৳{{ formatAmount(orderStats.processing_amount) }}
-        </p>
-        <p class="mt-2 text-sm font-medium text-blue-600">
-          ৳{{ formatAmount(processingOrdersAmount) }}
         </p>
       </div>
 
@@ -1410,19 +1407,6 @@ function formatAmount(amount) {
   if (amount === undefined || amount === null) return "0.00";
   return parseFloat(amount).toFixed(2);
 }
-
-// Computed properties - keep for backwards compatibility but not used for stats
-const pendingOrders = computed(() => {
-  return orders.value.filter((order) => order.order_status === "pending");
-});
-
-const processingOrders = computed(() => {
-  return orders.value.filter((order) => order.order_status === "processing");
-});
-
-const deliveredOrders = computed(() => {
-  return orders.value.filter((order) => order.order_status === "delivered");
-});
 
 // Backend pagination computed properties
 const totalPages = computed(() => {
