@@ -127,12 +127,15 @@ export const useMentions = () => {
    * Creates mention chips/tags with the same design as the input component
    * @param {string} content - The comment content
    * @returns {string} HTML string with mention chips and regular text
-   */
-  const processMentionsAsHTML = (content) => {
-    if (!content) return content;    // Improved regex to match @Username patterns including full names
-    // This pattern matches @ followed by name characters, handling multiple mentions properly
-    // It stops at: space+@, punctuation, or end of string (removed lowercase letter restriction)
-    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+@|\s*[.!?,:;]|\s*$|$)/g;return content.replace(mentionRegex, (match, mentionedName) => {
+   */  const processMentionsAsHTML = (content) => {
+    if (!content) return content;
+    
+    // Enhanced regex that stops at double spaces (our delimiter), punctuation, or other mentions
+    // Double space acts as a clear boundary between mentions and regular text
+    // Updated to handle trailing double spaces (mentions-only comments)
+    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s{2,}|\s*[.!?,:;]|\s+@|\s*$|$)/g;
+    
+    return content.replace(mentionRegex, (match, mentionedName) => {
       const trimmedName = mentionedName.trim();
       // Create mention chip with @ symbol and no space between @ and name
       return `<span 
@@ -146,7 +149,7 @@ export const useMentions = () => {
           <span class="text-blue-500 dark:text-blue-400 hover:text-purple-500 dark:hover:text-purple-400 font-semibold">@</span>${trimmedName}
         </span>
       </span>`;
-    });
+    }).replace(/\s{2,}/g, ' '); // Clean up multiple spaces after processing
   };
   /**
    * Setup click handlers for mention links
