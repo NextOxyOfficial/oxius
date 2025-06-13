@@ -32,7 +32,7 @@
               <div class="flex items-center gap-1">
                 <NuxtLink
                   :to="`/business-network/profile/${highestGiftComment.author}`"
-                  class="text-base font-medium text-gray-800 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                  class="text-sm text-gray-800 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                 >
                   {{ highestGiftComment.author_details?.name }}
                 </NuxtLink>
@@ -257,10 +257,11 @@
                     {{ extractGiftMessage(comment?.content) }}
                   </p>
                 </div>
-              </div>              <!-- Regular comment with mention processing -->
+              </div>              
+              <!-- Regular comment with mention processing -->
               <div
                 v-else
-                class="text-base font-medium text-gray-800 dark:text-gray-300"
+                class="text-sm text-gray-800 dark:text-gray-300"
                 style="word-break: break-word"
                 v-html="processMentionsInComment(comment?.content)"
               ></div>

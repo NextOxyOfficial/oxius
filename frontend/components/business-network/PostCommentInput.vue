@@ -53,7 +53,7 @@
               v-model="displayCommentText"
               placeholder="Add a comment... (Type @ to mention users)"
               rows="1"
-              class="flex-1 min-w-[120px] text-base bg-transparent border-none outline-none resize-none text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 leading-5 max-h-[4rem] overflow-y-auto no-scrollbar comment-textarea"
+              class="flex-1 min-w-[120px] text-sm bg-transparent line-clump-1 border-none outline-none resize-none text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 leading-5 max-h-[4rem] overflow-y-auto no-scrollbar comment-textarea"
               :style="{ minHeight: '24px' }"
               @input="handleCommentInput"
               @focus="post.showCommentInput = true"
