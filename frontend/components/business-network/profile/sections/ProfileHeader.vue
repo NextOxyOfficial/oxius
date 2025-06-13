@@ -46,53 +46,6 @@
             {{ user?.profession }}
           </p>
         </div>
-
-        <!-- Mobile Action Buttons -->
-        <div class="flex gap-2">              
-          <!-- QR Code Button for mobile with enhanced styling -->
-          <button
-            @click="$emit('open-qr-modal')"
-            class="p-1.5 size-9 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all shadow-sm relative overflow-hidden group"
-            title="View QR Code"
-          >
-            <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-            <UIcon name="i-mdi:qrcode" class="size-5 relative z-10" />
-          </button>
-          
-          <!-- Action buttons for mobile -->              
-          <button
-            v-if="user?.id !== currentUser?.user?.id && currentUser"
-            :class="[
-              'px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-300 relative overflow-hidden group/follow min-w-[90px] text-center',
-              isFollowing
-                ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-800'
-                : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white'
-            ]"
-            :disabled="followLoading"
-            @click="$emit('toggle-follow')"
-          >
-            <span class="relative z-10 flex items-center justify-center gap-1.5">
-              <div
-                v-if="followLoading"
-                class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"
-              ></div>
-
-              <template v-else-if="isFollowing">
-                <Check class="h-3 w-3 animate-scaleIn" />
-                Following
-              </template>
-
-              <template v-else>
-                <UserPlus class="h-3 w-3 animate-scaleIn" />
-                Follow
-              </template>
-            </span>
-            <span 
-              class="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 opacity-0 group-hover/follow:opacity-100 transition-opacity duration-300"
-              v-if="!isFollowing"
-            ></span>
-          </button>
-        </div>
       </div>
 
       <div class="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-7">
@@ -155,9 +108,7 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- User Stats for Mobile -->              
+          </div>          <!-- User Stats for Mobile -->              
           <div class="flex w-full justify-center sm:hidden mt-4 space-x-6">
             <div
               class="text-center hover:scale-105 transition-transform cursor-pointer"
@@ -179,6 +130,52 @@
               <p class="font-semibold">{{ user?.following_count || 0 }}</p>
               <p class="text-sm text-gray-600">Following</p>
             </div>
+          </div>
+
+          <!-- Mobile Action Buttons -->
+          <div class="flex gap-2 justify-center sm:hidden mt-4">                <!-- QR Code Button for mobile with enhanced styling -->
+            <button
+              @click="$emit('open-qr-modal')"
+              class="p-1.5 size-9 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all shadow-sm relative overflow-hidden group"
+              title="View QR Code"
+            >
+              <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+              <UIcon name="i-heroicons-qr-code" class="size-5 relative z-10" />
+            </button>
+            
+            <!-- Action buttons for mobile -->              
+            <button
+              v-if="user?.id !== currentUser?.user?.id && currentUser"
+              :class="[
+                'px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-300 relative overflow-hidden group/follow min-w-[90px] text-center',
+                isFollowing
+                  ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-800'
+                  : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white'
+              ]"
+              :disabled="followLoading"
+              @click="$emit('toggle-follow')"
+            >
+              <span class="relative z-10 flex items-center justify-center gap-1.5">
+                <div
+                  v-if="followLoading"
+                  class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"
+                ></div>
+
+                <template v-else-if="isFollowing">
+                  <Check class="h-3 w-3 animate-scaleIn" />
+                  Following
+                </template>
+
+                <template v-else>
+                  <UserPlus class="h-3 w-3 animate-scaleIn" />
+                  Follow
+                </template>
+              </span>
+              <span 
+                class="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 opacity-0 group-hover/follow:opacity-100 transition-opacity duration-300"
+                v-if="!isFollowing"
+              ></span>
+            </button>
           </div>
 
           <!-- Diamond count and top-up button for mobile -->

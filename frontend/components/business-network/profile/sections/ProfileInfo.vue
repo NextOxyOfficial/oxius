@@ -46,7 +46,7 @@
       </div>
 
       <!-- Action buttons (Desktop) -->
-      <div class="hidden sm:flex gap-2">                  
+      <div class="hidden sm:flex gap-2">                    
         <!-- QR Code Button with enhanced styling -->
         <button
           @click="$emit('open-qr-modal')"
@@ -54,7 +54,7 @@
           title="View QR Code"
         >
           <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-          <UIcon name="i-mdi:qrcode" class="w-4 h-4 relative z-10" />
+          <UIcon name="i-heroicons-qr-code" class="w-4 h-4 relative z-10" />
           <span class="relative z-10">QR Code</span>
         </button>
         
