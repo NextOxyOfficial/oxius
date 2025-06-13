@@ -72,8 +72,9 @@
                   <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <Icon name="heroicons:shopping-bag" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
                   <span class="relative z-10 truncate">{{ $t('marketplace') }}</span>
-                </NuxtLink>                <!-- My Posts Button - Enhanced (Navigate to page) -->
+                </NuxtLink>                <!-- My Posts Button - Enhanced (Navigate to page) - Only show for logged in users -->
                 <NuxtLink
+                  v-if="user?.user"
                   to="/sale/my-posts"
                   class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs sm:text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
                 >
@@ -82,7 +83,7 @@
                   
                   <Icon name="heroicons:document-text" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
                   <span class="relative z-10 truncate">{{ $t('my_post') }}</span>
-                </NuxtLink>                <!-- Post Sale Button - Enhanced (Outlined) - Always visible -->
+                </NuxtLink><!-- Post Sale Button - Enhanced (Outlined) - Always visible -->
                 <NuxtLink
                   to="/sale/my-posts?tab=post-sale"
                   class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-medium text-xs sm:text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"

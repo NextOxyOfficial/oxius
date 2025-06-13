@@ -15,11 +15,9 @@
             class="rounded-xl shadow-sm w-full"
             alt="Login"
           />
-          
-          <!-- Overlay text -->
+            <!-- Overlay text removed -->
           <div class="absolute inset-0 flex flex-col items-start justify-end p-8 bg-gradient-to-t from-black/70 to-transparent rounded-xl text-white">
-            <h2 class="text-3xl font-bold mb-2">Welcome Back!</h2>
-            <p class="text-lg">Sign in to your account to access all features</p>
+            <!-- Text removed as requested -->
           </div>
         </div>
       </div>
