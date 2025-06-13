@@ -640,6 +640,10 @@ const fetchBanners = async () => {
 
 // Fetch posts for the selected category
 const categoryPosts = ref([]);
+const categoryPostsPage = ref(1);
+const categoryPostsLimit = ref(6); // Show only 6 posts initially
+const showAllCategoryPosts = ref(false);
+
 const fetchCategoryPosts = async () => {
   if (!selectedCategory.value) return;
 
@@ -647,9 +651,10 @@ const fetchCategoryPosts = async () => {
     isLoading.value = true;
     console.log("Fetching posts for category:", selectedCategory.value);
 
-    // Update to the correct API endpoint
+    // Use pagination for category posts
+    const limit = showAllCategoryPosts.value ? 50 : categoryPostsLimit.value;
     const response = await get(
-      `/sale/posts/?category=${selectedCategory.value}`
+      `/sale/posts/?category=${selectedCategory.value}&limit=${limit}`
     );
 
     if (response.error) {

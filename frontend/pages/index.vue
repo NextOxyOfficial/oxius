@@ -438,9 +438,8 @@
               <!-- Gigs list with premium styling -->
               <div
                 class="flex-1 p-1 space-y-1.5 overflow-y-auto max-h-[600px] scrollbar-thin"
-              >
-                <div
-                  v-for="(gig, i) in microGigs"
+              >                <div
+                  v-for="(gig, i) in displayedMicroGigs"
                   :key="i"
                   class="bg-slate-50/80 dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200"
                 >
@@ -637,9 +636,9 @@
                   </div>
                 </div>
 
-                <!-- Empty state -->
-                <div
-                  v-if="microGigs.length === 0"
+                <!-- Empty state -->                
+                 <div
+                  v-if="displayedMicroGigs.length === 0"
                   class="flex flex-col items-center justify-center py-12"
                 >
                   <UIcon
@@ -648,6 +647,33 @@
                   />                  <p class="text-lg text-slate-500 dark:text-slate-400">
                     {{ $t('no_gigs_available_category') }}
                   </p>
+                </div>
+                
+                <!-- Load More Button for Micro Gigs -->
+                <div 
+                  v-if="displayedMicroGigs.length > 0 && displayedMicroGigs.length < microGigs.length && !showAllMicroGigs"
+                  class="text-center py-4"
+                >
+                  <button
+                    @click="loadMoreMicroGigs"
+                    class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 font-medium text-sm text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 hover:border-emerald-300 rounded-lg transition-all duration-200"
+                  >
+                    <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+                    <span>Load More Gigs</span>
+                  </button>
+                </div>
+                
+                <!-- Show All Button -->
+                <div 
+                  v-if="microGigs.length > INITIAL_LIMITS.microGigs && !showAllMicroGigs"
+                  class="text-center py-2"
+                >
+                  <button
+                    @click="showAllMicroGigs = true"
+                    class="text-sm text-emerald-600 hover:text-emerald-700 font-medium underline"
+                  >
+                    View All {{ microGigs.length }} Gigs
+                  </button>
                 </div>
               </div>
             </div>
@@ -687,9 +713,20 @@ const selectedCategory = ref(null);
 const title = ref(null);
 const isLoading = ref(false);
 const previewGid = ref(null);
-const { data } = await get("/micro-gigs/");
+
+// Implement pagination limits for better performance
+const INITIAL_LIMITS = {
+  microGigs: 12, // Show only 12 gigs initially
+  services: 20,  // Show only 20 categories initially
+  posts: 10      // Show only 10 recent posts initially
+};
+
+// Load micro gigs with pagination
+const { data } = await get(`/micro-gigs/?limit=${INITIAL_LIMITS.microGigs}`);
 microGigs.value = data;
-const res = await get("/classified-categories/");
+
+// Load services with pagination
+const res = await get(`/classified-categories/?limit=${INITIAL_LIMITS.services}`);
 // Ensure services has the expected structure
 if (Array.isArray(res.data)) {
   services.value = { results: res.data, next: null };
@@ -697,11 +734,51 @@ if (Array.isArray(res.data)) {
   services.value = res.data;
 }
 const classifiedLatestPosts = ref([]);
-const res2 = await get("/classified-posts/");
+const res2 = await get(`/classified-posts/?limit=${INITIAL_LIMITS.posts}`);
 classifiedLatestPosts.value = res2.data;
 
 const classifiedPosts = ref([]);
 const toast = useToast();
+
+// Pagination state for micro gigs
+const microGigsPage = ref(1);
+const microGigsPerPage = ref(6); // Show 6 gigs per page initially
+const showAllMicroGigs = ref(false);
+
+// Computed property for displayed micro gigs with pagination
+const displayedMicroGigs = computed(() => {
+  if (showAllMicroGigs.value) {
+    return microGigs.value;
+  }
+  const startIndex = 0;
+  const endIndex = microGigsPerPage.value * microGigsPage.value;
+  return microGigs.value.slice(startIndex, endIndex);
+});
+
+// Function to load more micro gigs
+const loadMoreMicroGigs = async () => {
+  if (showAllMicroGigs.value) return;
+  
+  if (microGigsPage.value * microGigsPerPage.value >= microGigs.value.length) {
+    // Need to fetch more from API
+    try {
+      const currentLength = microGigs.value.length;
+      const { data } = await get(`/micro-gigs/?limit=${INITIAL_LIMITS.microGigs}&offset=${currentLength}`);
+      if (data && data.length > 0) {
+        microGigs.value = [...microGigs.value, ...data];
+        microGigsPage.value++;
+      } else {
+        // No more data, show all
+        showAllMicroGigs.value = true;
+      }
+    } catch (error) {
+      console.error("Error loading more micro gigs:", error);
+    }
+  } else {
+    // Just show more from existing data
+    microGigsPage.value++;
+  }
+};
 
 const microGigsFilter = [
   { title: "All", value: "" },

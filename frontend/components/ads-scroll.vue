@@ -70,12 +70,15 @@
                 <div class="relative h-36 overflow-hidden">
                   <div
                     class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity"
-                  ></div>
-                  <NuxtImg
+                  ></div>                  <NuxtImg
                     :src="getImageSrc(ad)"
                     :alt="ad.title"
-                    class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                    class="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                     loading="lazy"
+                    placeholder
+                    format="webp"
+                    quality="80"
+                    sizes="sm:180px md:220px lg:250px"
                   />
                   <!-- Price tag -->
                   <div
@@ -164,26 +167,32 @@ const startX = ref(0);
 const startScrollPos = ref(0);
 const isPaused = ref(false);
 
-// Animation control
-const animationSpeed = ref(0.8);
+// Animation control with performance optimization
+const animationSpeed = ref(0.5); // Reduced speed for better performance
 const autoScrollInterval = ref(null);
 
-// Process ads data
+// Process ads data with performance optimization
 const adsArray = computed(() => {
   if (!ads?.results) return [];
-  return Array.isArray(ads.results) ? ads.results : [];
+  const results = Array.isArray(ads.results) ? ads.results : [];
+  // Limit to reasonable number for performance (max 50 ads)
+  return results.slice(0, 50);
 });
 
-// Create enough duplicates to ensure continuous scrolling
+// Create limited duplicates to ensure continuous scrolling without performance issues
 const displayedAds = computed(() => {
   if (adsArray.value.length === 0) return [];
-  // Create multiple duplicates of the array to ensure continuous scrolling
-  return [
-    ...adsArray.value,
-    ...adsArray.value,
-    ...adsArray.value,
-    ...adsArray.value,
-  ];
+  
+  // For small sets, duplicate more times; for larger sets, duplicate less
+  const duplicateCount = adsArray.value.length <= 10 ? 4 : 
+                        adsArray.value.length <= 20 ? 3 : 2;
+  
+  const duplicatedAds = [];
+  for (let i = 0; i < duplicateCount; i++) {
+    duplicatedAds.push(...adsArray.value);
+  }
+  
+  return duplicatedAds;
 });
 
 // Get appropriate image source
@@ -306,14 +315,12 @@ const startAutoScroll = () => {
         displayedAds.value.length > originalLength * 2
       ) {
         scrollPosition.value = 1; // Keep a slight offset to avoid visual jumps
-      }
-
-      // Safety check to ensure we don't scroll beyond the content
+      }      // Safety check to ensure we don't scroll beyond the content
       const maxScroll = totalWidth.value - viewportWidth.value;
       if (scrollPosition.value > maxScroll) {
         scrollPosition.value = maxScroll - 10; // Keep slightly before the end
       }
-    }, 30); // Smooth scrolling interval
+    }, 50); // Optimized interval for better performance
   }
 };
 
@@ -327,20 +334,19 @@ const initializeCarousel = () => {
     return;
 
   viewportWidth.value = carouselRef.value.clientWidth;
-
-  // Adjust card width based on screen size - more reasonable sizes
+  // Adjust card width based on screen size - performance optimized sizes
   if (window.innerWidth < 640) {
     // Mobile: show 2 cards
     cardWidth.value = viewportWidth.value * 0.45;
-    animationSpeed.value = 0.6;
+    animationSpeed.value = 0.4; // Slower on mobile for better performance
   } else if (window.innerWidth < 1024) {
     // Tablet: show 3 cards
     cardWidth.value = viewportWidth.value * 0.3;
-    animationSpeed.value = 0.8;
+    animationSpeed.value = 0.5;
   } else {
     // Desktop: show 4-5 cards
     cardWidth.value = viewportWidth.value * 0.21;
-    animationSpeed.value = 1;
+    animationSpeed.value = 0.7; // Adjusted for performance
   }
 
   // Calculate total width of all cards including gaps
