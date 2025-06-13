@@ -178,18 +178,26 @@
         </div>
       </div>
     </div>      
-    <!-- Product Details Modal - Matching My Orders Tab Style -->     <UModal
+    <!-- Product Details Modal - Matching My Orders Tab Style -->       
+     <UModal
       v-model="isModalOpen"
       :ui="{
         width: 'w-full sm:max-w-4xl',
         height: 'h-auto',
         container: 'flex flex-col h-auto mt-20 p-0 sm:p-0',
         padding: 'p-0',
+        transition: {
+          enter: 'transition ease-out duration-200',
+          enterFrom: 'opacity-0',
+          enterTo: 'opacity-100',
+          leave: 'transition ease-in duration-150',
+          leaveFrom: 'opacity-100',
+          leaveTo: 'opacity-0'
+        }
       }"
     >
-    <div>
-      <div
-        class="bg-white dark:bg-slate-800 rounded-xl shadow-sm transform transition-all animate-slide-up"
+    <div>      <div
+        class="bg-white dark:bg-slate-800 rounded-xl shadow-sm"
       >
         <div
           class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 rounded-t-xl"
@@ -443,7 +451,7 @@ onMounted(() => {
   transform: translateY(0);
 }
 
-/* Modal animations */
+/* Modal animations - Optimized for performance */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -453,39 +461,24 @@ onMounted(() => {
   }
 }
 
-@keyframes modal-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Slide up animation matching my-orders-tab */
+/* Simplified slide-up animation - no scale to prevent shaking */
 @keyframes slide-up {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translate3d(0, 10px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 .animate-fade-in {
-  animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-modal-slide-up {
-  animation: modal-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fade-in 0.2s ease-out forwards;
 }
 
 .animate-slide-up {
-  animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slide-up 0.2s ease-out forwards;
 }
 
 /* Custom colors */
