@@ -140,6 +140,14 @@
 </template>
 
 <script setup>
+/**
+ * AdsScroll Component - Optimized for Performance
+ * - Limits to maximum 10 random recent posts per reload
+ * - Uses random selection for variety on each page load
+ * - Optimized animation speeds and intervals for smooth scrolling
+ * - Reduced memory footprint and improved initial loading speed
+ */
+
 const { formatDate } = useUtils();
 const { ads } = defineProps({
   ads: {
@@ -167,25 +175,34 @@ const startX = ref(0);
 const startScrollPos = ref(0);
 const isPaused = ref(false);
 
-// Animation control with performance optimization
-const animationSpeed = ref(0.5); // Reduced speed for better performance
+// Animation control with performance optimization for limited data
+const animationSpeed = ref(0.8); // Slightly faster since we have fewer items
 const autoScrollInterval = ref(null);
 
-// Process ads data with performance optimization
+// Process ads data with performance optimization and random selection
 const adsArray = computed(() => {
   if (!ads?.results) return [];
   const results = Array.isArray(ads.results) ? ads.results : [];
-  // Limit to reasonable number for performance (max 50 ads)
-  return results.slice(0, 50);
+  
+  // Limit to maximum 10 random recent posts for optimal performance
+  const MAX_ADS = 10;
+  
+  if (results.length <= MAX_ADS) {
+    return results;
+  }
+  
+  // Randomly select 10 posts from the available results
+  const shuffled = [...results].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, MAX_ADS);
 });
 
-// Create limited duplicates to ensure continuous scrolling without performance issues
+// Create optimized duplicates for smooth continuous scrolling with limited data
 const displayedAds = computed(() => {
   if (adsArray.value.length === 0) return [];
   
-  // For small sets, duplicate more times; for larger sets, duplicate less
-  const duplicateCount = adsArray.value.length <= 10 ? 4 : 
-                        adsArray.value.length <= 20 ? 3 : 2;
+  // Since we're limiting to max 10 ads, we need more duplicates for smooth scrolling
+  const duplicateCount = adsArray.value.length <= 5 ? 6 : 
+                        adsArray.value.length <= 8 ? 4 : 3;
   
   const duplicatedAds = [];
   for (let i = 0; i < duplicateCount; i++) {
@@ -320,7 +337,7 @@ const startAutoScroll = () => {
       if (scrollPosition.value > maxScroll) {
         scrollPosition.value = maxScroll - 10; // Keep slightly before the end
       }
-    }, 50); // Optimized interval for better performance
+    }, 40); // Optimized interval for smoother animation with limited data
   }
 };
 
@@ -333,20 +350,19 @@ const initializeCarousel = () => {
   )
     return;
 
-  viewportWidth.value = carouselRef.value.clientWidth;
-  // Adjust card width based on screen size - performance optimized sizes
+  viewportWidth.value = carouselRef.value.clientWidth;  // Adjust card width based on screen size - performance optimized sizes
   if (window.innerWidth < 640) {
     // Mobile: show 2 cards
     cardWidth.value = viewportWidth.value * 0.45;
-    animationSpeed.value = 0.4; // Slower on mobile for better performance
+    animationSpeed.value = 0.6; // Optimized for mobile with limited data
   } else if (window.innerWidth < 1024) {
     // Tablet: show 3 cards
     cardWidth.value = viewportWidth.value * 0.3;
-    animationSpeed.value = 0.5;
+    animationSpeed.value = 0.8; // Balanced speed for tablets
   } else {
     // Desktop: show 4-5 cards
     cardWidth.value = viewportWidth.value * 0.21;
-    animationSpeed.value = 0.7; // Adjusted for performance
+    animationSpeed.value = 1.0; // Slightly faster for desktop with limited data
   }
 
   // Calculate total width of all cards including gaps
