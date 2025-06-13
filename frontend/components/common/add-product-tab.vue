@@ -80,9 +80,11 @@
             <UFormGroup label="Description" required class="mb-5">
               <p class="text-sm text-gray-600 mb-3">
                 Provide detailed information about your product
-              </p>              <div
+              </p>              
+              <div
                 class="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-100 focus-within:border-emerald-500 transition-all"
-              >                <CommonEditor
+              >                
+              <CommonEditor
                   v-if="route.query.id && form.description"
                   :content="form.description"
                   @updateContent="
@@ -208,7 +210,7 @@
               Pricing & Inventory
             </h2>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               <UFormGroup
                 label="Regular Price"
                 required
@@ -301,17 +303,17 @@
                   <UIcon name="i-heroicons-scale" />
                 </template>
               </UInput>
-            </UFormGroup>
-
+            </UFormGroup>            
             <UFormGroup
               label="Delivery Method"
               required
               :error="
                 !form.deliveryMethod && checkSubmit && 'Please select a delivery method'
               "
-              class="mb-5"
-            >              <div class="space-y-3">
-                <div class="flex items-center">
+              class="my-5"
+              style="margin-bottom: 1.25rem !important;"
+            ><div class="space-y-3">
+                <div class="flex items-center mt-4">
                   <URadio
                     v-model="form.deliveryMethod"
                     value="free"
@@ -363,12 +365,12 @@
                   >
                     <template #leading>
                       <UIcon name="i-mdi:currency-bdt" />
-                    </template>
-                  </UInput>
+                    </template>                  </UInput>
                 </UFormGroup>
               </div>
             </UFormGroup>
-          </div>          <UCard class="mx-2 sm:mx-6">
+          </div>
+          <UCard class="mx-2 sm:mx-6">
             <UCheckbox
               name="notifications"
               v-model="advanceEditMode"
@@ -380,16 +382,15 @@
               v-if="advanceEditMode"
               @update:content="handleEditorUpdate"
             />
-          </UCard>
-
+          </UCard>          
           <!-- Form Submit Section -->
           <div class="p-6">
-            <div class="flex flex-col sm:flex-row gap-4 justify-between">
+            <div class="flex flex-row gap-3 justify-between">
               <UButton
                 color="gray"
                 variant="outline"
                 @click="resetForm"
-                class="flex-shrink-0"
+                class="flex-1"
               >
                 <UIcon name="i-heroicons-arrow-path" class="mr-2" />
                 Reset Form
@@ -400,8 +401,8 @@
                 color="primary"
                 size="lg"
                 :loading="isSubmitting"
-                class="bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-100"
-              >                <UIcon name="i-heroicons-plus-circle" class="mr-2" />
+                class="bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-100 flex-1"
+              ><UIcon name="i-heroicons-plus-circle" class="mr-2" />
                 {{ route.query.id ? 'Update Product' : 'Add Product' }}
               </UButton>
             </div>
@@ -854,191 +855,371 @@ function resetForm(showConfirm = true) {
 <style scoped>
 /* Premium Glassmorphism Card */
 .glassmorphism-card {
-  @apply bg-white/90 dark:bg-slate-800/90 backdrop-blur-md;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+}
+
+.dark .glassmorphism-card {
+  background: rgba(30, 41, 59, 0.9);
 }
 
 /* Section Styling */
 .form-section {
-  @apply px-2 sm:px-6 py-5 rounded-xl relative transition-all duration-300;
+  padding: 1.25rem 0.5rem;
+  border-radius: 0.75rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 640px) {
+  .form-section {
+    padding: 1.25rem 1.5rem;
+  }
 }
 
 .section-header {
-  @apply flex items-center gap-3 mb-4;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .section-icon-wrapper {
-  @apply w-10 h-10 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center border border-primary-200 dark:border-primary-800/50;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: rgb(239 246 255);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(219 234 254);
+}
+
+.dark .section-icon-wrapper {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.5);
 }
 
 .section-icon {
-  @apply w-5 h-5 text-primary-600 dark:text-primary-400;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: rgb(37, 99, 235);
+}
+
+.dark .section-icon {
+  color: rgb(96, 165, 250);
 }
 
 .section-title {
-  @apply text-lg font-medium text-gray-800 dark:text-white;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: rgb(31, 41, 55);
+}
+
+.dark .section-title {
+  color: white;
 }
 
 /* Premium Floating Form Controls */
 .form-floating-group {
-  @apply relative;
+  position: relative;
 }
 
 .floating-input-wrapper {
-  @apply relative;
+  position: relative;
 }
 
 .floating-input {
-  @apply w-full px-4 py-2.5 pt-5 pl-10 rounded-lg border border-slate-200 dark:border-slate-700 
-         bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 focus:outline-none focus:border-primary-500 
-         dark:focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20 transition-all duration-200;
+  width: 100%;
+  padding: 0.625rem 1rem 0.625rem 2.5rem;
+  padding-top: 1.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226, 232, 240);
+  background: white;
+  color: rgb(31, 41, 55);
+  transition: all 0.2s ease;
+}
+
+.floating-input:focus {
+  outline: none;
+  border-color: rgb(59, 130, 246);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.dark .floating-input {
+  border-color: rgb(51, 65, 85);
+  background: rgb(30, 41, 59);
+  color: rgb(226, 232, 240);
+}
+
+.dark .floating-input:focus {
+  border-color: rgb(96, 165, 250);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
 }
 
 .floating-label {
-  @apply absolute left-10 top-3.5 text-sm text-slate-500 dark:text-slate-400 transition-all duration-200 pointer-events-none
-         peer-focus:text-sm peer-focus:top-1.5 peer-focus:text-primary-600 dark:peer-focus:text-primary-400
-         peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:top-1.5;
+  position: absolute;
+  left: 2.5rem;
+  top: 0.875rem;
+  font-size: 0.875rem;
+  color: rgb(100, 116, 139);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.floating-input:focus ~ .floating-label,
+.floating-input:not(:placeholder-shown) ~ .floating-label {
+  top: 0.375rem;
+  font-size: 0.875rem;
+  color: rgb(59, 130, 246);
+}
+
+.dark .floating-label {
+  color: rgb(148, 163, 184);
+}
+
+.dark .floating-input:focus ~ .floating-label,
+.dark .floating-input:not(:placeholder-shown) ~ .floating-label {
+  color: rgb(96, 165, 250);
 }
 
 .floating-icon {
-  @apply absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500;
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  color: rgb(148, 163, 184);
+}
+
+.dark .floating-icon {
+  color: rgb(100, 116, 139);
 }
 
 /* Premium Currency Input */
 .premium-currency-input {
-  @apply relative;
+  position: relative;
 }
 
 .currency-symbol {
-  @apply absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 font-medium;
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgb(100, 116, 139);
+  font-weight: 500;
+}
+
+.dark .currency-symbol {
+  color: rgb(148, 163, 184);
 }
 
 .premium-input {
-  @apply w-full px-4 py-2.5 pt-5 pl-10 rounded-lg border border-slate-200 dark:border-slate-700
-         bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 focus:outline-none focus:border-primary-500
-         dark:focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20 transition-all duration-200;
+  width: 100%;
+  padding: 0.625rem 1rem 0.625rem 2.5rem;
+  padding-top: 1.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226, 232, 240);
+  background: white;
+  color: rgb(31, 41, 55);
+  transition: all 0.2s ease;
+}
+
+.premium-input:focus {
+  outline: none;
+  border-color: rgb(59, 130, 246);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.dark .premium-input {
+  border-color: rgb(51, 65, 85);
+  background: rgb(30, 41, 59);
+  color: rgb(226, 232, 240);
+}
+
+.dark .premium-input:focus {
+  border-color: rgb(96, 165, 250);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
 }
 
 .premium-input-label {
-  @apply absolute left-10 top-1.5 text-sm text-slate-500 dark:text-slate-400;
+  position: absolute;
+  left: 2.5rem;
+  top: 0.375rem;
+  font-size: 0.875rem;
+  color: rgb(100, 116, 139);
+}
+
+.dark .premium-input-label {
+  color: rgb(148, 163, 184);
 }
 
 /* Premium Textarea */
 .premium-textarea {
-  @apply w-full px-4 py-2.5 pt-5 rounded-lg border border-slate-200 dark:border-slate-700
-         bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 focus:outline-none focus:border-primary-500
-         dark:focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20 transition-all duration-200 resize-none;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  padding-top: 1.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226, 232, 240);
+  background: white;
+  color: rgb(31, 41, 55);
+  transition: all 0.2s ease;
+  resize: none;
+}
+
+.premium-textarea:focus {
+  outline: none;
+  border-color: rgb(59, 130, 246);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.dark .premium-textarea {
+  border-color: rgb(51, 65, 85);
+  background: rgb(30, 41, 59);
+  color: rgb(226, 232, 240);
+}
+
+.dark .premium-textarea:focus {
+  border-color: rgb(96, 165, 250);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
 }
 
 .floating-label-textarea {
-  @apply absolute left-4 top-1.5 text-sm text-slate-500 dark:text-slate-400;
+  position: absolute;
+  left: 1rem;
+  top: 0.375rem;
+  font-size: 0.875rem;
+  color: rgb(100, 116, 139);
+}
+
+.dark .floating-label-textarea {
+  color: rgb(148, 163, 184);
 }
 
 /* Premium Select */
 .premium-select {
-  @apply border-slate-200 dark:border-slate-700 pt-4 focus:border-primary-500 dark:focus:border-primary-400
-         focus:ring-2 focus:ring-primary-500/20 dark:focus:ring-primary-400/20;
+  border-color: rgb(226, 232, 240);
+  padding-top: 1rem;
+}
+
+.premium-select:focus {
+  border-color: rgb(59, 130, 246);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.dark .premium-select {
+  border-color: rgb(51, 65, 85);
+}
+
+.dark .premium-select:focus {
+  border-color: rgb(96, 165, 250);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
 }
 
 /* Form Hints & Errors */
 .form-hint {
-  @apply mt-1.5 text-sm text-slate-500 dark:text-slate-400 flex items-center;
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  color: rgb(100, 116, 139);
+  display: flex;
+  align-items: center;
+}
+
+.dark .form-hint {
+  color: rgb(148, 163, 184);
 }
 
 .form-error {
-  @apply mt-1.5 text-sm text-red-500 flex items-center;
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  color: rgb(239, 68, 68);
+  display: flex;
+  align-items: center;
 }
 
 /* Premium Buttons */
 .premium-btn-primary {
-  @apply rounded-lg py-2.5 px-5 bg-gradient-to-r from-primary-500 to-primary-600 border-0 shadow-sm 
-         hover:shadow-sm hover:from-primary-600 hover:to-primary-700 transition-all duration-300 transform hover:-translate-y-0.5;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: linear-gradient(to right, rgb(59, 130, 246), rgb(37, 99, 235));
+  border: none;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  transform: translateY(0);
+}
+
+.premium-btn-primary:hover {
+  background: linear-gradient(to right, rgb(37, 99, 235), rgb(29, 78, 216));
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transform: translateY(-0.125rem);
 }
 
 .premium-btn-outline {
-  @apply rounded-lg py-2.5 px-5 border border-slate-200 dark:border-slate-700 hover:border-primary-400 
-         dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/10 
-         text-slate-700 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400
-         transition-all duration-300 transform hover:-translate-y-0.5;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border: 1px solid rgb(226, 232, 240);
+  color: rgb(51, 65, 85);
+  transition: all 0.3s ease;
+  transform: translateY(0);
+}
+
+.premium-btn-outline:hover {
+  border-color: rgb(96, 165, 250);
+  background: rgb(239, 246, 255);
+  color: rgb(37, 99, 235);
+  transform: translateY(-0.125rem);
+}
+
+.dark .premium-btn-outline {
+  border-color: rgb(51, 65, 85);
+  color: rgb(203, 213, 225);
+}
+
+.dark .premium-btn-outline:hover {
+  border-color: rgb(59, 130, 246);
+  background: rgba(59, 130, 246, 0.1);
+  color: rgb(96, 165, 250);
 }
 
 .premium-btn-secondary {
-  @apply rounded-lg py-2.5 px-5 text-gray-600 dark:text-slate-400 hover:bg-slate-100 
-         dark:hover:bg-slate-700/50 hover:text-gray-800 dark:hover:text-white
-         transition-all duration-300;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  color: rgb(75, 85, 99);
+  transition: all 0.3s ease;
 }
 
-/* Premium Checkboxes */
-.premium-checkbox-container {
-  @apply cursor-pointer;
+.premium-btn-secondary:hover {
+  background: rgb(241, 245, 249);
+  color: rgb(31, 41, 55);
 }
 
-.premium-checkbox {
-  @apply sr-only;
+.dark .premium-btn-secondary {
+  color: rgb(148, 163, 184);
 }
 
-.premium-checkbox-bg {
-  @apply absolute w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded 
-         transition-colors duration-200;
+.dark .premium-btn-secondary:hover {
+  background: rgba(51, 65, 85, 0.5);
+  color: white;
 }
 
-.premium-checkbox-container input:checked ~ .premium-checkbox-bg {
-  @apply bg-primary-500 border-primary-500 dark:bg-primary-600 dark:border-primary-600;
+/* Additional Hover Effects */
+.form-section:hover {
+  background: rgba(248, 250, 252, 0.7);
 }
 
-.premium-checkbox-icon {
-  @apply absolute w-3 h-3 text-white opacity-0 transform scale-90 
-         transition-all duration-200 pointer-events-none;
+.dark .form-section:hover {
+  background: rgba(30, 41, 59, 0.6);
 }
 
-.premium-checkbox-container input:checked ~ .premium-checkbox-icon {
-  @apply opacity-100 scale-100;
+/* Premium Modal */
+.premium-modal {
+  backdrop-filter: blur(12px);
 }
 
-/* Premium Radio Buttons */
-.premium-radio-container {
-  @apply cursor-pointer;
-}
-
-.premium-radio {
-  @apply sr-only;
-}
-
-.premium-radio-bg {
-  @apply absolute w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded-full 
-         transition-colors duration-200;
-}
-
-.premium-radio-dot {
-  @apply absolute w-2.5 h-2.5 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full 
-         bg-primary-500 scale-0 opacity-0 transition-all duration-200;
-}
-
-.premium-radio-container input:checked ~ .premium-radio-bg {
-  @apply border-primary-500 dark:border-primary-500;
-}
-
-.premium-radio-container input:checked ~ .premium-radio-dot {
-  @apply scale-100 opacity-100;
-}
-
-/* Upload Container Animations */
-.premium-upload-container {
-  @apply transition-all duration-300;
-}
-
-.premium-editor-container {
-  @apply transition-all duration-300;
-}
-
-/* Pulse Animation */
-.pulse-animation {
-  @apply border-2 border-primary-400/50 dark:border-primary-500/50;
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
+/* Animation keyframes */
 @keyframes pulse {
-  0%,
-  100% {
+  0%, 100% {
     opacity: 0.5;
   }
   50% {
@@ -1046,14 +1227,8 @@ function resetForm(showConfirm = true) {
   }
 }
 
-/* Success Animation */
-.success-pulse-animation {
-  animation: success-pulse 1.5s ease-in-out infinite;
-}
-
 @keyframes success-pulse {
-  0%,
-  100% {
+  0%, 100% {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
   }
@@ -1061,15 +1236,6 @@ function resetForm(showConfirm = true) {
     transform: scale(1.05);
     box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
   }
-}
-
-/* Success Modal Particles */
-.success-particle {
-  @apply absolute w-2 h-2 rounded-full bg-white/40;
-  animation: float-up 3s ease-in-out infinite;
-  top: 100%;
-  left: calc(random(100) * 1%);
-  animation-delay: calc(random(3) * 1s);
 }
 
 @keyframes float-up {
@@ -1086,7 +1252,6 @@ function resetForm(showConfirm = true) {
   }
 }
 
-/* Animation Lines */
 @keyframes line-scroll {
   0% {
     transform: translateX(-100%);
@@ -1105,6 +1270,36 @@ function resetForm(showConfirm = true) {
   }
 }
 
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Animation classes */
+.pulse-animation {
+  border: 2px solid rgba(96, 165, 250, 0.5);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.dark .pulse-animation {
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.success-pulse-animation {
+  animation: success-pulse 1.5s ease-in-out infinite;
+}
+
+.success-particle {
+  position: absolute;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  animation: float-up 3s ease-in-out infinite;
+  top: 100%;
+}
+
 .animate-line-scroll {
   animation: line-scroll 3s infinite linear;
 }
@@ -1113,20 +1308,11 @@ function resetForm(showConfirm = true) {
   animation: line-scroll-reverse 3s infinite linear;
 }
 
-/* Shimmer animation */
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
+.premium-upload-container {
+  transition: all 0.3s ease;
 }
 
-/* Additional Hover Effects */
-.form-section:hover {
-  @apply bg-slate-50/70 dark:bg-slate-800/60;
-}
-
-/* Premium Modal */
-.premium-modal {
-  @apply backdrop-blur-md;
+.premium-editor-container {
+  transition: all 0.3s ease;
 }
 </style>
