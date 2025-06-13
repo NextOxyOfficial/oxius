@@ -71,12 +71,11 @@
                 class="absolute inset-0 flex items-center justify-center text-slate-400"
               >
                 <UIcon name="i-heroicons-photo" class="w-20 h-20" />
-              </div>
-
+              </div>              
               <!-- Discount Badge with Improved Design -->
               <div
                 v-if="currentProduct.discount"
-                class="absolute top-2 left-2 bg-red-500 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm transform -rotate-6 animate-pulse"
+                class="absolute top-2 left-2 bg-red-500 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm"
               >
                 -{{ currentProduct.discount }}% OFF!
               </div>
@@ -267,22 +266,17 @@
 
             <!-- Buy Now Button with Enhanced Design -->
             <button
-              type="button"
-              class="flex-1 relative overflow-hidden group bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 rounded-lg py-3 px-6 text-white font-medium shadow-sm hover:shadow-sm transition-all duration-300"
+              type="button"              
+              class="flex-1 relative overflow-hidden group bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 rounded-lg py-3 px-6 text-white font-medium shadow-sm hover:shadow-sm transition-colors duration-200"
               @click="addToCart(currentProduct, quantity)"
               :disabled="currentProduct.quantity <= 0"
             >
-              <!-- Shine animation effect -->
-              <div
-                class="absolute inset-0 w-40 h-full bg-white/20 skew-x-30 transform -translate-x-[150%] group-hover:translate-x-[200%] transition-transform duration-700"
-              ></div>
-
               <!-- Content container -->
               <div class="relative flex items-center justify-center gap-2">
                 <!-- Shopping cart icon -->
                 <UIcon
                   name="i-heroicons-shopping-cart"
-                  class="w-5 h-5 transition-transform group-hover:scale-110 duration-300"
+                  class="w-5 h-5"
                 />
 
                 <!-- Button text with animated dot -->
@@ -643,8 +637,8 @@
             <div v-else-if="displayedReviews.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div
                 v-for="(review, index) in displayedReviews"
-                :key="review.id || index"
-                class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 transition-transform hover:translate-y-[-5px]"
+                :key="review.id || index"                
+                class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 transition-opacity hover:opacity-90"
               >
                 <div class="flex text-amber-400 mb-3">
                   <UIcon
@@ -1552,31 +1546,10 @@ watch(isLoggedIn, async (newValue) => {
 </script>
 
 <style scoped>
-/* Shine animation for button */
-@keyframes shine {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(200%);
-  }
-}
-
 /* Rating stars component styling */
 .rating-stars {
   position: relative;
   display: inline-flex;
-}
-
-/* Animation for the discount badge */
-@keyframes pulse-scale {
-  0%,
-  100% {
-    transform: scale(1) rotate(-6deg);
-  }
-  50% {
-    transform: scale(1.05) rotate(-4deg);
-  }
 }
 
 .prose img {
@@ -1593,24 +1566,25 @@ watch(isLoggedIn, async (newValue) => {
   scrollbar-width: none; /* Firefox */
 }
 
-/* Animation for product cards */
+/* Optimized animations for better performance */
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translate3d(0, 5px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 .similar-product-fade-in {
-  animation: fade-in 0.4s ease-out forwards;
-  transition: transform 0.3s ease-in-out;
+  animation: fade-in 0.2s ease-out forwards;
+  will-change: transform, opacity;
 }
 
 .similar-product-fade-in:hover {
-  transform: translateY(-5px);
+  opacity: 0.9;
+  transition: opacity 0.15s ease;
 }
 </style>
