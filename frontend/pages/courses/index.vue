@@ -170,13 +170,14 @@
       />
 
       <!-- Products for selected batch -->
-      <BatchProducts :selectedBatch="selectedBatch" />
-
-      <DivisionSelector
+      <BatchProducts :selectedBatch="selectedBatch" />      <DivisionSelector
         :batch="selectedBatch"
         :selectedDivision="selectedDivision"
         @select-division="handleDivisionSelection"
       />
+
+      <!-- Products for selected division -->
+      <DivisionProducts :selectedDivision="selectedDivision" />
 
       <SubjectSelector
         :batch="selectedBatch"
@@ -244,6 +245,7 @@ import { ref } from "vue";
 import BatchSelector from "~/components/courses/BatchSelector.vue";
 import BatchProducts from "~/components/courses/BatchProducts.vue";
 import DivisionSelector from "~/components/courses/DivisionSelector.vue";
+import DivisionProducts from "~/components/courses/DivisionProducts.vue";
 import SubjectSelector from "~/components/courses/SubjectSelector.vue";
 import VideoLessons from "~/components/courses/VideoLessons.vue";
 

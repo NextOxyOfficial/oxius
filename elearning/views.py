@@ -55,6 +55,26 @@ class DivisionViewSet(viewsets.ReadOnlyModelViewSet):
         subjects = division.subjects.filter(is_active=True)
         serializer = SubjectSerializer(subjects, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def products(self, request, code=None):
+        """Fetch products associated with this division"""
+        from base.serializers import ProductSerializer
+        
+        division = self.get_object()
+        products = division.products.filter(is_active=True).select_related('owner').prefetch_related('image', 'category')
+        
+        # Limit products for performance (can be made configurable)
+        limit = request.query_params.get('limit', 10)
+        try:
+            limit = int(limit)
+        except (ValueError, TypeError):
+            limit = 10
+            
+        products = products[:limit]
+        
+        serializer = ProductSerializer(products, many=True, context={'request': request})
+        return Response(serializer.data)
 
 
 class SubjectViewSet(viewsets.ReadOnlyModelViewSet):

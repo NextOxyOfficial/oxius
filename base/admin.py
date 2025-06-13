@@ -289,7 +289,7 @@ admin.site.register(ProductMedia)
 
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name','owner__store_name', 'sale_price','regular_price','created_at', 'updated_at')
-    filter_horizontal = ('batches', 'category', 'benefits', 'faqs', 'trust_badges')
+    filter_horizontal = ('batches', 'divisions', 'category', 'benefits', 'faqs', 'trust_badges')
     
     fieldsets = (
         ('Basic Information', {
@@ -297,9 +297,8 @@ class ProductAdmin(admin.ModelAdmin):
         }),
         ('Pricing & Inventory', {
             'fields': ('regular_price', 'sale_price', 'quantity', 'weight')
-        }),
-        ('Categories & Organization', {
-            'fields': ('category', 'batches', 'is_featured', 'is_active')
+        }),        ('Categories & Organization', {
+            'fields': ('category', 'batches', 'divisions', 'is_featured', 'is_active')
         }),
         ('Educational Classification', {
             'fields': ('is_science', 'is_commerce', 'is_humanities', 'is_advanced'),

@@ -333,3 +333,43 @@ export const fetchBatchProducts = async (baseURL, batchCode, options = {}) => {
     throw error;
   }
 };
+
+/**
+ * Fetch products associated with a specific division
+ * @param {string} baseURL - Base URL of the API
+ * @param {string} divisionCode - Division code to fetch products for
+ * @param {Object} options - Optional parameters
+ * @param {number} options.limit - Maximum number of products to fetch
+ * @returns {Promise<Array>} Array of products
+ */
+export const fetchDivisionProducts = async (baseURL, divisionCode, options = {}) => {
+  const { limit = 10 } = options;
+  
+  const cacheKey = `division_products_${divisionCode}_${limit}`;
+  
+  // Return cached data if available
+  if (cache.has(cacheKey)) {
+    console.log(`Returning cached division products for ${divisionCode}`);
+    return cache.get(cacheKey);
+  }
+
+  try {
+    console.log(`Fetching products for division: ${divisionCode} with limit: ${limit}`);
+    
+    const data = await $fetch(`${baseURL}/api/elearning/divisions/${divisionCode}/products/`, {
+      method: 'GET',
+      params: {
+        limit
+      }
+    });
+
+    // Cache the data for 30 minutes (shorter cache for products since they might change more frequently)
+    cache.set(cacheKey, data, 30 * 60 * 1000);
+    console.log(`Division products for ${divisionCode} cached successfully`);
+    
+    return data;
+  } catch (error) {
+    console.error(`Error fetching products for division ${divisionCode}:`, error);
+    throw error;
+  }
+};

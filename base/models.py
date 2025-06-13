@@ -704,10 +704,13 @@ class Product(models.Model):
     benefits = models.ManyToManyField(ProductBenefit, blank=True, related_name='products')
     faqs = models.ManyToManyField(ProductFAQ, blank=True, related_name='products')
     trust_badges = models.ManyToManyField(ProductTrustBadge, blank=True, related_name='products')
-    
-    # Educational batch relationship
+      # Educational batch relationship
     batches = models.ManyToManyField('elearning.Batch', blank=True, related_name='products', 
                                    help_text='Select batches where this product should be displayed')
+    
+    # Educational division relationship
+    divisions = models.ManyToManyField('elearning.Division', blank=True, related_name='products', 
+                                     help_text='Select divisions where this product should be displayed')
     
     # Marketing section titles
     benefits_title = models.CharField(max_length=200, blank=True, null=True)
