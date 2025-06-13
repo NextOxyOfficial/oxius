@@ -270,18 +270,16 @@ watch(
   display: none; /* Chrome, Safari, Opera */
 }
 
-/* Animate items on load with stagger */
+/* Animate items on load with stagger - optimized for performance */
 .product-card {
-  animation: fadeSlideIn 0.6s ease-out forwards;
+  animation: fadeSlideIn 0.4s ease-out forwards;
   animation-delay: var(--delay);
   opacity: 0;
-  transform: translateX(20px);
 }
 
 @keyframes fadeSlideIn {
   to {
     opacity: 1;
-    transform: translateX(0);
   }
 }
 </style>

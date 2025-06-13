@@ -92,16 +92,16 @@
                 <img
                   :src="product.image"
                   :alt="product.name"
-                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102"
                   @load="imageLoaded = true"
                 />
 
                 <!-- Quick View Overlay -->
                 <div
-                  class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex flex-col items-center justify-center gap-2 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                  class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex flex-col items-center justify-center gap-2 transition-all duration-200 opacity-0 group-hover:opacity-100"
                 >
                   <button
-                    class="w-32 py-1.5 bg-white/90 dark:bg-slate-800/90 text-sm font-medium text-gray-800 dark:text-white rounded-md transform transition-all hover:scale-105"
+                    class="w-32 py-1.5 bg-white/90 dark:bg-slate-800/90 text-sm font-medium text-gray-800 dark:text-white rounded-md transition-all hover:scale-101"
                     @click="openProductModal(product)"
                   >
                     <UIcon name="i-heroicons-eye" class="w-3.5 h-3.5 mr-1" />
@@ -109,7 +109,7 @@
                   </button>
 
                   <button
-                    class="w-32 py-1.5 bg-primary/90 text-sm font-medium text-white rounded-md transform transition-all hover:scale-105"
+                    class="w-32 py-1.5 bg-primary/90 text-sm font-medium text-white rounded-md transition-all hover:scale-101"
                     @click="addToCart(product)"
                   >
                     <UIcon
@@ -611,18 +611,16 @@ watch(
   display: none; /* Chrome, Safari, Opera */
 }
 
-/* Animate items on load with stagger */
+/* Animate items on load with stagger - optimized for performance */
 .product-card {
-  animation: fadeSlideIn 0.6s ease-out forwards;
+  animation: fadeSlideIn 0.4s ease-out forwards;
   animation-delay: var(--delay);
   opacity: 0;
-  transform: translateX(10px);
 }
 
 @keyframes fadeSlideIn {
   to {
     opacity: 1;
-    transform: translateX(0);
   }
 }
 </style>

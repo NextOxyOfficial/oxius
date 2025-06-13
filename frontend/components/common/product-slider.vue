@@ -169,7 +169,8 @@
           />
         </NuxtLink>
       </div>
-    </div>    <!-- Professional Empty State -->
+    </div>    
+    <!-- Professional Empty State -->
     <div
       v-else
       class="py-12 sm:py-16 flex flex-col items-center justify-center text-center bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-slate-200/50 dark:border-slate-700/50"
@@ -347,15 +348,19 @@ function scrollSlider(direction) {
     left: targetScroll,
     behavior: 'smooth'
   });
-  
-  // Update scroll indicator
+    // Update scroll indicator
   const scrollIndex = Math.round((targetScroll / (scrollWidth - containerWidth)) * (scrollPositions.value.length - 1));
   currentScrollIndex.value = Math.max(0, Math.min(scrollIndex, scrollPositions.value.length - 1));
   
-  // Reset scrolling flag after animation
+  // Reset scrolling flag after animation completes
+  container.addEventListener('scrollend', () => {
+    isScrolling.value = false;
+  }, { once: true });
+  
+  // Fallback timeout in case scrollend isn't supported
   setTimeout(() => {
     isScrolling.value = false;
-  }, 500);
+  }, 800);
 }
 
 // Handle mouse click for slider interaction
@@ -383,13 +388,10 @@ function handleMouseMove(event) {
   
   const deltaX = event.clientX - clickStartX.value;
   
-  // If moved more than 5px, treat as a drag operation, not a click
+  // Only track movement for gesture detection, don't manually manipulate scroll
   if (Math.abs(deltaX) > 5) {
-    const container = sliderContainer.value;
-    if (container) {
-      container.scrollLeft -= deltaX;
-      clickStartX.value = event.clientX;
-    }
+    // Mark as dragging but let native scrolling handle the movement
+    clickStartX.value = event.clientX;
   }
 }
 
@@ -480,16 +482,20 @@ function scrollToPosition(index) {
   
   const scrollableWidth = scrollWidth - containerWidth;
   const targetScroll = index === 0 ? 0 : (index / (scrollPositions.value.length - 1)) * scrollableWidth;
-  
-  container.scrollTo({
+    container.scrollTo({
     left: targetScroll,
     behavior: 'smooth'
   });
   
-  // Reset scrolling flag after animation
+  // Reset scrolling flag after animation completes
+  container.addEventListener('scrollend', () => {
+    isScrolling.value = false;
+  }, { once: true });
+  
+  // Fallback timeout in case scrollend isn't supported
   setTimeout(() => {
     isScrolling.value = false;
-  }, 500);
+  }, 800);
 }
 
 // Reset scroll position
@@ -521,15 +527,20 @@ function updateScrollPosition() {
 function handleScroll() {
   if (!sliderContainer.value || isScrolling.value || scrollPositions.value.length <= 1) return;
   
-  const container = sliderContainer.value;
-  const scrollWidth = container.scrollWidth;
-  const containerWidth = container.clientWidth;
-  const scrollLeft = container.scrollLeft;
-  
-  const scrollableWidth = scrollWidth - containerWidth;
-  const scrollRatio = scrollLeft / scrollableWidth;
-  
-  currentScrollIndex.value = Math.round(scrollRatio * (scrollPositions.value.length - 1));
+  // Throttle scroll event handling to improve performance
+  requestAnimationFrame(() => {
+    if (!sliderContainer.value) return;
+    
+    const container = sliderContainer.value;
+    const scrollWidth = container.scrollWidth;
+    const containerWidth = container.clientWidth;
+    const scrollLeft = container.scrollLeft;
+    
+    const scrollableWidth = scrollWidth - containerWidth;
+    const scrollRatio = scrollLeft / scrollableWidth;
+    
+    currentScrollIndex.value = Math.round(scrollRatio * (scrollPositions.value.length - 1));
+  });
 }
 
 // Watch for element resizing using ResizeObserver
@@ -650,7 +661,7 @@ watch(
 }
 
 .product-card {
-  transition: transform 0.2s ease;
+  transition: transform 0.15s ease;
   z-index: 1;
 }
 
@@ -700,28 +711,8 @@ watch(
 
 /* Slider content styling */
 .slider-content {
-  -webkit-transform: translateZ(0);
-  -moz-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
   width: 100%;
   scroll-snap-type: x mandatory;
-}
-
-/* Enhanced touch feedback */
-.slider-content::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  background: radial-gradient(circle, transparent 90%, rgba(0, 0, 0, 0.03) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.slider-content:active::after {
-  opacity: 1;
 }
 
 /* Improved scrolling for touch devices */
@@ -732,21 +723,17 @@ watch(
 }
 
 /* Animation effects */
-@keyframes shimmer {
+@keyframes fadeIn {
   0% {
-    -webkit-transform: translateX(-100%);
-    -moz-transform: translateX(-100%);
-    transform: translateX(-100%);
+    opacity: 0;
   }
   100% {
-    -webkit-transform: translateX(100%);
-    -moz-transform: translateX(100%);
-    transform: translateX(100%);
+    opacity: 1;
   }
 }
 
 .animate-shimmer {
-  animation: shimmer 2s infinite;
+  animation: fadeIn 1s ease;
 }
 
 /* Smooth transition for scroll position indicators */
@@ -754,11 +741,11 @@ watch(
   transition: all 0.3s ease;
 }
 
-/* Professional app-like animations */
+/* Professional app-like animations - simplified for performance */
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -769,17 +756,15 @@ watch(
 @keyframes fadeInScale {
   from {
     opacity: 0;
-    transform: scale(0.95);
   }
   to {
     opacity: 1;
-    transform: scale(1);
   }
 }
 
-/* Component entrance animations */
+/* Component entrance animations - simplified */
 .product-slider-container {
-  animation: slideUp 0.6s ease-out;
+  animation: slideUp 0.3s ease-out;
 }
 
 /* Modern focus states */
@@ -798,13 +783,13 @@ button:focus-visible,
     min-height: 44px;
   }
   
-  /* Better touch feedback */
+  /* Better touch feedback - reduced animation for performance */
   .product-card-wrapper {
     transition: transform 0.1s ease;
   }
   
   .product-card-wrapper:active {
-    transform: scale(0.98);
+    transform: scale(0.99);
   }
 }
 
