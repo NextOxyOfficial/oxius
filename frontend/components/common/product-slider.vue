@@ -45,7 +45,8 @@
                   Discover amazing products
                 </p>
               </div>
-            </div>            <!-- Action button - mobile optimized -->
+            </div>            
+            <!-- Action button - mobile optimized -->
             <NuxtLink
               to="/shop-manager"
               class="flex-shrink-0 group relative inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-xs sm:text-sm transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
@@ -208,42 +209,7 @@
       </button>
     </div>
 
-    <!-- Product Quick View Modal -->
-    <!-- <UModal
-      v-model="isModalOpen"
-      :ui="{
-        inner: 'fixed inset-0 overflow-y-auto rounded-md',
-        base: 'relative text-left rtl:text-right flex flex-col -top-12 sm:top-8 rounded-md',
-        fullscreen: 'w-full max-w-3xl mt-32 sm:mt-12 mb-10 sm:h-[750px]',
-      }"
-      fullscreen
-    >
-      <div class="w-full h-full overflow-hidden overflow-y-scroll">
-        <CommonProductDetailsCard
-          :current-product="selectedProduct"
-          :modal="true"
-          @close-modal="closeProductModal"
-        />
-      </div>
-    </UModal> -->
-
-    <!-- <div
-      v-if="isModalOpen"
-      class="fixed inset-0 top-14 z-10 overflow-y-auto"
-      aria-labelledby="modal-title"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div
-        class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
-      >
-        <CommonProductDetailsCard
-          :current-product="selectedProduct"
-          :modal="true"
-          @close-modal="closeProductModal"
-        />
-      </div>
-    </div> -->
+    
   </UContainer>
 </template>
 
