@@ -90,7 +90,7 @@
                   </button>
                 </div>
               </div>
-              <p v-else class="text-sm mt-1">{{ comment.content }}</p>
+              <p v-else class="text-sm mt-1" v-html="processMentionsInComment(comment.content)" style="word-break: break-word"></p>
             </div>
             <div class="flex items-center mt-1 space-x-3">
               <span class="text-sm text-gray-600">{{
@@ -135,6 +135,9 @@
 
 <script setup>
 import { ref, nextTick, onMounted } from "vue";
+
+// Import the mentions composable
+const { processMentionsAsHTML, setupMentionClickHandlers } = useMentions();
 
 const props = defineProps({
   mediaComments: {
@@ -215,7 +218,14 @@ onMounted(() => {
   if (props.showCommentInput && commentInputRef.value) {
     commentInputRef.value.focus();
   }
+  // Setup mention click handlers
+  setupMentionClickHandlers();
 });
+
+// Process mentions in comments to make them clickable
+const processMentionsInComment = (content) => {
+  return processMentionsAsHTML(content);
+};
 
 // Format time ago function
 const formatTimeAgo = (dateString) => {

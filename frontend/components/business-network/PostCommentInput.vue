@@ -13,50 +13,77 @@
       <div
         class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-blue-500/10 blur-md -z-10"
       ></div>
-    </div>
-
-    <!-- Comment input with glassmorphism -->
+    </div>    <!-- Comment input with glassmorphism and inline mention display -->
     <div class="flex-1 relative flex items-center gap-2">
-      <div class="relative group flex-1">        
-        <textarea
-          ref="commentInputRef"
-          v-model="post.commentText"
-          placeholder="Add a comment..."
-          rows="1"
-          class="w-full text-base py-2.5 pr-[60px] pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
-          @input="handleCommentInput"
-          @focus="post.showCommentInput = true"
-          @keydown="handleMentionKeydown"
-        ></textarea>
-
-        <!-- Subtle gradient line under input on focus -->
-        <div
-          class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300"
-        ></div>
-
-        <!-- Action buttons with premium styling (inside input) -->
-        <div
-          v-if="post.commentText"
-          class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1"
-        >
-          <button
-            class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
-            @click="post.commentText = ''"
-            aria-label="Clear comment"
-          >
-            <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
-          </button>
-          <button
-            class="p-1 rounded-full bg-blue-500/90 hover:bg-blue-600 mb-1 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
-            @click="$emit('add-comment', post)"
-            aria-label="Post comment"
-          >
-            <Send class="h-3.5 w-3.5" />
-            <!-- Subtle glow effect -->
+      <div class="relative group flex-1">        <!-- Enhanced input container with mention chips inside -->
+        <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">
+            <!-- Content wrapper with padding for chips and input -->
+          <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]"><!-- Mentioned user chips -->
             <div
-              class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
-            ></div>
-          </button>
+              v-for="(mention, index) in extractedMentions"
+              :key="index"
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/25 hover:to-purple-500/25 dark:hover:from-blue-600/35 dark:hover:to-purple-600/35 transition-all duration-300 cursor-pointer group/mention transform hover:scale-105 shadow-sm hover:shadow text-xs font-medium mention-chip-enter"
+              @click="navigateToMentionedUser(mention)"
+            >
+              <!-- Mention indicator -->
+              <div class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full group-hover/mention:bg-purple-500 dark:group-hover/mention:bg-purple-400 transition-colors duration-300 flex-shrink-0"></div>
+              
+              <!-- User name -->
+              <span class="text-blue-700 dark:text-blue-300 group-hover/mention:text-purple-700 dark:group-hover/mention:text-purple-300 transition-colors duration-300 max-w-[120px] truncate font-medium">
+                {{ mention }}
+              </span>
+              
+              <!-- Remove button -->
+              <button
+                @click.stop="removeMention(mention)"
+                class="ml-0.5 p-0.5 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-all duration-200 flex-shrink-0"
+                aria-label="Remove mention"
+              >
+                <UIcon name="i-heroicons-x-mark" class="h-2.5 w-2.5" />
+              </button>
+            </div>            
+            <!-- Flexible input field -->
+            <textarea
+              ref="commentInputRef"
+              v-model="displayCommentText"
+              placeholder="Add a comment..."
+              rows="1"
+              class="flex-1 min-w-[120px] text-base bg-transparent border-none outline-none resize-none text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 leading-5 max-h-[4rem] overflow-y-auto no-scrollbar comment-textarea"
+              :style="{ minHeight: '24px' }"
+              @input="handleCommentInput"
+              @focus="post.showCommentInput = true"
+              @keydown="handleMentionKeydown"
+              @keyup="autoResize"
+            ></textarea>
+          </div>          <!-- Subtle gradient line under input on focus -->
+          <div
+            class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 focus-within:scale-x-100 transition-transform duration-300"
+          ></div>
+
+          <!-- Action buttons with premium styling (positioned over the input container) -->
+          <div
+            v-if="displayCommentText || extractedMentions.length > 0"
+            class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 z-10"
+          >
+            <button
+              class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+              @click="clearComment"
+              aria-label="Clear comment"
+            >
+              <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
+            </button>
+            <button
+              class="p-1 rounded-full bg-blue-500/90 hover:bg-blue-600 mb-1 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
+              @click="$emit('add-comment', post)"
+              aria-label="Post comment"
+            >
+              <Send class="h-3.5 w-3.5" />
+              <!-- Subtle glow effect -->
+              <div
+                class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
+              ></div>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -422,7 +449,7 @@
                 class="w-10 h-10 rounded-full border-2 border-gray-200/70 dark:border-slate-700/70 object-cover"
               />
             </div><!-- User info and badges -->            <div class="flex-1 min-w-0">
-              <!-- User name with all badges in a single line -->
+              <!-- User name with verified and pro badges on the right -->
               <div class="flex items-center gap-1 flex-1 min-w-0">
                 <span class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
                   {{ user?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.username || 'Unknown User' }}
@@ -445,15 +472,13 @@
                     <span class="text-2xs">Pro</span>
                   </div>
                 </span>
-                
-                <!-- Top Contributor badge -->
-                <span
-                  v-if="user?.is_topcontributor"
-                  class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm flex-shrink-0"
-                >                  <div class="flex items-center gap-1">
-                    <UIcon name="i-heroicons-star" class="size-3" />
-                    <span class="text-2xs">Top Contributor</span>
-                  </div>
+              </div>
+              
+              <!-- Top Contributor badge under the name -->
+              <div v-if="user?.is_topcontributor" class="mt-1">
+                <span class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm inline-flex items-center gap-1">
+                  <UIcon name="i-heroicons-star" class="size-3" />
+                  <span class="text-2xs">Top Contributor</span>
                 </span>
               </div>
             </div>
@@ -511,6 +536,7 @@ import { Send } from "lucide-vue-next";
 
 const { get, post: postApi } = useApi();
 const { user, jwtLogin } = useAuth();
+const router = useRouter();
 const toast = useToast();
 
 // Add ref for the comment input
@@ -522,6 +548,10 @@ const showMentions = ref(false);
 const mentionSuggestions = ref([]);
 const activeMentionIndex = ref(0);
 const mentionSearchText = ref("");
+
+// Enhanced mention display state
+const extractedMentions = ref([]);
+const displayCommentText = ref("");
 const mentionInputPosition = ref(null);
 const isSearching = ref(false);
 
@@ -650,6 +680,8 @@ const handleClickOutside = (event) => {
 // Setup event listeners for click outside detection
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
+  // Initialize mention display
+  updateMentionDisplay();
 });
 
 onBeforeUnmount(() => {
@@ -842,47 +874,6 @@ const navigateToFunds = () => {
   navigateTo("/deposit-withdraw");
 };
 
-// Handle comment input and mention detection
-const handleCommentInput = (event) => {
-  const inputValue = event.target.value;
-  props.post.commentText = inputValue;
-  
-  console.log('Input changed:', inputValue);
-    // Check for mention character (@)
-  const cursorPos = event.target.selectionStart;
-  const textBeforeCursor = inputValue.substring(0, cursorPos);
-  const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
-  
-  console.log('Mention match:', mentionMatch);
-  console.log('Text before cursor:', textBeforeCursor);
-  console.log('Cursor position:', cursorPos);
-  console.log('Current showMentions:', showMentions.value);
-  console.log('Current mentionSuggestions:', mentionSuggestions.value);
-  console.log('Current isSearching:', isSearching.value);
-  
-  if (mentionMatch) {
-    mentionSearchText.value = mentionMatch[1] || '';
-    showMentions.value = true;
-    mentionInputPosition.value = {
-      startPos: cursorPos - mentionMatch[0].length,
-      endPos: cursorPos,
-    };
-    
-    console.log('Starting mention search for:', mentionSearchText.value);
-    console.log('Set showMentions to true, mentionSearchText to:', mentionSearchText.value);
-    
-    // Search for users matching the mention text (even if empty, to show all users)
-    searchMentions(mentionSearchText.value);
-  } else {
-    showMentions.value = false;
-    mentionSuggestions.value = [];
-    console.log('No mention detected, hiding dropdown');
-  }
-  
-  // Emit the event for parent components that might need it
-  emit('handle-comment-input', event, props.post);
-};
-
 // Handle keyboard navigation for mentions
 const handleMentionKeydown = (event) => {
   if (!showMentions.value || mentionSuggestions.value.length === 0) {
@@ -967,11 +958,7 @@ const searchMentions = async (query) => {
 
 // Select a mention and insert it into the comment
 const selectMention = (selectedUser) => {
-  if (!mentionInputPosition.value || !commentInputRef.value) return;
-  
-  const { startPos, endPos } = mentionInputPosition.value;
-  const beforeMention = props.post.commentText.substring(0, startPos);
-  const afterMention = props.post.commentText.substring(endPos);
+  if (!commentInputRef.value) return;
   
   // Get the user's display name
   const userName = selectedUser.name || 
@@ -979,25 +966,157 @@ const selectMention = (selectedUser) => {
                    selectedUser.username || 
                    'Unknown User';
   
-  // Replace the mention with the user's name
-  props.post.commentText = `${beforeMention}@${userName} ${afterMention}`;
+  // Add to extracted mentions if not already present
+  if (!extractedMentions.value.includes(userName)) {
+    extractedMentions.value.push(userName);
+  }
+  
+  // Clear the @mention from display text
+  const currentText = displayCommentText.value;
+  const lastAtIndex = currentText.lastIndexOf('@');
+  if (lastAtIndex !== -1) {
+    displayCommentText.value = currentText.substring(0, lastAtIndex).trim();
+  }
+  
+  // Rebuild full comment text
+  const mentionText = extractedMentions.value.map(mention => `@${mention}`).join(' ');
+  const finalText = mentionText + (displayCommentText.value ? ' ' + displayCommentText.value : '');
+  props.post.commentText = finalText;
   
   // Reset mention state
   showMentions.value = false;
   mentionSuggestions.value = [];
   mentionInputPosition.value = null;
   
-  // Focus back to the input and set cursor position
+  // Focus back to the input
   nextTick(() => {
     if (commentInputRef.value) {
       commentInputRef.value.focus();
-      const newCursorPos = startPos + userName.length + 2; // +2 for "@ "
-      commentInputRef.value.setSelectionRange(newCursorPos, newCursorPos);
     }
   });
   
   // Emit the event for parent components that might need it
   emit('select-mention', selectedUser, props.post);
+};
+
+// Enhanced mention functionality methods
+const parseCommentForMentions = (text) => {
+  if (!text) return { mentions: [], cleanText: text };
+  
+  const mentionRegex = /@([^@\s][^@]*?)(?=\s@|$|\s[^@])/g;
+  const mentions = [];
+  let match;
+  
+  while ((match = mentionRegex.exec(text)) !== null) {
+    const mentionName = match[1].trim();
+    if (mentionName && !mentions.includes(mentionName)) {
+      mentions.push(mentionName);
+    }
+  }
+  
+  // Remove mentions from text to show clean text in input
+  const cleanText = text.replace(mentionRegex, '').replace(/\s+/g, ' ').trim();
+  
+  return { mentions, cleanText };
+};
+
+// Update mentions and display text when comment text changes
+const updateMentionDisplay = () => {
+  const { mentions, cleanText } = parseCommentForMentions(props.post.commentText);
+  extractedMentions.value = mentions;
+  displayCommentText.value = cleanText;
+};
+
+// Navigate to mentioned user's profile
+const navigateToMentionedUser = async (mentionName) => {
+  try {
+    const router = useRouter();
+    // Try to navigate to search results filtered by users
+    await router.push({
+      path: `/business-network/search-results/${encodeURIComponent(mentionName)}`,
+      query: { type: 'users' }
+    });
+  } catch (error) {
+    console.error('Error navigating to mentioned user:', error);
+  }
+};
+
+// Remove a mention from the list
+const removeMention = (mentionToRemove) => {
+  // Remove from extracted mentions
+  extractedMentions.value = extractedMentions.value.filter(mention => mention !== mentionToRemove);
+  
+  // Rebuild the comment text without this mention
+  const remainingMentions = extractedMentions.value.map(mention => `@${mention}`).join(' ');
+  const finalText = remainingMentions + (displayCommentText.value ? ' ' + displayCommentText.value : '');
+  
+  props.post.commentText = finalText;
+  updateMentionDisplay();
+};
+
+// Clear all content
+const clearComment = () => {
+  props.post.commentText = '';
+  displayCommentText.value = '';
+  extractedMentions.value = [];
+};
+
+// Override the original handleCommentInput to work with the new display
+const handleCommentInput = (event) => {
+  const inputValue = event.target.value;
+  
+  // Update the display text
+  displayCommentText.value = inputValue;
+  
+  // Rebuild full comment text with mentions
+  const mentionText = extractedMentions.value.map(mention => `@${mention}`).join(' ');
+  const fullText = mentionText + (inputValue ? ' ' + inputValue : '');
+  
+  props.post.commentText = fullText;
+  
+  // Handle mention detection in the new input
+  const lastAtIndex = inputValue.lastIndexOf('@');
+  if (lastAtIndex !== -1) {
+    const textAfterAt = inputValue.substring(lastAtIndex + 1);
+    // Only show mentions if there's no space after @
+    if (!textAfterAt.includes(' ')) {
+      mentionSearchText.value = textAfterAt;
+      searchMentions(textAfterAt);
+      showMentions.value = true;
+      
+      // Store mention position for the display text input
+      mentionInputPosition.value = {
+        startPos: lastAtIndex,
+        endPos: inputValue.length
+      };
+    } else {
+      showMentions.value = false;
+    }
+  } else {
+    showMentions.value = false;
+  }
+  
+  // Auto resize the textarea
+  autoResize();
+  
+  // Emit the event for parent components that might need it
+  emit('handle-comment-input', event, props.post);
+};
+
+// Watch for changes in post.commentText to update display
+watch(() => props.post.commentText, (newText) => {
+  updateMentionDisplay();
+}, { immediate: true });
+
+// Auto-resize textarea function
+const autoResize = () => {
+  nextTick(() => {
+    if (commentInputRef.value) {
+      commentInputRef.value.style.height = 'auto';
+      const newHeight = Math.min(commentInputRef.value.scrollHeight, 96); // Max 4 lines
+      commentInputRef.value.style.height = newHeight + 'px';
+    }
+  });
 };
 
 const emit = defineEmits([
@@ -1109,5 +1228,45 @@ const emit = defineEmits([
 
 .animate-pop-in {
   animation: popIn 0.3s ease-out forwards;
+}
+
+/* Enhanced mention chip animations */
+@keyframes mention-chip-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.mention-chip-enter {
+  animation: mention-chip-in 0.2s ease-out forwards;
+}
+
+/* Smooth transitions for textarea resize */
+.comment-textarea {
+  transition: height 0.2s ease-out;
+  resize: none;
+}
+
+/* Custom scrollbar for mention chips area */
+.mention-chips-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.mention-chips-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mention-chips-container::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 2px;
+}
+
+.mention-chips-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
 }
 </style>

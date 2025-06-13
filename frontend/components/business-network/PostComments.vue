@@ -257,15 +257,13 @@
                     {{ extractGiftMessage(comment?.content) }}
                   </p>
                 </div>
-              </div>
-              <!-- Regular comment -->
-              <p
+              </div>              <!-- Regular comment with mention processing -->
+              <div
                 v-else
                 class="text-base font-medium text-gray-800 dark:text-gray-300"
                 style="word-break: break-word"
-              >
-                {{ comment?.content }}
-              </p>
+                v-html="processMentionsInComment(comment?.content)"
+              ></div>
             </div>
           </div>
 
@@ -287,7 +285,10 @@
 
 <script setup>
 import { Loader2 } from "lucide-vue-next";
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
+
+// Import the mentions composable
+const { processMentionsAsHTML, setupMentionClickHandlers } = useMentions();
 
 const props = defineProps({
   post: {
@@ -437,6 +438,16 @@ const toggleDropdown = (comment) => {
     comment.showDropdown = !comment.showDropdown;
   }
 };
+
+// Process mentions in comments to make them clickable
+const processMentionsInComment = (content) => {
+  return processMentionsAsHTML(content);
+};
+
+// Setup mention click handlers when component mounts
+onMounted(() => {
+  setupMentionClickHandlers();
+});
 </script>
 
 <style scoped>

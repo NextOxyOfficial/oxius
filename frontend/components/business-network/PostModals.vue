@@ -290,16 +290,14 @@
                           <p class="gift-message-text">
                             {{ extractGiftMessage(comment?.content) }}
                           </p>
-                        </div>
-                      </div>
-                      <!-- Regular comment -->
-                      <p
+                        </div>                      </div>
+                      <!-- Regular comment with mention processing -->
+                      <div
                         v-else
                         class="text-sm sm:text-sm text-gray-800 dark:text-gray-300"
                         style="word-break: break-word"
-                      >
-                        {{ comment?.content }}
-                      </p>
+                        v-html="processMentionsInComment(comment?.content)"
+                      ></div>
                     </div>
                   </div>
 
@@ -609,6 +607,10 @@
 
 <script setup>
 import { X, Check, UserPlus, Loader2, Send } from "lucide-vue-next";
+import { onMounted } from "vue";
+
+// Import the mentions composable
+const { processMentionsAsHTML, setupMentionClickHandlers } = useMentions();
 
 // Define placeholder path for consistent usage across components
 const placeholderPath = '/static/frontend/images/placeholder.jpg';
@@ -782,6 +784,16 @@ const saveEditComment = (post, comment) => {
   // Emit save event to parent
   emit("save-edit-comment", post, comment);
 };
+
+// Process mentions in comments to make them clickable
+const processMentionsInComment = (content) => {
+  return processMentionsAsHTML(content);
+};
+
+// Setup mention click handlers when component mounts
+onMounted(() => {
+  setupMentionClickHandlers();
+});
 </script>
 
 <style scoped>
