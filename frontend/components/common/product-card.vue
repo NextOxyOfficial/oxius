@@ -178,12 +178,13 @@
         </div>
       </div>
     </div>      
-    <!-- Product Details Modal - Matching My Orders Tab Style -->       <UModal
+    <!-- Product Details Modal - Matching My Orders Tab Style -->     <UModal
       v-model="isModalOpen"
       :ui="{
         width: 'w-full sm:max-w-4xl',
         height: 'h-auto',
-        container: 'flex flex-col h-auto mt-20',
+        container: 'flex flex-col h-auto mt-20 p-0 sm:p-0',
+        padding: 'p-0',
       }"
     >
     <div>
