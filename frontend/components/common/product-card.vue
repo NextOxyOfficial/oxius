@@ -177,51 +177,30 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Premium Modal Design -->
-    <Teleport to="body">
-      <div
-        v-if="isModalOpen"
-        class="fixed inset-0 top-14 z-50 overflow-y-auto"
-        :class="{ 'animate-fade-in': isModalOpen }"
-        @click="closeProductModal()"
+    </div>      
+    <!-- Product Details Modal - Matching My Orders Tab Style -->
+    <UModal
+      v-model="isModalOpen"
+      :ui="{
+        width: 'w-full sm:max-w-4xl',
+        height: 'h-auto',
+      }"
+    >      
+    <div
+        class="bg-white dark:bg-slate-800 rounded-xl shadow-sm transform transition-all animate-slide-up"
       >
         <div
-          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
-          aria-hidden="true"
-          @click="isModalOpen = false"
+          class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 rounded-t-xl"
         ></div>
-        <div
-          class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
-        >
-          <div
-            class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
-            :class="{ 'animate-modal-slide-up': isModalOpen }"
-            @click.stop
-          >
-            <div
-              class="w-full md:h-[75vh] overflow-hidden overflow-y-auto custom-scrollbar"
-            >
-              <CommonProductDetailsCard
-                :current-product="selectedProduct"
-                :modal="true"
-                :seeDetails="true"
-                @close-modal="closeProductModal"
-              />
-            </div>
-
-            <!-- Decorative blobs -->
-            <div
-              class="absolute top-0 right-0 w-64 h-64 bg-primary-400/10 rounded-lg filter blur-3xl -z-10 transform translate-x-1/3 -translate-y-1/3"
-            ></div>
-            <div
-              class="absolute bottom-0 left-0 w-64 h-64 bg-violet-400/10 rounded-lg filter blur-3xl -z-10 transform -translate-x-1/3 translate-y-1/3"
-            ></div>
-          </div>
-        </div>
+        
+        <CommonProductDetailsCard
+          :current-product="selectedProduct"
+          :modal="true"
+          :seeDetails="true"
+          @close-modal="closeProductModal"
+        />
       </div>
-    </Teleport>
+    </UModal>
   </div>
 </template>
 
@@ -298,7 +277,6 @@ function addToCart(item, qty = 1) {
 
 // Product modal functions
 function openProductModal(product) {
-  document.body.style.overflow = "hidden";
   selectedProduct.value = product;
   quantity.value = 1;
   isModalOpen.value = true;
@@ -484,12 +462,28 @@ onMounted(() => {
   }
 }
 
+/* Slide up animation matching my-orders-tab */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-fade-in {
   animation: fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-modal-slide-up {
   animation: modal-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Custom colors */
