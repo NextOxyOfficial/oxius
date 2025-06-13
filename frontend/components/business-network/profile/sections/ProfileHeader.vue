@@ -130,45 +130,45 @@
               <p class="font-semibold">{{ user?.following_count || 0 }}</p>
               <p class="text-sm text-gray-600">Following</p>
             </div>
-          </div>
-
-          <!-- Mobile Action Buttons -->
-          <div class="flex gap-2 justify-center sm:hidden mt-4">                <!-- QR Code Button for mobile with enhanced styling -->
+          </div>          <!-- Mobile Action Buttons -->
+          <div class="flex gap-3 justify-center sm:hidden mt-6">              
+            <!-- QR Code Button for mobile with premium styling -->
             <button
               @click="$emit('open-qr-modal')"
-              class="p-1.5 size-9 rounded-full text-xs font-medium flex items-center justify-center gap-1.5 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-all shadow-sm relative overflow-hidden group"
+              class="px-4 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden group min-w-[110px]"
               title="View QR Code"
             >
-              <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-              <UIcon name="i-heroicons-qr-code" class="size-5 relative z-10" />
+              <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></span>
+              <UIcon name="i-cil-qr-code" class="size-5 relative z-10" />
+              <span class="relative z-10 font-semibold">QR Code</span>
             </button>
             
-            <!-- Action buttons for mobile -->              
+            <!-- Follow/Following button for mobile with premium styling -->              
             <button
               v-if="user?.id !== currentUser?.user?.id && currentUser"
               :class="[
-                'px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-300 relative overflow-hidden group/follow min-w-[90px] text-center',
+                'px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all duration-300 relative overflow-hidden group/follow min-w-[110px] justify-center shadow-sm hover:shadow-md',
                 isFollowing
-                  ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-800'
-                  : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white'
+                  ? 'border border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-gray-800 bg-white'
+                  : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white hover:from-blue-600 hover:via-indigo-600 hover:to-blue-700'
               ]"
               :disabled="followLoading"
               @click="$emit('toggle-follow')"
             >
-              <span class="relative z-10 flex items-center justify-center gap-1.5">
+              <span class="relative z-10 flex items-center justify-center gap-2">
                 <div
                   v-if="followLoading"
-                  class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"
+                  class="h-4 w-4 border-2 border-t-transparent border-current rounded-full animate-spin"
                 ></div>
 
                 <template v-else-if="isFollowing">
-                  <Check class="h-3 w-3 animate-scaleIn" />
-                  Following
+                  <Check class="h-4 w-4 animate-scaleIn" />
+                  <span>Following</span>
                 </template>
 
                 <template v-else>
-                  <UserPlus class="h-3 w-3 animate-scaleIn" />
-                  Follow
+                  <UserPlus class="h-4 w-4 animate-scaleIn" />
+                  <span>Follow</span>
                 </template>
               </span>
               <span 

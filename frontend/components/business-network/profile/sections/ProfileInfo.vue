@@ -46,15 +46,14 @@
       </div>
 
       <!-- Action buttons (Desktop) -->
-      <div class="hidden sm:flex gap-2">                    
-        <!-- QR Code Button with enhanced styling -->
+      <div class="hidden sm:flex gap-2">                      <!-- QR Code Button with enhanced styling -->
         <button
           @click="$emit('open-qr-modal')"
           class="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border border-gray-200 text-gray-800 hover:bg-gray-50 transition-all relative overflow-hidden group"
           title="View QR Code"
         >
           <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-          <UIcon name="i-heroicons-qr-code" class="w-4 h-4 relative z-10" />
+          <UIcon name="i-cil-qr-code" class="w-4 h-4 relative z-10" />
           <span class="relative z-10">QR Code</span>
         </button>
         
