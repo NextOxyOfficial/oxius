@@ -521,13 +521,6 @@ const toggleFollow = async () => {
       if (data) {
         // Update followers count accordingly
         user.value.followers_count = (user.value.followers_count || 0) + 1;
-
-        toast.add({
-          title: "Followed",
-          description: "You have successfully followed this user.",
-          icon: "i-heroicons-check-circle",
-          color: "green",
-        });
       }
     } else {
       // Unfollow user
@@ -539,13 +532,6 @@ const toggleFollow = async () => {
           0,
           (user.value.followers_count || 0) - 1
         );
-
-        toast.add({
-          title: "Unfollowed",
-          description: "You have successfully unfollowed this user.",
-          icon: "i-heroicons-information-circle",
-          color: "gray",
-        });
       }
     }
   } catch (error) {

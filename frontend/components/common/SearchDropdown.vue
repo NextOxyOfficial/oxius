@@ -966,17 +966,8 @@ const toggleFollow = async (personId) => {
 
   if (!followingStatus.value[personId]) {
     try {
-      const { data } = await post(`/bn/users/${personId}/follow/`);
-
-      if (data) {
+      const { data } = await post(`/bn/users/${personId}/follow/`);      if (data) {
         // Update followers count accordingly
-
-        toast.add({
-          title: "Followed",
-          description: "You have successfully followed this user.",
-          icon: "i-heroicons-check-circle",
-          color: "green",
-        });
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
@@ -986,16 +977,8 @@ const toggleFollow = async (personId) => {
     }
   } else {
     try {
-      const res = await del(`/bn/users/${personId}/unfollow/`);
-      if (res.data === undefined) {
+      const res = await del(`/bn/users/${personId}/unfollow/`);      if (res.data === undefined) {
         // Update followers count accordingly
-
-        toast.add({
-          title: "Unfollowed",
-          description: "You have successfully unfollowed this user.",
-          icon: "i-heroicons-information-circle",
-          color: "gray",
-        });
       }
     } catch (error) {
       console.error("Error toggling follow:", error);

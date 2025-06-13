@@ -554,16 +554,12 @@ const toggleFollow = async (post) => {
 
   try {
     const isFollowing = post.author_details.is_following;
-    const endpoint = `/bn/follow/${authorId}/`;
-
-    if (isFollowing) {
+    const endpoint = `/bn/follow/${authorId}/`;    if (isFollowing) {
       const { data } = await del(endpoint);
       post.author_details.is_following = false;
-      toast.add({ title: "Unfollowed user", color: "gray" });
     } else {
       const { data } = await post(endpoint);
       post.author_details.is_following = true;
-      toast.add({ title: "Following user", color: "blue" });
     }
   } catch (error) {
     console.error("Error toggling follow:", error);
