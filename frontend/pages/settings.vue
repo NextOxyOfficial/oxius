@@ -16,12 +16,11 @@
 
         <!-- User Info Summary -->
         <div class="text-center flex gap-2 items-center justify-center mb-8">
-          <div class="relative">
-            <img
+          <div class="relative">            <img
               v-if="userProfile.image"
               :src="userProfile.image"
               alt="Profile"
-              class="w-20 h-20 rounded-full object-contain border-4 border-white shadow-sm"
+              class="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm"
             />
             <div
               v-else
@@ -263,11 +262,10 @@
                 >
                 <div class="flex flex-wrap items-center gap-5">
                   <!-- Current image preview -->
-                  <div v-if="userProfile.image" class="relative">
-                    <img
+                  <div v-if="userProfile.image" class="relative">                    <img
                       :src="userProfile.image"
                       alt="Profile"
-                      class="w-24 h-24 rounded-full object-contain border-2 border-white shadow"
+                      class="w-24 h-24 rounded-full object-cover border-2 border-white shadow"
                     />
                     <button
                       type="button"
@@ -1093,13 +1091,13 @@ function handleFileUpload(event, field) {
   }
 
   // Updated the file size limit to 10 MB for initial upload
-  const maxSize = 12 * 1024 * 1024; // 10MB
-  const targetSize = 150 * 1024; // 150KB target size
+  const maxSize = 12 * 1024 * 1024; // 12MB
+  const targetSize = 800 * 1024; // 800KB target size for better quality
 
   if (file.size > maxSize) {
     showToast(
       "File Too Large",
-      `Image must be smaller than 10MB. Current size: ${(
+      `Image must be smaller than 12MB. Current size: ${(
         file.size /
         (1024 * 1024)
       ).toFixed(1)}MB`,
@@ -1111,12 +1109,12 @@ function handleFileUpload(event, field) {
   const reader = new FileReader();
 
   reader.onload = () => {
-    // Resize and compress the image
+    // Resize and compress the image with better quality preservation
     const img = new Image();
     img.onload = function () {
-      // Start with reasonable dimensions
-      const MAX_WIDTH = 800;
-      const MAX_HEIGHT = 800;
+      // Optimal dimensions for profile pictures with better quality
+      const MAX_WIDTH = 1024;
+      const MAX_HEIGHT = 1024;
 
       let width = img.width;
       let height = img.height;
@@ -1134,40 +1132,44 @@ function handleFileUpload(event, field) {
         }
       }
 
-      // Create canvas to resize image
+      // Create canvas to resize image with better quality settings
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
 
-      // Draw image at new size
+      // Use high-quality canvas rendering
       const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
       ctx.drawImage(img, 0, 0, width, height);
 
-      // Compress with decreasing quality until we hit target size
-      let quality = 0.7; // Start with good quality
+      // Use higher quality compression with better balance
+      let quality = 0.85; // Start with high quality
       let resultImage = canvas.toDataURL("image/jpeg", quality);
       let resultSize = Math.round((resultImage.length * 3) / 4); // Estimate base64 size
 
-      // Iteratively reduce quality until we get under 150KB
-      while (resultSize > targetSize && quality > 0.1) {
-        quality -= 0.1;
+      // Only reduce quality if absolutely necessary and maintain minimum quality
+      while (resultSize > targetSize && quality > 0.6) {
+        quality -= 0.05; // Smaller steps to preserve quality
         resultImage = canvas.toDataURL("image/jpeg", quality);
         resultSize = Math.round((resultImage.length * 3) / 4);
       }
 
-      // If still too large, reduce dimensions further
-      if (resultSize > targetSize) {
-        const scaleFactor = Math.sqrt(targetSize / resultSize) * 0.9; // Add buffer
+      // If still too large, slightly reduce dimensions instead of quality
+      if (resultSize > targetSize && quality <= 0.6) {
+        const scaleFactor = Math.sqrt(targetSize / resultSize) * 0.95; // Less aggressive scaling
         width = Math.floor(width * scaleFactor);
         height = Math.floor(height * scaleFactor);
 
-        // Redraw at smaller size
+        // Redraw at smaller size with high quality
         canvas.width = width;
         canvas.height = height;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Try with medium quality
-        quality = 0.5;
+        // Use good quality for final result
+        quality = 0.75;
         resultImage = canvas.toDataURL("image/jpeg", quality);
         resultSize = Math.round((resultImage.length * 3) / 4);
       }
@@ -1176,9 +1178,10 @@ function handleFileUpload(event, field) {
       userProfile.value.image = resultImage;
 
       const finalSizeKB = (resultSize / 1024).toFixed(1);
+      // Don't show compression details to user as requested
       showToast(
-        "Image Ready",
-        `Image compressed to ${finalSizeKB}KB and ready for upload`,
+        "Image Uploaded",
+        "Profile image uploaded successfully",
         "green"
       );
     };
@@ -1211,13 +1214,13 @@ function handleBannerUpload(event) {
   }
 
   // Check file size (max 10MB)
-  const maxSize = 10 * 1024 * 1024; // 10MB
-  const targetSize = 500 * 1024; // 500KB target size for compression
+  const maxSize = 12 * 1024 * 1024; // 12MB
+  const targetSize = 1024 * 1024; // 1MB target size for better banner quality
 
   if (file.size > maxSize) {
     showToast(
       "File Too Large",
-      `Banner image must be smaller than 10MB. Current size: ${(
+      `Banner image must be smaller than 12MB. Current size: ${(
         file.size /
         (1024 * 1024)
       ).toFixed(1)}MB`,
@@ -1229,12 +1232,12 @@ function handleBannerUpload(event) {
   const reader = new FileReader();
 
   reader.onload = () => {
-    // Resize and compress the image
+    // Resize and compress the image with better quality preservation
     const img = new Image();
     img.onload = function () {
-      // Banner dimensions
-      const MAX_WIDTH = 1600;
-      const MAX_HEIGHT = 400;
+      // Better banner dimensions for higher quality
+      const MAX_WIDTH = 1920;
+      const MAX_HEIGHT = 600;
 
       let width = img.width;
       let height = img.height;
@@ -1250,23 +1253,44 @@ function handleBannerUpload(event) {
         height = MAX_HEIGHT;
       }
 
-      // Create canvas to resize image
+      // Create canvas to resize image with high quality settings
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
 
-      // Draw image at new size
+      // Use high-quality canvas rendering
       const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
       ctx.drawImage(img, 0, 0, width, height);
 
-      // Compress with decreasing quality until we hit target size
-      let quality = 0.9; // Start with good quality
+      // Use higher quality compression with better balance
+      let quality = 0.9; // Start with very high quality
       let resultImage = canvas.toDataURL("image/jpeg", quality);
       let resultSize = Math.round((resultImage.length * 3) / 4); // Estimate base64 size
 
-      // Iteratively reduce quality until we get under target size
-      while (resultSize > targetSize && quality > 0.3) {
-        quality -= 0.1;
+      // Only reduce quality if absolutely necessary and maintain good minimum quality
+      while (resultSize > targetSize && quality > 0.7) {
+        quality -= 0.05; // Smaller steps to preserve quality
+        resultImage = canvas.toDataURL("image/jpeg", quality);
+        resultSize = Math.round((resultImage.length * 3) / 4);
+      }
+
+      // If still too large, slightly reduce dimensions instead of quality
+      if (resultSize > targetSize && quality <= 0.7) {
+        const scaleFactor = Math.sqrt(targetSize / resultSize) * 0.95; // Less aggressive scaling
+        width = Math.floor(width * scaleFactor);
+        height = Math.floor(height * scaleFactor);
+
+        // Redraw at smaller size with high quality
+        canvas.width = width;
+        canvas.height = height;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Use good quality for final result
+        quality = 0.8;
         resultImage = canvas.toDataURL("image/jpeg", quality);
         resultSize = Math.round((resultImage.length * 3) / 4);
       }
@@ -1275,9 +1299,10 @@ function handleBannerUpload(event) {
       userProfile.value.store_banner = resultImage;
 
       const finalSizeKB = (resultSize / 1024).toFixed(1);
+      // Don't show compression details to user as requested
       showToast(
-        "Banner Ready",
-        `Banner image compressed to ${finalSizeKB}KB and ready for upload`,
+        "Banner Uploaded",
+        "Banner image uploaded successfully",
         "green"
       );
     };

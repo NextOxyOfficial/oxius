@@ -143,7 +143,8 @@
                 Edit
               </UButton>
                 <!-- Save and Cancel Buttons -->
-              <div v-else class="ml-auto flex items-center space-x-2 relative z-10">                <UButton
+              <div v-else class="ml-auto flex items-center space-x-2 relative z-10">                
+                <UButton
                   @click.stop="updateStoreInfo()"
                   color="emerald"
                   variant="solid"
@@ -200,7 +201,8 @@
                         />
                       </div>
                     </div>
-                    <div class="ml-3 overflow-hidden flex-1">                      <p class="text-xs font-medium text-gray-600 mb-1">
+                    <div class="ml-3 overflow-hidden flex-1">                      
+                      <p class="text-xs font-medium text-gray-600 mb-1">
                         Shop Name <span class="text-red-500">*</span>
                       </p>                      <UInput
                         v-if="isEditing"
@@ -398,7 +400,8 @@
                         </button>
                       </span>
                     </div>
-                    <span class="text-gray-400">|</span>                    <span>
+                    <span class="text-gray-400">|</span>                    
+                    <span>
                       Last order:
                       {{
                         orders.length > 0 && lastOrderDate
@@ -1224,14 +1227,12 @@
                 Add Funds to Your Account
               </NuxtLink>
             </div>
-          </div>
-
-          <div class="flex sm:flex-row gap-4 w-full">
+          </div>          <div class="flex sm:flex-row gap-4 w-full">
             <UButton
               color="primary"
               icon="i-heroicons-shopping-cart"
               @click="purchaseProductSlots"
-              class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+              class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 py-4"
               :disabled="
                 !selectedSlotPackage ||
                 user?.user?.balance < (selectedSlotPackage?.price || 0) ||
@@ -1245,7 +1246,7 @@
               color="gray"
               variant="outline"
               @click="showBuySlotsModal = false"
-              class="flex-1"
+              class="flex-1 py-4"
             >
               Cancel            </UButton>
           </div>
