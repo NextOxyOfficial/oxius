@@ -200,17 +200,11 @@
               @delete-comment="deleteComment"
               @cancel-edit-comment="cancelEditComment"
               @save-edit-comment="saveEditComment"
-            />
-
-            <!-- Add Comment Input -->
+            />            <!-- Add Comment Input -->
             <BusinessNetworkPostCommentInput
               v-if="user"
               :post="post.post_details ? post.post_details : post"
               :user="user"
-              :show-mentions="showMentions"
-              :mention-suggestions="mentionSuggestions"
-              :active-mention-index="activeMentionIndex"
-              :mention-input-position="mentionInputPosition"
               @add-comment="addComment"
               @handle-comment-input="handleCommentInput"
               @handle-mention-keydown="handleMentionKeydown"

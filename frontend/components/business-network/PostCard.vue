@@ -81,17 +81,11 @@
         @delete-comment="$emit('delete-comment', post, $event)" 
         @cancel-edit-comment="$emit('cancel-edit-comment', $event)"
         @save-edit-comment="$emit('save-edit-comment', post, $event)"
-      />
-
-      <!-- Add Comment Input -->
+      />      <!-- Add Comment Input -->
       <PostCommentInput 
         v-if="user"
         :post="post"
         :user="user"
-        :show-mentions="showMentions"
-        :mention-suggestions="mentionSuggestions"
-        :active-mention-index="activeMentionIndex"
-        :mention-input-position="mentionInputPosition"
         @add-comment="$emit('add-comment', post)"
         @handle-comment-input="$emit('handle-comment-input', $event, post)"
         @handle-mention-keydown="$emit('handle-mention-keydown', $event, post)"
@@ -108,22 +102,6 @@ defineProps({
     required: true
   },
   user: {
-    type: Object,
-    default: null
-  },
-  showMentions: {
-    type: Boolean,
-    default: false
-  },
-  mentionSuggestions: {
-    type: Array,
-    default: () => []
-  },
-  activeMentionIndex: {
-    type: Number,
-    default: 0
-  },
-  mentionInputPosition: {
     type: Object,
     default: null
   }

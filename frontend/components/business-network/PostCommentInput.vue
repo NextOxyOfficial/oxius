@@ -17,15 +17,16 @@
 
     <!-- Comment input with glassmorphism -->
     <div class="flex-1 relative flex items-center gap-2">
-      <div class="relative group flex-1">
+      <div class="relative group flex-1">        
         <textarea
+          ref="commentInputRef"
           v-model="post.commentText"
           placeholder="Add a comment..."
           rows="1"
           class="w-full text-base py-2.5 pr-[60px] pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
-          @input="$emit('handle-comment-input', $event, post)"
+          @input="handleCommentInput"
           @focus="post.showCommentInput = true"
-          @keydown="$emit('handle-mention-keydown', $event, post)"
+          @keydown="handleMentionKeydown"
         ></textarea>
 
         <!-- Subtle gradient line under input on focus -->
@@ -388,68 +389,79 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Mention suggestions dropdown with enhanced glassmorphism -->
+      </div>      <!-- Mention suggestions dropdown with enhanced glassmorphism -->
       <div
-        v-if="
-          showMentions &&
-          mentionSuggestions.length > 0 &&
-          post === mentionInputPosition?.post
-        "
-        class="absolute left-0 bottom-full mb-2 w-64 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 z-20 max-h-56 overflow-y-auto animate-fade-in-up premium-shadow"
-      >
-        <div class="pt-1 pb-1">
-          <!-- Header with subtle styling -->
-          <div
-            class="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-600 border-b border-gray-100/80 dark:border-slate-700/80"
-          >
-            Mention someone
+        v-if="showMentions"
+        ref="mentionDropdownRef"
+        class="absolute left-0 bottom-full mb-2 w-72 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-lg shadow-lg border border-gray-100/50 dark:border-slate-700/50 z-20 max-h-64 overflow-y-auto animate-fade-in-up premium-shadow no-scrollbar"
+      ><div class="py-2">
+          <!-- Show loading state when searching -->
+          <div v-if="isSearching" class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+            <div class="flex items-center justify-center space-x-2">
+              <div class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+              <span>Searching...</span>
+            </div>
           </div>
-
-          <div class="py-1">
-            <div
-              v-for="(user, index) in mentionSuggestions"
-              :key="user.id"
-              @click="$emit('select-mention', user, post)"
-              :class="[
-                'flex items-center px-3 py-2 cursor-pointer transition-colors duration-200',
-                index === activeMentionIndex
-                  ? 'bg-blue-50/80 dark:bg-blue-900/30'
-                  : 'hover:bg-gray-50/80 dark:hover:bg-slate-700/80',
-              ]"
-            >
-              <!-- User avatar in mentions -->
-              <div class="relative">
-                <img
-                  :src="user?.follower_details?.image"
-                  :alt="user?.follower_details?.name"
-                  class="w-8 h-8 rounded-full mr-2.5 border border-gray-200/70 dark:border-slate-700/70 object-cover"
-                />
-                <!-- Verified badge if applicable -->
-                <div
-                  v-if="user?.follower_details?.kyc"
-                  class="absolute -bottom-0.5 -right-0.5 bg-blue-500 rounded-full w-3 h-3 border border-white dark:border-slate-800 flex items-center justify-center"
-                >
-                  <UIcon name="i-heroicons-check" class="w-2 h-2 text-white" />
-                </div>
-              </div>
-
-              <!-- User name with subtle styling -->
-              <div class="flex flex-col">
-                <span
-                  class="text-sm font-medium text-gray-800 dark:text-gray-300"
-                >
-                  {{ user?.follower_details?.name }}
+          
+          <!-- Show suggestions -->
+          <div
+            v-for="(user, index) in mentionSuggestions"
+            :key="user.id"
+            @click="selectMention(user)"
+            :class="[
+              'flex items-center px-4 py-3 cursor-pointer transition-colors duration-200',
+              index === activeMentionIndex
+                ? 'bg-blue-50/80 dark:bg-blue-900/30'
+                : 'hover:bg-gray-50/80 dark:hover:bg-slate-700/50',
+            ]"
+          >            <!-- User avatar -->
+            <div class="relative mr-3">
+              <img
+                :src="user?.image || '/static/frontend/images/placeholder.jpg'"
+                :alt="user?.name || user?.first_name || 'User'"
+                class="w-10 h-10 rounded-full border-2 border-gray-200/70 dark:border-slate-700/70 object-cover"
+              />
+            </div><!-- User info and badges -->            <div class="flex-1 min-w-0">
+              <!-- User name with all badges in a single line -->
+              <div class="flex items-center gap-1 flex-1 min-w-0">
+                <span class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                  {{ user?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.username || 'Unknown User' }}
                 </span>
+                
+                <!-- Verified badge -->
+                <UIcon
+                  v-if="user?.kyc"
+                  name="i-mdi-check-decagram"
+                  class="w-4 h-4 text-blue-600 animate-pulse-subtle flex-shrink-0"
+                />
+                
+                <!-- Pro badge immediately after verified badge -->
                 <span
-                  class="text-xs text-gray-600 dark:text-gray-600"
-                  v-if="user?.follower_details?.profession"
+                  v-if="user?.is_pro"
+                  class="px-1.5 py-0.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full text-xs font-medium shadow-sm flex-shrink-0"
                 >
-                  {{ user?.follower_details?.profession }}
+                  <div class="flex items-center gap-1">
+                    <UIcon name="i-heroicons-shield-check" class="size-3" />
+                    <span class="text-2xs">Pro</span>
+                  </div>
+                </span>
+                
+                <!-- Top Contributor badge -->
+                <span
+                  v-if="user?.is_topcontributor"
+                  class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm flex-shrink-0"
+                >                  <div class="flex items-center gap-1">
+                    <UIcon name="i-heroicons-star" class="size-3" />
+                    <span class="text-2xs">Top Contributor</span>
+                  </div>
                 </span>
               </div>
             </div>
+          </div>
+          
+          <!-- Show no results message -->
+          <div v-if="mentionSuggestions.length === 0 && mentionSearchText && !isSearching" class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+            No users found for "{{ mentionSearchText }}"
           </div>
         </div>
       </div>
@@ -494,12 +506,24 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
 import { Send } from "lucide-vue-next";
 
 const { get, post: postApi } = useApi();
 const { user, jwtLogin } = useAuth();
 const toast = useToast();
+
+// Add ref for the comment input
+const commentInputRef = ref(null);
+const mentionDropdownRef = ref(null);
+
+// Mention functionality state
+const showMentions = ref(false);
+const mentionSuggestions = ref([]);
+const activeMentionIndex = ref(0);
+const mentionSearchText = ref("");
+const mentionInputPosition = ref(null);
+const isSearching = ref(false);
 
 const props = defineProps({
   post: {
@@ -509,22 +533,6 @@ const props = defineProps({
   user: {
     type: Object,
     required: true,
-  },
-  showMentions: {
-    type: Boolean,
-    default: false,
-  },
-  mentionSuggestions: {
-    type: Array,
-    default: () => [],
-  },
-  activeMentionIndex: {
-    type: Number,
-    default: 0,
-  },
-  mentionInputPosition: {
-    type: Object,
-    default: null,
   },
 });
 
@@ -615,6 +623,7 @@ const toggleDiamondDropup = (e) => {
 
 // Handle clicks outside to close dropdown
 const handleClickOutside = (event) => {
+  // Handle diamond dropup
   if (
     showDiamondDropup.value &&
     dropupRef.value &&
@@ -623,6 +632,18 @@ const handleClickOutside = (event) => {
     !giftButtonRef.value.contains(event.target)
   ) {
     showDiamondDropup.value = false;
+  }
+  
+  // Handle mention dropdown
+  if (
+    showMentions.value &&
+    mentionDropdownRef.value &&
+    !mentionDropdownRef.value.contains(event.target) &&
+    commentInputRef.value &&
+    !commentInputRef.value.contains(event.target)
+  ) {
+    showMentions.value = false;
+    mentionSuggestions.value = [];
   }
 };
 
@@ -819,6 +840,164 @@ const goToDeposit = () => {
 // Navigate to funds page
 const navigateToFunds = () => {
   navigateTo("/deposit-withdraw");
+};
+
+// Handle comment input and mention detection
+const handleCommentInput = (event) => {
+  const inputValue = event.target.value;
+  props.post.commentText = inputValue;
+  
+  console.log('Input changed:', inputValue);
+    // Check for mention character (@)
+  const cursorPos = event.target.selectionStart;
+  const textBeforeCursor = inputValue.substring(0, cursorPos);
+  const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+  
+  console.log('Mention match:', mentionMatch);
+  console.log('Text before cursor:', textBeforeCursor);
+  console.log('Cursor position:', cursorPos);
+  console.log('Current showMentions:', showMentions.value);
+  console.log('Current mentionSuggestions:', mentionSuggestions.value);
+  console.log('Current isSearching:', isSearching.value);
+  
+  if (mentionMatch) {
+    mentionSearchText.value = mentionMatch[1] || '';
+    showMentions.value = true;
+    mentionInputPosition.value = {
+      startPos: cursorPos - mentionMatch[0].length,
+      endPos: cursorPos,
+    };
+    
+    console.log('Starting mention search for:', mentionSearchText.value);
+    console.log('Set showMentions to true, mentionSearchText to:', mentionSearchText.value);
+    
+    // Search for users matching the mention text (even if empty, to show all users)
+    searchMentions(mentionSearchText.value);
+  } else {
+    showMentions.value = false;
+    mentionSuggestions.value = [];
+    console.log('No mention detected, hiding dropdown');
+  }
+  
+  // Emit the event for parent components that might need it
+  emit('handle-comment-input', event, props.post);
+};
+
+// Handle keyboard navigation for mentions
+const handleMentionKeydown = (event) => {
+  if (!showMentions.value || mentionSuggestions.value.length === 0) {
+    emit('handle-mention-keydown', event, props.post);
+    return;
+  }
+  
+  // Handle arrow keys for mention selection
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    activeMentionIndex.value = (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    activeMentionIndex.value =
+      activeMentionIndex.value <= 0
+        ? mentionSuggestions.value.length - 1
+        : activeMentionIndex.value - 1;
+  } else if (event.key === "Enter" && showMentions.value) {
+    event.preventDefault();
+    const selectedUser = mentionSuggestions.value[activeMentionIndex.value];
+    if (selectedUser) {
+      selectMention(selectedUser);
+    }
+  } else if (event.key === "Escape") {
+    showMentions.value = false;
+    mentionSuggestions.value = [];
+  }
+  
+  // Emit the event for parent components
+  emit('handle-mention-keydown', event, props.post);
+};
+
+// Search for users to mention
+const searchMentions = async (query) => {
+  console.log('searchMentions called with query:', query);
+  console.log('Before search - isSearching:', isSearching.value);
+  console.log('Before search - mentionSuggestions:', mentionSuggestions.value);
+  
+  // For empty query, show some default users or search with a minimal query
+  if (!query || query.length === 0) {
+    console.log('Empty query, searching for some default users');
+    query = 'a'; // Search for users containing 'a' to show some results
+  }
+  
+  isSearching.value = true;
+  console.log('Set isSearching to true');
+  
+  try {
+    console.log('Making API call to:', `/bn/user-search/?q=${encodeURIComponent(query)}`);
+    const { data } = await get(`/bn/user-search/?q=${encodeURIComponent(query)}`);
+    
+    console.log('API response received:', data);
+    console.log('API response type:', typeof data);
+    console.log('API response keys:', Object.keys(data || {}));
+    
+    // Handle paginated response
+    if (data && data.results) {
+      mentionSuggestions.value = data.results.slice(0, 10); // Limit to 10 suggestions
+      console.log('Set suggestions from paginated results:', mentionSuggestions.value);
+    } else if (Array.isArray(data)) {
+      mentionSuggestions.value = data.slice(0, 10);
+      console.log('Set suggestions from array:', mentionSuggestions.value);
+    } else {
+      mentionSuggestions.value = [];
+      console.log('No valid data format, clearing suggestions');
+    }
+    
+    console.log('Final mentionSuggestions:', mentionSuggestions.value);
+    console.log('Final mentionSuggestions length:', mentionSuggestions.value.length);
+      activeMentionIndex.value = 0;
+  } catch (error) {
+    console.error("Error searching mentions:", error);
+    console.error("Error details:", error.response?.data);
+    mentionSuggestions.value = [];
+  } finally {
+    isSearching.value = false;
+    console.log('Set isSearching to false');
+    console.log('After search - mentionSuggestions:', mentionSuggestions.value);
+    console.log('After search - isSearching:', isSearching.value);
+  }
+};
+
+// Select a mention and insert it into the comment
+const selectMention = (selectedUser) => {
+  if (!mentionInputPosition.value || !commentInputRef.value) return;
+  
+  const { startPos, endPos } = mentionInputPosition.value;
+  const beforeMention = props.post.commentText.substring(0, startPos);
+  const afterMention = props.post.commentText.substring(endPos);
+  
+  // Get the user's display name
+  const userName = selectedUser.name || 
+                   `${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`.trim() || 
+                   selectedUser.username || 
+                   'Unknown User';
+  
+  // Replace the mention with the user's name
+  props.post.commentText = `${beforeMention}@${userName} ${afterMention}`;
+  
+  // Reset mention state
+  showMentions.value = false;
+  mentionSuggestions.value = [];
+  mentionInputPosition.value = null;
+  
+  // Focus back to the input and set cursor position
+  nextTick(() => {
+    if (commentInputRef.value) {
+      commentInputRef.value.focus();
+      const newCursorPos = startPos + userName.length + 2; // +2 for "@ "
+      commentInputRef.value.setSelectionRange(newCursorPos, newCursorPos);
+    }
+  });
+  
+  // Emit the event for parent components that might need it
+  emit('select-mention', selectedUser, props.post);
 };
 
 const emit = defineEmits([
