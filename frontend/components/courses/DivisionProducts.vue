@@ -1,9 +1,8 @@
 <template>
-  <div v-if="selectedDivision && (loading || error || products.length > 0)" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-4">
-    <div class="flex items-center justify-between mb-4">
+  <div v-if="selectedDivision && (loading || error || products.length > 0)" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-4">    <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-medium text-gray-800">
         <Icon name="heroicons:shopping-bag" class="w-5 h-5 inline mr-2 text-blue-600" />
-        {{ $t('recommended_products') }}
+        {{ selectedDivision }} বিভাগের গুরুত্বপূর্ণ বই ও শিক্ষা সামগ্রী
       </h3>
       <span class="bg-blue-100 text-blue-700 text-sm px-2 py-1 rounded-full">
         {{ selectedDivision }}
