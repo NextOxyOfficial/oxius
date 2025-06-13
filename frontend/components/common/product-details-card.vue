@@ -24,11 +24,10 @@
             </UBadge>
             <UBadge v-else color="red"> Out of Stock </UBadge>
           </div>
-          <div class="flex gap-3 justify-between items-start">
-            <h3
+          <div class="flex gap-3 justify-between items-start">            <h3
               class="text-lg ml-1 md:text-lg font-medium text-primary-700 dark:text-primary-300 text-left"
             >
-              {{ currentProduct.name }}
+              {{ capitalizedProductName }}
             </h3>
             <UButton
               v-if="seeDetails"
@@ -1144,6 +1143,11 @@ function calculateSavings(sale_price, regular_price) {
 }
 
 // Dynamic rating computations
+const capitalizedProductName = computed(() => {
+  if (!currentProduct.name) return '';
+  return currentProduct.name.charAt(0).toUpperCase() + currentProduct.name.slice(1);
+});
+
 const reviewCount = computed(() => {
   const count = productRatingStats.value?.total_reviews || 0;
   console.log('reviewCount computed (for main display):', count);
