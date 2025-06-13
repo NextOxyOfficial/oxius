@@ -21,18 +21,15 @@
         <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">
             <!-- Content wrapper with padding for chips and input -->
           <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]">
-            <!-- Mentioned user chips -->
-            <div
+            <!-- Mentioned user chips -->            <div
               v-for="(mention, index) in extractedMentions"
               :key="index"
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/25 hover:to-purple-500/25 dark:hover:from-blue-600/35 dark:hover:to-purple-600/35 transition-all duration-300 cursor-pointer group/mention transform hover:scale-105 shadow-sm hover:shadow text-xs font-medium mention-chip-enter"
+              class="inline-flex items-center px-2.5 py-1 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/25 hover:to-purple-500/25 dark:hover:from-blue-600/35 dark:hover:to-purple-600/35 transition-all duration-300 cursor-pointer group/mention transform hover:scale-105 shadow-sm hover:shadow text-xs font-medium mention-chip-enter"
               @click="navigateToMentionedUser(mention)"
             >
-              <!-- Mention indicator -->
-              <div class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full group-hover/mention:bg-purple-500 dark:group-hover/mention:bg-purple-400 transition-colors duration-300 flex-shrink-0"></div>
-                <!-- User name -->
+              <!-- @ symbol and user name without space -->
               <span class="text-blue-700 dark:text-blue-300 group-hover/mention:text-purple-700 dark:group-hover/mention:text-purple-300 transition-colors duration-300 font-medium whitespace-nowrap">
-                {{ mention }}
+                <span class="text-blue-500 dark:text-blue-400 group-hover/mention:text-purple-500 dark:group-hover/mention:text-purple-400 font-semibold">@</span>{{ mention }}
               </span>
               
               <!-- Remove button -->
@@ -422,7 +419,7 @@
       <div
         v-if="showMentions"
         ref="mentionDropdownRef"
-        class="absolute left-0 bottom-full mb-2 w-72 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-lg shadow-lg border border-gray-100/50 dark:border-slate-700/50 z-20 max-h-64 overflow-y-auto animate-fade-in-up premium-shadow no-scrollbar"
+        class="absolute left-0 bottom-full mb-2 w-72 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 z-20 max-h-64 overflow-y-auto animate-fade-in-up premium-shadow no-scrollbar"
       ><div class="py-2">
           <!-- Show loading state when searching -->
           <div v-if="isSearching" class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">

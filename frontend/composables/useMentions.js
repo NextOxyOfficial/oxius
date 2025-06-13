@@ -54,22 +54,65 @@ export const useMentions = () => {
     return parts.length === 0 ? [content] : parts;
   };  /**
    * Navigate to user profile by searching for the mentioned name
-   * Since we only have the display name and not the user ID, we'll search for the user
+   * First try to find the user by name, then navigate to their profile
    * @param {string} mentionedName - The mentioned user's display name
    */
   const navigateToUserProfile = async (mentionedName) => {
     try {
       const router = useRouter();
+      const { get } = useApi();
       
-      // Navigate to search results to help find the mentioned user
-      // This is more reliable than trying to guess the user ID
+      console.log('Searching for mentioned user:', mentionedName);
+      
+      // First, try to search for the user by name to get their ID
+      try {
+        const { data } = await get(`/bn/user-search/?q=${encodeURIComponent(mentionedName)}`);
+        
+        let users = [];
+        if (data && data.results) {
+          users = data.results;
+        } else if (Array.isArray(data)) {
+          users = data;
+        }
+        
+        // Find exact or close match
+        const exactMatch = users.find(user => {
+          const fullName = user.name || 
+                          `${user.first_name || ''} ${user.last_name || ''}`.trim() || 
+                          user.username;
+          return fullName.toLowerCase() === mentionedName.toLowerCase();
+        });
+        
+        if (exactMatch && exactMatch.id) {
+          // Navigate directly to the user's profile
+          console.log('Found exact match, navigating to profile:', exactMatch);
+          await router.push(`/business-network/profile/${exactMatch.id}`);
+          return;
+        }
+        
+        // If no exact match but we have results, navigate to search results
+        if (users.length > 0) {
+          console.log('No exact match, showing search results');
+          await router.push({
+            path: `/business-network/search-results/${encodeURIComponent(mentionedName)}`,
+            query: { type: 'people' }
+          });
+          return;
+        }
+      } catch (searchError) {
+        console.error('Error searching for user:', searchError);
+      }
+      
+      // Fallback: navigate to search results
+      console.log('Fallback: navigating to search results');
       await router.push({
         path: `/business-network/search-results/${encodeURIComponent(mentionedName)}`,
         query: { type: 'people' }
       });
+      
     } catch (error) {
       console.error('Error navigating to mentioned user:', error);
-      // Fallback to general business network search
+      // Final fallback to general business network search
       try {
         const router = useRouter();
         await router.push({
@@ -92,18 +135,22 @@ export const useMentions = () => {
     // Improved regex to match @Username patterns including full names
     // This pattern matches @ followed by any characters until a space, punctuation, or end of string
     // It handles names like "John Doe", "John-Paul Smith", "Mary O'Connor", etc.
-    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+[a-z]|\s*[.!?]|\s*$|$)/g;
-    
-    return content.replace(mentionRegex, (match, mentionedName) => {
+    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+[a-z]|\s*[.!?]|\s*$|$)/g;    return content.replace(mentionRegex, (match, mentionedName) => {
       const trimmedName = mentionedName.trim();
-      // Create mention chip with the same design as PostCommentInput
-      return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 mx-1 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/25 hover:to-purple-500/25 dark:hover:from-blue-600/35 dark:hover:to-purple-600/35 transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-sm hover:shadow text-xs font-medium mention-chip mention-link" data-username="${trimmedName}">
-        <div class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full transition-colors duration-300 flex-shrink-0"></div>
-        <span class="text-blue-700 dark:text-blue-300 transition-colors duration-300 font-medium whitespace-nowrap">${trimmedName}</span>
+      // Create mention chip with @ symbol and no space between @ and name
+      return `<span 
+        class="inline-flex items-center px-2.5 py-1 mx-0.5 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/30 hover:to-purple-500/30 dark:hover:from-blue-600/40 dark:hover:to-purple-600/40 transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-sm hover:shadow-md text-xs font-medium mention-chip mention-link active:scale-95" 
+        data-username="${trimmedName}"
+        title="Click to view ${trimmedName}'s profile"
+        role="button"
+        tabindex="0"
+      >
+        <span class="text-blue-700 dark:text-blue-300 hover:text-purple-700 dark:hover:text-purple-300 transition-colors duration-300 font-medium whitespace-nowrap">
+          <span class="text-blue-500 dark:text-blue-400 hover:text-purple-500 dark:hover:text-purple-400 font-semibold">@</span>${trimmedName}
+        </span>
       </span>`;
     });
   };
-
   /**
    * Setup click handlers for mention links
    * Call this in the component's onMounted hook
@@ -111,13 +158,32 @@ export const useMentions = () => {
   const setupMentionClickHandlers = () => {
     if (process.client) {
       // Add global click listener for mention links
-      document.addEventListener('click', (event) => {
-        if (event.target.classList.contains('mention-link')) {
+      const handleMentionInteraction = (event) => {
+        if (event.target.classList.contains('mention-link') || event.target.closest('.mention-link')) {
           event.preventDefault();
-          const username = event.target.getAttribute('data-username');
+          event.stopPropagation();
+          
+          const mentionElement = event.target.classList.contains('mention-link') 
+            ? event.target 
+            : event.target.closest('.mention-link');
+            
+          const username = mentionElement.getAttribute('data-username');
           if (username) {
+            console.log('Mention clicked:', username);
             navigateToUserProfile(username);
           }
+        }
+      };
+      
+      // Handle clicks
+      document.addEventListener('click', handleMentionInteraction);
+      
+      // Handle keyboard navigation (Enter key)
+      document.addEventListener('keydown', (event) => {
+        if ((event.key === 'Enter' || event.key === ' ') && 
+            (event.target.classList.contains('mention-link') || event.target.closest('.mention-link'))) {
+          event.preventDefault();
+          handleMentionInteraction(event);
         }
       });
     }
