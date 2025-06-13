@@ -683,8 +683,7 @@ const handleClickOutside = (event) => {
 // Setup event listeners for click outside detection
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
-  // Initialize mention display
-  updateMentionDisplay();
+  // Initialize with empty state - mentions are only created by selection
 });
 
 onBeforeUnmount(() => {
@@ -900,9 +899,16 @@ const handleMentionKeydown = (event) => {
     if (selectedUser) {
       selectMention(selectedUser);
     }
-  } else if (event.key === "Escape") {
+  } else if (event.key === "Escape" || event.key === " ") {
+    // Close mention dropdown without selecting
     showMentions.value = false;
     mentionSuggestions.value = [];
+    if (event.key === " ") {
+      // For space, we don't prevent default so the space gets typed
+      // But we close the mention dropdown
+    } else {
+      event.preventDefault();
+    }
   }
   
   // Emit the event for parent components
@@ -915,10 +921,12 @@ const searchMentions = async (query) => {
   console.log('Before search - isSearching:', isSearching.value);
   console.log('Before search - mentionSuggestions:', mentionSuggestions.value);
   
-  // For empty query, show some default users or search with a minimal query
+  // Only search if we have a valid query
   if (!query || query.length === 0) {
-    console.log('Empty query, searching for some default users');
-    query = 'a'; // Search for users containing 'a' to show some results
+    console.log('Empty query, not searching');
+    mentionSuggestions.value = [];
+    isSearching.value = false;
+    return;
   }
   
   isSearching.value = true;
@@ -1056,7 +1064,6 @@ const removeMention = (mentionToRemove) => {
   const finalText = remainingMentions + (displayCommentText.value ? ' ' + displayCommentText.value : '');
   
   props.post.commentText = finalText;
-  updateMentionDisplay();
 };
 
 // Clear all content
@@ -1073,7 +1080,7 @@ const handleCommentInput = (event) => {
   // Update the display text
   displayCommentText.value = inputValue;
   
-  // Rebuild full comment text with mentions
+  // Rebuild full comment text with mentions (only include confirmed mentions)
   const mentionText = extractedMentions.value.map(mention => `@${mention}`).join(' ');
   const fullText = mentionText + (inputValue ? ' ' + inputValue : '');
   
@@ -1083,8 +1090,8 @@ const handleCommentInput = (event) => {
   const lastAtIndex = inputValue.lastIndexOf('@');
   if (lastAtIndex !== -1) {
     const textAfterAt = inputValue.substring(lastAtIndex + 1);
-    // Only show mentions if there's no space after @
-    if (!textAfterAt.includes(' ')) {
+    // Only show mentions if there's no space after @ AND there's at least one character after @
+    if (!textAfterAt.includes(' ') && textAfterAt.length > 0) {
       mentionSearchText.value = textAfterAt;
       searchMentions(textAfterAt);
       showMentions.value = true;
@@ -1108,10 +1115,11 @@ const handleCommentInput = (event) => {
   emit('handle-comment-input', event, props.post);
 };
 
-// Watch for changes in post.commentText to update display
+// Watch for changes in post.commentText to update display (but don't auto-parse mentions)
 watch(() => props.post.commentText, (newText) => {
-  updateMentionDisplay();
-}, { immediate: true });
+  // Only update if the text was changed externally (not from our own input handling)
+  // We handle our own display updates in handleCommentInput
+}, { immediate: false });
 
 // Auto-resize textarea function
 const autoResize = () => {
