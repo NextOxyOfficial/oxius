@@ -2,8 +2,7 @@
  * Composable for handling mention functionality in comments
  */
 export const useMentions = () => {
-  
-  /**
+    /**
    * Process comment content to make mentioned usernames clickable
    * @param {string} content - The comment content
    * @param {Function} h - Vue's render function or component's h function
@@ -11,9 +10,9 @@ export const useMentions = () => {
    */
   const processMentionedUsers = (content, h) => {
     if (!content) return [content];    // Improved regex to match @Username patterns including full names
-    // This pattern matches @ followed by any characters until a space, punctuation, or end of string
-    // It handles names like "John Doe", "John-Paul Smith", "Mary O'Connor", etc.
-    const mentionRegex = /@([^\s@]+(?:\s+[^\s@]+)*?)(?=\s|$|[.!?,:;])/g;
+    // This pattern matches @ followed by name characters, handling multiple mentions properly
+    // It stops at: space+@, space+lowercase, punctuation, or end of string
+    const mentionRegex = /@([^\s@]+(?:\s+[^\s@]+)*?)(?=\s+@|\s|$|[.!?,:;])/g;
     
     const parts = [];
     let lastIndex = 0;
@@ -133,9 +132,9 @@ export const useMentions = () => {
     if (!content) return content;
 
     // Improved regex to match @Username patterns including full names
-    // This pattern matches @ followed by any characters until a space, punctuation, or end of string
-    // It handles names like "John Doe", "John-Paul Smith", "Mary O'Connor", etc.
-    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+[a-z]|\s*[.!?]|\s*$|$)/g;    return content.replace(mentionRegex, (match, mentionedName) => {
+    // This pattern matches @ followed by name characters, handling multiple mentions properly
+    // It stops at: space+@, space+lowercase, punctuation, or end of string
+    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+@|\s+[a-z]|\s*[.!?,:;]|\s*$|$)/g;return content.replace(mentionRegex, (match, mentionedName) => {
       const trimmedName = mentionedName.trim();
       // Create mention chip with @ symbol and no space between @ and name
       return `<span 

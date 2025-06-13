@@ -1044,8 +1044,8 @@ const parseCommentForMentions = (text) => {
   if (!text) return { mentions: [], cleanText: text };
   
   // Improved regex to capture full names properly
-  // This matches up to 3 words after @, but stops at lowercase words or punctuation
-  const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+[a-z]|\s*[.!?]|\s*$|$)/g;
+  // This matches up to 3 words after @, but stops at space+@, lowercase words, or punctuation
+  const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+@|\s+[a-z]|\s*[.!?,:;]|\s*$|$)/g;
   const mentions = [];
   let match;
   
