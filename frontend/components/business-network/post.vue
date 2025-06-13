@@ -709,11 +709,15 @@ const addComment = async (postToComment) => {
 
 // Handle mentions and comment input
 const handleCommentInput = (event, targetPost) => {
-  targetPost.commentText = event.target.value;
+  // CRITICAL FIX: Don't interfere with PostCommentInput's mention management
+  // The PostCommentInput component now handles its own text and mentions
+  // Only handle the parent's mention dropdown logic if needed
+  console.log('📋 Parent handleCommentInput - avoiding setting commentText to prevent mention clearing');
+  console.log('📝 Parent handleCommentInput - inputValue:', `"${event.target.value}"`);
 
-  // Check for mention character (@)
+  // Check for mention character (@) for parent's mention dropdown (if used)
   const cursorPos = event.target.selectionStart;
-  const textBeforeCursor = targetPost.commentText.substring(0, cursorPos);
+  const textBeforeCursor = event.target.value.substring(0, cursorPos);
   const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
 
   if (mentionMatch) {

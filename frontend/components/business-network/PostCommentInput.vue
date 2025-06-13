@@ -20,7 +20,7 @@
         <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">            <!-- Content wrapper with padding for chips and input -->
             <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]">              <!-- Mentioned users chips -->
               <div 
-                v-for="mention in extractedMentions" 
+                v-for="mention in stableMentions" 
                 :key="mention.id || mention.name"
                 class="inline-flex items-center px-2.5 py-1 mx-0.5 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/30 hover:to-purple-500/30 dark:hover:from-blue-600/40 dark:hover:to-purple-600/40 transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-sm hover:shadow-md text-xs font-medium mention-chip mention-link active:scale-95"
                 @click="navigateToMentionedUser(mention.name)"
@@ -66,7 +66,7 @@
             class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 focus-within:scale-x-100 transition-transform duration-300"
           ></div>          <!-- Action buttons with premium styling (positioned over the input container) -->
           <div
-            v-if="(displayCommentText && displayCommentText.trim()) || extractedMentions.length > 0"
+            v-if="(displayCommentText && displayCommentText.trim()) || stableMentions.length > 0"
             class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 z-10"
           >
             <button
@@ -563,6 +563,44 @@ const displayCommentText = ref("");
 const mentionInputPosition = ref(null);
 const isSearching = ref(false);
 
+// Computed property to ensure mention stability - prevents accidental clearing
+const stableMentions = computed(() => {
+  console.log('🔒 stableMentions computed, current mentions:', extractedMentions.value.map(m => m.name));
+  return extractedMentions.value;
+});
+
+// Protected function to safely clear mentions - only called when intentional
+const safelyClearMentions = (reason) => {
+  console.log('🛡️ safelyClearMentions called, reason:', reason);
+  console.log('🏷️ Clearing mentions:', extractedMentions.value.map(m => m.name));
+  extractedMentions.value = [];
+};
+
+// Protected function to safely add mention - with validation
+const safelyAddMention = (mention, reason) => {
+  console.log('🛡️ safelyAddMention called, reason:', reason);
+  console.log('➕ Adding mention:', mention.name);
+  
+  const mentionExists = extractedMentions.value.some(m => m.id === mention.id);
+  if (!mentionExists) {
+    extractedMentions.value.push(mention);
+    console.log('📋 All mentions now:', extractedMentions.value.map(m => m.name));
+  } else {
+    console.log('⚠️ Mention already exists, skipping');
+  }
+};
+
+// Protected function to safely remove mention - with validation
+const safelyRemoveMention = (mentionToRemove, reason) => {
+  console.log('🛡️ safelyRemoveMention called, reason:', reason);
+  console.log('🗑️ Removing mention:', mentionToRemove.name);
+  console.log('🏷️ Mentions before removal:', extractedMentions.value.map(m => m.name));
+  
+  extractedMentions.value = extractedMentions.value.filter(m => m.id !== mentionToRemove.id);
+  
+  console.log('🏷️ Mentions after removal:', extractedMentions.value.map(m => m.name));
+};
+
 const props = defineProps({
   post: {
     type: Object,
@@ -995,8 +1033,7 @@ const selectMention = (selectedUser) => {
       }
     });
   }
-  
-  // Add the user as a mention chip (completely separate from text)
+    // Add the user as a mention chip (completely separate from text)
   const mentionExists = extractedMentions.value.some(m => m.id === selectedUser.id);
   if (!mentionExists) {
     const newMention = {
@@ -1007,8 +1044,7 @@ const selectMention = (selectedUser) => {
     };
     
     console.log('➕ Adding mention chip:', newMention);
-    extractedMentions.value.push(newMention);
-    console.log('📋 All mentions now:', extractedMentions.value);
+    safelyAddMention(newMention, 'user selection from dropdown');
   } else {
     console.log('⚠️ Mention already exists, skipping');
   }
@@ -1022,18 +1058,23 @@ const selectMention = (selectedUser) => {
   emit('select-mention', selectedUser, props.post);
 };
 
-// Clear all content
+// Clear all content - ONLY called by explicit clear button click
 const clearComment = () => {
+  console.log('🧹 clearComment called explicitly');
+  
   props.post.commentText = '';
   displayCommentText.value = '';
-  extractedMentions.value = [];
+  safelyClearMentions('explicit clear button click');
 };
 
 // Override the original handleCommentInput to work with inline mentions
 const handleCommentInput = (event) => {
   const inputValue = event.target.value;
   console.log('🔍 Text input changed to:', `"${inputValue}"`);
+  console.log('🏷️ Current mentions (should NOT change):', extractedMentions.value.map(m => m.name));
+  console.log('📏 Input length:', inputValue.length, 'Is empty:', inputValue.length === 0);
   
+  // CRITICAL: Only update text, NEVER touch mention chips here
   displayCommentText.value = inputValue;
   
   // Handle mention detection for dropdown ONLY when actively typing @
@@ -1075,8 +1116,16 @@ const handleCommentInput = (event) => {
   // Auto resize the textarea
   autoResize();
   
-  // Emit the event for parent components that might need it
+  console.log('🏷️ Mentions after input processing (should be unchanged):', extractedMentions.value.map(m => m.name));
+  // CRITICAL DEBUG: Check if props.post.commentText is being set here
+  console.log('📋 Before emit - props.post.commentText:', `"${props.post.commentText || ''}"`);
+  
+  // ALWAYS emit, but be careful about what we emit
+  // The parent needs to know about input changes, but we shouldn't let empty input 
+  // cause unwanted side effects
   emit('handle-comment-input', event, props.post);
+  
+  console.log('📋 After emit - props.post.commentText:', `"${props.post.commentText || ''}"`);
 };
 
 // Handle posting comment with mentions and text
@@ -1105,19 +1154,18 @@ const handlePostComment = () => {
   // Only emit if we have content (mentions or text)
   if (finalText || extractedMentions.value.length > 0) {
     emit('add-comment', props.post);
-    
-    // Clear local state immediately after emitting
+      // Clear local state immediately after emitting
     displayCommentText.value = '';
-    extractedMentions.value = [];
+    safelyClearMentions('successful comment post');
     
     // Also clear the post's comment text so parent components know it's been processed
     props.post.commentText = '';
   }
 };
 
-// Remove mention chip
+// Remove mention chip - ONLY called by explicit user action (button click or keyboard on chip)
 const removeMention = (mentionToRemove) => {
-  extractedMentions.value = extractedMentions.value.filter(m => m.id !== mentionToRemove.id);
+  safelyRemoveMention(mentionToRemove, 'explicit user action (X button or keyboard)');
 };
 
 // Auto-resize textarea
@@ -1144,11 +1192,31 @@ const navigateToMentionedUser = (username) => {
   }
 };
 
-// Simple watcher - only clear when post is successful
+// Enhanced watcher - only clear when there's a legitimate reason (like successful post)
 watch(() => props.post.commentText, (newText, oldText) => {
-  if (oldText && oldText.length > 0 && (!newText || newText.length === 0)) {
+  console.log('👀 Watcher triggered - oldText:', `"${oldText || ''}"`, 'newText:', `"${newText || ''}"`);
+  console.log('🔍 Input is empty:', !displayCommentText.value || displayCommentText.value.length === 0);
+  console.log('🏷️ Current mentions before watcher logic:', extractedMentions.value.map(m => m.name));
+  
+  // ONLY clear mentions if this is truly after a successful post
+  // We know it's a successful post when:
+  // 1. The old text was substantial (contained actual content)
+  // 2. The new text is completely empty (parent cleared it after success)
+  // 3. AND we have mentions that should be cleared
+  const wasSubstantialContent = oldText && oldText.trim().length > 10; // More substantial threshold
+  const isNowEmpty = !newText || newText.trim().length === 0;
+  const hasMentionsToFlear = extractedMentions.value.length > 0;
+  const isFromSuccessfulPost = wasSubstantialContent && isNowEmpty && hasMentionsToFlear;
+  
+  if (isFromSuccessfulPost) {
+    console.log('✅ Legitimate clearing - appears to be after successful post');
     displayCommentText.value = '';
-    extractedMentions.value = [];
+    safelyClearMentions('legitimate post success or explicit clear');
+  } else {
+    console.log('🛡️ Ignoring watcher trigger - not a legitimate clearing scenario');
+    console.log('  - Was substantial:', wasSubstantialContent);
+    console.log('  - Is now empty:', isNowEmpty);
+    console.log('  - Has mentions:', hasMentionsToFlear);
   }
 });
 
