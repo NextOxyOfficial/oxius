@@ -19,10 +19,9 @@
         <div id="classified-category">
           <PublicTitle />
         </div>
-        <!-- Enhanced search form with premium styling -->
-        <form
+        <!-- Enhanced search form with premium styling -->        <form
           @submit.prevent="handleSearch"
-          class="w-full max-w-xl mx-auto relative z-10 transition-all duration-500 hover:scale-[1.01]"
+          class="w-full max-w-xl mx-auto relative z-10 transition-all duration-300"
         >
           <!-- Decorative elements with reduced blur for better performance -->
           <div
@@ -37,9 +36,8 @@
           <div
             class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl h-12 sm:h-14 shadow-sm border border-slate-200/50 dark:border-slate-700/30 overflow-hidden transition-all duration-300 hover:shadow-sm group"
           >
-            <!-- Accent line animation -->
-            <div
-              class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"
+            <!-- Accent line animation -->            <div
+              class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"
             ></div>
 
             <div class="flex items-center h-full">
@@ -86,9 +84,8 @@
                 class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-1.5 px-4 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 h-10 sm:h-12 mr-2 shadow-sm hover:shadow-sm text-sm"
                 :disabled="isLoading"
               >
-                <!-- Button background animation -->
-                <span
-                  class="absolute inset-0 w-full h-full bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"
+                <!-- Button background animation -->                <span
+                  class="absolute inset-0 w-full h-full bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"
                 ></span>
 
                 <!-- Button content -->
@@ -127,11 +124,10 @@
           <ul
             class="flex flex-wrap gap-2"
             v-if="searchServices?.results?.length"
-          >
-            <li
+          >            <li
               v-for="service in searchServices?.results"
               :key="service.id"
-              class="transition-transform duration-300 hover:scale-105"
+              class="transition-transform duration-200"
             >
               <NuxtLink
                 class="p-2.5 border border-emerald-200 hover:border-emerald-400 flex gap-2 items-center rounded-lg bg-emerald-50/80 hover:bg-emerald-50 shadow-sm hover:shadow transition-all duration-300"
@@ -195,11 +191,10 @@
         <!-- Service categories with premium styling -->
         <PublicServiceCategory :services="services" />
 
-        <!-- Premium load more button -->
-        <div class="text-center mt-4" v-if="services.next">
+        <!-- Premium load more button -->        <div class="text-center mt-4" v-if="services.next">
           <button
             @click="loadMore(services.next)"
-            class="group relative inline-flex text-sm items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
+            class="group relative inline-flex text-sm items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-sm hover:shadow-sm transition-all duration-200"
             :disabled="isLoadingMore"
           >
             <!-- Background hover effect -->
@@ -265,10 +260,9 @@
 
         <AccountBalance v-if="user" :user="user" :isUser="true" class="mb-8" />
 
-        <!-- Mobile recharge link with premium styling -->
-        <NuxtLink
+        <!-- Mobile recharge link with premium styling -->        <NuxtLink
           to="/mobile-recharge"
-          class="mb-8 bg-slate-50/70 dark:bg-slate-800 shadow-sm hover:shadow-sm border border-slate-200 dark:border-slate-700 block py-3 px-6 max-w-fit mx-auto rounded-xl transition-all duration-300 hover:scale-105 group"
+          class="mb-8 bg-slate-50/70 dark:bg-slate-800 shadow-sm hover:shadow-sm border border-slate-200 dark:border-slate-700 block py-3 px-6 max-w-fit mx-auto rounded-xl transition-all duration-200 group"
         >
           <div class="flex items-center gap-3">
             <UIcon
@@ -280,13 +274,12 @@
             >
               {{ $t("mobile_recharge") }}
             </h2>
-            <div class="flex justify-center gap-2">
-              <NuxtImg
+            <div class="flex justify-center gap-2">              <NuxtImg
                 v-for="operator in operators"
                 :key="operator.id"
                 :src="operator.icon"
                 :title="operator.title"
-                class="size-6 transition-transform duration-300 group-hover:scale-110"
+                class="size-6 transition-transform duration-200"
                 :style="`transition-delay: ${operator.id * 50}ms`"
               />
             </div>
@@ -384,10 +377,9 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                  <!-- Post gig button with premium styling -->
-                  <UButton
+                  <!-- Post gig button with premium styling -->                  <UButton
                     to="/post-a-gig"
-                    class="relative overflow-hidden bg-white hover:bg-slate-50 text-emerald-600 font-medium rounded-lg shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105 border border-emerald-200 hover:border-emerald-300"
+                    class="relative overflow-hidden bg-white hover:bg-slate-50 text-emerald-600 font-medium rounded-lg shadow-sm hover:shadow-sm transition-all duration-200 border border-emerald-200 hover:border-emerald-300"
                     :ui="{
                       size: {
                         sm: 'text-sm',
@@ -564,7 +556,7 @@
                           size="md"
                           color="emerald"
                           variant="solid"
-                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
+                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-200"
                           :to="`/order/${gig.id}/`"
                         >
                           <UIcon
@@ -589,7 +581,7 @@
                           color="emerald"
                           variant="solid"
                           :to="`/auth/login/`"
-                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
+                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-200"
                         >
                           <UIcon
                             name="i-heroicons-currency-dollar"
@@ -607,7 +599,7 @@
                           size="md"
                           color="emerald"
                           variant="solid"
-                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
+                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-200"
                           :to="`/order/${gig.id}/`"
                         >
                           <UIcon
@@ -632,7 +624,7 @@
                           color="emerald"
                           variant="solid"
                           :to="`/auth/login/`"
-                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-300 transform hover:scale-105"
+                          class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-200"
                         >
                           <UIcon
                             name="i-heroicons-currency-dollar"
@@ -1036,11 +1028,9 @@ onBeforeUnmount(() => {
   0%,
   100% {
     opacity: 0.7;
-    transform: scale(1);
   }
   50% {
     opacity: 0.5;
-    transform: scale(1.05);
   }
 }
 
@@ -1054,7 +1044,7 @@ onBeforeUnmount(() => {
     opacity: 0.5;
   }
   100% {
-    transform: scale(6);
+    transform: scale(3);
     opacity: 0;
   }
 }

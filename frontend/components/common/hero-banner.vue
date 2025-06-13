@@ -43,20 +43,17 @@
                 />
               </div>
             </div>
-            <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->
-            <button
+            <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->            <button
               @click="prevSlide"
-              class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 shadow-sm opacity-0 transform -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
-              :class="{ 'opacity-100 translate-x-0': isHovering }"
+              class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
+              :class="{ 'opacity-100': isHovering }"
               aria-label="Previous slide"
             >
               <ChevronLeft class="h-5 w-5 text-white" />
-            </button>
-
-            <button
+            </button>            <button
               @click="nextSlide"
-              class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 shadow-sm opacity-0 transform translate-x-2 group-hover:opacity-100 group-hover:translate-x-0"
-              :class="{ 'opacity-100 translate-x-0': isHovering }"
+              class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
+              :class="{ 'opacity-100': isHovering }"
               aria-label="Next slide"
             >
               <ChevronRight class="h-5 w-5 text-white" />
@@ -68,10 +65,9 @@
               <button
                 v-for="(_, index) in sliderImages"
                 :key="index"
-                @click="goToSlide(index)"
-                class="w-2.5 h-2.5 rounded-full transition-all duration-300 relative"
+                @click="goToSlide(index)"                class="w-2.5 h-2.5 rounded-full transition-all duration-200 relative"
                 :class="{
-                  'bg-white scale-110': index === currentSlide,
+                  'bg-white': index === currentSlide,
                   'bg-white/40 hover:bg-white/60': index !== currentSlide,
                 }"
                 :aria-label="`Go to slide ${index + 1}`"
@@ -660,7 +656,7 @@ onUnmounted(() => {
 }
 
 .service-btn:hover .icon-circle {
-  transform: scale(1.1);
+  transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -683,7 +679,7 @@ onUnmounted(() => {
 }
 
 .mobile-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.99);
   background-color: rgba(249, 250, 251, 0.8);
 }
 
@@ -700,7 +696,7 @@ onUnmounted(() => {
 }
 
 .mobile-btn:active .mobile-icon-circle {
-  transform: scale(0.95);
+  transform: scale(0.98);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
