@@ -74,10 +74,9 @@
               aria-label="Clear comment"
             >
               <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
-            </button>
-            <button
+            </button>            <button
               class="p-1 rounded-full bg-blue-500/90 hover:bg-blue-600 mb-1 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
-              @click="$emit('add-comment', post)"
+              @click="handlePostComment"
               aria-label="Post comment"
             >
               <Send class="h-3.5 w-3.5" />
@@ -989,10 +988,26 @@ const selectMention = (selectedUser) => {
     displayCommentText.value = currentText.substring(0, lastAtIndex).trim();
   }
   
-  // Rebuild full comment text
+  // Rebuild full comment text properly
   const mentionText = extractedMentions.value.map(mention => `@${mention}`).join(' ');
-  const finalText = mentionText + (displayCommentText.value ? ' ' + displayCommentText.value : '');
+  
+  let finalText = '';
+  if (mentionText && displayCommentText.value.trim()) {
+    finalText = mentionText + ' ' + displayCommentText.value;
+  } else if (mentionText) {
+    finalText = mentionText;
+  } else if (displayCommentText.value.trim()) {
+    finalText = displayCommentText.value;
+  }
+  
   props.post.commentText = finalText;
+  
+  console.log('Selected mention, final text:', {
+    userName,
+    mentions: extractedMentions.value,
+    displayText: displayCommentText.value,
+    finalText: finalText
+  });
   
   // Reset mention state
   showMentions.value = false;
@@ -1061,9 +1076,24 @@ const removeMention = (mentionToRemove) => {
   
   // Rebuild the comment text without this mention
   const remainingMentions = extractedMentions.value.map(mention => `@${mention}`).join(' ');
-  const finalText = remainingMentions + (displayCommentText.value ? ' ' + displayCommentText.value : '');
+  
+  let finalText = '';
+  if (remainingMentions && displayCommentText.value.trim()) {
+    finalText = remainingMentions + ' ' + displayCommentText.value;
+  } else if (remainingMentions) {
+    finalText = remainingMentions;
+  } else if (displayCommentText.value.trim()) {
+    finalText = displayCommentText.value;
+  }
   
   props.post.commentText = finalText;
+  
+  console.log('Removed mention, final text:', {
+    removedMention: mentionToRemove,
+    remainingMentions: extractedMentions.value,
+    displayText: displayCommentText.value,
+    finalText: finalText
+  });
 };
 
 // Clear all content
@@ -1082,9 +1112,24 @@ const handleCommentInput = (event) => {
   
   // Rebuild full comment text with mentions (only include confirmed mentions)
   const mentionText = extractedMentions.value.map(mention => `@${mention}`).join(' ');
-  const fullText = mentionText + (inputValue ? ' ' + inputValue : '');
+  
+  // Build the final text properly
+  let fullText = '';
+  if (mentionText && inputValue.trim()) {
+    fullText = mentionText + ' ' + inputValue;
+  } else if (mentionText) {
+    fullText = mentionText;
+  } else if (inputValue.trim()) {
+    fullText = inputValue;
+  }
   
   props.post.commentText = fullText;
+  
+  console.log('Comment text built:', {
+    mentions: extractedMentions.value,
+    inputValue: inputValue,
+    finalText: fullText
+  });
   
   // Handle mention detection in the new input
   const lastAtIndex = inputValue.lastIndexOf('@');
@@ -1113,6 +1158,39 @@ const handleCommentInput = (event) => {
   
   // Emit the event for parent components that might need it
   emit('handle-comment-input', event, props.post);
+};
+
+// Handle posting comment with debug info
+const handlePostComment = () => {
+  // Rebuild the final comment text one more time before posting
+  const mentionText = extractedMentions.value.map(mention => `@${mention}`).join(' ');
+  
+  let finalText = '';
+  if (mentionText && displayCommentText.value.trim()) {
+    finalText = mentionText + ' ' + displayCommentText.value;
+  } else if (mentionText) {
+    finalText = mentionText;
+  } else if (displayCommentText.value.trim()) {
+    finalText = displayCommentText.value;
+  }
+  
+  props.post.commentText = finalText;
+  
+  console.log('=== POSTING COMMENT ===');
+  console.log('Mentions:', extractedMentions.value);
+  console.log('Display text:', displayCommentText.value);
+  console.log('Final comment text:', finalText);
+  console.log('Comment text length:', finalText?.length);
+  console.log('Comment text trimmed:', finalText?.trim());
+  console.log('Post object commentText:', props.post.commentText);
+  console.log('========================');
+  
+  // Only emit if we have content
+  if (finalText?.trim()) {
+    emit('add-comment', props.post);
+  } else {
+    console.warn('No content to post!');
+  }
 };
 
 // Watch for changes in post.commentText to update display (but don't auto-parse mentions)

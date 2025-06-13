@@ -80,10 +80,11 @@ export const useMentions = () => {
         console.error('Error with fallback navigation:', fallbackError);
       }
     }
-  };/**
+  };  /**
    * Simple version that returns HTML string for v-html usage
+   * Creates mention chips/tags with the same design as the input component
    * @param {string} content - The comment content
-   * @returns {string} HTML string with clickable mentions
+   * @returns {string} HTML string with mention chips and regular text
    */
   const processMentionsAsHTML = (content) => {
     if (!content) return content;
@@ -91,12 +92,15 @@ export const useMentions = () => {
     // Improved regex to match @Username patterns including full names
     // This pattern matches @ followed by any characters until a space, punctuation, or end of string
     // It handles names like "John Doe", "John-Paul Smith", "Mary O'Connor", etc.
-    const mentionRegex = /@([^\s@]+(?:\s+[^\s@]+)*?)(?=\s|$|[.!?,:;])/g;
+    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+[a-z]|\s*[.!?]|\s*$|$)/g;
     
     return content.replace(mentionRegex, (match, mentionedName) => {
       const trimmedName = mentionedName.trim();
-      // Create a clickable span that calls a global navigation function
-      return `<span class="mention-link text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium cursor-pointer transition-colors duration-200" data-username="${trimmedName}">@${trimmedName}</span>`;
+      // Create mention chip with the same design as PostCommentInput
+      return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 mx-1 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/25 hover:to-purple-500/25 dark:hover:from-blue-600/35 dark:hover:to-purple-600/35 transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-sm hover:shadow text-xs font-medium mention-chip mention-link" data-username="${trimmedName}">
+        <div class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full transition-colors duration-300 flex-shrink-0"></div>
+        <span class="text-blue-700 dark:text-blue-300 transition-colors duration-300 font-medium whitespace-nowrap">${trimmedName}</span>
+      </span>`;
     });
   };
 
