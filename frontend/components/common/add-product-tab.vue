@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen py-8 bg-gradient-to-b from-gray-50 to-gray-100">
+  <div class="min-h-screen pb-8 bg-gradient-to-b from-gray-50 to-gray-100">
     <UContainer>
       <form
         @submit.prevent="handleAddProduct"
