@@ -1,5 +1,5 @@
 <template>
-  <div v-if="selectedDivision && (loading || error || products.length > 0)" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-4">    <div class="flex items-center justify-between mb-4">
+  <div v-if="selectedDivision && (loading || error || products.length > 0)" class="bg-white rounded-lg shadow-sm border border-gray-200 py-4 px-2 mt-4">    <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-medium text-gray-800">
         <Icon name="heroicons:shopping-bag" class="w-5 h-5 inline mr-2 text-blue-600" />
         {{ selectedDivision }} বিভাগের গুরুত্বপূর্ণ বই ও শিক্ষা সামগ্রী
@@ -61,7 +61,7 @@
       <!-- Scrollable products container -->
       <div 
         ref="scrollContainer"
-        class="flex gap-4 overflow-x-auto scroll-smooth scrollbar-hide px-2 py-2"
+        class="flex gap-2 overflow-x-auto scroll-smooth scrollbar-hide px-2 py-2"
         @scroll="updateScrollButtons"
       >
         <div 

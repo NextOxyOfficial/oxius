@@ -162,15 +162,17 @@
   <!-- Hero header section -->
 
   <!-- Content section -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <div class="space-y-3">      <!-- Selection Components -->
+  <div class="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8 py-6">
+    <div class="space-y-3">      
+      <!-- Selection Components -->
       <BatchSelector
         :selectedBatch="selectedBatch"
         @select-batch="handleBatchSelection"
       />
 
       <!-- Products for selected batch -->
-      <BatchProducts :selectedBatch="selectedBatch" />      <DivisionSelector
+      <BatchProducts :selectedBatch="selectedBatch" />      
+      <DivisionSelector
         :batch="selectedBatch"
         :selectedDivision="selectedDivision"
         @select-division="handleDivisionSelection"

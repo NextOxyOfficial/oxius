@@ -1,10 +1,10 @@
 <template>
   <div ref="productCardRef">
     <div class="transition-all duration-300">
-      <!-- Glass-like Card Container with Premium Shadows -->
-      <div
+      <!-- Glass-like Card Container with Premium Shadows -->      
+       <div
         class="bg-slate-100/80 dark:bg-slate-800/90 border border-white/40 dark:border-slate-700/40 rounded-lg overflow-hidden shadow-custom transition-all duration-500 h-full flex flex-col backdrop-blur-sm hover:shadow-custom-hover"
-      >        <!-- Product Image Section -->
+      ><!-- Product Image Section -->
         <div class="relative pt-[100%] overflow-hidden product-image-container">
           <!-- Premium-looking Discount Badge -->
           <div
@@ -178,28 +178,29 @@
         </div>
       </div>
     </div>      
-    <!-- Product Details Modal - Matching My Orders Tab Style -->
-    <UModal
+    <!-- Product Details Modal - Matching My Orders Tab Style -->       <UModal
       v-model="isModalOpen"
       :ui="{
         width: 'w-full sm:max-w-4xl',
         height: 'h-auto',
+        container: 'flex flex-col h-auto mt-20',
       }"
-    >      
-    <div
+    >
+    <div>
+      <div
         class="bg-white dark:bg-slate-800 rounded-xl shadow-sm transform transition-all animate-slide-up"
       >
         <div
           class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 rounded-t-xl"
         ></div>
-        
-        <CommonProductDetailsCard
+          <CommonProductDetailsCard
           :current-product="selectedProduct"
           :modal="true"
           :seeDetails="true"
           @close-modal="closeProductModal"
         />
       </div>
+    </div>
     </UModal>
   </div>
 </template>
