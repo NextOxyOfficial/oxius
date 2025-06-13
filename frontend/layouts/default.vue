@@ -1,5 +1,5 @@
 <template>
-  <div class="font-AnekBangla">
+  <div class="font-AnekBangla layout-default">
     <PublicHeader />
     <slot />
     <PublicFooter />

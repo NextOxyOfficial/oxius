@@ -1349,15 +1349,6 @@ getUserDetails();
   transform: translateY(100%);
 }
 
-/* Ensure toast doesn't overlap with sticky button on mobile */
-:global(.u-toast-container) {
-  bottom: calc(4.5rem + env(safe-area-inset-bottom)) !important;
-  z-index: 60;
-}
-
-@media (min-width: 640px) {
-  :global(.u-toast-container) {
-    bottom: calc(3.5rem + env(safe-area-inset-bottom)) !important;
-  }
-}
+/* Settings page uses our global toast positioning */
+/* The global layout-specific rules will handle toast positioning */
 </style>

@@ -68,12 +68,91 @@
 /* Toast container positioning for mobile safety */
 .u-notifications {
   bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
-  z-index: 60 !important;
+  z-index: 9999 !important; /* Increased z-index to be above mobile footers */
 }
 
 @media (min-width: 640px) {
   .u-notifications {
     bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Additional spacing on mobile to avoid footer overlap */
+@media (max-width: 640px) {
+  .u-notifications {
+    bottom: calc(6rem + env(safe-area-inset-bottom)) !important; /* Extra spacing for mobile footer */
+    margin-bottom: 0.5rem !important; /* Additional margin for better spacing */
+  }
+}
+
+/* Layout-specific toast positioning adjustments */
+
+/* For pages using dashboard layout (shop-manager, eshop manager etc.) */
+.layout-dashboard .u-notifications,
+.page-shop-manager .u-notifications,
+.page-eshop .u-notifications {
+  z-index: 9999 !important;
+}
+
+@media (max-width: 640px) {
+  .layout-dashboard .u-notifications,
+  .page-shop-manager .u-notifications,
+  .page-eshop .u-notifications {
+    bottom: calc(7.5rem + env(safe-area-inset-bottom)) !important; /* Account for larger mobile footer */
+  }
+}
+
+@media (min-width: 640px) {
+  .layout-dashboard .u-notifications,
+  .page-shop-manager .u-notifications,
+  .page-eshop .u-notifications {
+    bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* For business network pages */
+.layout-adsy-business-network .u-notifications {
+  z-index: 9999 !important;
+}
+
+@media (max-width: 640px) {
+  .layout-adsy-business-network .u-notifications {
+    bottom: calc(7rem + env(safe-area-inset-bottom)) !important; /* Business network footer is slightly smaller */
+  }
+}
+
+@media (min-width: 640px) {
+  .layout-adsy-business-network .u-notifications {
+    bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* For default layout pages */
+.layout-default .u-notifications {
+  z-index: 9999 !important;
+}
+
+@media (max-width: 640px) {
+  .layout-default .u-notifications {
+    bottom: calc(7.5rem + env(safe-area-inset-bottom)) !important; /* Default mobile footer */
+  }
+}
+
+/* Enhanced mobile toast positioning with better spacing */
+@media (max-width: 640px) {
+  .u-notifications {
+    right: 1rem !important;
+    left: 1rem !important;
+    width: calc(100% - 2rem) !important;
+    margin: 0 !important;
+  }
+  
+  .u-notification {
+    margin-bottom: 0.5rem !important;
+    border-radius: 0.75rem !important;
+    max-width: 100% !important;
+    /* Ensure toast content is properly spaced */
+    padding: 1rem !important;
   }
 }
 
@@ -214,10 +293,13 @@
   .u-notifications {
     width: calc(100% - 2rem) !important;
     margin: 0 1rem;
+    bottom: calc(6rem + env(safe-area-inset-bottom)) !important; /* Extra spacing for mobile footer */
   }
   
   .u-notification {
     margin-bottom: 0.75rem;
+    border-radius: 0.75rem !important;
+    max-width: 100% !important;
   }
 }
 
@@ -258,4 +340,50 @@
   line-height: 1.5;
 }
 
-/* Custom animation keyframes */
+/* Utility classes for components that frequently show toasts */
+.toast-safe-bottom {
+  padding-bottom: calc(8rem + env(safe-area-inset-bottom)) !important;
+}
+
+@media (min-width: 640px) {
+  .toast-safe-bottom {
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Special spacing for shop-manager and similar pages */
+.shop-manager-content {
+  margin-bottom: calc(8rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 640px) {
+  .shop-manager-content {
+    margin-bottom: 2rem;
+  }
+}
+
+/* Toast interaction improvements for mobile */
+@media (max-width: 640px) {
+  .u-notification {
+    /* Improve touch target size for close button */
+    min-height: 4rem !important;
+  }
+  
+  .u-notification .u-button {
+    /* Larger touch target for mobile */
+    min-width: 2.5rem !important;
+    min-height: 2.5rem !important;
+  }
+  
+  /* Better text spacing on mobile */
+  .u-notification .u-notification-title {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+  }
+  
+  .u-notification .u-notification-description {
+    font-size: 0.75rem !important;
+    line-height: 1rem !important;
+    margin-top: 0.25rem !important;
+  }
+}

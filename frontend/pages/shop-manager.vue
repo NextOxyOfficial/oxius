@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-gradient-to-br from-gray-50 to-gray-100 py-2 md:py-4">
+  <div class="bg-gradient-to-br from-gray-50 to-gray-100 py-2 md:py-4 page-shop-manager">    
     <!-- Main Content -->
-    <UContainer>
+    <UContainer class="shop-manager-content">
       <PublicEshopTitle />
       <div v-if="!user?.user?.is_pro" class="my-8">
         <div
@@ -866,10 +866,8 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Toast Notifications -->
-    <div class="fixed bottom-0 right-0 p-6 z-50">
+    </div>    <!-- Toast Notifications -->
+    <div class="fixed right-0 p-6 z-[9999] bottom-20 sm:bottom-4">
       <transition-group name="toast">
         <div
           v-for="toast in toasts"
@@ -880,6 +878,8 @@
               ? 'bg-green-50 border-l-4 border-green-500 text-green-800'
               : toast.type === 'error'
               ? 'bg-red-50 border-l-4 border-red-500 text-red-800'
+              : toast.type === 'warning'
+              ? 'bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800'
               : 'bg-indigo-50 border-l-4 border-indigo-500 text-indigo-800',
           ]"
         >
@@ -890,6 +890,8 @@
                   ? 'CheckCircle'
                   : toast.type === 'error'
                   ? 'AlertCircle'
+                  : toast.type === 'warning'
+                  ? 'AlertTriangle'
                   : 'Info'
               "
               class="h-5 w-5"
@@ -898,6 +900,8 @@
                   ? 'text-green-500'
                   : toast.type === 'error'
                   ? 'text-red-500'
+                  : toast.type === 'warning'
+                  ? 'text-yellow-500'
                   : 'text-indigo-500',
               ]"
             />
@@ -908,7 +912,7 @@
           </div>
           <button
             @click="removeToast(toast.id)"
-            class="ml-4 text-gray-600 hover:text-gray-600"
+            class="ml-4 text-gray-600 hover:text-gray-800 transition-colors"
           >
             <X class="h-4 w-4" />
           </button>

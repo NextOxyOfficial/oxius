@@ -1,5 +1,4 @@
-<template>
-  <UContainer class="py-4 md:py-6">
+<template>  <UContainer class="py-4 md:py-6 page-eshop">
     <div class="min-h-screen">
       <!-- Modern Hero Banner with Layered Design -->
       <div

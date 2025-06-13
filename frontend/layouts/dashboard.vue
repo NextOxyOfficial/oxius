@@ -51,7 +51,7 @@ useHead({
 </script>
 
 <template>
-  <div class="font-AnekBangla">
+  <div class="font-AnekBangla layout-dashboard">
     <NuxtLoadingIndicator class="!opacity-[1]" />
     <section
       class="h-screen w-screen flex items-center justify-center fixed inset-0 z-[99999999] bg-white"

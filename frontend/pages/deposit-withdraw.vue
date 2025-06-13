@@ -3062,13 +3062,8 @@ function getTransactionTypeName(transactionType) {
   }
 }
 
-/* Mobile Toast Positioning */
+/* Mobile Toast Positioning - Use global layout-specific rules */
 @media (max-width: 640px) {
-  :deep(.u-notifications) {
-    padding: 1rem !important;
-    bottom: calc(env(safe-area-inset-bottom) + 1rem) !important;
-  }
-  
   :deep(.u-toast) {
     margin-bottom: 0.75rem !important;
     max-width: calc(100vw - 2rem) !important;

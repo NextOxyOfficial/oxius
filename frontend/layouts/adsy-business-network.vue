@@ -1,5 +1,5 @@
 <template>
-  <div class="font-AnekBangla">
+  <div class="font-AnekBangla layout-adsy-business-network">
     <AdsyBusinessNetworkHeader />
     <div class="max-w-5xl w-full mx-auto relative flex justify-center">
       <AdsyBusinessNetworkSidebar />
