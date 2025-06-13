@@ -17,9 +17,9 @@
     <!-- Comment input with glassmorphism and inline mention display -->
     <div class="flex-1 relative flex items-center gap-2">
       <div class="relative group flex-1">          <!-- Enhanced input container with mention chips inside -->
-        <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">
-            <!-- Content wrapper with padding for chips and input -->
-            <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]">              <!-- Mentioned users chips -->
+        <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">            <!-- Content wrapper with padding for chips and input -->
+            <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]">
+              <!-- Mentioned users chips -->
               <div 
                 v-for="mention in extractedMentions" 
                 :key="mention.id || mention.name"
@@ -67,7 +67,7 @@
             class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 focus-within:scale-x-100 transition-transform duration-300"
           ></div>          <!-- Action buttons with premium styling (positioned over the input container) -->
           <div
-            v-if="displayCommentText && displayCommentText.trim()"
+            v-if="(displayCommentText && displayCommentText.trim()) || extractedMentions.length > 0"
             class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 z-10"
           >
             <button
@@ -922,12 +922,7 @@ const handleMentionKeydown = (event) => {
 
 // Search for users to mention
 const searchMentions = async (query) => {
-  console.log('searchMentions called with query:', query);
-  console.log('Before search - isSearching:', isSearching.value);
-  console.log('Before search - mentionSuggestions:', mentionSuggestions.value);
-  
   isSearching.value = true;
-  console.log('Set isSearching to true');
   
   try {
     // If query is empty, get recent users or all users
@@ -936,37 +931,23 @@ const searchMentions = async (query) => {
       ? `/bn/user-search/?q=${encodeURIComponent(searchQuery)}`
       : `/bn/user-search/`; // Get default users when no query
     
-    console.log('Making API call to:', apiUrl);
     const { data } = await get(apiUrl);
-    
-    console.log('API response received:', data);
-    console.log('API response type:', typeof data);
-    console.log('API response keys:', Object.keys(data || {}));
     
     // Handle paginated response
     if (data && data.results) {
       mentionSuggestions.value = data.results.slice(0, 10); // Limit to 10 suggestions
-      console.log('Set suggestions from paginated results:', mentionSuggestions.value);
     } else if (Array.isArray(data)) {
       mentionSuggestions.value = data.slice(0, 10);
-      console.log('Set suggestions from array:', mentionSuggestions.value);
     } else {
       mentionSuggestions.value = [];
-      console.log('No valid data format, clearing suggestions');
     }
     
-    console.log('Final mentionSuggestions:', mentionSuggestions.value);
-    console.log('Final mentionSuggestions length:', mentionSuggestions.value.length);
-      activeMentionIndex.value = 0;
+    activeMentionIndex.value = 0;
   } catch (error) {
     console.error("Error searching mentions:", error);
-    console.error("Error details:", error.response?.data);
     mentionSuggestions.value = [];
   } finally {
     isSearching.value = false;
-    console.log('Set isSearching to false');
-    console.log('After search - mentionSuggestions:', mentionSuggestions.value);
-    console.log('After search - isSearching:', isSearching.value);
   }
 };
 
@@ -979,47 +960,67 @@ const selectMention = (selectedUser) => {
                    `${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`.trim() || 
                    selectedUser.username || 
                    'Unknown User';
-  
-  // Get current text and cursor position
+    // Get current text and cursor position
   const currentText = displayCommentText.value;
   const mentionPos = mentionInputPosition.value;
-    if (mentionPos) {
-    // Replace the @partial text with just a space (remove the mention from text)
+  
+  if (mentionPos) {
+    // Replace the @partial text, handling different positions appropriately
     const beforeMention = currentText.substring(0, mentionPos.startPos);
     const afterMention = currentText.substring(mentionPos.endPos);
-    const newText = beforeMention + ' ' + afterMention;
     
-    // Update both display and comment text (without the @username)
-    displayCommentText.value = newText.trim();
-    props.post.commentText = newText.trim();
+    let newText;
+    let newCursorPos;
     
-    // Position cursor after the space where mention was
+    // If mention is at the beginning
+    if (mentionPos.startPos === 0) {
+      newText = afterMention;
+      newCursorPos = 0;
+    }
+    // If mention is at the end or there's no text after
+    else if (!afterMention.trim()) {
+      newText = beforeMention.trim();
+      newCursorPos = beforeMention.trim().length;
+    }
+    // If mention is in the middle
+    else {
+      // Add space only if there isn't already one before or after
+      const needsSpaceBefore = beforeMention && !beforeMention.endsWith(' ');
+      const needsSpaceAfter = afterMention && !afterMention.startsWith(' ');
+      
+      let spacing = '';
+      if (needsSpaceBefore && needsSpaceAfter) {
+        spacing = ' ';
+      }
+      
+      newText = beforeMention + spacing + afterMention;
+      newCursorPos = beforeMention.length + spacing.length;    }
+    
+    // Update display text only - don't update props.post.commentText here
+    displayCommentText.value = newText;
+    // Don't update props.post.commentText here as it will trigger watchers
+    // that might clear mentions. We'll update it when posting the comment.
+    
+    // Position cursor appropriately
     nextTick(() => {
       if (commentInputRef.value) {
-        const newCursorPos = mentionPos.startPos + 1;
         commentInputRef.value.setSelectionRange(newCursorPos, newCursorPos);
         commentInputRef.value.focus();
       }
     });
   }
-    console.log('Selected mention inline:', {
-    userName,
-    newText: displayCommentText.value
-  });
-  
+    
   // Add the mentioned user to extractedMentions array if not already present
   const mentionExists = extractedMentions.value.some(m => 
     m.name === userName || m.id === selectedUser.id
   );
-  
-  if (!mentionExists) {
+    if (!mentionExists) {
     extractedMentions.value.push({
       id: selectedUser.id,
       name: userName,
       image: selectedUser.image,
       user: selectedUser
     });
-    console.log('Added mention to extractedMentions:', userName);
   }
   
   // Reset mention state
@@ -1071,37 +1072,28 @@ const clearComment = () => {
 const handleCommentInput = (event) => {
   const inputValue = event.target.value;
   
-  // Update both display text and comment text to the same value for inline mentions
+  // Update display text only - don't update props.post.commentText during input
+  // to avoid triggering watchers that might clear mentions
   displayCommentText.value = inputValue;
-  props.post.commentText = inputValue;
   
-  console.log('Inline comment input:', {
-    inputValue: inputValue,
-    commentText: props.post.commentText
-  });
-    // Handle mention detection for dropdown
+  // Handle mention detection for dropdown
   const cursorPos = event.target.selectionStart;
   const textBeforeCursor = inputValue.substring(0, cursorPos);
   const lastAtIndex = textBeforeCursor.lastIndexOf('@');
   
-  console.log('Mention detection:', {
-    inputValue,
-    cursorPos,
-    textBeforeCursor,
-    lastAtIndex,
-    showMentions: showMentions.value
-  });
-    if (lastAtIndex !== -1) {
+  if (lastAtIndex !== -1) {
     const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-    console.log('Found @ at index:', lastAtIndex, 'textAfterAt:', textAfterAt);
     
     // Show mentions if there's no space after @ (allows empty text after @)
-    if (!textAfterAt.includes(' ')) {
+    // Also check if we're at the start of input or after a space (valid mention positions)
+    const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : ' ';
+    const isValidMentionPosition = lastAtIndex === 0 || charBeforeAt === ' ' || charBeforeAt === '\n';
+    
+    if (!textAfterAt.includes(' ') && isValidMentionPosition) {
       mentionSearchText.value = textAfterAt;
       // Search even with empty query to show all users initially
       searchMentions(textAfterAt);
       showMentions.value = true;
-      console.log('Showing mentions dropdown for query:', textAfterAt);
       
       // Store mention position for the display text input
       mentionInputPosition.value = {
@@ -1109,11 +1101,9 @@ const handleCommentInput = (event) => {
         endPos: cursorPos
       };
     } else {
-      console.log('Space found after @, hiding mentions');
       showMentions.value = false;
     }
   } else {
-    console.log('No @ found, hiding mentions');
     showMentions.value = false;
   }
   
@@ -1141,12 +1131,7 @@ const handlePostComment = () => {
   
   props.post.commentText = finalText;
   
-  console.log('=== POSTING COMMENT WITH MENTIONS ===');
-  console.log('Mentions:', extractedMentions.value);
-  console.log('Text content:', displayCommentText.value);
-  console.log('Final comment text:', finalText);
-  console.log('=====================================');
-    // Only emit if we have content (mentions or text)
+  // Only emit if we have content (mentions or text)
   if (finalText || extractedMentions.value.length > 0) {
     emit('add-comment', props.post);
     
@@ -1154,18 +1139,18 @@ const handlePostComment = () => {
     displayCommentText.value = '';
     extractedMentions.value = [];
     
-    console.log('Cleared input and mentions after posting');
-  } else {
-    console.warn('No content to post!');
+    // Also clear the post's comment text so parent components know it's been processed
+    props.post.commentText = '';
   }
 };
 
 // Watch for changes in post.commentText to update display
-watch(() => props.post.commentText, (newText) => {
-  // If the parent component clears the comment text (after successful posting),
-  // we should also clear our local state
-  if (!newText || newText.trim() === '') {
-    console.log('Parent cleared comment text, clearing display text and mentions');
+// Only clear mentions when the comment is successfully posted (parent clears the text)
+watch(() => props.post.commentText, (newText, oldText) => {
+  // Only clear if the parent explicitly cleared the text after a successful post
+  // We can detect this by checking if the old text was not empty and the new text is empty
+  if (oldText && oldText.trim() !== '' && (!newText || newText.trim() === '')) {
+    // This indicates a successful post, so clear everything
     displayCommentText.value = '';
     extractedMentions.value = [];
   }
@@ -1219,14 +1204,14 @@ const removeMention = (mentionToRemove) => {
   console.log('Removed mention chip:', mentionToRemove.name);
 };
 
-// Watch for changes in displayCommentText to handle text changes
+// Watch for changes in displayCommentText
+// We don't need to do anything here anymore since mentions are managed separately
 watch(displayCommentText, (newText) => {
-  // Only clear all mentions if the entire text is empty
-  if (!newText || newText.trim() === '') {
-    extractedMentions.value = [];
-  }
-  // Note: We don't remove individual chips based on text content anymore
-  // since mentions are now stored separately as chips, not as text
+  // Mentions persist independently of text input
+  // They are only cleared when:
+  // 1. User manually removes them via the X button (removeMention function)
+  // 2. Comment is successfully posted (handlePostComment function)
+  // 3. User explicitly clears the entire input (clearComment function)
 }, { immediate: false });
 
 
