@@ -1188,6 +1188,13 @@ const handlePostComment = () => {
   // Only emit if we have content
   if (finalText?.trim()) {
     emit('add-comment', props.post);
+    
+    // Clear local state immediately after emitting
+    // The parent will also clear props.post.commentText, but we clear ours first for immediate UI feedback
+    displayCommentText.value = '';
+    extractedMentions.value = [];
+    
+    console.log('Cleared local state after posting');
   } else {
     console.warn('No content to post!');
   }
@@ -1195,8 +1202,13 @@ const handlePostComment = () => {
 
 // Watch for changes in post.commentText to update display (but don't auto-parse mentions)
 watch(() => props.post.commentText, (newText) => {
-  // Only update if the text was changed externally (not from our own input handling)
-  // We handle our own display updates in handleCommentInput
+  // If the parent component clears the comment text (after successful posting),
+  // we should also clear our local state
+  if (!newText || newText.trim() === '') {
+    console.log('Parent cleared comment text, clearing local state');
+    displayCommentText.value = '';
+    extractedMentions.value = [];
+  }
 }, { immediate: false });
 
 // Auto-resize textarea function
