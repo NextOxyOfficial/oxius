@@ -11,8 +11,8 @@ export const useMentions = () => {
   const processMentionedUsers = (content, h) => {
     if (!content) return [content];    // Improved regex to match @Username patterns including full names
     // This pattern matches @ followed by name characters, handling multiple mentions properly
-    // It stops at: space+@, space+lowercase, punctuation, or end of string
-    const mentionRegex = /@([^\s@]+(?:\s+[^\s@]+)*?)(?=\s+@|\s|$|[.!?,:;])/g;
+    // It stops at: space+@, punctuation, or end of string (removed lowercase letter restriction)
+    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+@|\s*[.!?,:;]|\s*$|$)/g;
     
     const parts = [];
     let lastIndex = 0;
@@ -129,12 +129,10 @@ export const useMentions = () => {
    * @returns {string} HTML string with mention chips and regular text
    */
   const processMentionsAsHTML = (content) => {
-    if (!content) return content;
-
-    // Improved regex to match @Username patterns including full names
+    if (!content) return content;    // Improved regex to match @Username patterns including full names
     // This pattern matches @ followed by name characters, handling multiple mentions properly
-    // It stops at: space+@, space+lowercase, punctuation, or end of string
-    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+@|\s+[a-z]|\s*[.!?,:;]|\s*$|$)/g;return content.replace(mentionRegex, (match, mentionedName) => {
+    // It stops at: space+@, punctuation, or end of string (removed lowercase letter restriction)
+    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+@|\s*[.!?,:;]|\s*$|$)/g;return content.replace(mentionRegex, (match, mentionedName) => {
       const trimmedName = mentionedName.trim();
       // Create mention chip with @ symbol and no space between @ and name
       return `<span 

@@ -1009,10 +1009,10 @@ const selectMention = (selectedUser) => {
       }
     });
   }
-    
-  // Add the mentioned user to extractedMentions array if not already present
+      // Add the mentioned user to extractedMentions array if not already present
+  // Only check by ID to allow multiple users with the same name
   const mentionExists = extractedMentions.value.some(m => 
-    m.name === userName || m.id === selectedUser.id
+    m.id === selectedUser.id
   );
     if (!mentionExists) {
     extractedMentions.value.push({
@@ -1042,16 +1042,14 @@ const selectMention = (selectedUser) => {
 // Enhanced mention functionality methods
 const parseCommentForMentions = (text) => {
   if (!text) return { mentions: [], cleanText: text };
-  
-  // Improved regex to capture full names properly
-  // This matches up to 3 words after @, but stops at space+@, lowercase words, or punctuation
-  const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+@|\s+[a-z]|\s*[.!?,:;]|\s*$|$)/g;
+    // Improved regex to capture full names properly
+  // This matches @ followed by name parts, stopping at space+@, punctuation, or end
+  const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+@|\s*[.!?,:;]|\s*$|$)/g;
   const mentions = [];
   let match;
-  
-  while ((match = mentionRegex.exec(text)) !== null) {
+    while ((match = mentionRegex.exec(text)) !== null) {
     const mentionName = match[1].trim();
-    if (mentionName && !mentions.includes(mentionName)) {
+    if (mentionName) {
       mentions.push(mentionName);
     }
   }
@@ -1194,8 +1192,9 @@ const navigateToMentionedUser = (username) => {
 
 // Remove mention from the extracted mentions array
 const removeMention = (mentionToRemove) => {
+  // Only match by ID to ensure we remove the exact user, not just any user with the same name
   const index = extractedMentions.value.findIndex(m => 
-    m.name === mentionToRemove.name || m.id === mentionToRemove.id
+    m.id === mentionToRemove.id
   );
   if (index > -1) {
     extractedMentions.value.splice(index, 1);
