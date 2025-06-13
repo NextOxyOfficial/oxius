@@ -13,12 +13,15 @@
       <div
         class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-blue-500/10 blur-md -z-10"
       ></div>
-    </div>    <!-- Comment input with glassmorphism and inline mention display -->
+    </div>    
+    <!-- Comment input with glassmorphism and inline mention display -->
     <div class="flex-1 relative flex items-center gap-2">
-      <div class="relative group flex-1">        <!-- Enhanced input container with mention chips inside -->
+      <div class="relative group flex-1">        
+        <!-- Enhanced input container with mention chips inside -->
         <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">
             <!-- Content wrapper with padding for chips and input -->
-          <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]"><!-- Mentioned user chips -->
+          <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]">
+            <!-- Mentioned user chips -->
             <div
               v-for="(mention, index) in extractedMentions"
               :key="index"
@@ -27,9 +30,8 @@
             >
               <!-- Mention indicator -->
               <div class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full group-hover/mention:bg-purple-500 dark:group-hover/mention:bg-purple-400 transition-colors duration-300 flex-shrink-0"></div>
-              
-              <!-- User name -->
-              <span class="text-blue-700 dark:text-blue-300 group-hover/mention:text-purple-700 dark:group-hover/mention:text-purple-300 transition-colors duration-300 max-w-[120px] truncate font-medium">
+                <!-- User name -->
+              <span class="text-blue-700 dark:text-blue-300 group-hover/mention:text-purple-700 dark:group-hover/mention:text-purple-300 transition-colors duration-300 font-medium whitespace-nowrap">
                 {{ mention }}
               </span>
               
@@ -55,7 +57,8 @@
               @keydown="handleMentionKeydown"
               @keyup="autoResize"
             ></textarea>
-          </div>          <!-- Subtle gradient line under input on focus -->
+          </div>          
+          <!-- Subtle gradient line under input on focus -->
           <div
             class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 focus-within:scale-x-100 transition-transform duration-300"
           ></div>
@@ -1003,7 +1006,9 @@ const selectMention = (selectedUser) => {
 const parseCommentForMentions = (text) => {
   if (!text) return { mentions: [], cleanText: text };
   
-  const mentionRegex = /@([^@\s][^@]*?)(?=\s@|$|\s[^@])/g;
+  // Improved regex to capture full names properly
+  // This matches up to 3 words after @, but stops at lowercase words or punctuation
+  const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+[a-z]|\s*[.!?]|\s*$|$)/g;
   const mentions = [];
   let match;
   
