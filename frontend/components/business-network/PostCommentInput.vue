@@ -16,12 +16,40 @@
     </div>    
     <!-- Comment input with glassmorphism and inline mention display -->
     <div class="flex-1 relative flex items-center gap-2">
-      <div class="relative group flex-1">        
-        <!-- Enhanced input container with mention chips inside -->
+      <div class="relative group flex-1">          <!-- Enhanced input container with mention chips inside -->
         <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">
-            <!-- Content wrapper with padding for chips and input -->          <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]">
-            <!-- Flexible input field for inline mentions -->
-            <textarea
+            <!-- Content wrapper with padding for chips and input -->
+            <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]">              <!-- Mentioned users chips -->
+              <div 
+                v-for="mention in extractedMentions" 
+                :key="mention.id || mention.name"
+                class="inline-flex items-center px-2.5 py-1 mx-0.5 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/30 hover:to-purple-500/30 dark:hover:from-blue-600/40 dark:hover:to-purple-600/40 transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-sm hover:shadow-md text-xs font-medium mention-chip mention-link active:scale-95"
+                @click="navigateToMentionedUser(mention.name)"
+                :title="`Click to view ${mention.name}'s profile`"
+                :aria-label="`Mentioned user: ${mention.name}. Click to view profile or press Delete to remove.`"
+                role="button"
+                tabindex="0"
+                @keydown.enter.prevent="navigateToMentionedUser(mention.name)"
+                @keydown.space.prevent="navigateToMentionedUser(mention.name)"
+                @keydown.delete.prevent="removeMention(mention)"
+                @keydown.backspace.prevent="removeMention(mention)"
+              >
+                <span class="text-blue-700 dark:text-blue-300 hover:text-purple-700 dark:hover:text-purple-300 transition-colors duration-300 font-medium whitespace-nowrap">
+                  <span class="text-blue-500 dark:text-blue-400 hover:text-purple-500 dark:hover:text-purple-400 font-semibold">@</span>{{ mention.name }}
+                </span>
+                <button
+                  @click.stop="removeMention(mention)"
+                  class="ml-1.5 text-blue-600 dark:text-blue-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-red-500 rounded"
+                  :title="`Remove ${mention.name}`"
+                  :aria-label="`Remove ${mention.name} from mentions`"
+                  tabindex="-1"
+                >
+                  <UIcon name="i-heroicons-x-mark" class="w-3 h-3" />
+                </button>
+              </div>
+              
+              <!-- Flexible input field for inline mentions -->
+              <textarea
               ref="commentInputRef"
               v-model="displayCommentText"
               placeholder="Add a comment... (Type @ to mention users)"
@@ -973,11 +1001,25 @@ const selectMention = (selectedUser) => {
       }
     });
   }
-  
-  console.log('Selected mention inline:', {
+    console.log('Selected mention inline:', {
     userName,
     newText: displayCommentText.value
   });
+  
+  // Add the mentioned user to extractedMentions array if not already present
+  const mentionExists = extractedMentions.value.some(m => 
+    m.name === userName || m.id === selectedUser.id
+  );
+  
+  if (!mentionExists) {
+    extractedMentions.value.push({
+      id: selectedUser.id,
+      name: userName,
+      image: selectedUser.image,
+      user: selectedUser
+    });
+    console.log('Added mention to extractedMentions:', userName);
+  }
   
   // Reset mention state
   showMentions.value = false;
@@ -1021,6 +1063,7 @@ const parseCommentForMentions = (text) => {
 const clearComment = () => {
   props.post.commentText = '';
   displayCommentText.value = '';
+  extractedMentions.value = [];
 };
 
 // Override the original handleCommentInput to work with inline mentions
@@ -1079,15 +1122,15 @@ const handlePostComment = () => {
   console.log('Final comment text:', finalText);
   console.log('Comment text length:', finalText?.length);
   console.log('===============================');
-  
-  // Only emit if we have content
+    // Only emit if we have content
   if (finalText) {
     emit('add-comment', props.post);
     
     // Clear local state immediately after emitting
     displayCommentText.value = '';
+    extractedMentions.value = [];
     
-    console.log('Cleared input after posting');
+    console.log('Cleared input and mentions after posting');
   } else {
     console.warn('No content to post!');
   }
@@ -1098,8 +1141,9 @@ watch(() => props.post.commentText, (newText) => {
   // If the parent component clears the comment text (after successful posting),
   // we should also clear our local state
   if (!newText || newText.trim() === '') {
-    console.log('Parent cleared comment text, clearing display text');
+    console.log('Parent cleared comment text, clearing display text and mentions');
     displayCommentText.value = '';
+    extractedMentions.value = [];
   }
 }, { immediate: false });
 
@@ -1114,10 +1158,66 @@ const autoResize = () => {
   });
 };
 
+// Navigate to mentioned user's profile
+const navigateToMentionedUser = (username) => {
+  console.log('Navigating to mentioned user:', username);
+  try {
+    const router = useRouter();
+    // Navigate to search results with the mentioned user's name
+    router.push({
+      path: `/business-network/search-results/${encodeURIComponent(username)}`,
+      query: { type: 'people' }
+    });
+  } catch (error) {
+    console.error('Error navigating to mentioned user:', error);
+    // Fallback to general business network search
+    try {
+      const router = useRouter();
+      router.push({
+        path: '/business-network',
+        query: { search: username }
+      });
+    } catch (fallbackError) {
+      console.error('Error with fallback navigation:', fallbackError);
+    }
+  }
+};
+
+// Remove mention from the extracted mentions array
+const removeMention = (mentionToRemove) => {
+  const index = extractedMentions.value.findIndex(m => 
+    m.name === mentionToRemove.name || m.id === mentionToRemove.id
+  );
+  if (index > -1) {
+    extractedMentions.value.splice(index, 1);
+  }
+  
+  // Also remove from the display text
+  const mentionPattern = new RegExp(`@${mentionToRemove.name}\\b`, 'gi');
+  displayCommentText.value = displayCommentText.value.replace(mentionPattern, '').trim();
+  props.post.commentText = displayCommentText.value;
+  
+  console.log('Removed mention:', mentionToRemove.name);
+};
+
+// Watch for changes in displayCommentText to remove chips if mentions are deleted from text
+watch(displayCommentText, (newText) => {
+  if (newText) {
+    // Only remove mentions that are no longer in the text (don't auto-add)
+    extractedMentions.value = extractedMentions.value.filter(mention => {
+      return newText.includes(`@${mention.name}`);
+    });
+  } else {
+    // Clear all mentions if text is empty
+    extractedMentions.value = [];
+  }
+}, { immediate: false });
+
+
 const emit = defineEmits([
   "add-comment",
   "handle-comment-input",
-  "handle-mention-keydown",
+  "handle-mention-keyboard",
   "select-mention",
   "gift-sent",
 ]);
@@ -1263,5 +1363,59 @@ const emit = defineEmits([
 
 .mention-chips-container::-webkit-scrollbar-thumb:hover {
   background: rgba(156, 163, 175, 0.5);
+}
+
+/* Enhanced mention chip styles */
+.mention-chip {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+}
+
+.mention-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.mention-chip:hover::before {
+  left: 100%;
+}
+
+/* Focus styles for accessibility */
+.mention-chip:focus {
+  outline: 2px solid #3B82F6;
+  outline-offset: 1px;
+}
+
+/* Enhanced mention chip animations with stagger effect */
+@keyframes mention-chip-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-3px) scale(1.02);
+  }
+  60% {
+    transform: translateY(-1px) scale(1.01);
+  }
+}
+
+.mention-chip-enter {
+  animation: mention-chip-in 0.3s ease-out forwards, mention-chip-bounce 0.6s ease-out 0.3s;
+}
+
+/* Responsive mention chips */
+@media (max-width: 640px) {
+  .mention-chip {
+    font-size: 0.7rem;
+    padding: 0.375rem 0.75rem;
+  }
 }
 </style>
