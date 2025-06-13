@@ -487,10 +487,14 @@
               </div>
             </div>
           </div>
-          
-          <!-- Show no results message -->
-          <div v-if="mentionSuggestions.length === 0 && mentionSearchText && !isSearching" class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
-            No users found for "{{ mentionSearchText }}"
+            <!-- Show no results message -->
+          <div v-if="mentionSuggestions.length === 0 && !isSearching" class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+            <div v-if="!mentionSearchText">
+              Start typing to search for users...
+            </div>
+            <div v-else>
+              No users found for "{{ mentionSearchText }}"
+            </div>
           </div>
         </div>
       </div>
@@ -922,20 +926,18 @@ const searchMentions = async (query) => {
   console.log('Before search - isSearching:', isSearching.value);
   console.log('Before search - mentionSuggestions:', mentionSuggestions.value);
   
-  // Only search if we have a valid query
-  if (!query || query.length === 0) {
-    console.log('Empty query, not searching');
-    mentionSuggestions.value = [];
-    isSearching.value = false;
-    return;
-  }
-  
   isSearching.value = true;
   console.log('Set isSearching to true');
   
   try {
-    console.log('Making API call to:', `/bn/user-search/?q=${encodeURIComponent(query)}`);
-    const { data } = await get(`/bn/user-search/?q=${encodeURIComponent(query)}`);
+    // If query is empty, get recent users or all users
+    const searchQuery = query.trim() || '';
+    const apiUrl = searchQuery 
+      ? `/bn/user-search/?q=${encodeURIComponent(searchQuery)}`
+      : `/bn/user-search/`; // Get default users when no query
+    
+    console.log('Making API call to:', apiUrl);
+    const { data } = await get(apiUrl);
     
     console.log('API response received:', data);
     console.log('API response type:', typeof data);
@@ -981,21 +983,20 @@ const selectMention = (selectedUser) => {
   // Get current text and cursor position
   const currentText = displayCommentText.value;
   const mentionPos = mentionInputPosition.value;
-  
-  if (mentionPos) {
-    // Replace the @partial text with the full mention
+    if (mentionPos) {
+    // Replace the @partial text with just a space (remove the mention from text)
     const beforeMention = currentText.substring(0, mentionPos.startPos);
     const afterMention = currentText.substring(mentionPos.endPos);
-    const newText = beforeMention + `@${userName}` + afterMention;
+    const newText = beforeMention + ' ' + afterMention;
     
-    // Update both display and comment text
-    displayCommentText.value = newText;
-    props.post.commentText = newText;
+    // Update both display and comment text (without the @username)
+    displayCommentText.value = newText.trim();
+    props.post.commentText = newText.trim();
     
-    // Position cursor after the mention
+    // Position cursor after the space where mention was
     nextTick(() => {
       if (commentInputRef.value) {
-        const newCursorPos = mentionPos.startPos + `@${userName}`.length;
+        const newCursorPos = mentionPos.startPos + 1;
         commentInputRef.value.setSelectionRange(newCursorPos, newCursorPos);
         commentInputRef.value.focus();
       }
@@ -1078,19 +1079,29 @@ const handleCommentInput = (event) => {
     inputValue: inputValue,
     commentText: props.post.commentText
   });
-  
-  // Handle mention detection for dropdown
+    // Handle mention detection for dropdown
   const cursorPos = event.target.selectionStart;
   const textBeforeCursor = inputValue.substring(0, cursorPos);
   const lastAtIndex = textBeforeCursor.lastIndexOf('@');
   
-  if (lastAtIndex !== -1) {
+  console.log('Mention detection:', {
+    inputValue,
+    cursorPos,
+    textBeforeCursor,
+    lastAtIndex,
+    showMentions: showMentions.value
+  });
+    if (lastAtIndex !== -1) {
     const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-    // Only show mentions if there's no space after @ AND there's at least one character after @
-    if (!textAfterAt.includes(' ') && textAfterAt.length > 0) {
+    console.log('Found @ at index:', lastAtIndex, 'textAfterAt:', textAfterAt);
+    
+    // Show mentions if there's no space after @ (allows empty text after @)
+    if (!textAfterAt.includes(' ')) {
       mentionSearchText.value = textAfterAt;
+      // Search even with empty query to show all users initially
       searchMentions(textAfterAt);
       showMentions.value = true;
+      console.log('Showing mentions dropdown for query:', textAfterAt);
       
       // Store mention position for the display text input
       mentionInputPosition.value = {
@@ -1098,9 +1109,11 @@ const handleCommentInput = (event) => {
         endPos: cursorPos
       };
     } else {
+      console.log('Space found after @, hiding mentions');
       showMentions.value = false;
     }
   } else {
+    console.log('No @ found, hiding mentions');
     showMentions.value = false;
   }
   
@@ -1111,19 +1124,30 @@ const handleCommentInput = (event) => {
   emit('handle-comment-input', event, props.post);
 };
 
-// Handle posting comment with inline mentions
+// Handle posting comment with mentions and text
 const handlePostComment = () => {
-  // Use the display text directly since it contains inline mentions
-  const finalText = displayCommentText.value.trim();
+  // Combine mention chips with the text content
+  let finalText = displayCommentText.value.trim();
+  
+  // Add mentions at the beginning of the comment
+  if (extractedMentions.value.length > 0) {
+    const mentionTexts = extractedMentions.value.map(mention => `@${mention.name}`);
+    if (finalText) {
+      finalText = mentionTexts.join(' ') + ' ' + finalText;
+    } else {
+      finalText = mentionTexts.join(' ');
+    }
+  }
   
   props.post.commentText = finalText;
   
-  console.log('=== POSTING INLINE COMMENT ===');
+  console.log('=== POSTING COMMENT WITH MENTIONS ===');
+  console.log('Mentions:', extractedMentions.value);
+  console.log('Text content:', displayCommentText.value);
   console.log('Final comment text:', finalText);
-  console.log('Comment text length:', finalText?.length);
-  console.log('===============================');
-    // Only emit if we have content
-  if (finalText) {
+  console.log('=====================================');
+    // Only emit if we have content (mentions or text)
+  if (finalText || extractedMentions.value.length > 0) {
     emit('add-comment', props.post);
     
     // Clear local state immediately after emitting
@@ -1192,25 +1216,17 @@ const removeMention = (mentionToRemove) => {
     extractedMentions.value.splice(index, 1);
   }
   
-  // Also remove from the display text
-  const mentionPattern = new RegExp(`@${mentionToRemove.name}\\b`, 'gi');
-  displayCommentText.value = displayCommentText.value.replace(mentionPattern, '').trim();
-  props.post.commentText = displayCommentText.value;
-  
-  console.log('Removed mention:', mentionToRemove.name);
+  console.log('Removed mention chip:', mentionToRemove.name);
 };
 
-// Watch for changes in displayCommentText to remove chips if mentions are deleted from text
+// Watch for changes in displayCommentText to handle text changes
 watch(displayCommentText, (newText) => {
-  if (newText) {
-    // Only remove mentions that are no longer in the text (don't auto-add)
-    extractedMentions.value = extractedMentions.value.filter(mention => {
-      return newText.includes(`@${mention.name}`);
-    });
-  } else {
-    // Clear all mentions if text is empty
+  // Only clear all mentions if the entire text is empty
+  if (!newText || newText.trim() === '') {
     extractedMentions.value = [];
   }
+  // Note: We don't remove individual chips based on text content anymore
+  // since mentions are now stored separately as chips, not as text
 }, { immediate: false });
 
 
