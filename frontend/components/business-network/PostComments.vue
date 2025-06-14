@@ -79,11 +79,9 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- See all comments button with smaller hover effect -->
+    </div>    <!-- See all comments button with smaller hover effect -->
     <button
-      v-if="post?.post_comments?.length > 3"
+      v-if="(post?.comment_count || 0) > 3"
       class="flex items-center text-sm text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-300 group"
       @click="$emit('open-comments-modal', post)"
     >
@@ -91,7 +89,7 @@
         name="i-heroicons-chat-bubble-left-ellipsis"
         class="mr-1.5 w-4 h-4 group-hover:scale-105 transition-transform duration-300"
       />
-      See all {{ post?.post_comments?.length }} comments
+      See all {{ post?.comment_count || 0 }} comments
     </button>
 
     <!-- Comments with premium glassmorphism design -->
@@ -343,9 +341,8 @@ const displayedComments = computed(() => {
       (comment) => comment.id !== highestGiftComment.value.id
     );
   }
-
-  // Return up to 3 most recent comments (excluding the pinned one)
-  return comments.slice(0, 3).reverse();
+  // Return the last 3 comments (most recent ones, already properly ordered)
+  return comments.slice(-3);
 });
 
 // Extract clean gift message from content

@@ -186,12 +186,12 @@
               </button>
             </div>
 
-            <!-- Comments Preview -->
-            <BusinessNetworkPostComments
+            <!-- Comments Preview -->            
+             <BusinessNetworkPostComments
               v-if="
                 post?.post_details
-                  ? post.post_details.post_comments.length > 0
-                  : post?.post_comments?.length > 0
+                  ? (post.post_details.comment_count || 0) > 0
+                  : (post?.comment_count || 0) > 0
               "
               :post="post.post_details ? post.post_details : post"
               :user="user"
@@ -200,7 +200,8 @@
               @delete-comment="deleteComment"
               @cancel-edit-comment="cancelEditComment"
               @save-edit-comment="saveEditComment"
-            />            <!-- Add Comment Input -->
+            />            
+            <!-- Add Comment Input -->
             <BusinessNetworkPostCommentInput
               v-if="user"
               :post="post.post_details ? post.post_details : post"
@@ -285,10 +286,8 @@
       :show-mentions="showMentions"
       :mention-suggestions="mentionSuggestions"
       :active-mention-index="activeMentionIndex"
-      :mention-input-position="mentionInputPosition"
-      :is-loading-more-comments="isLoadingMoreComments"
+      :mention-input-position="mentionInputPosition"      :is-loading-more-comments="isLoadingMoreComments"
       :has-more-comments="activeCommentsPost ? commentsPagination[activeCommentsPost.id]?.hasMore || false : false"
-      :comments-per-page="10"
       @close-likes-modal="activeLikesPost = null"
       @toggle-user-follow="toggleUserFollow"
       @close-comments-modal="closeCommentsModal"
@@ -495,25 +494,22 @@ const loadCommentsForPost = async (postId, page = 1, replace = false) => {
         page_size: 10
       }
     });
-    
-    // Find the post in our posts array
+      // Find the post in our posts array
     const post = props.posts.find(p => p.id === postId);
     if (post) {
       if (replace || page === 1) {
-        // Initial load: show newest comments first (keep API order)
-        post.post_comments = data.results || [];
+        // Initial load: reverse order to show newest comments at bottom
+        post.post_comments = (data.results || []).reverse();
       } else {
-        // Load more (older comments): append to end
-        post.post_comments = [...(post.post_comments || []), ...(data.results || [])];
+        // Load more (older comments): prepend to beginning (they're older)
+        // Reverse the new comments and prepend them
+        const olderComments = (data.results || []).reverse();
+        post.post_comments = [...olderComments, ...(post.post_comments || [])];
       }
-    }
-    
-    // Update pagination state
-    commentsPagination.value[postId] = {
-      currentPage: page,
-      hasMore: !!data.next,
-      isLoading: false
-    };
+    }    // Update pagination state
+    commentsPagination.value[postId].currentPage = page;
+    commentsPagination.value[postId].hasMore = !!data.next;
+    commentsPagination.value[postId].isLoading = false;
     
   } catch (error) {
     console.error("Error loading comments:", error);
@@ -523,15 +519,18 @@ const loadCommentsForPost = async (postId, page = 1, replace = false) => {
   }
 };
 
-// Load more comments (infinite scroll)
+// Load more comments
 const loadMoreComments = async (eventData) => {
   const postId = eventData.postId || activeCommentsPost.value?.id;
-  const pagination = commentsPagination.value[postId];
-  if (!pagination || pagination.isLoading || !pagination.hasMore) {
-    return;
-  }
   
-  await loadCommentsForPost(postId, pagination.currentPage + 1, false);
+  if (!postId) return;
+  
+  // Get the correct next page from pagination state
+  const pagination = commentsPagination.value[postId];
+  if (!pagination || !pagination.hasMore) return;
+  
+  const nextPage = pagination.currentPage + 1;
+  await loadCommentsForPost(postId, nextPage, false);
 };
 
 // Close comments modal and reset state
@@ -751,11 +750,9 @@ const toggleLike = async (postToLike) => {
 };
 
 // Comment functionality
-const addComment = async (postToComment) => {
-  if (!postToComment.commentText?.trim() || postToComment.isCommentLoading) {
+const addComment = async (postToComment) => {  if (!postToComment.commentText?.trim() || postToComment.isCommentLoading) {
     return;
   }
-  console.log("add", postToComment);
   postToComment.isCommentLoading = true;
 
   try {
@@ -767,10 +764,13 @@ const addComment = async (postToComment) => {
     // Initialize post_comments array if it doesn't exist
     if (!postToComment.post_comments) {
       postToComment.post_comments = [];
-    }
-
-    // Add the new comment to the beginning
+    }    // Add the new comment to the beginning
     postToComment.post_comments.unshift(data);
+
+    // Update the comment count
+    if (postToComment.comment_count !== undefined) {
+      postToComment.comment_count = (postToComment.comment_count || 0) + 1;
+    }
 
     // Clear the comment text
     postToComment.commentText = "";
@@ -790,11 +790,8 @@ const addComment = async (postToComment) => {
 
 // Handle mentions and comment input
 const handleCommentInput = (event, targetPost) => {
-  // CRITICAL FIX: Don't interfere with PostCommentInput's mention management
-  // The PostCommentInput component now handles its own text and mentions
+  // CRITICAL FIX: Don't interfere with PostCommentInput's mention management  // The PostCommentInput component now handles its own text and mentions
   // Only handle the parent's mention dropdown logic if needed
-  console.log('📋 Parent handleCommentInput - avoiding setting commentText to prevent mention clearing');
-  console.log('📝 Parent handleCommentInput - inputValue:', `"${event.target.value}"`);
 
   // Check for mention character (@) for parent's mention dropdown (if used)
   const cursorPos = event.target.selectionStart;
@@ -1063,9 +1060,7 @@ const confirmDeleteComment = async () => {
   try {
     commentToDelete.value.isDeleting = true;
 
-    await del(`/bn/comments/${commentToDelete.value.id}/`);
-
-    // Remove the comment from the list
+    await del(`/bn/comments/${commentToDelete.value.id}/`);    // Remove the comment from the list
     if (
       postWithCommentToDelete.value &&
       postWithCommentToDelete.value.post_comments
@@ -1074,6 +1069,11 @@ const confirmDeleteComment = async () => {
         postWithCommentToDelete.value.post_comments.filter(
           (c) => c.id !== commentToDelete.value.id
         );
+
+      // Update the comment count
+      if (postWithCommentToDelete.value.comment_count !== undefined && postWithCommentToDelete.value.comment_count > 0) {
+        postWithCommentToDelete.value.comment_count -= 1;
+      }
     }
 
     toast.add({
