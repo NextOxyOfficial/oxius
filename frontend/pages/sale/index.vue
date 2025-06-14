@@ -207,10 +207,8 @@
           @select-category="selectCategory"
           @select-subcategory="selectSubcategory"
           @toggle-subcategories="toggleSubcategories"
-        />
-
-        <!-- Main Content Area -->
-        <div class="flex-1 order-1 lg:order-2">
+        />        <!-- Main Content Area -->
+        <div class="flex-1 order-1 lg:order-2 min-w-0 overflow-hidden">
           <!-- Sorting & View Options -->
           <div
             class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap justify-between items-center gap-4"
@@ -412,29 +410,27 @@
 
             <div v-else-if="!listings?.length" class="py-8 text-center">
               <p class="text-gray-600">No listings found in this category</p>
-            </div>
-            <div
+            </div>              <div
               v-else
-              class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2"
-            >
-              <NuxtLink
+              class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 w-full"
+            >            <NuxtLink
                 v-for="(post, i) in listings"
                 :key="`post-${i}`"
                 :to="`/sale/${post.slug}`"
-                class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
-              >                  <!-- Image -->
-                <div class="relative aspect-square overflow-hidden">
-                  <div v-if="!getListingImage(post) || getListingImage(post).includes('placeholder')" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center">
-                    <div class="bg-white/80 backdrop-blur-sm rounded-full p-4 mb-2 shadow-sm">
-                      <UIcon name="i-heroicons-photo" class="h-8 w-8 text-gray-400" />
+                class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 group w-full max-w-full"
+              ><!-- Image -->
+                <div class="relative aspect-square w-full overflow-hidden bg-gray-100">
+                  <div v-if="!getListingImage(post) || getListingImage(post).includes('placeholder')" class="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-2">
+                    <div class="bg-white/90 rounded-full p-2 mb-1">
+                      <UIcon name="i-heroicons-photo" class="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                     </div>
-                    <p class="text-gray-500 text-xs font-medium">No Photo Uploaded</p>
+                    <p class="text-gray-500 text-xs text-center">No Photo</p>
                   </div>
                   <img
                     v-else
                     :src="getListingImage(post)"
                     :alt="post?.title || `Image`"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <!-- Price -->
