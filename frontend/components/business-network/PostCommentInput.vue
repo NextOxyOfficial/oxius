@@ -16,9 +16,11 @@
     </div>    
     <!-- Comment input with glassmorphism and inline mention display -->
     <div class="flex-1 relative flex items-center gap-2">
-      <div class="relative group flex-1">          <!-- Enhanced input container with mention chips inside -->
-        <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-md focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">            <!-- Content wrapper with padding for chips and input -->
-            <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]">              <!-- Mentioned users chips -->
+      <div class="relative group flex-1">          
+        <!-- Enhanced input container with mention chips inside -->
+        <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">            <!-- Content wrapper with padding for chips and input -->
+            <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]">              
+              <!-- Mentioned users chips -->
               <div 
                 v-for="mention in stableMentions" 
                 :key="mention.id || mention.name"
