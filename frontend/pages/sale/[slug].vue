@@ -1,6 +1,6 @@
 <template>  <div class="max-w-6xl mx-auto -mt-3">
     <!-- Breadcrumb -->
-    <nav class="flex items-center text-sm my-3 px-3 pt-4">
+    <nav class="flex items-center text-sm sm:my-6 my-3 px-3 pt-4">
       <NuxtLink to="/" class="text-gray-500 hover:text-emerald-600">Home</NuxtLink>
       <span class="mx-2 text-gray-400">
         <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />

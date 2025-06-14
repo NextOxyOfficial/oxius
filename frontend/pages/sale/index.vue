@@ -366,22 +366,24 @@
                   class="-mr-1"
                   @click="selectedCondition = ''"
                 />
-              </UBadge>
-
-              <UBadge
+              </UBadge>              <UBadge
                 v-if="searchQuery"
-                color="gray"
+                color="emerald"
                 variant="subtle"
-                class="flex items-center gap-1"
+                class="flex items-center gap-2"
               >
-                Search: "{{ searchQuery }}"
+                <UIcon name="i-heroicons-magnifying-glass" class="h-3 w-3" />
+                <span>Search: "<strong>{{ searchQuery }}</strong>"</span>
+                <span v-if="listings?.length" class="text-xs opacity-75">
+                  ({{ listings.length }} {{ listings.length === 1 ? 'result' : 'results' }})
+                </span>
                 <UButton
-                  color="gray"
+                  color="emerald"
                   variant="ghost"
                   icon="i-heroicons-x-mark"
                   size="xs"
                   class="-mr-1"
-                  @click="searchQuery = ''"
+                  @click="clearSearch"
                 />
               </UBadge>
             </div>
@@ -406,11 +408,35 @@
                 class="animate-spin h-6 w-6 mx-auto text-blue-500"
               />
               <p class="mt-2 text-gray-600 text-sm">Loading listings...</p>
-            </div>
-
-            <div v-else-if="!listings?.length" class="py-8 text-center">
-              <p class="text-gray-600">No listings found in this category</p>
-            </div>            <div
+            </div>            <div v-else-if="!listings?.length" class="py-8 text-center">
+              <div class="flex flex-col items-center">
+                <UIcon 
+                  :name="searchQuery ? 'i-heroicons-magnifying-glass' : 'i-heroicons-square-3-stack-3d'" 
+                  class="h-12 w-12 text-gray-400 mb-3" 
+                />
+                <h3 class="text-lg font-medium text-gray-800 mb-2">
+                  {{ searchQuery ? 'No search results found' : 'No listings found' }}
+                </h3>
+                <p class="text-gray-600 text-sm max-w-md">
+                  <span v-if="searchQuery">
+                    No posts found matching "<strong>{{ searchQuery }}</strong>". Try using different keywords or check the spelling.
+                  </span>
+                  <span v-else>
+                    No listings found in this category. Try selecting a different category or adjusting your filters.
+                  </span>
+                </p>
+                <div v-if="searchQuery" class="mt-4">
+                  <UButton 
+                    color="primary" 
+                    variant="soft" 
+                    @click="clearSearch"
+                    size="sm"
+                  >
+                    Clear search and browse all listings
+                  </UButton>
+                </div>
+              </div>
+            </div><div
               v-else
               class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 w-full"
             ><NuxtLink
@@ -451,8 +477,7 @@
                   </div>
                 </div>                <!-- Title and Location -->
                 <div class="p-2">
-                  <div class="text-gray-600 text-sm font-semibold line-clamp-2">
-                    {{ capitalizeTitle(post?.title) || `Post title` }}
+                  <div class="text-gray-600 text-sm font-semibold line-clamp-2" v-html="highlightSearchTerm(capitalizeTitle(post?.title) || 'Post title', searchQuery)">
                   </div>
                   <div class="flex items-start mt-1 text-xs text-gray-600">
                     <UIcon
@@ -712,86 +737,7 @@
                   >
                     Complete Safety Guide
                     <UIcon name="i-heroicons-arrow-right" class="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200" />                  </NuxtLink>
-                </div>
-              </div>
-            </div>
-          </div>          <!-- Marketplace Welcome Section (Always Visible) -->
-          <div class="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20 rounded-2xl border border-gray-200/60 shadow-sm mt-12">
-            
-            <!-- Content -->
-            <div class="relative z-10 text-center py-16 px-8">
-              <!-- Icon with Floating Animation -->
-              <div class="mb-8 flex justify-center">
-                <div class="relative">
-                  <div class="w-24 h-24 bg-gradient-to-br from-emerald-400 to-blue-500 rounded-full flex items-center justify-center shadow-sm animate-bounce-slow">
-                    <UIcon name="i-heroicons-shopping-bag" class="h-12 w-12 text-white" />
-                  </div>
-                  <!-- Floating circles animation -->
-                  <div class="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full animate-ping"></div>
-                  <div class="absolute -bottom-1 -left-1 w-4 h-4 bg-pink-400 rounded-full animate-pulse"></div>
-                </div>
-              </div>
-
-              <!-- Heading -->
-              <h2 class="text-3xl font-bold text-gray-900 mb-4 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                Welcome to Our Marketplace
-              </h2>
-              
-              <!-- Description -->
-              <p class="text-lg text-gray-600 max-w-md mx-auto mb-8 leading-relaxed">
-                Discover amazing deals from verified sellers in your area. Your next great find is just a click away!
-              </p>
-
-              <!-- Stats Cards -->
-              <div class="grid grid-cols-3 gap-4 max-w-md mx-auto mb-8">
-                <div class="bg-white/70 backdrop-blur-sm rounded-lg p-4 border border-white/50 shadow-sm">
-                  <div class="text-2xl font-bold text-emerald-600">1000+</div>
-                  <div class="text-xs text-gray-600">Active Listings</div>
-                </div>
-                <div class="bg-white/70 backdrop-blur-sm rounded-lg p-4 border border-white/50 shadow-sm">
-                  <div class="text-2xl font-bold text-blue-600">500+</div>
-                  <div class="text-xs text-gray-600">Verified Sellers</div>
-                </div>
-                <div class="bg-white/70 backdrop-blur-sm rounded-lg p-4 border border-white/50 shadow-sm">
-                  <div class="text-2xl font-bold text-purple-600">50+</div>
-                  <div class="text-xs text-gray-600">Categories</div>
-                </div>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <NuxtLink 
-                  to="/sale?category=electronics"
-                  class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold px-6 py-3 rounded-lg shadow-sm hover:shadow-sm transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
-                >
-                  <UIcon name="i-heroicons-magnifying-glass" class="h-5 w-5" />
-                  Browse Electronics
-                </NuxtLink>
-                
-                <NuxtLink 
-                  to="/sale?category=vehicles"
-                  class="bg-white text-gray-700 font-semibold px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-50 shadow-sm hover:shadow-sm transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
-                >
-                  <UIcon name="i-heroicons-truck" class="h-5 w-5" />
-                  View Vehicles
-                </NuxtLink>
-              </div>
-
-              <!-- Trust Indicators -->
-              <div class="mt-8 flex justify-center items-center gap-6 text-sm text-gray-500">
-                <div class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-shield-check" class="h-5 w-5 text-green-500" />
-                  <span>Verified Sellers</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-chat-bubble-left-right" class="h-5 w-5 text-blue-500" />
-                  <span>Safe Messaging</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-map-pin" class="h-5 w-5 text-purple-500" />
-                  <span>Local Deals</span>
-                </div>
-              </div>
+                </div>              </div>
             </div>
           </div>
         </div>
@@ -858,6 +804,22 @@ function toggleMobileSidebar() {
 function clearLocation() {
   location.value = null;
   window.location.reload();
+}
+
+// Function to clear search and reload listings
+async function clearSearch() {
+  searchQuery.value = "";
+  form.value.title = "";
+  currentPage.value = 1;
+  await loadPosts(1, false);
+}
+
+// Function to highlight search terms in text
+function highlightSearchTerm(text, searchTerm) {
+  if (!searchTerm || !text) return text;
+  
+  const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return text.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
 }
 
 // Function to handle search form submission
