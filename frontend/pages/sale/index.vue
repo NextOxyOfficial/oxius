@@ -121,8 +121,7 @@
               >
                 <span class="sr-only">Edit Location</span>
               </UButton>
-            </UTooltip>
-            <UButtonGroup size="md" class="flex-1 hidden md:flex md:w-2/4">
+            </UTooltip>            <UButtonGroup size="md" class="flex-1 hidden md:flex md:w-2/4">
               <UInput
                 icon="i-heroicons-magnifying-glass-20-solid"
                 size="md"
@@ -130,6 +129,7 @@
                 :trailing="false"
                 placeholder="Search..."
                 v-model="form.title"
+                @keyup.enter="filterSearch"
                 class="w-full"
                 :ui="{
                   padding: {
@@ -155,14 +155,14 @@
             </UButtonGroup>
           </div>
         </div>
-        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-4 ">
-          <UInput
+        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-4 ">          <UInput
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
             color="white"
             :trailing="false"
             placeholder="Search..."
             v-model="form.title"
+            @keyup.enter="filterSearch"
             class="w-full"
             :ui="{
               padding: {
@@ -636,9 +636,8 @@
                   </div>
                 </div>
 
-                <div class="mt-6 pt-4 border-t border-blue-200/50">
-                  <NuxtLink 
-                    to="/buyer-guide" 
+                <div class="mt-6 pt-4 border-t border-blue-200/50">                  <NuxtLink 
+                    to="/contact-us" 
                     class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm group/link"
                   >
                     Complete Buyer's Guide
@@ -706,8 +705,9 @@
                   </div>
                 </div>
 
-                <div class="mt-6 pt-4 border-t border-emerald-200/50">                  <NuxtLink 
-                    to="/safety-guide" 
+                <div class="mt-6 pt-4 border-t border-emerald-200/50">                  
+                  <NuxtLink 
+                    to="/contact-us" 
                     class="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-medium text-sm group/link"
                   >
                     Complete Safety Guide
@@ -862,13 +862,31 @@ function clearLocation() {
 
 // Function to handle search form submission
 async function filterSearch() {
-  isLoading.value = true;
-  searchQuery.value = form.value.title || "";
-  currentPage.value = 1;
+  try {
+    isLoading.value = true;
+    searchQuery.value = form.value.title?.trim() || "";
+    currentPage.value = 1;
 
-  // Apply the search query filter
-  await loadPosts(1, false);
-  isLoading.value = false;
+    console.log("Search query:", searchQuery.value); // Debug log
+
+    // Clear other filters when searching to avoid conflicts (only if there's a search query)
+    if (searchQuery.value) {
+      selectedCategory.value = null;
+      selectedSubcategory.value = null;
+      selectedDivision.value = null;
+      selectedDistrict.value = null;
+      selectedArea.value = null;
+      selectedCondition.value = null;
+      priceRange.value = { min: null, max: null };
+    }
+
+    // Apply the search query filter
+    await loadPosts(1, false);
+  } catch (error) {
+    console.error("Search error:", error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 const searchQuery = ref("");
@@ -1030,14 +1048,15 @@ async function loadPosts(page = 1, isLoadMore = false) {
 
     // Add pagination with page size of 10
     params.append("page", page.toString());
-    params.append("page_size", "10");
-
-    // Add filters
+    params.append("page_size", "10");    // Add filters
     if (selectedCategory.value)
       params.append("category", selectedCategory.value.toString());
     if (selectedSubcategory.value)
-      params.append("subcategory", selectedSubcategory.value.toString());
-    if (searchQuery.value) params.append("search", searchQuery.value);
+      params.append("subcategory", selectedSubcategory.value.toString());    if (searchQuery.value) {
+      // Use comprehensive search that looks in title and description
+      params.append("search", searchQuery.value);
+      console.log("Adding comprehensive search parameter:", searchQuery.value); // Debug log
+    }
     if (priceRange.value.min)
       params.append("min_price", priceRange.value.min.toString());
     if (priceRange.value.max)
@@ -1058,15 +1077,19 @@ async function loadPosts(page = 1, isLoadMore = false) {
       price_high: "-price",
       most_viewed: "-views",
     };
-    params.append("sort", sortMapping[sortOption.value] || "-created_at"); 
-
-    // Get data from API
-    const response = await get(
-      `${API_ENDPOINTS.LISTINGS}?${params.toString()}`
-    );
+    params.append("sort", sortMapping[sortOption.value] || "-created_at");    // Get data from API
+    const apiUrl = `${API_ENDPOINTS.LISTINGS}?${params.toString()}`;
+    console.log("API URL:", apiUrl); // Debug log
+    console.log("Search Query Value:", searchQuery.value); // Debug log
+    console.log("All URL Params:", params.toString()); // Debug log
+    
+    const response = await get(apiUrl);
+    console.log("API Response:", response); // Debug log
 
     if (response && response.data) {
+      console.log("Response data:", response.data); // Debug log
       if (response.data.results) {
+        console.log("Number of results:", response.data.results.length); // Debug log
         // Paginated response
         const newListings = mapListingsData(response.data.results);
         

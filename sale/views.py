@@ -131,11 +131,18 @@ class SalePostViewSet(viewsets.ModelViewSet):
         max_price = self.request.query_params.get('max_price')
         if max_price:
             queryset = queryset.filter(price__lte=max_price)
-            
-        # Title search
+              # Title search
         title = self.request.query_params.get('title')
         if title:
             queryset = queryset.filter(title__icontains=title)
+            
+        # Comprehensive search in title and description
+        search = self.request.query_params.get('search')
+        if search:
+            from django.db.models import Q
+            queryset = queryset.filter(
+                Q(title__icontains=search) | Q(description__icontains=search)
+            )
             
         return queryset
     

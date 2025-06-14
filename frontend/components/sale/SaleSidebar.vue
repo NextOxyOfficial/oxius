@@ -67,9 +67,18 @@
                     ? 'bg-primary-50 text-primary-700 font-medium shadow-sm'
                     : 'text-gray-800 hover:bg-gray-50'
                 "
-              >
-                <span class="flex items-center gap-2">
-                  <UIcon :name="getCategoryIcon(category.id)" class="w-4 h-4" />
+              >                <span class="flex items-center gap-2">
+                  <!-- Use dynamic icon from backend or fallback to icon mapping -->
+                  <img 
+                    v-if="category.icon" 
+                    :src="category.icon" 
+                    :alt="category.name + ' icon'"
+                    class="w-4 h-4 object-contain"
+                  />                  <UIcon 
+                    v-else 
+                    :name="getCategoryIcon(category.id, category.name)" 
+                    class="w-4 h-4" 
+                  />
                   {{ category.name }}
                 </span>
 
@@ -241,6 +250,15 @@ const props = defineProps({
   },
 });
 
+// Debug: Log categories to see the structure
+import { watch } from 'vue';
+watch(() => props.categories, (newCategories) => {
+  console.log('Categories data:', newCategories);
+  if (newCategories?.length > 0) {
+    console.log('First category structure:', newCategories[0]);
+  }
+}, { immediate: true });
+
 const emits = defineEmits([
   "toggle-mobile-sidebar",
   "select-category",
@@ -278,16 +296,59 @@ function toggleSubcategories(category) {
   emits("toggle-subcategories", category);
 }
 
-// Get category icon
-function getCategoryIcon(categoryId) {
-  const iconMapping = {
-    1: "i-heroicons-home",
-    2: "i-heroicons-truck",
-    3: "i-heroicons-device-phone-mobile",
-    4: "i-heroicons-trophy",
-    5: "i-heroicons-building-office-2",
-    6: "i-heroicons-square-3-stack-3d",  };
-  return iconMapping[categoryId] || "i-heroicons-squares-2x2";
+// Get category icon - now with better fallbacks based on category names
+function getCategoryIcon(categoryId, categoryName = '') {
+  // First try ID-based mapping for known categories
+  const idIconMapping = {
+    1: "i-heroicons-home",                    // Home & Garden
+    2: "i-heroicons-truck",                   // Vehicles
+    3: "i-heroicons-device-phone-mobile",     // Electronics/Mobile
+    4: "i-heroicons-trophy",                  // Sports & Hobbies
+    5: "i-heroicons-building-office-2",       // Real Estate/Property
+    6: "i-heroicons-cube",                    // Products/Items
+    7: "i-heroicons-computer-desktop",        // Electronics/Computers
+    8: "i-heroicons-musical-note",            // Entertainment/Music
+    9: "i-heroicons-sparkles",                // Fashion/Beauty
+    10: "i-heroicons-academic-cap",           // Education/Books
+    11: "i-heroicons-briefcase",              // Business/Services
+    12: "i-heroicons-heart",                  // Health & Wellness
+    13: "i-heroicons-wrench-screwdriver",     // Tools & Equipment
+    14: "i-heroicons-gift",                   // Gifts & Collectibles
+    15: "i-heroicons-camera",                 // Photography
+    16: "i-heroicons-beaker",                 // Baby & Kids
+    17: "i-heroicons-shopping-bag",           // Shopping/Retail
+    18: "i-heroicons-cog-6-tooth",            // Machinery/Industrial
+    19: "i-heroicons-puzzle-piece",           // Games & Toys
+    20: "i-heroicons-map",                    // Travel & Tourism
+  };
+
+  if (idIconMapping[categoryId]) {
+    return idIconMapping[categoryId];
+  }
+
+  // Fallback to name-based mapping (case insensitive)
+  const lowerName = categoryName.toLowerCase();
+  if (lowerName.includes('vehicle') || lowerName.includes('car') || lowerName.includes('bike')) {
+    return "i-heroicons-truck";
+  }
+  if (lowerName.includes('home') || lowerName.includes('house') || lowerName.includes('property')) {
+    return "i-heroicons-home";
+  }
+  if (lowerName.includes('electronic') || lowerName.includes('mobile') || lowerName.includes('phone')) {
+    return "i-heroicons-device-phone-mobile";
+  }
+  if (lowerName.includes('fashion') || lowerName.includes('cloth') || lowerName.includes('beauty')) {
+    return "i-heroicons-sparkles";
+  }
+  if (lowerName.includes('sport') || lowerName.includes('game') || lowerName.includes('toy')) {
+    return "i-heroicons-trophy";
+  }
+  if (lowerName.includes('business') || lowerName.includes('service') || lowerName.includes('job')) {
+    return "i-heroicons-briefcase";
+  }
+
+  // Default fallback
+  return "i-heroicons-squares-2x2";
 }
 </script>
 
