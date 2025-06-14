@@ -361,7 +361,7 @@
             </h2>
             <div class="flex items-center">
               <div
-                class="h-12 w-12 rounded-full bg-gray-200 overflow-hidden mr-4 border border-gray-200"
+                class="size-16 rounded-full bg-gray-200 overflow-hidden mr-4 border border-gray-200"
               >
                 <img
                   :src="
@@ -370,11 +370,31 @@
                   :alt="product.user_details?.name"
                   class="h-full w-full object-cover"
                 />
-              </div>
-              <div>
-                <h3 class="font-semibold text-gray-800">
-                  {{ product.user_details?.name }}
-                </h3>
+              </div>              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="font-semibold text-gray-800">
+                    {{ product.user_details?.name }}
+                  </h3>
+                  <div class="flex items-center space-x-1 ml-2">
+                    <UIcon
+                      v-if="product.user_details?.kyc"
+                      name="mdi:check-decagram"
+                      class="w-4 h-4 text-blue-600"
+                      title="Verified"
+                    />
+                    <div class="inline-flex" v-if="product.user_details?.is_pro">
+                      <span
+                        class="px-1.5 py-0.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full text-xs font-medium shadow-sm"
+                        title="Pro Member"
+                      >
+                        <div class="flex items-center gap-1">
+                          <UIcon name="i-heroicons-shield-check" class="size-3" />
+                          <span class="text-2xs">Pro</span>
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+                </div>
                 <p class="text-sm text-gray-600">
                   Member since
                   {{ formatDate(product.user_details.date_joined) }}

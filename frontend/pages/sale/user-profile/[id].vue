@@ -39,17 +39,28 @@
         <div
           class="flex flex-col md:flex-row md:items-end justify-between -mt-4"
         >
-          <div>
-            <div class="flex items-center">
+          <div>            <div class="flex items-center justify-between">
               <h1 class="text-2xl font-bold text-gray-800">
                 {{ seller.name }}
               </h1>
-              <div
-                class="ml-3 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-sm font-medium flex items-center"
-                v-if="seller.kyc"
-              >
-                <CheckCircle class="h-3 w-3 mr-1" />
-                Verified Seller
+              <div class="flex items-center space-x-2 ml-3">
+                <UIcon
+                  v-if="seller.kyc"
+                  name="mdi:check-decagram"
+                  class="w-5 h-5 text-blue-600"
+                  title="Verified"
+                />
+                <div class="inline-flex" v-if="seller.is_pro">
+                  <span
+                    class="px-2 py-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full text-sm font-medium shadow-sm"
+                    title="Pro Member"
+                  >
+                    <div class="flex items-center gap-1">
+                      <UIcon name="i-heroicons-shield-check" class="size-4" />
+                      <span class="text-xs">Pro</span>
+                    </div>
+                  </span>
+                </div>
               </div>
             </div>
             <p class="text-gray-600 text-sm mt-1">
@@ -70,9 +81,10 @@
             </div>
           </div>          <div class="mt-4 md:mt-0">
             <button
-              class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md text-sm transition-colors duration-200"
+              class="border border-gray-200 hover:bg-gray-50 text-gray-800 px-4 py-2 rounded-md text-sm transition-colors duration-200 flex items-center"
               @click="contactSeller"
             >
+              <Phone class="h-4 w-4 mr-2 text-emerald-600" />
               Contact Seller
             </button>
           </div>
@@ -356,7 +368,8 @@
                     </NuxtLink>
                   </div>
                 </div>
-              </div>            </div>
+              </div>            
+            </div>
 
             <!-- Loading State -->
             <div v-if="isLoading" class="py-8 text-center">

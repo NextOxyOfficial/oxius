@@ -282,7 +282,7 @@
             </h2>
             <div class="flex items-center">
               <div
-                class="h-12 w-12 rounded-full bg-gray-200 overflow-hidden mr-4 border border-gray-200"
+                class="size-16 rounded-full bg-gray-200 overflow-hidden mr-4 border border-gray-200"
               >
                 <img
                   :src="service.user?.image || '/static/frontend/images/placeholder.jpg'"
