@@ -1,5 +1,5 @@
 <template>
-  <section class="py-2 sm:pb-6">
+  <section class="pb-2 sm:pb-6">
     <slot />
   </section>
 </template>

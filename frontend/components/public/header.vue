@@ -1,10 +1,9 @@
-<template>
-  <div
+<template>  <div
     class="py-3 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg transition-all duration-300 z-[99999999] w-full"
     :class="[
       isScrolled
-        ? 'fixed backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg  border-gray-200/50 dark:border-gray-800/50'
-        : 'sticky w-full shadow-sm',
+        ? 'fixed top-0 left-0 right-0 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg border-gray-200/50 dark:border-gray-800/50'
+        : 'sticky top-0 w-full shadow-sm',
       'sm:py-3 py-1.5', // Smaller padding on mobile
     ]"
   >

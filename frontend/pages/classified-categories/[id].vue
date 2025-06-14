@@ -606,10 +606,9 @@
           :city="location?.allOverBangladesh ? 'All Cities' : form.city"
           :upazila="location?.allOverBangladesh ? 'All Areas' : form.upazila"
           :business_type="categoryDetails?.business_type"
-        />
-      </UCard>
+        />      </UCard>
     </UContainer>
-  </PublicSection>
+  </div>
 </template>
 
 <script setup>
@@ -624,6 +623,13 @@ const { formatDate } = useUtils();
 const isLoading = ref(false);
 const isNearByLoading = ref(false);
 const searchLocationOption = ref(false);
+
+// Handle scroll events for header compensation
+const isScrolled = ref(false);
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 80;
+};
+
 import { useRoute } from "vue-router";
 const router = useRoute();
 const form = ref({
@@ -818,6 +824,15 @@ function clearLocation() {
   location.value = null;
   window.location.reload();
 }
+
+// Add scroll event listeners
+onMounted(() => {
+  window.addEventListener("scroll", handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
+});
 </script>
 <style scoped>
 /* Empty state transitions */

@@ -1,7 +1,13 @@
 <template>
   <div class="font-AnekBangla layout-default">
-    <PublicHeader />
-    <slot />
+    <div id="header-container" class="relative">
+      <PublicHeader />
+      <!-- Header spacer - maintains space when header becomes fixed -->
+      <div id="header-spacer" class="header-spacer" ref="headerSpacer"></div>
+    </div>
+    <main id="main-content">
+      <slot />
+    </main>
     <PublicFooter />
     <UNotifications />
 
@@ -136,6 +142,41 @@ const route = useRoute();
 const loader = ref(true);
 const showMobileAppPopup = ref(false);
 const appSize = ref(''); // Will be populated from API
+
+// Header spacing management
+const headerSpacer = ref(null);
+const isHeaderFixed = ref(false);
+
+// Handle header fixed positioning compensation
+const handleHeaderSpacing = () => {
+  const headerContainer = document.querySelector('#header-container');
+  const header = headerContainer?.querySelector('.py-3');
+  if (!header || !headerSpacer.value) {
+    console.log('Header spacing: Missing elements', { header: !!header, spacer: !!headerSpacer.value });
+    return;
+  }
+  
+  const scrollY = window.scrollY;
+  const isFixed = scrollY > 80;
+  
+  if (isFixed !== isHeaderFixed.value) {
+    isHeaderFixed.value = isFixed;
+    console.log('Header state changed:', { isFixed, scrollY });
+    
+    if (isFixed) {
+      // When header becomes fixed, set spacer height to maintain space
+      const headerHeight = header.offsetHeight;
+      console.log('Setting spacer height to:', headerHeight);
+      headerSpacer.value.style.height = `${headerHeight}px`;
+      headerSpacer.value.style.display = 'block';
+    } else {
+      // When header returns to sticky, remove spacer
+      console.log('Removing spacer');
+      headerSpacer.value.style.height = '0px';
+      headerSpacer.value.style.display = 'none';
+    }
+  }
+};
 
 // Cookie utility functions
 const setCookie = (name, value, hours = 24) => {
@@ -382,6 +423,13 @@ onMounted(async () => {
   // Fetch app details early
   await fetchDownloadUrl();
   
+  // Set up header spacing management with a small delay to ensure DOM is ready
+  setTimeout(() => {
+    window.addEventListener('scroll', handleHeaderSpacing);
+    // Initialize the spacer state
+    handleHeaderSpacing();
+  }, 100);
+  
   setTimeout(() => {
     loader.value = false;
     // Initialize mobile app popup after loader is done
@@ -389,8 +437,32 @@ onMounted(async () => {
   }, 1000);
 });
 
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleHeaderSpacing);
+});
+
 useHead({
   title:
     "AdsyClub – Bangladesh's 1st Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
 });
 </script>
+
+<style scoped>
+.header-spacer {
+  height: 0px;
+  display: none;
+  transition: height 0.3s ease;
+}
+
+/* Ensure main content doesn't have extra margins that might cause spacing issues */
+#main-content {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* Make sure the header container maintains proper positioning */
+#header-container {
+  position: relative;
+  z-index: 99999999;
+}
+</style>
