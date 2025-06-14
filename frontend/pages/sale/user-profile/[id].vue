@@ -265,11 +265,17 @@
                 v-for="product in products"
                 :key="product.id"
                 class="bg-white rounded-lg overflow-hidden border border-gray-200"
-              >
-                <div class="relative aspect-video">
+              >                <div class="relative aspect-video">
                   <NuxtLink :to="`/sale/${product.slug}`">
+                    <div v-if="!product.main_image" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center group hover:from-gray-200 hover:to-gray-300 transition-all duration-300">
+                      <div class="bg-white/80 backdrop-blur-sm rounded-full p-3 mb-2 shadow-sm group-hover:shadow-md transition-all duration-300">
+                        <ImageOff class="h-8 w-8 text-gray-400 group-hover:text-gray-500 transition-colors duration-300" />
+                      </div>
+                      <p class="text-gray-500 text-xs font-medium group-hover:text-gray-600 transition-colors duration-300">No Photo Uploaded</p>
+                    </div>
                     <img
-                      :src="product.main_image || '/static/frontend/images/placeholder.jpg'"
+                      v-else
+                      :src="product.main_image"
                       :alt="product.title"
                       class="absolute inset-0 w-full h-full object-contain"
                     />
@@ -319,10 +325,16 @@
                 v-for="product in products"
                 :key="product.id"
                 class="flex flex-col sm:flex-row bg-white rounded-lg overflow-hidden"
-              >
-                <div class="relative sm:w-1/3 aspect-video sm:aspect-none">
+              >                <div class="relative sm:w-1/3 aspect-video sm:aspect-none">
+                  <div v-if="!product.main_image" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center group hover:from-gray-200 hover:to-gray-300 transition-all duration-300">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-full p-4 mb-3 shadow-sm group-hover:shadow-md transition-all duration-300">
+                      <ImageOff class="h-10 w-10 text-gray-400 group-hover:text-gray-500 transition-colors duration-300" />
+                    </div>
+                    <p class="text-gray-500 text-sm font-medium group-hover:text-gray-600 transition-colors duration-300">No Photo Uploaded</p>
+                  </div>
                   <img
-                    :src="product.main_image || '/static/frontend/images/placeholder.jpg'"
+                    v-else
+                    :src="product.main_image"
                     :alt="product.title"
                     class="absolute inset-0 w-full h-full object-contain"
                   />
@@ -663,6 +675,7 @@ import {
   List,
   X,
   SearchX,
+  ImageOff,
 } from "lucide-vue-next";
 
 const { get } = useApi();

@@ -31,13 +31,19 @@
           class="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200"
           @touchstart="handleTouchStart"
           @touchmove="handleTouchMove"
-          @touchend="handleTouchEnd"
-        >
+          @touchend="handleTouchEnd"        >
+          <div v-if="!service?.medias?.length && !service?.category_details?.image" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center">
+            <div class="bg-white/80 backdrop-blur-sm rounded-full p-6 mb-4 shadow-sm">
+              <UIcon name="i-heroicons-photo" class="h-16 w-16 text-gray-400" />
+            </div>
+            <p class="text-gray-500 text-lg font-medium">No Photo Uploaded</p>
+          </div>
           <img
+            v-else
             :src="
               service?.medias?.length > 0 
                 ? service.medias[currentImageIndex]?.image 
-                : service?.category_details?.image || '/placeholder.svg'
+                : service?.category_details?.image
             "
             :alt="service.title"
             class="absolute inset-0 w-full h-full object-cover"
@@ -71,9 +77,7 @@
               {{ currentImageIndex + 1 }}/{{ service?.medias?.length }}
             </span>
           </div>
-        </div>
-
-        <!-- Thumbnail Gallery -->
+        </div>        <!-- Thumbnail Gallery -->
         <div v-if="service?.medias?.length > 1" class="flex mt-3 space-x-2 overflow-x-auto pb-2 px-2">
           <div
             v-for="(media, index) in service?.medias"
@@ -85,8 +89,12 @@
             }`"
             @click="selectImage(index)"
           >
+            <div v-if="!media.image" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+              <UIcon name="i-heroicons-photo" class="h-6 w-6 text-gray-400" />
+            </div>
             <img
-              :src="media.image || '/placeholder.svg'"
+              v-else
+              :src="media.image"
               :alt="`Thumbnail ${index + 1}`"
               class="absolute inset-0 w-full h-full object-cover"
             />
