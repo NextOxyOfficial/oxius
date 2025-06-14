@@ -10,20 +10,20 @@
         <!-- Enhanced backdrop with subtle blur effect -->
         <div
           class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
-          aria-hidden="true"          @click="$emit('close-likes-modal')"
-        ></div>
-
-        <div
+          aria-hidden="true"          
+          @click="$emit('close-likes-modal')"
+        ></div>        <div
           class="flex items-end justify-center min-h-screen pt-4 pb-20 sm:block sm:p-0"
         >
           <!-- Modal with enhanced styling -->
           <div
-            class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
-            @click.stop
-          >            <!-- Premium scrollbar styling -->
+            class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden max-h-[80vh] sm:max-h-none flex flex-col sm:block"
+            @click.stop          >
+            <!-- Premium scrollbar styling -->
             <div
-              class="w-full custom-scrollbar overflow-hidden p-2 sm:p-6"
-            >              <div class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left">
+              class="w-full custom-scrollbar overflow-hidden p-2 sm:p-6 flex-1 flex flex-col sm:block overflow-y-auto sm:overflow-visible"
+            >
+              <div class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left">
                 <div class="flex items-center justify-between mb-1">
                   <h3 class="font-semibold text-gray-800 dark:text-white text-left">Liked by</h3>
                   <button
@@ -33,7 +33,8 @@
                   >
                     <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
                   </button>
-                </div>                <p class="text-sm text-gray-600 dark:text-slate-400 truncate text-left">
+                </div>                
+                <p class="text-sm text-gray-600 dark:text-slate-400 truncate text-left">
                   {{ activeLikesPost.title }}
                 </p>
               </div>
@@ -94,17 +95,19 @@
                     <component
                       :is="user.isFollowing ? Check : UserPlus"
                       class="h-3.5 w-3.5"
-                    />                    {{ user.isFollowing ? "Following" : "Follow" }}
+                    />                    
+                    {{ user.isFollowing ? "Following" : "Follow" }}
                   </button>
                 </div>
               </div>
             </div>
-          </div>        </div>
+          </div>        
+        </div>
       </div>
     </Teleport>
 
     <!-- Comments Modal -->
-    <Teleport to="body">
+    <Teleport to="body">      
       <div
         v-if="activeCommentsPost"
         class="fixed inset-0 top-14 z-50 overflow-y-auto"
@@ -113,13 +116,12 @@
         <!-- Enhanced backdrop with subtle blur effect -->
         <div
           class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
-          aria-hidden="true"          @click="$emit('close-comments-modal')"
-        ></div>
-
+          aria-hidden="true"          
+          @click="$emit('close-comments-modal')"
+        ></div>        
         <div
           class="flex items-end justify-center min-h-screen pt-4 pb-20 sm:block sm:p-0"
-        >
-          <!-- Modal with enhanced styling -->
+        >          <!-- Modal with enhanced styling -->
           <div
             class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
             @click.stop
@@ -127,7 +129,7 @@
             <!-- Premium scrollbar styling -->
             <div
               class="w-full custom-scrollbar overflow-hidden p-2 sm:p-6"
-            >              <div class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left">
+            ><div class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left">
                 <div class="flex items-center justify-between mb-1">
                   <h3 class="font-semibold text-gray-800 dark:text-white text-left">Comments</h3>
                   <button
@@ -140,8 +142,9 @@
                 </div>                
                 <p class="text-sm text-gray-600 dark:text-slate-400 truncate text-left">
                   {{ activeCommentsPost.title }}
-                </p>
-              </div>                <!-- Comments Section Header with count -->
+                </p>              </div>
+
+              <!-- Comments Section Header with count -->
               <div
                 v-if="activeCommentsPost?.post_comments?.length > 0"
                 class="px-3 sm:px-5 pt-2 pb-1"
@@ -149,7 +152,9 @@
                 <p class="text-sm text-gray-600 dark:text-slate-400">
                   {{ activeCommentsPost.post_comments.length }} comment{{ activeCommentsPost.post_comments.length !== 1 ? 's' : '' }}
                 </p>
-              </div>              <!-- Comments Section -->
+              </div>
+
+              <!-- Comments Section -->
               <div
                 ref="commentsContainerRef"
                 class="p-3 sm:p-5 space-y-3"
@@ -325,7 +330,8 @@
                           <p class="gift-message-text">
                             {{ extractGiftMessage(comment?.content) }}
                           </p>
-                        </div>                      </div>
+                        </div>                      
+                      </div>
                       <!-- Regular comment with mention processing -->
                       <div
                         v-else
@@ -341,10 +347,12 @@
                     <UIcon
                       name="i-heroicons-clock"
                       class="w-3 h-3 text-gray-600 dark:text-gray-600 mr-1"
-                    />                    <span class="text-sm text-gray-600 dark:text-gray-600">
+                    />                    
+                    <span class="text-sm text-gray-600 dark:text-gray-600">
                       {{ formatTimeAgo(comment?.created_at) }}
                     </span>
-                  </div>                  </div>
+                  </div>                  
+                </div>
                 </div>
               </div>
 
@@ -381,10 +389,12 @@
                   </svg>
                   <p class="text-slate-500 dark:text-slate-400 text-center">
                     No comments yet. Be the first to comment!
-                  </p>
-                </div>              </div>
-            </div>
-              <div class="p-4 sm:p-5 border-t border-gray-200 dark:border-slate-700" v-if="user?.user">
+                  </p>                  
+                </div>                
+              </div>
+              </div>
+
+              <div class="p-4 sm:p-5 border-t border-gray-200 dark:border-slate-700 sticky bottom-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md sm:relative sm:bg-transparent sm:dark:bg-transparent sm:backdrop-blur-none pb-safe-bottom" v-if="user?.user">
                 <div class="flex items-center gap-2">
                   <div class="relative">
                     <!-- Pro user badge with improved color ring around profile picture -->
@@ -396,31 +406,10 @@
                       :alt="user?.user?.name"
                       class="w-6 h-6 rounded-full object-cover"
                     />
-                    <!-- Pro text badge -->
-                    <div
-                      v-if="user?.user?.is_pro"
-                      class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1 py-0.5 flex items-center justify-center shadow-sm z-20 text-xs font-semibold"
-                    >
-                      PRO
-                    </div>
+                   
                   </div>
                   <div class="flex-1 relative">
-                    <!-- <input
-                      type="text"
-                      placeholder="Add a comment..."
-                      class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
-                      v-model="activeCommentsPost.commentText"
-                      @input="
-                        $emit('handle-comment-input', $event, activeCommentsPost)
-                      "
-                      @keydown="
-                        $emit('handle-mention-keydown', $event, activeCommentsPost)
-                      "
-                      @keyup.enter="
-                        !showMentions && $emit('add-comment', activeCommentsPost)
-                      "
-                      @click.stop
-                    /> -->
+                    
                     <textarea
                       v-model="activeCommentsPost.commentText"
                       placeholder="Add a comment..."
@@ -513,19 +502,7 @@
                         />
                       </button>
                     </div>
-                    <!-- <button
-                      v-if="activeCommentsPost.commentText"
-                      class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 flex items-center gap-1"
-                      @click.stop="$emit('add-comment', activeCommentsPost)"
-                      :disabled="activeCommentsPost.isCommentLoading"
-                    >
-                      <Loader2
-                        v-if="activeCommentsPost.isCommentLoading"
-                        class="h-5 w-5 animate-spin"
-                      />
-                      <Send v-else class="h-3 w-3" />
-                    </button> -->
-                  </div>
+                    </div>
                 </div>
               </div>
             </div>
@@ -1135,6 +1112,20 @@ watch(() => props.hasMoreComments, (hasMore) => {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Mobile sticky input enhancement */
+@media (max-width: 640px) {
+  .pb-safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  /* Ensure sticky input doesn't get cut off on mobile keyboards */
+  .sticky-mobile-input {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
   }
 }
 </style>
