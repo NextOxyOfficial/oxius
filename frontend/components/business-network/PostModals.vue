@@ -407,121 +407,8 @@
                   </svg>
                   <p class="text-slate-500 dark:text-slate-400 text-center">
                     No comments yet. Be the first to comment!
-                  </p>                  
-                </div>                
+                  </p>                    </div>                
               </div>
-              </div>
-
-              <div class="p-4 sm:p-5 border-t border-gray-200 dark:border-slate-700 sticky bottom-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md sm:relative sm:bg-transparent sm:dark:bg-transparent sm:backdrop-blur-none pb-safe-bottom" v-if="user?.user">
-                <div class="flex items-center gap-2">
-                  <div class="relative">
-                    <!-- Pro user badge with improved color ring around profile picture -->
-                    <div
-                      v-if="user?.user?.is_pro"
-                      class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
-                    ></div>                <img
-                      :src="user?.user?.image || placeholderPath"
-                      :alt="user?.user?.name"
-                      class="size-7 rounded-full object-cover"
-                    />
-                   
-                  </div>
-                  <div class="flex-1 relative">
-                    
-                    <textarea
-                      v-model="activeCommentsPost.commentText"
-                      placeholder="Add a comment..."
-                      rows="1"
-                      class="w-full text-sm py-2.5 pr-28 pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
-                      @input="
-                        autoResize();
-                        $emit('handle-comment-input', $event, activeCommentsPost);
-                      "
-                      @focus="activeCommentsPost.showCommentInput = true"
-                      @keydown="
-                        $emit('handle-mention-keydown', $event, activeCommentsPost)
-                      "
-                    />
-                    <!-- Mention suggestions dropdown -->
-                    <div
-                      v-if="
-                        showMentions &&
-                        mentionSuggestions.length > 0 &&
-                        activeCommentsPost === mentionInputPosition?.post
-                      "
-                      class="absolute left-0 bottom-full mb-1 w-64 bg-white rounded-lg shadow-sm border border-gray-200 z-20 max-h-48 overflow-y-auto"
-                    >
-                      <div class="py-1">
-                        <div
-                          v-for="(user, index) in mentionSuggestions"
-                          :key="user.id"
-                          @click="$emit('select-mention', user, activeCommentsPost)"
-                          :class="[
-                            'flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100',
-                            index === activeMentionIndex ? 'bg-gray-100' : '',
-                          ]"
-                        >
-                          <div class="relative">
-                            <!-- Pro user badge with improved color ring around profile picture -->
-                            <div
-                              v-if="user?.follower_details?.is_pro"
-                              class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
-                            ></div>                        <img
-                              :src="
-                                user?.follower_details?.image ||
-                                placeholderPath
-                              "
-                              :alt="user?.follower_details?.name"
-                              class="w-7 h-7 rounded-full mr-2 object-cover"
-                            />
-                            <!-- Pro text badge -->
-                            <div
-                              v-if="user?.follower_details?.is_pro"
-                              class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1 py-0.5 flex items-center justify-center shadow-sm z-20 text-xs font-semibold"
-                            >
-                              PRO
-                            </div>
-                          </div>
-                          <span class="text-sm font-medium flex items-center gap-1">
-                            {{ user?.follower_details?.name }}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      v-if="activeCommentsPost.commentText"
-                      class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1"
-                    >
-                      <button
-                        class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
-                        @click="activeCommentsPost.commentText = ''"
-                        aria-label="Clear comment"
-                      >
-                        <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
-                      </button>
-                      <button
-                        class="p-1 rounded-full bg-blue-500/90 mb-1 hover:bg-blue-600 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
-                        @click="$emit('add-comment', activeCommentsPost)"
-                        aria-label="Post comment"
-                      >
-                        <Send class="h-3.5 w-3.5" />
-                        <!-- Subtle glow effect -->
-                        <div
-                          class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
-                        ></div>
-                      </button>
-                      <button
-                        class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
-                        aria-label="Clear comment"
-                      >
-                        <UIcon
-                          name="i-streamline-gift-2"
-                          class="size-4 text-pink-500"
-                        />
-                      </button>
-                    </div>
-                    </div>
-                </div>
               </div>
             </div>
           </div>
@@ -692,27 +579,11 @@ const props = defineProps({
   commentToDelete: {
     type: Object,
     default: null,
-  },
-  user: {
+  },  user: {
     type: Object,
     default: null,
   },
-  showMentions: {
-    type: Boolean,
-    default: false,
-  },
-  mentionSuggestions: {
-    type: Array,
-    default: () => [],
-  },
-  activeMentionIndex: {
-    type: Number,
-    default: 0,
-  },
-  mentionInputPosition: {
-    type: Object,
-    default: null,
-  },  activePhotoViewer: {
+  activePhotoViewer: {
     type: Object,
     default: null,
   },
@@ -733,16 +604,12 @@ const emit = defineEmits([
   "close-likes-modal",
   "toggle-user-follow",
   "close-comments-modal",
-  "handle-comment-input",
-  "handle-mention-keyboard",
-  "add-comment",
   "cancel-delete-comment",
   "confirm-delete-comment",
   "edit-comment",
   "delete-comment",
   "cancel-edit-comment",
   "save-edit-comment",
-  "select-mention",
   "close-photo-viewer",
   "prev-photo",
   "next-photo",
@@ -804,19 +671,10 @@ const downloadImage = (url) => {
 
   const link = document.createElement("a");
   link.href = url;
-  link.download = url.split("/").pop() || "download.jpg";
-  document.body.appendChild(link);
+  link.download = url.split("/").pop() || "download.jpg";  document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 };
-
-function autoResize() {
-  const el = this.$refs.activeCommentsPost.commentTextarea;
-  if (el) {
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 104) + "px"; // 3 lines ~ 104px
-  }
-}
 
 // Extract clean gift message from content
 const extractGiftMessage = (content) => {
@@ -1048,21 +906,6 @@ const loadMoreComments = async () => {
     transform: rotate(0deg);
   }
   to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Mobile sticky input enhancement */
-@media (max-width: 640px) {
-  .pb-safe-bottom {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  }
-  
-  /* Ensure sticky input doesn't get cut off on mobile keyboards */
-  .sticky-mobile-input {
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-  }
+    transform: rotate(360deg);  }
 }
 </style>

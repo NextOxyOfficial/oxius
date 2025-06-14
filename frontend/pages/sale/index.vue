@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-100 min-h-screen">
+  <div class="bg-gray-50/80 min-h-screen">
     <!-- Top Navigation Bar with Search and Post Button -->
     <div class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <CommonGeoSelector />
