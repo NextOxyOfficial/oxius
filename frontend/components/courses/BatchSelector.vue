@@ -39,9 +39,9 @@
           'border-gray-200': selectedBatch !== batch.code,
         }"
       >
-        <div class="flex flex-col items-center space-y-2 text-center">
-          <div class="p-1.5 rounded-lg" :class="getBatchColor(batch.name)">
-            <UIcon v-if="batch.icon" :name="String(batch.icon)" />
+        <div class="flex flex-col items-center space-y-2 text-center">        
+          <div class="p-1.5 flex rounded-lg" :class="getBatchColor(batch.name) ">
+            <UIcon v-if="batch.icon" :name="String(batch.icon)" class="size-7" />
 
             <svg
               v-else
