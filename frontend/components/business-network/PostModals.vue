@@ -157,10 +157,9 @@
                   >
                     See more comments
                   </span>
-                  
-                  <!-- Comments count in same row, aligned right -->
+                    <!-- Comments count in same row, aligned right -->
                   <p class="text-xs text-gray-500 dark:text-slate-500">
-                    {{ activeCommentsPost?.comment_count || 0 }} comment{{ (activeCommentsPost?.comment_count || 0) !== 1 ? 's' : '' }}
+                    {{ commentsCountText }}
                   </p>
                 </div>
 
@@ -174,10 +173,9 @@
                       <div class="loading-spinner"></div>
                       <span class="text-sm">Loading older comments...</span>
                     </div>
-                    
-                    <!-- Comments count during loading, aligned right -->
+                      <!-- Comments count during loading, aligned right -->
                     <p class="text-xs text-gray-500 dark:text-slate-500">
-                      {{ activeCommentsPost?.comment_count || 0 }} comment{{ (activeCommentsPost?.comment_count || 0) !== 1 ? 's' : '' }}
+                      {{ commentsCountText }}
                     </p>
                   </div>
                 </div>
@@ -186,9 +184,8 @@
                 <div
                   v-if="!hasMoreComments && activeCommentsPost?.post_comments?.length > 0"
                   class="py-2"
-                >
-                  <p class="text-xs text-gray-500 dark:text-slate-500">
-                    {{ activeCommentsPost?.comment_count || 0 }} comment{{ (activeCommentsPost?.comment_count || 0) !== 1 ? 's' : '' }}
+                >                  <p class="text-xs text-gray-500 dark:text-slate-500">
+                    {{ commentsCountText }}
                   </p>
                 </div>
 
@@ -873,12 +870,22 @@ onMounted(() => {
 
 // Load more comments function for button click
 const loadMoreComments = async () => {
+  console.log('PostModals loadMoreComments called');
+  console.log('Props state:', {
+    isLoadingMoreComments: props.isLoadingMoreComments,
+    hasMoreComments: props.hasMoreComments,
+    activeCommentsPost: !!props.activeCommentsPost,
+    postId: props.activeCommentsPost?.id
+  });
+  
   if (props.isLoadingMoreComments || !props.hasMoreComments || !props.activeCommentsPost) {
+    console.log('Conditions not met for loading more comments');
     return;
   }
   
   try {
     // Emit event to parent to load more comments
+    console.log('Emitting load-more-comments event with postId:', props.activeCommentsPost.id);
     emit('load-more-comments', {
       postId: props.activeCommentsPost.id
     });

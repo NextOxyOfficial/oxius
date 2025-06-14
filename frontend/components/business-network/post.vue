@@ -479,37 +479,66 @@ const initCommentsPage = (postId) => {
 const loadCommentsForPost = async (postId, page = 1, replace = false) => {
   if (!postId) return;
   
-  const pagination = commentsPagination.value[postId];
-  if (!pagination) {
+  // Initialize pagination if it doesn't exist
+  if (!commentsPagination.value[postId]) {
     initCommentsPage(postId);
   }
   
   try {
     commentsPagination.value[postId].isLoading = true;
     isLoadingMoreComments.value = true;
+      console.log(`Loading comments for post ${postId}, page ${page}, replace: ${replace}`);
     
-    const { data } = await get(`/bn/posts/${postId}/comments/`, {
+    const response = await get(`/bn/posts/${postId}/comments/`, {
       params: {
         page: page,
         page_size: 10
       }
     });
-      // Find the post in our posts array
+    
+    console.log('Full API response:', response);
+    const data = response.data || response;
+    console.log('API response data:', data);
+    console.log('Has next page:', !!data.next);
+    console.log('Results count:', data.results?.length);
+    console.log('Total count:', data.count);
+    
+    // Find the post in our posts array
     const post = props.posts.find(p => p.id === postId);
     if (post) {
       if (replace || page === 1) {
         // Initial load: reverse order to show newest comments at bottom
         post.post_comments = (data.results || []).reverse();
-      } else {
+        console.log('Initial load - set comments:', post.post_comments?.length);      } else {
         // Load more (older comments): prepend to beginning (they're older)
-        // Reverse the new comments and prepend them
-        const olderComments = (data.results || []).reverse();
-        post.post_comments = [...olderComments, ...(post.post_comments || [])];
+        // Don't reverse the new comments, just prepend them as they come from API
+        const olderComments = data.results || [];
+        const previousCount = post.post_comments?.length || 0;
+        
+        // Filter out any duplicate comments to prevent duplication
+        const existingCommentIds = new Set(post.post_comments?.map(c => c.id) || []);
+        const newUniqueComments = olderComments.filter(comment => !existingCommentIds.has(comment.id));
+        
+        post.post_comments = [...newUniqueComments, ...(post.post_comments || [])];
+        console.log(`Load more - added ${newUniqueComments.length} unique comments (${olderComments.length} total from API), total: ${post.post_comments?.length}, previous: ${previousCount}`);
       }
-    }    // Update pagination state
+      
+      // Update the post's comment count
+      if (data.count !== undefined) {
+        post.comment_count = data.count;
+      }
+    }
+    
+    // Update pagination state
     commentsPagination.value[postId].currentPage = page;
     commentsPagination.value[postId].hasMore = !!data.next;
     commentsPagination.value[postId].isLoading = false;
+    
+    console.log('Updated pagination state:', {
+      currentPage: page,
+      hasMore: !!data.next,
+      nextUrl: data.next
+    });
     
   } catch (error) {
     console.error("Error loading comments:", error);
@@ -523,13 +552,35 @@ const loadCommentsForPost = async (postId, page = 1, replace = false) => {
 const loadMoreComments = async (eventData) => {
   const postId = eventData.postId || activeCommentsPost.value?.id;
   
-  if (!postId) return;
+  console.log('loadMoreComments called with:', { eventData, postId });
+  
+  if (!postId) {
+    console.log('No postId found');
+    return;
+  }
   
   // Get the correct next page from pagination state
   const pagination = commentsPagination.value[postId];
-  if (!pagination || !pagination.hasMore) return;
+  console.log('Pagination state:', pagination);
+  
+  if (!pagination) {
+    console.log('No pagination state found, initializing...');
+    initCommentsPage(postId);
+    return;
+  }
+  
+  if (!pagination.hasMore) {
+    console.log('No more comments to load');
+    return;
+  }
+  
+  if (pagination.isLoading) {
+    console.log('Already loading comments');
+    return;
+  }
   
   const nextPage = pagination.currentPage + 1;
+  console.log('Loading page:', nextPage);
   await loadCommentsForPost(postId, nextPage, false);
 };
 
@@ -878,11 +929,21 @@ const openLikesModal = (postToView) => {
 
 const openCommentsModal = async (postToView) => {
   activeCommentsPost.value = postToView;
-    // Initialize pagination for this post
-  initCommentsPage(postToView.id);
+  
+  // Reset pagination for this post to ensure clean state
+  commentsPagination.value[postToView.id] = {
+    currentPage: 0, // Start at 0 so first load will be page 1
+    hasMore: true,
+    isLoading: false
+  };
+  
+  console.log('Opening comments modal for post:', postToView.id);
+  console.log('Existing comments count:', postToView.post_comments?.length);
   
   // Always load initial 10 comments with pagination (replace existing)
-  await loadCommentsForPost(postToView.id, 1, true);  // Set timeout to scroll to top (recent comments) once modal is visible
+  await loadCommentsForPost(postToView.id, 1, true);
+  
+  // Set timeout to scroll to top (recent comments) once modal is visible
   setTimeout(() => {
     if (modalsRef.value?.commentsContainerRef) {
       modalsRef.value.commentsContainerRef.scrollTop = 0;
