@@ -672,7 +672,7 @@
 
 <script setup>
 import { X, Check, UserPlus, Loader2, Send } from "lucide-vue-next";
-import { onMounted, ref, nextTick } from "vue";
+import { onMounted, ref, nextTick, computed } from "vue";
 
 // Import the mentions composable
 const { processMentionsAsHTML, setupMentionClickHandlers } = useMentions();
@@ -752,6 +752,14 @@ const emit = defineEmits([
 
 defineExpose({ commentsContainerRef });
 
+// Computed property for comments count text
+const commentsCountText = computed(() => {
+  const post = props.activeCommentsPost;
+  if (!post) return '';
+  
+  const count = post.comment_count || post.post_comments?.length || 0;
+  return `${count} ${count === 1 ? 'comment' : 'comments'}`;
+});
 
 // Format time ago function
 const formatTimeAgo = (dateString) => {

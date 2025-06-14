@@ -484,43 +484,63 @@ const loadCommentsForPost = async (postId, page = 1, replace = false) => {
     initCommentsPage(postId);
   }
   
-  try {
-    commentsPagination.value[postId].isLoading = true;
+  try {    commentsPagination.value[postId].isLoading = true;
     isLoadingMoreComments.value = true;
-      console.log(`Loading comments for post ${postId}, page ${page}, replace: ${replace}`);
+    console.log(`Loading comments for post ${postId}, page ${page}, replace: ${replace}`);
     
-    const response = await get(`/bn/posts/${postId}/comments/`, {
-      params: {
-        page: page,
-        page_size: 10
-      }
-    });
+    const requestParams = {
+      page: page,
+      page_size: 10
+    };
+    console.log('Request params:', requestParams);
     
-    console.log('Full API response:', response);
+    // Build URL with query parameters manually since the get function doesn't support params
+    const queryString = new URLSearchParams(requestParams).toString();
+    const requestUrl = `/bn/posts/${postId}/comments/?${queryString}`;
+    console.log('Full request URL with params:', requestUrl);
+    
+    const response = await get(requestUrl);
+      console.log('Full API response:', response);
     const data = response.data || response;
     console.log('API response data:', data);
     console.log('Has next page:', !!data.next);
     console.log('Results count:', data.results?.length);
     console.log('Total count:', data.count);
     
-    // Find the post in our posts array
+    // Log the actual comment IDs being returned
+    if (data.results) {
+      console.log('Comment IDs returned:', data.results.map(c => c.id));
+    }    // Find the post in our posts array
     const post = props.posts.find(p => p.id === postId);
     if (post) {
       if (replace || page === 1) {
         // Initial load: reverse order to show newest comments at bottom
         post.post_comments = (data.results || []).reverse();
-        console.log('Initial load - set comments:', post.post_comments?.length);      } else {
-        // Load more (older comments): prepend to beginning (they're older)
-        // Don't reverse the new comments, just prepend them as they come from API
+        console.log('Initial load - set comments:', post.post_comments?.length);
+        console.log('Initial load comment IDs:', post.post_comments?.map(c => c.id));
+      } else {
+        // Load more (older comments): The API returns them in descending order (newest first)
+        // We need to reverse them first, then prepend to show oldest at top
         const olderComments = data.results || [];
         const previousCount = post.post_comments?.length || 0;
         
+        console.log('Before load more - existing comment IDs:', post.post_comments?.map(c => c.id));
+        console.log('New older comment IDs from API (newest first):', olderComments.map(c => c.id));
+        
+        // Reverse the older comments so they're in oldest-first order
+        const olderCommentsReversed = olderComments.reverse();
+        console.log('New older comment IDs after reverse (oldest first):', olderCommentsReversed.map(c => c.id));
+        
         // Filter out any duplicate comments to prevent duplication
         const existingCommentIds = new Set(post.post_comments?.map(c => c.id) || []);
-        const newUniqueComments = olderComments.filter(comment => !existingCommentIds.has(comment.id));
+        const newUniqueComments = olderCommentsReversed.filter(comment => !existingCommentIds.has(comment.id));
         
+        console.log('Filtered unique comment IDs:', newUniqueComments.map(c => c.id));
+        
+        // Prepend the older comments (they should appear before the existing comments)
         post.post_comments = [...newUniqueComments, ...(post.post_comments || [])];
         console.log(`Load more - added ${newUniqueComments.length} unique comments (${olderComments.length} total from API), total: ${post.post_comments?.length}, previous: ${previousCount}`);
+        console.log('After load more - all comment IDs:', post.post_comments?.map(c => c.id));
       }
       
       // Update the post's comment count
