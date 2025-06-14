@@ -69,11 +69,9 @@
         @open-comments-modal="$emit('open-comments-modal', post)"
         @share-post="$emit('share-post', post)"
         @toggle-save="$emit('toggle-save', post)"
-      />
-
-      <!-- Comments Preview -->
+      />      <!-- Comments Preview -->
       <PostComments 
-        v-if="post?.post_comments?.length > 0" 
+        v-if="(post?.comment_count || 0) > 0" 
         :post="post" 
         :user="user"
         @open-comments-modal="$emit('open-comments-modal', post)"
@@ -81,7 +79,7 @@
         @delete-comment="$emit('delete-comment', post, $event)" 
         @cancel-edit-comment="$emit('cancel-edit-comment', $event)"
         @save-edit-comment="$emit('save-edit-comment', post, $event)"
-      />      <!-- Add Comment Input -->
+      /><!-- Add Comment Input -->
       <PostCommentInput 
         v-if="user"
         :post="post"

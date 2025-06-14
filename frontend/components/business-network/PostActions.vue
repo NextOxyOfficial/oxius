@@ -51,13 +51,12 @@
             />
           </div>
         </button>
-        
-        <!-- Comment counter (small) -->
+          <!-- Comment counter (small) -->
         <span 
           @click="$emit('open-comments-modal', post)" 
           class="text-base ml-1 text-gray-600 dark:text-gray-600 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
         >
-          {{ formatCount(post?.post_comments?.length || 0) }}
+          {{ formatCount(post?.comment_count || 0) }}
         </span>
       </div>      
       <!-- Share button (icon only) -->

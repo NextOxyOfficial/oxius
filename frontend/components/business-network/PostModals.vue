@@ -142,15 +142,13 @@
                 </div>                
                 <p class="text-sm text-gray-600 dark:text-slate-400 truncate text-left">
                   {{ activeCommentsPost.title }}
-                </p>              </div>
-
-              <!-- Comments Section Header with count -->
+                </p>              </div>              <!-- Comments Section Header with count -->
               <div
-                v-if="activeCommentsPost?.post_comments?.length > 0"
+                v-if="(activeCommentsPost?.comment_count || 0) > 0"
                 class="px-3 sm:px-5 pt-2 pb-1"
               >
                 <p class="text-sm text-gray-600 dark:text-slate-400">
-                  {{ activeCommentsPost.post_comments.length }} comment{{ activeCommentsPost.post_comments.length !== 1 ? 's' : '' }}
+                  {{ activeCommentsPost?.comment_count || 0 }} comment{{ (activeCommentsPost?.comment_count || 0) !== 1 ? 's' : '' }}
                 </p>
               </div>
 
@@ -365,11 +363,9 @@
                   <div class="loading-spinner"></div>
                   <span class="text-sm">Loading more comments...</span>
                 </div>
-              </div>
-
-              <!-- Empty state -->
+              </div>              <!-- Empty state -->
               <div
-                v-if="!activeCommentsPost?.post_comments?.length"
+                v-if="!(activeCommentsPost?.comment_count || 0)"
                 class="text-center py-12"
               >
                 <div class="flex flex-col items-center justify-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-200 dark:border-slate-700">

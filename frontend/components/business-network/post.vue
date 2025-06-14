@@ -186,12 +186,12 @@
               </button>
             </div>
 
-            <!-- Comments Preview -->
-            <BusinessNetworkPostComments
+            <!-- Comments Preview -->            
+             <BusinessNetworkPostComments
               v-if="
                 post?.post_details
-                  ? post.post_details.post_comments.length > 0
-                  : post?.post_comments?.length > 0
+                  ? (post.post_details.comment_count || 0) > 0
+                  : (post?.comment_count || 0) > 0
               "
               :post="post.post_details ? post.post_details : post"
               :user="user"
@@ -200,7 +200,8 @@
               @delete-comment="deleteComment"
               @cancel-edit-comment="cancelEditComment"
               @save-edit-comment="saveEditComment"
-            />            <!-- Add Comment Input -->
+            />            
+            <!-- Add Comment Input -->
             <BusinessNetworkPostCommentInput
               v-if="user"
               :post="post.post_details ? post.post_details : post"
@@ -767,10 +768,13 @@ const addComment = async (postToComment) => {
     // Initialize post_comments array if it doesn't exist
     if (!postToComment.post_comments) {
       postToComment.post_comments = [];
-    }
-
-    // Add the new comment to the beginning
+    }    // Add the new comment to the beginning
     postToComment.post_comments.unshift(data);
+
+    // Update the comment count
+    if (postToComment.comment_count !== undefined) {
+      postToComment.comment_count = (postToComment.comment_count || 0) + 1;
+    }
 
     // Clear the comment text
     postToComment.commentText = "";
@@ -1063,9 +1067,7 @@ const confirmDeleteComment = async () => {
   try {
     commentToDelete.value.isDeleting = true;
 
-    await del(`/bn/comments/${commentToDelete.value.id}/`);
-
-    // Remove the comment from the list
+    await del(`/bn/comments/${commentToDelete.value.id}/`);    // Remove the comment from the list
     if (
       postWithCommentToDelete.value &&
       postWithCommentToDelete.value.post_comments
@@ -1074,6 +1076,11 @@ const confirmDeleteComment = async () => {
         postWithCommentToDelete.value.post_comments.filter(
           (c) => c.id !== commentToDelete.value.id
         );
+
+      // Update the comment count
+      if (postWithCommentToDelete.value.comment_count !== undefined && postWithCommentToDelete.value.comment_count > 0) {
+        postWithCommentToDelete.value.comment_count -= 1;
+      }
     }
 
     toast.add({
