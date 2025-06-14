@@ -341,9 +341,8 @@ const displayedComments = computed(() => {
       (comment) => comment.id !== highestGiftComment.value.id
     );
   }
-
-  // Return up to 3 most recent comments (excluding the pinned one)
-  return comments.slice(0, 3).reverse();
+  // Return the last 3 comments (most recent ones, already properly ordered)
+  return comments.slice(-3);
 });
 
 // Extract clean gift message from content

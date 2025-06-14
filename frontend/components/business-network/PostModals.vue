@@ -17,11 +17,11 @@
         >
           <!-- Modal with enhanced styling -->
           <div
-            class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden max-h-[80vh] sm:max-h-none flex flex-col sm:block"
+            class="relative max-w-3xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden max-h-[80vh] sm:max-h-none flex flex-col sm:block"
             @click.stop          >
             <!-- Premium scrollbar styling -->
             <div
-              class="w-full custom-scrollbar overflow-hidden p-2 sm:p-6 flex-1 flex flex-col sm:block overflow-y-auto sm:overflow-visible"
+              class="w-full custom-scrollbar overflow-hidden p-2 sm:px-6 flex-1 flex flex-col sm:block overflow-y-auto sm:overflow-visible"
             >
               <div class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left">
                 <div class="flex items-center justify-between mb-1">
@@ -121,14 +121,15 @@
         ></div>        
         <div
           class="flex items-end justify-center min-h-screen pt-4 pb-20 sm:block sm:p-0"
-        >          <!-- Modal with enhanced styling -->
+        >          
+        <!-- Modal with enhanced styling -->
           <div
-            class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
+            class="relative max-w-3xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
             @click.stop
           >
             <!-- Premium scrollbar styling -->
             <div
-              class="w-full custom-scrollbar overflow-hidden p-2 sm:p-6"
+              class="w-full custom-scrollbar overflow-hidden p-2 sm:py-6"
             ><div class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left">
                 <div class="flex items-center justify-between mb-1">
                   <h3 class="font-semibold text-gray-800 dark:text-white text-left">Comments</h3>
@@ -141,24 +142,57 @@
                   </button>
                 </div>                
                 <p class="text-sm text-gray-600 dark:text-slate-400 truncate text-left">
-                  {{ activeCommentsPost.title }}
-                </p>              </div>              <!-- Comments Section Header with count -->
-              <div
-                v-if="(activeCommentsPost?.comment_count || 0) > 0"
-                class="px-3 sm:px-5 pt-2 pb-1"
-              >
-                <p class="text-sm text-gray-600 dark:text-slate-400">
-                  {{ activeCommentsPost?.comment_count || 0 }} comment{{ (activeCommentsPost?.comment_count || 0) !== 1 ? 's' : '' }}
-                </p>
-              </div>
-
+                  {{ activeCommentsPost.title }}                </p>              
+              </div>              
               <!-- Comments Section -->
               <div
                 ref="commentsContainerRef"
-                class="p-3 sm:p-5 space-y-3"
-                @scroll="handleCommentsScroll"
-              >
-                <!-- Comments with premium glassmorphism design -->
+                class="p-3 sm:p-5 space-y-3"              >                <!-- Load More Text at the top for older comments -->
+                <div
+                  v-if="hasMoreComments && !isLoadingMoreComments && activeCommentsPost?.post_comments?.length > 0"
+                  class="py-2 flex items-center justify-between"
+                >                  <span
+                    @click="loadMoreComments"
+                    class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer transition-colors duration-200"
+                  >
+                    See more comments
+                  </span>
+                  
+                  <!-- Comments count in same row, aligned right -->
+                  <p class="text-xs text-gray-500 dark:text-slate-500">
+                    {{ activeCommentsPost?.comment_count || 0 }} comment{{ (activeCommentsPost?.comment_count || 0) !== 1 ? 's' : '' }}
+                  </p>
+                </div>
+
+                <!-- Loading indicator at top when loading older comments -->
+                <div
+                  v-if="isLoadingMoreComments"
+                  class="py-2"
+                >
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-gray-500 dark:text-slate-400">
+                      <div class="loading-spinner"></div>
+                      <span class="text-sm">Loading older comments...</span>
+                    </div>
+                    
+                    <!-- Comments count during loading, aligned right -->
+                    <p class="text-xs text-gray-500 dark:text-slate-500">
+                      {{ activeCommentsPost?.comment_count || 0 }} comment{{ (activeCommentsPost?.comment_count || 0) !== 1 ? 's' : '' }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Comments count when no load more needed -->
+                <div
+                  v-if="!hasMoreComments && activeCommentsPost?.post_comments?.length > 0"
+                  class="py-2"
+                >
+                  <p class="text-xs text-gray-500 dark:text-slate-500">
+                    {{ activeCommentsPost?.comment_count || 0 }} comment{{ (activeCommentsPost?.comment_count || 0) !== 1 ? 's' : '' }}
+                  </p>
+                </div>
+
+                <!-- Comments with premium glassmorphism design (most recent at bottom) -->
                 <div
                   v-if="activeCommentsPost?.post_comments?.length > 0"
                   v-for="(comment, index) in activeCommentsPost.post_comments"
@@ -351,19 +385,10 @@
                     </span>
                   </div>                  
                 </div>
-                </div>
+                </div>              
               </div>
 
-              <!-- Loading indicator for pagination at bottom -->
-              <div
-                v-if="isLoadingMoreComments"
-                class="flex items-center justify-center py-4"
-              >
-                <div class="flex items-center space-x-2 text-gray-500 dark:text-slate-400">
-                  <div class="loading-spinner"></div>
-                  <span class="text-sm">Loading more comments...</span>
-                </div>
-              </div>              <!-- Empty state -->
+              <!-- Empty state -->
               <div
                 v-if="!(activeCommentsPost?.comment_count || 0)"
                 class="text-center py-12"
@@ -548,7 +573,7 @@
         @click="$emit('close-photo-viewer')"
       >
         <div
-          class="max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col"
+          class="max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col"
           @click.stop
         >
           <!-- Header with close and download buttons -->
@@ -650,7 +675,7 @@
 
 <script setup>
 import { X, Check, UserPlus, Loader2, Send } from "lucide-vue-next";
-import { onMounted, ref, computed, watch, nextTick } from "vue";
+import { onMounted, ref, nextTick } from "vue";
 
 // Import the mentions composable
 const { processMentionsAsHTML, setupMentionClickHandlers } = useMentions();
@@ -697,14 +722,9 @@ const props = defineProps({
   isLoadingMoreComments: {
     type: Boolean,
     default: false,
-  },
-  hasMoreComments: {
+  },  hasMoreComments: {
     type: Boolean,
     default: false,
-  },
-  commentsPerPage: {
-    type: Number,
-    default: 10,
   },
 });
 
@@ -735,47 +755,6 @@ const emit = defineEmits([
 
 defineExpose({ commentsContainerRef });
 
-/*
-Usage Example for Parent Component:
-
-<PostModals
-  :activeCommentsPost="currentPost"
-  :isLoadingMoreComments="isLoadingComments"
-  :hasMoreComments="hasMoreComments"
-  :commentsPerPage="10"
-  @load-more-comments="handleLoadMoreComments"
-  @close-comments-modal="closeModal"
-  // ... other props
-/
-
-// In parent component script:
-const isLoadingComments = ref(false);
-const hasMoreComments = ref(true);
-
-const handleLoadMoreComments = async ({ page, perPage, postId }) => {
-  isLoadingComments.value = true;
-  
-  try {
-    const response = await $fetch(`/api/posts/${postId}/comments`, {
-      query: {
-        page,
-        per_page: perPage
-      }
-    });
-    
-    // Append new comments to existing ones
-    currentPost.value.post_comments.push(...response.comments);
-    
-    // Update hasMoreComments based on response
-    hasMoreComments.value = response.has_more;
-    
-  } catch (error) {
-    console.error('Failed to load more comments:', error);
-  } finally {
-    isLoadingComments.value = false;
-  }
-};
-*/
 
 // Format time ago function
 const formatTimeAgo = (dateString) => {
@@ -892,74 +871,21 @@ onMounted(() => {
   setupMentionClickHandlers();
 });
 
-// Pagination state for infinite loading
-const currentPage = ref(1);
-const isLoadingMore = ref(false);
-const hasReachedEnd = ref(false);
-
-// Handle scroll detection for infinite loading
-const handleCommentsScroll = (event) => {
-  const container = event.target;
-  const scrollTop = container.scrollTop;
-  const scrollHeight = container.scrollHeight;
-  const clientHeight = container.clientHeight;
-  const scrollThreshold = 100; // Load more when within 100px of bottom
-  
-  // Check if user scrolled near the bottom and there are more comments to load
-  if (
-    scrollTop + clientHeight >= scrollHeight - scrollThreshold &&
-    !isLoadingMore.value &&
-    !hasReachedEnd.value &&
-    !props.isLoadingMoreComments &&
-    props.hasMoreComments
-  ) {
-    loadMoreComments();
-  }
-};
-
-// Load more comments function for infinite scrolling
+// Load more comments function for button click
 const loadMoreComments = async () => {
-  if (isLoadingMore.value || hasReachedEnd.value || !props.hasMoreComments || !props.activeCommentsPost) {
+  if (props.isLoadingMoreComments || !props.hasMoreComments || !props.activeCommentsPost) {
     return;
   }
-  
-  isLoadingMore.value = true;
-  const nextPage = currentPage.value + 1;
   
   try {
     // Emit event to parent to load more comments
     emit('load-more-comments', {
-      page: nextPage,
-      perPage: props.commentsPerPage,
       postId: props.activeCommentsPost.id
     });
-    
-    currentPage.value = nextPage;
   } catch (error) {
     console.error('Error loading more comments:', error);
-  } finally {
-    // Reset loading state after a short delay
-    setTimeout(() => {
-      isLoadingMore.value = false;
-    }, 300);
   }
 };
-
-// Reset pagination when modal opens/closes or post changes
-watch(() => props.activeCommentsPost?.id, (newId, oldId) => {
-  if (newId !== oldId) {
-    currentPage.value = 1;
-    isLoadingMore.value = false;
-    hasReachedEnd.value = false;
-  }
-});
-
-// Watch for hasMoreComments changes to update local state
-watch(() => props.hasMoreComments, (hasMore) => {
-  if (!hasMore) {
-    hasReachedEnd.value = true;
-  }
-});
 </script>
 
 <style scoped>
