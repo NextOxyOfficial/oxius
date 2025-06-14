@@ -715,21 +715,8 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Marketplace Welcome Section (Always Visible) -->
+          </div>          <!-- Marketplace Welcome Section (Always Visible) -->
           <div class="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/20 rounded-2xl border border-gray-200/60 shadow-sm mt-12">
-            <!-- Background Pattern -->
-            <div class="absolute inset-0 opacity-5">
-              <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-                <defs>
-                  <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" stroke-width="0.5"/>
-                  </pattern>
-                </defs>
-                <rect width="100" height="100" fill="url(#grid)" />
-              </svg>
-            </div>
             
             <!-- Content -->
             <div class="relative z-10 text-center py-16 px-8">
