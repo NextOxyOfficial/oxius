@@ -272,8 +272,7 @@
       @add-media-comment="addMediaComment"
       @edit-media-comment="editMediaComment"
       @delete-media-comment="deleteMediaComment"
-    />
-
+    />    
     <!-- All Modals -->
     <BusinessNetworkPostModals
       ref="modalsRef"
@@ -287,12 +286,16 @@
       :mention-suggestions="mentionSuggestions"
       :active-mention-index="activeMentionIndex"
       :mention-input-position="mentionInputPosition"
+      :is-loading-more-comments="isLoadingMoreComments"
+      :has-more-comments="activeCommentsPost ? commentsPagination[activeCommentsPost.id]?.hasMore || false : false"
+      :comments-per-page="10"
       @close-likes-modal="activeLikesPost = null"
       @toggle-user-follow="toggleUserFollow"
-      @close-comments-modal="activeCommentsPost = null"
+      @close-comments-modal="closeCommentsModal"
       @handle-comment-input="handleCommentInput"
       @handle-mention-keydown="handleMentionKeydown"
       @add-comment="addComment"
+      @load-more-comments="loadMoreComments"
       @close-media-likes-modal="activeMediaLikes = null"
       @cancel-delete-comment="commentToDelete = null"
       @confirm-delete-comment="confirmDeleteComment"
@@ -457,6 +460,84 @@ const mentionSuggestions = ref([]);
 const showMentions = ref(false);
 const mentionInputPosition = ref(null);
 const activeMentionIndex = ref(0);
+
+// Comments pagination state
+const commentsPagination = ref({});
+const isLoadingMoreComments = ref(false);
+
+// Initialize comments pagination for a post
+const initCommentsPage = (postId) => {
+  if (!commentsPagination.value[postId]) {
+    commentsPagination.value[postId] = {
+      currentPage: 1,
+      hasMore: true,
+      isLoading: false
+    };
+  }
+};
+
+// Load comments for a specific post
+const loadCommentsForPost = async (postId, page = 1, replace = false) => {
+  if (!postId) return;
+  
+  const pagination = commentsPagination.value[postId];
+  if (!pagination) {
+    initCommentsPage(postId);
+  }
+  
+  try {
+    commentsPagination.value[postId].isLoading = true;
+    isLoadingMoreComments.value = true;
+    
+    const { data } = await get(`/bn/posts/${postId}/comments/`, {
+      params: {
+        page: page,
+        page_size: 10
+      }
+    });
+    
+    // Find the post in our posts array
+    const post = props.posts.find(p => p.id === postId);
+    if (post) {
+      if (replace || page === 1) {
+        // Initial load: show newest comments first (keep API order)
+        post.post_comments = data.results || [];
+      } else {
+        // Load more (older comments): append to end
+        post.post_comments = [...(post.post_comments || []), ...(data.results || [])];
+      }
+    }
+    
+    // Update pagination state
+    commentsPagination.value[postId] = {
+      currentPage: page,
+      hasMore: !!data.next,
+      isLoading: false
+    };
+    
+  } catch (error) {
+    console.error("Error loading comments:", error);
+    commentsPagination.value[postId].isLoading = false;
+  } finally {
+    isLoadingMoreComments.value = false;
+  }
+};
+
+// Load more comments (infinite scroll)
+const loadMoreComments = async (eventData) => {
+  const postId = eventData.postId || activeCommentsPost.value?.id;
+  const pagination = commentsPagination.value[postId];
+  if (!pagination || pagination.isLoading || !pagination.hasMore) {
+    return;
+  }
+  
+  await loadCommentsForPost(postId, pagination.currentPage + 1, false);
+};
+
+// Close comments modal and reset state
+const closeCommentsModal = () => {
+  activeCommentsPost.value = null;
+};
 
 // Sponsored Products
 const allProducts = ref([]);
@@ -798,10 +879,13 @@ const openLikesModal = (postToView) => {
   activeLikesPost.value = postToView;
 };
 
-const openCommentsModal = (postToView) => {
+const openCommentsModal = async (postToView) => {
   activeCommentsPost.value = postToView;
-
-  // Set timeout to scroll to end of comments once modal is visible
+    // Initialize pagination for this post
+  initCommentsPage(postToView.id);
+  
+  // Always load initial 10 comments with pagination (replace existing)
+  await loadCommentsForPost(postToView.id, 1, true);  // Set timeout to scroll to top (recent comments) once modal is visible
   setTimeout(() => {
     if (modalsRef.value?.commentsContainerRef) {
       modalsRef.value.commentsContainerRef.scrollTop = 0;

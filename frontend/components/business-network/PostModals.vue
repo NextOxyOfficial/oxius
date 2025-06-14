@@ -137,24 +137,32 @@
                   >
                     <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
                   </button>
-                </div>                <p class="text-sm text-gray-600 dark:text-slate-400 truncate text-left">
+                </div>                
+                <p class="text-sm text-gray-600 dark:text-slate-400 truncate text-left">
                   {{ activeCommentsPost.title }}
                 </p>
-              </div>
-
-              <!-- Comments Section -->
+              </div>                <!-- Comments Section Header with count -->
+              <div
+                v-if="activeCommentsPost?.post_comments?.length > 0"
+                class="px-3 sm:px-5 pt-2 pb-1"
+              >
+                <p class="text-sm text-gray-600 dark:text-slate-400">
+                  {{ activeCommentsPost.post_comments.length }} comment{{ activeCommentsPost.post_comments.length !== 1 ? 's' : '' }}
+                </p>
+              </div>              <!-- Comments Section -->
               <div
                 ref="commentsContainerRef"
                 class="p-3 sm:p-5 space-y-3"
+                @scroll="handleCommentsScroll"
               >
                 <!-- Comments with premium glassmorphism design -->
                 <div
-                  v-for="(comment, index) in [
-                    ...activeCommentsPost.post_comments,
-                  ].reverse()"
+                  v-if="activeCommentsPost?.post_comments?.length > 0"
+                  v-for="(comment, index) in activeCommentsPost.post_comments"
                   :key="comment.id"
                   class="flex items-start space-x-2.5"
                 >
+                  <!-- ...existing comment structure... -->
                   <div class="flex items-start space-x-2.5 w-full">
                 <NuxtLink :to="`/business-network/profile/${comment?.author}`">
                   <div class="relative group">                    <img
@@ -336,10 +344,45 @@
                     />                    <span class="text-sm text-gray-600 dark:text-gray-600">
                       {{ formatTimeAgo(comment?.created_at) }}
                     </span>
-                  </div>
+                  </div>                  </div>
                 </div>
               </div>
-            </div>
+
+              <!-- Loading indicator for pagination at bottom -->
+              <div
+                v-if="isLoadingMoreComments"
+                class="flex items-center justify-center py-4"
+              >
+                <div class="flex items-center space-x-2 text-gray-500 dark:text-slate-400">
+                  <div class="loading-spinner"></div>
+                  <span class="text-sm">Loading more comments...</span>
+                </div>
+              </div>
+
+              <!-- Empty state -->
+              <div
+                v-if="!activeCommentsPost?.post_comments?.length"
+                class="text-center py-12"
+              >
+                <div class="flex flex-col items-center justify-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-200 dark:border-slate-700">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-slate-400 dark:text-slate-500 mb-3"
+                  >
+                    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
+                  </svg>
+                  <p class="text-slate-500 dark:text-slate-400 text-center">
+                    No comments yet. Be the first to comment!
+                  </p>
+                </div>              </div>
             </div>
               <div class="p-4 sm:p-5 border-t border-gray-200 dark:border-slate-700" v-if="user?.user">
                 <div class="flex items-center gap-2">
@@ -497,13 +540,12 @@
         v-if="commentToDelete"
         class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center"
         @click="$emit('cancel-delete-comment')"
-      >
-        <div
-          class="bg-white rounded-lg max-w-sm w-full p-4 shadow-sm"
+      >        <div
+          class="bg-white rounded-lg max-w-sm w-full p-4 shadow-sm text-left"
           @click.stop
         >
-          <h3 class="text-base font-semibold mb-2">Delete Comment</h3>
-          <p class="text-gray-600 mb-4">
+          <h3 class="text-base font-semibold mb-2 text-left">Delete Comment</h3>
+          <p class="text-gray-600 mb-4 text-left">
             Are you sure you want to delete this comment? This action cannot be
             undone.
           </p>
@@ -635,7 +677,7 @@
 
 <script setup>
 import { X, Check, UserPlus, Loader2, Send } from "lucide-vue-next";
-import { onMounted } from "vue";
+import { onMounted, ref, computed, watch, nextTick } from "vue";
 
 // Import the mentions composable
 const { processMentionsAsHTML, setupMentionClickHandlers } = useMentions();
@@ -675,10 +717,21 @@ const props = defineProps({
   mentionInputPosition: {
     type: Object,
     default: null,
-  },
-  activePhotoViewer: {
+  },  activePhotoViewer: {
     type: Object,
     default: null,
+  },
+  isLoadingMoreComments: {
+    type: Boolean,
+    default: false,
+  },
+  hasMoreComments: {
+    type: Boolean,
+    default: false,
+  },
+  commentsPerPage: {
+    type: Number,
+    default: 10,
   },
 });
 
@@ -704,9 +757,52 @@ const emit = defineEmits([
   "prev-photo",
   "next-photo",
   "select-photo",
+  "load-more-comments",
 ]);
 
 defineExpose({ commentsContainerRef });
+
+/*
+Usage Example for Parent Component:
+
+<PostModals
+  :activeCommentsPost="currentPost"
+  :isLoadingMoreComments="isLoadingComments"
+  :hasMoreComments="hasMoreComments"
+  :commentsPerPage="10"
+  @load-more-comments="handleLoadMoreComments"
+  @close-comments-modal="closeModal"
+  // ... other props
+/
+
+// In parent component script:
+const isLoadingComments = ref(false);
+const hasMoreComments = ref(true);
+
+const handleLoadMoreComments = async ({ page, perPage, postId }) => {
+  isLoadingComments.value = true;
+  
+  try {
+    const response = await $fetch(`/api/posts/${postId}/comments`, {
+      query: {
+        page,
+        per_page: perPage
+      }
+    });
+    
+    // Append new comments to existing ones
+    currentPost.value.post_comments.push(...response.comments);
+    
+    // Update hasMoreComments based on response
+    hasMoreComments.value = response.has_more;
+    
+  } catch (error) {
+    console.error('Failed to load more comments:', error);
+  } finally {
+    isLoadingComments.value = false;
+  }
+};
+*/
 
 // Format time ago function
 const formatTimeAgo = (dateString) => {
@@ -821,6 +917,75 @@ const processMentionsInComment = (content) => {
 // Setup mention click handlers when component mounts
 onMounted(() => {
   setupMentionClickHandlers();
+});
+
+// Pagination state for infinite loading
+const currentPage = ref(1);
+const isLoadingMore = ref(false);
+const hasReachedEnd = ref(false);
+
+// Handle scroll detection for infinite loading
+const handleCommentsScroll = (event) => {
+  const container = event.target;
+  const scrollTop = container.scrollTop;
+  const scrollHeight = container.scrollHeight;
+  const clientHeight = container.clientHeight;
+  const scrollThreshold = 100; // Load more when within 100px of bottom
+  
+  // Check if user scrolled near the bottom and there are more comments to load
+  if (
+    scrollTop + clientHeight >= scrollHeight - scrollThreshold &&
+    !isLoadingMore.value &&
+    !hasReachedEnd.value &&
+    !props.isLoadingMoreComments &&
+    props.hasMoreComments
+  ) {
+    loadMoreComments();
+  }
+};
+
+// Load more comments function for infinite scrolling
+const loadMoreComments = async () => {
+  if (isLoadingMore.value || hasReachedEnd.value || !props.hasMoreComments || !props.activeCommentsPost) {
+    return;
+  }
+  
+  isLoadingMore.value = true;
+  const nextPage = currentPage.value + 1;
+  
+  try {
+    // Emit event to parent to load more comments
+    emit('load-more-comments', {
+      page: nextPage,
+      perPage: props.commentsPerPage,
+      postId: props.activeCommentsPost.id
+    });
+    
+    currentPage.value = nextPage;
+  } catch (error) {
+    console.error('Error loading more comments:', error);
+  } finally {
+    // Reset loading state after a short delay
+    setTimeout(() => {
+      isLoadingMore.value = false;
+    }, 300);
+  }
+};
+
+// Reset pagination when modal opens/closes or post changes
+watch(() => props.activeCommentsPost?.id, (newId, oldId) => {
+  if (newId !== oldId) {
+    currentPage.value = 1;
+    isLoadingMore.value = false;
+    hasReachedEnd.value = false;
+  }
+});
+
+// Watch for hasMoreComments changes to update local state
+watch(() => props.hasMoreComments, (hasMore) => {
+  if (!hasMore) {
+    hasReachedEnd.value = true;
+  }
 });
 </script>
 
@@ -952,5 +1117,24 @@ onMounted(() => {
     rgba(219, 39, 119, 0.2) 50%,
     rgba(131, 24, 67, 0.3) 100%
   );
+}
+
+/* Loading spinner for pagination */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
