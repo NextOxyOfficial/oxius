@@ -422,10 +422,16 @@
                 :key="`post-${i}`"
                 :to="`/sale/${post.slug}`"
                 class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow transition-shadow group"
-              >
-                  <!-- Image -->
+              >                  <!-- Image -->
                 <div class="relative aspect-square overflow-hidden">
+                  <div v-if="!getListingImage(post) || getListingImage(post).includes('placeholder')" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-full p-4 mb-2 shadow-sm">
+                      <UIcon name="i-heroicons-photo" class="h-8 w-8 text-gray-400" />
+                    </div>
+                    <p class="text-gray-500 text-xs font-medium">No Photo Uploaded</p>
+                  </div>
                   <img
+                    v-else
                     :src="getListingImage(post)"
                     :alt="post?.title || `Image`"
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -1216,7 +1222,7 @@ function getListingImage(listing) {
     return listing.images[0];
   }
 
-  return "https://via.placeholder.com/300x200?text=No+Image";
+  return null; // Return null instead of placeholder URL
 }
 
 function formatPrice(price) {
