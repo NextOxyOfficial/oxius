@@ -4,90 +4,102 @@
     <Teleport to="body">
       <div
         v-if="activeLikesPost"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center"
+        class="fixed inset-0 top-14 z-50 overflow-y-auto"
         @click="$emit('close-likes-modal')"
       >
+        <!-- Enhanced backdrop with subtle blur effect -->
         <div
-          class="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-sm"
-          @click.stop
+          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
+          aria-hidden="true"          @click="$emit('close-likes-modal')"
+        ></div>
+
+        <div
+          class="flex items-end justify-center min-h-screen pt-4 pb-20 sm:block sm:p-0"
         >
-          <div class="p-4 sm:p-5 border-b border-gray-200">
-            <div class="flex items-center justify-between mb-1">
-              <h3 class="font-semibold">Liked by</h3>
-              <button
-                @click="$emit('close-likes-modal')"
-                class="hover:bg-gray-100 p-1 rounded-full transition-colors"
-              >
-                <X class="h-5 w-5" />
-              </button>
-            </div>
-            <p class="text-sm text-gray-600 truncate">
-              {{ activeLikesPost.title }}
-            </p>
-          </div>
-          <div class="overflow-y-auto max-h-[60vh]">
+          <!-- Modal with enhanced styling -->
+          <div
+            class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
+            @click.stop
+          >            <!-- Premium scrollbar styling -->
             <div
-              v-for="user in activeLikesPost.post_likes"
-              :key="user.id"
-              class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100"
-            >
-              <div class="flex items-center space-x-3">
-                <NuxtLink :to="`/business-network/profile/${user.user}`">
-                  <div class="relative">
-                    <!-- Pro user badge with improved color ring around profile picture -->
-                    <div
-                      v-if="user.user_details?.is_pro"
-                      class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
-                    ></div>                    
-                    <img
-                      :src="
-                        user.user_details.image || placeholderPath
-                      "
-                      :alt="user.user_details.name"
-                      class="w-10 h-10 rounded-full cursor-pointer object-cover"
-                    />
-                    <!-- Pro text badge -->
-                    <div
-                      v-if="user.user_details?.is_pro"
-                      class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-20 text-xs font-semibold"
-                    >
-                      PRO
+              class="w-full custom-scrollbar overflow-hidden p-2 sm:p-6"
+            >              <div class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left">
+                <div class="flex items-center justify-between mb-1">
+                  <h3 class="font-semibold text-gray-800 dark:text-white text-left">Liked by</h3>
+                  <button
+                    @click="$emit('close-likes-modal')"
+                    class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                  </button>
+                </div>                <p class="text-sm text-gray-600 dark:text-slate-400 truncate text-left">
+                  {{ activeLikesPost.title }}
+                </p>
+              </div>
+              <div class="space-y-2">
+                <div
+                  v-for="user in activeLikesPost.post_likes"
+                  :key="user.id"
+                  class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 dark:border-slate-700/50"
+                >
+                  <div class="flex items-center space-x-3">
+                    <NuxtLink :to="`/business-network/profile/${user.user}`">
+                      <div class="relative">
+                        <!-- Pro user badge with improved color ring around profile picture -->
+                        <div
+                          v-if="user.user_details?.is_pro"
+                          class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
+                        ></div>                    
+                        <img
+                          :src="
+                            user.user_details.image || placeholderPath
+                          "
+                          :alt="user.user_details.name"
+                          class="w-10 h-10 rounded-full cursor-pointer object-cover"
+                        />
+                        <!-- Pro text badge -->
+                        <div
+                          v-if="user.user_details?.is_pro"
+                          class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-20 text-xs font-semibold"
+                        >
+                          PRO
+                        </div>
+                      </div>
+                    </NuxtLink>
+                    <div>
+                      <NuxtLink
+                        :to="`/business-network/profile/${user.user}`"
+                        class="font-medium hover:underline flex items-center gap-1 text-gray-800 dark:text-gray-200"
+                      >
+                        {{ user.user_details.name }}
+                      </NuxtLink>
+                      <p class="text-sm text-gray-600 dark:text-slate-400">
+                        @{{
+                          user.user_details.name.toLowerCase().replace(/\s+/g, "")
+                        }}
+                      </p>
                     </div>
                   </div>
-                </NuxtLink>
-                <div>
-                  <NuxtLink
-                    :to="`/business-network/profile/${user.user}`"
-                    class="font-medium hover:underline flex items-center gap-1"
+                  <button
+                    v-if="currentUser && user.user !== currentUser.user.id"
+                    :class="[
+                      'text-sm h-8 rounded-full px-4 flex items-center gap-1.5 font-medium shadow-sm transition-all duration-200',
+                      user.isFollowing
+                        ? 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 border border-gray-200 hover:shadow-sm hover:border-gray-300 dark:from-slate-700 dark:to-slate-600 dark:text-slate-200 dark:border-slate-600'
+                        : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-sm hover:shadow-blue-500/20',
+                    ]"
+                    @click.stop="$emit('toggle-user-follow', user)"
                   >
-                    {{ user.user_details.name }}
-                  </NuxtLink>
-                  <p class="text-sm text-gray-600">
-                    @{{
-                      user.user_details.name.toLowerCase().replace(/\s+/g, "")
-                    }}
-                  </p>
+                    <component
+                      :is="user.isFollowing ? Check : UserPlus"
+                      class="h-3.5 w-3.5"
+                    />                    {{ user.isFollowing ? "Following" : "Follow" }}
+                  </button>
                 </div>
               </div>
-              <button
-                v-if="currentUser && user.user !== currentUser.user.id"
-                :class="[
-                  'text-sm h-8 rounded-full px-4 flex items-center gap-1.5 font-medium shadow-sm transition-all duration-200',
-                  user.isFollowing
-                    ? 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 border border-gray-200 hover:shadow-sm hover:border-gray-300'
-                    : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-sm hover:shadow-blue-500/20',
-                ]"
-                @click.stop="$emit('toggle-user-follow', user)"
-              >
-                <component
-                  :is="user.isFollowing ? Check : UserPlus"
-                  class="h-3.5 w-3.5"
-                />
-                {{ user.isFollowing ? "Following" : "Follow" }}
-              </button>
             </div>
-          </div>
-        </div>
+          </div>        </div>
       </div>
     </Teleport>
 
@@ -95,40 +107,55 @@
     <Teleport to="body">
       <div
         v-if="activeCommentsPost"
-        class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center"
+        class="fixed inset-0 top-14 z-50 overflow-y-auto"
         @click="$emit('close-comments-modal')"
       >
+        <!-- Enhanced backdrop with subtle blur effect -->
         <div
-          class="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden shadow-sm"
-          @click.stop
+          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
+          aria-hidden="true"          @click="$emit('close-comments-modal')"
+        ></div>
+
+        <div
+          class="flex items-end justify-center min-h-screen pt-4 pb-20 sm:block sm:p-0"
         >
-          <div class="p-4 sm:p-5 border-b border-gray-200">
-            <div class="flex items-center justify-between mb-1">
-              <h3 class="font-semibold">Comments</h3>
-              <button
-                @click="$emit('close-comments-modal')"
-                class="hover:bg-gray-100 p-1 rounded-full transition-colors"
-              >
-                <X class="h-5 w-5" />
-              </button>
-            </div>
-            <p class="text-sm text-gray-600 truncate">
-              {{ activeCommentsPost.title }}
-            </p>
-          </div>
+          <!-- Modal with enhanced styling -->
           <div
-            ref="commentsContainerRef"
-            class="overflow-y-auto max-h-[60vh] p-3 sm:p-5 space-y-3"
+            class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
+            @click.stop
           >
-            <!-- Comments with premium glassmorphism design -->
+            <!-- Premium scrollbar styling -->
             <div
-              v-for="(comment, index) in [
-                ...activeCommentsPost.post_comments,
-              ].reverse()"
-              :key="comment.id"
-              class="flex items-start space-x-2.5"
-            >
-              <div class="flex items-start space-x-2.5 w-full">
+              class="w-full custom-scrollbar overflow-hidden p-2 sm:p-6"
+            >              <div class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left">
+                <div class="flex items-center justify-between mb-1">
+                  <h3 class="font-semibold text-gray-800 dark:text-white text-left">Comments</h3>
+                  <button
+                    @click="$emit('close-comments-modal')"
+                    class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                  </button>
+                </div>                <p class="text-sm text-gray-600 dark:text-slate-400 truncate text-left">
+                  {{ activeCommentsPost.title }}
+                </p>
+              </div>
+
+              <!-- Comments Section -->
+              <div
+                ref="commentsContainerRef"
+                class="p-3 sm:p-5 space-y-3"
+              >
+                <!-- Comments with premium glassmorphism design -->
+                <div
+                  v-for="(comment, index) in [
+                    ...activeCommentsPost.post_comments,
+                  ].reverse()"
+                  :key="comment.id"
+                  class="flex items-start space-x-2.5"
+                >
+                  <div class="flex items-start space-x-2.5 w-full">
                 <NuxtLink :to="`/business-network/profile/${comment?.author}`">
                   <div class="relative group">                    <img
                       :src="comment.author_details?.image || placeholderPath"
@@ -306,156 +333,157 @@
                     <UIcon
                       name="i-heroicons-clock"
                       class="w-3 h-3 text-gray-600 dark:text-gray-600 mr-1"
-                    />
-                    <span class="text-sm text-gray-600 dark:text-gray-600">
+                    />                    <span class="text-sm text-gray-600 dark:text-gray-600">
                       {{ formatTimeAgo(comment?.created_at) }}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="p-4 sm:p-5 border-t border-gray-200" v-if="user?.user">
-            <div class="flex items-center gap-2">
-              <div class="relative">
-                <!-- Pro user badge with improved color ring around profile picture -->
-                <div
-                  v-if="user?.user?.is_pro"
-                  class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
-                ></div>                <img
-                  :src="user?.user?.image || placeholderPath"
-                  :alt="user?.user?.name"
-                  class="w-6 h-6 rounded-full object-cover"
-                />
-                <!-- Pro text badge -->
-                <div
-                  v-if="user?.user?.is_pro"
-                  class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1 py-0.5 flex items-center justify-center shadow-sm z-20 text-xs font-semibold"
-                >
-                  PRO
-                </div>
-              </div>
-              <div class="flex-1 relative">
-                <!-- <input
-                  type="text"
-                  placeholder="Add a comment..."
-                  class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
-                  v-model="activeCommentsPost.commentText"
-                  @input="
-                    $emit('handle-comment-input', $event, activeCommentsPost)
-                  "
-                  @keydown="
-                    $emit('handle-mention-keydown', $event, activeCommentsPost)
-                  "
-                  @keyup.enter="
-                    !showMentions && $emit('add-comment', activeCommentsPost)
-                  "
-                  @click.stop
-                /> -->
-                <textarea
-                  v-model="activeCommentsPost.commentText"
-                  placeholder="Add a comment..."
-                  rows="1"
-                  class="w-full text-sm py-2.5 pr-28 pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
-                  @input="
-                    autoResize();
-                    $emit('handle-comment-input', $event, activeCommentsPost);
-                  "
-                  @focus="activeCommentsPost.showCommentInput = true"
-                  @keydown="
-                    $emit('handle-mention-keydown', $event, activeCommentsPost)
-                  "
-                />
-                <!-- Mention suggestions dropdown -->
-                <div
-                  v-if="
-                    showMentions &&
-                    mentionSuggestions.length > 0 &&
-                    activeCommentsPost === mentionInputPosition?.post
-                  "
-                  class="absolute left-0 bottom-full mb-1 w-64 bg-white rounded-lg shadow-sm border border-gray-200 z-20 max-h-48 overflow-y-auto"
-                >
-                  <div class="py-1">
+            </div>
+              <div class="p-4 sm:p-5 border-t border-gray-200 dark:border-slate-700" v-if="user?.user">
+                <div class="flex items-center gap-2">
+                  <div class="relative">
+                    <!-- Pro user badge with improved color ring around profile picture -->
                     <div
-                      v-for="(user, index) in mentionSuggestions"
-                      :key="user.id"
-                      @click="$emit('select-mention', user, activeCommentsPost)"
-                      :class="[
-                        'flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100',
-                        index === activeMentionIndex ? 'bg-gray-100' : '',
-                      ]"
+                      v-if="user?.user?.is_pro"
+                      class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
+                    ></div>                <img
+                      :src="user?.user?.image || placeholderPath"
+                      :alt="user?.user?.name"
+                      class="w-6 h-6 rounded-full object-cover"
+                    />
+                    <!-- Pro text badge -->
+                    <div
+                      v-if="user?.user?.is_pro"
+                      class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1 py-0.5 flex items-center justify-center shadow-sm z-20 text-xs font-semibold"
                     >
-                      <div class="relative">
-                        <!-- Pro user badge with improved color ring around profile picture -->
-                        <div
-                          v-if="user?.follower_details?.is_pro"
-                          class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
-                        ></div>                        <img
-                          :src="
-                            user?.follower_details?.image ||
-                            placeholderPath
-                          "
-                          :alt="user?.follower_details?.name"
-                          class="w-7 h-7 rounded-full mr-2 object-cover"
-                        />
-                        <!-- Pro text badge -->
-                        <div
-                          v-if="user?.follower_details?.is_pro"
-                          class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1 py-0.5 flex items-center justify-center shadow-sm z-20 text-xs font-semibold"
-                        >
-                          PRO
-                        </div>
-                      </div>
-                      <span class="text-sm font-medium flex items-center gap-1">
-                        {{ user?.follower_details?.name }}
-                      </span>
+                      PRO
                     </div>
                   </div>
-                </div>
-                <div
-                  v-if="activeCommentsPost.commentText"
-                  class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1"
-                >
-                  <button
-                    class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
-                    @click="activeCommentsPost.commentText = ''"
-                    aria-label="Clear comment"
-                  >
-                    <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
-                  </button>
-                  <button
-                    class="p-1 rounded-full bg-blue-500/90 mb-1 hover:bg-blue-600 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
-                    @click="$emit('add-comment', activeCommentsPost)"
-                    aria-label="Post comment"
-                  >
-                    <Send class="h-3.5 w-3.5" />
-                    <!-- Subtle glow effect -->
-                    <div
-                      class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
-                    ></div>
-                  </button>
-                  <button
-                    class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
-                    aria-label="Clear comment"
-                  >
-                    <UIcon
-                      name="i-streamline-gift-2"
-                      class="size-4 text-pink-500"
+                  <div class="flex-1 relative">
+                    <!-- <input
+                      type="text"
+                      placeholder="Add a comment..."
+                      class="w-full text-sm py-1.5 px-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-600"
+                      v-model="activeCommentsPost.commentText"
+                      @input="
+                        $emit('handle-comment-input', $event, activeCommentsPost)
+                      "
+                      @keydown="
+                        $emit('handle-mention-keydown', $event, activeCommentsPost)
+                      "
+                      @keyup.enter="
+                        !showMentions && $emit('add-comment', activeCommentsPost)
+                      "
+                      @click.stop
+                    /> -->
+                    <textarea
+                      v-model="activeCommentsPost.commentText"
+                      placeholder="Add a comment..."
+                      rows="1"
+                      class="w-full text-sm py-2.5 pr-28 pl-4 bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-400/40 shadow-sm hover:shadow-sm focus:shadow-sm transition-all duration-300 backdrop-blur-[2px] text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 resize-none overflow-y-auto leading-5 max-h-[6.5rem] no-scrollbar"
+                      @input="
+                        autoResize();
+                        $emit('handle-comment-input', $event, activeCommentsPost);
+                      "
+                      @focus="activeCommentsPost.showCommentInput = true"
+                      @keydown="
+                        $emit('handle-mention-keydown', $event, activeCommentsPost)
+                      "
                     />
-                  </button>
+                    <!-- Mention suggestions dropdown -->
+                    <div
+                      v-if="
+                        showMentions &&
+                        mentionSuggestions.length > 0 &&
+                        activeCommentsPost === mentionInputPosition?.post
+                      "
+                      class="absolute left-0 bottom-full mb-1 w-64 bg-white rounded-lg shadow-sm border border-gray-200 z-20 max-h-48 overflow-y-auto"
+                    >
+                      <div class="py-1">
+                        <div
+                          v-for="(user, index) in mentionSuggestions"
+                          :key="user.id"
+                          @click="$emit('select-mention', user, activeCommentsPost)"
+                          :class="[
+                            'flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100',
+                            index === activeMentionIndex ? 'bg-gray-100' : '',
+                          ]"
+                        >
+                          <div class="relative">
+                            <!-- Pro user badge with improved color ring around profile picture -->
+                            <div
+                              v-if="user?.follower_details?.is_pro"
+                              class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
+                            ></div>                        <img
+                              :src="
+                                user?.follower_details?.image ||
+                                placeholderPath
+                              "
+                              :alt="user?.follower_details?.name"
+                              class="w-7 h-7 rounded-full mr-2 object-cover"
+                            />
+                            <!-- Pro text badge -->
+                            <div
+                              v-if="user?.follower_details?.is_pro"
+                              class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1 py-0.5 flex items-center justify-center shadow-sm z-20 text-xs font-semibold"
+                            >
+                              PRO
+                            </div>
+                          </div>
+                          <span class="text-sm font-medium flex items-center gap-1">
+                            {{ user?.follower_details?.name }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      v-if="activeCommentsPost.commentText"
+                      class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1"
+                    >
+                      <button
+                        class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+                        @click="activeCommentsPost.commentText = ''"
+                        aria-label="Clear comment"
+                      >
+                        <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
+                      </button>
+                      <button
+                        class="p-1 rounded-full bg-blue-500/90 mb-1 hover:bg-blue-600 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
+                        @click="$emit('add-comment', activeCommentsPost)"
+                        aria-label="Post comment"
+                      >
+                        <Send class="h-3.5 w-3.5" />
+                        <!-- Subtle glow effect -->
+                        <div
+                          class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
+                        ></div>
+                      </button>
+                      <button
+                        class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+                        aria-label="Clear comment"
+                      >
+                        <UIcon
+                          name="i-streamline-gift-2"
+                          class="size-4 text-pink-500"
+                        />
+                      </button>
+                    </div>
+                    <!-- <button
+                      v-if="activeCommentsPost.commentText"
+                      class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 flex items-center gap-1"
+                      @click.stop="$emit('add-comment', activeCommentsPost)"
+                      :disabled="activeCommentsPost.isCommentLoading"
+                    >
+                      <Loader2
+                        v-if="activeCommentsPost.isCommentLoading"
+                        class="h-5 w-5 animate-spin"
+                      />
+                      <Send v-else class="h-3 w-3" />
+                    </button> -->
+                  </div>
                 </div>
-                <!-- <button
-                  v-if="activeCommentsPost.commentText"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 flex items-center gap-1"
-                  @click.stop="$emit('add-comment', activeCommentsPost)"
-                  :disabled="activeCommentsPost.isCommentLoading"
-                >
-                  <Loader2
-                    v-if="activeCommentsPost.isCommentLoading"
-                    class="h-5 w-5 animate-spin"
-                  />
-                  <Send v-else class="h-3 w-3" />
-                </button> -->
               </div>
             </div>
           </div>
@@ -663,7 +691,7 @@ const emit = defineEmits([
   "toggle-user-follow",
   "close-comments-modal",
   "handle-comment-input",
-  "handle-mention-keydown",
+  "handle-mention-keyboard",
   "add-comment",
   "cancel-delete-comment",
   "confirm-delete-comment",
@@ -805,6 +833,7 @@ onMounted(() => {
     border-box;
   -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
 }
 
@@ -818,32 +847,95 @@ onMounted(() => {
   scrollbar-width: none; /* Firefox */
 }
 
+/* Custom scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.25);
+}
+
+/* Dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+  }
+}
+
 /* Premium Gift Comment Styling */
 .gift-comment {
-  @apply relative my-2 p-3 rounded-xl overflow-hidden bg-gradient-to-r from-pink-100/90 via-pink-50/80 to-fuchsia-100/70 border border-pink-200/60 shadow-sm transition-all duration-300;
+  position: relative;
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: linear-gradient(to right, rgba(251, 207, 232, 0.9), rgba(251, 207, 232, 0.8), rgba(232, 121, 249, 0.7));
+  border: 1px solid rgba(244, 114, 182, 0.6);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
 .dark .gift-comment {
-  @apply from-pink-900/30 via-pink-800/25 to-fuchsia-900/30 border-pink-700/40;
+  background: linear-gradient(to right, rgba(131, 24, 67, 0.3), rgba(190, 24, 93, 0.25), rgba(131, 24, 67, 0.3));
+  border-color: rgba(190, 24, 93, 0.4);
 }
 
 .gift-comment:hover {
-  @apply -translate-y-0.5 shadow-sm;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 /* Gift sender info styling */
 .gift-sender-info {
-  @apply text-xs text-pink-600 dark:text-pink-400;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgb(219, 39, 119);
+}
+
+.dark .gift-sender-info {
+  color: rgb(244, 114, 182);
 }
 
 /* Gift message styling */
 .gift-message-text {
-  @apply text-sm leading-relaxed text-gray-800 dark:text-gray-300 mt-1;
+  font-size: 0.875rem;
+  line-height: 1.625;
+  color: rgb(31, 41, 55);
+  margin-top: 0.25rem;
+}
+
+.dark .gift-message-text {
+  color: rgb(209, 213, 219);
 }
 
 /* Top Gift Comment Styling */
 .gift-comment-premium {
-  @apply relative p-3 rounded-xl overflow-hidden border-pink-300/40 shadow-sm transition-all duration-300;
+  position: relative;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(244, 114, 182, 0.4);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
   background: linear-gradient(
     135deg,
     rgba(253, 242, 248, 0.9) 0%,
@@ -853,7 +945,7 @@ onMounted(() => {
 }
 
 .dark .gift-comment-premium {
-  @apply border-pink-700/40;
+  border-color: rgba(190, 24, 93, 0.4);
   background: linear-gradient(
     135deg,
     rgba(131, 24, 67, 0.3) 0%,
