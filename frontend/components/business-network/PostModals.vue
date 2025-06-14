@@ -129,7 +129,7 @@
           >
             <!-- Premium scrollbar styling -->
             <div
-              class="w-full custom-scrollbar overflow-hidden p-2 sm:py-6"
+              class="w-full custom-scrollbar overflow-hidden p-2"
             ><div class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left">
                 <div class="flex items-center justify-between mb-1">
                   <h3 class="font-semibold text-gray-800 dark:text-white text-left">Comments</h3>
@@ -425,7 +425,7 @@
                     ></div>                <img
                       :src="user?.user?.image || placeholderPath"
                       :alt="user?.user?.name"
-                      class="w-6 h-6 rounded-full object-cover"
+                      class="size-7 rounded-full object-cover"
                     />
                    
                   </div>
