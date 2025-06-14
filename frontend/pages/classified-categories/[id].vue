@@ -599,16 +599,15 @@
           background: 'bg-slate-50 dark:bg-gray-900',
           ring: 'ring-0 ring-gray-200 dark:ring-gray-800',
         }"
-      >
-        <AiResults
+      >        <AiResults
           :country="form.country"
           :state="location?.allOverBangladesh ? 'All Bangladesh' : form.state"
           :city="location?.allOverBangladesh ? 'All Cities' : form.city"
           :upazila="location?.allOverBangladesh ? 'All Areas' : form.upazila"
           :business_type="categoryDetails?.business_type"
-        />      </UCard>
-    </UContainer>
-  </div>
+        />
+      </UCard>    </UContainer>
+  </PublicSection>
 </template>
 
 <script setup>
