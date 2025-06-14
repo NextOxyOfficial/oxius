@@ -39,9 +39,8 @@
           'border-gray-200': selectedBatch !== batch.code,
         }"
       >
-        <div class="flex flex-col items-center space-y-2 text-center">        
-          <div class="p-1.5 flex rounded-lg" :class="getBatchColor(batch.name) ">
-            <UIcon v-if="batch.icon" :name="String(batch.icon)" class="size-7" />
+        <div class="flex flex-col items-center space-y-2 text-center">            <div class="p-1.5 flex rounded-lg" :class="getBatchColor(batch.name) ">
+            <UIcon v-if="batch.icon" :name="String(batch.icon)" class="size-7" :class="getBatchTextColor(batch.code)" />
 
             <svg
               v-else
@@ -153,11 +152,11 @@ function getBatchColor(code) {
 function getBatchTextColor(code) {
   switch (code) {
     case "SSC":
-      return "text-blue-600";
+      return "text-blue-700";
     case "HSC":
-      return "text-purple-600";
+      return "text-purple-700";
     default:
-      return "text-gray-600";
+      return "text-gray-700";
   }
 }
 

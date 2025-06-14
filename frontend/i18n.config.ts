@@ -207,7 +207,7 @@ export default defineI18nConfig(() => ({
       select_your_batch: "Select Your Batch",
       select_your_division: "Select Your Division",
       select_your_subject: "Select Your Subject",
-      interactive_education: "Interactive education for SSC and HSC students",
+      interactive_education: "Interactive education for the students",
       video_lessons_desc:
         "Interactive educational content for your selected subject",
       step_1_of_4: "Step 1 of 4",
@@ -543,7 +543,7 @@ export default defineI18nConfig(() => ({
       select_your_division: "আপনার বিভাগ নির্বাচন করুন",
       select_your_subject: "আপনার বিষয় নির্বাচন করুন",
       interactive_education:
-        "এসএসসি এবং এইচএসসি ছাত্রদের জন্য ইন্টারেক্টিভ শিক্ষা",
+        "ছাত্র-ছাত্রীদের জন্য ইন্টারেক্টিভ শিক্ষা",
       video_lessons_desc:
         "ইন্টারেক্টিভ শিক্ষামূলক বিষয়বস্তু আপনার নির্বাচিত বিষয়ের জন্য",
       step_1_of_4: "ধাপ ১ / ৪",
