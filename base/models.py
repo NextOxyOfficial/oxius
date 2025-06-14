@@ -68,7 +68,6 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=True)
     phone = models.CharField(
         unique=True, max_length=100, default='', blank=True)
-    phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
     email = models.EmailField(unique=True, default='', null=True)
     age = models.IntegerField(blank=True, null=True)
     gender = models.CharField(max_length=10, blank=True, null=True)
