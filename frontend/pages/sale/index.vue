@@ -410,10 +410,10 @@
 
             <div v-else-if="!listings?.length" class="py-8 text-center">
               <p class="text-gray-600">No listings found in this category</p>
-            </div>              <div
+            </div>            <div
               v-else
-              class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 w-full"
-            >            <NuxtLink
+              class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 w-full"
+            ><NuxtLink
                 v-for="(post, i) in listings"
                 :key="`post-${i}`"
                 :to="`/sale/${post.slug}`"
