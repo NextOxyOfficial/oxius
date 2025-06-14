@@ -377,10 +377,13 @@
                   class="h-full w-full object-cover"
                 />
               </div>              <div>
-                <div class="flex items-center justify-between">
-                  <h3 class="font-semibold text-gray-800">
+                <div class="flex items-center">
+                  <NuxtLink
+                    :to="`/sale/user-profile/${product.user_details?.id}`"
+                    class="font-semibold text-gray-800 hover:text-emerald-600 transition-colors duration-200 cursor-pointer"
+                  >
                     {{ product.user_details?.name }}
-                  </h3>
+                  </NuxtLink>
                   <div class="flex items-center space-x-1 ml-2">
                     <UIcon
                       v-if="product.user_details?.kyc"
