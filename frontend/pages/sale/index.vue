@@ -467,22 +467,21 @@
                   </div>
                 </div>              
               </NuxtLink>
-            </div>
-            
+            </div>            
             <!-- Load More Button -->
             <div v-if="hasMoreListings && !loading" class="flex justify-center mt-8">
               <button
                 @click="loadMorePosts"
                 :disabled="isLoadingMore"
-                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+                class="text-emerald-600 hover:text-emerald-700 disabled:text-gray-400 font-medium transition-colors duration-200 flex items-center gap-2 hover:underline"
               >
                 <UIcon 
                   v-if="isLoadingMore" 
                   name="i-heroicons-arrow-path" 
-                  class="animate-spin h-5 w-5" 
+                  class="animate-spin h-4 w-4" 
                 />
                 <span v-if="isLoadingMore">Loading more...</span>
-                <span v-else>Load More Posts</span>
+                <span v-else>See More</span>
               </button>
             </div>
             
