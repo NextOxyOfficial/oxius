@@ -334,14 +334,17 @@ const displayedComments = computed(() => {
   if (!props.post?.post_comments?.length) return [];
 
   let comments = [...props.post.post_comments];
-
   // If there's a highest gift comment, remove it from the regular comments list
   if (highestGiftComment.value) {
     comments = comments.filter(
       (comment) => comment.id !== highestGiftComment.value.id
     );
   }
-  // Return the last 3 comments (most recent ones, already properly ordered)
+  
+  // Sort comments by creation date in ascending order (oldest first)
+  comments.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  
+  // Return the last 3 comments (most recent ones at the bottom)
   return comments.slice(-3);
 });
 
