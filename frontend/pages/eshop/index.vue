@@ -4,17 +4,19 @@
   >
     <!-- Premium Banner Slider with Enhanced Visual Effects -->
     <div class="pt-4 pb-2 mb-2">
-      <UContainer>        <CommonEshopBanner
+      <UContainer>
+        <CommonEshopBanner
           :customHeight="{
             mobile: '38%',
             tablet: '25%',
-            desktop: '22%'
+            desktop: '22%',
           }"
           endpoint="/eshop-banner/"
           :autoplayInterval="5000"
         />
       </UContainer>
-    </div>    <UContainer>
+    </div>
+    <UContainer>
       <!-- Categories Sidebar Component -->
       <CommonEshopCategoriesSidebar
         :isOpen="isSidebarOpen"
@@ -325,7 +327,11 @@
 </template>
 
 <script setup>
-import { CommonHotDealsSection, CommonEshopBanner, CommonEshopCategoriesSidebar } from "#components";
+import {
+  CommonHotDealsSection,
+  CommonEshopBanner,
+  CommonEshopCategoriesSidebar,
+} from "#components";
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 const { get } = useApi();
 const products = ref({});
