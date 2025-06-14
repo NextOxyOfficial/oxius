@@ -380,8 +380,42 @@
                 </div>
               </div>
             </div>
-          </NuxtLink>
-        </UCard>
+          </NuxtLink>        </UCard>          <!-- Simple Pagination Section -->
+        <div v-if="search?.length && pagination && totalPages > 1" class="mt-6 mb-4">
+          <div class="flex items-center justify-center gap-2 text-sm">
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            
+            <!-- Previous button -->
+            <button
+              :disabled="currentPage === 1"
+              @click="goToPage(currentPage - 1)"
+              class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              Previous
+            </button>
+            
+            <!-- Page numbers -->
+            <button
+              v-for="page in getVisiblePages()"
+              :key="page"
+              @click="goToPage(page)"
+              class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
+              :class="page === currentPage ? 'bg-blue-500 text-white border-blue-500' : ''"
+            >
+              {{ page }}
+            </button>
+            
+            <!-- Next button -->
+            <button
+              :disabled="currentPage === totalPages"
+              @click="goToPage(currentPage + 1)"
+              class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+        
         <UDivider label="" class="mt-2 sm:mt-5" />
         <h3
           v-if="!location?.allOverBangladesh"
@@ -623,6 +657,14 @@ const isLoading = ref(false);
 const isNearByLoading = ref(false);
 const searchLocationOption = ref(false);
 
+// Pagination variables
+const currentPage = ref(1);
+const totalPages = ref(1);
+const totalCount = ref(0);
+const isLoadingMore = ref(false);
+const hasMore = ref(false);
+const pagination = ref(null);
+
 // Handle scroll events for header compensation
 const isScrolled = ref(false);
 const handleScroll = () => {
@@ -729,7 +771,7 @@ watch(
 
 // geo filter
 
-async function filterSearch() {
+async function filterSearch(page = 1) {
   // Preserve allOverBangladesh flag if it exists in the current location
   const { title, category, ...rest } = form.value;
   const locationData = {
@@ -737,11 +779,17 @@ async function filterSearch() {
     allOverBangladesh: location.value?.allOverBangladesh || false,
   };
   location.value = locationData;
-  search.value = [];
-  isLoading.value = true;
+  
+  if (page === 1) {
+    search.value = [];
+    currentPage.value = 1;
+    isLoading.value = true;
+  } else {
+    isLoadingMore.value = true;
+  }
 
-  // Build the API request URL
-  let apiUrl = `/classified-posts/filter/?category=${categoryDetails.value.id}&title=${form.value.title}&country=${form.value.country}`;
+  // Build the API request URL with pagination
+  let apiUrl = `/classified-posts/filter/?category=${categoryDetails.value.id}&title=${form.value.title}&country=${form.value.country}&page=${page}&page_size=20`;
 
   // Only add state, city, and upazila params if not showing all over Bangladesh
   if (!location.value?.allOverBangladesh) {
@@ -751,18 +799,73 @@ async function filterSearch() {
   const res = await get(apiUrl);
 
   setTimeout(() => {
-    if (res.data?.length > 0) {
-      search.value = res.data;
-      searchError.value = false;
+    if (res.data) {
+      if (res.data.results && res.data.results.length > 0) {
+        if (page === 1) {
+          search.value = res.data.results;
+        } else {
+          search.value = [...search.value, ...res.data.results];
+        }
+        
+        // Update pagination info
+        pagination.value = res.data;
+        totalCount.value = res.data.count || 0;
+        totalPages.value = Math.ceil(totalCount.value / 20);
+        hasMore.value = !!res.data.next;
+        currentPage.value = page;
+        searchError.value = false;
+      } else if (Array.isArray(res.data) && res.data.length > 0) {
+        // Handle non-paginated response (fallback)
+        if (page === 1) {
+          search.value = res.data;
+        } else {
+          search.value = [...search.value, ...res.data];
+        }
+        searchError.value = false;
+      } else {
+        if (page === 1) {
+          searchError.value = true;
+        }
+      }
     } else {
-      searchError.value = true;
+      if (page === 1) {
+        searchError.value = true;
+      }
     }
+    
     isLoading.value = false;
+    isLoadingMore.value = false;
   }, 2000);
 }
 if (location.value) {
   filterSearch();
 }
+
+// Function to load more posts
+async function loadMorePosts() {
+  if (!hasMore.value || isLoadingMore.value) return;
+  await filterSearch(currentPage.value + 1);
+}
+
+// Function to go to specific page
+async function goToPage(page) {
+  if (page < 1 || page > totalPages.value || page === currentPage.value) return;
+  await filterSearch(page);
+}
+
+// Helper function to get visible page numbers
+function getVisiblePages() {
+  const pages = [];
+  const start = Math.max(1, currentPage.value - 2);
+  const end = Math.min(totalPages.value, currentPage.value + 2);
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  
+  return pages;
+}
+
 const nearby_services = ref([]);
 // Add this function to your script setup
 async function fetchNearbyAds() {
@@ -773,14 +876,22 @@ async function fetchNearbyAds() {
   // If showing all over Bangladesh, get a sample of ads from across the country
   if (location.value.allOverBangladesh) {
     const countrySearchRes = await get(
-      `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}`
+      `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&page=1&page_size=20`
     );
 
-    nearby_services.value = countrySearchRes.data.filter(
-      (service) =>
-        service.service_status.toLowerCase() === "approved" &&
-        service.active_service
-    );
+    if (countrySearchRes.data?.results) {
+      nearby_services.value = countrySearchRes.data.results.filter(
+        (service) =>
+          service.service_status.toLowerCase() === "approved" &&
+          service.active_service
+      );
+    } else if (Array.isArray(countrySearchRes.data)) {
+      nearby_services.value = countrySearchRes.data.filter(
+        (service) =>
+          service.service_status.toLowerCase() === "approved" &&
+          service.active_service
+      );
+    }
 
     isNearByLoading.value = false;
     return;
@@ -788,13 +899,21 @@ async function fetchNearbyAds() {
 
   // First try: search in the same city, any upazila
   const citySearchRes = await get(
-    `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
+    `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}&page=1&page_size=20`
   );
 
   // If city search has results, use those
   console.log("near by", citySearchRes.data);
-  if (citySearchRes.data?.length > 0) {
-    nearby_services.value = citySearchRes.data.filter(
+  let nearbyData = [];
+  
+  if (citySearchRes.data?.results) {
+    nearbyData = citySearchRes.data.results;
+  } else if (Array.isArray(citySearchRes.data)) {
+    nearbyData = citySearchRes.data;
+  }
+
+  if (nearbyData.length > 0) {
+    nearby_services.value = nearbyData.filter(
       (service) =>
         service.service_status.toLowerCase() === "approved" &&
         service.active_service
@@ -805,10 +924,17 @@ async function fetchNearbyAds() {
 
   // Second try: search in the same state, any city
   const stateSearchRes = await get(
-    `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}`
+    `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}&page=1&page_size=20`
   );
 
-  nearby_services.value = stateSearchRes.data.filter(
+  let stateData = [];
+  if (stateSearchRes.data?.results) {
+    stateData = stateSearchRes.data.results;
+  } else if (Array.isArray(stateSearchRes.data)) {
+    stateData = stateSearchRes.data;
+  }
+
+  nearby_services.value = stateData.filter(
     (service) =>
       service.service_status.toLowerCase() === "approved" &&
       service.active_service
@@ -831,6 +957,17 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
+});
+
+watch([
+  () => form.value.country,
+  () => form.value.state,
+  () => form.value.city,
+  () => form.value.upazila,
+  () => form.value.title
+], () => {
+  currentPage.value = 1;
+  filterSearch(1);
 });
 </script>
 <style scoped>
@@ -978,4 +1115,6 @@ onUnmounted(() => {
     box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
   }
 }
+
+/* Pagination specific animations - removed advanced animations */
 </style>

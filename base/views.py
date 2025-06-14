@@ -711,14 +711,18 @@ class GetClassifiedPosts(generics.ListAPIView):
         return queryset
 
 
-class ClassifiedCategoryPostFilterView(APIView):
-    def get(self, request):
-        country = request.GET.get('country')
-        state = request.GET.get('state')
-        city = request.GET.get('city')
-        upazila = request.GET.get('upazila')
-        category = request.GET.get('category')
-        title = request.GET.get('title')
+class ClassifiedCategoryPostFilterView(generics.ListAPIView):
+    serializer_class = ClassifiedPostSerializer
+    pagination_class = ClassifiedPostPagination
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        country = self.request.GET.get('country')
+        state = self.request.GET.get('state')
+        city = self.request.GET.get('city')
+        upazila = self.request.GET.get('upazila')
+        category = self.request.GET.get('category')
+        title = self.request.GET.get('title')
 
         # Filter based on the query parameters
         filters = Q()
@@ -735,11 +739,8 @@ class ClassifiedCategoryPostFilterView(APIView):
         if upazila:
             filters &= Q(upazila__iexact=upazila)
 
-        posts = ClassifiedCategoryPost.objects.filter(filters)
-
-        print(posts)
-        serializer = ClassifiedPostSerializer(posts, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        posts = ClassifiedCategoryPost.objects.filter(filters).order_by('-created_at')
+        return posts
 
 
 @api_view(['GET'])
