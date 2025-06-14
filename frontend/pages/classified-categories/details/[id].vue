@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-6xl mx-auto -mt-3">
+  <div class="max-w-6xl mx-auto -mt-3 mb-8">
     <!-- Breadcrumb -->
     <nav class="flex items-center text-sm my-6 px-3 pt-4">
       <NuxtLink to="/" class="text-gray-500 hover:text-emerald-600">Home</NuxtLink>
