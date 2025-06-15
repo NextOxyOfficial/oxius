@@ -422,14 +422,14 @@
         </UCard>
       </USlideover>
 
-      <div class="flex items-center justify-between gap-2 lg:gap-6 px-3">
+      <div class="flex items-center justify-between gap-2 lg:gap-6 pr-3">
         <!-- Mobile Layout: Menu Button and Logo -->
         <div class="flex items-center gap-1">
           <!-- Mobile Menu Button -->
           <div class="md:hidden">
             <UButton
               @click="isOpen = true"
-              icon="i-heroicons-bars-3"
+              icon="i-heroicons-bars-4"
               variant="ghost"
               color="gray"
               class="hover:bg-gray-100 rounded-lg transition-all duration-200"
