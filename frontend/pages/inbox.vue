@@ -1431,8 +1431,8 @@ function formatUpdateType(notificationType) {
     order_received: 'Order',
     withdraw_successful: 'Withdrawal',
     mobile_recharge_successful: 'Recharge',
-    pro_subscribed: 'Pro Subscription',
-    pro_expiring: 'Pro Expiring',
+    pro_subscribed: 'Pro',
+    pro_expiring: 'Pro Ending',
     gig_posted: 'Gig Posted',
     general: 'General'
   };
