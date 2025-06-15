@@ -29,20 +29,34 @@
               @keyup="handleKeyup"
               @paste="handlePaste"
               data-placeholder="Add a comment... (Type @ to mention users)"
-            ></div>
-            <!-- Action buttons positioned inline with the text -->
+            ></div>            <!-- Action buttons positioned inline with the text -->
             <div
-              v-if="hasContent"
               class="flex items-center gap-1 ml-2 self-end"
             >
+              <!-- Gift button - always visible when not own post -->
               <button
+                v-if="post.author_details.id !== user?.user?.id"
+                ref="giftButtonRef"
+                class="p-1.5 rounded-full text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 hover:bg-pink-50/80 dark:hover:bg-pink-900/20 transition-all duration-300"
+                aria-label="Send Gift"
+                @click="toggleDiamondDropup"
+              >
+                <UIcon name="i-streamline-gift-2" class="h-4 w-4" />
+              </button>
+
+              <!-- Clear button - only when has content -->
+              <button
+                v-if="hasContent"
                 class="p-1.5 rounded-full text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
                 @click="clearComment"
                 aria-label="Clear comment"
               >
                 <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
               </button>            
+              
+              <!-- Send button - only when has content -->
               <button
+                v-if="hasContent"
                 class="p-1.5 rounded-full bg-blue-500/90 hover:bg-blue-600 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300 relative"
                 @click="handlePostComment"
                 aria-label="Post comment"
@@ -55,34 +69,19 @@
               </button>
             </div>
           </div>
-          
-          <!-- Subtle gradient line under input on focus -->
+            <!-- Subtle gradient line under input on focus -->
           <div
             class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 focus-within:scale-x-100 transition-transform duration-300"
           ></div>
         </div>
       </div>
 
-      <!-- Gift button moved outside of input -->
-      <div class="relative" v-if="post.author_details.id !== user?.user?.id">
-        <button
-          ref="giftButtonRef"
-          class="px-2 pt-2 rounded-full text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 bg-pink-50/80 dark:bg-pink-900/20 hover:bg-pink-100/80 dark:hover:bg-pink-900/30 transition-all duration-300 shadow-sm hover:shadow"
-          aria-label="Send Gift"
-          @click="toggleDiamondDropup"
-        >
-          <UIcon name="i-streamline-gift-2" class="size-5" />
-          <span v-if="showDiamondDropup" class="sr-only"
-            >Close diamond purchase</span
-          >
-        </button>
-
-        <!-- Diamond Purchase Dropup -->
-        <div
-          v-if="showDiamondDropup"
-          ref="dropupRef"
-          class="absolute right-0 bottom-full mb-2 w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-sm border border-pink-100/60 dark:border-pink-900/30 z-30 animate-fade-in-up diamond-dropup overflow-hidden"
-        >
+      <!-- Diamond Purchase Dropup positioned relative to gift button -->
+      <div
+        v-if="showDiamondDropup"
+        ref="dropupRef"
+        class="absolute right-0 bottom-full mb-2 w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-sm border border-pink-100/60 dark:border-pink-900/30 z-30 animate-fade-in-up diamond-dropup overflow-hidden"
+      >
           <!-- Main gift interface -->
           <div v-if="!showBuyDiamonds" class="pt-2 pb-3">
             <!-- Header with diamond icon and balance -->
@@ -466,9 +465,7 @@
               Start typing to search for users...
             </div>
             <div v-else>
-              No users found for "{{ mentionSearchText }}"
-            </div>
-          </div>
+              No users found for "{{ mentionSearchText }}"          </div>
         </div>
       </div>
     </div>
