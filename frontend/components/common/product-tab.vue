@@ -80,7 +80,7 @@
       </div>
     </div>
 
-    <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
+    <div class="px-2 sm:px-6 py-5 border-b border-gray-200 bg-gray-50">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between">
         <div class="flex items-center space-x-2">
           <ShoppingCart class="h-5 w-5 text-indigo-600" />

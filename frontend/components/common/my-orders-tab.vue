@@ -112,7 +112,8 @@
             name="i-heroicons-arrow-path"
             class="h-6 w-6 animate-spin text-gray-600"
           />
-        </div>        <div class="flex items-center justify-between">
+        </div>        
+        <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Delivered Orders</p>
             <p class="text-xl font-semibold text-gray-800">
@@ -132,14 +133,14 @@
           ৳{{ formatAmount(orderStats.delivered_amount) }}
         </p>
       </div>
-    </div>
-
-    <div class="px-6 py-5 border-b border-gray-200 bg-gray-50">
+    </div>    <div class="px-2 sm:px-6 py-5 border-b border-gray-200 bg-gray-50">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between">
         <div class="flex items-center space-x-2">
           <ShoppingBag class="h-5 w-5 text-indigo-600" />
           <h2 class="text-xl font-semibold text-gray-800">My Orders</h2>
-        </div>        <div class="mt-3 md:mt-0 flex items-center space-x-4">
+        </div>        
+        <!-- Desktop: Controls on the right with search -->
+        <div class="hidden md:flex items-center space-x-4">
           <UButton
             @click="retryLoadOrders"
             color="gray"
@@ -169,13 +170,58 @@
               type="text"
               v-model="orderSearch"
               placeholder="Search orders..."
-              class="block w-full pr-10 py-2 pl-1.5 sm:text-sm border-gray-300 rounded-md focus:outline-none"
+              class="block w-full pr-10 py-2 pl-3 sm:text-sm border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
             />
             <div
               class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
             >
               <Search class="h-5 w-5 text-gray-600" />
             </div>
+          </div>
+        </div>
+        
+        <!-- Mobile: Centered controls without search -->
+        <div class="mt-3 md:hidden flex items-center justify-center space-x-4">
+          <UButton
+            @click="retryLoadOrders"
+            color="gray"
+            variant="outline"
+            size="sm"
+            icon="i-heroicons-arrow-path"
+            :loading="isOrdersLoading"
+            title="Refresh orders"
+          >
+            Refresh
+          </UButton>
+          <div class="relative">
+            <select
+              v-model="orderFilter"
+              class="block w-full pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none sm:text-sm rounded-md"
+            >
+              <option value="all">All Orders</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mobile: Search Section Below (centered) -->
+      <div class="mt-4 md:hidden flex justify-center">
+        <div class="relative rounded-md shadow-sm w-full max-w-sm">
+          <input
+            type="text"
+            v-model="orderSearch"
+            placeholder="Search orders..."
+            class="block w-full pr-10 py-2 pl-3 sm:text-sm border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <div
+            class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+          >
+            <Search class="h-5 w-5 text-gray-600" />
           </div>
         </div>
       </div>
