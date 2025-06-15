@@ -510,7 +510,7 @@ onMounted(() => {
 
 /* Multi-line comment styling */
 .text-sm {
-  line-height: 1.4; /* Better line spacing for multi-line content */
+  line-height: 2; /* Better line spacing for multi-line content */
   white-space: pre-wrap; /* Preserve whitespace formatting */
 }
 

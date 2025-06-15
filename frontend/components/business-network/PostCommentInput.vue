@@ -21,12 +21,12 @@
           <div class="flex items-center gap-1.5 px-3 min-h-[38px]">              
             <!-- Contenteditable div for inline mentions and text -->            <div
               ref="commentInputRef"
-              contenteditable="true"
-              class="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none text-gray-800 dark:text-gray-300 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-input-editable"
+              contenteditable="true"              class="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none text-gray-800 dark:text-gray-300 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-input-editable"
               :style="{ minHeight: '20px' }"
               @input="handleContentEditableInput"
               @focus="post.showCommentInput = true"
               @keydown="handleKeydown"
+              @keyup="handleKeyup"
               @paste="handlePaste"
               data-placeholder="Add a comment... (Type @ to mention users)"
             ></div>
@@ -716,12 +716,49 @@ onMounted(() => {
   
   // Initialize mention count
   nextTick(() => {
+    updateInlineMentionCount();  });
+});
+
+// Add mutation observer to watch for content changes
+let mutationObserver = null;
+
+onMounted(() => {
+  document.addEventListener("click", handleClickOutside);
+  // Initialize with empty state - mentions are only created by selection
+  
+  // Initialize mention count
+  nextTick(() => {
     updateInlineMentionCount();
+      // Set up mutation observer to watch for DOM changes that affect height
+    if (commentInputRef.value) {
+      mutationObserver = new MutationObserver((mutations) => {
+        // Only trigger resize if there are significant changes
+        const hasSignificantChanges = mutations.some(mutation => 
+          mutation.type === 'childList' && 
+          (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)
+        );
+        
+        if (hasSignificantChanges) {
+          // Use debounced resize to prevent shaking
+          debouncedAutoResize();
+        }
+      });
+      
+      mutationObserver.observe(commentInputRef.value, {
+        childList: true,
+        subtree: false // Only watch direct children to reduce sensitivity
+      });
+    }
   });
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside);
+  
+  // Disconnect mutation observer
+  if (mutationObserver) {
+    mutationObserver.disconnect();
+  }
 });
 
 // Close diamond dropup
@@ -981,22 +1018,31 @@ const searchMentions = async (query) => {
 
 // Clear all content - ONLY called by explicit clear button click
 const clearComment = () => {
-  console.log('🧹 clearComment called explicitly');
-  
+  console.log('🧹 clearComment called explicitly');  
   props.post.commentText = '';
   displayCommentText.value = '';
   
   // Clear contenteditable content
   if (commentInputRef.value) {
     commentInputRef.value.innerHTML = '';
+    // Force immediate height reset
+    commentInputRef.value.style.height = '20px';
   }
-    safelyClearMentions('explicit clear button click');
+  
+  safelyClearMentions('explicit clear button click');
   
   // Update mention count after clearing
   updateInlineMentionCount();
-  
-  // Reset height after clearing
-  autoResize();
+    // Reset height after clearing with smooth transition
+  if (commentInputRef.value) {
+    commentInputRef.value.style.transition = 'height 0.2s ease-out';
+    commentInputRef.value.style.height = '20px';
+    setTimeout(() => {
+      if (commentInputRef.value) {
+        commentInputRef.value.style.transition = '';
+      }
+    }, 200);
+  }
 };
 
 // Computed property to check if content exists
@@ -1038,10 +1084,11 @@ const handleContentEditableInput = (event) => {
   
   // Update mention count in case chips were deleted
   updateInlineMentionCount();
-    // Handle mention detection
+  
+  // Handle mention detection
   detectAndShowMentions(event.target);
   
-  // Auto resize with debouncing for smooth performance
+  // Always use debounced resize to prevent shaking
   debouncedAutoResize();
   
   // Emit to parent
@@ -1263,15 +1310,19 @@ const insertMentionChip = (selectedUser) => {
   handleContentEditableInput({ target: commentInputRef.value });
 };
 
-// Debounced auto-resize for frequent updates
+// Debounced auto-resize for frequent updates with better control
 let resizeTimeout = null;
+let isResizing = false;
+
 const debouncedAutoResize = () => {
   if (resizeTimeout) {
     clearTimeout(resizeTimeout);
   }
   resizeTimeout = setTimeout(() => {
-    autoResize();
-  }, 50);
+    if (!isResizing) {
+      autoResize();
+    }
+  }, 100); // Increased debounce time for smoother behavior
 };
 
 // Combined keydown handler for mentions and auto-resize
@@ -1279,17 +1330,22 @@ const handleKeydown = (event) => {
   // First handle mention functionality
   handleMentionKeydown(event);
   
-  // Then handle auto-resize for specific keys
-  const resizeTriggerKeys = ['Backspace', 'Delete', 'Enter'];
-  if (resizeTriggerKeys.includes(event.key)) {
-    // Use a small delay to ensure the content change has been processed
-    setTimeout(() => {
-      autoResize();
-    }, 10);
+  // Only trigger resize on specific events to reduce shaking
+  // We'll let the input handler and debounced resize handle most cases
+};
+
+// Simplified keyup handler - only for critical delete operations
+const handleKeyup = (event) => {
+  // Only resize on delete operations when content is significantly changed
+  if ((event.key === 'Backspace' || event.key === 'Delete') && commentInputRef.value) {
+    const isEmpty = !commentInputRef.value.textContent.trim() && 
+                   commentInputRef.value.querySelectorAll('.mention-chip-inline').length === 0;
+    
+    // Only trigger immediate resize if input becomes empty or very small
+    if (isEmpty || commentInputRef.value.textContent.length < 10) {
+      debouncedAutoResize();
+    }
   }
-  
-  // No automatic posting on Enter - users should click the send button
-  // This allows Enter to create line breaks naturally
 };
 
 // Override the selectMention function to use inline insertion
@@ -1398,23 +1454,44 @@ const removeMention = (mentionToRemove) => {
 
 // Auto-resize contenteditable div
 const autoResize = () => {
+  if (isResizing) return; // Prevent concurrent resize operations
+  
+  isResizing = true;
+  
   nextTick(() => {
     if (commentInputRef.value) {
-      // First reset height to minimum to get accurate scrollHeight
-      commentInputRef.value.style.height = '20px';
+      // Store current scroll position to prevent jumping
+      const scrollTop = commentInputRef.value.scrollTop;
       
-      // Force a reflow to ensure the height reset takes effect
-      commentInputRef.value.offsetHeight;
-      
-      // Get the actual content height
+      // Get current content height without changing the element
+      const currentHeight = commentInputRef.value.clientHeight;
       const scrollHeight = commentInputRef.value.scrollHeight;
       
-      // Set to minimum height (20px) or calculated height, whichever is larger
-      const newHeight = Math.max(20, Math.min(scrollHeight, 120));
-      commentInputRef.value.style.height = newHeight + 'px';
+      // Only resize if there's a significant difference
+      const targetHeight = Math.max(20, Math.min(scrollHeight + 2, 120));
       
-      console.log('🔧 Auto-resize:', { scrollHeight, newHeight });
+      if (Math.abs(currentHeight - targetHeight) > 2) {
+        // Apply height change with transition for smooth resize
+        commentInputRef.value.style.transition = 'height 0.1s ease-out';
+        commentInputRef.value.style.height = targetHeight + 'px';
+        
+        // Restore scroll position
+        if (scrollTop > 0) {
+          commentInputRef.value.scrollTop = scrollTop;
+        }
+        
+        // Remove transition after animation
+        setTimeout(() => {
+          if (commentInputRef.value) {
+            commentInputRef.value.style.transition = '';
+          }
+        }, 100);
+      }
+      
+      console.log('🔧 Auto-resize:', { currentHeight, scrollHeight, targetHeight });
     }
+    
+    isResizing = false;
   });
 };
 
