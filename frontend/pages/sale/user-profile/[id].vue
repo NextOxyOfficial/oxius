@@ -1,6 +1,7 @@
 <template>
-  <div class="max-w-6xl mx-auto px-1 py-6">
-    <!-- Seller Profile Header -->    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+  <div class="max-w-6xl mx-auto px-1 py-3">
+    <!-- Seller Profile Header -->    
+     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <div
         class="relative h-40 bg-gradient-to-r from-emerald-600 to-emerald-800 overflow-hidden"
         :style="seller.image ? `background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('${seller.image}'); background-size: cover; background-position: center;` : ''"
@@ -39,7 +40,8 @@
         <div
           class="flex flex-col md:flex-row md:items-end justify-between -mt-4"
         >
-          <div>            <div class="flex items-center justify-between">
+          <div>            
+            <div class="flex items-center">
               <h1 class="text-2xl font-bold text-gray-800">
                 {{ seller.name }}
               </h1>
@@ -93,9 +95,9 @@
     </div>
 
     <!-- Seller Details Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
       <!-- About & Contact - 1 column on large screens -->
-      <div class="lg:col-span-1 space-y-6">
+      <div class="lg:col-span-1 space-y-3">
         <!-- About Section -->
         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div class="p-5">
@@ -157,13 +159,13 @@
       <div class="lg:col-span-2">
         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div class="py-5 px-1 sm:px-4">
-            <div class="max-sm:flex-block flex items-center justify-between max-sm:mb-4">
+            <div class="max-sm:flex-block items-center justify-between max-sm:mb-4">
               <h2 class="text-lg mb-4 font-bold text-gray-800 flex items-center">
                 <ShoppingBag class="h-5 w-5 mr-2 text-emerald-600" />
                 {{ seller.name }}'s Listings ({{ seller.sale_post_count }})
               </h2>
 
-              <div class="flex items-center max-sm:justify-center space-x-2">
+              <div class="flex items-center sm:mb-2 max-sm:justify-center space-x-2">
                 <select
                   v-model="sortOption"
                   class="text-sm border border-gray-200 rounded-md px-2 py-1.5 text-gray-600 bg-white"
@@ -279,11 +281,14 @@
                     class="absolute inset-0 w-full h-full object-contain hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <div class="p-4">                  <h3 class="font-semibold text-gray-800 mb-1 line-clamp-2">
-                    <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
+                <div class="p-4">                  
+                  <h3 class="font-semibold text-gray-800 mb-1 line-clamp-2">
+                    <NuxtLink :to="`/sale/${product.slug}`" 
+                    class="hover:text-emerald-600 transition-colors">
                       {{ capitalizeTitle(product.title) }}
                     </NuxtLink>
-                  </h3>                  <div class="flex items-center justify-between mt-2">
+                  </h3>                  
+                  <div class="flex items-center justify-between mt-2">
                     <span class="font-bold text-emerald-700"
                       >৳{{ product.price ? product.price.toLocaleString() : 'Contact for Price' }}</span
                     >
@@ -338,7 +343,8 @@
                   />
                 </div>
 
-                <div class="p-4 sm:w-2/3 flex flex-col">                  <h3 class="font-semibold text-gray-800 mb-1">
+                <div class="p-4 sm:w-2/3 flex flex-col">                  
+                  <h3 class="font-semibold text-gray-800 mb-1">
                     <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
                       {{ capitalizeTitle(product.title) }}
                     </NuxtLink>                  </h3><div class="flex items-center justify-between mt-2">
@@ -402,7 +408,8 @@
               >
                 Clear all filters
               </button>
-            </div>            <!-- Pagination -->
+            </div>            
+            <!-- Pagination -->
             <div
               v-if="!isLoading && products?.length > 0"
               class="flex items-center justify-between mt-6 pt-4 border-t border-gray-100"
