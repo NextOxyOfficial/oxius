@@ -285,9 +285,9 @@
                     <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
                       {{ capitalizeTitle(product.title) }}
                     </NuxtLink>
-                  </h3><div class="flex items-center justify-between mt-2">
+                  </h3>                  <div class="flex items-center justify-between mt-2">
                     <span class="font-bold text-emerald-700"
-                      >৳{{ product.price.toLocaleString() }}</span
+                      >৳{{ product.price ? product.price.toLocaleString() : 'Contact for Price' }}</span
                     >
                     <span class="text-sm text-gray-600">{{
                       formatDate(product.created_at)
@@ -343,10 +343,9 @@
                 <div class="p-4 sm:w-2/3 flex flex-col">                  <h3 class="font-semibold text-gray-800 mb-1">
                     <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
                       {{ capitalizeTitle(product.title) }}
-                    </NuxtLink>
-                  </h3><div class="flex items-center justify-between mt-2">
+                    </NuxtLink>                  </h3><div class="flex items-center justify-between mt-2">
                     <span class="font-bold text-emerald-700"
-                      >৳{{ product.price.toLocaleString() }}</span
+                      >৳{{ product.price ? product.price.toLocaleString() : 'Contact for Price' }}</span
                     >
                     <span class="text-sm text-gray-600">{{
                       formatDate(product.created_at)

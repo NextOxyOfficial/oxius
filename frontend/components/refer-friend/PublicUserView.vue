@@ -193,7 +193,7 @@
               <span v-if="isLoadingPlatformStats">
                 <USkeleton class="h-8 w-20 mx-auto" />
               </span>
-              <span v-else>৳ {{ platformStats.top_earner_amount.toLocaleString() }}</span>
+              <span v-else>৳ {{ platformStats.top_earner_amount ? platformStats.top_earner_amount.toLocaleString() : '0' }}</span>
             </div>
             <p class="text-sm md:text-base text-gray-600 dark:text-gray-600">
               Top Earner

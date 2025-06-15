@@ -118,11 +118,9 @@
               <Calendar class="h-3 w-3 mr-1" />
               {{ formatDate(product?.created_at) }}
             </span>
-          </div>
-
-          <div class="mt-4">
+          </div>          <div class="mt-4">
             <span class="text-2xl font-bold text-emerald-600"
-              >৳{{ product?.price.toLocaleString() }}</span
+              >৳{{ product?.price ? product.price.toLocaleString() : 'Contact for Price' }}</span
             >
           </div>
 
@@ -508,10 +506,9 @@
                   ? `${post?.division}, ${post?.district}, ${post?.area}`
                   : `All Over Bangladesh`
               }}
-            </div>
-            <div class="flex justify-between items-center mt-2">
+            </div>            <div class="flex justify-between items-center mt-2">
               <span class="font-bold text-emerald-600 text-sm"
-                >৳{{ item?.price.toLocaleString() }}</span
+                >৳{{ item?.price ? item.price.toLocaleString() : 'Contact for Price' }}</span
               >
               <span
                 class="text-gray-400 hover:text-emerald-600 h-6 w-6 p-0 transition-colors duration-200"

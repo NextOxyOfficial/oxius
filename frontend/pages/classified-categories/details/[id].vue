@@ -127,9 +127,8 @@
             </span>
           </div>
 
-          <div class="mt-4">
-            <span v-if="!service.negotiable" class="text-2xl font-bold text-emerald-600 inline-flex items-center">
-              <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{ service?.price?.toLocaleString() }}
+          <div class="mt-4">            <span v-if="!service.negotiable" class="text-2xl font-bold text-emerald-600 inline-flex items-center">
+              <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{ service?.price ? service.price.toLocaleString() : 'Contact for Price' }}
             </span>
             <span v-else class="text-2xl font-bold text-emerald-600">Negotiable</span>
           </div>

@@ -332,11 +332,10 @@
           >
             <div class="relative">
               <!-- Price overlay in top right -->
-              <div class="absolute top-0 right-0 m-2 z-10">
-                <div
+              <div class="absolute top-0 right-0 m-2 z-10">                <div
                   class="px-2 py-1 bg-primary text-white text-sm font-semibold rounded"
                 >
-                  ৳{{ post.price?.toLocaleString() || "Negotiable" }}
+                  ৳{{ post.price ? post.price.toLocaleString() : "Negotiable" }}
                 </div>
               </div>
 
