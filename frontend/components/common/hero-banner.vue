@@ -76,11 +76,11 @@
           </div>
           <!-- Right side - Premium content area -->
           <div
-            class="w-full md:w-2/5 max-sm:py-4 sm:pb-4 sm:px-4 flex flex-col justify-center rounded-xl bg-slate-50/80"
+            class="w-full md:w-2/5 max-sm:pt-4 sm:pb-4 sm:px-4 flex flex-col justify-center rounded-xl bg-slate-50/80"
           >
             <div class="relative text-center">
               <h1
-                class="text-lg sm:text-base font-medium leading-tight text-gray-800 relative inline-block"
+                class="text-lg sm:text-base font-medium sm:py-4 leading-tight text-gray-800 relative inline-block"
               >
                 <span class="relative z-10">{{
                   $t("bangladesh_first_title")
@@ -88,7 +88,7 @@
               </h1>
               <!-- Service buttons grid with cool design -->
               <div
-                class="grid grid-cols-4 gap-0 my-4 hidden md:grid border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-200/80"
+                class="grid grid-cols-4 gap-0 hidden md:grid border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-200/80"
               >
                 <!-- Business Network -->
                 <NuxtLink
