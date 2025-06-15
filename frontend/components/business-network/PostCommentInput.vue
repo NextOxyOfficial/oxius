@@ -54,11 +54,12 @@
               placeholder="Add a comment... (Type @ to mention users)"
               rows="1"
               class="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none resize-none text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-textarea"
-              :style="{ minHeight: '20px', height: '20px' }"
-              @input="handleCommentInput"
+              :style="{ minHeight: '20px', height: '20px' }"              @input="handleCommentInput"
               @focus="post.showCommentInput = true"
               @keydown="handleMentionKeydown"
               @keyup="autoResize"
+              @keydown.delete="autoResize"
+              @keydown.backspace="autoResize"
             ></textarea>
             
             <!-- Action buttons positioned inline with the text -->
@@ -1069,6 +1070,9 @@ const clearComment = () => {
   props.post.commentText = '';
   displayCommentText.value = '';
   safelyClearMentions('explicit clear button click');
+  
+  // Reset textarea height after clearing
+  autoResize();
 };
 
 // Override the original handleCommentInput to work with inline mentions
@@ -1176,17 +1180,15 @@ const removeMention = (mentionToRemove) => {
 const autoResize = () => {
   nextTick(() => {
     if (commentInputRef.value) {
-      // Reset to minimum height first
-      commentInputRef.value.style.height = '20px';
+      // Reset to auto first to get accurate scrollHeight
+      commentInputRef.value.style.height = 'auto';
       
       // Calculate the required height based on content
       const scrollHeight = commentInputRef.value.scrollHeight;
       
-      // Only increase height if content needs more space
-      if (scrollHeight > 20) {
-        const newHeight = Math.min(scrollHeight, 120);
-        commentInputRef.value.style.height = newHeight + 'px';
-      }
+      // Set to minimum height (20px) or calculated height, whichever is larger
+      const newHeight = Math.max(20, Math.min(scrollHeight, 120));
+      commentInputRef.value.style.height = newHeight + 'px';
     }
   });
 };
@@ -1203,6 +1205,11 @@ const navigateToMentionedUser = (username) => {
     console.error('Error navigating to user:', error);
   }
 };
+
+// Watch for changes in displayCommentText to auto-resize
+watch(() => displayCommentText.value, () => {
+  autoResize();
+});
 
 // Enhanced watcher - only clear when there's a legitimate reason (like successful post)
 watch(() => props.post.commentText, (newText, oldText) => {
