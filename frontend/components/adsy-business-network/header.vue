@@ -173,7 +173,7 @@
                     :alt="user.user.name || user.user.first_name"
                     class="w-full h-full object-cover rounded-full z-10"
                   />
-                  <UIcon v-else name="i-heroicons-user" class="w-6 h-6 text-gray-600 ml-2.5 z-10" />
+                  <UIcon v-else name="i-heroicons-user" class="w-6 h-6 text-gray-600 flex z-10" />
                 </div>
 
                 <!-- Pro Badge with Tailwind -->
