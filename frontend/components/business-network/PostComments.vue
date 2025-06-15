@@ -329,7 +329,13 @@ const highestGiftComment = computed(() => {
 
 // Filter out the highest gift comment from regular comments to avoid duplication
 const displayedComments = computed(() => {
-  if (!props.post?.post_comments?.length) return [];
+  if (!props.post?.post_comments?.length) {
+    console.log('📭 No comments to display for post:', props.post?.id);
+    return [];
+  }
+
+  console.log('📬 Total comments for post:', props.post.id, 'count:', props.post.post_comments.length);
+  console.log('📋 All comments:', props.post.post_comments.map(c => ({ id: c.id, content: c.content?.substring(0, 50) + '...', created_at: c.created_at })));
 
   let comments = [...props.post.post_comments];
   // If there's a highest gift comment, remove it from the regular comments list
@@ -343,7 +349,10 @@ const displayedComments = computed(() => {
   comments.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
   
   // Return the last 3 comments (most recent ones at the bottom)
-  return comments.slice(-3);
+  const displayed = comments.slice(-3);
+  console.log('📺 Displayed comments:', displayed.map(c => ({ id: c.id, content: c.content?.substring(0, 50) + '...', author: c.author_details?.name })));
+  
+  return displayed;
 });
 
 // Extract clean gift message from content
@@ -440,13 +449,20 @@ const toggleDropdown = (comment) => {
 
 // Process mentions in comments to make them clickable and preserve line breaks
 const processMentionsInComment = (content) => {
-  if (!content) return content;
+  if (!content) {
+    console.log('⚠️ No content provided to processMentionsInComment');
+    return content;
+  }
+  
+  console.log('📝 Processing comment content:', `"${content}"`);
   
   // First process mentions
   let processedContent = processMentionsAsHTML(content);
   
   // Then convert line breaks to HTML <br> tags
   processedContent = processedContent.replace(/\n/g, '<br>');
+  
+  console.log('✅ Processed comment content:', `"${processedContent}"`);
   
   return processedContent;
 };

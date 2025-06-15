@@ -821,7 +821,8 @@ const toggleLike = async (postToLike) => {
 };
 
 // Comment functionality
-const addComment = async (postToComment) => {  if (!postToComment.commentText?.trim() || postToComment.isCommentLoading) {
+const addComment = async (postToComment) => {
+  if (!postToComment.commentText?.trim() || postToComment.isCommentLoading) {
     return;
   }
   postToComment.isCommentLoading = true;
@@ -832,10 +833,37 @@ const addComment = async (postToComment) => {  if (!postToComment.commentText?.t
       content: postToComment.commentText,
     });
 
+    console.log('📤 Comment sent to server:', postToComment.commentText);
+    console.log('📥 Server response:', data);
+
     // Initialize post_comments array if it doesn't exist
     if (!postToComment.post_comments) {
       postToComment.post_comments = [];
-    }    // Add the new comment to the beginning
+    }    // Ensure the new comment has proper author details
+    if (data && !data.author_details && user.value?.user) {
+      data.author_details = {
+        id: user.value.user.id,
+        name: user.value.user.name || `${user.value.user.first_name || ''} ${user.value.user.last_name || ''}`.trim(),
+        image: user.value.user.image,
+        kyc: user.value.user.kyc,
+        is_pro: user.value.user.is_pro,
+        is_topcontributor: user.value.user.is_topcontributor
+      };
+    }
+
+    // Also ensure the comment has the author field
+    if (data && !data.author && user.value?.user) {
+      data.author = user.value.user.id;
+    }
+
+    // Ensure the comment has a created_at timestamp if missing
+    if (data && !data.created_at) {
+      data.created_at = new Date().toISOString();
+    }
+
+    console.log('📝 Final comment data to display:', data);
+
+    // Add the new comment to the beginning
     postToComment.post_comments.unshift(data);
 
     // Update the comment count
