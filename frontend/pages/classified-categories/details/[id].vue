@@ -1,26 +1,26 @@
 <template>
-  <div class="max-w-6xl mx-auto -mt-3 mb-8">
+  <div class="max-w-6xl mx-auto -mt-3 mb-8">      
     <!-- Breadcrumb -->
-    <nav class="flex items-center text-sm my-6 px-3 pt-4">
-      <NuxtLink to="/" class="text-gray-500 hover:text-emerald-600">Home</NuxtLink>
-      <span class="mx-2 text-gray-400">
+    <nav class="flex items-center text-sm my-3 px-3 pt-4 overflow-x-auto overflow-y-hidden whitespace-nowrap scrollbar-hide">
+      <NuxtLink to="/" class="text-gray-500 hover:text-emerald-600 flex-shrink-0">Home</NuxtLink>
+      <span class="mx-2 text-gray-400 flex-shrink-0">
         <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
       </span>
-      <NuxtLink to="/classified-categories" class="text-gray-500 hover:text-emerald-600">Classified Categories</NuxtLink>
-      <span class="mx-2 text-gray-400">
+      <NuxtLink to="/classified-categories" class="text-gray-500 hover:text-emerald-600 flex-shrink-0">Classified Categories</NuxtLink>
+      <span class="mx-2 text-gray-400 flex-shrink-0">
         <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
       </span>
       <NuxtLink 
         v-if="service?.category_details"
         :to="`/classified-categories/${service?.category_details?.slug}`" 
-        class="text-gray-500 hover:text-emerald-600"
+        class="text-gray-500 hover:text-emerald-600 flex-shrink-0 max-w-[150px] truncate"
       >
         {{ service?.category_details?.title }}
       </NuxtLink>
-      <span v-if="service?.category_details" class="mx-2 text-gray-400">
+      <span v-if="service?.category_details" class="mx-2 text-gray-400 flex-shrink-0">
         <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
       </span>
-      <span class="text-gray-700 truncate max-w-[200px]">{{ service?.title }}</span>
+      <span class="text-gray-700 flex-shrink-0 max-w-[200px] truncate">{{ service?.title }}</span>
     </nav>
     
     <!-- Main Service Section -->
@@ -926,5 +926,13 @@ function pbs_click() {
 </script>
 
 <style scoped>
-/* Additional custom styles can be added here if needed */
+/* Hide scrollbar while keeping scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
 </style>
