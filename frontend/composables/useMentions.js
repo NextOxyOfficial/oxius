@@ -2,17 +2,48 @@
  * Composable for handling mention functionality in comments
  */
 export const useMentions = () => {
+  /**
+   * Normalize and validate a username for mention processing
+   * @param {string} username - The username to normalize
+   * @returns {string} Normalized username
+   */
+  const normalizeUsername = (username) => {
+    if (!username) return '';
+    
+    // Trim whitespace and remove any leading @ symbol
+    let normalized = username.trim().replace(/^@+/, '');
+    
+    // Remove any trailing punctuation that might have been captured
+    normalized = normalized.replace(/[.!?,:;]+$/, '');
+    
+    return normalized;
+  };
+
+  /**
+   * Check if a string contains valid mention characters
+   * @param {string} text - The text to validate
+   * @returns {boolean} True if valid mention text
+   */
+  const isValidMentionText = (text) => {
+    if (!text) return false;
+    
+    // Check if text contains only valid Unicode characters for names
+    const validPattern = /^[\p{L}\p{M}\p{N}_'-]+(?:\s+[\p{L}\p{M}\p{N}_'-]+)*$/u;
+    return validPattern.test(text.trim());
+  };
     /**
    * Process comment content to make mentioned usernames clickable
    * @param {string} content - The comment content
    * @param {Function} h - Vue's render function or component's h function
    * @returns {Array} Array of VNode elements or string parts
-   */
-  const processMentionedUsers = (content, h) => {
-    if (!content) return [content];    // Improved regex to match @Username patterns including full names
-    // This pattern matches @ followed by name characters, handling multiple mentions properly
-    // It stops at: space+@, punctuation, or end of string (removed lowercase letter restriction)
-    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s+@|\s*[.!?,:;]|\s*$|$)/g;
+   */  const processMentionedUsers = (content, h) => {
+    if (!content) return [content];
+    
+    // Enhanced regex to match @Username patterns including full names
+    // This pattern matches @ followed by Unicode letters, numbers, and common name characters
+    // It stops at: space+@, punctuation, or end of string
+    // Supports all Unicode scripts including Bangla, Arabic, Chinese, etc.
+    const mentionRegex = /@([\p{L}\p{M}\p{N}_'-]+(?:\s+[\p{L}\p{M}\p{N}_'-]+)*?)(?=\s+@|\s*[.!?,:;]|\s*$|$)/gu;
     
     const parts = [];
     let lastIndex = 0;
@@ -132,11 +163,17 @@ export const useMentions = () => {
     
     // Enhanced regex that stops at double spaces (our delimiter), punctuation, or other mentions
     // Double space acts as a clear boundary between mentions and regular text
-    // Updated to handle trailing double spaces (mentions-only comments)
-    const mentionRegex = /@([A-Za-z0-9_'-]+(?:\s+[A-Za-z0-9_'-]+)*?)(?=\s{2,}|\s*[.!?,:;]|\s+@|\s*$|$)/g;
-    
+    // Supports all Unicode scripts including Bangla, Arabic, Chinese, etc.
+    // \p{L} = Unicode letters, \p{M} = Unicode marks (diacritics), \p{N} = Unicode numbers
+    const mentionRegex = /@([\p{L}\p{M}\p{N}_'-]+(?:\s+[\p{L}\p{M}\p{N}_'-]+)*?)(?=\s{2,}|\s*[.!?,:;]|\s+@|\s*$|$)/gu;    
     return content.replace(mentionRegex, (match, mentionedName) => {
-      const trimmedName = mentionedName.trim();
+      const trimmedName = normalizeUsername(mentionedName);
+      
+      // Skip if the extracted name is not valid
+      if (!isValidMentionText(trimmedName)) {
+        return match; // Return original text if not a valid mention
+      }
+      
       // Create mention chip with @ symbol and no space between @ and name
       return `<span 
         class="inline-flex items-center px-2.5 py-1 mx-0.5 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/30 hover:to-purple-500/30 dark:hover:from-blue-600/40 dark:hover:to-purple-600/40 transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-sm hover:shadow-md text-xs font-medium mention-chip mention-link active:scale-95" 
