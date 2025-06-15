@@ -181,19 +181,9 @@
             </div>
           </template>
         </div>
-      </div>
-
+      </div>      
       <div class="category-tabs relative mb-6">
-        <!-- Navigation buttons (only visible on mobile) -->
-        <button
-          v-if="isMobile"
-          @click="slideLeft"
-          class="slider-nav-btn left-0 transition-opacity duration-300 opacity-25 hover:opacity-70"
-          :class="{ 'cursor-not-allowed': isAtStart }"
-          :disabled="isAtStart"
-        >
-          <Icon name="heroicons:chevron-left" size="18px" />
-        </button>        <!-- Categories slider with touch events -->
+        <!-- Categories slider with touch events -->
         <div
           class="overflow-hidden overflow-x-auto scroll-smooth"
           ref="sliderContainer"
@@ -271,23 +261,12 @@
                 </div>
               </div>
             </template>
-          </div>
-        </div>
-
-        <button
-          v-if="isMobile"
-          @click="slideRight"
-          class="slider-nav-btn right-0 transition-opacity duration-300 opacity-25 hover:opacity-70"
-          :class="{ 'cursor-not-allowed': isAtEnd }"
-          :disabled="isAtEnd"
-        >
-          <Icon name="heroicons:chevron-right" size="18px" />
-        </button>
+          </div>        </div>
       </div>
 
       <!-- Display section for selected category items with lazy loading -->
       <div class="selected-category-items mt-4" v-if="selectedCategory">
-        <div class="flex justify-between items-center my-4 sm:px-6">
+        <div class="flex justify-between items-center my-6 px-2 sm:px-6">
           <div>
             <h3 class="text-lg font-semibold">
               {{ getSelectedCategoryName() }}
@@ -497,52 +476,10 @@ const selectCategory = (category) => {
 };
 
 // Get the name of the selected category
-const getSelectedCategoryName = () => {
-  const found = categories.value.find(
+const getSelectedCategoryName = () => {  const found = categories.value.find(
     (cat) => cat.id === selectedCategory.value
   );
   return found ? found.name : "";
-};
-
-// Slide the categories left
-const slideLeft = () => {
-  if (!sliderContainer.value || isAtStart.value) return;
-
-  const containerWidth = sliderContainer.value.clientWidth;
-  const itemWidth = isMobile.value
-    ? containerWidth / 4 // Show 4 items on mobile
-    : containerWidth / 6; // Show 6 items on desktop
-
-  // Scroll left by 2 items width
-  const scrollAmount = itemWidth * 2;
-  const currentScroll = sliderContainer.value.scrollLeft;
-  const targetScroll = Math.max(0, currentScroll - scrollAmount);
-
-  sliderContainer.value.scrollTo({
-    left: targetScroll,
-    behavior: 'smooth'
-  });
-};
-
-// Slide the categories right
-const slideRight = () => {
-  if (!sliderContainer.value || isAtEnd.value) return;
-
-  const containerWidth = sliderContainer.value.clientWidth;
-  const itemWidth = isMobile.value
-    ? containerWidth / 4 // Show 4 items on mobile
-    : containerWidth / 6; // Show 6 items on desktop
-
-  // Scroll right by 2 items width
-  const scrollAmount = itemWidth * 2;
-  const currentScroll = sliderContainer.value.scrollLeft;
-  const maxScroll = sliderContainer.value.scrollWidth - containerWidth;
-  const targetScroll = Math.min(maxScroll, currentScroll + scrollAmount);
-
-  sliderContainer.value.scrollTo({
-    left: targetScroll,
-    behavior: 'smooth'
-  });
 };
 
 // Handle scroll events to update navigation button states
@@ -759,35 +696,6 @@ const capitalizeTitle = (title) => {
   margin: 0 auto;
 }
 
-.slider-nav-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: white;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.slider-nav-btn:hover {
-  background-color: #f8f8f8;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-50%) scale(1.05);
-}
-
-.slider-nav-btn:active {
-  transform: translateY(-50%) scale(0.98);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .category-card {
   border-bottom: 2px solid transparent;
   border-radius: 0;
@@ -847,22 +755,12 @@ const capitalizeTitle = (title) => {
   .category-item {
     width: 16.666667%; /* 1/6 */
   }
-
-  /* Hide navigation buttons on desktop as all categories are visible */
-  .slider-nav-btn {
-    display: none;
-  }
 }
 
 @media (max-width: 767px) {
   /* Mobile: show 4 categories at once */
   .category-item {
     width: 25%; /* 1/4 */
-  }
-
-  /* Show navigation buttons on mobile */
-  .slider-nav-btn {
-    display: flex;
   }
 }
 
