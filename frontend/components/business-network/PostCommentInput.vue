@@ -1447,22 +1447,47 @@ const handleCommentInput = (event) => {
 const handlePostComment = () => {
   if (!commentInputRef.value) return;
   
-  // Extract content from contenteditable including inline mentions
+  // Extract content from contenteditable including inline mentions and line breaks
   let finalText = '';
-  const childNodes = commentInputRef.value.childNodes;
   
-  for (let node of childNodes) {
+  // Recursive function to extract text from all nodes, handling nested content
+  const extractTextFromNode = (node) => {
     if (node.nodeType === Node.TEXT_NODE) {
-      finalText += node.textContent;
+      return node.textContent;
     } else if (node.classList && node.classList.contains('mention-chip-inline')) {
       const mentionName = node.getAttribute('data-mention-name');
-      finalText += `@${mentionName} `;
+      return `@${mentionName} `;
+    } else if (node.nodeName === 'BR') {
+      return '\n';
+    } else if (node.nodeName === 'DIV' || node.nodeName === 'P') {
+      // For div/p elements, extract text from children and add line break
+      let text = '';
+      for (let child of node.childNodes) {
+        text += extractTextFromNode(child);
+      }
+      // Add line break after div/p unless it's the last element
+      return text + (node.nextSibling ? '\n' : '');
+    } else if (node.childNodes && node.childNodes.length > 0) {
+      // For other elements with children, recursively extract from children
+      let text = '';
+      for (let child of node.childNodes) {
+        text += extractTextFromNode(child);
+      }
+      return text;
     }
+    return '';
+  };
+  
+  // Process all child nodes
+  for (let node of commentInputRef.value.childNodes) {
+    finalText += extractTextFromNode(node);
   }
   
-  finalText = finalText.trim();
+  // Clean up extra whitespace while preserving intentional line breaks
+  finalText = finalText.replace(/\n\s*\n/g, '\n').trim();
   
-  console.log('📤 Final comment text being posted:', `"${finalText}"`);
+  console.log('📤 Final comment text being posted (multi-line):', `"${finalText}"`);
+  console.log('📤 Final comment text (with line breaks visible):', finalText.replace(/\n/g, '\\n'));
   
   props.post.commentText = finalText;
   
