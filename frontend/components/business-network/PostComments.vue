@@ -253,11 +253,12 @@
                     v-html="processGiftMessageWithLineBreaks(extractGiftMessage(comment?.content))"
                   ></p>
                 </div>
-              </div>                <!-- Regular comment with mention processing -->
+              </div>                
+              <!-- Regular comment with mention processing -->
               <div
                 v-else
                 class="text-sm text-gray-800 dark:text-gray-300 comment-content"
-                style="word-break: break-word; white-space: pre-wrap; line-height: 1.4;"
+                style="word-break: break-word; white-space: pre-wrap; line-height: 2;"
                 v-html="processMentionsInComment(comment?.content)"
               ></div>
             </div>
@@ -510,7 +511,7 @@ onMounted(() => {
 
 /* Multi-line comment styling */
 .text-sm {
-  line-height: 2; /* Better line spacing for multi-line content */
+  line-height: 2.4; /* Better line spacing for multi-line content */
   white-space: pre-wrap; /* Preserve whitespace formatting */
 }
 
