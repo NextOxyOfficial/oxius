@@ -1,31 +1,41 @@
 <template>
   <Teleport to="body">
-    <div
-      v-if="modelValue && problem"
-      class="fixed inset-0 top-14 z-50 overflow-y-auto"
-      :class="{ 'animate-fade-in': isModalOpen }"
-      @click="$emit('update:modelValue', false)"
+    <Transition
+      enter-active-class="transition ease-out duration-200"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
     >
-      <!-- Enhanced backdrop with subtle blur effect -->
       <div
-        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
-        aria-hidden="true"
+        v-if="modelValue && problem"
+        class="fixed inset-0 z-50 overflow-y-auto"
         @click="$emit('update:modelValue', false)"
-      ></div>
-
-      <div
-        class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
       >
-        <!-- Modal with enhanced styling -->
+        <!-- Enhanced backdrop with subtle blur effect -->
         <div
-          class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
-          :class="{ 'animate-modal-slide-up': modelValue }"
-          @click.stop
-        >
-          <!-- Premium scrollbar styling -->
-          <div
-            class="w-full md:h-[80vh] overflow-hidden overflow-y-auto custom-scrollbar p-2 sm:p-6"
+          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-all duration-300 backdrop-blur-sm"
+          aria-hidden="true"
+          @click="$emit('update:modelValue', false)"
+        ></div>
+
+        <!-- Modal container matching UModal structure -->
+        <div class="flex flex-col h-auto my-20 p-0 sm:p-0">
+          <Transition
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition ease-in duration-150"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
           >
+            <div v-if="modelValue">
+              <!-- Modal with enhanced styling -->
+              <div
+                class="relative w-full sm:max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-xl shadow-sm p-2 sm:p-6"
+                @click.stop
+              >
             <!-- Problem Header with enhanced design -->
             <div class="flex justify-between items-start">
               <div class="flex items-center">
@@ -56,7 +66,7 @@
                     class="absolute -bottom-1 -right-1 bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white rounded-full px-1.5 py-0.5 flex items-center justify-center shadow-sm z-30 text-[9px] font-semibold"
                     style="border: 1px solid rgba(255, 255, 255, 0.5)"
                   >
-                    PRO
+                    Pro
                   </div>
                 </div>
                 <div class="ml-3">
@@ -316,7 +326,8 @@
                           >
                             PRO
                           </div>
-                        </div>                        <div class="ml-3">
+                        </div>                        
+                        <div class="ml-3">
                           <div class="flex items-center">
                             <p
                               class="font-medium text-gray-800 dark:text-slate-200"
@@ -333,7 +344,8 @@
                               class="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm"
                             >
                               <CheckCircle class="h-3 w-3 mr-1" /> Solution
-                            </span>                          </div>
+                            </span>                          
+                          </div>
                           <div class="w-full text-left">
                             <p class="text-sm text-slate-500 dark:text-slate-400 text-left inline-block">
                               {{ formatTimeAgo(comment.created_at) }}
@@ -574,19 +586,17 @@
                     >
                       This problem has been marked as solved
                     </h4>
-                    <p
-                      class="mt-1 text-sm text-emerald-700 dark:text-emerald-500"
-                    >
-                      New advice cannot be added to solved problems.
-                    </p>
-                  </div>
+                    <p class="mt-1 text-sm text-emerald-700 dark:text-emerald-500">                        
+                      New advice cannot be added to solved problems.</p></div>
                 </div>
               </div>
+              </div>              
             </div>
-          </div>
+            </div>
+          </Transition>
         </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>
 
@@ -1067,11 +1077,11 @@ watch(
 
 /* Pro user border with gradient effect */
 .pro-border-ring {
-  border-radius: 9999px; /* Ensure full circle */
-  border: 2px solid transparent;
+  border-radius: 9999px; /* Ensure full circle */  border: 2px solid transparent;
   background: linear-gradient(to right, #7f00ff, #e100ff, #9500ff, #d700ff)
     border-box;
   -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
 }

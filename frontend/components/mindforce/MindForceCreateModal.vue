@@ -1,15 +1,16 @@
 <template>
-  <Teleport to="body">
+  <Teleport to="body">    
     <Transition
-      enter-active-class="transition-all duration-300 ease-out"
+      enter-active-class="transition ease-out duration-200"
       enter-from-class="opacity-0"
       enter-to-class="opacity-100"
-      leave-active-class="transition-all duration-200 ease-in"
+      leave-active-class="transition ease-in duration-150"
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
-    >      <div
+    >
+      <div
         v-if="modelValue"
-        class="fixed inset-0 top-14 z-50 overflow-y-auto"
+        class="fixed inset-0 z-50 overflow-y-auto"
         @click="$emit('update:modelValue', false)"
       >
         <!-- Enhanced backdrop with gradient and blur -->
@@ -18,26 +19,23 @@
           aria-hidden="true"
           @click="$emit('update:modelValue', false)"
         ></div>
-        
-        <!-- Modal with premium styling -->
-        <div
-          class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
-        >
-          <Transition
-            enter-active-class="transition-all duration-400 ease-out"
-            enter-from-class="opacity-0 transform scale-95 translate-y-4"
-            enter-to-class="opacity-100 transform scale-100 translate-y-0"
-            leave-active-class="transition-all duration-200 ease-in"
-            leave-from-class="opacity-100 transform scale-100 translate-y-0"
-            leave-to-class="opacity-0 transform scale-95 translate-y-4"
+
+        <!-- Modal container matching UModal structure -->
+        <div class="flex flex-col h-auto my-20 p-0 sm:p-0">        
+          <Transition            
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0"
+            enter-to-class="opacity-100"
+            leave-active-class="transition ease-in duration-150"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
           >
-            <div
-              v-if="modelValue"
-              class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
-              @click.stop
-            >
-              <!-- Premium scrollbar styling -->
-              <div class="overflow-y-auto smooth-scroll custom-scrollbar max-h-[85vh]">
+            <div v-if="modelValue">
+              <!-- Modal with enhanced styling -->
+              <div
+                class="relative w-full sm:max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-xl shadow-sm"
+                @click.stop
+              >
                 <!-- Close button with enhanced styling -->
                 <button
                   @click="$emit('update:modelValue', false)"
@@ -57,7 +55,7 @@
                 class="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"
               ></div>
               <h2
-                class="text-xl font-semibold mb-1 text-gray-800 dark:text-white relative z-10 flex items-center"
+                class="text-lg font-semibold mb-1 text-gray-800 dark:text-white relative z-10 flex items-center"
               >
                 <div
                   class="h-6 w-6 rounded-full bg-blue-500 mr-2.5 flex items-center justify-center"
@@ -66,7 +64,7 @@
                 </div>
                 Post a New Problem
               </h2>
-              <p class="text-slate-500 dark:text-slate-400 text-md text-start ml-8.5">
+              <p class="text-slate-500 dark:text-slate-400 text-sm text-start ml-8.5">
                 Share your problem with the community and get expert help.
               </p>
             </div>
@@ -82,7 +80,7 @@
                 <div class="space-y-2">
                   <label
                     for="title"
-                    class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center group"
+                    class="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center group"
                   >
                     <Hash class="h-4 w-4 mr-1.5 text-blue-500 group-hover:scale-110 transition-transform duration-200" />
                     Problem Title
@@ -96,7 +94,8 @@
                     @blur="handleInputBlur"
                   />
                 </div>
-              </Transition>              <Transition
+              </Transition>              
+              <Transition
                 appear
                 enter-active-class="transition-all duration-500 ease-out"
                 enter-from-class="opacity-0 transform translate-y-4"
@@ -106,7 +105,7 @@
                 <div class="space-y-2">
                   <label
                     for="description"
-                    class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center group"
+                    class="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center group"
                   >
                     <FileText class="h-4 w-4 mr-1.5 text-blue-500 group-hover:scale-110 transition-transform duration-200" />
                     Description
@@ -121,7 +120,8 @@
                     @blur="handleInputBlur"
                   ></textarea>
                 </div>
-              </Transition>              <!-- Enhanced Photo Upload Section -->
+              </Transition>              
+              <!-- Enhanced Photo Upload Section -->
               <Transition
                 appear
                 enter-active-class="transition-all duration-500 ease-out"
@@ -131,7 +131,7 @@
               >
                 <div class="space-y-3">
                   <label
-                    class="text-md font-medium text-slate-700 dark:text-slate-300 flex justify-between items-center group"
+                    class="text-sm font-medium text-slate-700 dark:text-slate-300 flex justify-between items-center group"
                   >
                     <span class="flex items-center">
                       <Image class="h-4 w-4 mr-1.5 text-blue-500 group-hover:scale-110 transition-transform duration-200" />
@@ -250,7 +250,7 @@
                 <div class="space-y-2">
                   <label
                     for="category"
-                    class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center group"
+                    class="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center group"
                   >
                     <TagIcon class="h-4 w-4 mr-1.5 text-blue-500 group-hover:scale-110 transition-transform duration-200" />
                     Category
@@ -259,7 +259,7 @@
                     <select
                       id="category"
                       v-model="formData.category"
-                      class="flex h-11 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-md ring-offset-background placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-400 dark:focus:border-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/30 dark:focus-visible:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 shadow-sm hover:shadow-sm focus:shadow-sm appearance-none pr-12"
+                      class="flex h-11 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-sm ring-offset-background placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-400 dark:focus:border-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/30 dark:focus-visible:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 shadow-sm hover:shadow-sm focus:shadow-sm appearance-none pr-12"
                       @focus="handleInputFocus"
                       @blur="handleInputBlur"
                     >
@@ -277,7 +277,8 @@
                     />
                   </div>
                 </div>
-              </Transition>              <!-- Help Type selector with premium styling -->
+              </Transition>              
+              <!-- Help Type selector with premium styling -->
               <Transition
                 appear
                 enter-active-class="transition-all duration-500 ease-out"
@@ -287,7 +288,7 @@
               >
                 <div class="space-y-3">
                   <label
-                    class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center group"
+                    class="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center group"
                   >
                     <HelpCircle class="h-4 w-4 mr-1.5 text-blue-500 group-hover:scale-110 transition-transform duration-200" />
                     Help Type
@@ -301,7 +302,8 @@
                           ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 ring-2 ring-blue-400/30 dark:ring-blue-600/30 shadow-sm scale-105'
                           : 'border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-blue-300 dark:hover:border-blue-600 shadow-sm hover:shadow-sm',
                       ]"
-                    >                      <input
+                    >                      
+                    <input
                         type="radio"
                         id="free"
                         value="free"
@@ -310,7 +312,7 @@
                       />
                       <label
                         for="free"
-                        class="text-md cursor-pointer text-slate-700 dark:text-slate-300 font-medium select-none"
+                        class="text-sm cursor-pointer text-slate-700 dark:text-slate-300 font-medium select-none"
                         >I need help for free</label
                       >
                     </div>
@@ -332,13 +334,14 @@
                       />
                       <label
                         for="paid"
-                        class="text-md cursor-pointer text-slate-700 dark:text-slate-300 font-medium select-none"
+                        class="text-sm cursor-pointer text-slate-700 dark:text-slate-300 font-medium select-none"
                         >I can pay for help</label
                       >
                     </div>
                   </div>
                 </div>
-              </Transition>              <!-- Payment amount with premium styling -->
+              </Transition>              
+              <!-- Payment amount with premium styling -->
               <Transition
                 enter-active-class="transition-all duration-400 ease-out"
                 enter-from-class="opacity-0 transform translate-y-4 scale-95"
@@ -350,7 +353,7 @@
                 <div v-if="formData.payment_option === 'paid'" class="space-y-2">
                   <label
                     for="paymentAmount"
-                    class="text-md font-medium text-slate-700 dark:text-slate-300 flex items-center group"
+                    class="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center group"
                   >
                     <DollarSign class="h-4 w-4 mr-1.5 text-emerald-500 group-hover:scale-110 transition-transform duration-200" />
                     Payment Amount
@@ -365,7 +368,7 @@
                       v-model="formData.payment_amount"
                       type="number"
                       placeholder="Enter amount"
-                      class="flex h-11 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-8 pr-4 py-2 text-md ring-offset-background placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-400 dark:focus:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/30 dark:focus-visible:ring-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 shadow-sm hover:shadow-sm focus:shadow-sm"
+                      class="flex h-11 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-8 pr-4 py-2 text-sm ring-offset-background placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-400 dark:focus:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/30 dark:focus-visible:ring-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 shadow-sm hover:shadow-sm focus:shadow-sm"
                       @focus="handleInputFocus"
                       @blur="handleInputBlur"
                     />
@@ -380,7 +383,7 @@
             >
               <button
                 @click="$emit('update:modelValue', false)"
-                class="inline-flex items-center justify-center rounded-xl text-md font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 h-11 px-6 py-2 shadow-sm hover:shadow-sm active:scale-95 hover:scale-105"
+                class="inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 h-11 px-6 py-2 shadow-sm hover:shadow-sm active:scale-95 hover:scale-105"
               >
                 Cancel
               </button>
@@ -388,7 +391,7 @@
                 @click="handleSubmit"
                 :disabled="!isFormValid || isSubmitting"
                 :class="[
-                  'inline-flex items-center justify-center rounded-xl text-md font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-11 px-8 py-2 shadow-sm hover:shadow-sm transform active:scale-95',
+                  'inline-flex items-center justify-center rounded-xl text-sm font-medium ring-offset-background transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-11 px-8 py-2 shadow-sm hover:shadow-sm transform active:scale-95',
                   isFormValid && !isSubmitting
                     ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-violet-600 hover:from-blue-600 hover:via-blue-700 hover:to-violet-700 text-white hover:scale-105 hover:-translate-y-0.5'
                     : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed',
@@ -413,21 +416,20 @@
                       class="opacity-75"
                       fill="currentColor"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 012 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
+                    ></path>                  </svg>
                   Posting...
-                </span>
+                </span>                
                 <span v-else class="flex items-center">
                   <Send class="h-4 w-4 mr-2" />
-                  Post Problem
-                </span>              </button>
+                  Post Problem                </span>              
+              </button>
             </div>
+              </div>
             </div>
-          </div>
-        </Transition>
+          </Transition>
+        </div>
       </div>
-    </div>
-  </Transition>
+    </Transition>
   </Teleport>
 </template>
 
