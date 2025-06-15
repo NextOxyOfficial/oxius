@@ -47,12 +47,21 @@ export const useMentions = () => {
     
     const parts = [];
     let lastIndex = 0;
-    let match;
-
-    // Process all mentions in the content
+    let match;    // Process all mentions in the content
     while ((match = mentionRegex.exec(content)) !== null) {
       const beforeMention = content.slice(lastIndex, match.index);
-      const mentionedName = match[1].trim();
+      const mentionedName = normalizeUsername(match[1]);
+      
+      // Skip if the extracted name is not valid
+      if (!isValidMentionText(mentionedName)) {
+        // Add the original text and continue
+        if (beforeMention) {
+          parts.push(beforeMention);
+        }
+        parts.push(match[0]); // Add the original @text
+        lastIndex = match.index + match[0].length;
+        continue;
+      }
       
       // Add text before the mention
       if (beforeMention) {
