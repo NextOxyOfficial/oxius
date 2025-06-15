@@ -302,7 +302,7 @@
                           <img
                             :src="
                               comment?.author_details?.image ||
-                              '/placeholder.svg'
+                              '/static/frontend/images/placeholder.jpg'
                             "
                             :alt="comment?.author_details?.name"
                             class="h-full w-full object-cover relative z-15 rounded-full overflow-hidden"
@@ -753,7 +753,7 @@ const createTempComment = (content, media) => {
     author_details: {
       id: props.currentUserId,
       name: user.value?.user?.name || "You", // This will be replaced when real data comes back
-      image: user.value?.user?.image || "/placeholder.svg", // Temporary placeholder
+      image: user.value?.user?.image || "/static/frontend/images/placeholder.jpg", // Temporary placeholder
     },
     is_solved: false,
     is_temp: true, // Flag to identify temporary comments
@@ -860,7 +860,7 @@ const getMediaUrl = (media) => {
   }
 
   console.log("Unable to extract URL from media object:", media);
-  return "/placeholder.svg"; // Fallback to placeholder
+  return "/static/frontend/images/placeholder.jpg"; // Fallback to placeholder
 };
 
 const openMediaViewer = (comment, index) => {
