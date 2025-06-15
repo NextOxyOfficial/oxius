@@ -124,7 +124,7 @@
             >
           </div>
 
-          <div class="mt-4 grid grid-cols-2 gap-4">
+          <div class="mt-4 grid grid-cols-2 gap-2">
             <div class="flex items-center">
               <div
                 class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
