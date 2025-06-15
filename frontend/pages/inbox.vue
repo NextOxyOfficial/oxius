@@ -143,9 +143,9 @@
         </nav>
       </div>      
       <!-- Unified Content Area with Filtering -->
-      <div class="px-2 sm:px-4">
+      <div class="sm:px-4">
         <!-- Unified Filtering Bar -->
-        <div class="flex flex-wrap gap-2 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="flex flex-wrap gap-2 mb-6 p-2 bg-gray-50 rounded-lg border border-gray-200">
           <!-- Tab specific filters -->
           <div v-if="activeTab === 'support'" class="flex flex-wrap gap-2 flex-1">
             <UButton
@@ -261,7 +261,7 @@
                   }"
                 >
                   <div
-                    class="flex items-center gap-4 p-4 cursor-pointer"
+                    class="flex items-center gap-2 p-2 cursor-pointer"
                     @click="openTicketDetail(ticket)"
                   >
                     <!-- Left Status Stripe -->
@@ -1431,8 +1431,8 @@ function formatUpdateType(notificationType) {
     order_received: 'Order',
     withdraw_successful: 'Withdrawal',
     mobile_recharge_successful: 'Recharge',
-    pro_subscribed: 'Pro Subscription',
-    pro_expiring: 'Pro Expiring',
+    pro_subscribed: 'Pro',
+    pro_expiring: 'Pro Ending',
     gig_posted: 'Gig Posted',
     general: 'General'
   };

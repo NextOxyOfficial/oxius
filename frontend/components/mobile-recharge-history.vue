@@ -1,31 +1,30 @@
 <template>
-  <div class="transaction-history h-max">
-    <p class="text-center text-gray-600">
+  <div class="transaction-history">
+    <p class="text-center text-gray-600 mb-4">
       {{ $t("mobile_recharge_transactions") }}
     </p>
 
     <!-- Filter buttons with improved styling -->
-    <div class="filters mb-4">
+    <div class="filters mb-6">
       <div class="filter-buttons flex flex-wrap gap-2 justify-center">
         <button
           v-for="filter in filterOptions"
           :key="filter.value"
           @click="activeFilter = filter.value"
           :class="[
-            'px-2 py-2 rounded-full text-sm font-medium transition-colors',
+            'px-3 py-2 rounded-full text-sm font-medium transition-colors',
             activeFilter === filter.value
-              ? 'border border-green-500  shadow-sm'
+              ? 'bg-green-500 text-white shadow-sm'
               : 'bg-gray-100 text-gray-800 hover:bg-gray-200',
           ]"
         >
+          {{ filter.label }}
         </button>
       </div>
     </div>
 
-    <!-- Transactions list with proper null checks -->
-    <div
-      class="transactions overflow-auto h-[36vh] sm:h-[460px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-    >
+    <!-- Transactions list without internal scrolling -->
+    <div class="transactions space-y-4">
       <div
         v-if="filteredTransactions.length === 0"
         class="text-center py-8 text-gray-600 flex flex-col items-center"
@@ -34,13 +33,13 @@
           name="i-heroicons-document-magnifying-glass"
           class="w-12 h-12 text-gray-400 mb-2"
         />
-        No transactions found
+        <p>No transactions found</p>
       </div>
 
       <div
         v-for="(transaction, index) in filteredTransactions"
         :key="index"
-        class="transaction-item border rounded-lg p-4 mb-3 hover:shadow-sm transition-shadow bg-white"
+        class="transaction-item border rounded-lg p-4 hover:shadow-sm transition-shadow bg-white"
       >
         <div class="flex justify-between items-start">
           <div>
@@ -126,7 +125,7 @@
       <button
         @click="currentPage = Math.max(1, currentPage - 1)"
         :disabled="currentPage === 1"
-        class="px-3 py-1 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+        class="px-3 py-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
       >
         <UIcon name="i-heroicons-chevron-left" class="w-4 h-4" />
       </button>
@@ -136,7 +135,7 @@
         :key="page"
         @click="currentPage = page"
         :class="[
-          'px-3 py-1 rounded border transition-colors',
+          'px-3 py-2 rounded border transition-colors',
           currentPage === page
             ? 'bg-emerald-500 text-white border-emerald-500'
             : 'hover:bg-gray-50',
@@ -148,7 +147,7 @@
       <button
         @click="currentPage = Math.min(totalPages, currentPage + 1)"
         :disabled="currentPage === totalPages || totalPages === 0"
-        class="px-3 py-1 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+        class="px-3 py-2 rounded border disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
       >
         <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
       </button>
@@ -165,6 +164,15 @@ const searchQuery = ref("");
 const activeFilter = ref("all");
 const currentPage = ref(1);
 const itemsPerPage = 5;
+
+// Filter options
+const filterOptions = [
+  { value: "all", label: "All" },
+  { value: "data", label: "Data" },
+  { value: "voice", label: "Voice" },
+  { value: "combo", label: "Combo" },
+  { value: "balance", label: "Balance" },
+];
 
 // Fetch transaction data
 const transactions = ref([]);
@@ -332,21 +340,6 @@ const getOperatorInitial = (operator) => {
   max-width: 800px;
   margin: 0 auto;
   padding: 1.5rem;
-}
-
-/* Custom scrollbar styling */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 10px;
 }
 
 @media (max-width: 640px) {

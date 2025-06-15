@@ -127,28 +127,15 @@
             </span>
           </div>
 
-          <div class="mt-4">            <span v-if="!service.negotiable" class="text-2xl font-bold text-emerald-600 inline-flex items-center">
+          <div class="mt-4">            
+            <span v-if="!service.negotiable" class="text-2xl font-bold text-emerald-600 inline-flex items-center">
               <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{ service?.price ? service.price.toLocaleString() : 'Contact for Price' }}
             </span>
             <span v-else class="text-2xl font-bold text-emerald-600">Negotiable</span>
-          </div>
-
-          <div class="mt-4 grid grid-cols-2 gap-4">
-            <div class="flex items-center">
-              <div
-                class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
-              >
-                <Tag class="h-4 w-4 text-emerald-600" />
-              </div>
-              <div>
-                <div class="text-sm font-medium text-gray-600">Category</div>
-                <div class="text-sm text-gray-800">
-                  {{ service.category_details?.title }}
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-center">
+          </div>          
+          <div class="mt-4 space-y-3">
+            <!-- First row: Location (full width) -->
+            <div class="flex items-center mb-4">
               <div
                 class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
               >
@@ -162,28 +149,33 @@
               </div>
             </div>
 
-            <div class="flex items-center">
-              <div
-                class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
-              >
-                <Briefcase class="h-4 w-4 text-emerald-600" />
+            <!-- Second row: Category and Posted (2 columns) -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex items-center">
+                <div
+                  class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
+                >
+                  <Tag class="h-4 w-4 text-emerald-600" />
+                </div>
+                <div>
+                  <div class="text-sm font-medium text-gray-600">Category</div>
+                  <div class="text-sm text-gray-800">
+                    {{ service.category_details?.title }}
+                  </div>
+                </div>
               </div>
-              <div>
-                <div class="text-sm font-medium text-gray-600">Service Type</div>
-                <div class="text-sm text-gray-800">{{ service?.category_details?.title }}</div>
-              </div>
-            </div>
 
-            <div class="flex items-center">
-              <div
-                class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
-              >
-                <Clock class="h-4 w-4 text-emerald-600" />
-              </div>
-              <div>
-                <div class="text-sm font-medium text-gray-600">Posted</div>
-                <div class="text-sm text-gray-800">
-                  {{ formatRelativeTime(service?.created_at) }}
+              <div class="flex items-center">
+                <div
+                  class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
+                >
+                  <Clock class="h-4 w-4 text-emerald-600" />
+                </div>
+                <div>
+                  <div class="text-sm font-medium text-gray-600">Posted</div>
+                  <div class="text-sm text-gray-800">
+                    {{ formatRelativeTime(service?.created_at) }}
+                  </div>
                 </div>
               </div>
             </div>

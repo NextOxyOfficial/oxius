@@ -56,13 +56,12 @@
                   Sent {{ highestGiftComment?.diamond_amount }} diamonds to
                   {{ post?.author_details?.name || post?.author?.name }}
                 </span>
-              </div>
-
-              <!-- Gift message if available -->
+              </div>              <!-- Gift message if available -->
               <div class="gift-message-container">
-                <p class="gift-message-text">
-                  {{ extractGiftMessage(highestGiftComment?.content) }}
-                </p>
+                <p 
+                  class="gift-message-text"
+                  v-html="processGiftMessageWithLineBreaks(extractGiftMessage(highestGiftComment?.content))"
+                ></p>
               </div>
             </div>
           </div>
@@ -247,20 +246,19 @@
                     Sent {{ comment?.diamond_amount }} diamonds to
                     {{ post?.author_details?.name || post?.author?.name }}
                   </span>
-                </div>
-
-                <!-- Gift message content with improved styling -->
+                </div>                <!-- Gift message content with improved styling -->
                 <div class="gift-content">
-                  <p class="gift-message-text">
-                    {{ extractGiftMessage(comment?.content) }}
-                  </p>
+                  <p 
+                    class="gift-message-text"
+                    v-html="processGiftMessageWithLineBreaks(extractGiftMessage(comment?.content))"
+                  ></p>
                 </div>
-              </div>              
+              </div>                
               <!-- Regular comment with mention processing -->
               <div
                 v-else
-                class="text-sm text-gray-800 dark:text-gray-300"
-                style="word-break: break-word"
+                class="text-sm text-gray-800 dark:text-gray-300 comment-content"
+                style="word-break: break-word; white-space: pre-wrap; line-height: 2;"
                 v-html="processMentionsInComment(comment?.content)"
               ></div>
             </div>
@@ -440,9 +438,25 @@ const toggleDropdown = (comment) => {
   }
 };
 
-// Process mentions in comments to make them clickable
+// Process mentions in comments to make them clickable and preserve line breaks
 const processMentionsInComment = (content) => {
-  return processMentionsAsHTML(content);
+  if (!content) return content;
+  
+  // First process mentions
+  let processedContent = processMentionsAsHTML(content);
+  
+  // Then convert line breaks to HTML <br> tags
+  processedContent = processedContent.replace(/\n/g, '<br>');
+  
+  return processedContent;
+};
+
+// Process gift message content and preserve line breaks
+const processGiftMessageWithLineBreaks = (content) => {
+  if (!content) return content;
+  
+  // Convert line breaks to HTML <br> tags
+  return content.replace(/\n/g, '<br>');
 };
 
 // Setup mention click handlers when component mounts
@@ -454,30 +468,59 @@ onMounted(() => {
 <style scoped>
 /* Premium Gift Comment Styling */
 .gift-comment {
-  @apply relative my-2 p-3 rounded-xl overflow-hidden bg-gradient-to-r from-pink-100/90 via-pink-50/80 to-fuchsia-100/70 border border-pink-200/60 shadow-sm transition-all duration-300;
+  position: relative;
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: linear-gradient(to right, rgba(252, 231, 243, 0.9), rgba(253, 244, 255, 0.8), rgba(250, 232, 255, 0.7));
+  border: 1px solid rgba(251, 207, 232, 0.6);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dark .gift-comment {
-  @apply from-pink-900/30 via-pink-800/25 to-fuchsia-900/30 border-pink-700/40;
+  background: linear-gradient(to right, rgba(131, 24, 67, 0.3), rgba(157, 23, 77, 0.25), rgba(112, 26, 117, 0.3));
+  border-color: rgba(190, 24, 93, 0.4);
 }
 
 .gift-comment:hover {
-  @apply -translate-y-0.5 shadow-sm;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 /* Gift sender info styling */
 .gift-sender-info {
-  @apply text-xs text-pink-600 dark:text-pink-400;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgb(219, 39, 119);
+}
+
+.dark .gift-sender-info {
+  color: rgb(244, 114, 182);
 }
 
 /* Gift message styling */
 .gift-message-text {
-  @apply text-base leading-relaxed text-gray-800 dark:text-gray-300 mt-1;
+  font-size: 1rem;
+  line-height: 1.625;
+  color: rgb(31, 41, 55);
+  margin-top: 0.25rem;
+}
+
+.dark .gift-message-text {
+  color: rgb(209, 213, 219);
 }
 
 /* Top Gift Comment Styling */
 .gift-comment-premium {
-  @apply relative p-3 rounded-xl overflow-hidden border-pink-300/40 shadow-sm transition-all duration-300;
+  position: relative;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(249, 168, 212, 0.4);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   background: linear-gradient(
     135deg,
     rgba(253, 242, 248, 0.9) 0%,
@@ -487,12 +530,23 @@ onMounted(() => {
 }
 
 .dark .gift-comment-premium {
-  @apply border-pink-700/40;
+  border-color: rgba(190, 24, 93, 0.4);
   background: linear-gradient(
     135deg,
     rgba(131, 24, 67, 0.3) 0%,
     rgba(219, 39, 119, 0.2) 50%,
     rgba(131, 24, 67, 0.3) 100%
   );
+}
+
+/* Multi-line comment styling */
+.text-sm {
+  line-height: 2.4; /* Better line spacing for multi-line content */
+  white-space: pre-wrap; /* Preserve whitespace formatting */
+}
+
+.gift-message-text {
+  line-height: 1.5; /* Better line spacing for gift messages */
+  white-space: pre-wrap; /* Preserve whitespace formatting */
 }
 </style>

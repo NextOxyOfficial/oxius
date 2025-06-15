@@ -1,608 +1,291 @@
 <template>
-  <div
-    class="flex items-center gap-2.5 mt-4 pt-3 border-t border-gray-100/60 dark:border-slate-700/40 px-2"
-  >
-    <!-- User avatar with enhanced styling -->
-    <div class="relative group">
-      <img
-        :src="user?.user?.image"
-        alt="Your avatar"
-        class="size-9 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:shadow-sm transition-all duration-300"
-      />
-      <!-- Subtle glow effect on hover -->
-      <div
-        class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-blue-500/10 blur-md -z-10"
-      ></div>
-    </div>    
-    <!-- Comment input with glassmorphism and inline mention display -->
-    <div class="flex-1 relative flex items-center gap-2">
-      <div class="relative group flex-1">          
-        <!-- Enhanced input container with mention chips inside -->
-        <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">            
-          <!-- Content wrapper with padding for chips and input -->
-            <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]">              
-              <!-- Mentioned users chips -->
-              <div 
-                v-for="mention in stableMentions" 
-                :key="mention.id || mention.name"
-                class="inline-flex items-center px-2.5 py-1 mx-0.5 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/30 hover:to-purple-500/30 dark:hover:from-blue-600/40 dark:hover:to-purple-600/40 transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-sm hover:shadow-md text-xs font-medium mention-chip mention-link active:scale-95"
-                @click="navigateToMentionedUser(mention.name)"
-                :title="`Click to view ${mention.name}'s profile`"
-                :aria-label="`Mentioned user: ${mention.name}. Click to view profile or press Delete to remove.`"
-                role="button"
-                tabindex="0"
-                @keydown.enter.prevent="navigateToMentionedUser(mention.name)"
-                @keydown.space.prevent="navigateToMentionedUser(mention.name)"
-                @keydown.delete.stop.prevent="removeMention(mention)"
-                @keydown.backspace.stop.prevent="removeMention(mention)"
-              >
-                <span class="text-blue-700 dark:text-blue-300 hover:text-purple-700 dark:hover:text-purple-300 transition-colors duration-300 whitespace-nowrap">
-                  <span class="text-blue-500 dark:text-blue-400 hover:text-purple-500 dark:hover:text-purple-400 font-semibold">@</span>{{ mention.name }}
-                </span>
-                <button
-                  @click.stop="removeMention(mention)"
-                  class="ml-1.5 text-blue-600 dark:text-blue-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-red-500 rounded"
-                  :title="`Remove ${mention.name}`"
-                  :aria-label="`Remove ${mention.name} from mentions`"
-                  tabindex="-1"
-                >
-                  <UIcon name="i-heroicons-x-mark" class="w-3 h-3" />
-                </button>
-              </div>
-              
-              <!-- Flexible input field for inline mentions -->
-              <textarea
-              ref="commentInputRef"
-              v-model="displayCommentText"
-              placeholder="Add a comment... (Type @ to mention users)"
-              rows="1"
-              class="flex-1 min-w-[120px] text-sm bg-transparent line-clump-1 border-none outline-none resize-none text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 leading-5 max-h-[4rem] overflow-y-auto no-scrollbar comment-textarea"
-              :style="{ minHeight: '24px' }"
-              @input="handleCommentInput"
-              @focus="post.showCommentInput = true"
-              @keydown="handleMentionKeydown"
-              @keyup="autoResize"
-            ></textarea>
+  <div class="space-y-2.5 px-2 pt-1">
+    <!-- Top gift comment pinned section - Shows only the highest diamond gift -->
+    <div v-if="highestGiftComment" class="mb-3">
+      <div class="flex items-center gap-2 mb-1.5">
+        <UIcon name="i-heroicons-star" class="w-3.5 h-3.5 text-amber-500" />
+        <span class="text-xs font-medium text-gray-600 dark:text-gray-600"
+          >Top Gift</span
+        >
+      </div>
+      <div class="flex items-start space-x-2.5 w-full">
+        <NuxtLink
+          :to="`/business-network/profile/${highestGiftComment?.author}`"
+        >
+          <div class="relative group">
+            <div
+              class="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 to-pink-500 opacity-50 blur-sm animate-pulse"
+            ></div>
+            <img
+              :src="highestGiftComment.author_details?.image || placeholderPath"
+              :alt="highestGiftComment.author_details?.name"
+              class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border-2 border-amber-300 dark:border-amber-500/80 shadow-sm group-hover:shadow-sm transition-all duration-300 relative z-10"
+            />
           </div>
-          <!-- Subtle gradient line under input on focus -->
+        </NuxtLink>
+
+        <div class="flex-1">
           <div
-            class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 focus-within:scale-x-100 transition-transform duration-300"
-          ></div>          <!-- Action buttons with premium styling (positioned over the input container) -->
-          <div
-            v-if="(displayCommentText && displayCommentText.trim()) || stableMentions.length > 0"
-            class="absolute right-2 top-6 -translate-y-1/2 flex items-center gap-1 z-10"
+            class="bg-gradient-to-r from-amber-50/80 to-pink-50/80 dark:from-amber-900/20 dark:to-pink-900/20 backdrop-blur-[2px] rounded-xl pb-2 pt-0.5 px-3 shadow-sm border border-amber-200/50 dark:border-amber-700/30"
           >
-            <button
-              class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
-              @click="clearComment"
-              aria-label="Clear comment"
-            >
-              <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
-            </button>            <button
-              class="p-1 rounded-full bg-blue-500/90 hover:bg-blue-600 mb-1 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
-              @click="handlePostComment"
-              aria-label="Post comment"
-            >
-              <Send class="h-3.5 w-3.5" />
-              <!-- Subtle glow effect -->
-              <div
-                class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
-              ></div>
-            </button>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1">
+                <NuxtLink
+                  :to="`/business-network/profile/${highestGiftComment.author}`"
+                  class="text-sm text-gray-800 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                >
+                  {{ highestGiftComment.author_details?.name }}
+                </NuxtLink>
+                <!-- Verified Badge -->
+                <div
+                  v-if="highestGiftComment.author_details?.kyc"
+                  class="text-blue-500 flex items-center"
+                >
+                  <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Gift content with sender info -->
+            <div class="gift-comment-premium">
+              <div class="gift-label flex gap-1 mb-1">
+                <UIcon name="i-heroicons-gift" class="w-4 h-4 text-pink-500 mt-0.5 mr-1" />
+                <span
+                  class="text-sm font-medium text-pink-600 dark:text-pink-400"
+                >
+                  Sent {{ highestGiftComment?.diamond_amount }} diamonds to
+                  {{ post?.author_details?.name || post?.author?.name }}
+                </span>
+              </div>              <!-- Gift message if available -->
+              <div class="gift-message-container">
+                <p 
+                  class="gift-message-text"
+                  v-html="processGiftMessageWithLineBreaks(extractGiftMessage(highestGiftComment?.content))"
+                ></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timestamp with premium styling -->
+          <div class="flex items-center mt-1 pl-1">
+            <UIcon
+              name="i-heroicons-clock"
+              class="w-3 h-3 text-gray-600 dark:text-gray-600 mr-1"
+            />
+            <span class="text-sm text-gray-600 dark:text-gray-600">
+              {{ formatTimeAgo(highestGiftComment?.created_at) }}
+            </span>
           </div>
         </div>
       </div>
+    </div>    <!-- See all comments button with smaller hover effect -->
+    <button
+      v-if="(post?.comment_count || 0) > 3"
+      class="flex items-center text-sm text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-300 group"
+      @click="$emit('open-comments-modal', post)"
+    >
+      <UIcon
+        name="i-heroicons-chat-bubble-left-ellipsis"
+        class="mr-1.5 w-4 h-4 group-hover:scale-105 transition-transform duration-300"
+      />
+      See all {{ post?.comment_count || 0 }} comments
+    </button>
 
-      <!-- Gift button moved outside of input -->
-      <div class="relative" v-if="post.author_details.id !== user?.user?.id">
-        <button
-          ref="giftButtonRef"
-          class="px-2 pt-2 rounded-full text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 bg-pink-50/80 dark:bg-pink-900/20 hover:bg-pink-100/80 dark:hover:bg-pink-900/30 transition-all duration-300 shadow-sm hover:shadow"
-          aria-label="Send Gift"
-          @click="toggleDiamondDropup"
-        >
-          <UIcon name="i-streamline-gift-2" class="size-5" />
-          <span v-if="showDiamondDropup" class="sr-only"
-            >Close diamond purchase</span
-          >
-        </button>
-
-        <!-- Diamond Purchase Dropup -->
-        <div
-          v-if="showDiamondDropup"
-          ref="dropupRef"
-          class="absolute right-0 bottom-full mb-2 w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-sm border border-pink-100/60 dark:border-pink-900/30 z-30 animate-fade-in-up diamond-dropup overflow-hidden"
-        >
-          <!-- Main gift interface -->
-          <div v-if="!showBuyDiamonds" class="pt-2 pb-3">
-            <!-- Header with diamond icon and balance -->
-            <div
-              class="px-4 py-2 flex items-center justify-between border-b border-pink-100/50 dark:border-slate-700/50"
-            >
-              <div class="flex items-center">
-                <div
-                  class="p-1.5 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-lg mr-2"
-                >
-                  <UIcon
-                    name="i-heroicons-gift"
-                    class="h-5 w-5 text-pink-500"
-                  />
-                </div>
-                <h3
-                  class="text-base font-semibold text-gray-800 dark:text-gray-300"
-                >
-                  Send Gift to
-                  {{
-                    post?.author_details?.name || post?.author?.name || "User"
-                  }}
-                </h3>
-              </div>
-              <button
-                @click="closeDiamondDropup"
-                class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600"
-              >
-                <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
-              </button>
-            </div>
-
-            <!-- Available Balance Card with Animated Background -->
-            <div
-              class="relative px-4 py-4 mt-3 mb-4 mx-4 rounded-xl overflow-hidden diamond-balance-card"
-            >
-              <!-- Animated shimmer background -->
-              <div
-                class="absolute inset-0 bg-gradient-to-r from-pink-50/80 via-purple-50/80 to-pink-50/80 dark:from-pink-900/10 dark:via-purple-900/15 dark:to-pink-900/10 shimmer-background"
-              ></div>
-
-              <!-- Diamond icon decoration -->
-              <div class="absolute -right-4 -top-4 opacity-10">
-                <UIcon name="i-heroicons-gem" class="h-20 w-20 text-pink-500" />
-              </div>
-
-              <!-- Centered diamonds display -->
-              <div class="relative flex flex-col items-center justify-center">
-                <div class="flex items-center justify-center mb-1">
-                  <span
-                    class="text-sm text-gray-800 dark:text-gray-400 font-medium"
-                    >Available Diamonds</span
-                  >
-                </div>
-                <div class="flex items-center justify-center">
-                  <span
-                    class="text-2xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-pink-600 to-purple-600 dark:from-pink-400 dark:to-purple-400"
-                    >{{ user.user.diamond_balance }}</span
-                  >
-                  <UIcon
-                    name="i-heroicons-gem"
-                    class="h-5 w-5 text-pink-400 ml-1.5"
-                  />
-                </div>
-              </div>
-
-              <!-- Buy button -->
-              <button
-                @click.stop="showBuyDiamonds = true"
-                class="absolute top-1.5 right-2 px-2.5 py-1 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-xs font-medium rounded-full shadow-sm hover:shadow-sm transition-all duration-200 flex items-center"
-              >
-                <UIcon name="i-heroicons-plus" class="h-3 w-3 mr-1" />
-                Buy
-              </button>
-            </div>
-
-            <!-- Use Available Balance Section -->
-            <div class="px-4 mb-4">
-              <div class="flex flex-col">
-                <label
-                  class="block text-sm font-medium text-gray-800 dark:text-gray-400 mb-1.5 ml-1"
-                >
-                  Send gift diamonds
-                </label>
-                <div class="relative">
-                  <input
-                    type="number"
-                    v-model.number="sendFromBalance"
-                    placeholder="Enter diamond amount"
-                    :max="availableDiamonds"
-                    min="1"
-                    class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-800 dark:text-gray-300 bg-white/80 dark:bg-slate-800/80"
-                  />
-                  <div
-                    class="absolute right-3 top-6 -translate-y-1/2 flex items-center"
-                  >
-                    <UIcon
-                      name="i-heroicons-sparkles"
-                      class="h-4 w-4 text-pink-400 mr-1"
-                    />
-                  </div>
-                </div>
-
-                <!-- Gift message input -->
-                <div class="mt-3">
-                  <label
-                    class="block text-sm font-medium text-gray-800 dark:text-gray-400 mb-1.5 ml-1"
-                  >
-                    Gift message
-                  </label>
-                  <div class="relative">
-                    <textarea
-                      v-model="giftMessage"
-                      placeholder="Add a gift message... (optional)"
-                      rows="2"
-                      class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-800 dark:text-gray-300 bg-white/80 dark:bg-slate-800/80 resize-none"
-                    ></textarea>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-4 space-y-3">
-                <!-- Send Gift Button -->
-                <button
-                  @click="sendGift"
-                  :disabled="isSendingGift"
-                  class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-sm hover:shadow flex items-center justify-center transition-all duration-300 transform hover:translate-y-[-1px]"
-                >
-                  <template v-if="isSendingGift">
-                    <div
-                      class="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
-                    ></div>
-                    Sending...
-                  </template>
-                  <template v-else>
-                    <UIcon name="i-heroicons-gift-top" class="h-4 w-4 mr-1.5" />
-                    Send Gift
-                  </template>
-                </button>
-
-                <!-- No Balance Message -->
-                <div
-                  v-if="availableDiamonds === 0"
-                  class="flex items-center justify-center gap-1.5 text-center text-sm text-gray-600 dark:text-gray-600 py-1.5"
-                >
-                  <UIcon
-                    name="i-heroicons-exclamation-circle"
-                    class="h-4 w-4 text-pink-400"
-                  />
-                  <span>You need diamonds to send a gift</span>
-                </div>
-              </div>
-            </div>
+    <!-- Comments with premium glassmorphism design -->
+    <div
+      v-for="(comment, index) in displayedComments"
+      :key="comment.id"
+      class="flex items-start space-x-2.5"
+    >
+      <div class="flex items-start space-x-2.5 w-full">
+        <NuxtLink :to="`/business-network/profile/${comment?.author}`">
+          <div class="relative group">
+            <img
+              :src="comment.author_details?.image || placeholderPath"
+              :alt="comment.author_details?.name"
+              class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-sm transition-all duration-300"
+            />
           </div>
+        </NuxtLink>
 
-          <!-- Buy diamonds interface -->
-          <div v-else class="pt-2 pb-3">
-            <!-- Header with diamond icon -->
-            <div
-              class="px-4 py-2 flex items-center justify-between border-b border-pink-100/50 dark:border-slate-700/50 mb-2"
-            >
-              <div class="flex items-center">
-                <div
-                  class="p-1.5 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-lg mr-2"
-                >
-                  <UIcon
-                    name="i-heroicons-shopping-bag"
-                    class="h-5 w-5 text-pink-500"
-                  />
-                </div>
-                <h3
-                  class="text-base font-semibold text-gray-800 dark:text-gray-300"
-                >
-                  Buy Diamonds
-                </h3>
-              </div>
-              <button
-                @click.stop="showBuyDiamonds = false"
-                class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600"
-              >
-                <UIcon name="i-heroicons-arrow-left" class="h-4 w-4" />
-              </button>
-            </div>
-
-            <!-- Diamond package options with improved design -->
-            <div class="px-4 pt-1">
-              <!-- Available Balance Display -->
-              <div
-                class="flex items-center justify-between mb-3 pb-3 border-b border-pink-100/50 dark:border-slate-700/50"
-              >
-                <div class="flex items-center">
-                  <UIcon
-                    name="i-heroicons-wallet"
-                    class="h-4 w-4 text-pink-500 mr-1.5"
-                  />
-                  <span class="text-sm text-gray-800 dark:text-gray-400"
-                    >Account Funds:</span
-                  >
-                </div>
-                <div class="flex items-center">
-                  <span
-                    class="text-md font-semibold text-gray-800 dark:text-gray-300"
-                    >{{ user.user.balance }}</span
-                  >
-                  <span
-                    class="text-md font-semibold text-gray-800 dark:text-gray-400 ml-1"
-                    >৳</span
-                  >
-                  <button
-                    @click="navigateToFunds"
-                    class="ml-2 px-2 py-0.5 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-full shadow-sm hover:shadow transition-all duration-200"
-                  >
-                    Add Funds
-                  </button>
-                </div>
-              </div>
-
-              <p class="text-xs text-gray-600 dark:text-gray-600 mb-3">
-                Purchase diamond packages (10 diamonds = 1 BDT)
-              </p>
-
-              <!-- Diamond packages -->
-              <div class="grid grid-cols-2 gap-3 mb-5">
-                <button
-                  v-for="(pkg, index) in diamondPackages"
-                  :key="index"
-                  @click="selectDiamondPackage(pkg.diamonds)"
-                  :class="[
-                    'relative flex flex-col items-center justify-center p-3 rounded-lg border transition-all duration-200',
-                    selectedPackage === pkg.diamonds
-                      ? 'border-pink-500 bg-gradient-to-br from-pink-50/70 to-purple-50/70 dark:from-pink-900/20 dark:to-purple-900/20 shadow-sm'
-                      : 'border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-800 hover:bg-pink-50/30 dark:hover:bg-pink-900/5',
-                  ]"
-                >
-                  <div class="flex items-center">
-                    <span class="text-pink-500 font-semibold text-xl">
-                      {{ pkg.diamonds }}
-                    </span>
-                    <UIcon
-                      name="i-heroicons-sparkles"
-                      class="h-4 w-4 ml-1 text-pink-400"
-                    />
-                  </div>
-                  <span class="text-xs text-gray-600 dark:text-gray-400 mt-1"
-                    >{{ pkg.price }} BDT</span
-                  >
-
-                  <!-- Selection indicator -->
-                  <div
-                    v-if="selectedPackage === pkg.amount"
-                    class="absolute -top-1.5 -right-1.5 h-5 w-5 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center shadow-sm"
-                  >
-                    <UIcon
-                      name="i-heroicons-check"
-                      class="h-3 w-3 text-white"
-                    />
-                  </div>
-                </button>
-              </div>
-
-              <!-- Custom amount input -->
-              <div class="mb-5">
-                <label
-                  class="block text-xs font-medium text-gray-800 dark:text-gray-400 mb-1.5 ml-1"
-                >
-                  Custom Amount
-                </label>
-                <div class="relative">
-                  <input
-                    type="number"
-                    v-model="customDiamondAmount"
-                    placeholder="Enter diamond amount"
-                    min="10"
-                    class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500/50 dark:focus:ring-pink-400/40 text-gray-800 dark:text-gray-300 bg-white/80 dark:bg-slate-800/80"
-                    @input="onCustomAmountInput"
-                  />
-                  <div
-                    class="absolute right-3 top-6 -translate-y-1/2 flex items-center"
-                  >
-                    <UIcon
-                      name="i-heroicons-sparkles"
-                      class="h-4 w-4 text-pink-400 mr-1"
-                    />
-                  </div>
-                </div>
-                <div class="flex items-center justify-between mt-1.5">
-                  <p class="text-xs text-gray-600">Minimum 10 diamonds</p>
-                  <p class="text-xs text-gray-600">
-                    ≈ {{ calculatePrice(customDiamondAmount || 0) }} BDT
-                  </p>
-                </div>
-              </div>
-
-              <!-- Purchase button -->
-              <button
-                @click="purchaseDiamonds"
-                class="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium rounded-lg shadow-sm hover:shadow flex items-center justify-center transition-all duration-300 transform hover:translate-y-[-1px]"
-                :disabled="!canPurchase"
-                :class="{ 'opacity-60 cursor-not-allowed': !canPurchase }"
-              >
-                <UIcon
-                  name="i-heroicons-shopping-cart"
-                  class="h-4 w-4 mr-1.5"
-                />
-                Purchase Diamonds
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>      <!-- Mention suggestions dropdown with enhanced glassmorphism -->
-      <div
-        v-if="showMentions"
-        ref="mentionDropdownRef"
-        class="absolute left-0 bottom-full mb-2 w-72 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 z-20 max-h-64 overflow-y-auto animate-fade-in-up premium-shadow no-scrollbar"
-      ><div class="py-2">
-          <!-- Show loading state when searching -->
-          <div v-if="isSearching" class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
-            <div class="flex items-center justify-center space-x-2">
-              <div class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-              <span>Searching...</span>
-            </div>
-          </div>
-          
-          <!-- Show suggestions -->
+        <div class="flex-1">
           <div
-            v-for="(user, index) in mentionSuggestions"
-            :key="user.id"
-            @click="selectMention(user)"
-            :class="[
-              'flex items-center px-4 py-3 cursor-pointer transition-colors duration-200',
-              index === activeMentionIndex
-                ? 'bg-blue-50/80 dark:bg-blue-900/30'
-                : 'hover:bg-gray-50/80 dark:hover:bg-slate-700/50',
-            ]"
-          >            <!-- User avatar -->
-            <div class="relative mr-3">
-              <img
-                :src="user?.image || '/static/frontend/images/placeholder.jpg'"
-                :alt="user?.name || user?.first_name || 'User'"
-                class="w-10 h-10 rounded-full border-2 border-gray-200/70 dark:border-slate-700/70 object-cover"
-              />
-            </div><!-- User info and badges -->            
-            <div class="flex-1 min-w-0">
-              <!-- User name with verified and pro badges on the right -->
-              <div class="flex items-center gap-1 flex-1 min-w-0">
-                <span class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
-                  {{ user?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.username || 'Unknown User' }}
-                </span>
-                
-                <!-- Verified badge -->
-                <UIcon
-                  v-if="user?.kyc"
-                  name="i-mdi-check-decagram"
-                  class="w-4 h-4 text-blue-600 animate-pulse-subtle flex-shrink-0"
-                />
-                
-                <!-- Pro badge immediately after verified badge -->
-                <span
-                  v-if="user?.is_pro"
-                  class="px-1.5 py-0.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full text-xs font-medium shadow-sm flex-shrink-0"
+            class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl pb-1 pt-0.5 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1">
+                <NuxtLink
+                  :to="`/business-network/profile/${comment.author}`"
+                  class="text-base font-medium text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
-                  <div class="flex items-center gap-1">
-                    <UIcon name="i-heroicons-shield-check" class="size-3" />
-                    <span class="text-2xs">Pro</span>
+                  {{ comment.author_details?.name }}
+                </NuxtLink>
+                <!-- Verified Badge -->
+                <div
+                  v-if="comment.author_details?.kyc"
+                  class="text-blue-500 flex items-center"
+                >
+                  <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
+                </div>
+              </div>
+
+              <!-- Only edit/delete buttons for comment owner - Fixing action buttons -->
+              <div v-if="comment.author === user?.user?.id" class="relative">
+                <button
+                  type="button"
+                  @click.stop="toggleDropdown(comment)"
+                  class="p-1.5 rounded-full text-gray-600 dark:text-gray-600 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
+                  aria-label="Comment options"
+                >
+                  <UIcon
+                    name="i-heroicons-ellipsis-horizontal"
+                    class="size-4"
+                  />
+                </button>
+
+                <!-- Dropdown menu -->
+                <div
+                  v-if="comment.showDropdown"
+                  class="absolute right-8 -top-1 mt-1 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 z-50 transition-all duration-200 origin-top-right"
+                  @click.stop
+                >
+                  <div class="py-1">
+                    <button
+                      @click.stop="
+                        editComment(post, comment);
+                        comment.showDropdown = false;
+                      "
+                      class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
+                    >
+                      <UIcon
+                        name="i-heroicons-pencil-square"
+                        class="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400"
+                      />
+                      <span>Edit</span>
+                    </button>
+
+                    <button
+                      @click.stop="
+                        deleteComment(post, comment);
+                        comment.showDropdown = false;
+                      "
+                      class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
+                      :disabled="comment.isDeleting"
+                    >
+                      <div v-if="comment.isDeleting" class="mr-2">
+                        <Loader2 class="h-4 w-4 text-red-500 animate-spin" />
+                      </div>
+                      <UIcon
+                        v-else
+                        name="i-heroicons-trash"
+                        class="h-4 w-4 mr-2 text-red-500 dark:text-red-400"
+                      />
+                      <span>Delete</span>
+                    </button>
                   </div>
-                </span>
+                </div>
+
+                <!-- Click outside directive to close dropdown -->
+                <div
+                  v-if="comment.showDropdown"
+                  class="fixed inset-0 z-10"
+                  @click="comment.showDropdown = false"
+                ></div>
               </div>
-              
-              <!-- Top Contributor badge under the name -->
-              <div v-if="user?.is_topcontributor" class="mt-1">
-                <span class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm inline-flex items-center gap-1">
-                  <UIcon name="i-heroicons-star" class="size-3" />
-                  <span class="text-2xs">Top Contributor</span>
-                </span>
+            </div>
+
+            <!-- Comment editing form with glassmorphism -->
+            <div v-if="comment.isEditing">
+              <textarea
+                :id="`comment-edit-${comment.id}`"
+                v-model="comment.editText"
+                class="w-full text-base p-2 bg-white/90 dark:bg-slate-700/90 border border-blue-200/70 dark:border-blue-700/50 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 backdrop-blur-sm shadow-sm transition-all duration-300"
+                rows="2"
+              ></textarea>
+              <div class="flex justify-end space-x-2 mt-2">
+                <button
+                  type="button"
+                  @click.prevent="$emit('cancel-edit-comment', comment)"
+                  class="text-xs text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  @click.prevent="saveEditComment(post, comment)"
+                  class="text-xs bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-lg px-3 py-1.5 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600 disabled:opacity-50 shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5"
+                  :disabled="
+                    !comment.editText?.trim() ||
+                    comment.editText === comment.content ||
+                    comment.isSaving
+                  "
+                >
+                  <Loader2
+                    v-if="comment.isSaving"
+                    class="h-3 w-3 animate-spin"
+                  />
+                  <span v-if="comment.isSaving">Saving...</span>
+                  <span v-else>Save</span>
+                </button>
               </div>
+            </div>
+
+            <!-- Comment content with premium styling and special gift display -->
+            <div v-else>
+              <!-- Gift comment with enhanced styling -->
+              <div v-if="comment?.is_gift_comment" class="gift-comment">
+                <!-- "Sent X diamonds" label -->
+                <div class="gift-sender-info flex items-center gap-1">
+                  <UIcon
+                    name="material-symbols:diamond-outline"
+                    class="w-4 h-4 text-pink-500"
+                  />
+                  <span
+                    class="text-sm font-medium text-pink-600 dark:text-pink-400"
+                  >
+                    Sent {{ comment?.diamond_amount }} diamonds to
+                    {{ post?.author_details?.name || post?.author?.name }}
+                  </span>
+                </div>                <!-- Gift message content with improved styling -->
+                <div class="gift-content">
+                  <p 
+                    class="gift-message-text"
+                    v-html="processGiftMessageWithLineBreaks(extractGiftMessage(comment?.content))"
+                  ></p>
+                </div>
+              </div>                
+              <!-- Regular comment with mention processing -->
+              <div
+                v-else
+                class="text-sm text-gray-800 dark:text-gray-300 comment-content"
+                style="word-break: break-word; white-space: pre-wrap; line-height: 2;"
+                v-html="processMentionsInComment(comment?.content)"
+              ></div>
             </div>
           </div>
-            <!-- Show no results message -->
-          <div v-if="mentionSuggestions.length === 0 && !isSearching" class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
-            <div v-if="!mentionSearchText">
-              Start typing to search for users...
-            </div>
-            <div v-else>
-              No users found for "{{ mentionSearchText }}"
-            </div>
+
+          <!-- Timestamp with premium styling -->
+          <div class="flex items-center mt-1 pl-1">
+            <UIcon
+              name="i-heroicons-clock"
+              class="w-3 h-3 text-gray-600 dark:text-gray-600 mr-1"
+            />
+            <span class="text-sm text-gray-600 dark:text-gray-600">
+              {{ formatTimeAgo(comment?.created_at) }}
+            </span>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Success notification popup -->
-  <Teleport to="body">
-    <Transition
-      enter-active-class="transition ease-out duration-200"
-      enter-from-class="opacity-0 scale-95"
-      enter-to-class="opacity-100 scale-100"
-      leave-active-class="transition ease-in duration-150"
-      leave-from-class="opacity-100 scale-100"
-      leave-to-class="opacity-0 scale-95"
-    >
-      <div
-        v-if="showSuccessPopup"
-        class="fixed top-1/4 left-1/2 transform -translate-x-1/2 z-[9999] sm:max-w-md max-w-[85%] w-full"
-      >
-        <div
-          class="animate-pop-in bg-white/95 dark:bg-slate-800/95 py-4 px-6 rounded-xl shadow-sm border border-pink-200 dark:border-pink-900/30 text-center"
-        >
-          <div class="flex flex-col items-center">
-            <div
-              class="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center mb-3 shadow-sm"
-            >
-              <UIcon name="i-heroicons-gift-top" class="h-7 w-7 text-white" />
-            </div>
-            <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-1">
-              Gift Sent Successfully!
-            </h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-              You sent {{ lastGiftAmount }} diamonds to
-              {{ post?.author_details?.name || post?.author?.name || "User" }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
-import { Send } from "lucide-vue-next";
+import { Loader2 } from "lucide-vue-next";
+import { computed, onMounted } from "vue";
 
-const { get, post: postApi } = useApi();
-const { user, jwtLogin } = useAuth();
-const router = useRouter();
-const toast = useToast();
-
-// Add ref for the comment input
-const commentInputRef = ref(null);
-const mentionDropdownRef = ref(null);
-
-// Mention functionality state
-const showMentions = ref(false);
-const mentionSuggestions = ref([]);
-const activeMentionIndex = ref(0);
-const mentionSearchText = ref("");
-
-// Enhanced mention display state
-const extractedMentions = ref([]);
-const displayCommentText = ref("");
-const mentionInputPosition = ref(null);
-const isSearching = ref(false);
-
-// Computed property to ensure mention stability - prevents accidental clearing
-const stableMentions = computed(() => {
-  console.log('🔒 stableMentions computed, current mentions:', extractedMentions.value.map(m => m.name));
-  return extractedMentions.value;
-});
-
-// Protected function to safely clear mentions - only called when intentional
-const safelyClearMentions = (reason) => {
-  console.log('🛡️ safelyClearMentions called, reason:', reason);
-  console.log('🏷️ Clearing mentions:', extractedMentions.value.map(m => m.name));
-  extractedMentions.value = [];
-};
-
-// Protected function to safely add mention - with validation
-const safelyAddMention = (mention, reason) => {
-  console.log('🛡️ safelyAddMention called, reason:', reason);
-  console.log('➕ Adding mention:', mention.name);
-  
-  const mentionExists = extractedMentions.value.some(m => m.id === mention.id);
-  if (!mentionExists) {
-    extractedMentions.value.push(mention);
-    console.log('📋 All mentions now:', extractedMentions.value.map(m => m.name));
-  } else {
-    console.log('⚠️ Mention already exists, skipping');
-  }
-};
-
-// Protected function to safely remove mention - with validation
-const safelyRemoveMention = (mentionToRemove, reason) => {
-  console.log('🛡️ safelyRemoveMention called, reason:', reason);
-  console.log('🗑️ Removing mention:', mentionToRemove.name);
-  console.log('🏷️ Mentions before removal:', extractedMentions.value.map(m => m.name));
-  
-  extractedMentions.value = extractedMentions.value.filter(m => m.id !== mentionToRemove.id);
-  
-  console.log('🏷️ Mentions after removal:', extractedMentions.value.map(m => m.name));
-};
+// Import the mentions composable
+const { processMentionsAsHTML, setupMentionClickHandlers } = useMentions();
 
 const props = defineProps({
   post: {
@@ -611,820 +294,229 @@ const props = defineProps({
   },
   user: {
     type: Object,
-    required: true,
+    default: null,
   },
 });
 
-// Diamond dropup state
-const showDiamondDropup = ref(false);
-const showBuyDiamonds = ref(false);
-const selectedPackage = ref(null);
-const customDiamondAmount = ref(null);
-const dropupRef = ref(null);
-const giftButtonRef = ref(null);
-
-// Gift sending states
-const sendFromBalance = ref(null);
-const giftMessage = ref(""); // Gift message input
-const isSendingGift = ref(false);
-const showSuccessPopup = ref(false);
-const lastGiftAmount = ref(0);
-
-// Account balance in BDT
-const accountBalance = computed(() => {
-  return user.value.user?.balance || 0;
-});
-
-// Available diamonds - this will be different from account funds
-const availableDiamonds = computed(() => {
-  // Check userStore first, then fallback to props.user
-  if (
-    user.value.user &&
-    typeof user.value.user.diamond_balance !== "undefined"
-  ) {
-    return user.value.user.diamond_balance || 0;
-  }
-  // Fallback to the props if userStore is not yet loaded
-  return props.user?.user?.diamond_balance || 0;
-});
-
-// Diamond packages (10 diamonds = 1 BDT)
-const diamondPackages = ref([]);
-
-async function getDiamondsPackges(params) {
-  try {
-    const response = await get("/diamonds/packages/");
-    if (response.data) {
-      diamondPackages.value = response.data;
-    }
-  } catch (error) {}
-}
-await getDiamondsPackges();
-
-// Calculate if purchase is possible
-const canPurchase = computed(() => {
-  return (
-    selectedPackage.value ||
-    (customDiamondAmount.value && customDiamondAmount.value >= 10)
-  );
-});
-
-// Calculate if sending gift is possible
-const canSendGift = computed(() => {
-  return (
-    sendFromBalance.value &&
-    sendFromBalance.value > 0 &&
-    sendFromBalance.value <= availableDiamonds.value
-  ); // Check against diamond balance, not user money balance
-});
-
-// Calculate price based on diamonds
-const calculatePrice = (diamonds) => {
-  return parseFloat((diamonds / 10).toFixed(2));
-};
-
-// Toggle diamond dropup
-const toggleDiamondDropup = (e) => {
-  e.stopPropagation(); // Prevent event bubbling
-  showDiamondDropup.value = !showDiamondDropup.value;
-
-  // Reset all selections when opening the dropdown
-  if (showDiamondDropup.value) {
-    selectedPackage.value = null;
-    customDiamondAmount.value = null;
-    sendFromBalance.value = null;
-    giftMessage.value = ""; // Reset gift message
-    showBuyDiamonds.value = false;
-
-    // Refresh user data to get latest balance
-  }
-};
-
-// Handle clicks outside to close dropdown
-const handleClickOutside = (event) => {
-  // Handle diamond dropup
-  if (
-    showDiamondDropup.value &&
-    dropupRef.value &&
-    !dropupRef.value.contains(event.target) &&
-    giftButtonRef.value &&
-    !giftButtonRef.value.contains(event.target)
-  ) {
-    showDiamondDropup.value = false;
-  }
-  
-  // Handle mention dropdown
-  if (
-    showMentions.value &&
-    mentionDropdownRef.value &&
-    !mentionDropdownRef.value.contains(event.target) &&
-    commentInputRef.value &&
-    !commentInputRef.value.contains(event.target)
-  ) {
-    showMentions.value = false;
-    mentionSuggestions.value = [];
-  }
-};
-
-// Setup event listeners for click outside detection
-onMounted(() => {
-  document.addEventListener("click", handleClickOutside);
-  // Initialize with empty state - mentions are only created by selection
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener("click", handleClickOutside);
-});
-
-// Close diamond dropup
-const closeDiamondDropup = () => {
-  showDiamondDropup.value = false;
-};
-
-// Select a diamond package
-const selectDiamondPackage = (amount) => {
-  if (amount === null || amount === undefined) {
-    selectedPackage.value = null;
-    return;
-  }
-
-  // Check if we're already selecting this package, then toggle it off
-  if (selectedPackage.value === amount) {
-    selectedPackage.value = null;
-  } else {
-    // Otherwise select the new package
-    selectedPackage.value = amount;
-    // And clear other inputs
-    customDiamondAmount.value = null;
-    sendFromBalance.value = null;
-  }
-};
-
-// Handle custom amount input with safer null checking
-const onCustomAmountInput = () => {
-  if (customDiamondAmount.value) {
-    selectedPackage.value = null;
-    sendFromBalance.value = null;
-  }
-};
-
-// Send gift from available balance
-const sendGift = async () => {
-  // Initialize API utility
-
-  console.log("Send Gift button clicked");
-
-  try {
-    // Make sure we have a valid gift amount to send
-    const giftAmount = parseInt(sendFromBalance.value);
-
-    // Simple validation - check if we have something to send
-    if (!giftAmount || isNaN(giftAmount) || giftAmount <= 0) {
-      if (window.$nuxt && window.$nuxt.$toast) {
-        window.$nuxt.$toast.error("Please enter a valid diamond amount");
-      } else {
-        alert("Please enter a valid diamond amount");
-      }
-      return;
-    }
-
-    // Check if user has enough diamonds
-    if (giftAmount > availableDiamonds.value) {
-      if (window.$nuxt && window.$nuxt.$toast) {
-        window.$nuxt.$toast.error(
-          `You only have ${availableDiamonds.value} diamonds available`
-        );
-      } else {
-        alert(`You only have ${availableDiamonds.value} diamonds available`);
-      }
-      return;
-    }
-
-    // Set loading state
-    isSendingGift.value = true;
-
-    // Prepare the payload
-    const payload = {
-      amount: giftAmount,
-      recipientId: props.post.author?.id || props.post.author_details?.id,
-      postId: props.post.id,
-      message: giftMessage.value || `Sent ${giftAmount} diamonds as a gift! ✨`,
-    };
-
-    console.log("Sending gift with payload:", payload);
-
-    // Call the API endpoint
-    const response = await postApi("/diamonds/send-gift/", payload);
-
-    console.log("Gift sent successfully:", response);
-
-    // Update the user's diamond balance locally
-    if (user.value.user) {
-      user.value.user.diamond_balance -= giftAmount;
-    }
-
-    // Close the dialog
-    closeDiamondDropup();
-
-    // Store the gift amount for the success popup
-    lastGiftAmount.value = giftAmount; // Show success popup
-    showSuccessPopup.value = true;
-
-    // Auto-hide popup after 3 seconds
-    setTimeout(() => {
-      showSuccessPopup.value = false;
-    }, 3000);
-
-    // Emit event that a gift was sent
-    emit("gift-sent", {
-      postId: props.post.id,
-      giftAmount: giftAmount,
-    });
-
-    // Refresh user data to get updated balances
-  } catch (error) {
-    console.error("Error sending gift:", error);
-
-    // Show error message
-    let errorMsg = "Failed to send gift";
-
-    if (error.response?.data?.error) {
-      errorMsg = error.response.data.error;
-    }
-
-    if (window.$nuxt && window.$nuxt.$toast) {
-      window.$nuxt.$toast.error(errorMsg);
-    } else {
-      alert(errorMsg);
-    }
-  } finally {
-    // Reset loading state
-    isSendingGift.value = false;
-  }
-};
-
-// Purchase diamonds
-const purchaseDiamonds = async () => {
-  // Initialize the API utility
-  console.log(selectedPackage.value, customDiamondAmount.value);
-  const diamondAmount = selectedPackage.value || customDiamondAmount.value;
-  if (!diamondAmount) return;
-
-  // Calculate cost in BDT (10 diamonds = 1 BDT)
-  const costInBDT = calculatePrice(diamondAmount);
-
-  // Check if user has sufficient balance
-  if (user.value?.user?.balance < costInBDT) {
-    toast.add({
-      title: "Insufficient balance",
-      description: "Please add funds to your account",
-    });
-    return;
-  }
-
-  try {
-    // Call API to purchase diamonds
-    const response = await postApi("/diamonds/purchase/", {
-      amount: parseInt(diamondAmount),
-      cost: costInBDT,
-    });
-
-    // Update UI immediately for better UX
-    if (response.data) {
-      jwtLogin();
-      // Show success message
-      toast.add({
-        title: "Purchase successful",
-        description: `You've purchased ${diamondAmount} diamonds!`,
-        color: "green",
-      });
-      showBuyDiamonds.value = false;
-    }
-  } catch (error) {
-    console.error("Error purchasing diamonds:", error);
-    toast.add({
-      title: "Purchase failed",
-      description: error.response?.data?.error || "Failed to purchase diamonds",
-      color: "red",
-    });
-  }
-};
-
-// Handle deposit button click - redirect to deposit page
-const goToDeposit = () => {
-  // Close the dropdown and navigate to the deposit page
-  showDiamondDropup.value = false;
-  navigateTo("/deposit-withdraw");
-};
-
-// Navigate to funds page
-const navigateToFunds = () => {
-  navigateTo("/deposit-withdraw");
-};
-
-// Handle keyboard navigation for mentions
-const handleMentionKeydown = (event) => {
-  if (!showMentions.value || mentionSuggestions.value.length === 0) {
-    emit('handle-mention-keydown', event, props.post);
-    return;
-  }
-  
-  // Handle arrow keys for mention selection
-  if (event.key === "ArrowDown") {
-    event.preventDefault();
-    activeMentionIndex.value = (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
-  } else if (event.key === "ArrowUp") {
-    event.preventDefault();
-    activeMentionIndex.value =
-      activeMentionIndex.value <= 0
-        ? mentionSuggestions.value.length - 1
-        : activeMentionIndex.value - 1;
-  } else if (event.key === "Enter" && showMentions.value) {
-    event.preventDefault();
-    const selectedUser = mentionSuggestions.value[activeMentionIndex.value];
-    if (selectedUser) {
-      selectMention(selectedUser);
-    }
-  } else if (event.key === "Escape" || event.key === " ") {
-    // Close mention dropdown without selecting
-    showMentions.value = false;
-    mentionSuggestions.value = [];
-    if (event.key === " ") {
-      // For space, we don't prevent default so the space gets typed
-      // But we close the mention dropdown
-    } else {
-      event.preventDefault();
-    }
-  }
-  
-  // Emit the event for parent components
-  emit('handle-mention-keydown', event, props.post);
-};
-
-// Search for users to mention
-const searchMentions = async (query) => {
-  isSearching.value = true;
-  
-  try {
-    // If query is empty, get recent users or all users
-    const searchQuery = query.trim() || '';
-    const apiUrl = searchQuery 
-      ? `/bn/user-search/?q=${encodeURIComponent(searchQuery)}`
-      : `/bn/user-search/`; // Get default users when no query
-    
-    const { data } = await get(apiUrl);
-    
-    // Handle paginated response
-    if (data && data.results) {
-      mentionSuggestions.value = data.results.slice(0, 10); // Limit to 10 suggestions
-    } else if (Array.isArray(data)) {
-      mentionSuggestions.value = data.slice(0, 10);
-    } else {
-      mentionSuggestions.value = [];
-    }
-    
-    activeMentionIndex.value = 0;
-  } catch (error) {
-    console.error("Error searching mentions:", error);
-    mentionSuggestions.value = [];
-  } finally {
-    isSearching.value = false;
-  }
-};
-
-// Select a mention and add it as a chip (CLEAN separation of chips and text)
-const selectMention = (selectedUser) => {
-  console.log('🎯 selectMention called with user:', selectedUser);
-  
-  // Get the user's display name
-  const userName = selectedUser.name || 
-                   `${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`.trim() || 
-                   selectedUser.username || 
-                   'Unknown User';
-  
-  console.log('👤 Generated userName:', `"${userName}"`);
-  
-  // Clean approach: Remove ONLY the @searchText, keep everything else exactly as is
-  const currentText = displayCommentText.value;
-  const mentionPos = mentionInputPosition.value;
-  
-  console.log('📝 Current text:', `"${currentText}"`);
-  console.log('📍 Mention position:', mentionPos);
-  
-  if (mentionPos) {
-    // Remove the @mention part (e.g., "@joh" if user was typing "@joh")
-    const beforeMention = currentText.substring(0, mentionPos.startPos);
-    const afterMention = currentText.substring(mentionPos.endPos);
-    
-    console.log('✂️ Before mention:', `"${beforeMention}"`);
-    console.log('✂️ After mention:', `"${afterMention}"`);
-    
-    // Simply join before + after (removes the @searchText completely)
-    const newText = beforeMention + afterMention;
-    
-    console.log('🔄 New text will be:', `"${newText}"`);
-    
-    // Update the input text
-    displayCommentText.value = newText;
-    
-    // Position cursor where the mention was removed
-    nextTick(() => {
-      if (commentInputRef.value) {
-        const newCursorPos = beforeMention.length;
-        commentInputRef.value.setSelectionRange(newCursorPos, newCursorPos);
-        commentInputRef.value.focus();
-      }
-    });
-  }
-    // Add the user as a mention chip (completely separate from text)
-  const mentionExists = extractedMentions.value.some(m => m.id === selectedUser.id);
-  if (!mentionExists) {
-    const newMention = {
-      id: selectedUser.id,
-      name: userName,
-      image: selectedUser.image,
-      user: selectedUser
-    };
-    
-    console.log('➕ Adding mention chip:', newMention);
-    safelyAddMention(newMention, 'user selection from dropdown');
-  } else {
-    console.log('⚠️ Mention already exists, skipping');
-  }
-  
-  // Clean up mention dropdown state
-  showMentions.value = false;
-  mentionSuggestions.value = [];
-  mentionInputPosition.value = null;
-  mentionSearchText.value = '';
-  
-  emit('select-mention', selectedUser, props.post);
-};
-
-// Clear all content - ONLY called by explicit clear button click
-const clearComment = () => {
-  console.log('🧹 clearComment called explicitly');
-  
-  props.post.commentText = '';
-  displayCommentText.value = '';
-  safelyClearMentions('explicit clear button click');
-};
-
-// Override the original handleCommentInput to work with inline mentions
-const handleCommentInput = (event) => {
-  const inputValue = event.target.value;
-  console.log('🔍 Text input changed to:', `"${inputValue}"`);
-  console.log('🏷️ Current mentions (should NOT change):', extractedMentions.value.map(m => m.name));
-  console.log('📏 Input length:', inputValue.length, 'Is empty:', inputValue.length === 0);
-  
-  // CRITICAL: Only update text, NEVER touch mention chips here
-  displayCommentText.value = inputValue;
-  
-  // Handle mention detection for dropdown ONLY when actively typing @
-  const cursorPos = event.target.selectionStart;
-  const textBeforeCursor = inputValue.substring(0, cursorPos);
-  const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-  
-  console.log('📍 Cursor at:', cursorPos, 'Last @ at:', lastAtIndex);
-  
-  if (lastAtIndex !== -1) {
-    const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-    const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : ' ';
-    const isValidMentionPosition = lastAtIndex === 0 || charBeforeAt === ' ' || charBeforeAt === '\n';
-    
-    console.log('📝 Text after @:', `"${textAfterAt}"`, 'Valid pos:', isValidMentionPosition);
-    
-    const isActiveMention = !textAfterAt.includes(' ') && 
-                           isValidMentionPosition && 
-                           (cursorPos === lastAtIndex + 1 + textAfterAt.length);
-    
-    console.log('🎯 Active mention:', isActiveMention);
-    
-    if (isActiveMention) {
-      mentionSearchText.value = textAfterAt;
-      searchMentions(textAfterAt);
-      showMentions.value = true;
-      
-      mentionInputPosition.value = {
-        startPos: lastAtIndex,
-        endPos: cursorPos
-      };
-    } else {
-      showMentions.value = false;
-    }
-  } else {
-    showMentions.value = false;
-  }
-  
-  // Auto resize the textarea
-  autoResize();
-  
-  console.log('🏷️ Mentions after input processing (should be unchanged):', extractedMentions.value.map(m => m.name));
-  // CRITICAL DEBUG: Check if props.post.commentText is being set here
-  console.log('📋 Before emit - props.post.commentText:', `"${props.post.commentText || ''}"`);
-  
-  // ALWAYS emit, but be careful about what we emit
-  // The parent needs to know about input changes, but we shouldn't let empty input 
-  // cause unwanted side effects
-  emit('handle-comment-input', event, props.post);
-  
-  console.log('📋 After emit - props.post.commentText:', `"${props.post.commentText || ''}"`);
-};
-
-// Handle posting comment with mentions and text
-const handlePostComment = () => {
-  // Combine mention chips with the text content
-  let finalText = displayCommentText.value.trim();
-  
-  // Add mentions with double space as delimiter to prevent regex confusion
-  if (extractedMentions.value.length > 0) {
-    // Format mentions with @ symbol and ALWAYS use double space as clear delimiter
-    const mentionTexts = extractedMentions.value.map(mention => `@${mention.name.trim()}`);
-    
-    if (finalText) {
-      // Use double space as delimiter - this will help regex distinguish mentions from text
-      finalText = mentionTexts.join(' ') + '  ' + finalText;
-    } else {
-      // Only mentions, no additional text - still add double space to maintain consistency
-      finalText = mentionTexts.join(' ') + '  ';
-    }
-  }
-  
-  console.log('📤 Final comment text being posted:', `"${finalText}"`);
-  
-  props.post.commentText = finalText;
-  
-  // Only emit if we have content (mentions or text)
-  if (finalText || extractedMentions.value.length > 0) {
-    emit('add-comment', props.post);
-      // Clear local state immediately after emitting
-    displayCommentText.value = '';
-    safelyClearMentions('successful comment post');
-    
-    // Also clear the post's comment text so parent components know it's been processed
-    props.post.commentText = '';
-  }
-};
-
-// Remove mention chip - ONLY called by explicit user action (button click or keyboard on chip)
-const removeMention = (mentionToRemove) => {
-  safelyRemoveMention(mentionToRemove, 'explicit user action (X button or keyboard)');
-};
-
-// Auto-resize textarea
-const autoResize = () => {
-  nextTick(() => {
-    if (commentInputRef.value) {
-      commentInputRef.value.style.height = 'auto';
-      const newHeight = Math.min(commentInputRef.value.scrollHeight, 96);
-      commentInputRef.value.style.height = newHeight + 'px';
-    }
-  });
-};
-
-// Navigate to mentioned user profile
-const navigateToMentionedUser = (username) => {
-  try {
-    const router = useRouter();
-    router.push({
-      path: `/business-network/search-results/${encodeURIComponent(username)}`,
-      query: { type: 'people' }
-    });
-  } catch (error) {
-    console.error('Error navigating to user:', error);
-  }
-};
-
-// Enhanced watcher - only clear when there's a legitimate reason (like successful post)
-watch(() => props.post.commentText, (newText, oldText) => {
-  console.log('👀 Watcher triggered - oldText:', `"${oldText || ''}"`, 'newText:', `"${newText || ''}"`);
-  console.log('🔍 Input is empty:', !displayCommentText.value || displayCommentText.value.length === 0);
-  console.log('🏷️ Current mentions before watcher logic:', extractedMentions.value.map(m => m.name));
-  
-  // ONLY clear mentions if this is truly after a successful post
-  // We know it's a successful post when:
-  // 1. The old text was substantial (contained actual content)
-  // 2. The new text is completely empty (parent cleared it after success)
-  // 3. AND we have mentions that should be cleared
-  const wasSubstantialContent = oldText && oldText.trim().length > 10; // More substantial threshold
-  const isNowEmpty = !newText || newText.trim().length === 0;
-  const hasMentionsToFlear = extractedMentions.value.length > 0;
-  const isFromSuccessfulPost = wasSubstantialContent && isNowEmpty && hasMentionsToFlear;
-  
-  if (isFromSuccessfulPost) {
-    console.log('✅ Legitimate clearing - appears to be after successful post');
-    displayCommentText.value = '';
-    safelyClearMentions('legitimate post success or explicit clear');
-  } else {
-    console.log('🛡️ Ignoring watcher trigger - not a legitimate clearing scenario');
-    console.log('  - Was substantial:', wasSubstantialContent);
-    console.log('  - Is now empty:', isNowEmpty);
-    console.log('  - Has mentions:', hasMentionsToFlear);
-  }
-});
+// Define placeholder path for consistent usage
+const placeholderPath = '/static/frontend/images/placeholder.jpg';
 
 const emit = defineEmits([
-  "add-comment",
-  "handle-comment-input",
-  "handle-mention-keyboard",
-  "select-mention",
-  "gift-sent",
+  "open-comments-modal",
+  "edit-comment",
+  "delete-comment",
+  "cancel-edit-comment",
+  "save-edit-comment",
 ]);
+
+// Find the comment with highest diamond amount for pinning at the top
+const highestGiftComment = computed(() => {
+  // Only if we have any gift comments
+  if (!props.post?.post_comments?.length) return null;
+
+  // Find all gift comments and sort by diamond amount
+  const giftComments = props.post.post_comments.filter(
+    (comment) => comment.is_gift_comment
+  );
+
+  if (giftComments.length === 0) return null;
+
+  // Sort by diamond amount in descending order and return the highest
+  return [...giftComments].sort(
+    (a, b) => b.diamond_amount - a.diamond_amount
+  )[0];
+});
+
+// Filter out the highest gift comment from regular comments to avoid duplication
+const displayedComments = computed(() => {
+  if (!props.post?.post_comments?.length) return [];
+
+  let comments = [...props.post.post_comments];
+  // If there's a highest gift comment, remove it from the regular comments list
+  if (highestGiftComment.value) {
+    comments = comments.filter(
+      (comment) => comment.id !== highestGiftComment.value.id
+    );
+  }
+  
+  // Sort comments by creation date in ascending order (oldest first)
+  comments.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  
+  // Return the last 3 comments (most recent ones at the bottom)
+  return comments.slice(-3);
+});
+
+// Extract clean gift message from content
+const extractGiftMessage = (content) => {
+  if (!content) return "";
+
+  // Remove common prefixes like "Sent X diamonds as a gift! ✨"
+  if (content.includes("diamonds as a gift")) {
+    return content.replace(/^Sent \d+ diamonds as a gift! ✨/, "").trim();
+  }
+
+  return content;
+};
+
+// Direct helper functions for comment actions
+const editComment = (post, comment) => {
+  // Initialize edit text if not already set
+  if (!comment.editText) {
+    comment.editText = comment.content;
+  }
+
+  // Set editing state
+  comment.isEditing = true;
+
+  // Emit event for parent components
+  emit("edit-comment", post, comment);
+};
+
+const deleteComment = (post, comment) => {
+  // Emit delete event to parent
+  emit("delete-comment", post, comment);
+};
+
+const saveEditComment = (post, comment) => {
+  // Emit save event to parent
+  emit("save-edit-comment", post, comment);
+};
+
+// Format time ago function
+const formatTimeAgo = (dateString) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return `${Math.abs(diffInSeconds)} ${
+      diffInSeconds === 1 ? "second" : "seconds"
+    } ago`;
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${Math.abs(diffInMinutes)} ${
+      diffInMinutes === 1 ? "minute" : "minutes"
+    } ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${Math.abs(diffInHours)} ${
+      diffInHours === 1 ? "hour" : "hours"
+    } ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `${Math.abs(diffInDays)} ${diffInDays === 1 ? "day" : "days"} ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  return `${Math.abs(diffInMonths)} ${
+    diffInMonths === 1 ? "month" : "months"
+  } ago`;
+};
+
+// Toggle dropdown visibility
+const toggleDropdown = (comment) => {
+  // First, close all other dropdowns
+  if (props.post?.post_comments) {
+    props.post.post_comments.forEach((c) => {
+      if (c.id !== comment.id) {
+        c.showDropdown = false;
+      }
+    });
+  }
+
+  // Toggle this dropdown
+  if (comment.showDropdown === undefined) {
+    comment.showDropdown = true;
+  } else {
+    comment.showDropdown = !comment.showDropdown;
+  }
+};
+
+// Process mentions in comments to make them clickable and preserve line breaks
+const processMentionsInComment = (content) => {
+  if (!content) return content;
+  
+  // First process mentions
+  let processedContent = processMentionsAsHTML(content);
+  
+  // Then convert line breaks to HTML <br> tags
+  processedContent = processedContent.replace(/\n/g, '<br>');
+  
+  return processedContent;
+};
+
+// Process gift message content and preserve line breaks
+const processGiftMessageWithLineBreaks = (content) => {
+  if (!content) return content;
+  
+  // Convert line breaks to HTML <br> tags
+  return content.replace(/\n/g, '<br>');
+};
+
+// Setup mention click handlers when component mounts
+onMounted(() => {
+  setupMentionClickHandlers();
+});
 </script>
 
 <style scoped>
-/* Premium shadow for dropdown */
-.premium-shadow {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.06),
-    0 0 1px rgba(0, 0, 0, 0.08);
-}
-
-.dark .premium-shadow {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.15),
-    0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-/* Diamond dropup special styling */
-.diamond-dropup {
-  box-shadow: 0 10px 40px rgba(255, 105, 180, 0.1),
-    0 4px 12px rgba(0, 0, 0, 0.08), 0 0 2px rgba(255, 105, 180, 0.1);
-  z-index: 40; /* Increase z-index to appear above other posts */
-}
-
-.dark .diamond-dropup {
-  box-shadow: 0 10px 40px rgba(255, 105, 180, 0.15),
-    0 4px 12px rgba(0, 0, 0, 0.25), 0 0 2px rgba(255, 255, 255, 0.05);
-}
-
-/* Animation for mention dropdown */
-.animate-fade-in-up {
-  animation: fadeInUp 0.2s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-/* Hide scrollbar for Chrome, Safari and Opera */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-/* Hide scrollbar for IE, Edge and Firefox */
-.no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-/* Diamond balance card styling */
-.diamond-balance-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.shimmer-background {
-  background-size: 200% 100%;
-  animation: shimmer 2.5s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -100% 0;
-  }
-  50% {
-    background-position: 100% 0;
-  }
-  100% {
-    background-position: -100% 0;
-  }
-}
+/* Premium Gift Comment Styling */
 .gift-comment {
-  background: linear-gradient(to right, #fff8f8, #fff0f8);
-  border-radius: 10px;
-  padding: 8px 12px;
-  border-left: 3px solid #ff66cc;
-  margin: 8px 0;
-}
-.gift-message {
-  font-weight: 500;
-  color: #ff3399;
+  @apply relative my-2 p-3 rounded-xl overflow-hidden bg-gradient-to-r from-pink-100/90 via-pink-50/80 to-fuchsia-100/70 border border-pink-200/60 shadow-sm transition-all duration-300;
 }
 
-/* Animation for success popup */
-@keyframes popIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  70% {
-    transform: scale(1.05);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+.dark .gift-comment {
+  @apply from-pink-900/30 via-pink-800/25 to-fuchsia-900/30 border-pink-700/40;
 }
 
-.animate-pop-in {
-  animation: popIn 0.3s ease-out forwards;
+.gift-comment:hover {
+  @apply -translate-y-0.5 shadow-sm;
 }
 
-/* Enhanced mention chip animations */
-@keyframes mention-chip-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.8) translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+/* Gift sender info styling */
+.gift-sender-info {
+  @apply text-xs text-pink-600 dark:text-pink-400;
 }
 
-.mention-chip-enter {
-  animation: mention-chip-in 0.2s ease-out forwards;
+/* Gift message styling */
+.gift-message-text {
+  @apply text-base leading-relaxed text-gray-800 dark:text-gray-300 mt-1;
 }
 
-/* Smooth transitions for textarea resize */
-.comment-textarea {
-  transition: height 0.2s ease-out;
-  resize: none;
+/* Top Gift Comment Styling */
+.gift-comment-premium {
+  @apply relative p-3 rounded-xl overflow-hidden border-pink-300/40 shadow-sm transition-all duration-300;
+  background: linear-gradient(
+    135deg,
+    rgba(253, 242, 248, 0.9) 0%,
+    rgba(249, 168, 212, 0.15) 50%,
+    rgba(253, 242, 248, 0.7) 100%
+  );
 }
 
-/* Custom scrollbar for mention chips area */
-.mention-chips-container::-webkit-scrollbar {
-  height: 4px;
+.dark .gift-comment-premium {
+  @apply border-pink-700/40;
+  background: linear-gradient(
+    135deg,
+    rgba(131, 24, 67, 0.3) 0%,
+    rgba(219, 39, 119, 0.2) 50%,
+    rgba(131, 24, 67, 0.3) 100%  );
 }
 
-.mention-chips-container::-webkit-scrollbar-track {
-  background: transparent;
+/* Multi-line comment styling */
+.text-sm {
+  line-height: 2.4; /* Better line spacing for multi-line content */
+  white-space: pre-wrap; /* Preserve whitespace formatting */
 }
 
-.mention-chips-container::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.3);
-  border-radius: 2px;
-}
-
-.mention-chips-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.5);
-}
-
-/* Enhanced mention chip styles */
-.mention-chip {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  position: relative;
-  overflow: hidden;
-}
-
-.mention-chip::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
-}
-
-.mention-chip:hover::before {
-  left: 100%;
-}
-
-/* Focus styles for accessibility */
-.mention-chip:focus {
-  outline: 2px solid #3B82F6;
-  outline-offset: 1px;
-}
-
-/* Enhanced mention chip animations with stagger effect */
-@keyframes mention-chip-bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  40% {
-    transform: translateY(-3px) scale(1.02);
-  }
-  60% {
-    transform: translateY(-1px) scale(1.01);
-  }
-}
-
-.mention-chip-enter {
-  animation: mention-chip-in 0.3s ease-out forwards, mention-chip-bounce 0.6s ease-out 0.3s;
-}
-
-/* Responsive mention chips */
-@media (max-width: 640px) {
-  .mention-chip {
-    font-size: 0.7rem;
-    padding: 0.375rem 0.75rem;
-  }
+.gift-message-text {
+  line-height: 1.5; /* Better line spacing for gift messages */
+  white-space: pre-wrap; /* Preserve whitespace formatting */
 }
 </style>

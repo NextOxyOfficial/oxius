@@ -75,30 +75,8 @@
           <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
         </div>
       </div>
-    </div>
-
-    <!-- Professional Product Slider -->
-    <div v-else-if="productsCount > 0" class="relative product-slider-container group">      
-      <!-- App-style Navigation Arrows -->      
-       <button
-        @click="scrollSlider('left')"
-        class="absolute -left-2 sm:-left-4 top-1/2 transform -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full transition-opacity duration-300 opacity-0 group-hover:opacity-100"
-      >
-        <UIcon
-          name="i-heroicons-chevron-left"
-          class="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 dark:text-slate-300"
-        />
-      </button>
-
-      <button
-        @click="scrollSlider('right')"
-        class="absolute -right-2 sm:-right-4 top-1/2 transform -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full transition-opacity duration-300 opacity-0 group-hover:opacity-100"
-      >
-        <UIcon
-          name="i-heroicons-chevron-right"
-          class="w-4 h-4 sm:w-5 sm:h-5 text-slate-700 dark:text-slate-300"
-        />
-      </button>
+    </div>    <!-- Professional Product Slider -->
+    <div v-else-if="productsCount > 0" class="relative product-slider-container group">
 
       <!-- Modern Product Container -->
       <div

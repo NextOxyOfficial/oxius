@@ -4,7 +4,7 @@
     <div class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <CommonGeoSelector />
       <UContainer class="py-3">
-        <div class="location-breadcrumb relative my-3 overflow-hidden">
+        <div class="location-breadcrumb relative mb-3 overflow-hidden">
           <!-- Subtle background effect -->
           <div
             class="absolute inset-0 bg-gradient-to-r from-gray-50 to-primary-50 opacity-70 rounded-lg"
@@ -24,7 +24,7 @@
             <div class="location-breadcrumb relative my-3 overflow-hidden">
               <!-- Subtle background effect -->
               <div
-                class="relative z-10 flex items-center justify-between p-3 rounded-lg border border-primary-100"
+                class="relative z-10 flex items-center justify-between p-1 rounded-lg border border-primary-100"
               >
                 <!-- Location path with icons -->
                 <div class="flex items-center flex-wrap location-path">
@@ -154,7 +154,8 @@
             </UButtonGroup>
           </div>
         </div>
-        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-4 ">          <UInput
+        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-4 pb-2 ">          
+          <UInput
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
             color="white"
@@ -187,7 +188,7 @@
         </UButtonGroup>
       </UContainer>
     </div>
-    <UContainer class="py-6">
+    <UContainer class=" sm:py-6">
       <!-- Overlay for mobile -->
       <div
         v-if="isMobileFilterOpen"
@@ -207,40 +208,55 @@
           @select-subcategory="selectSubcategory"
           @toggle-subcategories="toggleSubcategories"
         />        <!-- Main Content Area -->
-        <div class="flex-1 order-1 lg:order-2 min-w-0 overflow-hidden">
-          <!-- Sorting & View Options -->
+        <div class="flex-1 order-1 lg:order-2 min-w-0 overflow-hidden">          <!-- Sorting & View Options -->
           <div
             class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap justify-between items-center gap-4"
           >
-            <div class="flex items-center gap-3">
-              <!-- Mobile Filter Button -->
-              <UButton
-                icon="i-heroicons-bars-3"
-                size="sm"
-                color="primary"
-                variant="soft"
-                class="lg:hidden flex items-center gap-1.5"
-                @click="toggleMobileSidebar"
-                aria-label="Open Filters Menu"
-              >
-                <span class="text-xs font-medium">Menu</span>
-              </UButton>
-              <p class="text-gray-600 text-sm">
-                <span class="font-medium text-gray-800">{{
-                  selectedCategory
-                    ? getCateogryPostCount(selectedCategory)
-                    : totalListings
-                }}</span>
-                ads found
-                <span v-if="selectedCategory">
-                  in
+            <!-- Mobile Layout: Ads found + Post Sale Ad button on same row -->
+            <div class="flex items-center justify-between w-full lg:w-auto lg:justify-start gap-3">
+              <div class="flex items-center gap-3">
+                <!-- Mobile Filter Button -->
+                <UButton
+                  icon="i-heroicons-bars-3"
+                  size="sm"
+                  color="primary"
+                  variant="soft"
+                  class="lg:hidden flex items-center gap-1.5"
+                  @click="toggleMobileSidebar"
+                  aria-label="Open Filters Menu"
+                >
+                  <span class="text-xs font-medium">Menu</span>
+                </UButton>
+                <p class="text-gray-600 text-sm">
                   <span class="font-medium text-gray-800">{{
-                    getCategoryName(selectedCategory)
+                    selectedCategory
+                      ? getCateogryPostCount(selectedCategory)
+                      : totalListings
                   }}</span>
-                </span>
-              </p>
+                  ads found
+                  <span v-if="selectedCategory">
+                    in
+                    <span class="font-medium text-gray-800">{{
+                      getCategoryName(selectedCategory)
+                    }}</span>
+                  </span>
+                </p>
+              </div>
+              
+              <!-- Post Sale Ad Button - Mobile position (right side of ads found row) -->
+              <div class="lg:hidden">
+                <NuxtLink
+                  to="/sale/my-posts?tab=post-sale"
+                  class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-xs"
+                >
+                  <UIcon name="i-heroicons-plus-circle" class="h-3 w-3" />
+                  Post Ad
+                </NuxtLink>
+              </div>
             </div>            
-            <div class="flex gap-6 items-center">
+            
+            <!-- Desktop Layout: Sorting and Post Sale Ad button -->
+            <div class="hidden lg:flex gap-6 items-center">
               <div class="flex items-center gap-2">
                 <span class="text-sm text-gray-600">Sort by:</span>
                 <USelect
@@ -268,6 +284,27 @@
                   <UIcon name="i-heroicons-plus-circle" class="h-4 w-4" />
                   Post Sale Ad
                 </NuxtLink>
+              </div>
+            </div>
+            
+            <!-- Mobile Sort Options - Separate row -->
+            <div class="lg:hidden w-full">
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-600">Sort by:</span>
+                <USelect
+                  v-model="sortOption"
+                  :options="sortOptions"
+                  option-attribute="label"
+                  value-attribute="value"
+                  size="sm"
+                  class="w-40 h-8 flex"
+                  :ui="{
+                    padding: {
+                      sm: 'px-2 py-1'
+                    }
+                  }"
+                  @update:modelValue="applyFilters"
+                />
               </div>
             </div>
           </div>
@@ -392,7 +429,7 @@
             class="bg-blue-50/50 rounded-lg border border-blue-100/50 p-1 mb-6"
           >
             <div
-              class="flex flex-col sm:flex-row items-center justify-between my-2 gap-2"
+              class="flex flex-col sm:flex-row items-center justify-between my-4 gap-2"
             >
               <h2 class="text-lg font-medium text-gray-800">
                 {{ categoryBrowserHeading }}
@@ -436,7 +473,7 @@
               </div>
             </div><div
               v-else
-              class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 w-full"
+              class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-2 w-full"
             ><NuxtLink
                 v-for="(post, i) in listings"
                 :key="`post-${i}`"
