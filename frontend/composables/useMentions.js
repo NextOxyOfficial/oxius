@@ -170,32 +170,43 @@ export const useMentions = () => {
    */  const processMentionsAsHTML = (content) => {
     if (!content) return content;
     
-    // Enhanced regex that stops at double spaces (our delimiter), punctuation, or other mentions
-    // Double space acts as a clear boundary between mentions and regular text
-    // Supports all Unicode scripts including Bangla, Arabic, Chinese, etc.
-    // \p{L} = Unicode letters, \p{M} = Unicode marks (diacritics), \p{N} = Unicode numbers
-    const mentionRegex = /@([\p{L}\p{M}\p{N}_'-]+(?:\s+[\p{L}\p{M}\p{N}_'-]+)*?)(?=\s{2,}|\s*[.!?,:;]|\s+@|\s*$|$)/gu;    
-    return content.replace(mentionRegex, (match, mentionedName) => {
-      const trimmedName = normalizeUsername(mentionedName);
+    try {
+      // Enhanced regex that stops at double spaces (our delimiter), punctuation, or other mentions
+      // Double space acts as a clear boundary between mentions and regular text
+      // Supports all Unicode scripts including Bangla, Arabic, Chinese, etc.
+      // \p{L} = Unicode letters, \p{M} = Unicode marks (diacritics), \p{N} = Unicode numbers
+      const mentionRegex = /@([\p{L}\p{M}\p{N}_'-]+(?:\s+[\p{L}\p{M}\p{N}_'-]+)*?)(?=\s{2,}|\s*[.!?,:;]|\s+@|\s*$|$)/gu;
       
-      // Skip if the extracted name is not valid
-      if (!isValidMentionText(trimmedName)) {
-        return match; // Return original text if not a valid mention
-      }
+      const result = content.replace(mentionRegex, (match, mentionedName) => {
+        const trimmedName = normalizeUsername(mentionedName);
+        
+        // Skip if the extracted name is not valid
+        if (!isValidMentionText(trimmedName)) {
+          console.debug('Invalid mention text:', trimmedName, 'from match:', match);
+          return match; // Return original text if not a valid mention
+        }
+        
+        console.debug('Processing mention:', trimmedName, 'from original:', mentionedName);
+        
+        // Create mention chip with @ symbol and no space between @ and name
+        return `<span 
+          class="inline-flex items-center px-2.5 py-1 mx-0.5 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/30 hover:to-purple-500/30 dark:hover:from-blue-600/40 dark:hover:to-purple-600/40 transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-sm hover:shadow-md text-xs font-medium mention-chip mention-link active:scale-95" 
+          data-username="${trimmedName}"
+          title="Click to view ${trimmedName}'s profile"
+          role="button"
+          tabindex="0"
+        >
+          <span class="text-blue-700 dark:text-blue-300 hover:text-purple-700 dark:hover:text-purple-300 transition-colors duration-300 font-medium whitespace-nowrap">
+            <span class="text-blue-500 dark:text-blue-400 hover:text-purple-500 dark:hover:text-purple-400 font-semibold">@</span>${trimmedName}
+          </span>
+        </span>`;
+      }).replace(/\s{2,}/g, ' '); // Clean up multiple spaces after processing
       
-      // Create mention chip with @ symbol and no space between @ and name
-      return `<span 
-        class="inline-flex items-center px-2.5 py-1 mx-0.5 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/30 hover:to-purple-500/30 dark:hover:from-blue-600/40 dark:hover:to-purple-600/40 transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-sm hover:shadow-md text-xs font-medium mention-chip mention-link active:scale-95" 
-        data-username="${trimmedName}"
-        title="Click to view ${trimmedName}'s profile"
-        role="button"
-        tabindex="0"
-      >
-        <span class="text-blue-700 dark:text-blue-300 hover:text-purple-700 dark:hover:text-purple-300 transition-colors duration-300 font-medium whitespace-nowrap">
-          <span class="text-blue-500 dark:text-blue-400 hover:text-purple-500 dark:hover:text-purple-400 font-semibold">@</span>${trimmedName}
-        </span>
-      </span>`;
-    }).replace(/\s{2,}/g, ' '); // Clean up multiple spaces after processing
+      return result;
+    } catch (error) {
+      console.error('Error processing mentions in HTML:', error);
+      return content; // Return original content on error
+    }
   };
   /**
    * Setup click handlers for mention links
