@@ -19,18 +19,17 @@
          <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">
           <!-- Content wrapper with inline editing capability -->
           <div class="flex items-center gap-1.5 px-3 min-h-[38px]">              
-            <!-- Contenteditable div for inline mentions and text -->
-            <div
+            <!-- Contenteditable div for inline mentions and text -->            <div
               ref="commentInputRef"
               contenteditable="true"
               class="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none text-gray-800 dark:text-gray-300 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-input-editable"
               :style="{ minHeight: '20px' }"
               @input="handleContentEditableInput"
               @focus="post.showCommentInput = true"
-              @keydown="handleMentionKeydown"
+              @keydown="handleKeydown"
               @paste="handlePaste"
               data-placeholder="Add a comment... (Type @ to mention users)"
-            ></div>            
+            ></div>
             <!-- Action buttons positioned inline with the text -->
             <div
               v-if="hasContent"
@@ -1039,12 +1038,11 @@ const handleContentEditableInput = (event) => {
   
   // Update mention count in case chips were deleted
   updateInlineMentionCount();
-  
-  // Handle mention detection
+    // Handle mention detection
   detectAndShowMentions(event.target);
   
-  // Auto resize
-  autoResize();
+  // Auto resize with debouncing for smooth performance
+  debouncedAutoResize();
   
   // Emit to parent
   emit('handle-comment-input', event, props.post);
@@ -1194,6 +1192,35 @@ const insertMentionChip = (selectedUser) => {
   handleContentEditableInput({ target: commentInputRef.value });
 };
 
+// Debounced auto-resize for frequent updates
+let resizeTimeout = null;
+const debouncedAutoResize = () => {
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout);
+  }
+  resizeTimeout = setTimeout(() => {
+    autoResize();
+  }, 50);
+};
+
+// Combined keydown handler for mentions and auto-resize
+const handleKeydown = (event) => {
+  // First handle mention functionality
+  handleMentionKeydown(event);
+  
+  // Then handle auto-resize for specific keys
+  const resizeTriggerKeys = ['Backspace', 'Delete', 'Enter'];
+  if (resizeTriggerKeys.includes(event.key)) {
+    // Use a small delay to ensure the content change has been processed
+    setTimeout(() => {
+      autoResize();
+    }, 10);
+  }
+  
+  // No automatic posting on Enter - users should click the send button
+  // This allows Enter to create line breaks naturally
+};
+
 // Override the selectMention function to use inline insertion
 const selectMention = (selectedUser) => {
   insertMentionChip(selectedUser);
@@ -1302,15 +1329,30 @@ const removeMention = (mentionToRemove) => {
 const autoResize = () => {
   nextTick(() => {
     if (commentInputRef.value) {
-      // For contenteditable, we use scrollHeight directly
+      // First reset height to minimum to get accurate scrollHeight
+      commentInputRef.value.style.height = '20px';
+      
+      // Force a reflow to ensure the height reset takes effect
+      commentInputRef.value.offsetHeight;
+      
+      // Get the actual content height
       const scrollHeight = commentInputRef.value.scrollHeight;
       
       // Set to minimum height (20px) or calculated height, whichever is larger
       const newHeight = Math.max(20, Math.min(scrollHeight, 120));
       commentInputRef.value.style.height = newHeight + 'px';
+      
+      console.log('🔧 Auto-resize:', { scrollHeight, newHeight });
     }
   });
 };
+
+// Watch for changes in the actual DOM content to ensure height adjusts
+watch(() => commentInputRef.value?.innerHTML, () => {
+  nextTick(() => {
+    debouncedAutoResize();
+  });
+}, { flush: 'post' });
 
 // Navigate to mentioned user profile
 const navigateToMentionedUser = (username) => {
@@ -1327,7 +1369,7 @@ const navigateToMentionedUser = (username) => {
 
 // Watch for changes in displayCommentText to auto-resize
 watch(() => displayCommentText.value, () => {
-  autoResize();
+  debouncedAutoResize();
 });
 
 // Enhanced watcher - only clear when there's a legitimate reason (like successful post)
