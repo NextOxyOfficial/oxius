@@ -1,6 +1,5 @@
-<template>
-  <div
-    class="flex items-center gap-2.5 mt-4 pt-3 border-t border-gray-100/60 dark:border-slate-700/40 px-2"
+<template>  <div
+    class="flex items-start gap-2.5 mt-4 pt-3 border-t border-gray-100/60 dark:border-slate-700/40 px-2"
   >
     <!-- User avatar with enhanced styling -->
     <div class="relative group">
@@ -13,14 +12,12 @@
       <div
         class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-blue-500/10 blur-md -z-10"
       ></div>
-    </div>    
-    <!-- Comment input with glassmorphism and inline mention display -->
-    <div class="flex-1 relative flex items-center gap-2">
+    </div>      <!-- Comment input with glassmorphism and inline mention display -->
+    <div class="flex-1 relative">
       <div class="relative group flex-1">          
         <!-- Enhanced input container with mention chips inside -->
-        <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-full focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">            
-          <!-- Content wrapper with padding for chips and input -->
-            <div class="flex flex-wrap items-center gap-1.5 p-2 pr-[60px] min-h-[38px]">              
+        <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">              <!-- Content wrapper with padding for chips and input with inline action buttons -->
+            <div class="flex flex-wrap items-end gap-1.5 p-3 min-h-[38px]">              
               <!-- Mentioned users chips -->
               <div 
                 v-for="mention in stableMentions" 
@@ -56,40 +53,44 @@
               v-model="displayCommentText"
               placeholder="Add a comment... (Type @ to mention users)"
               rows="1"
-              class="flex-1 min-w-[120px] text-sm bg-transparent line-clump-1 border-none outline-none resize-none text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 leading-5 max-h-[4rem] overflow-y-auto no-scrollbar comment-textarea"
+              class="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none resize-none text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-textarea"
               :style="{ minHeight: '24px' }"
               @input="handleCommentInput"
               @focus="post.showCommentInput = true"
               @keydown="handleMentionKeydown"
               @keyup="autoResize"
             ></textarea>
+            
+            <!-- Action buttons positioned inline with the last row of text -->
+            <div
+              v-if="(displayCommentText && displayCommentText.trim()) || stableMentions.length > 0"
+              class="flex items-center gap-1 ml-2"
+            >
+              <button
+                class="p-1.5 rounded-full text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+                @click="clearComment"
+                aria-label="Clear comment"
+              >
+                <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
+              </button>            
+              <button
+                class="p-1.5 rounded-full bg-blue-500/90 hover:bg-blue-600 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300 relative"
+                @click="handlePostComment"
+                aria-label="Post comment"
+              >
+                <Send class="h-4 w-4" />
+                <!-- Subtle glow effect -->
+                <div
+                  class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
+                ></div>
+              </button>
+            </div>
           </div>
+          
           <!-- Subtle gradient line under input on focus -->
           <div
             class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 focus-within:scale-x-100 transition-transform duration-300"
-          ></div>          <!-- Action buttons with premium styling (positioned over the input container) -->
-          <div
-            v-if="(displayCommentText && displayCommentText.trim()) || stableMentions.length > 0"
-            class="absolute right-2 top-6 -translate-y-1/2 flex items-center gap-1 z-10"
-          >
-            <button
-              class="p-1 rounded-full text-gray-600 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
-              @click="clearComment"
-              aria-label="Clear comment"
-            >
-              <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
-            </button>            <button
-              class="p-1 rounded-full bg-blue-500/90 hover:bg-blue-600 mb-1 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300"
-              @click="handlePostComment"
-              aria-label="Post comment"
-            >
-              <Send class="h-3.5 w-3.5" />
-              <!-- Subtle glow effect -->
-              <div
-                class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
-              ></div>
-            </button>
-          </div>
+          ></div>
         </div>
       </div>
 
@@ -1176,7 +1177,7 @@ const autoResize = () => {
   nextTick(() => {
     if (commentInputRef.value) {
       commentInputRef.value.style.height = 'auto';
-      const newHeight = Math.min(commentInputRef.value.scrollHeight, 96);
+      const newHeight = Math.min(commentInputRef.value.scrollHeight, 120);
       commentInputRef.value.style.height = newHeight + 'px';
     }
   });
