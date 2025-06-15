@@ -24,7 +24,7 @@
           <!-- Close Button -->
           <button
             @click="closeMobileAppPopup"
-            class="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            class="absolute flex top-4 right-4 z-10 p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           >
             <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
@@ -44,14 +44,15 @@
               <h3 class="text-xl font-bold mb-2">Get Our Mobile App!</h3>
               <p class="text-emerald-100 text-sm">Experience AdsyClub on the go with our mobile application</p>
             </div>
-          </div>          <!-- Content -->
+          </div>          
+          <!-- Content -->
           <div class="p-6">
             <!-- Version Information (if available) -->
             <div v-if="appVersion || versionCode" class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <div class="flex items-center justify-between text-sm">
                 <span class="text-gray-600 dark:text-gray-400">Latest Version:</span>
                 <div class="flex items-center space-x-2">
-                  <span v-if="appVersion" class="font-semibold text-emerald-600 dark:text-emerald-400">v{{ appVersion }}</span>
+                  <span v-if="appVersion" class="font-semibold text-emerald-600 dark:text-emerald-400">{{ appVersion }}</span>
                   <span v-if="versionCode" class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded text-xs">
                     Build {{ versionCode }}
                   </span>
@@ -82,13 +83,15 @@
               </div>
             </div>            
             <!-- Action Buttons -->
-            <div class="space-y-3">              <UButton
+            <div class="space-y-3">              
+              <UButton
                 @click="downloadMobileApp"
                 color="emerald"
                 variant="solid"
                 class="w-full py-3 font-semibold shadow-lg hover:shadow-xl transition-all group"
                 size="lg"
-              >                <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 mr-2 group-hover:animate-bounce" />
+              >                
+              <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 mr-2 group-hover:animate-bounce" />
                 Download APK {{ appVersion ? `v${appVersion}` : '' }}{{ versionCode ? ` (${versionCode})` : '' }}{{ fileSize ? ` - ${fileSize}` : '' }}
               </UButton>
               

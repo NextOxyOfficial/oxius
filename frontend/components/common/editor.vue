@@ -250,7 +250,7 @@
     --></div>
     <div
       ref="editorButtons"
-      class="prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg focus:outline-none min-w-full"
+      class="prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg px-2 focus:outline-none min-w-full"
     >
       <editor-content
         class="bg-slate-200/10 dark:bg-slate-800/5"
