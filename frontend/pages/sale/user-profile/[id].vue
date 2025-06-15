@@ -23,7 +23,8 @@
             Report
           </button>
         </div>
-      </div>      <div class="px-6 pb-6 relative">          
+      </div>      
+      <div class="p-2 relative">          
         <!-- Profile Avatar -->
         <div
           class="relative -top-8 left-6 h-24 w-24 rounded-full border-4 border-white bg-white overflow-hidden cursor-pointer"
