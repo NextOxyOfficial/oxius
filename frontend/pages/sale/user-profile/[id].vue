@@ -343,7 +343,7 @@
                   />
                 </div>
 
-                <div class="p-4 sm:w-2/3 flex flex-col">                  
+                <div class="p-2 sm:w-2/3 flex flex-col">                  
                   <h3 class="font-semibold text-gray-800 mb-1">
                     <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
                       {{ capitalizeTitle(product.title) }}
