@@ -362,11 +362,8 @@
                         ? `${product?.division}, ${product?.district}, ${product?.area}`
                         : `All Over Bagnladesh`
                     }}</span>
+                  </div>                  <div class="text-sm text-gray-600 mt-2 line-clamp-2" v-html="product.description || 'No description available.'">
                   </div>
-
-                  <p class="text-sm text-gray-600 mt-2 line-clamp-2">
-                    {{ product.description || "No description available." }}
-                  </p>                  
                   <div
                     class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100"
                   >

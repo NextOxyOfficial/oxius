@@ -286,12 +286,10 @@
             <h2 class="text-lg font-bold mb-4 text-gray-800 flex items-center">
               <ClipboardList class="h-5 w-5 mr-2 text-emerald-600" />
               Details
-            </h2>
-            <p
+            </h2>            <div
               class="text-gray-600 sm:px-6 whitespace-pre-line text-sm leading-relaxed"
-            >
-              {{ product?.description }}
-            </p>
+              v-html="product?.description"
+            ></div>
 
             <div class="my-6 border-t border-gray-100"></div>
 
