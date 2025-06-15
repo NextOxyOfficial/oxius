@@ -15,9 +15,10 @@
     </div>      <!-- Comment input with glassmorphism and inline mention display -->
     <div class="flex-1 relative">
       <div class="relative group flex-1">          
-        <!-- Enhanced input container with mention chips inside -->        <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">
+        <!-- Enhanced input container with mention chips inside -->        
+         <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">
           <!-- Content wrapper with inline editing capability -->
-          <div class="flex items-center gap-1.5 px-3 py-2 min-h-[38px]">              
+          <div class="flex items-center gap-1.5 px-3 min-h-[38px]">              
             <!-- Contenteditable div for inline mentions and text -->
             <div
               ref="commentInputRef"
@@ -535,6 +536,19 @@ const extractedMentions = ref([]);
 const displayCommentText = ref("");
 const mentionInputPosition = ref(null);
 const isSearching = ref(false);
+const inlineMentionCount = ref(0); // Track inline mentions for reactivity
+
+// Function to update mention count
+const updateInlineMentionCount = () => {
+  if (!commentInputRef.value) {
+    inlineMentionCount.value = 0;
+    return;
+  }
+  
+  const chips = commentInputRef.value.querySelectorAll('.mention-chip-inline');
+  inlineMentionCount.value = chips.length;
+  console.log('📊 Updated inlineMentionCount:', inlineMentionCount.value);
+};
 
 // Computed property to ensure mention stability - prevents accidental clearing
 const stableMentions = computed(() => {
@@ -700,6 +714,11 @@ const handleClickOutside = (event) => {
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
   // Initialize with empty state - mentions are only created by selection
+  
+  // Initialize mention count
+  nextTick(() => {
+    updateInlineMentionCount();
+  });
 });
 
 onBeforeUnmount(() => {
@@ -972,8 +991,10 @@ const clearComment = () => {
   if (commentInputRef.value) {
     commentInputRef.value.innerHTML = '';
   }
+    safelyClearMentions('explicit clear button click');
   
-  safelyClearMentions('explicit clear button click');
+  // Update mention count after clearing
+  updateInlineMentionCount();
   
   // Reset height after clearing
   autoResize();
@@ -982,9 +1003,30 @@ const clearComment = () => {
 // Computed property to check if content exists
 const hasContent = computed(() => {
   if (!commentInputRef.value) return false;
+  
+  // Check for text content
   const text = commentInputRef.value.textContent || '';
-  const hasMentions = commentInputRef.value.querySelectorAll('.mention-chip-inline').length > 0;
-  return text.trim().length > 0 || hasMentions;
+  const hasText = text.trim().length > 0;
+  
+  // Check for mention chips using reactive count
+  const hasMentions = inlineMentionCount.value > 0;
+  
+  // Check if user is typing a mention (has @ followed by text)
+  const isTypingMention = showMentions.value && mentionSearchText.value.length > 0;
+  
+  // Also check displayCommentText as a fallback
+  const hasDisplayText = displayCommentText.value && displayCommentText.value.trim().length > 0;
+  
+  console.log('📊 hasContent check:', { 
+    hasText, 
+    hasMentions, 
+    isTypingMention, 
+    hasDisplayText, 
+    inlineMentionCount: inlineMentionCount.value,
+    mentionSearchText: mentionSearchText.value 
+  });
+  
+  return hasText || hasMentions || isTypingMention || hasDisplayText;
 });
 
 // Handle contenteditable input for inline mentions
@@ -994,6 +1036,9 @@ const handleContentEditableInput = (event) => {
   
   // Update displayCommentText for compatibility
   displayCommentText.value = content;
+  
+  // Update mention count in case chips were deleted
+  updateInlineMentionCount();
   
   // Handle mention detection
   detectAndShowMentions(event.target);
@@ -1095,13 +1140,20 @@ const insertMentionChip = (selectedUser) => {
     mentionChip.contentEditable = false;
     mentionChip.className = 'mention-chip-inline inline-flex items-center px-2 py-0.5 mx-1 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full text-xs font-medium cursor-pointer hover:from-blue-500/30 hover:to-purple-500/30';
     mentionChip.setAttribute('data-mention-id', selectedUser.id);
-    mentionChip.setAttribute('data-mention-name', userName);
-    mentionChip.innerHTML = `
+    mentionChip.setAttribute('data-mention-name', userName);    mentionChip.innerHTML = `
       <span class="text-blue-700 dark:text-blue-300 whitespace-nowrap">
         <span class="text-blue-500 dark:text-blue-400 font-semibold">@</span>${userName}
       </span>
-      <button class="ml-1 text-blue-600 dark:text-blue-400 hover:text-red-500 text-xs" onclick="this.parentElement.remove()">×</button>
+      <button class="ml-1 text-blue-600 dark:text-blue-400 hover:text-red-500 text-xs">×</button>
     `;
+    
+    // Add proper remove handler
+    const removeButton = mentionChip.querySelector('button');
+    removeButton.addEventListener('click', () => {
+      mentionChip.remove();
+      updateInlineMentionCount();
+      handleContentEditableInput({ target: commentInputRef.value });
+    });
     
     // Replace text with chip
     textNode.textContent = beforeText;
@@ -1129,12 +1181,14 @@ const insertMentionChip = (selectedUser) => {
     selection.removeAllRanges();
     selection.addRange(newRange);
   }
-  
-  // Clean up
+    // Clean up
   showMentions.value = false;
   mentionSuggestions.value = [];
   mentionInputPosition.value = null;
   mentionSearchText.value = '';
+  
+  // Update mention count
+  updateInlineMentionCount();
   
   // Update content
   handleContentEditableInput({ target: commentInputRef.value });
