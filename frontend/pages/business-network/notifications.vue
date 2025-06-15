@@ -1,149 +1,136 @@
-<template>  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1">    <!-- Filter tabs - simplified to only All Notifications -->
-    <div class="border-b border-gray-200 mb-4">
-      <div class="flex space-x-4">
-        <button
-          class="px-3 py-2 text-sm font-medium transition-colors relative text-blue-600 border-b-2 border-blue-500"
-        >
-          All Notifications
-        </button>
-      </div>
-    </div>
-
-    <!-- Notifications content -->
-    <div class="space-y-4">
-      <!-- Loading state -->
-      <div
-        v-if="loading"
-        class="py-12 flex flex-col items-center justify-center"
-      >
-        <div class="shimmer-loader mb-4">
-          <Loader2 class="h-12 w-12 text-blue-500 animate-spin" />
-        </div>
-        <p class="text-gray-600 text-center">Loading notifications...</p>
-      </div>
-
-      <!-- Empty state with enhanced styling -->
-      <div
-        v-else-if="filteredNotifications.length === 0"
-        class="py-16 flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-white rounded-xl border border-gray-100 shadow-sm"
-      >
-        <div class="bg-blue-100 p-5 rounded-full mb-5 pulse-animation">
-          <Bell class="h-12 w-12 text-blue-500" />
-        </div>
-        <h3 class="text-xl font-semibold text-gray-800 mb-2">
-          No notifications yet
-        </h3>
-        <p class="text-gray-600 text-sm max-w-sm text-center">
-          When someone interacts with your content or mentions you, you'll see
-          it here
-        </p>
-      </div>
-
-      <!-- Notification list with enhanced styling -->
-      <TransitionGroup name="notification-list" tag="div" class="space-y-3">
-        <div
-          v-for="notification in filteredNotifications"
-          :key="notification.id"
-          class="bg-white rounded-lg border overflow-hidden transition-all duration-300 hover:shadow-sm transform hover:translate-y-[-2px]"
-          :class="[
-            !notification.read
-              ? 'border-blue-200 glow-subtle'
-              : 'border-gray-200',
-          ]"
-        >
-          <!-- Notification item with different styling based on type -->
-          <div
-            class="flex p-4 cursor-pointer"
-            @click="openNotification(notification)"
-          >
-            <!-- Left side: Avatar with enhanced styling -->
-            <div class="flex-shrink-0 mr-4">
-              <div class="relative">
-                <img
-                  :src="notification.actor?.image || '/placeholder.svg'"
-                  :alt="notification.actor?.name"
-                  class="h-12 w-12 rounded-full object-cover border-2 shadow-sm"
-                  :class="[
-                    !notification.read
-                      ? 'border-blue-500 ring-2 ring-blue-100 ring-opacity-50'
-                      : 'border-gray-200',
-                  ]"
-                />
-                <!-- Icon badge based on notification type with enhanced styling -->
-                <div
-                  class="absolute -bottom-1 -right-1 rounded-full p-1.5 shadow-sm"
-                  :class="getNotificationTypeClass(notification.type)"
-                >
-                  <component
-                    :is="getNotificationIcon(notification.type)"
-                    class="h-3.5 w-3.5 text-white"
-                  />
-                </div>
-              </div>
+<template>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header Section - Stripe Style -->
+    <div class="bg-white border-b border-gray-200">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="py-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-2xl font-semibold text-gray-900">Notifications</h1>
+              <p class="text-sm text-gray-600 mt-1">Stay updated with your business network activity</p>
             </div>
-
-            <!-- Right side: Content with enhanced styling for unread notifications -->
-            <div class="flex-1 min-w-0">
-              <!-- Notification content -->
-              <div>
-                <p
-                  class="text-sm text-gray-800"
-                  :class="{ 'font-semibold': !notification.read }"
-                >
-                  <span
-                    class="font-medium"
-                    :class="{ 'font-semibold': !notification.read }"
-                    >{{ notification.actor?.name }}</span
-                  >
-                  <span> {{ getNotificationText(notification) }}</span>
-                </p>
-                <p
-                  v-if="notification.content"
-                  class="mt-1 text-sm text-gray-600 line-clamp-1"
-                  :class="{ 'text-gray-800': !notification.read }"
-                >
-                  {{ notification.content }}
-                </p>
-              </div>
-
-              <!-- Notification metadata -->
-              <div class="mt-2 flex items-center">
-                <!-- Time -->
-                <span class="text-xs text-gray-600">
-                  {{ formatTimeAgo(notification.created_at) }}
-                </span>
-
-                <!-- Unread indicator with animation -->
-                <span
-                  v-if="!notification.read"
-                  class="ml-2 h-2 w-2 rounded-full bg-blue-500 pulse-dot"
-                ></span>
-              </div>
-            </div>
-
-            <!-- Mark as read button with enhanced styling -->
-            <div class="ml-4 flex-shrink-0 flex items-start">
-              <button
-                v-if="!notification.read"
-                @click.stop="markAsRead(notification.id)"
-                class="rounded-full p-1.5 hover:bg-blue-50 transition-colors transform hover:scale-110"
-                aria-label="Mark as read"
-              >
-                <Check class="h-4 w-4 text-blue-500" />
-              </button>
+            <div v-if="unreadCount > 0" class="flex items-center">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {{ unreadCount }} unread
+              </span>
             </div>
           </div>
         </div>
-      </TransitionGroup>      
-      <!-- Load more button with enhanced styling -->
-      <div v-if="hasMoreNotifications" class="flex justify-center pt-4 pb-24 mb-8">
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+      <!-- Loading state -->
+      <div
+        v-if="loading"
+        class="bg-white rounded-lg border border-gray-200 p-8"
+      >
+        <div class="flex items-center justify-center">
+          <Loader2 class="h-6 w-6 text-gray-400 animate-spin mr-3" />
+          <span class="text-gray-600">Loading notifications...</span>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div
+        v-else-if="filteredNotifications.length === 0"
+        class="bg-white rounded-lg border border-gray-200 p-12 text-center"
+      >
+        <div class="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <Bell class="h-6 w-6 text-gray-400" />
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No notifications</h3>
+        <p class="text-gray-500 max-w-sm mx-auto">
+          When someone interacts with your content or mentions you, notifications will appear here.
+        </p>
+      </div>
+
+      <!-- Notifications List - Stripe Style -->
+      <div v-else class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <TransitionGroup name="notification-list" tag="div">
+          <div
+            v-for="(notification, index) in filteredNotifications"
+            :key="notification.id"
+            class="group cursor-pointer transition-colors hover:bg-gray-50"
+            :class="[
+              index !== filteredNotifications.length - 1 ? 'border-b border-gray-100' : '',
+              !notification.read ? 'bg-blue-50/30' : ''
+            ]"
+            @click="openNotification(notification)"
+          >
+            <div class="px-6 py-4">
+              <div class="flex items-start space-x-4">
+                <!-- Avatar -->
+                <div class="flex-shrink-0">
+                  <div class="relative">
+                    <img
+                      :src="notification.actor?.image || '/placeholder.svg'"
+                      :alt="notification.actor?.name"
+                      class="h-10 w-10 rounded-full object-cover"
+                    />
+                    <!-- Type badge -->
+                    <div
+                      class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center"
+                      :class="getNotificationTypeClass(notification.type)"
+                    >
+                      <component
+                        :is="getNotificationIcon(notification.type)"
+                        class="h-2.5 w-2.5 text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <p class="text-sm text-gray-900">
+                        <span class="font-medium">{{ notification.actor?.name }}</span>
+                        <span class="text-gray-700">{{ getNotificationText(notification) }}</span>
+                      </p>
+                      <p
+                        v-if="notification.content"
+                        class="mt-1 text-sm text-gray-600 line-clamp-2"
+                      >
+                        {{ notification.content }}
+                      </p>
+                    </div>
+                    <div class="flex items-center space-x-3 ml-4">
+                      <!-- Time -->
+                      <span class="text-xs text-gray-500 whitespace-nowrap">
+                        {{ formatTimeAgo(notification.created_at) }}
+                      </span>
+                      <!-- Unread indicator -->
+                      <div v-if="!notification.read" class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <!-- Mark as read button -->
+                      <button
+                        v-if="!notification.read"
+                        @click.stop="markAsRead(notification.id)"
+                        class="opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-gray-200 transition-all"
+                        aria-label="Mark as read"
+                      >
+                        <Check class="h-4 w-4 text-gray-500" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TransitionGroup>
+      </div>
+
+      <!-- Load more button -->
+      <div v-if="hasMoreNotifications" class="mt-6 text-center">
         <button
           @click="loadMoreNotifications"
-          class="inline-flex items-center justify-center rounded-md text-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-200 bg-white hover:bg-blue-50 h-10 px-6 py-2 shadow-sm hover:shadow-sm transform hover:translate-y-[-2px]"
+          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           :disabled="loadingMore"
         >
           <Loader2 v-if="loadingMore" class="h-4 w-4 mr-2 animate-spin" />
-          <span v-else>Load more</span>
+          <span v-else>Load more notifications</span>
         </button>
       </div>
     </div>
@@ -424,173 +411,53 @@ const formatTimeAgo = (dateString) => {
 </script>
 
 <style scoped>
-/* Animation for notification list */
+/* Clean transition animations */
 .notification-list-enter-active,
 .notification-list-leave-active {
-  transition: all 0.5s ease;
+  transition: all 0.3s ease;
 }
 
 .notification-list-enter-from,
 .notification-list-leave-to {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(10px);
 }
 
-/* Enhanced styling */
-:deep(.lucide) {
-  stroke-width: 1.5px;
-}
-
-/* Premium Animations */
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-@keyframes pulse-slow {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.2;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.25;
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes grow {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
-@keyframes pulse-dot {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 0.8;
-  }
-}
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* Apply animations */
-.animate-pulse-slow {
-  animation: pulse-slow 6s infinite ease-in-out;
-}
-
-.animate-float {
-  animation: float 8s infinite ease-in-out;
-}
-
-.animate-grow {
-  animation: grow 0.3s ease-out forwards;
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.5s ease-out forwards;
-}
-
-.animate-fade-in {
-  animation: fade-in-up 0.5s ease-out forwards;
-  animation-delay: 0.2s;
-  opacity: 0;
-}
-
-.pulse-dot {
-  animation: pulse-dot 2s infinite;
-}
-
-.pulse-animation {
-  animation: pulse 3s infinite;
-}
-
-/* Glass morphism and premium effects */
-.glow-subtle {
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
-}
-
-.shimmer-badge {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.2),
-    rgba(255, 255, 255, 0.1)
-  );
-  background-size: 200% 100%;
-  animation: shimmer 3s infinite linear;
-}
-
-.shimmer-loader {
-  position: relative;
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  border-radius: 50%;
 }
 
-.shimmer-loader::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  right: -50%;
-  bottom: -50%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  animation: shimmer 2s infinite linear;
+/* Subtle hover effects for better UX */
+.group:hover .opacity-0 {
+  opacity: 1;
 }
 
-/* Background pattern for header */
-.bg-grid-pattern {
-  background-image: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.1) 1px,
-    transparent 1px
-  );
-  background-size: 20px 20px;
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Focus styles for accessibility */
+button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Better loading state */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 </style>
