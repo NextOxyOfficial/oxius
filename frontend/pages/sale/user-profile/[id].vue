@@ -283,7 +283,7 @@
                     class="absolute inset-0 w-full h-full object-contain hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <div class="p-4">                  
+                <div class="p-2">                  
                   <h3 class="font-semibold text-gray-800 mb-1 line-clamp-2">
                     <NuxtLink :to="`/sale/${product.slug}`" 
                     class="hover:text-emerald-600 transition-colors">
