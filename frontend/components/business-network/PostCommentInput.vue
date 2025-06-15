@@ -15,56 +15,24 @@
     </div>      <!-- Comment input with glassmorphism and inline mention display -->
     <div class="flex-1 relative">
       <div class="relative group flex-1">          
-        <!-- Enhanced input container with mention chips inside -->
-        <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">          <!-- Content wrapper with padding for chips and input with inline action buttons -->
-            <div class="flex flex-wrap items-center gap-1.5 px-3 min-h-[38px]">              
-              <!-- Mentioned users chips -->
-              <div 
-                v-for="mention in stableMentions" 
-                :key="mention.id || mention.name"
-                class="inline-flex items-center px-2.5 py-1 mx-0.5 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full hover:from-blue-500/30 hover:to-purple-500/30 dark:hover:from-blue-600/40 dark:hover:to-purple-600/40 transition-all duration-300 cursor-pointer transform hover:scale-105 shadow-sm hover:shadow-md text-xs font-medium mention-chip mention-link active:scale-95"
-                @click="navigateToMentionedUser(mention.name)"
-                :title="`Click to view ${mention.name}'s profile`"
-                :aria-label="`Mentioned user: ${mention.name}. Click to view profile or press Delete to remove.`"
-                role="button"
-                tabindex="0"
-                @keydown.enter.prevent="navigateToMentionedUser(mention.name)"
-                @keydown.space.prevent="navigateToMentionedUser(mention.name)"
-                @keydown.delete.stop.prevent="removeMention(mention)"
-                @keydown.backspace.stop.prevent="removeMention(mention)"
-              >
-                <span class="text-blue-700 dark:text-blue-300 hover:text-purple-700 dark:hover:text-purple-300 transition-colors duration-300 whitespace-nowrap">
-                  <span class="text-blue-500 dark:text-blue-400 hover:text-purple-500 dark:hover:text-purple-400 font-semibold">@</span>{{ mention.name }}
-                </span>
-                <button
-                  @click.stop="removeMention(mention)"
-                  class="ml-1.5 text-blue-600 dark:text-blue-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-red-500 rounded"
-                  :title="`Remove ${mention.name}`"
-                  :aria-label="`Remove ${mention.name} from mentions`"
-                  tabindex="-1"
-                >
-                  <UIcon name="i-heroicons-x-mark" class="w-3 h-3" />
-                </button>
-              </div>
-              
-              <!-- Flexible input field for inline mentions -->
-              <textarea
+        <!-- Enhanced input container with mention chips inside -->        <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">
+          <!-- Content wrapper with inline editing capability -->
+          <div class="flex items-center gap-1.5 px-3 py-2 min-h-[38px]">              
+            <!-- Contenteditable div for inline mentions and text -->
+            <div
               ref="commentInputRef"
-              v-model="displayCommentText"
-              placeholder="Add a comment... (Type @ to mention users)"
-              rows="1"
-              class="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none resize-none text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-textarea"
-              :style="{ minHeight: '20px', height: '20px' }"              @input="handleCommentInput"
+              contenteditable="true"
+              class="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none text-gray-800 dark:text-gray-300 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-input-editable"
+              :style="{ minHeight: '20px' }"
+              @input="handleContentEditableInput"
               @focus="post.showCommentInput = true"
               @keydown="handleMentionKeydown"
-              @keyup="autoResize"
-              @keydown.delete="autoResize"
-              @keydown.backspace="autoResize"
-            ></textarea>
-            
+              @paste="handlePaste"
+              data-placeholder="Add a comment... (Type @ to mention users)"
+            ></div>            
             <!-- Action buttons positioned inline with the text -->
             <div
-              v-if="(displayCommentText && displayCommentText.trim()) || stableMentions.length > 0"
+              v-if="hasContent"
               class="flex items-center gap-1 ml-2 self-end"
             >
               <button
@@ -988,79 +956,9 @@ const searchMentions = async (query) => {
     activeMentionIndex.value = 0;
   } catch (error) {
     console.error("Error searching mentions:", error);
-    mentionSuggestions.value = [];
-  } finally {
+    mentionSuggestions.value = [];  } finally {
     isSearching.value = false;
   }
-};
-
-// Select a mention and add it as a chip (CLEAN separation of chips and text)
-const selectMention = (selectedUser) => {
-  console.log('🎯 selectMention called with user:', selectedUser);
-  
-  // Get the user's display name
-  const userName = selectedUser.name || 
-                   `${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`.trim() || 
-                   selectedUser.username || 
-                   'Unknown User';
-  
-  console.log('👤 Generated userName:', `"${userName}"`);
-  
-  // Clean approach: Remove ONLY the @searchText, keep everything else exactly as is
-  const currentText = displayCommentText.value;
-  const mentionPos = mentionInputPosition.value;
-  
-  console.log('📝 Current text:', `"${currentText}"`);
-  console.log('📍 Mention position:', mentionPos);
-  
-  if (mentionPos) {
-    // Remove the @mention part (e.g., "@joh" if user was typing "@joh")
-    const beforeMention = currentText.substring(0, mentionPos.startPos);
-    const afterMention = currentText.substring(mentionPos.endPos);
-    
-    console.log('✂️ Before mention:', `"${beforeMention}"`);
-    console.log('✂️ After mention:', `"${afterMention}"`);
-    
-    // Simply join before + after (removes the @searchText completely)
-    const newText = beforeMention + afterMention;
-    
-    console.log('🔄 New text will be:', `"${newText}"`);
-    
-    // Update the input text
-    displayCommentText.value = newText;
-    
-    // Position cursor where the mention was removed
-    nextTick(() => {
-      if (commentInputRef.value) {
-        const newCursorPos = beforeMention.length;
-        commentInputRef.value.setSelectionRange(newCursorPos, newCursorPos);
-        commentInputRef.value.focus();
-      }
-    });
-  }
-    // Add the user as a mention chip (completely separate from text)
-  const mentionExists = extractedMentions.value.some(m => m.id === selectedUser.id);
-  if (!mentionExists) {
-    const newMention = {
-      id: selectedUser.id,
-      name: userName,
-      image: selectedUser.image,
-      user: selectedUser
-    };
-    
-    console.log('➕ Adding mention chip:', newMention);
-    safelyAddMention(newMention, 'user selection from dropdown');
-  } else {
-    console.log('⚠️ Mention already exists, skipping');
-  }
-  
-  // Clean up mention dropdown state
-  showMentions.value = false;
-  mentionSuggestions.value = [];
-  mentionInputPosition.value = null;
-  mentionSearchText.value = '';
-  
-  emit('select-mention', selectedUser, props.post);
 };
 
 // Clear all content - ONLY called by explicit clear button click
@@ -1069,10 +967,183 @@ const clearComment = () => {
   
   props.post.commentText = '';
   displayCommentText.value = '';
+  
+  // Clear contenteditable content
+  if (commentInputRef.value) {
+    commentInputRef.value.innerHTML = '';
+  }
+  
   safelyClearMentions('explicit clear button click');
   
-  // Reset textarea height after clearing
+  // Reset height after clearing
   autoResize();
+};
+
+// Computed property to check if content exists
+const hasContent = computed(() => {
+  if (!commentInputRef.value) return false;
+  const text = commentInputRef.value.textContent || '';
+  const hasMentions = commentInputRef.value.querySelectorAll('.mention-chip-inline').length > 0;
+  return text.trim().length > 0 || hasMentions;
+});
+
+// Handle contenteditable input for inline mentions
+const handleContentEditableInput = (event) => {
+  const content = event.target.textContent || '';
+  console.log('📝 Contenteditable input changed:', content);
+  
+  // Update displayCommentText for compatibility
+  displayCommentText.value = content;
+  
+  // Handle mention detection
+  detectAndShowMentions(event.target);
+  
+  // Auto resize
+  autoResize();
+  
+  // Emit to parent
+  emit('handle-comment-input', event, props.post);
+};
+
+// Detect @ mentions in contenteditable
+const detectAndShowMentions = (element) => {
+  const selection = window.getSelection();
+  if (!selection.rangeCount) return;
+  
+  const range = selection.getRangeAt(0);
+  const textBeforeCursor = getTextBeforeCursor(element, range);
+  const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+  
+  if (lastAtIndex !== -1) {
+    const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+    const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : ' ';
+    const isValidMentionPosition = lastAtIndex === 0 || charBeforeAt === ' ' || charBeforeAt === '\n';
+    
+    const isActiveMention = !textAfterAt.includes(' ') && 
+                           isValidMentionPosition && 
+                           !textAfterAt.includes('\n');
+    
+    if (isActiveMention) {
+      mentionSearchText.value = textAfterAt;
+      searchMentions(textAfterAt);
+      showMentions.value = true;
+      
+      // Store position for mention insertion
+      mentionInputPosition.value = {
+        startPos: lastAtIndex,
+        endPos: lastAtIndex + 1 + textAfterAt.length,
+        range: range.cloneRange()
+      };
+    } else {
+      showMentions.value = false;
+    }
+  } else {
+    showMentions.value = false;
+  }
+};
+
+// Get text content before cursor position
+const getTextBeforeCursor = (element, range) => {
+  const tempRange = document.createRange();
+  tempRange.selectNodeContents(element);
+  tempRange.setEnd(range.startContainer, range.startOffset);
+  return tempRange.toString();
+};
+
+// Handle paste events to maintain plain text
+const handlePaste = (event) => {
+  event.preventDefault();
+  const text = (event.clipboardData || window.clipboardData).getData('text');
+  const selection = window.getSelection();
+  
+  if (selection.rangeCount) {
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(document.createTextNode(text));
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    
+    // Trigger input event
+    handleContentEditableInput({ target: event.target });
+  }
+};
+
+// Insert mention chip at cursor position
+const insertMentionChip = (selectedUser) => {
+  const userName = selectedUser.name || 
+                   `${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`.trim() || 
+                   selectedUser.username || 
+                   'Unknown User';
+  
+  if (!mentionInputPosition.value || !commentInputRef.value) return;
+  
+  const selection = window.getSelection();
+  const range = mentionInputPosition.value.range;
+  
+  // Remove the @mention text
+  const textNode = range.startContainer;
+  const startOffset = mentionInputPosition.value.startPos - (textNode.textContent.length - range.startOffset);
+  const endOffset = mentionInputPosition.value.endPos - (textNode.textContent.length - range.startOffset);
+  
+  if (textNode.nodeType === Node.TEXT_NODE) {
+    const beforeText = textNode.textContent.substring(0, Math.max(0, startOffset));
+    const afterText = textNode.textContent.substring(Math.max(0, endOffset));
+    
+    // Create mention chip element
+    const mentionChip = document.createElement('span');
+    mentionChip.contentEditable = false;
+    mentionChip.className = 'mention-chip-inline inline-flex items-center px-2 py-0.5 mx-1 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full text-xs font-medium cursor-pointer hover:from-blue-500/30 hover:to-purple-500/30';
+    mentionChip.setAttribute('data-mention-id', selectedUser.id);
+    mentionChip.setAttribute('data-mention-name', userName);
+    mentionChip.innerHTML = `
+      <span class="text-blue-700 dark:text-blue-300 whitespace-nowrap">
+        <span class="text-blue-500 dark:text-blue-400 font-semibold">@</span>${userName}
+      </span>
+      <button class="ml-1 text-blue-600 dark:text-blue-400 hover:text-red-500 text-xs" onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    // Replace text with chip
+    textNode.textContent = beforeText;
+    textNode.parentNode.insertBefore(mentionChip, textNode.nextSibling);
+    
+    if (afterText) {
+      const afterTextNode = document.createTextNode(afterText);
+      mentionChip.parentNode.insertBefore(afterTextNode, mentionChip.nextSibling);
+    }
+    
+    // Position cursor after the chip
+    const newRange = document.createRange();
+    const nextNode = mentionChip.nextSibling;
+    if (nextNode) {
+      newRange.setStart(nextNode, 0);
+      newRange.collapse(true);
+    } else {
+      // Add a space after the chip
+      const spaceNode = document.createTextNode(' ');
+      mentionChip.parentNode.insertBefore(spaceNode, mentionChip.nextSibling);
+      newRange.setStart(spaceNode, 1);
+      newRange.collapse(true);
+    }
+    
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+  }
+  
+  // Clean up
+  showMentions.value = false;
+  mentionSuggestions.value = [];
+  mentionInputPosition.value = null;
+  mentionSearchText.value = '';
+  
+  // Update content
+  handleContentEditableInput({ target: commentInputRef.value });
+};
+
+// Override the selectMention function to use inline insertion
+const selectMention = (selectedUser) => {
+  insertMentionChip(selectedUser);
+  emit('select-mention', selectedUser, props.post);
 };
 
 // Override the original handleCommentInput to work with inline mentions
@@ -1136,38 +1207,35 @@ const handleCommentInput = (event) => {
   console.log('📋 After emit - props.post.commentText:', `"${props.post.commentText || ''}"`);
 };
 
-// Handle posting comment with mentions and text
+// Handle posting comment with mentions and text from contenteditable
 const handlePostComment = () => {
-  // Combine mention chips with the text content
-  let finalText = displayCommentText.value.trim();
+  if (!commentInputRef.value) return;
   
-  // Add mentions with double space as delimiter to prevent regex confusion
-  if (extractedMentions.value.length > 0) {
-    // Format mentions with @ symbol and ALWAYS use double space as clear delimiter
-    const mentionTexts = extractedMentions.value.map(mention => `@${mention.name.trim()}`);
-    
-    if (finalText) {
-      // Use double space as delimiter - this will help regex distinguish mentions from text
-      finalText = mentionTexts.join(' ') + '  ' + finalText;
-    } else {
-      // Only mentions, no additional text - still add double space to maintain consistency
-      finalText = mentionTexts.join(' ') + '  ';
+  // Extract content from contenteditable including inline mentions
+  let finalText = '';
+  const childNodes = commentInputRef.value.childNodes;
+  
+  for (let node of childNodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      finalText += node.textContent;
+    } else if (node.classList && node.classList.contains('mention-chip-inline')) {
+      const mentionName = node.getAttribute('data-mention-name');
+      finalText += `@${mentionName} `;
     }
   }
+  
+  finalText = finalText.trim();
   
   console.log('📤 Final comment text being posted:', `"${finalText}"`);
   
   props.post.commentText = finalText;
   
-  // Only emit if we have content (mentions or text)
-  if (finalText || extractedMentions.value.length > 0) {
+  // Only emit if we have content
+  if (finalText) {
     emit('add-comment', props.post);
-      // Clear local state immediately after emitting
-    displayCommentText.value = '';
-    safelyClearMentions('successful comment post');
     
-    // Also clear the post's comment text so parent components know it's been processed
-    props.post.commentText = '';
+    // Clear content after posting
+    clearComment();
   }
 };
 
@@ -1176,14 +1244,11 @@ const removeMention = (mentionToRemove) => {
   safelyRemoveMention(mentionToRemove, 'explicit user action (X button or keyboard)');
 };
 
-// Auto-resize textarea
+// Auto-resize contenteditable div
 const autoResize = () => {
   nextTick(() => {
     if (commentInputRef.value) {
-      // Reset to auto first to get accurate scrollHeight
-      commentInputRef.value.style.height = 'auto';
-      
-      // Calculate the required height based on content
+      // For contenteditable, we use scrollHeight directly
       const scrollHeight = commentInputRef.value.scrollHeight;
       
       // Set to minimum height (20px) or calculated height, whichever is larger
@@ -1442,5 +1507,63 @@ const emit = defineEmits([
     font-size: 0.7rem;
     padding: 0.375rem 0.75rem;
   }
+}
+
+/* Contenteditable styles */
+.comment-input-editable {
+  transition: height 0.2s ease-out;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.comment-input-editable:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af; /* text-gray-400 */
+  pointer-events: none;
+}
+
+.dark .comment-input-editable:empty:before {
+  color: #6b7280; /* dark:text-gray-500 */
+}
+
+/* Inline mention chip styles */
+.mention-chip-inline {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.mention-chip-inline:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mention-chip-inline button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.mention-chip-inline button:hover {
+  color: #ef4444 !important; /* text-red-500 */
+}
+
+/* Focus styles for contenteditable */
+.comment-input-editable:focus {
+  outline: none;
+}
+
+/* Ensure proper spacing around inline chips */
+.mention-chip-inline + .mention-chip-inline {
+  margin-left: 4px;
 }
 </style>
