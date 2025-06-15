@@ -233,11 +233,12 @@ export const useMentions = () => {
         }
       });
     }
-  };
-  return {
+  };  return {
     processMentionedUsers,
     navigateToUserProfile,
     processMentionsAsHTML,
-    setupMentionClickHandlers
+    setupMentionClickHandlers,
+    normalizeUsername,
+    isValidMentionText
   };
 };
