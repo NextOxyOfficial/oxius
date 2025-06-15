@@ -4,7 +4,7 @@
     <div class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <CommonGeoSelector />
       <UContainer class="py-3">
-        <div class="location-breadcrumb relative my-3 overflow-hidden">
+        <div class="location-breadcrumb relative mb-3 overflow-hidden">
           <!-- Subtle background effect -->
           <div
             class="absolute inset-0 bg-gradient-to-r from-gray-50 to-primary-50 opacity-70 rounded-lg"
