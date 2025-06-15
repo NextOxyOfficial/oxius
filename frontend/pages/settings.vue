@@ -240,7 +240,7 @@
           </div>
 
           <!-- Profile Edit Form -->
-          <div v-if="activeTab === 'profile'" class="p-6">
+          <div v-if="activeTab === 'profile'" class="p-1">
             <div class="flex items-center gap-3 mb-6">
               <div class="bg-emerald-100 p-2 rounded-full text-emerald-600">
                 <UIcon name="i-heroicons-user" class="text-xl" />
