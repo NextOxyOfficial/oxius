@@ -17,7 +17,7 @@
       <div class="relative group flex-1">          
         <!-- Enhanced input container with mention chips inside -->
         <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">          <!-- Content wrapper with padding for chips and input with inline action buttons -->
-            <div class="flex flex-wrap items-center gap-1.5 p-3 min-h-[38px]">              
+            <div class="flex flex-wrap items-center gap-1.5 px-3 min-h-[38px]">              
               <!-- Mentioned users chips -->
               <div 
                 v-for="mention in stableMentions" 
@@ -54,7 +54,7 @@
               placeholder="Add a comment... (Type @ to mention users)"
               rows="1"
               class="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none resize-none text-gray-800 dark:text-gray-300 placeholder-gray-500 dark:placeholder-gray-400 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-textarea"
-              :style="{ minHeight: '24px' }"
+              :style="{ minHeight: '20px', height: '20px' }"
               @input="handleCommentInput"
               @focus="post.showCommentInput = true"
               @keydown="handleMentionKeydown"
@@ -1176,9 +1176,17 @@ const removeMention = (mentionToRemove) => {
 const autoResize = () => {
   nextTick(() => {
     if (commentInputRef.value) {
-      commentInputRef.value.style.height = 'auto';
-      const newHeight = Math.min(commentInputRef.value.scrollHeight, 120);
-      commentInputRef.value.style.height = newHeight + 'px';
+      // Reset to minimum height first
+      commentInputRef.value.style.height = '20px';
+      
+      // Calculate the required height based on content
+      const scrollHeight = commentInputRef.value.scrollHeight;
+      
+      // Only increase height if content needs more space
+      if (scrollHeight > 20) {
+        const newHeight = Math.min(scrollHeight, 120);
+        commentInputRef.value.style.height = newHeight + 'px';
+      }
     }
   });
 };
