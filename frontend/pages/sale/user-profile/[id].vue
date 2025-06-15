@@ -202,9 +202,10 @@
                   </button>
                 </div>
               </div>
-            </div>            <!-- Filter Bar -->
+            </div>            
+            <!-- Filter Bar -->
             <div
-              class="flex flex-wrap items-center gap-2 mb-4 pb-4 border-b border-gray-100"
+              class="flex flex-wrap items-center justify-center gap-2 mb-4 pb-4 border-b border-gray-100"
             >
               <span class="text-sm text-gray-600">Filter by:</span>
 
