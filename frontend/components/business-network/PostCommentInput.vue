@@ -1054,35 +1054,102 @@ const detectAndShowMentions = (element) => {
   if (!selection.rangeCount) return;
   
   const range = selection.getRangeAt(0);
-  const textBeforeCursor = getTextBeforeCursor(element, range);
-  const lastAtIndex = textBeforeCursor.lastIndexOf('@');
   
-  if (lastAtIndex !== -1) {
-    const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-    const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : ' ';
-    const isValidMentionPosition = lastAtIndex === 0 || charBeforeAt === ' ' || charBeforeAt === '\n';
+  // Get the current text node and cursor position
+  let currentNode = range.startContainer;
+  let cursorOffset = range.startOffset;
+  
+  console.log('🔍 Detecting mentions - Node type:', currentNode.nodeType, 'Cursor offset:', cursorOffset);
+  
+  // If we're not in a text node, find the nearest text node
+  if (currentNode.nodeType !== Node.TEXT_NODE) {
+    // If we're in an element, get the text content up to cursor
+    const textBeforeCursor = getTextBeforeCursor(element, range);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
     
-    const isActiveMention = !textAfterAt.includes(' ') && 
-                           isValidMentionPosition && 
-                           !textAfterAt.includes('\n');
+    console.log('📝 Not in text node - textBeforeCursor:', `"${textBeforeCursor}"`, 'lastAtIndex:', lastAtIndex);
     
-    if (isActiveMention) {
-      mentionSearchText.value = textAfterAt;
-      searchMentions(textAfterAt);
-      showMentions.value = true;
+    if (lastAtIndex !== -1) {
+      const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+      const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : ' ';
       
-      // Store position for mention insertion
-      mentionInputPosition.value = {
-        startPos: lastAtIndex,
-        endPos: lastAtIndex + 1 + textAfterAt.length,
-        range: range.cloneRange()
-      };
-    } else {
-      showMentions.value = false;
+      // More permissive mention position check
+      const isValidMentionPosition = lastAtIndex === 0 || 
+        charBeforeAt === ' ' || 
+        charBeforeAt === '\n' || 
+        charBeforeAt === '\r' ||
+        charBeforeAt === '\t';
+      
+      const isActiveMention = !textAfterAt.includes(' ') && 
+                             isValidMentionPosition && 
+                             !textAfterAt.includes('\n') &&
+                             !textAfterAt.includes('\r');
+      
+      console.log('✅ Element check - textAfterAt:', `"${textAfterAt}"`, 'charBeforeAt:', `"${charBeforeAt}"`, 'isValid:', isValidMentionPosition, 'isActive:', isActiveMention);
+      
+      if (isActiveMention) {
+        mentionSearchText.value = textAfterAt;
+        searchMentions(textAfterAt);
+        showMentions.value = true;
+        
+        // Store position for mention insertion
+        mentionInputPosition.value = {
+          startPos: lastAtIndex,
+          endPos: lastAtIndex + 1 + textAfterAt.length,
+          range: range.cloneRange()
+        };
+        return;
+      }
     }
   } else {
-    showMentions.value = false;
+    // We're in a text node, check for @ mentions in the current text
+    const textContent = currentNode.textContent || '';
+    const textBeforeCursor = textContent.substring(0, cursorOffset);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    
+    console.log('📝 In text node - textContent:', `"${textContent}"`, 'textBeforeCursor:', `"${textBeforeCursor}"`, 'lastAtIndex:', lastAtIndex);
+    
+    if (lastAtIndex !== -1) {
+      const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+      const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : ' ';
+      
+      // More permissive mention position check
+      const isValidMentionPosition = lastAtIndex === 0 || 
+        charBeforeAt === ' ' || 
+        charBeforeAt === '\n' || 
+        charBeforeAt === '\r' ||
+        charBeforeAt === '\t';
+      
+      const isActiveMention = !textAfterAt.includes(' ') && 
+                             isValidMentionPosition && 
+                             !textAfterAt.includes('\n') &&
+                             !textAfterAt.includes('\r');
+      
+      console.log('✅ Text node check - textAfterAt:', `"${textAfterAt}"`, 'charBeforeAt:', `"${charBeforeAt}"`, 'isValid:', isValidMentionPosition, 'isActive:', isActiveMention);
+      
+      if (isActiveMention) {
+        mentionSearchText.value = textAfterAt;
+        searchMentions(textAfterAt);
+        showMentions.value = true;
+        
+        // Store position for mention insertion with better range handling
+        const newRange = document.createRange();
+        newRange.setStart(currentNode, lastAtIndex);
+        newRange.setEnd(currentNode, cursorOffset);
+        
+        mentionInputPosition.value = {
+          startPos: lastAtIndex,
+          endPos: cursorOffset,
+          range: newRange,
+          textNode: currentNode
+        };
+        return;
+      }
+    }
   }
+  
+  // No active mention found
+  showMentions.value = false;
 };
 
 // Get text content before cursor position
@@ -1121,24 +1188,23 @@ const insertMentionChip = (selectedUser) => {
   
   if (!mentionInputPosition.value || !commentInputRef.value) return;
   
-  const selection = window.getSelection();
-  const range = mentionInputPosition.value.range;
+  // Use the stored text node and position if available
+  const textNode = mentionInputPosition.value.textNode || mentionInputPosition.value.range.startContainer;
+  const startPos = mentionInputPosition.value.startPos;
+  const endPos = mentionInputPosition.value.endPos;
   
-  // Remove the @mention text
-  const textNode = range.startContainer;
-  const startOffset = mentionInputPosition.value.startPos - (textNode.textContent.length - range.startOffset);
-  const endOffset = mentionInputPosition.value.endPos - (textNode.textContent.length - range.startOffset);
-  
-  if (textNode.nodeType === Node.TEXT_NODE) {
-    const beforeText = textNode.textContent.substring(0, Math.max(0, startOffset));
-    const afterText = textNode.textContent.substring(Math.max(0, endOffset));
+  if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+    const textContent = textNode.textContent || '';
+    const beforeText = textContent.substring(0, startPos);
+    const afterText = textContent.substring(endPos);
     
     // Create mention chip element
     const mentionChip = document.createElement('span');
     mentionChip.contentEditable = false;
     mentionChip.className = 'mention-chip-inline inline-flex items-center px-2 py-0.5 mx-1 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full text-xs font-medium cursor-pointer hover:from-blue-500/30 hover:to-purple-500/30';
     mentionChip.setAttribute('data-mention-id', selectedUser.id);
-    mentionChip.setAttribute('data-mention-name', userName);    mentionChip.innerHTML = `
+    mentionChip.setAttribute('data-mention-name', userName);
+    mentionChip.innerHTML = `
       <span class="text-blue-700 dark:text-blue-300 whitespace-nowrap">
         <span class="text-blue-500 dark:text-blue-400 font-semibold">@</span>${userName}
       </span>
@@ -1153,33 +1219,38 @@ const insertMentionChip = (selectedUser) => {
       handleContentEditableInput({ target: commentInputRef.value });
     });
     
-    // Replace text with chip
+    // Split the text node and insert the chip
     textNode.textContent = beforeText;
-    textNode.parentNode.insertBefore(mentionChip, textNode.nextSibling);
     
+    // Insert the chip after the text node
+    const parentNode = textNode.parentNode;
+    parentNode.insertBefore(mentionChip, textNode.nextSibling);
+    
+    // Add the remaining text after the chip if there is any
     if (afterText) {
       const afterTextNode = document.createTextNode(afterText);
-      mentionChip.parentNode.insertBefore(afterTextNode, mentionChip.nextSibling);
+      parentNode.insertBefore(afterTextNode, mentionChip.nextSibling);
     }
     
     // Position cursor after the chip
+    const selection = window.getSelection();
     const newRange = document.createRange();
     const nextNode = mentionChip.nextSibling;
-    if (nextNode) {
+    
+    if (nextNode && nextNode.nodeType === Node.TEXT_NODE) {
       newRange.setStart(nextNode, 0);
-      newRange.collapse(true);
     } else {
-      // Add a space after the chip
+      // Add a space after the chip if there's no text after it
       const spaceNode = document.createTextNode(' ');
-      mentionChip.parentNode.insertBefore(spaceNode, mentionChip.nextSibling);
+      parentNode.insertBefore(spaceNode, mentionChip.nextSibling);
       newRange.setStart(spaceNode, 1);
-      newRange.collapse(true);
     }
     
-    selection.removeAllRanges();
+    newRange.collapse(true);    selection.removeAllRanges();
     selection.addRange(newRange);
   }
-    // Clean up
+  
+  // Clean up
   showMentions.value = false;
   mentionSuggestions.value = [];
   mentionInputPosition.value = null;
