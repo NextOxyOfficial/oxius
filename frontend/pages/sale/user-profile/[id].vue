@@ -302,7 +302,7 @@
                   <div class="flex items-center mt-3 text-sm text-gray-600">
                     <Tag class="h-3 w-3 mr-1" />
                     <span>{{ product.category_name }}</span>
-                    <span class="mx-2">•</span>
+                    <span class="mx-1">•</span>
                     <MapPin class="h-3 w-3 mr-1" />
                     <span>{{
                       product?.division && product?.district && product?.area
@@ -361,14 +361,15 @@
                   <div class="flex items-center mt-3 text-sm text-gray-600">
                     <Tag class="h-3 w-3 mr-1" />
                     <span>{{ product.category }}</span>
-                    <span class="mx-2">•</span>
+                    <span class="mx-1">•</span>
                     <MapPin class="h-3 w-3 mr-1" />
                     <span>{{
                       product?.division && product?.district && product?.area
                         ? `${product?.division}, ${product?.district}, ${product?.area}`
                         : `All Over Bagnladesh`
                     }}</span>
-                  </div>                  <div class="text-sm text-gray-600 mt-2 line-clamp-2" v-html="product.description || 'No description available.'">
+                  </div>                  
+                  <div class="text-sm text-gray-600 mt-2 line-clamp-2" v-html="product.description || 'No description available.'">
                   </div>
                   <div
                     class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100"
