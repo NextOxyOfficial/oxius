@@ -154,7 +154,8 @@
             </UButtonGroup>
           </div>
         </div>
-        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-4 ">          <UInput
+        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-4 pb-2 ">          
+          <UInput
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
             color="white"
@@ -187,7 +188,7 @@
         </UButtonGroup>
       </UContainer>
     </div>
-    <UContainer class="py-6">
+    <UContainer class=" sm:py-6">
       <!-- Overlay for mobile -->
       <div
         v-if="isMobileFilterOpen"
@@ -392,7 +393,7 @@
             class="bg-blue-50/50 rounded-lg border border-blue-100/50 p-1 mb-6"
           >
             <div
-              class="flex flex-col sm:flex-row items-center justify-between my-2 gap-2"
+              class="flex flex-col sm:flex-row items-center justify-between my-4 gap-2"
             >
               <h2 class="text-lg font-medium text-gray-800">
                 {{ categoryBrowserHeading }}
@@ -436,7 +437,7 @@
               </div>
             </div><div
               v-else
-              class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 w-full"
+              class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-2 w-full"
             ><NuxtLink
                 v-for="(post, i) in listings"
                 :key="`post-${i}`"
