@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdsyClub - Bangladesh's Social Business Network</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            font-weight: bold;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .status {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            font-family: monospace;
+        }
+    </style>
+    <script>
+        // Auto-redirect to frontend if available
+        setTimeout(() => {
+            const frontendUrl = 'http://localhost:3000';
+            fetch(frontendUrl)
+                .then(() => {
+                    window.location.href = frontendUrl;
+                })
+                .catch(() => {
+                    console.log('Frontend not available at', frontendUrl);
+                });
+        }, 2000);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 AdsyClub</h1>
+        <p>Bangladesh's #1 Social Business Network</p>
+        <p>The backend API is running successfully!</p>
+        
+        <a href="http://localhost:3000" class="btn">🌐 Open Frontend</a>
+        <a href="/admin/" class="btn">⚙️ Admin Panel</a>
+        
+        <div class="status">
+            <strong>Status:</strong> Backend Server Running<br>
+            <strong>API Endpoint:</strong> {{ request.get_host }}/api/<br>
+            <strong>Frontend URL:</strong> http://localhost:3000
+        </div>
+        
+        <p style="margin-top: 30px; font-size: 0.9em; opacity: 0.7;">
+            If you're seeing this page, the Nuxt.js frontend may not be running.<br>
+            You'll be automatically redirected if the frontend is available.
+        </p>
+    </div>
+</body>
+</html>

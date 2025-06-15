@@ -1,5 +1,8 @@
 from .police_stations import CITY_AREAS
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.conf import settings
+import os
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -3595,7 +3598,37 @@ def create_gig_rejected_notification(user, gig_id, gig_title, reference_id=None)
 
 
 def index(request, **args):
-    return render(request, 'index.html')
+    """
+    Handle frontend routing - redirect to Nuxt.js frontend in development
+    or serve built frontend files in production
+    """
+    # Check if this is an API request
+    if request.path.startswith('/api/'):
+        return JsonResponse({'error': 'Invalid API endpoint'}, status=404)
+    
+    # In development, try to redirect to Nuxt.js dev server
+    if settings.DEBUG:
+        frontend_url = "http://localhost:3000"
+        
+        # For now, render the fallback template instead of redirecting
+        # to avoid redirect loops if frontend is not running
+        try:
+            return render(request, 'index.html')
+        except:
+            # If template rendering fails, return JSON response
+            return JsonResponse({
+                'message': 'AdsyClub API Backend',
+                'frontend_url': frontend_url,
+                'requested_path': request.path,
+                'note': 'Frontend should be running on port 3000'
+            })
+    
+    # In production, you would serve the built Nuxt.js files
+    return JsonResponse({
+        'message': 'AdsyClub API Backend',
+        'frontend_url': 'http://localhost:3000',
+        'requested_path': request.path
+    })
 
 
 @api_view(["POST"])

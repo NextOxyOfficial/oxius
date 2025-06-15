@@ -110,12 +110,11 @@ export default defineNuxtConfig({
     public: {
       baseURL: "http://127.0.0.1:8000",
       domain: "http://localhost:3000",
-      cookieOptions: {
-        default: {
+      cookieOptions: {        default: {
           httpOnly: false,
           secure: false, // Set to true in production with HTTPS
           sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 30, // 30 days to match JWT token and session lifetime
+          maxAge: 60 * 60 * 24 * 365, // 1 year for long-term persistence (location, preferences)
         }
       }
     },
@@ -124,12 +123,11 @@ export default defineNuxtConfig({
       public: {
         baseURL: "https://adsyclub.com",
         domain: "https://adsyclub.com",
-        cookieOptions: {
-          default: {
+        cookieOptions: {          default: {
             httpOnly: false,
             secure: true, // Enable secure cookies in production with HTTPS
             sameSite: 'lax',
-            maxAge: 60 * 60 * 24 * 30, // 30 days to match JWT token and session lifetime
+            maxAge: 60 * 60 * 24 * 365, // 1 year for long-term persistence
           }
         }
       },

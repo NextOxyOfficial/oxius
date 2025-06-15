@@ -127,7 +127,7 @@
 const { t } = useI18n();
 const { get } = useApi();
 const isOpen = ref(false);
-const location = useCookie("location");
+const { location, setLocation } = useLocation(); // Use enhanced location composable
 const showErrors = ref(false);
 const isLoading = ref(false);
 const allOverBangladesh = ref(false);
@@ -206,7 +206,6 @@ watch(
 // Function to validate and add location
 function validateAndAddLocation() {
   showErrors.value = true;
-
   // If all over Bangladesh is selected, or if all required fields are filled
   if (allOverBangladesh.value || !isSubmitDisabled.value) {
     isLoading.value = true;
@@ -215,16 +214,16 @@ function validateAndAddLocation() {
     setTimeout(() => {
       if (allOverBangladesh.value) {
         // Set location with national scope flag
-        location.value = {
+        setLocation({
           country: form.value.country,
           allOverBangladesh: true,
           state: "",
           city: "",
           upazila: ""
-        };
+        });
       } else {
         // Set location with specific location data
-        location.value = form.value;
+        setLocation(form.value);
       }
       isOpen.value = false;
       isLoading.value = false;

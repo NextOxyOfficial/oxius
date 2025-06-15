@@ -111,13 +111,12 @@
             </div>
             <UTooltip text="Change Location" class="me-auto">
               <UButton
-                icon="i-heroicons-map-pin"
-                size="md"
+                icon="i-heroicons-map-pin"                size="md"
                 color="primary"
                 variant="ghost"
                 trailing-icon="i-heroicons-pencil-square"
                 class="edit-location-btn ml-2 relative overflow-hidden"
-                @click="clearLocation"
+                @click="handleClearLocation"
               >
                 <span class="sr-only">Edit Location</span>
               </UButton>
@@ -327,9 +326,8 @@
                   color="gray"
                   variant="ghost"
                   icon="i-heroicons-x-mark"
-                  size="xs"
-                  class="-mr-1"
-                  @click="clearLocation"
+                  size="xs"                  class="-mr-1"
+                  @click="handleClearLocation"
                 />
               </UBadge>
 
@@ -769,7 +767,7 @@ const API_ENDPOINTS = {
 const currentPage = ref(1);
 const totalPages = ref(0);
 
-const location = useCookie("location");
+const { location, clearLocation } = useLocation(); // Use enhanced location composable
 const { t } = useI18n();
 
 const { get } = useApi();
@@ -801,8 +799,8 @@ function toggleMobileSidebar() {
 }
 
 // Function to clear location and reload page
-function clearLocation() {
-  location.value = null;
+const handleClearLocation = () => {
+  clearLocation();
   window.location.reload();
 }
 

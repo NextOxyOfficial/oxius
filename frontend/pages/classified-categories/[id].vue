@@ -131,15 +131,14 @@
               </div>
             </template>
           </div>
-          <UTooltip text="Change Location" class="me-auto">
-            <UButton
+          <UTooltip text="Change Location" class="me-auto">            <UButton
               icon="i-heroicons-map-pin"
               size="md"
               color="primary"
               variant="ghost"
               trailing-icon="i-heroicons-pencil-square"
               class="edit-location-btn ml-2 relative overflow-hidden"
-              @click="clearLocation"
+              @click="handleClearLocation"
             >
               <span class="sr-only">Edit Location</span>
             </UButton>
@@ -472,11 +471,10 @@
           <!-- Action buttons -->
           <div class="flex flex-wrap justify-center gap-3 fade-in-up-delay-2">
             <UButton
-              color="gray"
-              variant="ghost"
+              color="gray"              variant="ghost"
               :label="$t('change_location')"
               icon="i-heroicons-map"
-              @click="clearLocation"
+              @click="handleClearLocation"
             />
             <UButton
               color="primary"
@@ -651,7 +649,7 @@ useHead({
 });
 const { t } = useI18n();
 const { get } = useApi();
-const location = useCookie("location");
+const { location, clearLocation } = useLocation(); // Use enhanced location composable
 const { formatDate } = useUtils();
 const isLoading = ref(false);
 const isNearByLoading = ref(false);
@@ -945,8 +943,8 @@ async function fetchNearbyAds() {
 
 await fetchNearbyAds();
 
-function clearLocation() {
-  location.value = null;
+const handleClearLocation = () => {
+  clearLocation();
   window.location.reload();
 }
 
