@@ -42,15 +42,14 @@
             :src="product.images[currentImageIndex]?.image"
             :alt="product.title"
             class="absolute inset-0 w-full h-full object-cover"
-          />
-          <button
-            class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white p-2 transition-all duration-200"
+          />          <button
+            class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white p-2 transition-all duration-200 opacity-0 hover:opacity-100"
             @click="prevImage"
           >
             <ChevronLeft class="h-4 w-4 text-gray-800" />
           </button>
           <button
-            class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white p-2 transition-all duration-200"
+            class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white p-2 transition-all duration-200 opacity-0 hover:opacity-100"
             @click="nextImage"
           >
             <ChevronRight class="h-4 w-4 text-gray-800" />
@@ -70,7 +69,7 @@
             </span>
           </div>
         </div>        <!-- Thumbnail Gallery -->
-        <div v-if="product?.images && product.images.length > 0" class="flex mt-3 space-x-2 overflow-x-auto pb-2 px-2">
+        <div v-if="product?.images && product.images.length > 0" class="flex mt-3 space-x-2 overflow-x-auto pb-2 px-2 scrollbar-hide">
           <div
             v-for="(image, index) in product?.images"
             :key="index"
@@ -947,5 +946,13 @@ const submitReport = () => {
 </script>
 
 <style scoped>
-/* Additional custom styles can be added here if needed */
+/* Hide scrollbar but maintain functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
 </style>
