@@ -1077,7 +1077,10 @@ const hasContent = computed(() => {
 // Handle contenteditable input for inline mentions
 const handleContentEditableInput = (event) => {
   const content = event.target.textContent || '';
-  console.log('📝 Contenteditable input changed:', content);
+  const previousLength = displayCommentText.value?.length || 0;
+  const currentLength = content.length;
+  
+  console.log('📝 Contenteditable input changed:', content, 'Length change:', previousLength, '->', currentLength);
   
   // Update displayCommentText for compatibility
   displayCommentText.value = content;
@@ -1088,8 +1091,18 @@ const handleContentEditableInput = (event) => {
   // Handle mention detection
   detectAndShowMentions(event.target);
   
-  // Always use debounced resize to prevent shaking
-  debouncedAutoResize();
+  // If content was reduced significantly, trigger immediate resize
+  if (currentLength < previousLength && (previousLength - currentLength) > 5) {
+    // Immediate resize for content reduction
+    setTimeout(() => {
+      if (!isResizing) {
+        autoResize();
+      }
+    }, 10);
+  } else {
+    // Use debounced resize for other changes
+    debouncedAutoResize();
+  }
   
   // Emit to parent
   emit('handle-comment-input', event, props.post);
@@ -1322,7 +1335,7 @@ const debouncedAutoResize = () => {
     if (!isResizing) {
       autoResize();
     }
-  }, 100); // Increased debounce time for smoother behavior
+  }, 50); // Reduced debounce time for better responsiveness
 };
 
 // Combined keydown handler for mentions and auto-resize
@@ -1330,21 +1343,36 @@ const handleKeydown = (event) => {
   // First handle mention functionality
   handleMentionKeydown(event);
   
-  // Only trigger resize on specific events to reduce shaking
-  // We'll let the input handler and debounced resize handle most cases
+  // Trigger immediate resize for delete operations to be more responsive
+  if (event.key === 'Backspace' || event.key === 'Delete') {
+    // Short delay to let the delete action complete
+    setTimeout(() => {
+      if (!isResizing) {
+        autoResize();
+      }
+    }, 10);
+  }
 };
 
-// Simplified keyup handler - only for critical delete operations
+// Enhanced keyup handler for delete operations
 const handleKeyup = (event) => {
-  // Only resize on delete operations when content is significantly changed
-  if ((event.key === 'Backspace' || event.key === 'Delete') && commentInputRef.value) {
-    const isEmpty = !commentInputRef.value.textContent.trim() && 
-                   commentInputRef.value.querySelectorAll('.mention-chip-inline').length === 0;
-    
-    // Only trigger immediate resize if input becomes empty or very small
-    if (isEmpty || commentInputRef.value.textContent.length < 10) {
-      debouncedAutoResize();
-    }
+  // Trigger resize on all delete operations for immediate response
+  if (event.key === 'Backspace' || event.key === 'Delete') {
+    // Immediate resize to catch height reduction
+    setTimeout(() => {
+      if (!isResizing) {
+        autoResize();
+      }
+    }, 5);
+  }
+  
+  // Also trigger on Enter to handle line additions/deletions
+  if (event.key === 'Enter') {
+    setTimeout(() => {
+      if (!isResizing) {
+        autoResize();
+      }
+    }, 10);
   }
 };
 
@@ -1463,32 +1491,33 @@ const autoResize = () => {
       // Store current scroll position to prevent jumping
       const scrollTop = commentInputRef.value.scrollTop;
       
-      // Get current content height without changing the element
-      const currentHeight = commentInputRef.value.clientHeight;
+      // For accurate measurement, temporarily reset height to auto
+      const originalHeight = commentInputRef.value.style.height;
+      commentInputRef.value.style.height = 'auto';
+      
+      // Force a reflow to get accurate scrollHeight
       const scrollHeight = commentInputRef.value.scrollHeight;
       
-      // Only resize if there's a significant difference
+      // Calculate target height
       const targetHeight = Math.max(20, Math.min(scrollHeight + 2, 120));
       
-      if (Math.abs(currentHeight - targetHeight) > 2) {
-        // Apply height change with transition for smooth resize
-        commentInputRef.value.style.transition = 'height 0.1s ease-out';
-        commentInputRef.value.style.height = targetHeight + 'px';
-        
-        // Restore scroll position
-        if (scrollTop > 0) {
-          commentInputRef.value.scrollTop = scrollTop;
-        }
-        
-        // Remove transition after animation
-        setTimeout(() => {
-          if (commentInputRef.value) {
-            commentInputRef.value.style.transition = '';
-          }
-        }, 100);
+      // Apply the new height with smooth transition
+      commentInputRef.value.style.transition = 'height 0.15s ease-out';
+      commentInputRef.value.style.height = targetHeight + 'px';
+      
+      // Restore scroll position
+      if (scrollTop > 0) {
+        commentInputRef.value.scrollTop = scrollTop;
       }
       
-      console.log('🔧 Auto-resize:', { currentHeight, scrollHeight, targetHeight });
+      // Remove transition after animation
+      setTimeout(() => {
+        if (commentInputRef.value) {
+          commentInputRef.value.style.transition = '';
+        }
+      }, 150);
+      
+      console.log('🔧 Auto-resize:', { originalHeight, scrollHeight, targetHeight });
     }
     
     isResizing = false;
