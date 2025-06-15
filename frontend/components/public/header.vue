@@ -192,8 +192,7 @@
           height: 'max-h-screen',
         }"
         class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-sm"
-      >
-        <UCard
+      >        <UCard
           :ui="{
             header: { padding: 'pb-0.5' },
             ring: '',
@@ -201,7 +200,7 @@
             shadow: '',
             body: { padding: '' },
           }"
-          class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 mt-4 overflow-y-scroll"
+          class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 mt-4 overflow-y-scroll scrollbar-hide sm:scrollbar-default"
         >
           <!-- Close Button -->
           <div class="w-full flex justify-end pt-12 px-4">
@@ -964,6 +963,30 @@ watch(router.currentRoute, () => {
   }
   100% {
     transform: translateX(100%);
+  }
+}
+
+/* Hide scrollbar on mobile while keeping scroll functionality */
+@media (max-width: 640px) {
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    scrollbar-width: none; /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
+}
+
+/* Show scrollbar on larger screens */
+@media (min-width: 640px) {
+  .scrollbar-default {
+    -ms-overflow-style: auto;
+    scrollbar-width: auto;
+  }
+  
+  .scrollbar-default::-webkit-scrollbar {
+    display: block;
   }
 }
 
