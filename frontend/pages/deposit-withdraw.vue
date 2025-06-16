@@ -1013,9 +1013,7 @@
                     </span>
                   </div>
                 </div>
-              </div>
-
-              <!-- Password Confirmation -->
+              </div>              <!-- Password Confirmation -->
               <div class="mb-6">
                 <div class="space-y-2">
                   <label class="text-xs text-gray-600 font-medium">Enter your password to confirm:</label>
@@ -1036,7 +1034,11 @@
                     }"
                     class="text-sm"
                     autocomplete="current-password"
+                    @input="passwordError = ''"
                   />
+                  <div v-if="passwordError" class="text-red-600 text-xs mt-1 font-medium">
+                    {{ passwordError }}
+                  </div>
                 </div>
               </div>
 
@@ -1864,6 +1866,7 @@ const transfer = ref({
 });
 
 const transferErrors = ref({});
+const passwordError = ref("");
 
 // Fetch transaction history - gets all transaction types
 const getTransactionHistory = async () => {
@@ -2547,23 +2550,28 @@ async function sendToUser() {
 async function handleTransfer() {
   try {
     isLoading.value = true;
+    passwordError.value = ""; // Clear any previous password errors
 
     // Validate password first
     if (!transfer.value.password) {
-      throw new Error("Password is required to confirm the transfer");
-    }
-
-    // Verify password with backend
+      passwordError.value = "Password is required to confirm the transfer";
+      isLoading.value = false;
+      return;
+    }    // Verify password with backend
     try {
-      const { data: passwordVerification, error: passwordError } = await post(`/auth/verify-password/`, {
+      const { data: passwordVerification, error: passwordVerifyError } = await post(`/auth/verify-password/`, {
         password: transfer.value.password
       });
 
-      if (passwordError || !passwordVerification?.valid) {
-        throw new Error("Incorrect password. Please try again.");
+      if (passwordVerifyError || !passwordVerification?.valid) {
+        passwordError.value = "Incorrect password. Please retry with the correct password.";
+        isLoading.value = false;
+        return;
       }
     } catch (passwordVerifyError) {
-      throw new Error("Incorrect password. Please try again.");
+      passwordError.value = "Incorrect password. Please retry with the correct password.";
+      isLoading.value = false;
+      return;
     }
 
     const { to_user, password, ...rest } = transfer.value;
@@ -2620,6 +2628,7 @@ operators.value = operatorsRes.data;
 function reset() {
   isOpenTransfer.value = false;
   showSuccess.value = false;
+  passwordError.value = "";
   transfer.value = {
     contact: "",
     payable_amount: "",
