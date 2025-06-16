@@ -7,7 +7,7 @@
       <img
         :src="user?.user?.image"
         alt="Your avatar"
-        class="size-9 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:shadow-sm transition-all duration-300"
+        class="size-9 rounded-full mt-1.5 object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:shadow-sm transition-all duration-300"
       />
       <!-- Subtle glow effect on hover -->
       <div
