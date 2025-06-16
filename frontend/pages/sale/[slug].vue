@@ -1,25 +1,44 @@
-<template>  <div class="max-w-6xl mx-auto -mt-3">
-    <!-- Breadcrumb -->
-    <nav class="flex items-center text-sm sm:my-6 my-3 px-3 pt-4">
-      <NuxtLink to="/" class="text-gray-500 hover:text-emerald-600">Home</NuxtLink>
-      <span class="mx-2 text-gray-400">
-        <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
-      </span>
-      <NuxtLink to="/sale" class="text-gray-500 hover:text-emerald-600">Marketplace</NuxtLink>
-      <span class="mx-2 text-gray-400">
-        <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
-      </span>
-      <NuxtLink 
-        v-if="product?.category_details"
-        :to="`/sale?category=${product?.category}`" 
-        class="text-gray-500 hover:text-emerald-600"
-      >
-        {{ product?.category_details?.name }}
-      </NuxtLink>
-      <span v-if="product?.category_details" class="mx-2 text-gray-400">
-        <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
-      </span>
-      <span class="text-gray-700 truncate max-w-[200px]">{{ product?.title }}</span>
+<template>  <div class="max-w-6xl mx-auto -mt-3">    <!-- Breadcrumb -->
+    <nav class="flex items-center justify-between text-sm sm:my-6 my-3 px-3 pt-4">
+      <div class="flex items-center flex-1 min-w-0">
+        <NuxtLink to="/" class="text-gray-500 hover:text-emerald-600">Home</NuxtLink>
+        <span class="mx-2 text-gray-400">
+          <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
+        </span>
+        <NuxtLink to="/sale" class="text-gray-500 hover:text-emerald-600">Marketplace</NuxtLink>
+        <span class="mx-2 text-gray-400">
+          <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
+        </span>
+        <NuxtLink 
+          v-if="product?.category_details"
+          :to="`/sale?category=${product?.category}`" 
+          class="text-gray-500 hover:text-emerald-600 hidden sm:inline"
+        >
+          {{ product?.category_details?.name }}
+        </NuxtLink>
+        <span v-if="product?.category_details" class="mx-2 text-gray-400 hidden sm:inline">
+          <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
+        </span>
+        <span class="text-gray-700 truncate max-w-[100px] sm:max-w-[200px]">{{ product?.title }}</span>
+      </div>
+      
+      <!-- Action buttons for logged in users -->
+      <div v-if="isAuthenticated" class="flex items-center gap-2 flex-shrink-0 ml-2">
+        <NuxtLink
+          to="/sale/my-posts"
+          class="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs border border-emerald-500 text-emerald-600 rounded-md hover:bg-emerald-50 transition-colors duration-200"
+        >
+          <List class="h-3 w-3" />
+          <span class="hidden sm:inline">My Posts</span>
+        </NuxtLink>
+        <NuxtLink
+          to="/sale/my-posts?tab=post-sale"
+          class="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors duration-200"
+        >
+          <UIcon name="i-heroicons-plus-circle" class="h-3 w-3" />
+          <span class="hidden sm:inline">Post Ad</span>
+        </NuxtLink>
+      </div>
     </nav>
     
     <!-- Main Product Section -->
@@ -732,10 +751,14 @@ import {
   Download,
   ClipboardList,
   LayoutGrid,
+  List,
 } from "lucide-vue-next";
 
 // Import toast functionality for notifications
 const toast = useToast();
+
+// Import authentication composable
+const { user, isAuthenticated } = useAuth();
 
 const { params } = useRoute();
 const { get } = useApi();
