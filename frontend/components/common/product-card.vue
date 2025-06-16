@@ -74,34 +74,30 @@
             <h3 class="font-medium text-gray-800 dark:text-white line-clamp-1 text-sm text-left capitalize">
               {{ product.name }}
             </h3>
-          </NuxtLink>
-
-          <!-- Store Link - Moved below product name -->
+          </NuxtLink>          <!-- Store Link - Moved below product name -->
           <NuxtLink
             :to="`/eshop/${
               product?.owner_details?.store_username ||
               product?.owner?.store_username
             }`"
-            class="text-primary-500 text-sm mb-3 inline-flex items-center gap-1 hover:text-primary-600"
+            class="text-gray-600 dark:text-gray-400 text-sm mb-3 inline-flex items-center gap-2 hover:text-primary-600 transition-colors duration-200 bg-gray-50 dark:bg-slate-700 px-2 py-1 rounded-lg"
           >
-            <div class="flex items-center justify-center size-4 bg-primary-50 rounded">
+            <div class="flex items-center justify-center size-5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-sm">
               <UIcon
                 name="i-material-symbols-storefront-outline-rounded"
-                class="size-3"
-              />
-            </div>
-            <span class="line-clamp-1 font-medium">
+                class="size-3 text-white"
+              />            </div>
+            <span class="line-clamp-1 font-medium text-xs">
               {{
                 product?.owner_details?.store_name ||
                 product?.owner?.store_name ||
                 "Store"
               }}
             </span>          </NuxtLink>
-            
-          <!-- Full Width Buy Now Button -->
+              <!-- Full Width Buy Now Button -->
           <button
             :disabled="loadingStates[product.id]"
-            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-black hover:bg-gray-800 rounded transition-colors duration-200 disabled:opacity-70"
+            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gray-700 hover:bg-gray-800 rounded transition-colors duration-200 disabled:opacity-70"
             @click="addToCart(product, quantity)"
           >
             <span v-if="!loadingStates[product.id]" class="flex items-center gap-2">
