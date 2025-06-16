@@ -680,6 +680,76 @@ class UserFollowingListView(generics.ListAPIView):
         user_id = self.kwargs.get('user_id')
         return BusinessNetworkFollowerModel.objects.filter(follower=user_id).order_by('-created_at')
 
+class UserSuggestionsView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        
+        # Get users that the current user is already following
+        following_users = BusinessNetworkFollowerModel.objects.filter(
+            follower=user
+        ).values_list('following_id', flat=True)
+        
+        # Exclude current user and users they're already following
+        base_queryset = User.objects.exclude(
+            Q(id=user.id) | Q(id__in=following_users)
+        )
+        
+        # Strategy 1: Users followed by people you follow (mutual connections)
+        mutual_connections = base_queryset.filter(
+            business_network_followers__follower__in=following_users
+        ).annotate(
+            mutual_connections=Count('business_network_followers__follower', distinct=True)
+        ).filter(mutual_connections__gt=0)
+        
+        # Strategy 2: Active users with posts
+        active_users = base_queryset.annotate(
+            post_count=Count('business_network_posts', distinct=True),
+            follower_count=Count('business_network_followers', distinct=True)
+        ).filter(post_count__gt=0)
+        
+        # Strategy 3: Users with similar interests (same hashtags)
+        user_hashtags = BusinessNetworkPostTag.objects.filter(
+            post__author=user
+        ).values_list('tag', flat=True).distinct()
+        
+        similar_interest_users = base_queryset.filter(
+            business_network_posts__post_tags__tag__in=user_hashtags
+        ).annotate(
+            common_tags=Count('business_network_posts__post_tags__tag', distinct=True)
+        ).filter(common_tags__gt=0) if user_hashtags else User.objects.none()
+        
+        # Combine all strategies with priority
+        # Priority: mutual connections > active users > similar interests
+        suggestions = (
+            mutual_connections.order_by('-mutual_connections', '-follower_count')[:3] |
+            active_users.order_by('-follower_count', '-post_count')[:5] |
+            similar_interest_users.order_by('-common_tags', '-follower_count')[:2]
+        ).distinct()
+        
+        # Annotate with follower count and mutual connections for frontend
+        return suggestions.annotate(
+            follower_count=Count('business_network_followers', distinct=True),
+            post_count=Count('business_network_posts', distinct=True),
+            mutual_connections=Count(
+                'business_network_followers__follower',
+                filter=Q(business_network_followers__follower__in=following_users),
+                distinct=True
+            )
+        )[:10]  # Limit to 10 suggestions
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'count': len(serializer.data)
+        }, status=status.HTTP_200_OK)
+        
 class BusinessNetworkMediaLikeCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkMediaLikeSerializer
     
@@ -1728,6 +1798,76 @@ class UserFollowingListView(generics.ListAPIView):
         user_id = self.kwargs.get('user_id')
         return BusinessNetworkFollowerModel.objects.filter(follower=user_id).order_by('-created_at')
 
+class UserSuggestionsView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        
+        # Get users that the current user is already following
+        following_users = BusinessNetworkFollowerModel.objects.filter(
+            follower=user
+        ).values_list('following_id', flat=True)
+        
+        # Exclude current user and users they're already following
+        base_queryset = User.objects.exclude(
+            Q(id=user.id) | Q(id__in=following_users)
+        )
+        
+        # Strategy 1: Users followed by people you follow (mutual connections)
+        mutual_connections = base_queryset.filter(
+            business_network_followers__follower__in=following_users
+        ).annotate(
+            mutual_connections=Count('business_network_followers__follower', distinct=True)
+        ).filter(mutual_connections__gt=0)
+        
+        # Strategy 2: Active users with posts
+        active_users = base_queryset.annotate(
+            post_count=Count('business_network_posts', distinct=True),
+            follower_count=Count('business_network_followers', distinct=True)
+        ).filter(post_count__gt=0)
+        
+        # Strategy 3: Users with similar interests (same hashtags)
+        user_hashtags = BusinessNetworkPostTag.objects.filter(
+            post__author=user
+        ).values_list('tag', flat=True).distinct()
+        
+        similar_interest_users = base_queryset.filter(
+            business_network_posts__post_tags__tag__in=user_hashtags
+        ).annotate(
+            common_tags=Count('business_network_posts__post_tags__tag', distinct=True)
+        ).filter(common_tags__gt=0) if user_hashtags else User.objects.none()
+        
+        # Combine all strategies with priority
+        # Priority: mutual connections > active users > similar interests
+        suggestions = (
+            mutual_connections.order_by('-mutual_connections', '-follower_count')[:3] |
+            active_users.order_by('-follower_count', '-post_count')[:5] |
+            similar_interest_users.order_by('-common_tags', '-follower_count')[:2]
+        ).distinct()
+        
+        # Annotate with follower count and mutual connections for frontend
+        return suggestions.annotate(
+            follower_count=Count('business_network_followers', distinct=True),
+            post_count=Count('business_network_posts', distinct=True),
+            mutual_connections=Count(
+                'business_network_followers__follower',
+                filter=Q(business_network_followers__follower__in=following_users),
+                distinct=True
+            )
+        )[:10]  # Limit to 10 suggestions
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'count': len(serializer.data)
+        }, status=status.HTTP_200_OK)
+        
 class BusinessNetworkMediaLikeCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkMediaLikeSerializer
     

@@ -27,7 +27,7 @@
             v-if="product.is_free_delivery"
             class="absolute bottom-2 left-2 z-20"
           >
-            <div class="px-2 py-1 bg-green-500 rounded text-white text-xs font-semibold flex items-center">
+            <div class="px-2 py-1 bg-green-500/90 rounded text-white text-xs font-semibold flex items-center">
               <UIcon name="i-heroicons-truck" class="size-3 mr-1" />
               <span>FREE DELIVERY</span>
             </div>

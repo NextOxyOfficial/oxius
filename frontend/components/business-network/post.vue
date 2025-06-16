@@ -213,7 +213,17 @@
               @gift-sent="$emit('gift-sent', $event)"
             />
           </div>
-        </div>
+        </div>          <!-- User Suggestions Section - Show after every 3rd post (debug) -->
+        <BusinessNetworkUserSuggestions
+          v-if="(index + 1) % 3 === 0 && user?.user?.id"
+          :key="`suggestions-${index}`"
+          :current-user-id="user?.user?.id"
+          class="mt-4 transform transition-all duration-300"
+          :style="{
+            animationDelay: `${(index + 1) * 0.05}s`,
+            animation: `fadeIn 0.5s ease-out forwards`,
+          }"
+        />
 
         <!-- Sponsored Products Section - Show after every 5th post with enhanced design -->
         <BusinessNetworkProductSection
@@ -318,6 +328,7 @@
 <script setup>
 import { Loader2 } from "lucide-vue-next";
 import GoldSponsorsSlider from './GoldSponsorsSlider.vue';
+import BusinessNetworkUserSuggestions from './UserSuggestions.vue';
 
 // Props
 const props = defineProps({

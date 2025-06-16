@@ -44,6 +44,7 @@ urlpatterns = [
     path('users/<uuid:user_id>/followers/', UserFollowersListView.as_view(), name='user-followers-list'),
     path('users/<uuid:user_id>/following/', UserFollowingListView.as_view(), name='user-following-list'),
     path('check-follow-status/<uuid:follower_id>/<uuid:following_id>/', CheckUserFollowStatusView.as_view(), name='check-follow-status'),
+    path('user-suggestions/', UserSuggestionsView.as_view(), name='user-suggestions'),
 
     # media like endpoints
     path('media/<str:media_id>/like/', BusinessNetworkMediaLikeCreateView.as_view(), name='media-like'),
