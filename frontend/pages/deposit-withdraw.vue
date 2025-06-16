@@ -1015,28 +1015,15 @@
                     </span>
                   </div>
                 </div>
-              </div>              <!-- Final Amount -->
+              </div>
+
+              <!-- Final Amount -->
               <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
                 <p class="text-xs text-gray-600">Final amount</p>
                 <p class="text-gray-800 font-semibold">
                   <UIcon name="i-mdi:currency-bdt" class="" />
                   {{ transfer?.payable_amount }}
                 </p>
-              </div>
-
-              <!-- Password Confirmation -->
-              <div class="mb-6">
-                <label class="block text-xs text-gray-600 mb-2">Enter your password to confirm transfer:</label>
-                <UInput
-                  v-model="transferPassword"
-                  type="password"
-                  placeholder="Enter your password"
-                  size="md"
-                  :error="passwordError"
-                  icon="i-heroicons-lock-closed"
-                  class="w-full"
-                />
-                <p v-if="passwordError" class="text-red-500 text-xs mt-1">{{ passwordError }}</p>
               </div>
 
               <!-- Confirm Button -->
@@ -1854,8 +1841,6 @@ const transfer = ref({
 });
 
 const transferErrors = ref({});
-const transferPassword = ref("");
-const passwordError = ref("");
 
 // Fetch transaction history - gets all transaction types
 const getTransactionHistory = async () => {
@@ -2538,27 +2523,7 @@ async function sendToUser() {
 
 async function handleTransfer() {
   try {
-    // Clear any previous password errors
-    passwordError.value = "";
-    
-    // Validate password is entered
-    if (!transferPassword.value) {
-      passwordError.value = "Password is required to confirm transfer";
-      return;
-    }
-
     isLoading.value = true;
-
-    // First verify the password
-    const passwordCheck = await post('/verify-password/', {
-      password: transferPassword.value
-    });
-
-    if (passwordCheck.error) {
-      passwordError.value = "Incorrect password. Please try again.";
-      isLoading.value = false;
-      return;
-    }
 
     const { to_user, ...rest } = transfer.value;
 
