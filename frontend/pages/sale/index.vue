@@ -153,8 +153,7 @@
               />
             </UButtonGroup>
           </div>
-        </div>
-        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-2 pb-2 ">          
+        </div>        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-2 pb-2 ">          
           <UInput
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
@@ -176,9 +175,9 @@
             :loading="isLoading"
             color="primary"
             variant="solid"
-            label="Search"
+            icon="i-heroicons-magnifying-glass-20-solid"
             @click="filterSearch"
-            class="sm:h-10 max-sm:!text-base w-24 justify-center"
+            class="sm:h-10 max-sm:!text-base w-12 justify-center"
             :ui="{
               padding: {
                 md: 'sm:py-2.5',
