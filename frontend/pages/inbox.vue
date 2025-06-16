@@ -225,13 +225,27 @@
               :class="{ active: updatesFilter === 'pro_expiring' }"
               @click="setUpdatesFilter('pro_expiring')"
               label="Expiring"
-            />
+            />            
             <UButton
               variant="soft"
               color="gray"
               :class="{ active: updatesFilter === 'gig_posted' }"
               @click="setUpdatesFilter('gig_posted')"
               label="Gigs"
+            />
+            <UButton
+              variant="soft"
+              color="cyan"
+              :class="{ active: updatesFilter === 'balance_transfer_sent' }"
+              @click="setUpdatesFilter('balance_transfer_sent')"
+              label="Transfers Sent"
+            />
+            <UButton
+              variant="soft"
+              color="emerald"
+              :class="{ active: updatesFilter === 'balance_transfer_received' }"
+              @click="setUpdatesFilter('balance_transfer_received')"
+              label="Transfers Received"
             />
           </div>
 
@@ -1392,6 +1406,8 @@ function getUpdateIcon(notificationType) {
     pro_subscribed: 'i-heroicons-star',
     pro_expiring: 'i-heroicons-exclamation-triangle',
     gig_posted: 'i-heroicons-briefcase',
+    balance_transfer_sent: 'i-heroicons-arrow-up-right',
+    balance_transfer_received: 'i-heroicons-arrow-down-left',
     general: 'i-heroicons-bell'
   };
   return iconMap[notificationType] || 'i-heroicons-bell';
@@ -1406,6 +1422,8 @@ function getUpdateIconClass(notificationType) {
     pro_subscribed: 'pro-update',
     pro_expiring: 'expiring-update',
     gig_posted: 'gig-update',
+    balance_transfer_sent: 'transfer-sent-update',
+    balance_transfer_received: 'transfer-received-update',
     general: 'general-update'
   };
   return classMap[notificationType] || 'general-update';
@@ -1420,6 +1438,8 @@ function getUpdateTypeColor(notificationType) {
     pro_subscribed: 'purple',
     pro_expiring: 'amber',
     gig_posted: 'gray',
+    balance_transfer_sent: 'cyan',
+    balance_transfer_received: 'emerald',
     general: 'blue'
   };
   return colorMap[notificationType] || 'blue';
@@ -1434,6 +1454,8 @@ function formatUpdateType(notificationType) {
     pro_subscribed: 'Pro',
     pro_expiring: 'Pro Ending',
     gig_posted: 'Gig Posted',
+    balance_transfer_sent: 'Transfer Sent',
+    balance_transfer_received: 'Transfer Received',
     general: 'General'
   };
   return formatMap[notificationType] || 'Notification';
@@ -2691,6 +2713,16 @@ onBeforeUnmount(() => {
 .message-icon-circle.gig-update {
   background-color: #f3f4f6;
   border-color: #e5e7eb;
+}
+
+.message-icon-circle.transfer-sent-update {
+  background-color: #cffafe;
+  border-color: #7dd3fc;
+}
+
+.message-icon-circle.transfer-received-update {
+  background-color: #d1fae5;
+  border-color: #6ee7b7;
 }
 
 .message-icon-circle.general-update {

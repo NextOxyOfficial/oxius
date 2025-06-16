@@ -213,6 +213,9 @@ class AdminNotice(models.Model):
         ('order_received', 'New Order Received'),
         ('withdraw_successful', 'Withdraw Successful'),
         ('mobile_recharge_successful', 'Mobile Recharge Successful'),
+        ('transfer_sent', 'Money Transfer Sent'),
+        ('transfer_received', 'Money Transfer Received'),
+        ('deposit_successful', 'Deposit Successful'),
         ('pro_subscribed', 'Pro Subscription Activated'),
         ('pro_expiring', 'Pro Subscription Expiring'),
         ('gig_posted', 'Gig Posted Successfully'),
@@ -610,10 +613,11 @@ class Balance(models.Model):
 
     def __str__(self):
         return f"{self.user}'s Service: {self.payable_amount}"
-
-    def save(self, *args, **kwargs):        # Normalize transaction_type to lowercase for consistency
+    
+    def save(self, *args, **kwargs):
+        # Normalize transaction_type to lowercase for consistency
         self.transaction_type = (self.transaction_type or '').lower()
-        # Handle withdrawal
+        # Handle transfer
         if self.transaction_type == 'transfer' and self.to_user and not self.completed:
             self.user.balance -= Decimal(self.payable_amount)
             self.to_user.balance += Decimal(self.payable_amount)
@@ -621,6 +625,29 @@ class Balance(models.Model):
             self.to_user.save()
             self.completed = True
             self.approved = True
+            
+            # Create notifications for both sender and receiver
+            try:
+                from .views import create_transfer_sent_notification, create_transfer_received_notification
+                
+                # Notification for sender
+                create_transfer_sent_notification(
+                    user=self.user,
+                    amount=self.payable_amount,
+                    recipient_name=f"{self.to_user.first_name} {self.to_user.last_name}".strip() or self.to_user.name,
+                    transaction_id=str(self.id)
+                )
+                
+                # Notification for receiver
+                create_transfer_received_notification(
+                    user=self.to_user,
+                    amount=self.payable_amount,
+                    sender_name=f"{self.user.first_name} {self.user.last_name}".strip() or self.user.name,
+                    transaction_id=str(self.id)
+                )
+            except Exception as e:
+                print(f"Error creating transfer notifications: {str(e)}")
+                
         if self.transaction_type == 'withdraw' and not self.completed and not self.approved:
             self.user.balance -= self.payable_amount
             self.user.save()
@@ -648,6 +675,17 @@ class Balance(models.Model):
             self.completed = True
             self.approved = True
             self.user.save()
+            
+            # Create notification for successful deposit
+            try:
+                from .views import create_deposit_notification
+                create_deposit_notification(
+                    user=self.user,
+                    amount=self.payable_amount,
+                    transaction_id=str(self.id)
+                )
+            except Exception as e:
+                print(f"Error creating deposit notification: {str(e)}")
 
         if self.approved and not self.completed:
             self.completed = True

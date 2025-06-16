@@ -3529,6 +3529,48 @@ def create_mobile_recharge_notification(user, amount, phone_number, reference_id
     )
 
 
+def create_transfer_sent_notification(user, amount, recipient_name, transaction_id):
+    """Create notification for money transfer sent"""
+    title = "Money Transfer Sent"
+    message = f"You have successfully sent ৳{amount} to {recipient_name}."
+    return create_notification(
+        user=user,
+        notification_type='transfer_sent',
+        title=title,
+        message=message,
+        amount=amount,
+        reference_id=transaction_id
+    )
+
+
+def create_transfer_received_notification(user, amount, sender_name, transaction_id):
+    """Create notification for money transfer received"""
+    title = "Money Transfer Received"
+    message = f"You have received ৳{amount} from {sender_name}."
+    return create_notification(
+        user=user,
+        notification_type='transfer_received',
+        title=title,
+        message=message,
+        amount=amount,
+        reference_id=transaction_id
+    )
+
+
+def create_deposit_notification(user, amount, transaction_id):
+    """Create notification for successful deposit"""
+    title = "Deposit Successful"
+    message = f"Your deposit of ৳{amount} has been processed successfully."
+    return create_notification(
+        user=user,
+        notification_type='deposit_successful',
+        title=title,
+        message=message,
+        amount=amount,
+        reference_id=transaction_id
+    )
+
+
 def create_pro_subscription_notification(user, months, amount):
     """Create notification for pro subscription activation"""
     title = "Pro Subscription Activated"
