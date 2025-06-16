@@ -49,7 +49,7 @@
             <!-- Gift content with sender info -->
             <div class="gift-comment-premium">
               <div class="gift-label flex gap-1 mb-1">
-                <UIcon name="i-heroicons-gift" class="w-4 h-4 text-pink-500 mt-0.5 mr-1" />
+                <UIcon name="i-heroicons-gift" class="w-4 h-4 text-pink-500 mt-2 mr-1" />
                 <span
                   class="text-sm font-medium text-pink-600 dark:text-pink-400"
                 >
@@ -235,10 +235,10 @@
               <!-- Gift comment with enhanced styling -->
               <div v-if="comment?.is_gift_comment" class="gift-comment">
                 <!-- "Sent X diamonds" label -->
-                <div class="gift-sender-info flex items-center gap-1">
+                <div class="gift-sender-info flex gap-1">
                   <UIcon
                     name="material-symbols:diamond-outline"
-                    class="w-4 h-4 text-pink-500"
+                    class="w-4 h-4 mt-2 text-pink-500"
                   />
                   <span
                     class="text-sm font-medium text-pink-600 dark:text-pink-400"
