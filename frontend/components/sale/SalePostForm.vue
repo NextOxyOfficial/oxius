@@ -2,7 +2,9 @@
   <form @submit.prevent="submitForm" class="space-y-6">
     <!-- Basic Details Section -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <h3
+        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
+      >
         <UIcon name="i-heroicons-document-text" class="text-emerald-600" />
         Basic Details
       </h3>
@@ -11,7 +13,9 @@
         <UFormGroup
           label="Category"
           required
-          :error="!formData.category && checkSubmit && 'You must select a category'"
+          :error="
+            !formData.category && checkSubmit && 'You must select a category'
+          "
         >
           <USelectMenu
             v-model="formData.category"
@@ -28,7 +32,11 @@
         <UFormGroup
           v-if="childCategories.length > 0"
           label="Sub Category"
-          :error="!formData.childCategory && checkSubmit && 'You must select a sub category'"
+          :error="
+            !formData.childCategory &&
+            checkSubmit &&
+            'You must select a sub category'
+          "
         >
           <USelectMenu
             v-model="formData.childCategory"
@@ -63,13 +71,18 @@
         <div class="text-right text-sm text-gray-500 mt-1">
           {{ formData.title.length }}/100
         </div>
-      </UFormGroup>        <UFormGroup 
-        label="Description" 
-        required 
+      </UFormGroup>
+      <UFormGroup
+        label="Description"
+        required
         class="mt-4"
-        :error="getTextLength(formData.description) === 0 && checkSubmit && 'Please provide a description of your item'"
+        :error="
+          getTextLength(formData.description) === 0 &&
+          checkSubmit &&
+          'Please provide a description of your item'
+        "
       >
-        <Editor 
+        <Editor
           :content="formData.description"
           @updateContent="formData.description = $event"
         />
@@ -81,7 +94,9 @@
 
     <!-- Pricing & Condition Section -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <h3
+        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
+      >
         <UIcon name="i-heroicons-currency-dollar" class="text-emerald-600" />
         Pricing & Condition
       </h3>
@@ -89,7 +104,9 @@
       <UFormGroup
         label="Condition"
         required
-        :error="!formData.condition && checkSubmit && 'You must select a condition'"
+        :error="
+          !formData.condition && checkSubmit && 'You must select a condition'
+        "
         class="mb-4"
       >
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -151,12 +168,15 @@
 
     <!-- Media Upload Section -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <h3
+        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
+      >
         <UIcon name="i-heroicons-photo" class="text-emerald-600" />
         Upload Photos
       </h3>
       <p class="text-sm text-gray-600 mb-4">
-        Add photos to showcase your listing (up to 8 images). First image will be the main image.
+        Add photos to showcase your listing (up to 8 images). First image will
+        be the main image.
       </p>
 
       <div class="flex flex-wrap gap-4">
@@ -185,11 +205,11 @@
           >
             Main
           </div>
-        </div>        
+        </div>
         <!-- Upload button -->
         <div
           class="w-32 h-32 rounded-lg relative border-2 border-dashed border-gray-300 bg-gray-50 hover:border-emerald-500 hover:bg-emerald-50/20 transition-colors flex items-center justify-center cursor-pointer group"
-          v-if="formData.images.filter(img => img).length < 8"
+          v-if="formData.images.filter((img) => img).length < 8"
           @click="openFileUpload"
         >
           <input
@@ -199,15 +219,25 @@
             @change="handleFileUpload"
             accept="image/*"
           />
-          <div class="flex flex-col items-center gap-2 text-gray-600 text-sm text-center p-2 group-hover:text-emerald-600 pointer-events-none">
-            <UIcon name="i-heroicons-arrow-up-tray" class="text-xl text-emerald-500" />
+          <div
+            class="flex flex-col items-center gap-2 text-gray-600 text-sm text-center p-2 group-hover:text-emerald-600 pointer-events-none"
+          >
+            <UIcon
+              name="i-heroicons-arrow-up-tray"
+              class="text-xl text-emerald-500"
+            />
             <span>Add Photo</span>
           </div>
         </div>
       </div>
 
-      <p v-if="uploadError" class="mt-3 text-red-500 text-sm">{{ uploadError }}</p>
-      <p v-if="isUploading" class="mt-3 text-emerald-600 text-sm flex items-center">
+      <p v-if="uploadError" class="mt-3 text-red-500 text-sm">
+        {{ uploadError }}
+      </p>
+      <p
+        v-if="isUploading"
+        class="mt-3 text-emerald-600 text-sm flex items-center"
+      >
         <UIcon name="i-heroicons-arrow-path" class="animate-spin mr-1" />
         Processing image...
       </p>
@@ -215,7 +245,9 @@
 
     <!-- Location Section -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <h3
+        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
+      >
         <UIcon name="i-heroicons-map-pin" class="text-emerald-600" />
         Location
       </h3>
@@ -228,10 +260,18 @@
         class="mb-4"
       />
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" v-if="!allOverBangladesh">
+      <div
+        class="grid grid-cols-1 md:grid-cols-3 gap-4"
+        v-if="!allOverBangladesh"
+      >
         <UFormGroup
           label="Division"
-          :error="!formData.division && checkSubmit && !allOverBangladesh && 'You must select a division!'"
+          :error="
+            !formData.division &&
+            checkSubmit &&
+            !allOverBangladesh &&
+            'You must select a division!'
+          "
         >
           <USelectMenu
             v-model="formData.division"
@@ -246,7 +286,12 @@
 
         <UFormGroup
           label="District"
-          :error="!formData.district && checkSubmit && !allOverBangladesh && 'You must select a district'"
+          :error="
+            !formData.district &&
+            checkSubmit &&
+            !allOverBangladesh &&
+            'You must select a district'
+          "
         >
           <USelectMenu
             v-model="formData.district"
@@ -262,7 +307,12 @@
 
         <UFormGroup
           label="Area"
-          :error="!formData.area && checkSubmit && !allOverBangladesh && 'You must select an area'"
+          :error="
+            !formData.area &&
+            checkSubmit &&
+            !allOverBangladesh &&
+            'You must select an area'
+          "
         >
           <USelectMenu
             v-model="formData.area"
@@ -280,7 +330,11 @@
       <UFormGroup
         label="Detailed Address"
         required
-        :error="!formData.detailedAddress && checkSubmit && 'You must provide a detailed address!'"
+        :error="
+          !formData.detailedAddress &&
+          checkSubmit &&
+          'You must provide a detailed address!'
+        "
         class="mt-4"
       >
         <UTextarea
@@ -296,7 +350,9 @@
 
     <!-- Contact Information Section -->
     <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <h3
+        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
+      >
         <UIcon name="i-heroicons-phone" class="text-emerald-600" />
         Contact Information
       </h3>
@@ -305,7 +361,9 @@
         <UFormGroup
           label="Phone Number"
           required
-          :error="!formData.phone && checkSubmit && 'You must enter a phone number!'"
+          :error="
+            !formData.phone && checkSubmit && 'You must enter a phone number!'
+          "
         >
           <UInput
             v-model="formData.phone"
@@ -348,9 +406,13 @@
         <template #label>
           <span class="text-sm text-gray-700">
             I agree to the
-            <a href="#" class="text-emerald-600 hover:underline font-medium">Terms and Conditions</a>
+            <a href="#" class="text-emerald-600 hover:underline font-medium"
+              >Terms and Conditions</a
+            >
             and
-            <a href="#" class="text-emerald-600 hover:underline font-medium">Privacy Policy</a>
+            <a href="#" class="text-emerald-600 hover:underline font-medium"
+              >Privacy Policy</a
+            >
             <span class="text-red-500">*</span>
           </span>
         </template>
@@ -381,7 +443,7 @@ import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useSalePost } from "~/composables/useSalePost";
 import Editor from "~/components/common/editor.vue";
 
-const emit = defineEmits(['post-created']);
+const emit = defineEmits(["post-created"]);
 
 const { get } = useApi();
 const toast = useToast();
@@ -484,7 +546,9 @@ const handleCategoryChange = async () => {
 
   if (formData.category) {
     try {
-      const response = await get(`/sale/child-categories/?parent_id=${formData.category}`);
+      const response = await get(
+        `/sale/child-categories/?parent_id=${formData.category}`
+      );
       childCategories.value = response.data || [];
     } catch (error) {
       console.error("Error loading child categories:", error);
@@ -498,7 +562,9 @@ watch(
   async (newDivision) => {
     if (newDivision) {
       try {
-        const response = await get(`/geo/cities/?region_name_eng=${newDivision}`);
+        const response = await get(
+          `/geo/cities/?region_name_eng=${newDivision}`
+        );
         cities.value = response.data || [];
         formData.district = "";
         formData.area = "";
@@ -517,7 +583,9 @@ watch(
   async (newDistrict) => {
     if (newDistrict) {
       try {
-        const response = await get(`/geo/upazila/?city_name_eng=${newDistrict}`);
+        const response = await get(
+          `/geo/upazila/?city_name_eng=${newDistrict}`
+        );
         upazilas.value = response.data || [];
         formData.area = "";
       } catch (error) {
@@ -614,14 +682,14 @@ const processImageWithCompression = (file) => {
 
         // Calculate new dimensions with more aggressive optimization
         let { width, height } = img;
-        
+
         // Get optimized settings based on file size and image dimensions
         const settings = getCompressionSettings(file.size, width, height);
-        
+
         // Smart resizing with aspect ratio preservation
         if (width > settings.maxDimension || height > settings.maxDimension) {
           const aspectRatio = width / height;
-          
+
           if (width > height) {
             width = settings.maxDimension;
             height = Math.round(width / aspectRatio);
@@ -645,35 +713,48 @@ const processImageWithCompression = (file) => {
         let resultSize = Math.round((resultImage.length * 3) / 4);
 
         // Phase 1: Fine quality reduction
-        while (resultSize > settings.targetSize && quality > settings.minQuality + 0.1) {
+        while (
+          resultSize > settings.targetSize &&
+          quality > settings.minQuality + 0.1
+        ) {
           quality -= 0.02;
           resultImage = canvas.toDataURL("image/jpeg", quality);
           resultSize = Math.round((resultImage.length * 3) / 4);
         }
 
         // Phase 2: Dimensional reduction if needed
-        if (resultSize > settings.targetSize && quality <= settings.minQuality + 0.1) {
+        if (
+          resultSize > settings.targetSize &&
+          quality <= settings.minQuality + 0.1
+        ) {
           const scaleFactor = Math.sqrt(settings.targetSize / resultSize) * 0.9;
           const newWidth = Math.max(400, Math.round(width * scaleFactor));
           const newHeight = Math.max(400, Math.round(height * scaleFactor));
-          
+
           canvas.width = newWidth;
           canvas.height = newHeight;
           ctx.drawImage(img, 0, 0, newWidth, newHeight);
-          
+
           quality = Math.max(settings.minQuality, 0.65);
           resultImage = canvas.toDataURL("image/jpeg", quality);
           resultSize = Math.round((resultImage.length * 3) / 4);
         }
 
         // Final quality fine-tuning
-        while (resultSize > settings.targetSize && quality > settings.minQuality) {
+        while (
+          resultSize > settings.targetSize &&
+          quality > settings.minQuality
+        ) {
           quality -= 0.05;
           resultImage = canvas.toDataURL("image/jpeg", quality);
           resultSize = Math.round((resultImage.length * 3) / 4);
         }
 
-        console.log(`Image compressed: ${formatFileSize(file.size)} → ${formatFileSize(resultSize)} (${(quality * 100).toFixed(0)}% quality)`);
+        console.log(
+          `Image compressed: ${formatFileSize(file.size)} → ${formatFileSize(
+            resultSize
+          )} (${(quality * 100).toFixed(0)}% quality)`
+        );
         resolve(resultImage);
       };
       img.onerror = reject;
@@ -690,7 +771,7 @@ const getCompressionSettings = (fileSize, imageWidth, imageHeight) => {
     maxDimension: 1200,
     targetSize: 80 * 1024, // 80KB aggressive target
     initialQuality: 0.78,
-    minQuality: 0.45
+    minQuality: 0.45,
   };
 
   // Adjust for large files (>5MB) - more aggressive
@@ -698,22 +779,22 @@ const getCompressionSettings = (fileSize, imageWidth, imageHeight) => {
     settings.maxDimension = 1000;
     settings.targetSize = 75 * 1024; // 75KB for large files
     settings.initialQuality = 0.75;
-    settings.minQuality = 0.40;
+    settings.minQuality = 0.4;
   }
 
   // Adjust for very large images (>4000px) - prioritize size reduction
   if (imageWidth > 4000 || imageHeight > 4000) {
     settings.maxDimension = 800;
     settings.targetSize = 70 * 1024; // 70KB
-    settings.initialQuality = 0.70;
+    settings.initialQuality = 0.7;
     settings.minQuality = 0.35;
   }
 
   // Adjust for small files (<1MB) - maintain reasonable quality
   if (fileSize < 1024 * 1024) {
     settings.targetSize = 85 * 1024; // 85KB for small files
-    settings.minQuality = 0.50;
-    settings.initialQuality = 0.80;
+    settings.minQuality = 0.5;
+    settings.initialQuality = 0.8;
   }
 
   return settings;
@@ -721,17 +802,18 @@ const getCompressionSettings = (fileSize, imageWidth, imageHeight) => {
 
 // Format file size utility
 const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 };
 
 // Get text length from HTML content
 const getTextLength = (htmlContent) => {
   if (!htmlContent) return 0;
   // Create a temporary div to strip HTML tags and get text content
-  const tempDiv = document.createElement('div');
+  const tempDiv = document.createElement("div");
   tempDiv.innerHTML = htmlContent;
   return tempDiv.textContent?.length || 0;
 };
@@ -745,7 +827,8 @@ const submitForm = async () => {
   const requiredFields = {
     category: formData.category,
     title: formData.title?.trim(),
-    description: getTextLength(formData.description) > 0 ? formData.description : null,
+    description:
+      getTextLength(formData.description) > 0 ? formData.description : null,
     condition: formData.condition,
     detailed_address: formData.detailedAddress?.trim(),
     phone: formData.phone?.trim(),
@@ -768,7 +851,9 @@ const submitForm = async () => {
   if (missingFields.length > 0) {
     toast.add({
       title: "Validation Error",
-      description: `Please fill in all required fields: ${missingFields.join(", ")}`,
+      description: `Please fill in all required fields: ${missingFields.join(
+        ", "
+      )}`,
       color: "red",
       timeout: 5000,
     });
@@ -776,13 +861,17 @@ const submitForm = async () => {
   }
 
   // Validate price
-  if (!formData.negotiable && (!formData.price || parseFloat(formData.price) <= 0)) {
+  if (
+    !formData.negotiable &&
+    (!formData.price || parseFloat(formData.price) <= 0)
+  ) {
     toast.add({
       title: "Validation Error",
       description: "Please enter a valid price or mark as negotiable",
       color: "red",
       timeout: 5000,
-    });    return;
+    });
+    return;
   }
 
   // Validate description length
@@ -797,7 +886,9 @@ const submitForm = async () => {
   }
 
   // Validate images
-  const validImages = formData.images.filter((img) => img && typeof img === "string");
+  const validImages = formData.images.filter(
+    (img) => img && typeof img === "string"
+  );
   if (validImages.length === 0) {
     toast.add({
       title: "Validation Error",
@@ -820,11 +911,14 @@ const submitForm = async () => {
   }
   try {
     // Log image information for debugging
-    const imageSizes = validImages.map(img => {
+    const imageSizes = validImages.map((img) => {
       const size = Math.round((img.length * 3) / 4);
       return formatFileSize(size);
     });
-    console.log(`Submitting ${validImages.length} images with sizes:`, imageSizes);
+    console.log(
+      `Submitting ${validImages.length} images with sizes:`,
+      imageSizes
+    );
 
     // Prepare submission data following business network pattern
     const submissionData = {
@@ -852,30 +946,37 @@ const submitForm = async () => {
 
     // Handle price
     if (formData.negotiable) {
-      submissionData.price = formData.price && formData.price !== "" ? parseFloat(formData.price) : null;
+      submissionData.price =
+        formData.price && formData.price !== ""
+          ? parseFloat(formData.price)
+          : null;
     } else {
       submissionData.price = parseFloat(formData.price);
     }
 
-    console.log("Submitting data with payload size:", JSON.stringify(submissionData).length, "bytes");
+    console.log(
+      "Submitting data with payload size:",
+      JSON.stringify(submissionData).length,
+      "bytes"
+    );
 
     const result = await createSalePost(submissionData);
     console.log("Submission successful:", result);
-    
+
     // Emit success event
-    emit('post-created', result);
-    
+    emit("post-created", result);
+
     // Reset form
     resetForm();
-
   } catch (error) {
     console.error("Error submitting form:", error);
     console.error("Error details:", {
       status: error?.response?.status,
       statusText: error?.response?.statusText,
       data: error?.response?.data,
-      message: error?.message
-    });    let errorMessage = "Failed to submit your listing. Please try again.";
+      message: error?.message,
+    });
+    let errorMessage = "Failed to submit your listing. Please try again.";
 
     if (error?.response?.status === 400) {
       // Check for specific validation errors
@@ -883,13 +984,20 @@ const submitForm = async () => {
       if (errorData?.detail) {
         errorMessage = `Validation Error: ${errorData.detail}`;
       } else if (errorData?.non_field_errors) {
-        errorMessage = `Validation Error: ${errorData.non_field_errors.join(', ')}`;
-      } else if (typeof errorData === 'object') {
+        errorMessage = `Validation Error: ${errorData.non_field_errors.join(
+          ", "
+        )}`;
+      } else if (typeof errorData === "object") {
         // Extract field-specific errors
         const fieldErrors = Object.entries(errorData)
-          .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
-          .join('; ');
-        errorMessage = fieldErrors ? `Validation Errors: ${fieldErrors}` : "Please check your form data and try again.";
+          .map(
+            ([field, errors]) =>
+              `${field}: ${Array.isArray(errors) ? errors.join(", ") : errors}`
+          )
+          .join("; ");
+        errorMessage = fieldErrors
+          ? `Validation Errors: ${fieldErrors}`
+          : "Please check your form data and try again.";
       } else {
         errorMessage = "Please check your form data and try again.";
       }

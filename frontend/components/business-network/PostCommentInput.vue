@@ -1,4 +1,5 @@
-<template>  <div
+<template>
+  <div
     class="flex items-start gap-2.5 mt-4 pt-3 border-t border-gray-100/60 dark:border-slate-700/40 px-2"
   >
     <!-- User avatar with enhanced styling -->
@@ -12,16 +13,21 @@
       <div
         class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-blue-500/10 blur-md -z-10"
       ></div>
-    </div>      <!-- Comment input with glassmorphism and inline mention display -->
-    <div class="flex-1 relative">
-      <div class="relative group flex-1">          
-        <!-- Enhanced input container with mention chips inside -->        
-         <div class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]">
+    </div>
+    <!-- Comment input with glassmorphism and inline mention display -->
+    <div class="flex items-center gap-1 flex-1 relative">
+      <div class="relative group flex-1">
+        <!-- Enhanced input container with mention chips inside -->
+        <div
+          class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]"
+        >
           <!-- Content wrapper with inline editing capability -->
-          <div class="flex items-center gap-1.5 px-3 min-h-[38px]">              
-            <!-- Contenteditable div for inline mentions and text -->            <div
+          <div class="flex items-center gap-1.5 px-3 min-h-[38px]">
+            <!-- Contenteditable div for inline mentions and text -->
+            <div
               ref="commentInputRef"
-              contenteditable="true"              class="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none text-gray-800 dark:text-gray-300 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-input-editable"
+              contenteditable="true"
+              class="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none text-gray-800 dark:text-gray-300 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-input-editable"
               :style="{ minHeight: '20px' }"
               @input="handleContentEditableInput"
               @focus="post.showCommentInput = true"
@@ -41,7 +47,7 @@
                 aria-label="Clear comment"
               >
                 <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
-              </button>            
+              </button>
               <button
                 class="p-1.5 rounded-full bg-blue-500/90 hover:bg-blue-600 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300 relative"
                 @click="handlePostComment"
@@ -55,7 +61,7 @@
               </button>
             </div>
           </div>
-          
+
           <!-- Subtle gradient line under input on focus -->
           <div
             class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 focus-within:scale-x-100 transition-transform duration-300"
@@ -392,20 +398,27 @@
             </div>
           </div>
         </div>
-      </div>      <!-- Mention suggestions dropdown with enhanced glassmorphism -->
+      </div>
+      <!-- Mention suggestions dropdown with enhanced glassmorphism -->
       <div
         v-if="showMentions"
         ref="mentionDropdownRef"
         class="absolute left-0 bottom-full mb-2 w-72 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 z-20 max-h-64 overflow-y-auto animate-fade-in-up premium-shadow no-scrollbar"
-      ><div class="py-2">
+      >
+        <div class="py-2">
           <!-- Show loading state when searching -->
-          <div v-if="isSearching" class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+          <div
+            v-if="isSearching"
+            class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400"
+          >
             <div class="flex items-center justify-center space-x-2">
-              <div class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+              <div
+                class="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"
+              ></div>
               <span>Searching...</span>
             </div>
           </div>
-          
+
           <!-- Show suggestions -->
           <div
             v-for="(user, index) in mentionSuggestions"
@@ -417,28 +430,39 @@
                 ? 'bg-blue-50/80 dark:bg-blue-900/30'
                 : 'hover:bg-gray-50/80 dark:hover:bg-slate-700/50',
             ]"
-          >            <!-- User avatar -->
+          >
+            <!-- User avatar -->
             <div class="relative mr-3">
               <img
                 :src="user?.image || '/static/frontend/images/placeholder.jpg'"
                 :alt="user?.name || user?.first_name || 'User'"
                 class="w-10 h-10 rounded-full border-2 border-gray-200/70 dark:border-slate-700/70 object-cover"
               />
-            </div><!-- User info and badges -->            
+            </div>
+            <!-- User info and badges -->
             <div class="flex-1 min-w-0">
               <!-- User name with verified and pro badges on the right -->
               <div class="flex items-center gap-1 flex-1 min-w-0">
-                <span class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
-                  {{ user?.name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.username || 'Unknown User' }}
+                <span
+                  class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate"
+                >
+                  {{
+                    user?.name ||
+                    `${user?.first_name || ""} ${
+                      user?.last_name || ""
+                    }`.trim() ||
+                    user?.username ||
+                    "Unknown User"
+                  }}
                 </span>
-                
+
                 <!-- Verified badge -->
                 <UIcon
                   v-if="user?.kyc"
                   name="i-mdi-check-decagram"
                   class="w-4 h-4 text-blue-600 animate-pulse-subtle flex-shrink-0"
                 />
-                
+
                 <!-- Pro badge immediately after verified badge -->
                 <span
                   v-if="user?.is_pro"
@@ -450,24 +474,27 @@
                   </div>
                 </span>
               </div>
-              
+
               <!-- Top Contributor badge under the name -->
               <div v-if="user?.is_topcontributor" class="mt-1">
-                <span class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm inline-flex items-center gap-1">
+                <span
+                  class="px-1.5 py-0.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-full text-xs font-medium shadow-sm inline-flex items-center gap-1"
+                >
                   <UIcon name="i-heroicons-star" class="size-3" />
                   <span class="text-2xs">Top Contributor</span>
                 </span>
               </div>
             </div>
           </div>
-            <!-- Show no results message -->
-          <div v-if="mentionSuggestions.length === 0 && !isSearching" class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+          <!-- Show no results message -->
+          <div
+            v-if="mentionSuggestions.length === 0 && !isSearching"
+            class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400"
+          >
             <div v-if="!mentionSearchText">
               Start typing to search for users...
             </div>
-            <div v-else>
-              No users found for "{{ mentionSearchText }}"
-            </div>
+            <div v-else>No users found for "{{ mentionSearchText }}"</div>
           </div>
         </div>
       </div>
@@ -497,7 +524,9 @@
             >
               <UIcon name="i-heroicons-gift-top" class="h-7 w-7 text-white" />
             </div>
-            <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-1">
+            <h3
+              class="text-xl font-semibold text-gray-800 dark:text-white mb-1"
+            >
               Gift Sent Successfully!
             </h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -512,7 +541,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
+import {
+  ref,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  nextTick,
+} from "vue";
 import { Send } from "lucide-vue-next";
 
 const { get, post: postApi } = useApi();
@@ -543,48 +579,67 @@ const updateInlineMentionCount = () => {
     inlineMentionCount.value = 0;
     return;
   }
-  
-  const chips = commentInputRef.value.querySelectorAll('.mention-chip-inline');
+
+  const chips = commentInputRef.value.querySelectorAll(".mention-chip-inline");
   inlineMentionCount.value = chips.length;
-  console.log('📊 Updated inlineMentionCount:', inlineMentionCount.value);
+  console.log("📊 Updated inlineMentionCount:", inlineMentionCount.value);
 };
 
 // Computed property to ensure mention stability - prevents accidental clearing
 const stableMentions = computed(() => {
-  console.log('🔒 stableMentions computed, current mentions:', extractedMentions.value.map(m => m.name));
+  console.log(
+    "🔒 stableMentions computed, current mentions:",
+    extractedMentions.value.map((m) => m.name)
+  );
   return extractedMentions.value;
 });
 
 // Protected function to safely clear mentions - only called when intentional
 const safelyClearMentions = (reason) => {
-  console.log('🛡️ safelyClearMentions called, reason:', reason);
-  console.log('🏷️ Clearing mentions:', extractedMentions.value.map(m => m.name));
+  console.log("🛡️ safelyClearMentions called, reason:", reason);
+  console.log(
+    "🏷️ Clearing mentions:",
+    extractedMentions.value.map((m) => m.name)
+  );
   extractedMentions.value = [];
 };
 
 // Protected function to safely add mention - with validation
 const safelyAddMention = (mention, reason) => {
-  console.log('🛡️ safelyAddMention called, reason:', reason);
-  console.log('➕ Adding mention:', mention.name);
-  
-  const mentionExists = extractedMentions.value.some(m => m.id === mention.id);
+  console.log("🛡️ safelyAddMention called, reason:", reason);
+  console.log("➕ Adding mention:", mention.name);
+
+  const mentionExists = extractedMentions.value.some(
+    (m) => m.id === mention.id
+  );
   if (!mentionExists) {
     extractedMentions.value.push(mention);
-    console.log('📋 All mentions now:', extractedMentions.value.map(m => m.name));
+    console.log(
+      "📋 All mentions now:",
+      extractedMentions.value.map((m) => m.name)
+    );
   } else {
-    console.log('⚠️ Mention already exists, skipping');
+    console.log("⚠️ Mention already exists, skipping");
   }
 };
 
 // Protected function to safely remove mention - with validation
 const safelyRemoveMention = (mentionToRemove, reason) => {
-  console.log('🛡️ safelyRemoveMention called, reason:', reason);
-  console.log('🗑️ Removing mention:', mentionToRemove.name);
-  console.log('🏷️ Mentions before removal:', extractedMentions.value.map(m => m.name));
-  
-  extractedMentions.value = extractedMentions.value.filter(m => m.id !== mentionToRemove.id);
-  
-  console.log('🏷️ Mentions after removal:', extractedMentions.value.map(m => m.name));
+  console.log("🛡️ safelyRemoveMention called, reason:", reason);
+  console.log("🗑️ Removing mention:", mentionToRemove.name);
+  console.log(
+    "🏷️ Mentions before removal:",
+    extractedMentions.value.map((m) => m.name)
+  );
+
+  extractedMentions.value = extractedMentions.value.filter(
+    (m) => m.id !== mentionToRemove.id
+  );
+
+  console.log(
+    "🏷️ Mentions after removal:",
+    extractedMentions.value.map((m) => m.name)
+  );
 };
 
 const props = defineProps({
@@ -695,7 +750,7 @@ const handleClickOutside = (event) => {
   ) {
     showDiamondDropup.value = false;
   }
-  
+
   // Handle mention dropdown
   if (
     showMentions.value &&
@@ -713,10 +768,11 @@ const handleClickOutside = (event) => {
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
   // Initialize with empty state - mentions are only created by selection
-  
+
   // Initialize mention count
   nextTick(() => {
-    updateInlineMentionCount();  });
+    updateInlineMentionCount();
+  });
 });
 
 // Add mutation observer to watch for content changes
@@ -725,28 +781,29 @@ let mutationObserver = null;
 onMounted(() => {
   document.addEventListener("click", handleClickOutside);
   // Initialize with empty state - mentions are only created by selection
-  
+
   // Initialize mention count
   nextTick(() => {
     updateInlineMentionCount();
-      // Set up mutation observer to watch for DOM changes that affect height
+    // Set up mutation observer to watch for DOM changes that affect height
     if (commentInputRef.value) {
       mutationObserver = new MutationObserver((mutations) => {
         // Only trigger resize if there are significant changes
-        const hasSignificantChanges = mutations.some(mutation => 
-          mutation.type === 'childList' && 
-          (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)
+        const hasSignificantChanges = mutations.some(
+          (mutation) =>
+            mutation.type === "childList" &&
+            (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)
         );
-        
+
         if (hasSignificantChanges) {
           // Use debounced resize to prevent shaking
           debouncedAutoResize();
         }
       });
-      
+
       mutationObserver.observe(commentInputRef.value, {
         childList: true,
-        subtree: false // Only watch direct children to reduce sensitivity
+        subtree: false, // Only watch direct children to reduce sensitivity
       });
     }
   });
@@ -754,7 +811,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener("click", handleClickOutside);
-  
+
   // Disconnect mutation observer
   if (mutationObserver) {
     mutationObserver.disconnect();
@@ -950,14 +1007,15 @@ const navigateToFunds = () => {
 // Handle keyboard navigation for mentions
 const handleMentionKeydown = (event) => {
   if (!showMentions.value || mentionSuggestions.value.length === 0) {
-    emit('handle-mention-keydown', event, props.post);
+    emit("handle-mention-keydown", event, props.post);
     return;
   }
-  
+
   // Handle arrow keys for mention selection
   if (event.key === "ArrowDown") {
     event.preventDefault();
-    activeMentionIndex.value = (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
+    activeMentionIndex.value =
+      (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
   } else if (event.key === "ArrowUp") {
     event.preventDefault();
     activeMentionIndex.value =
@@ -981,24 +1039,24 @@ const handleMentionKeydown = (event) => {
       event.preventDefault();
     }
   }
-  
+
   // Emit the event for parent components
-  emit('handle-mention-keydown', event, props.post);
+  emit("handle-mention-keydown", event, props.post);
 };
 
 // Search for users to mention
 const searchMentions = async (query) => {
   isSearching.value = true;
-  
+
   try {
     // If query is empty, get recent users or all users
-    const searchQuery = query.trim() || '';
-    const apiUrl = searchQuery 
+    const searchQuery = query.trim() || "";
+    const apiUrl = searchQuery
       ? `/bn/user-search/?q=${encodeURIComponent(searchQuery)}`
       : `/bn/user-search/`; // Get default users when no query
-    
+
     const { data } = await get(apiUrl);
-    
+
     // Handle paginated response
     if (data && data.results) {
       mentionSuggestions.value = data.results.slice(0, 10); // Limit to 10 suggestions
@@ -1007,39 +1065,40 @@ const searchMentions = async (query) => {
     } else {
       mentionSuggestions.value = [];
     }
-    
+
     activeMentionIndex.value = 0;
   } catch (error) {
     console.error("Error searching mentions:", error);
-    mentionSuggestions.value = [];  } finally {
+    mentionSuggestions.value = [];
+  } finally {
     isSearching.value = false;
   }
 };
 
 // Clear all content - ONLY called by explicit clear button click
 const clearComment = () => {
-  console.log('🧹 clearComment called explicitly');  
-  props.post.commentText = '';
-  displayCommentText.value = '';
-  
+  console.log("🧹 clearComment called explicitly");
+  props.post.commentText = "";
+  displayCommentText.value = "";
+
   // Clear contenteditable content
   if (commentInputRef.value) {
-    commentInputRef.value.innerHTML = '';
+    commentInputRef.value.innerHTML = "";
     // Force immediate height reset
-    commentInputRef.value.style.height = '20px';
+    commentInputRef.value.style.height = "20px";
   }
-  
-  safelyClearMentions('explicit clear button click');
-  
+
+  safelyClearMentions("explicit clear button click");
+
   // Update mention count after clearing
   updateInlineMentionCount();
-    // Reset height after clearing with smooth transition
+  // Reset height after clearing with smooth transition
   if (commentInputRef.value) {
-    commentInputRef.value.style.transition = 'height 0.2s ease-out';
-    commentInputRef.value.style.height = '20px';
+    commentInputRef.value.style.transition = "height 0.2s ease-out";
+    commentInputRef.value.style.height = "20px";
     setTimeout(() => {
       if (commentInputRef.value) {
-        commentInputRef.value.style.transition = '';
+        commentInputRef.value.style.transition = "";
       }
     }, 200);
   }
@@ -1048,51 +1107,60 @@ const clearComment = () => {
 // Computed property to check if content exists
 const hasContent = computed(() => {
   if (!commentInputRef.value) return false;
-  
+
   // Check for text content
-  const text = commentInputRef.value.textContent || '';
+  const text = commentInputRef.value.textContent || "";
   const hasText = text.trim().length > 0;
-  
+
   // Check for mention chips using reactive count
   const hasMentions = inlineMentionCount.value > 0;
-  
+
   // Check if user is typing a mention (has @ followed by text)
-  const isTypingMention = showMentions.value && mentionSearchText.value.length > 0;
-  
+  const isTypingMention =
+    showMentions.value && mentionSearchText.value.length > 0;
+
   // Also check displayCommentText as a fallback
-  const hasDisplayText = displayCommentText.value && displayCommentText.value.trim().length > 0;
-  
-  console.log('📊 hasContent check:', { 
-    hasText, 
-    hasMentions, 
-    isTypingMention, 
-    hasDisplayText, 
+  const hasDisplayText =
+    displayCommentText.value && displayCommentText.value.trim().length > 0;
+
+  console.log("📊 hasContent check:", {
+    hasText,
+    hasMentions,
+    isTypingMention,
+    hasDisplayText,
     inlineMentionCount: inlineMentionCount.value,
-    mentionSearchText: mentionSearchText.value 
+    mentionSearchText: mentionSearchText.value,
   });
-  
+
   return hasText || hasMentions || isTypingMention || hasDisplayText;
 });
 
 // Handle contenteditable input for inline mentions
 const handleContentEditableInput = (event) => {
-  const content = event.target.textContent || '';
+  const content = event.target.textContent || "";
   const previousLength = displayCommentText.value?.length || 0;
   const currentLength = content.length;
-  
-  console.log('📝 Contenteditable input changed:', content, 'Length change:', previousLength, '->', currentLength);
-  
+
+  console.log(
+    "📝 Contenteditable input changed:",
+    content,
+    "Length change:",
+    previousLength,
+    "->",
+    currentLength
+  );
+
   // Update displayCommentText for compatibility
   displayCommentText.value = content;
-  
+
   // Update mention count in case chips were deleted
   updateInlineMentionCount();
-  
+
   // Handle mention detection
   detectAndShowMentions(event.target);
-  
+
   // If content was reduced significantly, trigger immediate resize
-  if (currentLength < previousLength && (previousLength - currentLength) > 5) {
+  if (currentLength < previousLength && previousLength - currentLength > 5) {
     // Immediate resize for content reduction
     setTimeout(() => {
       if (!isResizing) {
@@ -1103,111 +1171,152 @@ const handleContentEditableInput = (event) => {
     // Use debounced resize for other changes
     debouncedAutoResize();
   }
-  
+
   // Emit to parent
-  emit('handle-comment-input', event, props.post);
+  emit("handle-comment-input", event, props.post);
 };
 
 // Detect @ mentions in contenteditable
 const detectAndShowMentions = (element) => {
   const selection = window.getSelection();
   if (!selection.rangeCount) return;
-  
+
   const range = selection.getRangeAt(0);
-  
+
   // Get the current text node and cursor position
   let currentNode = range.startContainer;
   let cursorOffset = range.startOffset;
-  
-  console.log('🔍 Detecting mentions - Node type:', currentNode.nodeType, 'Cursor offset:', cursorOffset);
-  
+
+  console.log(
+    "🔍 Detecting mentions - Node type:",
+    currentNode.nodeType,
+    "Cursor offset:",
+    cursorOffset
+  );
+
   // If we're not in a text node, find the nearest text node
   if (currentNode.nodeType !== Node.TEXT_NODE) {
     // If we're in an element, get the text content up to cursor
     const textBeforeCursor = getTextBeforeCursor(element, range);
-    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-    
-    console.log('📝 Not in text node - textBeforeCursor:', `"${textBeforeCursor}"`, 'lastAtIndex:', lastAtIndex);
-    
+    const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
+    console.log(
+      "📝 Not in text node - textBeforeCursor:",
+      `"${textBeforeCursor}"`,
+      "lastAtIndex:",
+      lastAtIndex
+    );
+
     if (lastAtIndex !== -1) {
       const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-      const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : ' ';
-      
+      const charBeforeAt =
+        lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : " ";
+
       // More permissive mention position check
-      const isValidMentionPosition = lastAtIndex === 0 || 
-        charBeforeAt === ' ' || 
-        charBeforeAt === '\n' || 
-        charBeforeAt === '\r' ||
-        charBeforeAt === '\t';
-      
-      const isActiveMention = !textAfterAt.includes(' ') && 
-                             isValidMentionPosition && 
-                             !textAfterAt.includes('\n') &&
-                             !textAfterAt.includes('\r');
-      
-      console.log('✅ Element check - textAfterAt:', `"${textAfterAt}"`, 'charBeforeAt:', `"${charBeforeAt}"`, 'isValid:', isValidMentionPosition, 'isActive:', isActiveMention);
-      
+      const isValidMentionPosition =
+        lastAtIndex === 0 ||
+        charBeforeAt === " " ||
+        charBeforeAt === "\n" ||
+        charBeforeAt === "\r" ||
+        charBeforeAt === "\t";
+
+      const isActiveMention =
+        !textAfterAt.includes(" ") &&
+        isValidMentionPosition &&
+        !textAfterAt.includes("\n") &&
+        !textAfterAt.includes("\r");
+
+      console.log(
+        "✅ Element check - textAfterAt:",
+        `"${textAfterAt}"`,
+        "charBeforeAt:",
+        `"${charBeforeAt}"`,
+        "isValid:",
+        isValidMentionPosition,
+        "isActive:",
+        isActiveMention
+      );
+
       if (isActiveMention) {
         mentionSearchText.value = textAfterAt;
         searchMentions(textAfterAt);
         showMentions.value = true;
-        
+
         // Store position for mention insertion
         mentionInputPosition.value = {
           startPos: lastAtIndex,
           endPos: lastAtIndex + 1 + textAfterAt.length,
-          range: range.cloneRange()
+          range: range.cloneRange(),
         };
         return;
       }
     }
   } else {
     // We're in a text node, check for @ mentions in the current text
-    const textContent = currentNode.textContent || '';
+    const textContent = currentNode.textContent || "";
     const textBeforeCursor = textContent.substring(0, cursorOffset);
-    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-    
-    console.log('📝 In text node - textContent:', `"${textContent}"`, 'textBeforeCursor:', `"${textBeforeCursor}"`, 'lastAtIndex:', lastAtIndex);
-    
+    const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
+    console.log(
+      "📝 In text node - textContent:",
+      `"${textContent}"`,
+      "textBeforeCursor:",
+      `"${textBeforeCursor}"`,
+      "lastAtIndex:",
+      lastAtIndex
+    );
+
     if (lastAtIndex !== -1) {
       const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-      const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : ' ';
-      
+      const charBeforeAt =
+        lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : " ";
+
       // More permissive mention position check
-      const isValidMentionPosition = lastAtIndex === 0 || 
-        charBeforeAt === ' ' || 
-        charBeforeAt === '\n' || 
-        charBeforeAt === '\r' ||
-        charBeforeAt === '\t';
-      
-      const isActiveMention = !textAfterAt.includes(' ') && 
-                             isValidMentionPosition && 
-                             !textAfterAt.includes('\n') &&
-                             !textAfterAt.includes('\r');
-      
-      console.log('✅ Text node check - textAfterAt:', `"${textAfterAt}"`, 'charBeforeAt:', `"${charBeforeAt}"`, 'isValid:', isValidMentionPosition, 'isActive:', isActiveMention);
-      
+      const isValidMentionPosition =
+        lastAtIndex === 0 ||
+        charBeforeAt === " " ||
+        charBeforeAt === "\n" ||
+        charBeforeAt === "\r" ||
+        charBeforeAt === "\t";
+
+      const isActiveMention =
+        !textAfterAt.includes(" ") &&
+        isValidMentionPosition &&
+        !textAfterAt.includes("\n") &&
+        !textAfterAt.includes("\r");
+
+      console.log(
+        "✅ Text node check - textAfterAt:",
+        `"${textAfterAt}"`,
+        "charBeforeAt:",
+        `"${charBeforeAt}"`,
+        "isValid:",
+        isValidMentionPosition,
+        "isActive:",
+        isActiveMention
+      );
+
       if (isActiveMention) {
         mentionSearchText.value = textAfterAt;
         searchMentions(textAfterAt);
         showMentions.value = true;
-        
+
         // Store position for mention insertion with better range handling
         const newRange = document.createRange();
         newRange.setStart(currentNode, lastAtIndex);
         newRange.setEnd(currentNode, cursorOffset);
-        
+
         mentionInputPosition.value = {
           startPos: lastAtIndex,
           endPos: cursorOffset,
           range: newRange,
-          textNode: currentNode
+          textNode: currentNode,
         };
         return;
       }
     }
   }
-  
+
   // No active mention found
   showMentions.value = false;
 };
@@ -1223,9 +1332,9 @@ const getTextBeforeCursor = (element, range) => {
 // Handle paste events to maintain plain text
 const handlePaste = (event) => {
   event.preventDefault();
-  const text = (event.clipboardData || window.clipboardData).getData('text');
+  const text = (event.clipboardData || window.clipboardData).getData("text");
   const selection = window.getSelection();
-  
+
   if (selection.rangeCount) {
     const range = selection.getRangeAt(0);
     range.deleteContents();
@@ -1233,7 +1342,7 @@ const handlePaste = (event) => {
     range.collapse(false);
     selection.removeAllRanges();
     selection.addRange(range);
-    
+
     // Trigger input event
     handleContentEditableInput({ target: event.target });
   }
@@ -1241,84 +1350,89 @@ const handlePaste = (event) => {
 
 // Insert mention chip at cursor position
 const insertMentionChip = (selectedUser) => {
-  const userName = selectedUser.name || 
-                   `${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`.trim() || 
-                   selectedUser.username || 
-                   'Unknown User';
-  
+  const userName =
+    selectedUser.name ||
+    `${selectedUser.first_name || ""} ${selectedUser.last_name || ""}`.trim() ||
+    selectedUser.username ||
+    "Unknown User";
+
   if (!mentionInputPosition.value || !commentInputRef.value) return;
-  
+
   // Use the stored text node and position if available
-  const textNode = mentionInputPosition.value.textNode || mentionInputPosition.value.range.startContainer;
+  const textNode =
+    mentionInputPosition.value.textNode ||
+    mentionInputPosition.value.range.startContainer;
   const startPos = mentionInputPosition.value.startPos;
   const endPos = mentionInputPosition.value.endPos;
-  
+
   if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-    const textContent = textNode.textContent || '';
+    const textContent = textNode.textContent || "";
     const beforeText = textContent.substring(0, startPos);
     const afterText = textContent.substring(endPos);
-    
+
     // Create mention chip element
-    const mentionChip = document.createElement('span');
+    const mentionChip = document.createElement("span");
     mentionChip.contentEditable = false;
-    mentionChip.className = 'mention-chip-inline inline-flex items-center px-2 py-0.5 mx-1 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full text-xs font-medium cursor-pointer hover:from-blue-500/30 hover:to-purple-500/30';
-    mentionChip.setAttribute('data-mention-id', selectedUser.id);
-    mentionChip.setAttribute('data-mention-name', userName);
+    mentionChip.className =
+      "mention-chip-inline inline-flex items-center px-2 py-0.5 mx-1 bg-gradient-to-r from-blue-500/15 to-purple-500/15 dark:from-blue-600/25 dark:to-purple-600/25 border border-blue-200/60 dark:border-blue-700/40 rounded-full text-xs font-medium cursor-pointer hover:from-blue-500/30 hover:to-purple-500/30";
+    mentionChip.setAttribute("data-mention-id", selectedUser.id);
+    mentionChip.setAttribute("data-mention-name", userName);
     mentionChip.innerHTML = `
       <span class="text-blue-700 dark:text-blue-300 whitespace-nowrap">
         <span class="text-blue-500 dark:text-blue-400 font-semibold">@</span>${userName}
       </span>
       <button class="ml-1 text-blue-600 dark:text-blue-400 hover:text-red-500 text-xs">×</button>
     `;
-    
+
     // Add proper remove handler
-    const removeButton = mentionChip.querySelector('button');
-    removeButton.addEventListener('click', () => {
+    const removeButton = mentionChip.querySelector("button");
+    removeButton.addEventListener("click", () => {
       mentionChip.remove();
       updateInlineMentionCount();
       handleContentEditableInput({ target: commentInputRef.value });
     });
-    
+
     // Split the text node and insert the chip
     textNode.textContent = beforeText;
-    
+
     // Insert the chip after the text node
     const parentNode = textNode.parentNode;
     parentNode.insertBefore(mentionChip, textNode.nextSibling);
-    
+
     // Add the remaining text after the chip if there is any
     if (afterText) {
       const afterTextNode = document.createTextNode(afterText);
       parentNode.insertBefore(afterTextNode, mentionChip.nextSibling);
     }
-    
+
     // Position cursor after the chip
     const selection = window.getSelection();
     const newRange = document.createRange();
     const nextNode = mentionChip.nextSibling;
-    
+
     if (nextNode && nextNode.nodeType === Node.TEXT_NODE) {
       newRange.setStart(nextNode, 0);
     } else {
       // Add a space after the chip if there's no text after it
-      const spaceNode = document.createTextNode(' ');
+      const spaceNode = document.createTextNode(" ");
       parentNode.insertBefore(spaceNode, mentionChip.nextSibling);
       newRange.setStart(spaceNode, 1);
     }
-    
-    newRange.collapse(true);    selection.removeAllRanges();
+
+    newRange.collapse(true);
+    selection.removeAllRanges();
     selection.addRange(newRange);
   }
-  
+
   // Clean up
   showMentions.value = false;
   mentionSuggestions.value = [];
   mentionInputPosition.value = null;
-  mentionSearchText.value = '';
-  
+  mentionSearchText.value = "";
+
   // Update mention count
   updateInlineMentionCount();
-  
+
   // Update content
   handleContentEditableInput({ target: commentInputRef.value });
 };
@@ -1342,9 +1456,9 @@ const debouncedAutoResize = () => {
 const handleKeydown = (event) => {
   // First handle mention functionality
   handleMentionKeydown(event);
-  
+
   // Trigger immediate resize for delete operations to be more responsive
-  if (event.key === 'Backspace' || event.key === 'Delete') {
+  if (event.key === "Backspace" || event.key === "Delete") {
     // Short delay to let the delete action complete
     setTimeout(() => {
       if (!isResizing) {
@@ -1357,7 +1471,7 @@ const handleKeydown = (event) => {
 // Enhanced keyup handler for delete operations
 const handleKeyup = (event) => {
   // Trigger resize on all delete operations for immediate response
-  if (event.key === 'Backspace' || event.key === 'Delete') {
+  if (event.key === "Backspace" || event.key === "Delete") {
     // Immediate resize to catch height reduction
     setTimeout(() => {
       if (!isResizing) {
@@ -1365,9 +1479,9 @@ const handleKeyup = (event) => {
       }
     }, 5);
   }
-  
+
   // Also trigger on Enter to handle line additions/deletions
-  if (event.key === 'Enter') {
+  if (event.key === "Enter") {
     setTimeout(() => {
       if (!isResizing) {
         autoResize();
@@ -1379,47 +1493,63 @@ const handleKeyup = (event) => {
 // Override the selectMention function to use inline insertion
 const selectMention = (selectedUser) => {
   insertMentionChip(selectedUser);
-  emit('select-mention', selectedUser, props.post);
+  emit("select-mention", selectedUser, props.post);
 };
 
 // Override the original handleCommentInput to work with inline mentions
 const handleCommentInput = (event) => {
   const inputValue = event.target.value;
-  console.log('🔍 Text input changed to:', `"${inputValue}"`);
-  console.log('🏷️ Current mentions (should NOT change):', extractedMentions.value.map(m => m.name));
-  console.log('📏 Input length:', inputValue.length, 'Is empty:', inputValue.length === 0);
-  
+  console.log("🔍 Text input changed to:", `"${inputValue}"`);
+  console.log(
+    "🏷️ Current mentions (should NOT change):",
+    extractedMentions.value.map((m) => m.name)
+  );
+  console.log(
+    "📏 Input length:",
+    inputValue.length,
+    "Is empty:",
+    inputValue.length === 0
+  );
+
   // CRITICAL: Only update text, NEVER touch mention chips here
   displayCommentText.value = inputValue;
-  
+
   // Handle mention detection for dropdown ONLY when actively typing @
   const cursorPos = event.target.selectionStart;
   const textBeforeCursor = inputValue.substring(0, cursorPos);
-  const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-  
-  console.log('📍 Cursor at:', cursorPos, 'Last @ at:', lastAtIndex);
-  
+  const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
+  console.log("📍 Cursor at:", cursorPos, "Last @ at:", lastAtIndex);
+
   if (lastAtIndex !== -1) {
     const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-    const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : ' ';
-    const isValidMentionPosition = lastAtIndex === 0 || charBeforeAt === ' ' || charBeforeAt === '\n';
-    
-    console.log('📝 Text after @:', `"${textAfterAt}"`, 'Valid pos:', isValidMentionPosition);
-    
-    const isActiveMention = !textAfterAt.includes(' ') && 
-                           isValidMentionPosition && 
-                           (cursorPos === lastAtIndex + 1 + textAfterAt.length);
-    
-    console.log('🎯 Active mention:', isActiveMention);
-    
+    const charBeforeAt =
+      lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : " ";
+    const isValidMentionPosition =
+      lastAtIndex === 0 || charBeforeAt === " " || charBeforeAt === "\n";
+
+    console.log(
+      "📝 Text after @:",
+      `"${textAfterAt}"`,
+      "Valid pos:",
+      isValidMentionPosition
+    );
+
+    const isActiveMention =
+      !textAfterAt.includes(" ") &&
+      isValidMentionPosition &&
+      cursorPos === lastAtIndex + 1 + textAfterAt.length;
+
+    console.log("🎯 Active mention:", isActiveMention);
+
     if (isActiveMention) {
       mentionSearchText.value = textAfterAt;
       searchMentions(textAfterAt);
       showMentions.value = true;
-      
+
       mentionInputPosition.value = {
         startPos: lastAtIndex,
-        endPos: cursorPos
+        endPos: cursorPos,
       };
     } else {
       showMentions.value = false;
@@ -1427,74 +1557,92 @@ const handleCommentInput = (event) => {
   } else {
     showMentions.value = false;
   }
-  
+
   // Auto resize the textarea
   autoResize();
-  
-  console.log('🏷️ Mentions after input processing (should be unchanged):', extractedMentions.value.map(m => m.name));
+
+  console.log(
+    "🏷️ Mentions after input processing (should be unchanged):",
+    extractedMentions.value.map((m) => m.name)
+  );
   // CRITICAL DEBUG: Check if props.post.commentText is being set here
-  console.log('📋 Before emit - props.post.commentText:', `"${props.post.commentText || ''}"`);
-  
+  console.log(
+    "📋 Before emit - props.post.commentText:",
+    `"${props.post.commentText || ""}"`
+  );
+
   // ALWAYS emit, but be careful about what we emit
-  // The parent needs to know about input changes, but we shouldn't let empty input 
+  // The parent needs to know about input changes, but we shouldn't let empty input
   // cause unwanted side effects
-  emit('handle-comment-input', event, props.post);
-  
-  console.log('📋 After emit - props.post.commentText:', `"${props.post.commentText || ''}"`);
+  emit("handle-comment-input", event, props.post);
+
+  console.log(
+    "📋 After emit - props.post.commentText:",
+    `"${props.post.commentText || ""}"`
+  );
 };
 
 // Handle posting comment with mentions and text from contenteditable
 const handlePostComment = () => {
   if (!commentInputRef.value) return;
-  
+
   // Extract content from contenteditable including inline mentions and line breaks
-  let finalText = '';
-  
+  let finalText = "";
+
   // Recursive function to extract text from all nodes, handling nested content
   const extractTextFromNode = (node) => {
     if (node.nodeType === Node.TEXT_NODE) {
       return node.textContent;
-    } else if (node.classList && node.classList.contains('mention-chip-inline')) {
-      const mentionName = node.getAttribute('data-mention-name');
+    } else if (
+      node.classList &&
+      node.classList.contains("mention-chip-inline")
+    ) {
+      const mentionName = node.getAttribute("data-mention-name");
       return `@${mentionName} `;
-    } else if (node.nodeName === 'BR') {
-      return '\n';
-    } else if (node.nodeName === 'DIV' || node.nodeName === 'P') {
+    } else if (node.nodeName === "BR") {
+      return "\n";
+    } else if (node.nodeName === "DIV" || node.nodeName === "P") {
       // For div/p elements, extract text from children and add line break
-      let text = '';
+      let text = "";
       for (let child of node.childNodes) {
         text += extractTextFromNode(child);
       }
       // Add line break after div/p unless it's the last element
-      return text + (node.nextSibling ? '\n' : '');
+      return text + (node.nextSibling ? "\n" : "");
     } else if (node.childNodes && node.childNodes.length > 0) {
       // For other elements with children, recursively extract from children
-      let text = '';
+      let text = "";
       for (let child of node.childNodes) {
         text += extractTextFromNode(child);
       }
       return text;
     }
-    return '';
+    return "";
   };
-  
+
   // Process all child nodes
   for (let node of commentInputRef.value.childNodes) {
     finalText += extractTextFromNode(node);
   }
-  
+
   // Clean up extra whitespace while preserving intentional line breaks
-  finalText = finalText.replace(/\n\s*\n/g, '\n').trim();
-  
-  console.log('📤 Final comment text being posted (multi-line):', `"${finalText}"`);
-  console.log('📤 Final comment text (with line breaks visible):', finalText.replace(/\n/g, '\\n'));
-  
+  finalText = finalText.replace(/\n\s*\n/g, "\n").trim();
+
+  console.log(
+    "📤 Final comment text being posted (multi-line):",
+    `"${finalText}"`
+  );
+  console.log(
+    "📤 Final comment text (with line breaks visible):",
+    finalText.replace(/\n/g, "\\n")
+  );
+
   props.post.commentText = finalText;
-  
+
   // Only emit if we have content
   if (finalText) {
-    emit('add-comment', props.post);
-    
+    emit("add-comment", props.post);
+
     // Clear content after posting
     clearComment();
   }
@@ -1502,59 +1650,70 @@ const handlePostComment = () => {
 
 // Remove mention chip - ONLY called by explicit user action (button click or keyboard on chip)
 const removeMention = (mentionToRemove) => {
-  safelyRemoveMention(mentionToRemove, 'explicit user action (X button or keyboard)');
+  safelyRemoveMention(
+    mentionToRemove,
+    "explicit user action (X button or keyboard)"
+  );
 };
 
 // Auto-resize contenteditable div
 const autoResize = () => {
   if (isResizing) return; // Prevent concurrent resize operations
-  
+
   isResizing = true;
-  
+
   nextTick(() => {
     if (commentInputRef.value) {
       // Store current scroll position to prevent jumping
       const scrollTop = commentInputRef.value.scrollTop;
-      
+
       // For accurate measurement, temporarily reset height to auto
       const originalHeight = commentInputRef.value.style.height;
-      commentInputRef.value.style.height = 'auto';
-      
+      commentInputRef.value.style.height = "auto";
+
       // Force a reflow to get accurate scrollHeight
       const scrollHeight = commentInputRef.value.scrollHeight;
-      
+
       // Calculate target height
       const targetHeight = Math.max(20, Math.min(scrollHeight + 2, 120));
-      
+
       // Apply the new height with smooth transition
-      commentInputRef.value.style.transition = 'height 0.15s ease-out';
-      commentInputRef.value.style.height = targetHeight + 'px';
-      
+      commentInputRef.value.style.transition = "height 0.15s ease-out";
+      commentInputRef.value.style.height = targetHeight + "px";
+
       // Restore scroll position
       if (scrollTop > 0) {
         commentInputRef.value.scrollTop = scrollTop;
       }
-      
+
       // Remove transition after animation
       setTimeout(() => {
         if (commentInputRef.value) {
-          commentInputRef.value.style.transition = '';
+          commentInputRef.value.style.transition = "";
         }
       }, 150);
-      
-      console.log('🔧 Auto-resize:', { originalHeight, scrollHeight, targetHeight });
+
+      console.log("🔧 Auto-resize:", {
+        originalHeight,
+        scrollHeight,
+        targetHeight,
+      });
     }
-    
+
     isResizing = false;
   });
 };
 
 // Watch for changes in the actual DOM content to ensure height adjusts
-watch(() => commentInputRef.value?.innerHTML, () => {
-  nextTick(() => {
-    debouncedAutoResize();
-  });
-}, { flush: 'post' });
+watch(
+  () => commentInputRef.value?.innerHTML,
+  () => {
+    nextTick(() => {
+      debouncedAutoResize();
+    });
+  },
+  { flush: "post" }
+);
 
 // Navigate to mentioned user profile
 const navigateToMentionedUser = (username) => {
@@ -1562,45 +1721,67 @@ const navigateToMentionedUser = (username) => {
     const router = useRouter();
     router.push({
       path: `/business-network/search-results/${encodeURIComponent(username)}`,
-      query: { type: 'people' }
+      query: { type: "people" },
     });
   } catch (error) {
-    console.error('Error navigating to user:', error);
+    console.error("Error navigating to user:", error);
   }
 };
 
 // Watch for changes in displayCommentText to auto-resize
-watch(() => displayCommentText.value, () => {
-  debouncedAutoResize();
-});
+watch(
+  () => displayCommentText.value,
+  () => {
+    debouncedAutoResize();
+  }
+);
 
 // Enhanced watcher - only clear when there's a legitimate reason (like successful post)
-watch(() => props.post.commentText, (newText, oldText) => {
-  console.log('👀 Watcher triggered - oldText:', `"${oldText || ''}"`, 'newText:', `"${newText || ''}"`);
-  console.log('🔍 Input is empty:', !displayCommentText.value || displayCommentText.value.length === 0);
-  console.log('🏷️ Current mentions before watcher logic:', extractedMentions.value.map(m => m.name));
-  
-  // ONLY clear mentions if this is truly after a successful post
-  // We know it's a successful post when:
-  // 1. The old text was substantial (contained actual content)
-  // 2. The new text is completely empty (parent cleared it after success)
-  // 3. AND we have mentions that should be cleared
-  const wasSubstantialContent = oldText && oldText.trim().length > 10; // More substantial threshold
-  const isNowEmpty = !newText || newText.trim().length === 0;
-  const hasMentionsToFlear = extractedMentions.value.length > 0;
-  const isFromSuccessfulPost = wasSubstantialContent && isNowEmpty && hasMentionsToFlear;
-  
-  if (isFromSuccessfulPost) {
-    console.log('✅ Legitimate clearing - appears to be after successful post');
-    displayCommentText.value = '';
-    safelyClearMentions('legitimate post success or explicit clear');
-  } else {
-    console.log('🛡️ Ignoring watcher trigger - not a legitimate clearing scenario');
-    console.log('  - Was substantial:', wasSubstantialContent);
-    console.log('  - Is now empty:', isNowEmpty);
-    console.log('  - Has mentions:', hasMentionsToFlear);
+watch(
+  () => props.post.commentText,
+  (newText, oldText) => {
+    console.log(
+      "👀 Watcher triggered - oldText:",
+      `"${oldText || ""}"`,
+      "newText:",
+      `"${newText || ""}"`
+    );
+    console.log(
+      "🔍 Input is empty:",
+      !displayCommentText.value || displayCommentText.value.length === 0
+    );
+    console.log(
+      "🏷️ Current mentions before watcher logic:",
+      extractedMentions.value.map((m) => m.name)
+    );
+
+    // ONLY clear mentions if this is truly after a successful post
+    // We know it's a successful post when:
+    // 1. The old text was substantial (contained actual content)
+    // 2. The new text is completely empty (parent cleared it after success)
+    // 3. AND we have mentions that should be cleared
+    const wasSubstantialContent = oldText && oldText.trim().length > 10; // More substantial threshold
+    const isNowEmpty = !newText || newText.trim().length === 0;
+    const hasMentionsToFlear = extractedMentions.value.length > 0;
+    const isFromSuccessfulPost =
+      wasSubstantialContent && isNowEmpty && hasMentionsToFlear;
+
+    if (isFromSuccessfulPost) {
+      console.log(
+        "✅ Legitimate clearing - appears to be after successful post"
+      );
+      displayCommentText.value = "";
+      safelyClearMentions("legitimate post success or explicit clear");
+    } else {
+      console.log(
+        "🛡️ Ignoring watcher trigger - not a legitimate clearing scenario"
+      );
+      console.log("  - Was substantial:", wasSubstantialContent);
+      console.log("  - Is now empty:", isNowEmpty);
+      console.log("  - Has mentions:", hasMentionsToFlear);
+    }
   }
-});
+);
 
 const emit = defineEmits([
   "add-comment",
@@ -1762,13 +1943,18 @@ const emit = defineEmits([
 }
 
 .mention-chip::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -1778,13 +1964,17 @@ const emit = defineEmits([
 
 /* Focus styles for accessibility */
 .mention-chip:focus {
-  outline: 2px solid #3B82F6;
+  outline: 2px solid #3b82f6;
   outline-offset: 1px;
 }
 
 /* Enhanced mention chip animations with stagger effect */
 @keyframes mention-chip-bounce {
-  0%, 20%, 50%, 80%, 100% {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0) scale(1);
   }
   40% {
@@ -1796,7 +1986,8 @@ const emit = defineEmits([
 }
 
 .mention-chip-enter {
-  animation: mention-chip-in 0.3s ease-out forwards, mention-chip-bounce 0.6s ease-out 0.3s;
+  animation: mention-chip-in 0.3s ease-out forwards,
+    mention-chip-bounce 0.6s ease-out 0.3s;
 }
 
 /* Responsive mention chips */

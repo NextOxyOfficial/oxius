@@ -1,6 +1,9 @@
-<template>  <PublicSection>
-    <div class="bg-white rounded-xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100">
-      <div class="mx-auto max-w-7xl">        
+<template>
+  <PublicSection>
+    <div
+      class="bg-white rounded-xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100"
+    >
+      <div class="mx-auto max-w-7xl">
         <!-- Enhanced Header -->
         <div class="text-center my-6">
           <h1
@@ -10,7 +13,8 @@
           </h1>
           <p class="text-lg text-gray-600 max-w-lg mx-auto mb-4">
             View, edit, and manage all your sale listings in one place
-          </p>          <UButton
+          </p>
+          <UButton
             @click="navigateToMarketplace"
             color="emerald"
             variant="outline"
@@ -19,61 +23,89 @@
             <template #leading>
               <UIcon name="i-heroicons-shopping-bag" />
             </template>
-            Go to Marketplace          
-        </UButton>
-        </div>        <!-- Quick Stats -->
+            Go to Marketplace
+          </UButton>
+        </div>
+        <!-- Quick Stats -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 px-2 sm:px-4">
-          <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3 shadow-sm">
+          <div
+            class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3 shadow-sm"
+          >
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <UIcon name="i-heroicons-document-text" class="h-5 w-5 text-blue-600" />
+                <UIcon
+                  name="i-heroicons-document-text"
+                  class="h-5 w-5 text-blue-600"
+                />
               </div>
               <div class="ml-2">
                 <p class="text-xs font-medium text-blue-800">Total Posts</p>
-                <p class="text-base font-semibold text-blue-600">{{ stats.total || 0 }}</p>
+                <p class="text-base font-semibold text-blue-600">
+                  {{ stats.total || 0 }}
+                </p>
               </div>
             </div>
           </div>
-          
-          <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-3 shadow-sm">
+
+          <div
+            class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-3 shadow-sm"
+          >
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <UIcon name="i-heroicons-eye" class="h-5 w-5 text-green-600" />
               </div>
               <div class="ml-2">
                 <p class="text-xs font-medium text-green-800">Active</p>
-                <p class="text-base font-semibold text-green-600">{{ stats.active || 0 }}</p>
+                <p class="text-base font-semibold text-green-600">
+                  {{ stats.active || 0 }}
+                </p>
               </div>
             </div>
           </div>
-          
-          <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-3 shadow-sm">
+
+          <div
+            class="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-3 shadow-sm"
+          >
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <UIcon name="i-heroicons-check-circle" class="h-5 w-5 text-emerald-600" />
+                <UIcon
+                  name="i-heroicons-check-circle"
+                  class="h-5 w-5 text-emerald-600"
+                />
               </div>
               <div class="ml-2">
                 <p class="text-xs font-medium text-emerald-800">Sold</p>
-                <p class="text-base font-semibold text-emerald-600">{{ stats.sold || 0 }}</p>
+                <p class="text-base font-semibold text-emerald-600">
+                  {{ stats.sold || 0 }}
+                </p>
               </div>
             </div>
           </div>
-          
-          <div class="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-3 shadow-sm">
+
+          <div
+            class="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-3 shadow-sm"
+          >
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <UIcon name="i-heroicons-clock" class="h-5 w-5 text-amber-600" />
+                <UIcon
+                  name="i-heroicons-clock"
+                  class="h-5 w-5 text-amber-600"
+                />
               </div>
               <div class="ml-2">
                 <p class="text-xs font-medium text-amber-800">Pending</p>
-                <p class="text-base font-semibold text-amber-600">{{ stats.pending || 0 }}</p>
+                <p class="text-base font-semibold text-amber-600">
+                  {{ stats.pending || 0 }}
+                </p>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Tabs Navigation -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div
+          class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+        >
           <div class="border-b border-gray-200">
             <nav class="flex space-x-4" aria-label="Tabs">
               <button
@@ -84,10 +116,10 @@
                   activeTab === tab.id
                     ? 'border-emerald-500 text-emerald-600 bg-emerald-50'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                  'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg'
+                  'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg',
                 ]"
-              >                
-              <div class="flex items-center gap-2">
+              >
+                <div class="flex items-center gap-2">
                   <UIcon :name="tab.icon" class="w-4 h-4" />
                   {{ tab.name }}
                   <span
@@ -102,7 +134,7 @@
           </div>
 
           <!-- Tab Content -->
-          <div>              
+          <div>
             <!-- My Posts Tab -->
             <div v-if="activeTab === 'my-posts'">
               <MyPosts
@@ -111,12 +143,13 @@
                 @delete-post="handleDeletePost"
                 @posts-updated="updatePostsCount"
               />
-            </div>            
+            </div>
             <!-- Post Sale Tab -->
             <div v-if="activeTab === 'post-sale'">
               <!-- Embed the Post Sale Form -->
               <SalePostForm @post-created="handlePostCreated" />
-            </div>          </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -133,34 +166,34 @@ definePageMeta({
 });
 
 // State
-const activeTab = ref('my-posts');
+const activeTab = ref("my-posts");
 const refreshing = ref(false);
 const myPostsCount = ref(0);
 const stats = ref({
   total: 0,
   active: 0,
   sold: 0,
-  pending: 0
+  pending: 0,
 });
 
 // Tabs configuration
 const tabs = [
   {
-    id: 'my-posts',
-    name: 'My Posts',
-    icon: 'i-heroicons-document-text'
+    id: "my-posts",
+    name: "My Posts",
+    icon: "i-heroicons-document-text",
   },
   {
-    id: 'post-sale',
-    name: 'Post a Sale',
-    icon: 'i-heroicons-plus-circle'
-  }
+    id: "post-sale",
+    name: "Post a Sale",
+    icon: "i-heroicons-plus-circle",
+  },
 ];
 
 // Check URL params for initial tab
 const route = useRoute();
 if (route.query.tab) {
-  const tabExists = tabs.find(tab => tab.id === route.query.tab);
+  const tabExists = tabs.find((tab) => tab.id === route.query.tab);
   if (tabExists) {
     activeTab.value = route.query.tab;
   }
@@ -190,9 +223,9 @@ const handleDeletePost = (postId) => {
 const handlePostCreated = (post) => {
   console.log("Post created:", post);
   // Switch to my posts tab and refresh
-  activeTab.value = 'my-posts';
+  activeTab.value = "my-posts";
   updatePostsCount();
-  
+
   // Show success message
   const toast = useToast();
   toast.add({
@@ -206,25 +239,25 @@ const updatePostsCount = (data) => {
   if (data && data.posts) {
     const postsData = data.posts;
     const pagination = data.pagination;
-    
+
     // Use pagination count if available, otherwise fall back to posts length
     const totalCount = pagination?.count || postsData.length;
-    
+
     myPostsCount.value = totalCount;
-    
+
     // Calculate stats based on actual loaded posts for status counts
     // but use total count from pagination for total
     stats.value = {
       total: totalCount,
-      active: postsData.filter(p => p.status === 'active').length,
-      sold: postsData.filter(p => p.status === 'sold').length,
-      pending: postsData.filter(p => p.status === 'pending').length,
+      active: postsData.filter((p) => p.status === "active").length,
+      sold: postsData.filter((p) => p.status === "sold").length,
+      pending: postsData.filter((p) => p.status === "pending").length,
     };
   }
 };
 
 const navigateToMarketplace = () => {
-  navigateTo('/sale');
+  navigateTo("/sale");
 };
 
 // Watch active tab and update URL
@@ -239,7 +272,8 @@ useHead({
   meta: [
     {
       name: "description",
-      content: "Manage your sale listings, post new items, and track your selling activity.",
+      content:
+        "Manage your sale listings, post new items, and track your selling activity.",
     },
   ],
 });
