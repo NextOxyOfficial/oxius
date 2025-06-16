@@ -110,19 +110,18 @@
           >
             <UIcon name="i-heroicons-tag" class="w-4 h-4" />
             Looking to List a Sale?
-          </h3>          <p class="text-sm text-gray-600 mb-3">
+          </h3>          
+          <p class="text-sm text-gray-600 mb-3">
             List your items easily and reach thousands of potential buyers in your
             area.
           </p>
-          <UButton
-            to="/sale/my-posts?tab=post-sale"
-            color="primary"
-            size="sm"
-            class="w-full flex items-center justify-center gap-1 shadow-sm"
-          >
-            <UIcon name="i-heroicons-plus-circle" class="w-4 h-4" />
-            Post Your Ad
-          </UButton>
+          <NuxtLink
+                    to="/sale/my-posts?tab=post-sale"
+                    class="whitespace-nowrap flex items-center text-center gap-1 px-3 py-2 h-10 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm"
+                  >
+                    <UIcon name="i-heroicons-plus-circle" class="h-4 w-4" />
+                    Post Your Ad
+                  </NuxtLink>
         </div>
       </div>
 

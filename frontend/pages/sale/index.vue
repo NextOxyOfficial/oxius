@@ -279,7 +279,8 @@
                   }"
                   @update:modelValue="applyFilters"
                 />
-              </div>              <div
+              </div>              
+              <div
                 class="flex items-center border-l border-gray-200 pl-4 gap-2"
               >
                 <div v-if="isAuthenticated" class="flex items-center gap-2">
