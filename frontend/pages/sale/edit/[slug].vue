@@ -432,7 +432,7 @@
           <template #leading>
             <UIcon v-if="!isSubmitting" name="i-heroicons-paper-airplane" />
           </template>
-          {{ isSubmitting ? "Posting..." : "Post Your Ad" }}
+          {{ isSubmitting ? "Saving..." : "Save Your Ad" }}
         </UButton>
       </div>
     </form>
@@ -440,7 +440,13 @@
 </template>
 
 <script setup>
-const { get } = useApi();
+const { get, put } = useApi();
+const toast = useToast();
+const route = useRoute();
+
+// Form submission state
+const isSubmitting = ref(false);
+
 const formData = ref({
   category: null,
   child_category: null,
@@ -467,8 +473,14 @@ const conditions = ref([]);
 const regions = ref([]);
 const cities = ref([]);
 const upazilas = ref([]);
-const route = useRoute();
 const imagePreviewUrls = ref(new Array(8).fill(null));
+
+// Add missing variables for image management
+const deletedImageIds = ref([]); // Track deleted image IDs
+const newImages = ref([]); // Track new images to upload
+const fileInput = ref(null); // File input reference
+const isUploading = ref(false); // Upload state
+const uploadError = ref(""); // Upload error message
 
 async function getSalePost() {
   try {
@@ -489,7 +501,73 @@ async function getSalePost() {
         detailedAddress: res.data.detailed_address || "",
         phone: res.data.phone || "",
         email: res.data.email || "",
+        termsAccepted: true, // For editing, assume terms are already accepted
       };
+
+      // Load child categories if a category is selected
+      if (formData.value.category) {
+        try {
+          const response = await get(
+            `/sale/child-categories/?parent_id=${formData.value.category}`
+          );
+          childCategories.value = response.data || [];
+        } catch (error) {
+          console.error("Error loading child categories:", error);
+        }
+      }
+
+      // Handle location data - if all location fields are empty, set "All over Bangladesh"
+      if (
+        formData.value.division === null &&
+        formData.value.district === null &&
+        formData.value.area === null
+      ) {
+        allOverBangladesh.value = true;
+      } else {
+        allOverBangladesh.value = false;
+
+        // Load cities for the selected division
+        if (formData.value.division) {
+          try {
+            const cityResponse = await get(
+              `/geo/cities/?region_name_eng=${formData.value.division}`
+            );
+            cities.value = cityResponse.data || [];
+          } catch (error) {
+            console.error("Error loading cities:", error);
+          }
+        }
+
+        // Load upazilas for the selected district
+        if (formData.value.district) {
+          try {
+            const upazilaResponse = await get(
+              `/geo/upazila/?city_name_eng=${formData.value.district}`
+            );
+            upazilas.value = upazilaResponse.data || [];
+          } catch (error) {
+            console.error("Error loading upazilas:", error);
+          }
+        }
+      }
+
+      // Handle images from backend
+      if (res.data.images && Array.isArray(res.data.images)) {
+        // Initialize arrays
+        formData.value.images = new Array(8).fill(null);
+        imagePreviewUrls.value = new Array(8).fill(null);
+
+        // Place existing images in the arrays
+        res.data.images.forEach((img, index) => {
+          if (index < 8) {
+            formData.value.images[index] = img; // Store the whole image object
+            imagePreviewUrls.value[index] = img.image; // Display URL
+          }
+        });
+      } else {
+        formData.value.images = new Array(8).fill(null);
+        imagePreviewUrls.value = new Array(8).fill(null);
+      }
     }
   } catch (err) {
     console.error("Error fetching sale post data:", err);
@@ -556,8 +634,6 @@ watch(
           `/geo/cities/?region_name_eng=${newDivision}`
         );
         cities.value = response.data || [];
-        formData.value.district = "";
-        formData.value.area = "";
       } catch (error) {
         console.error("Error loading cities:", error);
       }
@@ -577,7 +653,6 @@ watch(
           `/geo/upazila/?city_name_eng=${newDistrict}`
         );
         upazilas.value = response.data || [];
-        formData.value.area = "";
       } catch (error) {
         console.error("Error loading upazilas:", error);
       }
@@ -597,7 +672,7 @@ async function getChildCategories() {
     console.error("Error loading child categories:", error);
   }
 }
-await getChildCategories();
+
 // Handle category change
 const handleCategoryChange = async () => {
   formData.value.child_category = "";
@@ -659,8 +734,12 @@ const handleFileUpload = async (event) => {
       // Find first empty slot
       const emptyIndex = formData.value.images.findIndex((img) => !img);
       if (emptyIndex !== -1) {
-        imagePreviewUrls.value[emptyIndex] = compressedImage;
+        // Store the base64 image in the images array
         formData.value.images[emptyIndex] = compressedImage;
+        imagePreviewUrls.value[emptyIndex] = compressedImage;
+
+        // Add to new images for submission
+        newImages.value.push(compressedImage);
         console.log("Image added to slot:", emptyIndex);
       } else {
         uploadError.value = "Maximum 8 images allowed";
@@ -679,8 +758,25 @@ const handleFileUpload = async (event) => {
 };
 
 const removeImage = (index) => {
-  imagePreviewUrls.value[index] = null;
+  const img = formData.value.images[index];
+
+  if (img) {
+    // If it's an existing image (object with id), mark for deletion
+    if (typeof img === "object" && img.id) {
+      deletedImageIds.value.push(img.id);
+    }
+    // If it's a new image (base64 string), remove from new images array
+    else if (typeof img === "string" && img.startsWith("data:image")) {
+      const newImageIndex = newImages.value.indexOf(img);
+      if (newImageIndex !== -1) {
+        newImages.value.splice(newImageIndex, 1);
+      }
+    }
+  }
+
+  // Clear the slot
   formData.value.images[index] = null;
+  imagePreviewUrls.value[index] = null;
   uploadError.value = "";
 };
 
@@ -904,15 +1000,19 @@ const submitForm = async () => {
     });
     return;
   }
-
-  // Validate images
-  const validImages = formData.value.images.filter(
-    (img) => img && typeof img === "string"
+  // Prepare images - only new base64 images for submission
+  const newImageData = formData.value.images.filter(
+    (img) => img && typeof img === "string" && img.startsWith("data:image")
   );
-  if (validImages?.length === 0) {
+
+  // Check if we have at least one image remaining (existing or new)
+  const remainingImages = formData.value.images.filter(
+    (img) => img && !deletedImageIds.value.includes(img?.id)
+  );
+  if (remainingImages.length === 0) {
     toast.add({
       title: "Validation Error",
-      description: "Please upload at least one image",
+      description: "Please keep at least one image",
       color: "red",
       timeout: 5000,
     });
@@ -929,18 +1029,11 @@ const submitForm = async () => {
     });
     return;
   }
-  try {
-    // Log image information for debugging
-    const imageSizes = validImages.map((img) => {
-      const size = Math.round((img.length * 3) / 4);
-      return formatFileSize(size);
-    });
-    console.log(
-      `Submitting ${validImages.length} images with sizes:`,
-      imageSizes
-    );
 
-    // Prepare submission data following business network pattern
+  isSubmitting.value = true;
+
+  try {
+    // Prepare submission data for updating
     const submissionData = {
       category: parseInt(formData.value.category),
       child_category: formData.value.child_category
@@ -955,7 +1048,8 @@ const submitForm = async () => {
       division: allOverBangladesh.value ? "" : formData.value.division,
       district: allOverBangladesh.value ? "" : formData.value.district,
       area: allOverBangladesh.value ? "" : formData.value.area,
-      images: validImages, // Send as array like business network
+      images: newImageData, // Only new images (base64)
+      deleted_images: deletedImageIds.value, // Images to delete
     };
 
     if (formData.value.email?.trim()) {
@@ -964,17 +1058,31 @@ const submitForm = async () => {
 
     // Handle price
     if (formData.value.negotiable) {
-      submissionData.price =
-        formData.value.price && formData.value.price !== ""
-          ? parseFloat(formData.value.price)
-          : null;
+      submissionData.price = 0;
     } else {
       submissionData.price = parseFloat(formData.value.price);
     }
 
-    console.log("Submission successful:", submissionData);
+    console.log("Updating post with data:", submissionData);
 
-    // Reset form
+    // Make API call to update the post
+
+    const response = await put(
+      `/sale/posts/${route.params.slug}/`,
+      submissionData
+    );
+
+    if (response) {
+      toast.add({
+        title: "Success",
+        description: "Your listing has been updated successfully!",
+        color: "green",
+        timeout: 5000,
+      });
+
+      // Redirect to the updated post
+      navigateTo(`/sale/${route.params.slug}`);
+    }
     resetForm();
   } catch (error) {
     console.error("Error submitting form:", error);
@@ -1021,6 +1129,8 @@ const submitForm = async () => {
       color: "red",
       timeout: 8000,
     });
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
@@ -1049,7 +1159,6 @@ onMounted(async () => {
     loadConditions(),
     loadRegions(),
     getSalePost(),
-    getChildCategories(),
   ]);
 });
 </script>

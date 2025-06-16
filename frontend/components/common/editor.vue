@@ -324,6 +324,15 @@ const editor = new Editor({
   },
 });
 
+watch(
+  () => props.content,
+  (newContent) => {
+    if (editor && newContent) {
+      editor.commands.setContent(newContent);
+    }
+  }
+);
+
 onBeforeUnmount(() => {
   editor.destroy();
 });
