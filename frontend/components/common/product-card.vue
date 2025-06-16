@@ -4,8 +4,7 @@
        <div
         class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden h-full flex flex-col"
       >        <!-- Product Image Section -->
-        <div class="relative pt-[100%] overflow-hidden">
-          <!-- Simplified Discount Badge -->
+        <div class="relative pt-[100%] overflow-hidden">          <!-- Simplified Discount Badge -->
           <div
             v-if="
               product.regular_price &&
@@ -19,7 +18,8 @@
                 calculateDiscount(product.sale_price, product.regular_price)
               }}% OFF</span>
             </div>
-          </div>          <!-- Simplified Free Delivery Badge -->
+          </div>          
+          <!-- Simplified Free Delivery Badge -->
           <div
             v-if="product.is_free_delivery"
             class="absolute bottom-2 left-2 z-20"
@@ -28,7 +28,7 @@
               <UIcon name="i-heroicons-truck" class="size-3 mr-1" />
               <span>FREE DELIVERY</span>
             </div>
-          </div>          
+          </div>
           <!-- Simplified Image -->
           <img
             :src="getProductImage(product)"
@@ -46,41 +46,10 @@
               <UIcon name="i-heroicons-eye" class="mr-2 size-4" />
               <span>Quick View</span>
             </button>
-          </div>
-        </div>        <!-- Product Details -->
-        <div class="my-2 px-2 flex-grow flex flex-col">
-          <!-- Simplified Store Link -->
-          <NuxtLink
-            :to="`/eshop/${
-              product?.owner_details?.store_username ||
-              product?.owner?.store_username
-            }`"
-            class="text-primary-500 text-sm mb-1.5 inline-flex items-center gap-1 hover:text-primary-600"
-          >
-            <div class="flex items-center justify-center size-4 bg-primary-50 rounded">
-              <UIcon
-                name="i-material-symbols-storefront-outline-rounded"
-                class="size-3"
-              />
-            </div>
-            <span class="line-clamp-1 font-medium">
-              {{
-                product?.owner_details?.store_name ||
-                product?.owner?.store_name ||
-                "Store"
-              }}
-            </span>
-          </NuxtLink>          
-          <!-- Simplified Product Title -->
-          <NuxtLink :to="`/product-details/${product?.slug}`" class="">
-            <h3 class="font-medium text-gray-800 dark:text-white line-clamp-2 flex-grow text-sm h-12 text-left">
-              {{ product.name }}
-            </h3>
-          </NuxtLink>            
-          <!-- Simplified Price Section -->
-          <div class="flex justify-between mt-auto border-t border-gray-200 dark:border-slate-700 mr-0.5 sm:mr-3 pt-1.5">
-            <!-- Price Section -->
-            <div class="flex flex-col h-10">
+          </div>        </div>        <!-- Product Details -->
+        <div class="my-2 px-2 flex-grow flex flex-col">          <!-- Price Section - Moved to top -->
+          <div class="mb-2">
+            <div class="flex items-center gap-2">
               <span class="font-semibold text-gray-800 dark:text-white text-base flex items-center">
                 <span class="text-xs mr-1 text-slate-500">৳</span>{{
                   product.sale_price && parseFloat(product.sale_price) > 0
@@ -96,25 +65,54 @@
                   parseFloat(product.sale_price) <
                     parseFloat(product.regular_price)
                 "
-                class="text-xs text-slate-400 line-through -mt-0.5 flex items-center"
+                class="text-xs text-slate-400 line-through flex items-center"
               >
                 <span class="text-xs mr-0.5">৳</span>{{ product.regular_price }}
               </span>
-            </div>
+            </div>          </div>          <!-- Product Title - Moved above store name -->
+          <NuxtLink :to="`/product-details/${product?.slug}`" class="mb-2">
+            <h3 class="font-medium text-gray-800 dark:text-white line-clamp-1 text-sm text-left capitalize">
+              {{ product.name }}
+            </h3>
+          </NuxtLink>
 
-            <!-- Simplified Buy Button -->
-            <button
-              :disabled="loadingStates[product.id]"
-              class="flex items-center justify-center gap-1 px-1.5 font-medium text-white bg-primary-500 hover:bg-primary-600 rounded h-[24px] min-w-[50px] disabled:opacity-70"
-              @click="addToCart(product, quantity)"
-            >
-              <span v-if="!loadingStates[product.id]">
-                <UIcon name="i-heroicons-shopping-cart" class="size-4 mr-1" />
-                <span class="text-sm">Buy</span>
-              </span>
-              <span v-else class="text-sm">...</span>
-            </button>
-          </div>
+          <!-- Store Link - Moved below product name -->
+          <NuxtLink
+            :to="`/eshop/${
+              product?.owner_details?.store_username ||
+              product?.owner?.store_username
+            }`"
+            class="text-primary-500 text-sm mb-3 inline-flex items-center gap-1 hover:text-primary-600"
+          >
+            <div class="flex items-center justify-center size-4 bg-primary-50 rounded">
+              <UIcon
+                name="i-material-symbols-storefront-outline-rounded"
+                class="size-3"
+              />
+            </div>
+            <span class="line-clamp-1 font-medium">
+              {{
+                product?.owner_details?.store_name ||
+                product?.owner?.store_name ||
+                "Store"
+              }}
+            </span>          </NuxtLink>
+            
+          <!-- Full Width Buy Now Button -->
+          <button
+            :disabled="loadingStates[product.id]"
+            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-black hover:bg-gray-800 rounded transition-colors duration-200 disabled:opacity-70"
+            @click="addToCart(product, quantity)"
+          >
+            <span v-if="!loadingStates[product.id]" class="flex items-center gap-2">
+              <UIcon name="i-heroicons-shopping-cart" class="size-4" />
+              <span class="text-sm font-medium">Buy Now</span>
+            </span>
+            <span v-else class="flex items-center gap-2">
+              <UIcon name="i-heroicons-arrow-path" class="size-4 animate-spin" />
+              <span class="text-sm">Adding...</span>
+            </span>
+          </button>
         </div>
       </div>
     </div>        <!-- Simplified Product Details Modal -->       

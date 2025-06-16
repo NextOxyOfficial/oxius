@@ -85,7 +85,7 @@
         @mousedown="handleSliderClick"
         @touchstart="handleSliderTouch"
       >
-        <div class="slider-content inline-flex py-3 px-2">
+        <div class="slider-content inline-flex py-3 sm:px-2">
           <!-- First row of products -->
           <div class="product-row">
             <div class="flex gap-2">
@@ -103,7 +103,7 @@
           </div>
         </div>
         
-        <div class="slider-content inline-flex py-1 px-2 mb-2">
+        <div class="slider-content inline-flex py-1 mb-2">
           <!-- Second row of products -->
           <div class="product-row">
             <div class="flex gap-4">
