@@ -2557,14 +2557,31 @@ async function handleTransfer() {
       passwordError.value = "Password is required to confirm the transfer";
       isLoading.value = false;
       return;
-    }    // Verify password with backend
+    }
+
+    // Basic password length check (client-side validation)
+    if (transfer.value.password.length < 6) {
+      passwordError.value = "Password must be at least 6 characters long";
+      isLoading.value = false;
+      return;
+    }
+
+    // Verify password with backend using change-password endpoint
+    // We'll attempt to change password to the same password to verify the current one
     try {
-      const { data: passwordVerification, error: passwordVerifyError } = await post(`/auth/verify-password/`, {
-        password: transfer.value.password
+      const { data: passwordVerification, error: passwordVerifyError } = await post(`/change-password/`, {
+        old_password: transfer.value.password,
+        new_password: transfer.value.password
       });
 
-      if (passwordVerifyError || !passwordVerification?.valid) {
-        passwordError.value = "Incorrect password. Please retry with the correct password.";
+      if (passwordVerifyError) {
+        // Check if it's specifically about incorrect current password
+        if (passwordVerifyError.data?.error?.includes('incorrect') || 
+            passwordVerifyError.data?.error?.includes('Current password')) {
+          passwordError.value = "Incorrect password. Please retry with the correct password.";
+        } else {
+          passwordError.value = "Password verification failed. Please try again.";
+        }
         isLoading.value = false;
         return;
       }
