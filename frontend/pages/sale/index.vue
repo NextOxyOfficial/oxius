@@ -154,7 +154,7 @@
             </UButtonGroup>
           </div>
         </div>
-        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-4 pb-2 ">          
+        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-2 pb-2 ">          
           <UInput
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
@@ -207,26 +207,16 @@
           @select-category="selectCategory"
           @select-subcategory="selectSubcategory"
           @toggle-subcategories="toggleSubcategories"
-        />        <!-- Main Content Area -->
-        <div class="flex-1 order-1 lg:order-2 min-w-0 overflow-hidden">          <!-- Sorting & View Options -->
+        />        
+        <!-- Main Content Area -->
+        <div class="flex-1 order-1 lg:order-2 min-w-0 overflow-hidden">          
+          <!-- Sorting & View Options -->
           <div
-            class="bg-white p-4 rounded-lg shadow-sm mb-4 flex flex-wrap justify-between items-center gap-4"
-          >
-            <!-- Mobile Layout: Ads found + Post Sale Ad button on same row -->
+            class="bg-white p-2 rounded-lg shadow-sm mb-4 flex flex-wrap justify-between items-center gap-4"
+          >            
+          <!-- Mobile Layout: Ads found + Post Sale Ad button on same row -->
             <div class="flex items-center justify-between w-full lg:w-auto lg:justify-start gap-3">
               <div class="flex items-center gap-3">
-                <!-- Mobile Filter Button -->
-                <UButton
-                  icon="i-heroicons-bars-3"
-                  size="sm"
-                  color="primary"
-                  variant="soft"
-                  class="lg:hidden flex items-center gap-1.5"
-                  @click="toggleMobileSidebar"
-                  aria-label="Open Filters Menu"
-                >
-                  <span class="text-xs font-medium">Menu</span>
-                </UButton>
                 <p class="text-gray-600 text-sm">
                   <span class="font-medium text-gray-800">{{
                     selectedCategory
@@ -242,16 +232,33 @@
                   </span>
                 </p>
               </div>
-              
-              <!-- Post Sale Ad Button - Mobile position (right side of ads found row) -->
+                <!-- Post Sale Ad Button - Mobile position (right side of ads found row) -->
               <div class="lg:hidden">
-                <NuxtLink
-                  to="/sale/my-posts?tab=post-sale"
-                  class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-xs"
-                >
-                  <UIcon name="i-heroicons-plus-circle" class="h-3 w-3" />
-                  Post Ad
-                </NuxtLink>
+                <div v-if="isAuthenticated" class="flex items-center gap-2">
+                  <NuxtLink
+                    to="/sale/my-posts"
+                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-xs"
+                  >
+                    <UIcon name="i-heroicons-list-bullet" class="h-3 w-3" />
+                    My Posts
+                  </NuxtLink>
+                  <NuxtLink
+                    to="/sale/my-posts?tab=post-sale"
+                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-xs"
+                  >
+                    <UIcon name="i-heroicons-plus-circle" class="h-3 w-3" />
+                    Post Ad
+                  </NuxtLink>
+                </div>
+                <div v-else>
+                  <NuxtLink
+                    to="/sale/my-posts?tab=post-sale"
+                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-xs"
+                  >
+                    <UIcon name="i-heroicons-plus-circle" class="h-3 w-3" />
+                    Post Ad
+                  </NuxtLink>
+                </div>
               </div>
             </div>            
             
@@ -273,34 +280,69 @@
                   }"
                   @update:modelValue="applyFilters"
                 />
-              </div>
-              <div
+              </div>              <div
                 class="flex items-center border-l border-gray-200 pl-4 gap-2"
               >
-                <NuxtLink
-                  to="/sale/my-posts?tab=post-sale"
-                  class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-sm"
-                >
-                  <UIcon name="i-heroicons-plus-circle" class="h-4 w-4" />
-                  Post Sale Ad
-                </NuxtLink>
+                <div v-if="isAuthenticated" class="flex items-center gap-2">
+                  <NuxtLink
+                    to="/sale/my-posts"
+                    class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-sm"
+                  >
+                    <UIcon name="i-heroicons-list-bullet" class="h-4 w-4" />
+                    My Posts
+                  </NuxtLink>
+                  <NuxtLink
+                    to="/sale/my-posts?tab=post-sale"
+                    class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm"
+                  >
+                    <UIcon name="i-heroicons-plus-circle" class="h-4 w-4" />
+                    Post Sale Ad
+                  </NuxtLink>
+                </div>
+                <div v-else>
+                  <NuxtLink
+                    to="/sale/my-posts?tab=post-sale"
+                    class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-sm"
+                  >
+                    <UIcon name="i-heroicons-plus-circle" class="h-4 w-4" />
+                    Post Sale Ad
+                  </NuxtLink>
+                </div>
               </div>
             </div>
-            
-            <!-- Mobile Sort Options - Separate row -->
+              <!-- Mobile Sort Options - Separate row -->
             <div class="lg:hidden w-full">
               <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-600">Sort by:</span>
-                <USelect
+                <!-- Mobile Filter Button -->
+                <UButton
+                  icon="i-heroicons-bars-3"
+                  size="sm"
+                  color="primary"
+                  variant="soft"
+                  class="flex items-center gap-1.5"
+                  @click="toggleMobileSidebar"
+                  aria-label="Open Filters Menu"
+                >
+                  <span class="text-xs font-medium">Menu</span>
+                </UButton>
+                <span class="text-sm text-gray-600">Sort by:</span>                <USelect
                   v-model="sortOption"
                   :options="sortOptions"
                   option-attribute="label"
                   value-attribute="value"
                   size="sm"
-                  class="w-40 h-8 flex"
+                  class="w-36 h-8 flex compact-select"
                   :ui="{
                     padding: {
                       sm: 'px-2 py-1'
+                    },
+                    gap: {
+                      sm: 'gap-1'
+                    },
+                    trailing: {
+                      padding: {
+                        sm: 'ps-1'
+                      }
                     }
                   }"
                   @update:modelValue="applyFilters"
@@ -787,7 +829,7 @@ import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 import { useApi } from "~/composables/useApi";
 import SaleSidebar from "~/components/sale/SaleSidebar.vue";
 
-const { user } = useAuth();
+const { user, isAuthenticated } = useAuth();
 const { query } = useRoute();
 
 // API endpoints
@@ -1542,5 +1584,20 @@ watch(
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Safari and Chrome */
+}
+
+/* Compact select styling for mobile */
+.compact-select button {
+  justify-content: space-between !important;
+  padding-left: 8px !important;
+  padding-right: 4px !important;
+}
+
+.compact-select button span {
+  margin-right: 2px !important;
+}
+
+.compact-select svg {
+  margin-left: 2px !important;
 }
 </style>
