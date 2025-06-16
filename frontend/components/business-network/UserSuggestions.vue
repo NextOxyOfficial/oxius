@@ -1,10 +1,24 @@
 <template>
-  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6 shadow-sm">
-    <!-- Header -->
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6 shadow-sm">    <!-- Header -->
     <div class="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-      <div class="flex items-center">
-        <Users class="h-5 w-5 text-blue-600 mr-2" />
-        <h3 class="text-sm font-semibold text-gray-800">Follow the people you may know</h3>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <Users class="h-5 w-5 text-blue-600 mr-2" />
+          <h3 class="text-sm font-semibold text-gray-800">Follow the people you may know</h3>
+        </div>
+        <button 
+          @click="fetchSuggestions"
+          :disabled="loading"
+          class="text-blue-600 hover:text-blue-800 disabled:opacity-50 transition-colors"
+          title="Refresh suggestions"
+        >
+          <svg v-if="loading" class="h-4 w-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -82,12 +96,19 @@
             </span>
           </button>
         </div>
-      </div>
-
-      <!-- Empty state -->
+      </div>      <!-- Empty state -->
       <div v-else-if="!loading" class="text-center py-6">
         <Users class="h-12 w-12 text-gray-300 mx-auto mb-2" />
-        <p class="text-gray-500 text-sm">No suggestions available right now</p>
+        <p class="text-gray-500 text-sm">
+          {{ error || 'No suggestions available right now' }}
+        </p>
+        <button 
+          v-if="error" 
+          @click="fetchSuggestions"
+          class="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+        >
+          Try again
+        </button>
       </div>
     </div>    <!-- View All Link -->
     <div v-if="displayedSuggestions.length > 0" class="px-4 py-3 border-t border-gray-100 bg-gray-50">
@@ -183,17 +204,39 @@ const fetchSuggestions = async () => {
     loading.value = true
     error.value = null
     
+    console.log('Fetching user suggestions...')
     const { get } = useApi()
     const response = await get('/bn/user-suggestions/')
     
-    if (response?.data) {
-      suggestions.value = response.data?.map(user => ({
+    console.log('API Response:', response)
+    
+    if (response?.data && Array.isArray(response.data) && response.data.length > 0) {
+      suggestions.value = response.data.map(user => ({
         ...user,
         isFollowing: false,
         mutual_connections: user.mutual_connections || 0
-      })) || []
+      }))
+      console.log('Processed suggestions:', suggestions.value)
     } else {
-      suggestions.value = []
+      console.log('No suggestions from main API, trying user search fallback')
+      // Fallback: try to get random users using search without query params
+      try {
+        const fallbackResponse = await get('/bn/user-search/')
+        if (fallbackResponse?.data?.results && fallbackResponse.data.results.length > 0) {
+          suggestions.value = fallbackResponse.data.results.slice(0, 5).map(user => ({
+            ...user,
+            isFollowing: false,
+            mutual_connections: 0
+          }))
+          console.log('Fallback suggestions from user search:', suggestions.value)
+        } else {
+          console.log('No users from fallback either')
+          suggestions.value = []
+        }
+      } catch (fallbackErr) {
+        console.error('Fallback also failed:', fallbackErr)
+        suggestions.value = []
+      }
     }
   } catch (err) {
     console.error('Error fetching user suggestions:', err)
