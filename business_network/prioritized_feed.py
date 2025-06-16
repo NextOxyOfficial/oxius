@@ -44,17 +44,23 @@ class PrioritizedFeedView(APIView):
         
         nearby_users_subquery = User.objects.filter(
             nearby_users_conditions
-        ).exclude(id=user.id).values('id')
+        ).exclude(id=user.id).values('id')        # Create prioritized queryset
+        # Only prioritize user's own posts from the last 24 hours to maintain feed freshness
+        from django.utils import timezone
+        from datetime import timedelta
         
-        # Create prioritized queryset
+        recent_threshold = timezone.now() - timedelta(hours=24)
+        
         queryset = BusinessNetworkPost.objects.annotate(
             priority=Case(
-                When(author_id__in=Subquery(users_i_follow_subquery), then=Value(1)),
-                When(author_id__in=Subquery(followers_of_my_followings_subquery), then=Value(2)),
-                When(author_id__in=Subquery(my_followers_subquery), then=Value(3)),
-                When(author_id__in=Subquery(followings_of_my_followings_subquery), then=Value(4)),
-                When(author_id__in=Subquery(nearby_users_subquery), then=Value(5)),
-                default=Value(6),
+                # Priority 1: User's own recent posts (last 24 hours only)
+                When(author=user, created_at__gte=recent_threshold, then=Value(1)),
+                When(author_id__in=Subquery(users_i_follow_subquery), then=Value(2)),
+                When(author_id__in=Subquery(followers_of_my_followings_subquery), then=Value(3)),
+                When(author_id__in=Subquery(my_followers_subquery), then=Value(4)),
+                When(author_id__in=Subquery(followings_of_my_followings_subquery), then=Value(5)),
+                When(author_id__in=Subquery(nearby_users_subquery), then=Value(6)),
+                default=Value(7),
                 output_field=IntegerField()
             )
         ).select_related('author').order_by('priority', '-created_at')
@@ -65,18 +71,17 @@ class PrioritizedFeedView(APIView):
         
         # Get first 20 posts for display
         posts = queryset[:20].values(
-            'id', 'title', 'content', 'created_at', 'priority',
-            'author__username', 'author__first_name', 'author__last_name',
-            'author__city', 'author__state'
+            'id', 'title', 'content', 'created_at', 'priority',            'author__username', 'author__first_name', 'author__last_name',            'author__city', 'author__state'
         )
         
         priority_descriptions = {
-            1: "Posts from users I follow",
-            2: "Posts from followers of my followings",
-            3: "Posts from my followers", 
-            4: "Posts from followings of my followings",
-            5: "Posts from nearby cities",
-            6: "Other posts"
+            1: "User's own recent posts (last 24 hours)",
+            2: "Posts from users I follow",
+            3: "Posts from followers of my followings",
+            4: "Posts from my followers", 
+            5: "Posts from followings of my followings",
+            6: "Posts from nearby cities",
+            7: "Other posts (including user's older posts)"
         }
         
         response_data = {
