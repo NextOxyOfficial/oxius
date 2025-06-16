@@ -1,10 +1,13 @@
 <template>
   <div ref="productCardRef">
-    <div class="transition-all duration-200">      <!-- Simplified Card Container -->      
+    <div class="transition-all duration-200">      
+      <!-- Simplified Card Container -->      
        <div
         class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden h-full flex flex-col"
-      >        <!-- Product Image Section -->
-        <div class="relative pt-[100%] overflow-hidden">          <!-- Simplified Discount Badge -->
+      >        
+      <!-- Product Image Section -->
+        <div class="relative pt-[100%] overflow-hidden">          
+          <!-- Simplified Discount Badge -->
           <div
             v-if="
               product.regular_price &&
@@ -46,8 +49,11 @@
               <UIcon name="i-heroicons-eye" class="mr-2 size-4" />
               <span>Quick View</span>
             </button>
-          </div>        </div>        <!-- Product Details -->
-        <div class="my-2 px-2 flex-grow flex flex-col">          <!-- Price Section - Moved to top -->
+          </div>        
+        </div>        
+          <!-- Product Details -->
+        <div class="my-2 px-2 flex-grow flex flex-col">          
+          <!-- Price Section - Moved to top -->
           <div class="mb-2">
             <div class="flex items-center gap-2">
               <span class="font-semibold text-gray-800 dark:text-white text-base flex items-center">
@@ -69,12 +75,15 @@
               >
                 <span class="text-xs mr-0.5">৳</span>{{ product.regular_price }}
               </span>
-            </div>          </div>          <!-- Product Title - Moved above store name -->
+            </div>         
+           </div>          
+            <!-- Product Title - Moved above store name -->
           <NuxtLink :to="`/product-details/${product?.slug}`" class="mb-2">
             <h3 class="font-medium text-gray-800 dark:text-white line-clamp-1 text-sm text-left capitalize">
               {{ product.name }}
             </h3>
-          </NuxtLink>          <!-- Store Link - Moved below product name -->
+          </NuxtLink>          
+          <!-- Store Link - Moved below product name -->
           <NuxtLink
             :to="`/eshop/${
               product?.owner_details?.store_username ||
@@ -93,7 +102,8 @@
                 product?.owner?.store_name ||
                 "Store"
               }}
-            </span>          </NuxtLink>
+            </span>          
+          </NuxtLink>
               <!-- Full Width Buy Now Button -->
           <button
             :disabled="loadingStates[product.id]"
@@ -106,12 +116,13 @@
             </span>
             <span v-else class="flex items-center gap-2">
               <UIcon name="i-heroicons-arrow-path" class="size-4 animate-spin" />
-              <span class="text-sm">Adding...</span>
+              <span class="text-sm">Processing...</span>
             </span>
           </button>
         </div>
       </div>
-    </div>        <!-- Simplified Product Details Modal -->       
+    </div>        
+    <!-- Simplified Product Details Modal -->       
      <UModal
       v-model="isModalOpen"
       :ui="{
@@ -123,7 +134,8 @@
     >
     <div>
       <div class="bg-white dark:bg-slate-800 rounded-xl"
-      >        <CommonProductDetailsCard
+      >        
+      <CommonProductDetailsCard
           :current-product="selectedProduct"
           :modal="true"
           :seeDetails="true"
