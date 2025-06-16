@@ -27,7 +27,7 @@
             <div
               ref="commentInputRef"
               contenteditable="true"
-              class="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none text-gray-800 dark:text-gray-300 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-input-editable"
+              class="flex-1 min-w-[120px] pt-2 text-sm bg-transparent border-none outline-none text-gray-800 dark:text-gray-300 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-input-editable"
               :style="{ minHeight: '20px' }"
               @input="handleContentEditableInput"
               @focus="post.showCommentInput = true"
