@@ -70,14 +70,15 @@
                 "Store"
               }}
             </span>
-          </NuxtLink>          <!-- Simplified Product Title -->
+          </NuxtLink>          
+          <!-- Simplified Product Title -->
           <NuxtLink :to="`/product-details/${product?.slug}`" class="">
-            <h3 class="font-medium text-gray-800 dark:text-white mb-2 line-clamp-2 flex-grow text-sm h-12 text-left">
+            <h3 class="font-medium text-gray-800 dark:text-white line-clamp-2 flex-grow text-sm h-12 text-left">
               {{ product.name }}
             </h3>
-          </NuxtLink>          
+          </NuxtLink>            
           <!-- Simplified Price Section -->
-          <div class="flex justify-between mt-auto border-t border-gray-200 dark:border-slate-700 mr-0.5 sm:mr-3">
+          <div class="flex justify-between mt-auto border-t border-gray-200 dark:border-slate-700 mr-0.5 sm:mr-3 pt-1.5">
             <!-- Price Section -->
             <div class="flex flex-col h-10">
               <span class="font-semibold text-gray-800 dark:text-white text-base flex items-center">
