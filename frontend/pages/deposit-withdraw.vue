@@ -1003,9 +1003,7 @@
                   <!-- <div class="space-y-1">
                   <label class="text-xs text-gray-600">Name:</label>
                   <p class="text-sm text-gray-800 font-medium">John Smith</p>
-                </div> -->
-
-                  <!-- Time Field -->
+                </div> -->                  <!-- Time Field -->
                   <div class="flex items-center gap-2">
                     <label class="text-xs text-gray-600">Time:</label>
                     <span
@@ -1017,6 +1015,31 @@
                 </div>
               </div>
 
+              <!-- Password Confirmation -->
+              <div class="mb-6">
+                <div class="space-y-2">
+                  <label class="text-xs text-gray-600 font-medium">Enter your password to confirm:</label>
+                  <UInput
+                    v-model="transfer.password"
+                    type="password"
+                    placeholder="Enter your password"
+                    size="md"
+                    :ui="{
+                      base: 'w-full',
+                      rounded: 'rounded-lg',
+                      placeholder: 'placeholder-gray-400',
+                      color: {
+                        white: {
+                          outline: 'shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400'
+                        }
+                      }
+                    }"
+                    class="text-sm"
+                    autocomplete="current-password"
+                  />
+                </div>
+              </div>
+
               <!-- Final Amount -->
               <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
                 <p class="text-xs text-gray-600">Final amount</p>
@@ -1024,11 +1047,10 @@
                   <UIcon name="i-mdi:currency-bdt" class="" />
                   {{ transfer?.payable_amount }}
                 </p>
-              </div>
-
-              <!-- Confirm Button -->
+              </div>              <!-- Confirm Button -->
               <UButton
                 @click="handleTransfer"
+                :disabled="!transfer.password || isLoading"
                 :class="[
                   'w-full py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                   'bg-black text-white hover:bg-gray-800 active:scale-98',
@@ -1838,6 +1860,7 @@ const transfer = ref({
   transaction_type: "Transfer",
   payment_method: "p2p",
   bank_status: "completed",
+  password: "",
 });
 
 const transferErrors = ref({});
@@ -2525,7 +2548,25 @@ async function handleTransfer() {
   try {
     isLoading.value = true;
 
-    const { to_user, ...rest } = transfer.value;
+    // Validate password first
+    if (!transfer.value.password) {
+      throw new Error("Password is required to confirm the transfer");
+    }
+
+    // Verify password with backend
+    try {
+      const { data: passwordVerification, error: passwordError } = await post(`/auth/verify-password/`, {
+        password: transfer.value.password
+      });
+
+      if (passwordError || !passwordVerification?.valid) {
+        throw new Error("Incorrect password. Please try again.");
+      }
+    } catch (passwordVerifyError) {
+      throw new Error("Incorrect password. Please try again.");
+    }
+
+    const { to_user, password, ...rest } = transfer.value;
 
     const { data, error } = await post(`/add-user-balance/`, rest);    if (error) {
       throw new Error(error);
@@ -2586,6 +2627,7 @@ function reset() {
     payment_method: "p2p",
     bank_status: "completed",
     to_user: null,
+    password: "",
   };
 }
 
