@@ -93,18 +93,32 @@
             @click="clearNotifications"
           />
         </div>
-      </transition>      <!-- Open Ticket button -->
-      <div class="flex justify-start mb-4 px-4">
+      </transition>      <!-- Open Ticket and Mark All Read buttons -->
+      <div class="flex flex-row justify-between items-center gap-3 mb-4 px-4">
         <UButton
           color="primary"
           label="Open Ticket"
           icon="i-heroicons-plus"
           @click="openNewTicketModal"
+          class="flex-shrink-0"
         />
+        <UButton
+          color="gray"
+          variant="soft"
+          icon="i-heroicons-check-circle"
+          :disabled="!hasUnreadMessages"
+          @click="markAllAsRead"
+          :title="`Mark all unread ${activeTab === 'support' ? 'tickets' : 'updates'} in this tab as read`"
+          class="mark-all-read-btn flex-shrink-0"
+          size="sm"
+        >
+          <span class="hidden sm:inline">Mark All Read</span>
+          <span class="sm:hidden">Mark All Read</span>
+        </UButton>
       </div>
 
       <!-- Tabbed Navigation -->
-      <div class="mb-6 border-b border-gray-200">
+      <div class="mb-2 border-b border-gray-200">
         <nav class="flex space-x-8 px-4">
           <button
             @click="setActiveTab('updates')"
@@ -145,7 +159,7 @@
       <!-- Unified Content Area with Filtering -->
       <div class="sm:px-4">
         <!-- Unified Filtering Bar -->
-        <div class="flex flex-wrap gap-2 mb-6 p-2 bg-gray-50 rounded-lg border border-gray-200">
+        <div class="flex flex-wrap gap-2 mb-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
           <!-- Tab specific filters -->
           <div v-if="activeTab === 'support'" class="flex flex-wrap gap-2 flex-1">
             <UButton
@@ -252,9 +266,7 @@
               @click="setUpdatesFilter('deposit_successful')"
               label="Deposits"
             />
-          </div>
-
-          <!-- Refresh button (always visible) -->
+          </div>            <!-- Refresh button (always visible) -->
           <UButton
             color="gray"
             variant="soft"
@@ -1251,6 +1263,16 @@ const filteredSupportTickets = computed(() => {
   return paginatedFiltered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 });
 
+// Computed property to check if there are unread messages in the current tab
+const hasUnreadMessages = computed(() => {
+  if (activeTab.value === 'updates') {
+    return allUpdates.value.some(update => !update.is_read);
+  } else if (activeTab.value === 'support') {
+    return allSupportTickets.value.some(ticket => !readMessages.value[ticket.id]);
+  }
+  return false;
+});
+
 // Ticket handling
 const isNewTicketModalOpen = ref(false);
 const isReplyModalOpen = ref(false);
@@ -1398,6 +1420,80 @@ async function loadMoreItems() {
     });
   } finally {
     isLoadingMore.value = false;
+  }
+}
+
+// Mark all messages as read
+async function markAllAsRead() {
+  try {
+    let markedCount = 0;
+    
+    if (activeTab.value === 'updates') {
+      // Mark all unread updates as read
+      const unreadUpdates = allUpdates.value.filter(update => !update.is_read);
+      
+      for (const update of unreadUpdates) {
+        try {
+          const success = await markUpdateAsReadGlobal(update.id);
+          if (success) {
+            update.is_read = true;
+            markedCount++;
+          }
+        } catch (error) {
+          console.error(`Error marking update ${update.id} as read:`, error);
+        }
+      }
+    } else if (activeTab.value === 'support') {
+      // Mark all unread support tickets as read
+      const unreadTickets = allSupportTickets.value.filter(ticket => !readMessages.value[ticket.id]);
+      
+      for (const ticket of unreadTickets) {
+        try {
+          const success = await markTicketAsReadGlobal(ticket.id);
+          if (success) {
+            readMessages.value[ticket.id] = true;
+            markedCount++;
+          }
+        } catch (error) {
+          console.error(`Error marking ticket ${ticket.id} as read:`, error);
+        }
+      }
+    }
+    
+    // Update global counts
+    await fetchUnreadCount();
+    
+    // Update local counts
+    newMessageCount.value = messages.value.filter(
+      (msg) => !readMessages.value[msg.id] && (msg.is_ticket ? !msg.is_read : !msg.is_read)
+    ).length;
+    newTicketCount.value = allSupportTickets.value.filter(
+      (ticket) => !readMessages.value[ticket.id]
+    ).length;
+    
+    if (markedCount > 0) {
+      toast.add({
+        title: "Success",
+        description: `Marked ${markedCount} ${activeTab.value === 'support' ? 'ticket' : 'update'}${markedCount > 1 ? 's' : ''} as read`,
+        color: "green",
+        timeout: 3000,
+      });
+    } else {
+      toast.add({
+        title: "Info",
+        description: `No unread ${activeTab.value === 'support' ? 'tickets' : 'updates'} to mark`,
+        color: "blue",
+        timeout: 2000,
+      });
+    }
+  } catch (error) {
+    console.error('Error marking all as read:', error);
+    toast.add({
+      title: "Error",
+      description: "Failed to mark all as read. Please try again.",
+      color: "red",
+      timeout: 3000,
+    });
   }
 }
 
@@ -2947,5 +3043,34 @@ onBeforeUnmount(() => {
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
+}
+
+/* Mark All Read button styling */
+.mark-all-read-btn {
+  transition: all 0.3s ease;
+}
+
+.mark-all-read-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mark-all-read-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Mobile responsive styling for button container */
+@media (max-width: 640px) {
+  .mark-all-read-btn {
+    font-size: 0.875rem; /* text-sm */
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  
+  /* Ensure buttons fit well in mobile row layout */
+  .mark-all-read-btn span {
+    white-space: nowrap;
+  }
 }
 </style>
