@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6 shadow-sm">    <!-- Header -->
+  <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6 shadow-sm w-full max-w-full">    <!-- Header -->
     <div class="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
       <div class="flex items-center justify-between">
         <div class="flex items-center">
@@ -20,10 +20,8 @@
           </svg>
         </button>
       </div>
-    </div>
-
-    <!-- User Suggestions -->
-    <div class="p-4">        <div v-if="loading">
+    </div>    <!-- User Suggestions -->
+    <div class="p-4 w-full max-w-full overflow-hidden">        <div v-if="loading">
         <!-- Desktop: Grid Skeleton -->
         <div v-if="isDesktop" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div v-for="i in 3" :key="i" class="bg-white border border-gray-200 rounded-lg p-4">
@@ -37,15 +35,18 @@
             </div>
           </div>
         </div>        <!-- Mobile: Horizontal Scroll Skeleton -->
-        <div v-else class="overflow-x-scroll overflow-y-hidden -mx-4">
-          <div class="flex space-x-3 px-4 pb-2 min-w-max">
-            <div v-for="i in 6" :key="i" class="bg-white border border-gray-200 rounded-lg p-3 flex-shrink-0" style="width: 160px; min-width: 160px;">              <div class="flex flex-col items-center text-center space-y-3">
-                <div class="w-16 h-16 rounded-lg bg-gray-200 animate-pulse"></div>
-                <div class="w-full space-y-2">
-                  <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4 mx-auto"></div>
-                  <div class="h-3 bg-gray-200 rounded animate-pulse w-1/2 mx-auto"></div>
+        <div v-else class="relative">
+          <div class="overflow-x-auto overflow-y-hidden scrollbar-hide">
+            <div class="flex space-x-3 pb-2" style="width: max-content; padding-left: 8px; padding-right: 8px;">
+              <div v-for="i in 6" :key="i" class="bg-white border border-gray-200 rounded-lg p-3 flex-shrink-0 w-40">
+                <div class="flex flex-col items-center text-center space-y-3">
+                  <div class="w-16 h-16 rounded-lg bg-gray-200 animate-pulse"></div>
+                  <div class="w-full space-y-2">
+                    <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4 mx-auto"></div>
+                    <div class="h-3 bg-gray-200 rounded animate-pulse w-1/2 mx-auto"></div>
+                  </div>
+                  <div class="h-6 bg-gray-200 rounded animate-pulse w-16"></div>
                 </div>
-                <div class="h-6 bg-gray-200 rounded animate-pulse w-16"></div>
               </div>
             </div>
           </div>
@@ -103,61 +104,63 @@
                 </span>
               </button>          </div>
           </div>
-        </div>        <!-- Mobile: Horizontal Scroll -->
-        <div v-else class="overflow-x-scroll overflow-y-hidden -mx-4">
-          <div class="flex space-x-3 px-4 pb-2 min-w-max">
-            <div 
-              v-for="user in suggestions" 
-              :key="user.id"
-              class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow duration-200 flex-shrink-0"
-              style="width: 160px; min-width: 160px;"
-            >
-              <!-- User Info Card -->
-              <div class="flex flex-col items-center text-center space-y-3">
-                <!-- Profile Picture -->
-                <NuxtLink :to="`/business-network/profile/${user.id}`">                  <img
-                    src="/static/frontend/images/placeholder.jpg"
-                    :alt="getUserDisplayName(user)"
-                    class="w-16 h-16 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
-                  />
-                </NuxtLink>
-                
-                <!-- User Details -->
-                <div class="flex-1 min-w-0 w-full">
-                  <NuxtLink 
-                    :to="`/business-network/profile/${user.id}`"
-                    class="block"
-                  >
-                    <h4 class="font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors text-sm">
-                      {{ getUserDisplayName(user) }}
-                    </h4>
+        </div>          <!-- Mobile: Horizontal Scroll -->
+        <div v-else class="relative">
+          <div class="overflow-x-auto overflow-y-hidden scrollbar-hide">
+            <div class="flex space-x-3 pb-2" style="width: max-content; padding-left: 8px; padding-right: 8px;">
+              <div 
+                v-for="user in suggestions" 
+                :key="user.id"
+                class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow duration-200 flex-shrink-0 w-40"
+              >
+                <!-- User Info Card -->
+                <div class="flex flex-col items-center text-center space-y-3">
+                  <!-- Profile Picture -->
+                  <NuxtLink :to="`/business-network/profile/${user.id}`">
+                    <img
+                      src="/static/frontend/images/placeholder.jpg"
+                      :alt="getUserDisplayName(user)"
+                      class="w-16 h-16 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
+                    />
                   </NuxtLink>
-                  <!-- Mutual connections -->
-                  <div v-if="user.mutual_connections > 0" class="text-xs text-blue-600 mt-1">
-                    {{ user.mutual_connections }} mutual connection{{ user.mutual_connections > 1 ? 's' : '' }}
+                  
+                  <!-- User Details -->
+                  <div class="flex-1 min-w-0 w-full">
+                    <NuxtLink 
+                      :to="`/business-network/profile/${user.id}`"
+                      class="block"
+                    >
+                      <h4 class="font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors text-sm">
+                        {{ getUserDisplayName(user) }}
+                      </h4>
+                    </NuxtLink>
+                    <!-- Mutual connections -->
+                    <div v-if="user.mutual_connections > 0" class="text-xs text-blue-600 mt-1">
+                      {{ user.mutual_connections }} mutual connection{{ user.mutual_connections > 1 ? 's' : '' }}
+                    </div>
                   </div>
-                </div>
 
-                <!-- Follow Button -->
-                <button
-                  @click="toggleFollow(user)"
-                  :disabled="user.isFollowing === 'pending'"
-                  class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                  :class="getFollowButtonClass(user)"
-                >
-                  <span v-if="user.isFollowing === 'pending'" class="flex items-center justify-center">
-                    <Loader2 class="h-3 w-3 animate-spin mr-1" />
-                    Loading...
-                  </span>
-                  <span v-else-if="user.isFollowing" class="flex items-center justify-center">
-                    <UserCheck class="h-3 w-3 mr-1" />
-                    Following
-                  </span>
-                  <span v-else class="flex items-center justify-center">
-                    <UserPlus class="h-3 w-3 mr-1" />
-                    Follow
-                  </span>
-                </button>
+                  <!-- Follow Button -->
+                  <button
+                    @click="toggleFollow(user)"
+                    :disabled="user.isFollowing === 'pending'"
+                    class="px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    :class="getFollowButtonClass(user)"
+                  >
+                    <span v-if="user.isFollowing === 'pending'" class="flex items-center justify-center">
+                      <Loader2 class="h-3 w-3 animate-spin mr-1" />
+                      Loading...
+                    </span>
+                    <span v-else-if="user.isFollowing" class="flex items-center justify-center">
+                      <UserCheck class="h-3 w-3 mr-1" />
+                      Following
+                    </span>
+                    <span v-else class="flex items-center justify-center">
+                      <UserPlus class="h-3 w-3 mr-1" />
+                      Follow
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -385,13 +388,30 @@ defineExpose({
   scroll-behavior: smooth;
 }
 
-/* Hide scrollbar on mobile for cleaner look (optional) */
-.overflow-x-auto::-webkit-scrollbar {
-  display: none;
+/* Hide scrollbar for cleaner look while maintaining scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
-.overflow-x-auto {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+  width: 0;
+  height: 0;
+}
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Ensure container doesn't cause layout issues */
+.relative {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
 }
 </style>
