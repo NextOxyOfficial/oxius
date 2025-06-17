@@ -108,18 +108,15 @@
     <div
       v-else-if="productsCount > 0"
       class="relative product-slider-container group"
-    >
-      <!-- Modern Product Container -->
+    >      <!-- Modern Product Container -->
       <div
         ref="sliderContainer"
-        class="overflow-x-auto custom-scrollbar rounded-2xl bg-gradient-to-br from-slate-50/80 to-white dark:from-slate-900/80 dark:to-slate-800 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 select-none scroll-smooth hide-scrollbar"
-        @mousedown="handleSliderClick"
-        @touchstart="handleSliderTouch"
+        class="overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50/80 to-white dark:from-slate-900/80 dark:to-slate-800 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50"
       >
-        <div class="slider-content inline-flex py-3 sm:px-2">
-          <!-- First row of products -->
+        <!-- First row of products -->
+        <div class="slider-content py-3 px-2 sm:px-4">
           <div class="product-row">
-            <div class="flex gap-2">
+            <div class="flex gap-2 sm:gap-3 md:gap-4">
               <div
                 v-for="product in firstRowProducts"
                 :key="product.id"
@@ -131,10 +128,10 @@
           </div>
         </div>
 
-        <div class="slider-content inline-flex py-1 mb-2">
-          <!-- Second row of products -->
+        <!-- Second row of products -->
+        <div class="slider-content py-3 px-2 sm:px-4 pb-4">
           <div class="product-row">
-            <div class="flex gap-4">
+            <div class="flex gap-2 sm:gap-3 md:gap-4">
               <div
                 v-for="product in secondRowProducts"
                 :key="product.id"
@@ -707,18 +704,21 @@ watch(
 
 /* Product row and card styling */
 .product-row {
-  min-width: 100%;
-  padding: 0 1px;
+  width: 100%;
+  padding: 0;
 }
 
 .product-card {
   transition: transform 0.15s ease;
   z-index: 1;
+  width: 100%;
+  height: auto;
 }
 
 /* Improved clickable areas */
 .slider-content {
   cursor: grab;
+  width: 100%;
 }
 
 .slider-content:active {
@@ -731,39 +731,76 @@ watch(
   cursor: pointer;
 }
 
-/* Card sizes based on screen size */
+/* Card sizes based on screen size - ensuring both rows fit screen width */
 @media (min-width: 1024px) {
   .product-card-wrapper {
-    width: calc(20% - 16px); /* 5 cards per row on desktop */
+    width: calc(20% - 12px); /* 5 cards per row on desktop, accounting for gaps */
+    min-width: calc(20% - 12px);
+    max-width: calc(20% - 12px);
+  }
+  
+  .product-row .flex {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .product-card-wrapper {
-    width: calc(25% - 16px); /* 4 cards per row on tablet */
+    width: calc(25% - 12px); /* 4 cards per row on tablet */
+    min-width: calc(25% - 12px);
+    max-width: calc(25% - 12px);
+  }
+  
+  .product-row .flex {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 
 @media (min-width: 640px) and (max-width: 767px) {
   .product-card-wrapper {
-    width: calc(33.33% - 16px); /* 3 cards per row on small tablet */
+    width: calc(33.33% - 10px); /* 3 cards per row on small tablet */
+    min-width: calc(33.33% - 10px);
+    max-width: calc(33.33% - 10px);
+  }
+  
+  .product-row .flex {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 
 @media (max-width: 639px) {
   .product-card-wrapper {
-    width: calc(50% - 10px); /* 2 cards per row on mobile */
+    width: calc(50% - 8px); /* 2 cards per row on mobile */
+    min-width: calc(50% - 8px);
+    max-width: calc(50% - 8px);
   }
 
   .product-row .flex {
-    gap: 10px; /* Smaller gap on mobile */
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px !important; /* Smaller gap on mobile */
   }
 }
 
 /* Slider content styling */
 .slider-content {
   width: 100%;
-  scroll-snap-type: x mandatory;
+  display: block;
+}
+
+/* Ensure both rows have consistent spacing */
+.slider-content + .slider-content {
+  margin-top: 0;
+}
+
+/* Product row flex container */
+.product-row .flex {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
 }
 
 /* Improved scrolling for touch devices */
