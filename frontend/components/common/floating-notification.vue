@@ -99,13 +99,14 @@
 <script setup>
 
 const notificationTypes = {
-  DEPOSIT: 'deposit',
-  WITHDRAW: 'withdraw',
-  TRANSFER: 'transfer',
+  DEPOSIT: 'deposit_successful',
+  WITHDRAW: 'withdraw_successful',
+  TRANSFER_SENT: 'transfer_sent',
+  TRANSFER_RECEIVED: 'transfer_received',
   ORDER_RECEIVED: 'order_received',
   KYC_APPROVED: 'kyc_approved',
-  RECHARGE_SUCCESS: 'recharge_success',
-  PRO_UPGRADED: 'pro_upgraded'
+  RECHARGE_SUCCESS: 'mobile_recharge_successful',
+  PRO_UPGRADED: 'pro_subscribed'
 };
 
 // State management
@@ -175,12 +176,12 @@ const openNotification = async (notification) => {
       console.error('Error marking notification as read:', error)
     }
   }
-
   // Handle notification click based on type
   switch (notification.type) {
     case notificationTypes.DEPOSIT:
     case notificationTypes.WITHDRAW:
-    case notificationTypes.TRANSFER:
+    case notificationTypes.TRANSFER_SENT:
+    case notificationTypes.TRANSFER_RECEIVED:
       navigateTo('/wallet/transactions')
       break
     case notificationTypes.ORDER_RECEIVED:
@@ -217,7 +218,8 @@ function getNotificationTypeClass(type) {
   const classes = {
     [notificationTypes.DEPOSIT]: 'notification-deposit',
     [notificationTypes.WITHDRAW]: 'notification-withdraw',
-    [notificationTypes.TRANSFER]: 'notification-transfer',
+    [notificationTypes.TRANSFER_SENT]: 'notification-transfer-sent',
+    [notificationTypes.TRANSFER_RECEIVED]: 'notification-transfer-received',
     [notificationTypes.ORDER_RECEIVED]: 'notification-order',
     [notificationTypes.KYC_APPROVED]: 'notification-kyc',
     [notificationTypes.RECHARGE_SUCCESS]: 'notification-recharge',
@@ -231,7 +233,8 @@ function getNotificationIcon(type) {
   const icons = {
     [notificationTypes.DEPOSIT]: 'i-heroicons-arrow-down-circle',
     [notificationTypes.WITHDRAW]: 'i-heroicons-arrow-up-circle',
-    [notificationTypes.TRANSFER]: 'i-heroicons-arrows-right-left',
+    [notificationTypes.TRANSFER_SENT]: 'i-heroicons-arrow-up-right',
+    [notificationTypes.TRANSFER_RECEIVED]: 'i-heroicons-arrow-down-left',
     [notificationTypes.ORDER_RECEIVED]: 'i-heroicons-shopping-bag',
     [notificationTypes.KYC_APPROVED]: 'i-heroicons-check-badge',
     [notificationTypes.RECHARGE_SUCCESS]: 'i-heroicons-device-phone-mobile',
@@ -295,8 +298,12 @@ function formatAmount(amount) {
   @apply bg-red-100 text-red-600;
 }
 
-.notification-transfer .notification-icon-wrapper {
-  @apply bg-blue-100 text-blue-600;
+.notification-transfer-sent .notification-icon-wrapper {
+  @apply bg-cyan-100 text-cyan-600;
+}
+
+.notification-transfer-received .notification-icon-wrapper {
+  @apply bg-emerald-100 text-emerald-600;
 }
 
 .notification-order .notification-icon-wrapper {
