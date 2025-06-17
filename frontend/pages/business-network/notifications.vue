@@ -50,20 +50,35 @@
             @click="openNotification(notification)"
           >
             <!-- Notification item with Stripe-style layout -->
-            <div class="flex items-start p-4">
-              <!-- Left side: Avatar with enhanced styling -->
+            <div class="flex items-start p-4">              <!-- Left side: Avatar with enhanced styling -->
               <div class="flex-shrink-0 mr-4">
                 <div class="relative">
-                  <img
-                    :src="notification.actor?.image || '/placeholder.svg'"
-                    :alt="notification.actor?.name"
-                    class="h-12 w-12 rounded-full object-cover border-2 shadow-sm"
+                  <!-- Profile image with fallback -->
+                  <div v-if="notification.actor?.image" class="relative">
+                    <img
+                      :src="notification.actor.image"
+                      :alt="notification.actor?.name"
+                      class="h-12 w-12 rounded-full object-cover border-2 shadow-sm"
+                      :class="[
+                        !notification.read
+                          ? 'border-blue-500 ring-2 ring-blue-100 ring-opacity-50'
+                          : 'border-gray-200',
+                      ]"
+                      @error="handleImageError"
+                    />
+                  </div>
+                  <!-- Placeholder avatar -->
+                  <div v-else class="h-12 w-12 rounded-full flex items-center justify-center border-2 shadow-sm bg-gradient-to-br from-blue-100 to-blue-200"
                     :class="[
                       !notification.read
                         ? 'border-blue-500 ring-2 ring-blue-100 ring-opacity-50'
                         : 'border-gray-200',
                     ]"
-                  />
+                  >
+                    <span class="text-blue-600 font-semibold text-lg">
+                      {{ getInitials(notification.actor?.name) }}
+                    </span>
+                  </div>
                   <!-- Icon badge based on notification type with enhanced styling -->
                   <div
                     class="absolute -bottom-1 -right-1 rounded-full p-1.5 shadow-sm"
@@ -417,6 +432,24 @@ const formatTimeAgo = (dateString) => {
     diffInMonths === 1 ? "month" : "months"
   } ago`;
 };
+
+// Get initials from name for placeholder
+function getInitials(name) {
+  if (!name) return '?';
+  
+  const words = name.trim().split(' ');
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+  
+  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+}
+
+// Handle image loading errors
+function handleImageError(event) {
+  // Hide the broken image
+  event.target.style.display = 'none';
+}
 </script>
 
 <style scoped>
