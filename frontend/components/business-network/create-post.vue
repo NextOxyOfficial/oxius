@@ -1,24 +1,23 @@
 <template>
-  <!-- Create Post Modal -->
-  <Teleport to="body">    <div
-      v-if="isCreatePostOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
-      :class="{ 'animate-fade-in': isCreatePostOpen }"
-      @click="closeModalWithConfirm"
-    >
-      <div
-        class="min-h-screen py-8 bg-gradient-to-b from-gray-50 to-gray-100 w-full max-w-4xl max-h-[95vh] overflow-y-auto rounded-xl"
-        @click.stop
-      >
-        <div class="px-4">
-          <!-- Enhanced Header -->
-          <div class="text-center mb-10">
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex-1"></div>
-              <h1 class="text-2xl font-semibold bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent flex-1">
-                {{ modalTitle }}
-              </h1>
-              <div class="flex-1 flex justify-end">
+  <!-- Create Post Modal -->  
+   <UModal
+    v-model="isCreatePostOpen"
+    :ui="{
+      width: 'w-full sm:max-w-3xl',
+      height: 'h-auto',
+      container: 'flex flex-col h-auto mt-14 p-2 sm:p-4',
+      padding: 'p-0',
+    }"
+  ><div class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 w-full rounded-xl">     
+     <div>        
+      <!-- Main Form -->        
+       <form
+          @submit.prevent="handleCreatePost"
+          class="bg-white rounded-xl shadow-sm w-full mx-auto overflow-hidden border border-gray-100"
+        ><!-- Content Section -->
+            <div class="p-2 md:p-4 sm:p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300">
+              <!-- Close Button -->
+              <div class="flex justify-end ">
                 <button
                   @click="closeModalWithConfirm"
                   class="p-2 hover:bg-gray-200 rounded-full transition-colors"
@@ -26,23 +25,6 @@
                   <X class="w-5 h-5 text-gray-500" />
                 </button>
               </div>
-            </div>
-            <p class="text-lg text-gray-600 max-w-lg mx-auto">
-              Share your thoughts and ideas with the community
-            </p>
-          </div>
-
-          <!-- Main Form -->
-          <form
-            @submit.prevent="handleCreatePost"
-            class="bg-white rounded-xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100"
-          >
-            <!-- Content Section -->
-            <div class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300">
-              <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                <Type class="text-emerald-600 w-5 h-5" />
-                Post Content
-              </h2>
 
               <!-- Form feedback alerts -->
               <div
@@ -93,14 +75,9 @@
                   />
                 </div>
               </div>
-            </div>
-
+            </div>            
             <!-- Media Upload Section -->
-            <div class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300">
-              <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                <ImageIcon class="text-emerald-600 w-5 h-5" />
-                Media Gallery
-              </h2>
+            <div class="p-2 md:p-4 sm:p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300">
               <p class="text-sm text-gray-600 mb-4">
                 Add photos to make your post more engaging (optional)
               </p>
@@ -178,14 +155,9 @@
                   Clear all images
                 </button>
               </div>
-            </div>
-
+            </div>            
             <!-- Hashtags Section -->
-            <div class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300">
-              <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                <Hash class="text-emerald-600 w-5 h-5" />
-                Hashtags
-              </h2>
+            <div class="p-2 md:p-4 sm:p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300">
               <p class="text-sm text-gray-600 mb-4">
                 Add hashtags to help people discover your post
               </p>
@@ -211,7 +183,8 @@
                   >
                     Add
                   </button>
-                </div>                <!-- Hashtag suggestions -->
+                </div>                
+                <!-- Hashtag suggestions -->
                 <div
                   v-if="showSuggestions && hashtagSuggestions.length > 0"
                   class="mt-2 bg-white border border-gray-200 rounded-lg shadow-sm max-h-40 overflow-y-auto"
@@ -228,7 +201,8 @@
                     <div class="flex items-center gap-2">
                       <Hash class="w-3 h-3 text-gray-400" />
                       <span>{{ tag.tag }}</span>
-                    </div>                    <span class="text-xs text-gray-500">{{ tag.count }} posts</span>
+                    </div>                    
+                    <span class="text-xs text-gray-500">{{ tag.count }} posts</span>
                   </div>
                 </div>
               </div>
@@ -253,10 +227,9 @@
                   </span>
                 </div>
               </div>
-            </div>
-
+            </div>            
             <!-- Submit Section -->
-            <div class="p-2 md:p-7 bg-gray-50">
+            <div class="p-4 md:pb-8 bg-gray-50">
               <div class="flex justify-center">
                 <button
                   type="submit"
@@ -270,15 +243,12 @@
                   <template v-else>
                     <Send class="w-4 h-4" />
                     {{ submitButtonText }}
-                  </template>
-                </button>
-              </div>
+                  </template>                </button>              </div>
             </div>
           </form>
         </div>
       </div>
-    </div>
-  </Teleport>
+  </UModal>
 
   <!-- Confirmation Modal -->
   <Teleport to="body">
