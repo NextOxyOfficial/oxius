@@ -93,7 +93,8 @@
             @click="clearNotifications"
           />
         </div>
-      </transition>      <!-- Open Ticket and Mark All Read buttons -->
+      </transition>      
+      <!-- Open Ticket and Mark All Read buttons -->
       <div class="flex flex-row justify-between items-center gap-3 mb-4 px-4">
         <UButton
           color="primary"
@@ -266,7 +267,8 @@
               @click="setUpdatesFilter('deposit_successful')"
               label="Deposits"
             />
-          </div>            <!-- Refresh button (always visible) -->
+          </div>            
+          <!-- Refresh button (always visible) -->
           <UButton
             color="gray"
             variant="soft"
@@ -278,7 +280,8 @@
         </div>
 
         <!-- Unified Content List with Stripe Design -->
-        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">          <!-- Support Tickets Content -->
+        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">          
+          <!-- Support Tickets Content -->
           <div v-if="activeTab === 'support'">
             <div v-if="supportTickets && supportTickets.length">
               <TransitionGroup name="message-list" tag="div">
