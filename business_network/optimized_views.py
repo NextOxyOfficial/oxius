@@ -166,7 +166,8 @@ def get_device_optimized_feed(request):
 class CachedBusinessNetworkStatsView(generics.GenericAPIView):
     """Cached statistics for dashboard"""
     permission_classes = [AllowAny]  # Changed for testing
-      def get(self, request):
+    
+    def get(self, request):
         # Return simple stats for testing - in production, add authentication logic
         stats = {
             'following_count': 0,
