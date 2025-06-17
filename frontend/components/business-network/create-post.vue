@@ -1,515 +1,280 @@
 <template>
   <!-- Create Post Modal -->
-  <Teleport to="body">
-    <div
+  <Teleport to="body">    <div
       v-if="isCreatePostOpen"
-      class="fixed inset-0 top-14 z-50 overflow-y-auto"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
       :class="{ 'animate-fade-in': isCreatePostOpen }"
       @click="closeModalWithConfirm"
     >
       <div
-        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
-        aria-hidden="true"
-        @click="isCreatePostOpen = false"
-      ></div>
-      <div
-        class="flex items-end justify-center min-h-screen pt-4 pb-20 text-center sm:block sm:p-0"
+        class="min-h-screen py-8 bg-gradient-to-b from-gray-50 to-gray-100 w-full max-w-4xl max-h-[95vh] overflow-y-auto rounded-xl"
+        @click.stop
       >
-        <div
-          class="relative max-w-4xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
-          :class="{ 'animate-modal-slide-up': isCreatePostOpen }"
-          @click.stop
-          ref="modalRef"
-        >
-          <!-- Modal Header -->
-          <div class="w-full overflow-hidden relative mt-2 px-2">
-            <h2
-              class="text-xl sm:px-4 font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2"
-            >
-              <div
-                class="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 p-1.5 shadow-sm"
-              >
-                <Edit3 class="h-4 w-4 text-white" />
+        <div class="px-4">
+          <!-- Enhanced Header -->
+          <div class="text-center mb-10">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex-1"></div>
+              <h1 class="text-2xl font-semibold bg-gradient-to-r from-emerald-500 to-green-600 bg-clip-text text-transparent flex-1">
+                {{ modalTitle }}
+              </h1>
+              <div class="flex-1 flex justify-end">
+                <button
+                  @click="closeModalWithConfirm"
+                  class="p-2 hover:bg-gray-200 rounded-full transition-colors"
+                >
+                  <X class="w-5 h-5 text-gray-500" />
+                </button>
               </div>
-              {{ modalTitle }}
-            </h2>
-            <button
-              class="absolute right-4 top-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 p-2 transition-colors transform hover:rotate-90 duration-300"
-              @click="closeModalWithConfirm"
-            >
-              <X class="h-5 w-5 text-gray-600 dark:text-gray-600" />
-            </button>
+            </div>
+            <p class="text-lg text-gray-600 max-w-lg mx-auto">
+              Share your thoughts and ideas with the community
+            </p>
           </div>
 
-          <div
-            class="p-2 sm:p-8 pb-6 overflow-y-auto max-h-[calc(90vh-130px)] hide-scrollbar"
+          <!-- Main Form -->
+          <form
+            @submit.prevent="handleCreatePost"
+            class="bg-white rounded-xl shadow-sm max-w-3xl mx-auto overflow-hidden border border-gray-100"
           >
-            <div class="space-y-5">
-              <!-- Form feedback alerts -->
-              <Transition
-                enter-active-class="transition duration-300 ease-out"
-                enter-from-class="transform -translate-y-4 opacity-0"
-                enter-to-class="transform translate-y-0 opacity-100"
-                leave-active-class="transition duration-200 ease-in"
-                leave-from-class="transform translate-y-0 opacity-100"
-                leave-to-class="transform -translate-y-4 opacity-0"
-              >
-                <div
-                  v-if="formError"
-                  class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-lg p-3 text-red-700 dark:text-red-300 text-sm flex items-start animate-shake"
-                >
-                  <AlertCircle class="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
-                  <div>{{ formError }}</div>
-                </div>
-              </Transition>
+            <!-- Content Section -->
+            <div class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300">
+              <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                <Type class="text-emerald-600 w-5 h-5" />
+                Post Content
+              </h2>
 
-              <!-- Title input with character count -->
-              <div class="relative group">
-                <label
-                  class="block text-sm font-medium text-gray-800 dark:text-gray-400 mb-1.5 flex items-center gap-1.5"
-                >
-                  <Type class="h-4 w-4 text-blue-500" />
-                  Post Title <span class="text-red-500">*</span>
+              <!-- Form feedback alerts -->
+              <div
+                v-if="formError"
+                class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
+              >
+                <p class="flex items-center gap-2">
+                  <AlertCircle class="w-4 h-4" />
+                  <span>{{ formError }}</span>
+                </p>
+              </div>
+
+              <!-- Title Input -->
+              <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Title <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                   <input
-                    type="text"
-                    placeholder="Write a catchy title..."
-                    class="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-900 dark:text-white transition-all duration-200 pr-16"
                     v-model="form.title"
+                    type="text"
+                    placeholder="Enter your post title..."
+                    class="w-full pl-10 pr-16 py-3 border border-gray-200 rounded-lg focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                    required
                     maxlength="255"
                   />
+                  <Type class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <span
-                    class="absolute right-3 bottom-3 text-xs px-1.5 py-0.5 rounded-full transition-all duration-200"
-                    :class="
-                      form.title.length > 200
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'text-gray-600'
-                    "
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500"
                   >
                     {{ form.title.length }}/255
                   </span>
                 </div>
               </div>
 
-              <!-- Description textarea with character count (renamed from Content) -->
-              <div class="relative group">
-                <label
-                  class="block text-sm font-medium text-gray-800 dark:text-gray-400 mb-1.5 flex items-center gap-1.5"
-                >
-                  <AlignLeft class="h-4 w-4 text-blue-500" />
-                  Description (Optional)
+              <!-- Content Editor -->
+              <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Content
                 </label>
-                <div class="relative">
+                <p class="text-sm text-gray-600 mb-3">
+                  Share your thoughts, ideas, or updates with the community
+                </p>
+                <div class="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-100 focus-within:border-emerald-500 transition-all">
                   <CommonEditor
                     v-model="form.content"
                     @updateContent="updateContent"
-                    class="editor-container text-left"
-                    placeholder="Write your post description here (optional)..."
                   />
-                  <div
-                    class="absolute right-2 bottom-2 text-xs bg-white dark:bg-gray-800 px-2 py-1 rounded-full shadow-sm border border-gray-100 dark:border-gray-700"
-                  >
-                    <span
-                      :class="
-                        form.content.length > 5000
-                          ? 'text-amber-500'
-                          : 'text-gray-600'
-                      "
-                      >{{ form.content.length }}</span
-                    >
-                    <span class="text-gray-600"> characters</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Media upload area - CONDITIONALLY DISPLAYED when no images are uploaded -->
-              <div
-                v-if="images.length === 0"
-                class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-4 transition-all hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
-                @dragover.prevent="isDragging = true"
-                @dragleave.prevent="isDragging = false"
-                @drop.prevent="handleFileDrop"
-                :class="{
-                  'bg-blue-50/80 dark:bg-blue-900/20 border-blue-400 dark:border-blue-500':
-                    isDragging,
-                }"
-              >
-                <div class="text-center">
-                  <div
-                    class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30 mb-3"
-                  >
-                    <ImageIcon
-                      class="h-6 w-6 text-blue-600 dark:text-blue-400"
-                    />
-                  </div>
-                  <p
-                    class="text-sm font-medium text-gray-800 dark:text-gray-400"
-                  >
-                    {{
-                      isDragging
-                        ? "Drop your images here"
-                        : "Drag images here or click to select"
-                    }}
-                  </p>
-                  <p
-                    class="mt-1 text-xs text-gray-600 dark:text-gray-600 flex items-center justify-center gap-1"
-                  >
-                    <span>Select up to 12 images (PNG, JPG, JPEG)</span>
-                    <span
-                      class="inline-flex items-center px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium rounded"
-                    >
-                      {{ images.length }}/12
-                    </span>
-                  </p>
-                  <button
-                    @click.stop="triggerFileInput"
-                    class="mt-3 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition-all duration-200 hover:shadow-sm flex items-center gap-1.5 mx-auto"
-                  >
-                    <Upload class="h-3.5 w-3.5" />
-                    <span v-if="images.length === 0">Select Images</span>
-                    <span v-else
-                      >Add More ({{ 12 - images.length }} remaining)</span
-                    >
-                  </button>
-                </div>
-              </div>
-
-              <!-- Media preview -->
-              <Transition
-                enter-active-class="transition-all duration-300 ease-out"
-                enter-from-class="opacity-0 max-h-0"
-                enter-to-class="opacity-100 max-h-[1000px]"
-                leave-active-class="transition-all duration-200 ease-in"
-                leave-from-class="opacity-100 max-h-[1000px]"
-                leave-to-class="opacity-0 max-h-0"
-              >
-                <div v-if="images.length > 0" class="space-y-3 overflow-hidden">
-                  <div class="flex items-center justify-between">
-                    <h4
-                      class="text-sm font-medium text-gray-800 dark:text-gray-400 flex items-center gap-1.5"
-                    >
-                      <ImageIcon class="h-4 w-4 text-blue-500" />
-                      <span>Selected Media</span>
-                    </h4>
-                    <div class="flex items-center gap-2">
-                      <span
-                        class="text-xs px-2 py-0.5 rounded-full font-medium transition-colors"
-                        :class="
-                          images.length > 9
-                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                            : images.length > 6
-                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                            : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
-                        "
-                      >
-                        {{ images.length }}/12 selected
-                      </span>
-                      <span
-                        v-if="images.length < 12"
-                        class="text-xs text-gray-500 dark:text-gray-400"
-                      >
-                        ({{ 12 - images.length }} more allowed)
-                      </span>
-                      <span
-                        v-else
-                        class="text-xs text-amber-600 dark:text-amber-400 font-medium"
-                      >
-                        Limit reached
-                      </span>
-                      <button
-                        v-if="images.length > 0"
-                        @click="clearAllImages"
-                        class="text-xs px-2 py-0.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                      >
-                        Clear All
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                    <div
-                      v-for="(img, index) in images"
-                      :key="index"
-                      class="relative aspect-square bg-gray-100 dark:bg-gray-800 rounded-md overflow-hidden media-card group"
-                    >
-                      <img
-                        v-if="img.image"
-                        :src="img.data"
-                        :alt="`Selected media ${index + 1}`"
-                        class="object-cover w-full h-full"
-                      />
-                      <img
-                        v-else
-                        :src="img"
-                        :alt="`Selected media ${index + 1}`"
-                        class="object-cover w-full h-full"
-                      />
-
-                      <div
-                        class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2"
-                      >
-                        <span class="text-white text-xs truncate w-full"
-                          >Image {{ index + 1 }}</span
-                        >
-                      </div>
-
-                      <button
-                        class="absolute top-1 right-1 bg-black/50 hover:bg-black/70 rounded-full p-1.5 media-delete-btn"
-                        @click.stop="removeMedia(index)"
-                        aria-label="Remove image"
-                      >
-                        <X class="h-3 w-3 text-white" />
-                      </button>
-                    </div>
-
-                    <!-- Add more media button -->
-                    <button
-                      v-if="canAddMoreMedia"
-                      @click.stop="triggerFileInput"
-                      class="aspect-square border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md flex flex-col items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors hover:border-blue-400 dark:hover:border-blue-500 group"
-                    >
-                      <div
-                        class="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 group-hover:scale-125 transition-transform"
-                      >
-                        <Plus class="h-5 w-5" />
-                      </div>
-                      <span
-                        class="text-xs text-gray-600 mt-1 group-hover:text-blue-600 transition-colors"
-                        >Add More</span
-                      >
-                    </button>
-                  </div>
-                </div>
-              </Transition>
-              <!-- Simplified Compression Progress Indicator -->
-              <Transition
-                enter-active-class="transition-all duration-300 ease-out"
-                enter-from-class="opacity-0 -translate-y-4"
-                enter-to-class="opacity-100 translate-y-0"
-                leave-active-class="transition-all duration-200 ease-in"
-                leave-from-class="opacity-100 translate-y-0"
-                leave-to-class="opacity-0 -translate-y-4"
-              >
-                <div
-                  v-if="showCompressionProgress"
-                  class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 space-y-3"
-                >
-                  <div class="flex items-center gap-3">
-                    <div
-                      class="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center"
-                    >
-                      <Loader2 class="h-3 w-3 text-white animate-spin" />
-                    </div>
-                    <span
-                      class="text-sm font-medium text-blue-800 dark:text-blue-200"
-                    >
-                      Processing images...
-                    </span>
-                  </div>
-
-                  <!-- Simple Progress Bar -->
-                  <div
-                    class="w-full bg-blue-200 dark:bg-blue-800/50 rounded-full h-2 overflow-hidden"
-                  >
-                    <div
-                      class="bg-blue-600 dark:bg-blue-500 h-full rounded-full transition-all duration-300 ease-out"
-                      :style="{ width: `${compressionProgress}%` }"
-                    ></div>
-                  </div>
-
-                  <!-- Simple status message -->
-                  <p class="text-xs text-blue-700 dark:text-blue-300">
-                    Please wait while we optimize your images for the best
-                    quality and performance.
-                  </p>
-                </div>
-              </Transition>
-
-              <!-- Hashtags section with autocomplete and popular tags -->
-              <div class="space-y-2 mb-5">
-                <!-- Added mb-5 for the extra space -->
-                <h4
-                  class="text-sm font-medium text-gray-800 dark:text-gray-400 flex items-center gap-1.5"
-                >
-                  <Hash class="h-4 w-4 text-green-500" />
-                  Hashtags (Optional)
-                </h4>
-
-                <!-- Tags display -->
-                <Transition
-                  enter-active-class="transition-all duration-300 ease-out"
-                  enter-from-class="opacity-0 max-h-0"
-                  enter-to-class="opacity-100 max-h-[500px]"
-                  leave-active-class="transition-all duration-200 ease-in"
-                  leave-from-class="opacity-100 max-h-[500px]"
-                  leave-to-class="opacity-0 max-h-0"
-                >
-                  <div
-                    v-if="createPostCategories.length > 0"
-                    class="flex flex-wrap gap-2 mb-3 overflow-hidden"
-                  >
-                    <span
-                      v-for="category in createPostCategories"
-                      :key="category"
-                      class="tag-item px-2 py-1 group bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm rounded-full flex items-center transition-all hover:bg-blue-100 dark:hover:bg-blue-900/50 hover:shadow-sm"
-                    >
-                      #{{ category }}
-                      <button
-                        @click="removeCategory(category)"
-                        class="ml-1 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 p-0.5 transition-colors"
-                        aria-label="Remove hashtag"
-                      >
-                        <X class="h-3 w-3" />
-                      </button>
-                    </span>
-                  </div>
-                </Transition>
-
-                <div class="relative">
-                  <div class="flex gap-2">
-                    <div class="relative flex-1">
-                      <input
-                        type="text"
-                        ref="hashtagInputRef"
-                        placeholder="Add hashtags without # symbol..."
-                        v-model="categoryInput"
-                        class="pl-8 pr-4 py-2 w-full border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-900 dark:text-white"
-                        @keydown.enter.prevent="addCategory"
-                        @input="searchHashtags"
-                        @focus="onHashtagInputFocus"
-                        @keydown.down.prevent="selectNextSuggestion"
-                        @keydown.up.prevent="selectPrevSuggestion"
-                      />
-                      <Hash
-                        class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600"
-                      />
-
-                      <!-- Hashtag Suggestions Dropdown -->
-                      <Transition
-                        enter-active-class="transition ease-out duration-200"
-                        enter-from-class="opacity-0 -translate-y-2"
-                        enter-to-class="opacity-100 translate-y-0"
-                        leave-active-class="transition ease-in duration-150"
-                        leave-from-class="opacity-100 translate-y-0"
-                        leave-to-class="opacity-0 -translate-y-2"
-                      >
-                        <div
-                          v-if="
-                            (hashtagSuggestions.length > 0 ||
-                              popularHashtags.length > 0) &&
-                            showSuggestions
-                          "
-                          class="absolute left-0 right-0 top-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-gray-900 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm z-10 hide-scrollbar"
-                        >
-                          <!-- Search results section -->
-                          <div v-if="hashtagSuggestions.length > 0">
-                            <div
-                              class="px-3 py-1.5 text-xs text-gray-600 bg-gray-50 dark:bg-gray-800 dark:text-gray-600 border-b border-gray-100 dark:border-gray-700"
-                            >
-                              Suggested hashtags
-                            </div>
-                            <div
-                              v-for="(tag, index) in hashtagSuggestions"
-                              :key="tag.id"
-                              @click="selectHashtagSuggestion(tag.tag)"
-                              :class="[
-                                'px-3 py-2 flex items-center gap-2 cursor-pointer transition-colors',
-                                selectedSuggestionIndex === index
-                                  ? 'bg-blue-50 dark:bg-blue-900/20'
-                                  : 'hover:bg-gray-50 dark:hover:bg-gray-800',
-                              ]"
-                            >
-                              <Hash class="h-3.5 w-3.5 text-blue-500" />
-                              <span class="text-sm">{{ tag.tag }}</span>
-                              <span class="text-xs text-gray-600 ml-auto"
-                                >{{ tag.count }} posts</span
-                              >
-                            </div>
-                          </div>
-
-                          <!-- Popular hashtags section -->
-                          <div v-if="popularHashtags.length > 0">
-                            <div
-                              class="px-3 py-1.5 text-xs text-gray-600 bg-gray-50 dark:bg-gray-800 dark:text-gray-600 border-b border-gray-100 dark:border-gray-700"
-                            >
-                              Popular Hashtags
-                            </div>
-                            <div class="flex flex-wrap gap-2 p-3">
-                              <button
-                                v-for="(tag, index) in popularHashtags"
-                                :key="index"
-                                @click="selectHashtagSuggestion(tag.tag)"
-                                class="px-2 py-1 bg-gray-100 hover:bg-blue-50 dark:bg-gray-800 dark:hover:bg-blue-900/20 rounded-full text-xs text-gray-800 dark:text-gray-400 transition-colors flex items-center gap-1"
-                              >
-                                <Hash class="h-3 w-3 text-blue-500" />
-                                {{ tag.tag }}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </Transition>
-                    </div>
-                    <button
-                      class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
-                      @click="addCategory"
-                      :disabled="
-                        !categoryInput.trim() ||
-                        createPostCategories.includes(categoryInput.trim())
-                      "
-                    >
-                      <Plus class="h-3.5 w-3.5" />
-                      Add
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Footer with action buttons -->
-          <div
-            class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 sticky bottom-0"
-          >
-            <button
-              class="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md mr-2 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-400 transition-colors hover:shadow-sm"
-              @click="closeModalWithConfirm"
-            >
-              Cancel
-            </button>
-            <button
-              :disabled="!form.title.trim() || isSubmitting"
-              @click="handleCreatePost"
-              :class="[
-                'px-4 py-2 rounded-md text-white transition-all duration-300 flex items-center gap-2 shadow-sm',
-                isSubmitting
-                  ? 'bg-indigo-600 cursor-not-allowed'
-                  : !form.title.trim()
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:shadow-sm',
-              ]"
-            >
-              <Loader2 v-if="isSubmitting" class="h-4 w-4 animate-spin" />
-              <Send v-else class="h-4 w-4" />
-              {{
-                isSubmitting
-                  ? isEditMode
-                    ? "Updating..."
-                    : "Posting..."
-                  : submitButtonText
-              }}
-            </button>
-          </div>
+            <!-- Media Upload Section -->
+            <div class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300">
+              <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                <ImageIcon class="text-emerald-600 w-5 h-5" />
+                Media Gallery
+              </h2>
+              <p class="text-sm text-gray-600 mb-4">
+                Add photos to make your post more engaging (optional)
+              </p>
 
-          <!-- Hidden file input - Updated for multiple files -->
-          <input
-            type="file"
-            ref="fileInputRef"
-            class="hidden"
-            multiple
-            accept="image/*"
-            @change="handleFileUpload"
-          />
+              <div class="flex flex-wrap gap-4 mt-4">
+                <!-- Uploaded images -->
+                <div
+                  v-for="(img, i) in images"
+                  :key="i"
+                  class="w-32 h-32 rounded-lg overflow-hidden relative border border-gray-200 bg-gray-50 group"
+                >
+                  <img
+                    :src="img"
+                    :alt="`Uploaded file ${i}`"
+                    class="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  />
+                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all"></div>
+                  <button
+                    type="button"
+                    class="absolute top-2 right-2 bg-white rounded-full w-8 h-8 flex items-center justify-center text-red-500 shadow-sm hover:bg-red-50 hover:scale-110 transition-all"
+                    @click="removeMedia(i)"
+                    aria-label="Delete image"
+                  >
+                    <Trash2 class="w-4 h-4" />
+                  </button>
+                </div>
+
+                <!-- Upload button (show if less than 12 images) -->
+                <div
+                  v-if="images.length < 12"
+                  class="w-32 h-32 rounded-lg relative border-2 border-dashed border-gray-300 bg-gray-50 hover:border-emerald-500 hover:bg-emerald-50/20 transition-colors flex items-center justify-center cursor-pointer group"
+                  @dragover.prevent="isDragging = true"
+                  @dragleave.prevent="isDragging = false"
+                  @drop.prevent="handleFileDrop"
+                  :class="{
+                    'border-emerald-500 bg-emerald-50/20': isDragging,
+                  }"
+                >
+                  <input
+                    type="file"
+                    ref="fileInputRef"
+                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    @change="handleFileUpload"
+                    accept="image/*"
+                    multiple
+                  />
+                  <div class="flex flex-col items-center gap-2 text-gray-600 text-sm text-center p-2 group-hover:text-emerald-600">
+                    <Upload class="text-xl text-emerald-500" />
+                    <span>Add Media</span>
+                    <span class="text-xs">{{ images.length }}/12</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Upload status -->
+              <p v-if="uploadError" class="mt-3 text-red-500 text-sm">
+                {{ uploadError }}
+              </p>
+              <p
+                v-if="isUploading"
+                class="mt-3 text-emerald-600 text-sm flex items-center"
+              >
+                <Loader2 class="animate-spin mr-1 w-4 h-4" />
+                Uploading media...
+              </p>
+
+              <!-- Clear all images button -->
+              <div v-if="images.length > 0" class="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  @click="clearAllImages"
+                  class="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
+                >
+                  <Trash2 class="w-4 h-4" />
+                  Clear all images
+                </button>
+              </div>
+            </div>
+
+            <!-- Hashtags Section -->
+            <div class="p-2 md:p-7 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300">
+              <h2 class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                <Hash class="text-emerald-600 w-5 h-5" />
+                Hashtags
+              </h2>
+              <p class="text-sm text-gray-600 mb-4">
+                Add hashtags to help people discover your post
+              </p>
+
+              <!-- Hashtag input -->
+              <div class="mb-4">
+                <div class="relative">
+                  <input
+                    v-model="categoryInput"
+                    ref="hashtagInputRef"
+                    type="text"
+                    placeholder="Add hashtag..."
+                    class="w-full pl-10 pr-20 py-3 border border-gray-200 rounded-lg focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                    @keydown.enter.prevent="addCategory"
+                    @input="searchHashtags"
+                    @focus="onHashtagInputFocus"
+                  />
+                  <Hash class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <button
+                    type="button"
+                    @click="addCategory"
+                    class="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 bg-emerald-600 text-white rounded-md text-sm hover:bg-emerald-700 transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>                <!-- Hashtag suggestions -->
+                <div
+                  v-if="showSuggestions && hashtagSuggestions.length > 0"
+                  class="mt-2 bg-white border border-gray-200 rounded-lg shadow-sm max-h-40 overflow-y-auto"
+                >
+                  <div
+                    v-for="(tag, index) in hashtagSuggestions"
+                    :key="tag.id || tag.tag"
+                    @click="selectHashtagSuggestion(tag.tag)"
+                    class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm flex items-center gap-2 justify-between"
+                    :class="{
+                      'bg-emerald-50': index === selectedSuggestionIndex,
+                    }"
+                  >
+                    <div class="flex items-center gap-2">
+                      <Hash class="w-3 h-3 text-gray-400" />
+                      <span>{{ tag.tag }}</span>
+                    </div>                    <span class="text-xs text-gray-500">{{ tag.count }} posts</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selected hashtags -->
+              <div v-if="createPostCategories.length > 0" class="space-y-2">
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    v-for="category in createPostCategories"
+                    :key="category"
+                    class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm"
+                  >
+                    <Hash class="w-3 h-3" />
+                    {{ category }}
+                    <button
+                      type="button"
+                      @click="removeCategory(category)"
+                      class="ml-1 hover:text-emerald-600"
+                    >
+                      <X class="w-3 h-3" />
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Section -->
+            <div class="p-2 md:p-7 bg-gray-50">
+              <div class="flex justify-center">
+                <button
+                  type="submit"
+                  :disabled="isSubmitting"
+                  class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-sm transition-all duration-300 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <template v-if="isSubmitting">
+                    <Loader2 class="w-4 h-4 animate-spin" />
+                    Publishing...
+                  </template>
+                  <template v-else>
+                    <Send class="w-4 h-4" />
+                    {{ submitButtonText }}
+                  </template>
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>

@@ -4,9 +4,11 @@
     <div class="max-w-5xl w-full mx-auto relative flex justify-center">
       <AdsyBusinessNetworkSidebar />
       <slot />
-    </div>
-    <AdsyBusinessNetworkFooter />
+    </div>    <AdsyBusinessNetworkFooter />
     <UNotifications />
+    
+    <!-- Create Post Modal -->
+    <BusinessNetworkCreatePost />
 
     <div v-if="loader" class="fixed inset-0 z-[99999999] bg-white">
       <NuxtLoadingIndicator class="!opacity-[1]" />
