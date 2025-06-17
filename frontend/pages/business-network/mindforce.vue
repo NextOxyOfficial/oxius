@@ -1,11 +1,10 @@
-<template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1">
+<template>  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
     <!-- Header Component -->
     <MindForceHeader :is-creating="isCreating" @create="openCreateModal" />
 
     <!-- Main Content -->
     <div
-      class="bg-white rounded-xl shadow-sm border border-gray-100 transition-all"
+      class="bg-white rounded-xl shadow-sm border border-gray-100"
     >
       <!-- Tabs & Search Component -->
       <MindForceTabsSearch
@@ -16,11 +15,9 @@
         @update:active-tab="activeTab = $event"
         @update:search-query="searchQuery = $event"
         @search="handleSearch"
-      />
-
-      <div class="px-2 py-3 mb-20">
+      />      <div class="px-2 py-3 pb-8">
         <!-- Active Problems Tab -->
-        <div v-if="activeTab === 'active'" class="space-y-4">
+        <div v-if="activeTab === 'active'" class="space-y-4 min-h-[400px]">
           <!-- Skeleton loading state -->
           <div v-if="isLoading" class="space-y-4">
             <div
@@ -47,17 +44,17 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <div v-else-if="activeProblems?.length > 0" class="space-y-4">
-            <MindForceProblemCard
-              v-for="problem in activeProblems"
-              :key="problem.id"
-              :problem="problem"
-              :current-user-id="user?.user?.id"
-              @click="openProblemDetail(problem)"
-              @photo-view="(index) => openPhotoViewer(problem, index)"
-            />
+          </div>          <div v-else-if="activeProblems?.length > 0" class="space-y-4">
+            <div class="content-container">
+              <MindForceProblemCard
+                v-for="problem in activeProblems"
+                :key="problem.id"
+                :problem="problem"
+                :current-user-id="user?.user?.id"
+                @click="openProblemDetail(problem)"
+                @photo-view="(index) => openPhotoViewer(problem, index)"
+              />
+            </div>
           </div>
           <div
             v-else
@@ -75,10 +72,8 @@
               </button>
             </div>
           </div>
-        </div>
-
-        <!-- Solved Problems Tab -->
-        <div v-if="activeTab === 'solved'" class="space-y-4">
+        </div>        <!-- Solved Problems Tab -->
+        <div v-if="activeTab === 'solved'" class="space-y-4 min-h-[400px]">
           <!-- Skeleton loading state -->
           <div v-if="isLoading" class="space-y-4">
             <div
@@ -106,17 +101,17 @@
                 <div class="h-5 w-16 bg-gray-200 rounded-full"></div>
               </div>
             </div>
-          </div>
-
-          <div v-else-if="solvedProblems?.length > 0" class="space-y-4">
-            <MindForceProblemCard
-              v-for="problem in solvedProblems"
-              :key="problem.id"
-              :problem="problem"
-              :current-user-id="user?.user?.id"
-              @click="openProblemDetail(problem)"
-              @photo-view="(index) => openPhotoViewer(problem, index)"
-            />
+          </div>          <div v-else-if="solvedProblems?.length > 0" class="space-y-4">
+            <div class="content-container">
+              <MindForceProblemCard
+                v-for="problem in solvedProblems"
+                :key="problem.id"
+                :problem="problem"
+                :current-user-id="user?.user?.id"
+                @click="openProblemDetail(problem)"
+                @photo-view="(index) => openPhotoViewer(problem, index)"
+              />
+            </div>
           </div>
           <div
             v-else
@@ -142,19 +137,18 @@
               <p class="text-gray-600">No solved problems yet.</p>
             </div>
           </div>
-        </div>
-
-        <!-- My Problems Tab -->
-        <div v-if="activeTab === 'my-problems' && user" class="space-y-4">
-          <div v-if="myProblems?.length > 0" class="space-y-4">
-            <MindForceProblemCard
-              v-for="problem in myProblems"
-              :key="problem.id"
-              :problem="problem"
-              :current-user-id="user?.user?.id"
-              @click="openProblemDetail(problem)"
-              @photo-view="(index) => openPhotoViewer(problem, index)"
-            />
+        </div>        <!-- My Problems Tab -->
+        <div v-if="activeTab === 'my-problems' && user" class="space-y-4 min-h-[400px]">          <div v-if="myProblems?.length > 0" class="space-y-4">
+            <div class="content-container">
+              <MindForceProblemCard
+                v-for="problem in myProblems"
+                :key="problem.id"
+                :problem="problem"
+                :current-user-id="user?.user?.id"
+                @click="openProblemDetail(problem)"
+                @photo-view="(index) => openPhotoViewer(problem, index)"
+              />
+            </div>
           </div>
           <div
             v-else
@@ -233,7 +227,7 @@
 
 <script setup>
 import { Search, Plus, MessageSquare, Eye, CheckCircle } from "lucide-vue-next";
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import MindForceHeader from "~/components/mindforce/MindForceHeader.vue";
 import MindForceTabsSearch from "~/components/mindforce/MindForceTabsSearch.vue";
 import MindForceProblemCard from "~/components/mindforce/MindForceProblemCard.vue";
@@ -282,6 +276,10 @@ const processingCommentIds = ref([]);
 const formRefresh = ref(0);
 const childRef = ref(null);
 
+// Additional state for better UX
+const isInitialLoading = ref(true);
+const isRefreshing = ref(false);
+
 // Create form state with photos array
 const createForm = ref({
   title: "",
@@ -312,10 +310,17 @@ const categories = ref([]);
 
 async function fetchCategories() {
   try {
-    const { data } = await get("/bn/mindforce/categories/");
-    categories.value = data;
+    const response = await get("/bn/mindforce/categories/");
+    if (response?.data) {
+      categories.value = response.data;
+    }
   } catch (error) {
     console.error("Error fetching categories:", error);
+    toast?.add?.({
+      title: "Error",
+      description: "Failed to load categories",
+      color: "red",
+    });
   }
 }
 
@@ -325,10 +330,20 @@ const problems = ref([]);
 async function fetchProblems() {
   try {
     isLoading.value = true;
-    const { data } = await get("/bn/mindforce/");
-    problems.value = data;
+    const response = await get("/bn/mindforce/");
+    if (response?.data) {
+      problems.value = response.data;
+    } else {
+      problems.value = [];
+    }
   } catch (error) {
     console.error("Error fetching problems:", error);
+    problems.value = [];
+    toast?.add?.({
+      title: "Error",
+      description: "Failed to load problems",
+      color: "red",
+    });
   } finally {
     isLoading.value = false;
   }
@@ -336,25 +351,26 @@ async function fetchProblems() {
 
 // Computed properties
 const activeProblems = computed(() =>
-  problems.value.filter((problem) => problem.status === "active")
+  problems.value?.filter((problem) => problem.status === "active") || []
 );
 
 const solvedProblems = computed(() =>
-  problems.value.filter((problem) => problem.status === "solved")
+  problems.value?.filter((problem) => problem.status === "solved") || []
 );
 
-const myProblems = computed(() =>
-  problems.value.filter(
-    (problem) => problem.user_details.id === user.value?.user?.id
-  )
-);
+const myProblems = computed(() => {
+  if (!user.value?.user?.id) return [];
+  return problems.value?.filter(
+    (problem) => problem.user_details?.id === user.value.user.id
+  ) || [];
+});
 
 // Methods
 const openCreateModal = () => {
   // Check if user is logged in
   if (!user.value?.user) {
     // Show toast notification to inform user to login first
-    toast.add({
+    toast?.add?.({
       title: "Authentication Required",
       description: "Please login first to create a problem",
       color: "amber",
@@ -379,7 +395,7 @@ const openProblemDetail = async (problem) => {
   try {
     // Fetch comments for the selected problem
     const commentsRes = await get(`/bn/mindforce/${problem.id}/comments/`);
-    if (commentsRes.data) {
+    if (commentsRes?.data) {
       // Update the comments in the selected problem - use mindforce_comments key
       selectedProblem.value.mindforce_comments = commentsRes.data;
 
@@ -390,27 +406,55 @@ const openProblemDetail = async (problem) => {
       }
     }
 
+    // Increment view count after a delay
     setTimeout(async () => {
-      // Increment view count through API
-      const res = await patch(`/bn/mindforce/${problem.id}/`, {
-        views: problem.views + 1,
-      });
+      try {
+        const res = await patch(`/bn/mindforce/${problem.id}/`, {
+          views: problem.views + 1,
+        });
 
-      if (res.data) {
-        // Update the view count locally
-        problem.views += 1;
+        if (res?.data) {
+          // Update the view count locally
+          problem.views += 1;
+        }
+      } catch (viewError) {
+        console.error("Error updating view count:", viewError);
       }
     }, 7000);
   } catch (error) {
-    console.error("Error updating problem details:", error);
+    console.error("Error fetching problem details:", error);
+    toast?.add?.({
+      title: "Error",
+      description: "Failed to load problem details",
+      color: "red",
+    });
   }
 };
 
-const handleSearch = () => {
+const handleSearch = async () => {
+  if (!searchQuery.value.trim()) {
+    await fetchProblems();
+    return;
+  }
+
   isSearching.value = true;
-  setTimeout(() => {
+  try {
+    const response = await get(`/bn/mindforce/?search=${encodeURIComponent(searchQuery.value)}`);
+    if (response?.data) {
+      problems.value = response.data;
+    } else {
+      problems.value = [];
+    }
+  } catch (error) {
+    console.error("Error searching problems:", error);
+    toast?.add?.({
+      title: "Error",
+      description: "Failed to search problems",
+      color: "red",
+    });
+  } finally {
     isSearching.value = false;
-  }, 500);
+  }
 };
 
 const openPhotoViewer = (problem, photoData) => {
@@ -434,15 +478,25 @@ const openPhotoViewer = (problem, photoData) => {
 
 // Modified create problem function
 const handleCreateProblem = async (formData) => {
+  if (!formData?.title?.trim() || !formData?.description?.trim()) {
+    toast?.add?.({
+      title: "Validation Error",
+      description: "Title and description are required",
+      color: "red",
+    });
+    return;
+  }
+
   isSubmittingCreate.value = true;
   createForm.value = {
     ...createForm.value,
     ...formData,
   };
+  
   try {
     const res = await post("/bn/mindforce/", createForm.value);
 
-    if (res.data) {
+    if (res?.data) {
       isCreateModalOpen.value = false;
       formRefresh.value++;
       // Add the new problem to the problems list directly
@@ -459,17 +513,19 @@ const handleCreateProblem = async (formData) => {
       };
 
       // Show success message
-      toast.add({
+      toast?.add?.({
         title: "Success",
         description: "Your problem has been posted successfully",
         color: "green",
       });
+    } else {
+      throw new Error("Invalid response from server");
     }
   } catch (error) {
     console.error("Error creating problem:", error);
-    toast.add({
+    toast?.add?.({
       title: "Error",
-      description: "Failed to create problem. Please try again.",
+      description: error?.response?.data?.message || "Failed to create problem. Please try again.",
       color: "red",
     });
   } finally {
@@ -478,7 +534,7 @@ const handleCreateProblem = async (formData) => {
 };
 
 watch(formRefresh, (newValue) => {
-  if (childRef.value?.resetFormData) {
+  if (newValue > 0 && childRef.value?.resetFormData) {
     childRef.value.resetFormData();
   }
 });
@@ -489,23 +545,51 @@ const confirmDelete = () => {
 };
 
 const deleteProblem = async () => {
+  if (!selectedProblem.value?.id) {
+    toast?.add?.({
+      title: "Error",
+      description: "No problem selected for deletion",
+      color: "red",
+    });
+    return;
+  }
+
   try {
     const res = await del(`/bn/mindforce/${selectedProblem.value.id}/`);
-    if (res.data === undefined) {
+    // Check for successful deletion (status 204 or undefined data)
+    if (res.status === 204 || res.data === undefined || res.data === null) {
       isDeleteDialogOpen.value = false;
-      toast.add({
+      toast?.add?.({
         title: "Success",
         description: "Problem deleted successfully",
+        color: "green",
       });
       await fetchProblems();
+    } else {
+      throw new Error("Unexpected response from server");
     }
   } catch (error) {
-    toast.add({ title: "Error", description: "Failed to delete problem" });
+    console.error("Error deleting problem:", error);
+    toast?.add?.({
+      title: "Error",
+      description: error?.response?.data?.message || "Failed to delete problem",
+      color: "red",
+    });
+  } finally {
+    isDeleteDialogOpen.value = false;
   }
-  isDeleteDialogOpen.value = false;
 };
 
 const markAsSolution = async (commentId) => {
+  if (!commentId) {
+    toast?.add?.({
+      title: "Error",
+      description: "Invalid comment ID",
+      color: "red",
+    });
+    return;
+  }
+
   // Keep track of which comment is being processed
   processingCommentIds.value.push(commentId);
 
@@ -515,41 +599,46 @@ const markAsSolution = async (commentId) => {
       is_solved: true,
     });
 
-    if (res.data.is_solved) {
+    if (res?.data?.is_solved) {
       // Update the selected problem's comments
-      if (selectedProblem.value && selectedProblem.value.mindforce_comments) {
+      if (selectedProblem.value?.mindforce_comments) {
         // Find and update the specific comment
         const commentIndex = selectedProblem.value.mindforce_comments.findIndex(
           (c) => c.id === commentId
         );
         if (commentIndex !== -1) {
-          selectedProblem.value.mindforce_comments[
-            commentIndex
-          ].is_solved = true;
+          selectedProblem.value.mindforce_comments[commentIndex].is_solved = true;
         }
       }
 
       // Also update in the main problems array
       const problemIndex = problems.value.findIndex(
-        (p) => p.id === selectedProblem.value.id
+        (p) => p.id === selectedProblem.value?.id
       );
-      if (
-        problemIndex !== -1 &&
-        problems.value[problemIndex].mindforce_comments
-      ) {
-        const commentIndex = problems.value[
-          problemIndex
-        ].mindforce_comments.findIndex((c) => c.id === commentId);
+      if (problemIndex !== -1 && problems.value[problemIndex].mindforce_comments) {
+        const commentIndex = problems.value[problemIndex].mindforce_comments.findIndex(
+          (c) => c.id === commentId
+        );
         if (commentIndex !== -1) {
-          problems.value[problemIndex].mindforce_comments[
-            commentIndex
-          ].is_solved = true;
+          problems.value[problemIndex].mindforce_comments[commentIndex].is_solved = true;
         }
       }
+
+      toast?.add?.({
+        title: "Success",
+        description: "Comment marked as solution",
+        color: "green",
+      });
+    } else {
+      throw new Error("Failed to mark comment as solution");
     }
   } catch (error) {
     console.error("Error marking solution:", error);
-    alert("Failed to mark as solution. Please try again.");
+    toast?.add?.({
+      title: "Error",
+      description: "Failed to mark as solution. Please try again.",
+      color: "red",
+    });
   } finally {
     processingCommentIds.value = processingCommentIds.value.filter(
       (id) => id !== commentId
@@ -559,12 +648,31 @@ const markAsSolution = async (commentId) => {
 
 const addComment = async (commentData) => {
   // Handle both string-only comments (backward compatibility) and object format with media
-
-  if (!commentData.content.trim() && commentData.images.length === 0) return;
+  if (!commentData?.content?.trim() && (!commentData?.images || commentData.images.length === 0)) {
+    toast?.add?.({
+      title: "Validation Error",
+      description: "Comment content or images are required",
+      color: "red",
+    });
+    return;
+  }
 
   // Check if the problem is already solved
-  if (selectedProblem.value.status === "solved") {
-    alert("Comments cannot be added to solved problems.");
+  if (selectedProblem.value?.status === "solved") {
+    toast?.add?.({
+      title: "Warning",
+      description: "Comments cannot be added to solved problems",
+      color: "amber",
+    });
+    return;
+  }
+
+  if (!selectedProblem.value?.id) {
+    toast?.add?.({
+      title: "Error",
+      description: "No problem selected",
+      color: "red",
+    });
     return;
   }
 
@@ -579,26 +687,38 @@ const addComment = async (commentData) => {
     const res = await post(
       `/bn/mindforce/${selectedProblem.value.id}/comments/`,
       {
-        content: commentData.content,
-        images: commentData.images,
+        content: commentData.content || "",
+        images: commentData.images || [],
       }
     );
 
-    if (res.data) {
+    if (res?.data) {
+      toast?.add?.({
+        title: "Success",
+        description: "Comment added successfully",
+        color: "green",
+      });
       // The modal component will handle displaying the comment via its local state
       // We don't need to update the comments array here
       // This prevents duplicate comments
+    } else {
+      throw new Error("Invalid response from server");
     }
   } catch (error) {
     console.error("Error adding comment:", error);
-    if (
-      error.response &&
-      error.response.data &&
-      error.response.data.detail === "Cannot comment on solved problems"
-    ) {
-      alert("This problem has been marked as solved. Comments are disabled.");
+    if (error?.response?.status === 400 && 
+        error?.response?.data?.detail === "Cannot comment on solved problems") {
+      toast?.add?.({
+        title: "Warning",
+        description: "This problem has been marked as solved. Comments are disabled.",
+        color: "amber",
+      });
     } else {
-      alert("Failed to add comment. Please try again later.");
+      toast?.add?.({
+        title: "Error",
+        description: error?.response?.data?.message || "Failed to add comment. Please try again later.",
+        color: "red",
+      });
     }
   } finally {
     isSubmittingComment.value = false;
@@ -606,7 +726,14 @@ const addComment = async (commentData) => {
 };
 
 const markProblemAsSolved = async () => {
-  if (!selectedProblem.value) return;
+  if (!selectedProblem.value?.id) {
+    toast?.add?.({
+      title: "Error",
+      description: "No problem selected",
+      color: "red",
+    });
+    return;
+  }
 
   try {
     // Make sure we're updating the correct problem
@@ -617,7 +744,7 @@ const markProblemAsSolved = async () => {
       status: "solved",
     });
 
-    if (res.data && res.data.status === "solved") {
+    if (res?.data?.status === "solved") {
       // Update the problem in the local state
       const index = problems.value.findIndex((p) => p.id === problemId);
       if (index !== -1) {
@@ -627,34 +754,100 @@ const markProblemAsSolved = async () => {
       // Close the modal and refresh problems to ensure everything is up-to-date
       isDetailModalOpen.value = false;
       await fetchProblems();
+
+      toast?.add?.({
+        title: "Success",
+        description: "Problem marked as solved successfully",
+        color: "green",
+      });
     } else {
-      console.error(
-        "Error marking problem as solved: Unexpected response",
-        res.data
-      );
-      alert("Could not mark the problem as solved. Please try again.");
+      throw new Error("Unexpected response from server");
     }
   } catch (error) {
     console.error("Error marking problem as solved:", error);
-    alert(
-      "An error occurred while marking the problem as solved. Please try again."
-    );
+    toast?.add?.({
+      title: "Error",
+      description: error?.response?.data?.message || "An error occurred while marking the problem as solved. Please try again.",
+      color: "red",
+    });
   }
 };
 
+// Add debounced search
+const searchDebounceTimer = ref(null);
+
+// Watch for search query changes and debounce
+watch(searchQuery, (newQuery) => {
+  if (searchDebounceTimer.value) {
+    clearTimeout(searchDebounceTimer.value);
+  }
+  
+  searchDebounceTimer.value = setTimeout(() => {
+    if (newQuery.trim()) {
+      handleSearch();
+    } else {
+      fetchProblems();
+    }
+  }, 300);
+});
+
+// Clean up timer on unmount
+onUnmounted(() => {
+  if (searchDebounceTimer.value) {
+    clearTimeout(searchDebounceTimer.value);
+  }
+});
+
 // Initialize data
 onMounted(async () => {
-  await Promise.all([fetchCategories(), fetchProblems()]);
+  try {
+    await Promise.all([fetchCategories(), fetchProblems()]);
+  } catch (error) {
+    console.error("Error initializing mindforce page:", error);
+    toast?.add?.({
+      title: "Error",
+      description: "Failed to load page data",
+      color: "red",
+    });
+  } finally {
+    isInitialLoading.value = false;
+  }
 });
 </script>
 
 <style scoped>
-/* Add smooth transition for all elements */
+/* Prevent layout shifts and improve scrolling */
+.mx-auto {
+  scroll-behavior: smooth;
+}
+
+/* Prevent transitions on layout-affecting properties */
 * {
-  transition-property: background-color, border-color, color, fill, stroke,
-    opacity, box-shadow, transform;
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+}
+
+/* Ensure stable layout */
+.space-y-4 {
+  contain: layout;
+}
+
+/* Content container for stable layouts */
+.content-container {
+  contain: layout style;
+  will-change: auto;
+}
+
+/* Prevent content jumping */
+.min-h-\[400px\] {
+  min-height: 400px;
+  contain: layout style;
+}
+
+/* Fix scrollbar stability */
+html {
+  overflow-y: scroll;
 }
 
 /* Force proper viewport behavior */
@@ -664,5 +857,23 @@ onMounted(async () => {
     max-width: 100%;
     overflow-x: hidden;
   }
+}
+
+/* Prevent layout shift on empty states */
+.py-16 {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Stabilize loading states */
+.animate-pulse {
+  contain: layout;
+}
+
+/* Prevent scrollbar jumping */
+body {
+  scrollbar-gutter: stable;
 }
 </style>
