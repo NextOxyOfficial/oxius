@@ -234,7 +234,7 @@ const sliderContainer = ref(null);
 
 // Responsive settings
 const itemsPerRow = ref(5); // Default for desktop
-const productsLimit = 20; // Total products to fetch
+const productsLimit = 10; // Total products to fetch
 
 // Scroll state
 const currentScrollIndex = ref(0);
@@ -253,12 +253,12 @@ const productsCount = computed(() => products.value?.length || 0);
 
 const firstRowProducts = computed(() => {
   if (!products.value.length) return [];
-  return products.value.slice(0, 10); // First 10 products (half of total)
+  return products.value.slice(0, 5); // First 5 products (half of total)
 });
 
 const secondRowProducts = computed(() => {
   if (!products.value.length) return [];
-  return products.value.slice(10, 20); // Last 10 products (second half)
+  return products.value.slice(5, 10); // Last 5 products (second half)
 });
 
 // Calculate number of scroll positions based on products and visible items
@@ -274,7 +274,7 @@ async function fetchProducts() {
   isLoading.value = true;
 
   try {
-    // Add limit parameter to fetch exactly 20 products
+    // Add limit parameter to fetch exactly 10 products
     const response = await get(`/all-products/?limit=${productsLimit}`);
 
     if (response && response.data) {
