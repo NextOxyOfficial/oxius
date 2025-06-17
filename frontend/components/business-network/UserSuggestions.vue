@@ -21,7 +21,8 @@
         </button>
       </div>
     </div>    <!-- User Suggestions -->
-    <div class="p-4 w-full max-w-full overflow-hidden">        <div v-if="loading">
+    <div class="p-4 w-full max-w-full overflow-hidden">        
+      <div v-if="loading">
         <!-- Desktop: Grid Skeleton -->
         <div v-if="isDesktop" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div v-for="i in 3" :key="i" class="bg-white border border-gray-200 rounded-lg p-4">
@@ -56,10 +57,11 @@
             class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
           >
             <!-- User Info Card -->
-            <div class="flex flex-col items-center text-center space-y-3">            <!-- Profile Picture -->
+            <div class="flex flex-col items-center text-center space-y-3">              
+              <!-- Profile Picture -->
               <NuxtLink :to="`/business-network/profile/${user.id}`">
                 <img
-                  src="/static/frontend/images/placeholder.jpg"
+                  :src="user.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="getUserDisplayName(user)"
                   class="size-28 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
                 />
@@ -108,11 +110,10 @@
             class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow duration-200"
           >
             <!-- User Info Card -->
-            <div class="flex flex-col items-center text-center space-y-3">
-              <!-- Profile Picture -->
+            <div class="flex flex-col items-center text-center space-y-3">              <!-- Profile Picture -->
               <NuxtLink :to="`/business-network/profile/${user.id}`">
                 <img
-                  src="/static/frontend/images/placeholder.jpg"
+                  :src="user.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="getUserDisplayName(user)"
                   class="w-16 h-16 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
                 />
