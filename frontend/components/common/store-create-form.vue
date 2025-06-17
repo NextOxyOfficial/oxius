@@ -593,7 +593,7 @@ async function handleCreateStore() {
       store_name: form.store_name,
       store_username: form.store_username.toLowerCase(),
     });
-    console.log(res);
+
     if (res.data) {
       // Show success toast
       showToast(

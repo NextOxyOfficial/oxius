@@ -1,4 +1,5 @@
-<template>  <div
+<template>
+  <div
     class="py-3 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg transition-all duration-300 z-[99999999] w-full"
     :class="[
       isScrolled
@@ -192,7 +193,8 @@
           height: 'max-h-screen',
         }"
         class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 shadow-sm"
-      >        <UCard
+      >
+        <UCard
           :ui="{
             header: { padding: 'pb-0.5' },
             ring: '',
@@ -365,7 +367,8 @@
                 />
               </NuxtLink>
             </div>
-          </div>          <!-- Download App Section -->
+          </div>
+          <!-- Download App Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
             <h3
               class="text-lg font-medium text-gray-800 dark:text-gray-300 mb-4"
@@ -382,8 +385,13 @@
                   alt="Google Play"
                   class="w-full h-full object-contain"
                 />
-                <div class="absolute inset-0 bg-green-500/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                  <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-green-600 dark:text-green-300" />
+                <div
+                  class="absolute inset-0 bg-green-500/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                >
+                  <UIcon
+                    name="i-heroicons-arrow-down-tray"
+                    class="w-5 h-5 text-green-600 dark:text-green-300"
+                  />
                 </div>
               </button>
               <div
@@ -394,8 +402,14 @@
                   alt="App Store"
                   class="w-full h-full object-contain"
                 />
-                <div class="absolute inset-0 bg-gray-500/20 flex items-center justify-center">
-                  <div class="bg-gray-600 text-white text-xs py-0.5 px-2 rounded-full">Coming Soon</div>
+                <div
+                  class="absolute inset-0 bg-gray-500/20 flex items-center justify-center"
+                >
+                  <div
+                    class="bg-gray-600 text-white text-xs py-0.5 px-2 rounded-full"
+                  >
+                    Coming Soon
+                  </div>
                 </div>
               </div>
             </div>
@@ -607,7 +621,8 @@
                   class="size-6 text-green-600 dark:text-green-400"
                 />
               </div>
-            </div>            <!-- QR Code Modal -->
+            </div>
+            <!-- QR Code Modal -->
             <CommonQrCodeModal
               v-model="showQr"
               title="Scan My QR Code"
@@ -754,35 +769,32 @@ const showQr = ref(false);
 const warningDismissed = ref(false);
 
 // Use the app download composable
-import { useAppDownload } from '~/composables/useAppDownload';
+import { useAppDownload } from "~/composables/useAppDownload";
 const { downloadApp } = useAppDownload();
 
 // Download Android app function
 const downloadAndroidApp = async () => {
   try {
-    console.log('Starting APK download...');
-    
     // Use the composable to get the dynamic download URL from admin
     await downloadApp();
-    
+
     // Close the mobile menu
     isOpen.value = false;
-    
+
     // Show success toast
     toast.add({
-      title: 'Download Started',
-      description: 'AdsyClub Android app is downloading...',
-      color: 'green',
-      icon: 'i-heroicons-check-circle'
+      title: "Download Started",
+      description: "AdsyClub Android app is downloading...",
+      color: "green",
+      icon: "i-heroicons-check-circle",
     });
-    
   } catch (error) {
-    console.error('Download error:', error);
+    console.error("Download error:", error);
     toast.add({
-      title: 'Download Error',
-      description: 'Failed to start download. Please try again.',
-      color: 'red',
-      icon: 'i-heroicons-exclamation-triangle'
+      title: "Download Error",
+      description: "Failed to start download. Please try again.",
+      color: "red",
+      icon: "i-heroicons-exclamation-triangle",
     });
   }
 };
@@ -972,7 +984,7 @@ watch(router.currentRoute, () => {
     -ms-overflow-style: none; /* Internet Explorer 10+ */
     scrollbar-width: none; /* Firefox */
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none; /* Safari and Chrome */
   }
@@ -984,7 +996,7 @@ watch(router.currentRoute, () => {
     -ms-overflow-style: auto;
     scrollbar-width: auto;
   }
-  
+
   .scrollbar-default::-webkit-scrollbar {
     display: block;
   }

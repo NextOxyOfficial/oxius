@@ -575,7 +575,6 @@ const addComment = async (commentData) => {
     if (!selectedProblem.value.mindforce_comments) {
       selectedProblem.value.mindforce_comments = [];
     }
-    console.log("Adding comment:", commentData.images);
 
     const res = await post(
       `/bn/mindforce/${selectedProblem.value.id}/comments/`,

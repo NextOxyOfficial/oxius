@@ -25,10 +25,10 @@ const currentProduct = ref({});
 async function getProduct() {
   try {
     const { data } = await get(`/products/${route.params.id}/`);
-    console.log({ data });
+
     currentProduct.value = data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -39,9 +39,8 @@ async function increaseProductViews() {
     const { data } = await patch(`/products/${currentProduct.value.slug}/`, {
       views: currentProduct.value.views + 1,
     });
-    console.log({ data });
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 </script>

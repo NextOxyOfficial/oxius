@@ -1,35 +1,66 @@
-<template>  <div id="sale-category" class="for-sale-section py-4 bg-white rounded-lg mt-3">
+<template>
+  <div
+    id="sale-category"
+    class="for-sale-section py-4 bg-white rounded-lg mt-3"
+  >
     <div class="container mx-auto px-1">
       <!-- Updated section header with linked buttons -->
       <div class="relative mb-4 sm:mb-6">
         <!-- Enhanced Background with Gradient and Dotted Effects -->
         <div class="relative">
           <!-- Background gradient layers -->
-          <div class="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-900/20 dark:via-green-900/20 dark:to-teal-900/20 rounded-2xl sm:rounded-3xl"></div>
-          <div class="absolute inset-0 bg-gradient-to-tr from-blue-50/50 via-transparent to-purple-50/50 dark:from-blue-900/10 dark:via-transparent dark:to-purple-900/10 rounded-2xl sm:rounded-3xl"></div>
-          
+          <div
+            class="absolute inset-0 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-900/20 dark:via-green-900/20 dark:to-teal-900/20 rounded-2xl sm:rounded-3xl"
+          ></div>
+          <div
+            class="absolute inset-0 bg-gradient-to-tr from-blue-50/50 via-transparent to-purple-50/50 dark:from-blue-900/10 dark:via-transparent dark:to-purple-900/10 rounded-2xl sm:rounded-3xl"
+          ></div>
+
           <!-- Dotted gradient patterns -->
-          <div class="absolute inset-0 opacity-60 dark:opacity-40 rounded-2xl sm:rounded-3xl overflow-hidden">
+          <div
+            class="absolute inset-0 opacity-60 dark:opacity-40 rounded-2xl sm:rounded-3xl overflow-hidden"
+          >
             <!-- Large dotted pattern -->
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(34,197,94,0.15)_1px,transparent_0)] bg-[size:24px_24px] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(134,239,172,0.1)_1px,transparent_0)]"></div>
+            <div
+              class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(34,197,94,0.15)_1px,transparent_0)] bg-[size:24px_24px] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(134,239,172,0.1)_1px,transparent_0)]"
+            ></div>
             <!-- Medium dotted pattern -->
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(59,130,246,0.1)_1px,transparent_0)] bg-[size:16px_16px] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(147,197,253,0.08)_1px,transparent_0)]"></div>
+            <div
+              class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(59,130,246,0.1)_1px,transparent_0)] bg-[size:16px_16px] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(147,197,253,0.08)_1px,transparent_0)]"
+            ></div>
             <!-- Small dotted pattern -->
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(168,85,247,0.08)_1px,transparent_0)] bg-[size:8px_8px] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(196,181,253,0.06)_1px,transparent_0)]"></div>
-          </div>          <!-- Animated gradient overlay -->
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent dark:via-white/10 animate-pulse rounded-2xl sm:rounded-3xl"></div>
-            <!-- Main content container -->
-          <div class="relative px-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md overflow-hidden">
+            <div
+              class="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(168,85,247,0.08)_1px,transparent_0)] bg-[size:8px_8px] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(196,181,253,0.06)_1px,transparent_0)]"
+            ></div>
+          </div>
+          <!-- Animated gradient overlay -->
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent dark:via-white/10 animate-pulse rounded-2xl sm:rounded-3xl"
+          ></div>
+          <!-- Main content container -->
+          <div
+            class="relative px-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md overflow-hidden"
+          >
             <!-- Dynamic Background Pattern -->
             <div class="absolute inset-0 opacity-40 dark:opacity-20">
               <!-- Subtle grid pattern -->
-              <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"></div>
-              <div class="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(0deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"></div>
-              
+              <div
+                class="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"
+              ></div>
+              <div
+                class="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(0deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"
+              ></div>
+
               <!-- Floating elements for visual interest -->
-              <div class="absolute top-2 right-4 w-2 h-2 rounded-full bg-emerald-400/20 animate-pulse"></div>
-              <div class="absolute bottom-3 left-6 w-1 h-1 rounded-full bg-blue-400/30 animate-ping"></div>
-              <div class="absolute top-1/2 right-1/4 w-1.5 h-1.5 rounded-full bg-green-400/20"></div>
+              <div
+                class="absolute top-2 right-4 w-2 h-2 rounded-full bg-emerald-400/20 animate-pulse"
+              ></div>
+              <div
+                class="absolute bottom-3 left-6 w-1 h-1 rounded-full bg-blue-400/30 animate-ping"
+              ></div>
+              <div
+                class="absolute top-1/2 right-1/4 w-1.5 h-1.5 rounded-full bg-green-400/20"
+              ></div>
             </div>
 
             <!-- Header Content -->
@@ -38,61 +69,94 @@
             >
               <div class="flex items-center gap-4">
                 <!-- App-style Icon -->
-                <div class="relative">                    
+                <div class="relative">
                   <!-- Icon background with modern design -->
-                  <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                  <div
+                    class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center"
+                  >
                     <Icon
                       name="heroicons:tag"
                       class="w-5 h-5 sm:w-6 sm:h-6 text-white"
                     />
                     <!-- Subtle shine effect -->
-                    <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent"></div>
+                    <div
+                      class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent"
+                    ></div>
                   </div>
                   <!-- Active indicator dot -->
-                  <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white dark:border-slate-800 animate-pulse"></div>
+                  <div
+                    class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white dark:border-slate-800 animate-pulse"
+                  ></div>
                 </div>
 
                 <!-- Title with enhanced styling -->
                 <div class="flex-1 min-w-0">
-                  <h2 class="text-lg sm:text-xl font-medium text-slate-900 dark:text-white truncate">
-                    {{$t("sale_listing")}}
+                  <h2
+                    class="text-lg sm:text-xl font-medium text-slate-900 dark:text-white truncate"
+                  >
+                    {{ $t("sale_listing") }}
                   </h2>
-                  <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  <p
+                    class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium"
+                  >
                     Buy & sell amazing products
                   </p>
-                </div>              </div>
-                <!-- Always show buttons, handle auth at page level -->
-                <div class="flex gap-2 sm:gap-3">                
-                  <!-- Marketplace Button - Enhanced (Outlined) -->
+                </div>
+              </div>
+              <!-- Always show buttons, handle auth at page level -->
+              <div class="flex gap-2 sm:gap-3">
+                <!-- Marketplace Button - Enhanced (Outlined) -->
                 <NuxtLink
                   to="/sale"
                   class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs sm:text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
                 >
                   <!-- Button hover effect -->
-                  <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <Icon name="heroicons:shopping-bag" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
-                  <span class="relative z-10 truncate">{{ $t('marketplace') }}</span>
-                </NuxtLink>                <!-- My Posts Button - Enhanced (Navigate to page) - Only show for logged in users -->
+                  <div
+                    class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  ></div>
+                  <Icon
+                    name="heroicons:shopping-bag"
+                    class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0"
+                  />
+                  <span class="relative z-10 truncate">{{
+                    $t("marketplace")
+                  }}</span>
+                </NuxtLink>
+                <!-- My Posts Button - Enhanced (Navigate to page) - Only show for logged in users -->
                 <NuxtLink
                   v-if="user?.user"
                   to="/sale/my-posts"
                   class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs sm:text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
                 >
                   <!-- Button hover effect -->
-                  <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  
-                  <Icon name="heroicons:document-text" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
-                  <span class="relative z-10 truncate">{{ $t('my_post') }}</span>
-                </NuxtLink><!-- Post Sale Button - Enhanced (Outlined) - Always visible -->
+                  <div
+                    class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  ></div>
+
+                  <Icon
+                    name="heroicons:document-text"
+                    class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0"
+                  />
+                  <span class="relative z-10 truncate">{{
+                    $t("my_post")
+                  }}</span> </NuxtLink
+                ><!-- Post Sale Button - Enhanced (Outlined) - Always visible -->
                 <NuxtLink
                   to="/sale/my-posts?tab=post-sale"
                   class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-medium text-xs sm:text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
                 >
                   <!-- Button hover effect -->
-                  <div class="absolute inset-0 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  
-                  <Icon name="heroicons:plus-circle" class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0" />
-                  <span class="relative z-10 truncate">{{ $t('post_a_sale') }}</span>
+                  <div
+                    class="absolute inset-0 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  ></div>
+
+                  <Icon
+                    name="heroicons:plus-circle"
+                    class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0"
+                  />
+                  <span class="relative z-10 truncate">{{
+                    $t("post_a_sale")
+                  }}</span>
                 </NuxtLink>
               </div>
             </div>
@@ -102,7 +166,7 @@
 
       <!-- Dynamic banner ads with responsive layout -->
       <div class="banner-container mb-4 sm:mb-8">
-        <div class="flex flex-col md:flex-row gap-2">          
+        <div class="flex flex-col md:flex-row gap-2">
           <!-- Show loading placeholder when banners are loading -->
           <template v-if="isLoadingBanners && !bannersFetched">
             <div class="main-banner rounded-lg overflow-hidden md:w-1/2">
@@ -181,19 +245,17 @@
             </div>
           </template>
         </div>
-      </div>      
+      </div>
       <div class="category-tabs relative mb-6">
         <!-- Categories slider with touch events -->
         <div
           class="overflow-hidden overflow-x-auto scroll-smooth"
           ref="sliderContainer"
           @scroll="handleScroll"
-          style="scrollbar-width: none; -ms-overflow-style: none;"
+          style="scrollbar-width: none; -ms-overflow-style: none"
         >
-          <div
-            class="categories-wrapper flex mt-3"
-            ref="categoriesWrapper"
-          ><!-- Show category loading placeholders when categories are loading -->
+          <div class="categories-wrapper flex mt-3" ref="categoriesWrapper">
+            <!-- Show category loading placeholders when categories are loading -->
             <template v-if="isLoadingCategories && !categoriesFetched">
               <div
                 v-for="index in 6"
@@ -261,7 +323,8 @@
                 </div>
               </div>
             </template>
-          </div>        </div>
+          </div>
+        </div>
       </div>
 
       <!-- Display section for selected category items with lazy loading -->
@@ -274,8 +337,10 @@
           </div>
           <NuxtLink
             :to="`/sale`"
-            class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"          >
-            {{ $t('view_all') }} <Icon name="heroicons:arrow-right" size="14px" />
+            class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"
+          >
+            {{ $t("view_all") }}
+            <Icon name="heroicons:arrow-right" size="14px" />
           </NuxtLink>
         </div>
 
@@ -311,7 +376,8 @@
           >
             <div class="relative">
               <!-- Price overlay in top right -->
-              <div class="absolute top-0 right-0 m-2 z-10">                <div
+              <div class="absolute top-0 right-0 m-2 z-10">
+                <div
                   class="px-2 py-1 bg-primary text-white text-sm font-semibold rounded"
                 >
                   ৳{{ post.price ? post.price.toLocaleString() : "Negotiable" }}
@@ -346,7 +412,8 @@
               </div>
             </div>
 
-            <div class="p-3 flex-grow flex flex-col">              <!-- Title with truncation -->
+            <div class="p-3 flex-grow flex flex-col">
+              <!-- Title with truncation -->
               <h4 class="font-medium text-gray-800 line-clamp-1 text-sm">
                 {{ capitalizeTitle(post.title) }}
               </h4>
@@ -393,13 +460,15 @@
             name="heroicons:document-magnifying-glass"
             size="40px"
             class="text-gray-600 mb-2"
-          />          <h3 class="text-base font-medium text-gray-800 mb-1">
-            {{ $t('no_listings_found') }}
+          />
+          <h3 class="text-base font-medium text-gray-800 mb-1">
+            {{ $t("no_listings_found") }}
           </h3>
           <p class="text-gray-600 text-sm text-center">
-            {{ $t('no_items_currently_listed') }}
+            {{ $t("no_items_currently_listed") }}
           </p>
-        </div>      </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -476,7 +545,8 @@ const selectCategory = (category) => {
 };
 
 // Get the name of the selected category
-const getSelectedCategoryName = () => {  const found = categories.value.find(
+const getSelectedCategoryName = () => {
+  const found = categories.value.find(
     (cat) => cat.id === selectedCategory.value
   );
   return found ? found.name : "";
@@ -487,7 +557,8 @@ const handleScroll = () => {
   if (!sliderContainer.value) return;
 
   const scrollLeft = sliderContainer.value.scrollLeft;
-  const maxScroll = sliderContainer.value.scrollWidth - sliderContainer.value.clientWidth;
+  const maxScroll =
+    sliderContainer.value.scrollWidth - sliderContainer.value.clientWidth;
 
   isAtStart.value = scrollLeft <= 5; // Small tolerance for precision
   isAtEnd.value = scrollLeft >= maxScroll - 5; // Small tolerance for precision
@@ -514,13 +585,15 @@ const fetchCategories = async () => {
 
   try {
     isLoadingCategories.value = true;
-    console.log("Fetching categories from API...");
-    
+
     // Update to the correct API endpoint
     const response = await get("/sale/categories/");
-    console.log("API Response for categories:", response.data);
-    
-    if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+
+    if (
+      response.data &&
+      Array.isArray(response.data) &&
+      response.data.length > 0
+    ) {
       // This will place the most recently added categories at the end
       const sortedCategories = [...response.data].sort((a, b) => a.id - b.id);
       categories.value = sortedCategories;
@@ -529,9 +602,8 @@ const fetchCategories = async () => {
       if (categories.value.length > 0) {
         selectedCategory.value = categories.value[0].id;
       }
-      
+
       categoriesFetched.value = true;
-      console.log("Categories loaded successfully:", categories.value.length);
     } else {
       console.warn("No categories received from API or invalid format");
       categoriesFetched.value = true; // Mark as fetched to prevent retries
@@ -554,15 +626,13 @@ const fetchBanners = async () => {
 
   try {
     isLoadingBanners.value = true;
-    console.log("Fetching banners from API...");
-    
+
     // Update to the correct API endpoint
     const response = await get("/sale/banners/");
-    
+
     if (response.data && Array.isArray(response.data)) {
       banners.value = response.data;
       bannersFetched.value = true;
-      console.log("Banners loaded successfully:", banners.value.length);
     } else {
       console.warn("No banners received from API or invalid format");
       bannersFetched.value = true; // Mark as fetched to prevent retries
@@ -586,7 +656,6 @@ const fetchCategoryPosts = async () => {
 
   try {
     isLoading.value = true;
-    console.log("Fetching posts for category:", selectedCategory.value);
 
     // Use pagination for category posts
     const limit = showAllCategoryPosts.value ? 50 : categoryPostsLimit.value;
@@ -599,8 +668,6 @@ const fetchCategoryPosts = async () => {
       categoryPosts.value = [];
       return;
     }
-
-    console.log("API response for category posts:", response.data);
 
     // Handle different API response formats
     if (response.data) {
@@ -623,8 +690,6 @@ const fetchCategoryPosts = async () => {
     } else {
       categoryPosts.value = [];
     }
-
-    console.log("Processed category posts:", categoryPosts.value);
   } catch (error) {
     console.error("Error fetching posts for category:", error);
     categoryPosts.value = [];
@@ -641,7 +706,7 @@ onMounted(async () => {
   if (!categoriesFetched.value) {
     await fetchCategories();
   }
-  
+
   if (!bannersFetched.value) {
     await fetchBanners();
   }
@@ -680,12 +745,12 @@ const formatDate = (dateString) => {
 // Helper function for capitalizing the first letter of each word in titles
 const capitalizeTitle = (title) => {
   if (!title) return "";
-  
+
   return title
     .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 </script>
 
@@ -730,8 +795,8 @@ const capitalizeTitle = (title) => {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .overflow-x-auto {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 /* Animation for loading skeleton */

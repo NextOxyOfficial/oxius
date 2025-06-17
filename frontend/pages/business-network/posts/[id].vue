@@ -6,7 +6,9 @@
         <Loader2 class="h-10 w-10 text-blue-600 animate-spin" />
       </div>
       <!-- Skeleton loader for post -->
-      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4">
+      <div
+        class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4 p-4"
+      >
         <div class="flex items-center space-x-3 mb-4">
           <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
           <div class="flex-1 space-y-2">
@@ -51,7 +53,6 @@ async function fetchPost() {
   try {
     const { data } = await get(`/bn/posts/${id}/`);
     posts.value = [data];
-    console.log("posts", data);
   } catch (error) {
     console.error("Error fetching post:", error);
   } finally {

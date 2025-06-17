@@ -469,9 +469,11 @@ const router = useRoute();
 
 async function fetchServices() {
   const response = await $fetch(
-    `${baseURL}/classified-categories/post/${router.query.slug || router.query.id}/`
+    `${baseURL}/classified-categories/post/${
+      router.query.slug || router.query.id
+    }/`
   );
-  console.log(response);
+
   const {
     price,
     instructions,
@@ -534,7 +536,7 @@ async function handlePostGig() {
   }
   isLoading.value = true;
   const { medias, ...rest } = form.value;
-  console.log(form.value);
+
   rest.service_status = "pending";
 
   const res = await (router.query.id
@@ -578,7 +580,6 @@ async function getMicroGigsCategory() {
       get("/classified-categories-all/"),
     ]);
     categories.value = categoriesResponse.data;
-    console.log(categoriesResponse.data);
   } catch (error) {
     console.error("Error fetching micro-gigs data:", error);
   }
@@ -586,7 +587,6 @@ async function getMicroGigsCategory() {
 
 onMounted(() => {
   getMicroGigsCategory();
-  console.log(router.query.id);
 
   if (router.query.id) {
     fetchServices();
@@ -607,13 +607,11 @@ regions.value = regions_response.data;
 watch(
   () => form.value.state,
   async (newState) => {
-    console.log(newState);
     if (newState) {
       const cities_response = await get(
         `/geo/cities/?region_name_eng=${newState}`
       );
       cities.value = cities_response.data;
-      console.log(cities_response.data);
     }
   }
 );
@@ -621,13 +619,11 @@ watch(
 watch(
   () => form.value.city,
   async (newCity) => {
-    console.log(newCity);
     if (newCity) {
       const thana_response = await get(
         `/geo/upazila/?city_name_eng=${newCity}`
       );
       upazilas.value = thana_response.data;
-      console.log(thana_response.data);
     }
   }
 );

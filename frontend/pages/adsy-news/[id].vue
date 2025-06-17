@@ -310,7 +310,7 @@ async function getArticle() {
     if (res && res.data) {
       article.value = res.data;
       // After getting the article, fetch related articles
-      console.log(article.value);
+
       await getRelatedArticles();
     }
   } catch (error) {

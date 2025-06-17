@@ -64,7 +64,7 @@
               </Transition>
 
               <!-- Title input with character count -->
-              <div class="relative group">                
+              <div class="relative group">
                 <label
                   class="block text-sm font-medium text-gray-800 dark:text-gray-400 mb-1.5 flex items-center gap-1.5"
                 >
@@ -93,7 +93,8 @@
               </div>
 
               <!-- Description textarea with character count (renamed from Content) -->
-              <div class="relative group">                <label
+              <div class="relative group">
+                <label
                   class="block text-sm font-medium text-gray-800 dark:text-gray-400 mb-1.5 flex items-center gap-1.5"
                 >
                   <AlignLeft class="h-4 w-4 text-blue-500" />
@@ -150,18 +151,26 @@
                         ? "Drop your images here"
                         : "Drag images here or click to select"
                     }}
-                  </p>                  <p class="mt-1 text-xs text-gray-600 dark:text-gray-600 flex items-center justify-center gap-1">
+                  </p>
+                  <p
+                    class="mt-1 text-xs text-gray-600 dark:text-gray-600 flex items-center justify-center gap-1"
+                  >
                     <span>Select up to 12 images (PNG, JPG, JPEG)</span>
-                    <span class="inline-flex items-center px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium rounded">
+                    <span
+                      class="inline-flex items-center px-1.5 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium rounded"
+                    >
                       {{ images.length }}/12
                     </span>
-                  </p>                  <button
+                  </p>
+                  <button
                     @click.stop="triggerFileInput"
                     class="mt-3 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm transition-all duration-200 hover:shadow-sm flex items-center gap-1.5 mx-auto"
                   >
                     <Upload class="h-3.5 w-3.5" />
                     <span v-if="images.length === 0">Select Images</span>
-                    <span v-else>Add More ({{ 12 - images.length }} remaining)</span>
+                    <span v-else
+                      >Add More ({{ 12 - images.length }} remaining)</span
+                    >
                   </button>
                 </div>
               </div>
@@ -182,7 +191,8 @@
                     >
                       <ImageIcon class="h-4 w-4 text-blue-500" />
                       <span>Selected Media</span>
-                    </h4>                    <div class="flex items-center gap-2">
+                    </h4>
+                    <div class="flex items-center gap-2">
                       <span
                         class="text-xs px-2 py-0.5 rounded-full font-medium transition-colors"
                         :class="
@@ -195,10 +205,16 @@
                       >
                         {{ images.length }}/12 selected
                       </span>
-                      <span v-if="images.length < 12" class="text-xs text-gray-500 dark:text-gray-400">
+                      <span
+                        v-if="images.length < 12"
+                        class="text-xs text-gray-500 dark:text-gray-400"
+                      >
                         ({{ 12 - images.length }} more allowed)
                       </span>
-                      <span v-else class="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                      <span
+                        v-else
+                        class="text-xs text-amber-600 dark:text-amber-400 font-medium"
+                      >
                         Limit reached
                       </span>
                       <button
@@ -265,7 +281,8 @@
                     </button>
                   </div>
                 </div>
-              </Transition>              <!-- Simplified Compression Progress Indicator -->
+              </Transition>
+              <!-- Simplified Compression Progress Indicator -->
               <Transition
                 enter-active-class="transition-all duration-300 ease-out"
                 enter-from-class="opacity-0 -translate-y-4"
@@ -274,26 +291,37 @@
                 leave-from-class="opacity-100 translate-y-0"
                 leave-to-class="opacity-0 -translate-y-4"
               >
-                <div v-if="showCompressionProgress" class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 space-y-3">
+                <div
+                  v-if="showCompressionProgress"
+                  class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 space-y-3"
+                >
                   <div class="flex items-center gap-3">
-                    <div class="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                    <div
+                      class="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center"
+                    >
                       <Loader2 class="h-3 w-3 text-white animate-spin" />
                     </div>
-                    <span class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    <span
+                      class="text-sm font-medium text-blue-800 dark:text-blue-200"
+                    >
                       Processing images...
                     </span>
                   </div>
-                  
+
                   <!-- Simple Progress Bar -->
-                  <div class="w-full bg-blue-200 dark:bg-blue-800/50 rounded-full h-2 overflow-hidden">
-                    <div 
+                  <div
+                    class="w-full bg-blue-200 dark:bg-blue-800/50 rounded-full h-2 overflow-hidden"
+                  >
+                    <div
                       class="bg-blue-600 dark:bg-blue-500 h-full rounded-full transition-all duration-300 ease-out"
                       :style="{ width: `${compressionProgress}%` }"
                     ></div>
                   </div>
-                  
-                  <!-- Simple status message -->                  <p class="text-xs text-blue-700 dark:text-blue-300">
-                    Please wait while we optimize your images for the best quality and performance.
+
+                  <!-- Simple status message -->
+                  <p class="text-xs text-blue-700 dark:text-blue-300">
+                    Please wait while we optimize your images for the best
+                    quality and performance.
                   </p>
                 </div>
               </Transition>
@@ -448,11 +476,9 @@
               @click="closeModalWithConfirm"
             >
               Cancel
-            </button>            
+            </button>
             <button
-              :disabled="
-                !form.title.trim() || isSubmitting
-              "
+              :disabled="!form.title.trim() || isSubmitting"
               @click="handleCreatePost"
               :class="[
                 'px-4 py-2 rounded-md text-white transition-all duration-300 flex items-center gap-2 shadow-sm',
@@ -488,7 +514,6 @@
       </div>
     </div>
   </Teleport>
-
 
   <!-- Confirmation Modal -->
   <Teleport to="body">
@@ -550,7 +575,8 @@
                 <Trash2 class="h-4 w-4" />
                 Discard
               </button>
-            </div>          </div>
+            </div>
+          </div>
         </Transition>
       </div>
     </Transition>
@@ -585,55 +611,86 @@
             @click.stop
           >
             <!-- Success Header with Gradient -->
-            <div class="relative bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 text-white p-6 text-center">              <!-- Animated Success Icon -->
+            <div
+              class="relative bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600 text-white p-6 text-center"
+            >
+              <!-- Animated Success Icon -->
               <div class="relative mx-auto w-16 h-16 mb-4">
-                <div class="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
-                <div class="relative bg-white rounded-full w-16 h-16 flex items-center justify-center">                  <svg class="h-8 w-8 text-purple-600 animate-party-slow" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.9 1 3 1.9 3 3V17C3 18.1 3.9 19 5 19H11.81C11.3 18.12 11 17.1 11 16C11 13.24 13.24 11 16 11S21 13.24 21 16C21 17.1 20.7 18.12 20.19 19H21C22.1 19 23 18.1 23 17V9H21ZM14 9V3.5L19.5 9H14ZM16 12C14.34 12 13 13.34 13 15S14.34 18 16 18 19 16.66 19 15 17.66 12 16 12ZM16 16.5C15.17 16.5 14.5 15.83 14.5 15S15.17 13.5 16 13.5 17.5 14.17 17.5 15 16.83 16.5 16 16.5Z"/>
-                    <circle cx="7" cy="6" r="1"/>
-                    <circle cx="7" cy="9" r="1"/>
-                    <circle cx="7" cy="12" r="1"/>
+                <div
+                  class="absolute inset-0 bg-white/20 rounded-full animate-ping"
+                ></div>
+                <div
+                  class="relative bg-white rounded-full w-16 h-16 flex items-center justify-center"
+                >
+                  <svg
+                    class="h-8 w-8 text-purple-600 animate-party-slow"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.9 1 3 1.9 3 3V17C3 18.1 3.9 19 5 19H11.81C11.3 18.12 11 17.1 11 16C11 13.24 13.24 11 16 11S21 13.24 21 16C21 17.1 20.7 18.12 20.19 19H21C22.1 19 23 18.1 23 17V9H21ZM14 9V3.5L19.5 9H14ZM16 12C14.34 12 13 13.34 13 15S14.34 18 16 18 19 16.66 19 15 17.66 12 16 12ZM16 16.5C15.17 16.5 14.5 15.83 14.5 15S15.17 13.5 16 13.5 17.5 14.17 17.5 15 16.83 16.5 16 16.5Z"
+                    />
+                    <circle cx="7" cy="6" r="1" />
+                    <circle cx="7" cy="9" r="1" />
+                    <circle cx="7" cy="12" r="1" />
                   </svg>
                 </div>
               </div>
-              
+
               <!-- Success Title -->
               <h3 class="text-xl font-bold mb-2">
                 {{ successMessage }}
               </h3>
-              
+
               <!-- Success Description -->
               <p class="text-green-50 text-sm opacity-90">
-                Your {{ isEditMode ? 'updated' : 'new' }} post is now live and visible to your network
+                Your {{ isEditMode ? "updated" : "new" }} post is now live and
+                visible to your network
               </p>
-              
+
               <!-- Decorative Elements -->
-              <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
-              <div class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+              <div
+                class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"
+              ></div>
+              <div
+                class="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"
+              ></div>
             </div>
-            
+
             <!-- Modal Body -->
             <div class="p-6 bg-gray-50 dark:bg-gray-900">
               <!-- Quick Stats -->
               <div class="grid grid-cols-3 gap-4 mb-6">
-                <div class="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                  <div class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                <div
+                  class="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
+                >
+                  <div
+                    class="text-2xl font-bold text-gray-800 dark:text-gray-200"
+                  >
                     {{ images.length }}
                   </div>
                   <div class="text-xs text-gray-600 dark:text-gray-400">
-                    {{ images.length === 1 ? 'Image' : 'Images' }}
+                    {{ images.length === 1 ? "Image" : "Images" }}
                   </div>
                 </div>
-                <div class="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                  <div class="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                <div
+                  class="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
+                >
+                  <div
+                    class="text-2xl font-bold text-gray-800 dark:text-gray-200"
+                  >
                     {{ createPostCategories.length }}
                   </div>
                   <div class="text-xs text-gray-600 dark:text-gray-400">
-                    {{ createPostCategories.length === 1 ? 'Tag' : 'Tags' }}
+                    {{ createPostCategories.length === 1 ? "Tag" : "Tags" }}
                   </div>
                 </div>
-                <div class="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                  <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                <div
+                  class="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm"
+                >
+                  <div
+                    class="text-2xl font-bold text-green-600 dark:text-green-400"
+                  >
                     ✓
                   </div>
                   <div class="text-xs text-gray-600 dark:text-gray-400">
@@ -641,14 +698,15 @@
                   </div>
                 </div>
               </div>
-                <!-- Action Buttons -->
+              <!-- Action Buttons -->
               <div class="flex flex-col gap-3">
                 <button
                   @click="closeSuccessModal"
                   class="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
                 >
                   <X class="h-4 w-4" />
-                  Close {{ autoCloseCountdown > 0 ? `(${autoCloseCountdown})` : '' }}
+                  Close
+                  {{ autoCloseCountdown > 0 ? `(${autoCloseCountdown})` : "" }}
                 </button>
               </div>
             </div>
@@ -864,15 +922,15 @@ const closeSuccessModal = () => {
     clearInterval(autoCloseTimer.value);
     autoCloseTimer.value = null;
   }
-  
+
   autoCloseCountdown.value = 0;
   showSuccessModal.value = false;
-  
+
   // Now close the main modal and reset form
   resetForm();
   isCreatePostOpen.value = false;
   document.body.style.overflow = "";
-  
+
   // Reload if on profile page
   if (route.path.includes("profile")) {
     window.location.reload();
@@ -881,10 +939,10 @@ const closeSuccessModal = () => {
 
 const startAutoCloseTimer = () => {
   autoCloseCountdown.value = 5;
-  
+
   autoCloseTimer.value = setInterval(() => {
     autoCloseCountdown.value--;
-    
+
     if (autoCloseCountdown.value <= 0) {
       closeSuccessModal();
     }
@@ -903,11 +961,11 @@ const handleFileUpload = async (event) => {
   if (!files || files.length === 0) return;
 
   // Filter to only include image files
-  const imageFiles = files.filter(file => file.type.startsWith("image/"));
-  
+  const imageFiles = files.filter((file) => file.type.startsWith("image/"));
+
   if (imageFiles.length === 0) {
     formError.value = "Please select valid image files";
-    setTimeout(() => formError.value = "", 3000);
+    setTimeout(() => (formError.value = ""), 3000);
     return;
   }
 
@@ -923,7 +981,7 @@ const handleFileUpload = async (event) => {
   }
   isUploading.value = true;
   uploadError.value = "";
-  
+
   // Initialize enhanced progress tracking
   showCompressionProgress.value = true;
   totalImages.value = imageFiles.length;
@@ -932,75 +990,87 @@ const handleFileUpload = async (event) => {
   compressionStatus.value = "Validating and preparing images...";
   compressionStartTime.value = Date.now();
   estimatedTimeRemaining.value = 0;
-  
+
   // Calculate total original size
-  totalBytesOriginal.value = imageFiles.reduce((sum, file) => sum + file.size, 0);
+  totalBytesOriginal.value = imageFiles.reduce(
+    (sum, file) => sum + file.size,
+    0
+  );
   totalBytesProcessed.value = 0;
-  
+
   // Initialize processing files list with validation
-  processingFiles.value = imageFiles.map(file => {
+  processingFiles.value = imageFiles.map((file) => {
     const validation = validateImageFile(file);
     return {
       name: file.name,
       originalSize: formatFileSize(file.size),
       compressedSize: null,
       compressionRatio: null,
-      status: validation.isValid ? 'pending' : 'error',
-      error: validation.error
+      status: validation.isValid ? "pending" : "error",
+      error: validation.error,
     };
   });
   try {
     // Process each file with enhanced tracking
     for (let i = 0; i < imageFiles.length; i++) {
       const file = imageFiles[i];
-      
+
       // Skip invalid files
-      if (processingFiles.value[i].status === 'error') {
+      if (processingFiles.value[i].status === "error") {
         continue;
       }
-      
+
       if (file.size > 12 * 1024 * 1024) {
-        processingFiles.value[i].status = 'skipped';
+        processingFiles.value[i].status = "skipped";
         uploadError.value = "Some images exceed 12MB and were skipped";
         continue;
       }
 
       currentImageIndex.value = i + 1;
-      compressionStatus.value = `Processing ${file.name}... (${i + 1}/${imageFiles.length})`;
-      processingFiles.value[i].status = 'processing';
+      compressionStatus.value = `Processing ${file.name}... (${i + 1}/${
+        imageFiles.length
+      })`;
+      processingFiles.value[i].status = "processing";
 
       // Process image with enhanced compression
       const compressedImage = await processImageWithProgress(file, i);
-      
+
       if (compressedImage) {
         const compressedSize = Math.round((compressedImage.length * 3) / 4);
         images.value.push(compressedImage);
-        processingFiles.value[i].status = 'completed';
-        processingFiles.value[i].compressedSize = formatFileSize(compressedSize);
-        processingFiles.value[i].compressionRatio = calculateCompressionRatio(file.size, compressedSize);
-        
+        processingFiles.value[i].status = "completed";
+        processingFiles.value[i].compressedSize =
+          formatFileSize(compressedSize);
+        processingFiles.value[i].compressionRatio = calculateCompressionRatio(
+          file.size,
+          compressedSize
+        );
+
         // Update bytes processed
         totalBytesProcessed.value += file.size;
       }
 
       // Update progress and time estimation
       compressionProgress.value = ((i + 1) / imageFiles.length) * 100;
-      estimatedTimeRemaining.value = estimateRemainingTime(i + 1, imageFiles.length, compressionStartTime.value);
+      estimatedTimeRemaining.value = estimateRemainingTime(
+        i + 1,
+        imageFiles.length,
+        compressionStartTime.value
+      );
     }
 
     compressionStatus.value = `Compression completed! ${images.value.length} images processed successfully.`;
-    
+
     // Hide progress after a short delay
     setTimeout(() => {
       showCompressionProgress.value = false;
       processingFiles.value = [];
     }, 2000);
-
   } catch (error) {
     console.error("File upload error:", error);
     uploadError.value = "Error processing some images";
     compressionStatus.value = "Error occurred during compression";
-    
+
     setTimeout(() => {
       showCompressionProgress.value = false;
       processingFiles.value = [];
@@ -1038,7 +1108,7 @@ const handleFileDrop = async (event) => {
     return;
   }
   isUploading.value = true;
-  
+
   // Initialize enhanced progress tracking for dropped files
   showCompressionProgress.value = true;
   totalImages.value = imageFiles.length;
@@ -1047,21 +1117,24 @@ const handleFileDrop = async (event) => {
   compressionStatus.value = "Validating and preparing dropped images...";
   compressionStartTime.value = Date.now();
   estimatedTimeRemaining.value = 0;
-  
+
   // Calculate total original size
-  totalBytesOriginal.value = imageFiles.reduce((sum, file) => sum + file.size, 0);
+  totalBytesOriginal.value = imageFiles.reduce(
+    (sum, file) => sum + file.size,
+    0
+  );
   totalBytesProcessed.value = 0;
-  
+
   // Initialize processing files list with validation
-  processingFiles.value = imageFiles.map(file => {
+  processingFiles.value = imageFiles.map((file) => {
     const validation = validateImageFile(file);
     return {
       name: file.name,
       originalSize: formatFileSize(file.size),
       compressedSize: null,
       compressionRatio: null,
-      status: validation.isValid ? 'pending' : 'error',
-      error: validation.error
+      status: validation.isValid ? "pending" : "error",
+      error: validation.error,
     };
   });
 
@@ -1069,54 +1142,63 @@ const handleFileDrop = async (event) => {
     // Process each dropped file with enhanced tracking
     for (let i = 0; i < imageFiles.length; i++) {
       const file = imageFiles[i];
-      
+
       // Skip invalid files
-      if (processingFiles.value[i].status === 'error') {
+      if (processingFiles.value[i].status === "error") {
         continue;
       }
-      
+
       if (file.size > 12 * 1024 * 1024) {
-        processingFiles.value[i].status = 'skipped';
+        processingFiles.value[i].status = "skipped";
         uploadError.value = "Some images exceed 12MB and were skipped";
         continue;
       }
 
       currentImageIndex.value = i + 1;
-      compressionStatus.value = `Processing ${file.name}... (${i + 1}/${imageFiles.length})`;
-      processingFiles.value[i].status = 'processing';
+      compressionStatus.value = `Processing ${file.name}... (${i + 1}/${
+        imageFiles.length
+      })`;
+      processingFiles.value[i].status = "processing";
 
       // Process image with enhanced compression
       const compressedImage = await processImageWithProgress(file, i);
-      
+
       if (compressedImage) {
         const compressedSize = Math.round((compressedImage.length * 3) / 4);
         images.value.push(compressedImage);
-        processingFiles.value[i].status = 'completed';
-        processingFiles.value[i].compressedSize = formatFileSize(compressedSize);
-        processingFiles.value[i].compressionRatio = calculateCompressionRatio(file.size, compressedSize);
-        
+        processingFiles.value[i].status = "completed";
+        processingFiles.value[i].compressedSize =
+          formatFileSize(compressedSize);
+        processingFiles.value[i].compressionRatio = calculateCompressionRatio(
+          file.size,
+          compressedSize
+        );
+
         // Update bytes processed
         totalBytesProcessed.value += file.size;
       }
 
       // Update progress and time estimation
       compressionProgress.value = ((i + 1) / imageFiles.length) * 100;
-      estimatedTimeRemaining.value = estimateRemainingTime(i + 1, imageFiles.length, compressionStartTime.value);
+      estimatedTimeRemaining.value = estimateRemainingTime(
+        i + 1,
+        imageFiles.length,
+        compressionStartTime.value
+      );
     }
 
     compressionStatus.value = `Compression completed! ${images.value.length} images processed successfully.`;
-    
+
     // Hide progress after a short delay
     setTimeout(() => {
       showCompressionProgress.value = false;
       processingFiles.value = [];
     }, 2000);
-
   } catch (error) {
     console.error("File drop error:", error);
     uploadError.value = "Error processing some images";
     compressionStatus.value = "Error occurred during compression";
-    
+
     setTimeout(() => {
       showCompressionProgress.value = false;
       processingFiles.value = [];
@@ -1145,20 +1227,18 @@ const processImageWithProgress = (file, index) => {
         try {
           // Apply advanced compression with multiple optimization techniques
           const compressedImage = performAdvancedCompression(img, file.size);
-          
+
           // Verify compression quality and size
           const compressedSize = Math.round((compressedImage.length * 3) / 4);
-          const compressionRatio = ((file.size - compressedSize) / file.size * 100).toFixed(1);
-          
-          console.log(`Image compressed: ${file.name}`);
-          console.log(`Original: ${formatFileSize(file.size)} → Compressed: ${formatFileSize(compressedSize)}`);
-          console.log(`Compression ratio: ${compressionRatio}%`);
-          
+          const compressionRatio = (
+            ((file.size - compressedSize) / file.size) *
+            100
+          ).toFixed(1);
+
           // Add staggered animation delay
           setTimeout(() => {
             resolve(compressedImage);
           }, index * 150); // Stagger by 150ms per image
-          
         } catch (error) {
           console.error(`Error compressing image ${file.name}:`, error);
           reject(error);
@@ -1181,21 +1261,25 @@ const processImageWithProgress = (file, index) => {
 const performAdvancedCompression = (img, originalFileSize) => {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
-  
+
   // Enable image smoothing for better quality
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
-  
+
   // Get optimized settings based on image characteristics
-  const settings = optimizeCompressionSettings(originalFileSize, img.width, img.height);
-  
+  const settings = optimizeCompressionSettings(
+    originalFileSize,
+    img.width,
+    img.height
+  );
+
   let width = img.width;
   let height = img.height;
 
   // Smart resizing with aspect ratio preservation
   if (width > settings.maxDimension || height > settings.maxDimension) {
     const aspectRatio = width / height;
-    
+
     if (width > height) {
       width = settings.maxDimension;
       height = Math.round(width / aspectRatio);
@@ -1203,7 +1287,7 @@ const performAdvancedCompression = (img, originalFileSize) => {
       height = settings.maxDimension;
       width = Math.round(height * aspectRatio);
     }
-    
+
     // Ensure minimum dimensions for quality
     if (width < 400 && height < 400) {
       const minDim = 400;
@@ -1218,7 +1302,7 @@ const performAdvancedCompression = (img, originalFileSize) => {
   }
   canvas.width = width;
   canvas.height = height;
-  
+
   // Apply subtle sharpening for better perceived quality
   ctx.filter = "contrast(1.05) saturate(1.02)";
   ctx.drawImage(img, 0, 0, width, height);
@@ -1231,25 +1315,34 @@ const performAdvancedCompression = (img, originalFileSize) => {
   let quality = settings.initialQuality;
   let resultImage = canvas.toDataURL("image/jpeg", quality);
   let resultSize = Math.round((resultImage.length * 3) / 4);
-  
+
   // Phase 1: Gentle quality reduction with fine increments
-  while (resultSize > settings.targetSize && quality > settings.minQuality + 0.1) {
+  while (
+    resultSize > settings.targetSize &&
+    quality > settings.minQuality + 0.1
+  ) {
     quality -= 0.01; // Very small increments for smooth quality transition
     resultImage = canvas.toDataURL("image/jpeg", quality);
     resultSize = Math.round((resultImage.length * 3) / 4);
   }
 
   // Phase 2: Moderate quality reduction if still over target
-  while (resultSize > settings.targetSize && quality > settings.minQuality + 0.05) {
+  while (
+    resultSize > settings.targetSize &&
+    quality > settings.minQuality + 0.05
+  ) {
     quality -= 0.02;
     resultImage = canvas.toDataURL("image/jpeg", quality);
     resultSize = Math.round((resultImage.length * 3) / 4);
   }
 
   // Phase 3: Smart dimensional reduction if quality limit reached
-  if (resultSize > settings.targetSize && quality <= settings.minQuality + 0.05) {
+  if (
+    resultSize > settings.targetSize &&
+    quality <= settings.minQuality + 0.05
+  ) {
     // Calculate optimal scale factor for target size
-    const scaleFactor = Math.sqrt(settings.targetSize / resultSize) * 0.90;
+    const scaleFactor = Math.sqrt(settings.targetSize / resultSize) * 0.9;
     const newWidth = Math.max(300, Math.round(width * scaleFactor));
     const newHeight = Math.max(300, Math.round(height * scaleFactor));
 
@@ -1257,7 +1350,7 @@ const performAdvancedCompression = (img, originalFileSize) => {
     if (newWidth >= width * 0.6 && newHeight >= height * 0.6) {
       canvas.width = newWidth;
       canvas.height = newHeight;
-      
+
       // Re-apply enhanced rendering
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
@@ -1266,12 +1359,15 @@ const performAdvancedCompression = (img, originalFileSize) => {
       ctx.filter = "none";
 
       // Reset quality to a good level after resize
-      quality = Math.max(settings.minQuality + 0.10, 0.65);
+      quality = Math.max(settings.minQuality + 0.1, 0.65);
       resultImage = canvas.toDataURL("image/jpeg", quality);
       resultSize = Math.round((resultImage.length * 3) / 4);
 
       // Final quality fine-tuning after resize
-      while (resultSize > settings.targetSize && quality > settings.minQuality) {
+      while (
+        resultSize > settings.targetSize &&
+        quality > settings.minQuality
+      ) {
         quality -= 0.015;
         resultImage = canvas.toDataURL("image/jpeg", quality);
         resultSize = Math.round((resultImage.length * 3) / 4);
@@ -1284,7 +1380,7 @@ const performAdvancedCompression = (img, originalFileSize) => {
     try {
       const webpImage = canvas.toDataURL("image/webp", quality);
       const webpSize = Math.round((webpImage.length * 3) / 4);
-      
+
       // Use WebP if significantly smaller
       if (webpSize < resultSize * 0.8) {
         return webpImage;
@@ -1351,11 +1447,11 @@ const processImage = (file) => {
 
 // Utility function to format file sizes
 const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
 };
 
 // Advanced pre-processing for optimal compression
@@ -1363,20 +1459,20 @@ const preprocessImageForCompression = (canvas, ctx, width, height) => {
   // Apply subtle noise reduction and edge enhancement
   const imageData = ctx.getImageData(0, 0, width, height);
   const data = imageData.data;
-  
+
   // Simple noise reduction while preserving edges
   for (let i = 0; i < data.length; i += 4) {
     // Slight smoothing for better compression
     const r = data[i];
     const g = data[i + 1];
     const b = data[i + 2];
-    
+
     // Preserve important details while reducing noise
     data[i] = Math.round(r * 0.98 + (r > 200 ? 2 : 0));
     data[i + 1] = Math.round(g * 0.98 + (g > 200 ? 2 : 0));
     data[i + 2] = Math.round(b * 0.98 + (b > 200 ? 2 : 0));
   }
-  
+
   ctx.putImageData(imageData, 0, 0);
 };
 
@@ -1492,14 +1588,12 @@ const selectHashtagSuggestion = (tag) => {
 async function handleCreatePost() {
   formError.value = "";
   isSubmitting.value = true;
-  console.log("Starting post creation/update process");
 
   try {
     let response;
 
     if (isEditMode.value) {
       // Update existing post
-      console.log("Updating existing post:", props.editPost.id);
       response = await patch(`/bn/posts/${props.editPost.id}/`, {
         ...form.value,
         images: images.value,
@@ -1507,7 +1601,6 @@ async function handleCreatePost() {
       });
 
       // Emit a different event for updates
-      console.log("Emitting post-updated event with data:", response.data);
       emit("post-updated", response.data);
 
       // Use event bus for better cross-component communication
@@ -1515,12 +1608,6 @@ async function handleCreatePost() {
       eventBus.emit("post-updated", response.data);
     } else {
       // Create new post
-      console.log("Creating new post with data:", form, {
-        title: form.value.title,
-        content: form.value.content.substring(0, 50) + "...",
-        imagesCount: images.value.length,
-        tagsCount: createPostCategories.value.length,
-      });
 
       response = await post("/bn/posts/", {
         ...form.value,
@@ -1528,17 +1615,15 @@ async function handleCreatePost() {
         tags: createPostCategories.value,
       });
 
-      console.log("Post created successfully, response:", response.data);
-
       // Emit the event with the complete post data for immediate display
-      console.log("Emitting post-created event");
-      emit("post-created", response.data);      // Use event bus for better cross-component communication
-      console.log("Broadcasting via eventBus");
+
+      emit("post-created", response.data); // Use event bus for better cross-component communication
+
       const eventBus = useEventBus();
       eventBus.emit("post-created", response.data);
-    }    // Show success modal
+    } // Show success modal
     showSuccessModal.value = true;
-    
+
     // Start auto-close timer
     startAutoCloseTimer();
 
@@ -1553,7 +1638,8 @@ async function handleCreatePost() {
       error.response?.data?.message ||
       `Failed to ${
         isEditMode.value ? "update" : "create"
-      } post. Please try again.`;  } finally {
+      } post. Please try again.`;
+  } finally {
     isSubmitting.value = false;
   }
 }
@@ -1646,7 +1732,7 @@ onMounted(() => {
 // Enhanced utility functions for better compression monitoring
 const calculateCompressionRatio = (originalSize, compressedSize) => {
   if (!originalSize || !compressedSize) return 0;
-  return ((originalSize - compressedSize) / originalSize * 100).toFixed(1);
+  return (((originalSize - compressedSize) / originalSize) * 100).toFixed(1);
 };
 
 const estimateRemainingTime = (processed, total, startTime) => {
@@ -1658,16 +1744,16 @@ const estimateRemainingTime = (processed, total, startTime) => {
 };
 
 const validateImageFile = (file) => {
-  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
   const maxSize = 12 * 1024 * 1024; // 12MB
-  
+
   return {
     isValid: validTypes.includes(file.type) && file.size <= maxSize,
-    error: !validTypes.includes(file.type) 
-      ? 'Invalid file type. Please upload JPEG, PNG, or WebP images.'
-      : file.size > maxSize 
-        ? 'File size exceeds 12MB limit.'
-        : null
+    error: !validTypes.includes(file.type)
+      ? "Invalid file type. Please upload JPEG, PNG, or WebP images."
+      : file.size > maxSize
+      ? "File size exceeds 12MB limit."
+      : null,
   };
 };
 
@@ -1679,7 +1765,7 @@ const optimizeCompressionSettings = (fileSize, imageWidth, imageHeight) => {
     initialQuality: 0.82, // Start with good quality
     minQuality: 0.55, // Lower minimum for better compression
     smartResize: true, // Enable smart resizing
-    progressiveCompression: true // Enable progressive compression
+    progressiveCompression: true, // Enable progressive compression
   };
 
   // Adjust for large files (>5MB) - aggressive compression
@@ -1687,7 +1773,7 @@ const optimizeCompressionSettings = (fileSize, imageWidth, imageHeight) => {
     settings.maxDimension = 1600;
     settings.targetSize = 120 * 1024; // 120KB for large files
     settings.initialQuality = 0.78;
-    settings.minQuality = 0.50;
+    settings.minQuality = 0.5;
   }
 
   // Adjust for very large images (>4000px) - prioritize size reduction
@@ -1701,7 +1787,7 @@ const optimizeCompressionSettings = (fileSize, imageWidth, imageHeight) => {
   // Adjust for small files (<1MB) - maintain quality while achieving tiny size
   if (fileSize < 1024 * 1024) {
     settings.targetSize = 80 * 1024; // 80KB for small files
-    settings.minQuality = 0.60;
+    settings.minQuality = 0.6;
     settings.initialQuality = 0.85;
   }
 
@@ -1716,8 +1802,8 @@ const optimizeCompressionSettings = (fileSize, imageWidth, imageHeight) => {
   if (imageWidth > 6000 || imageHeight > 6000) {
     settings.maxDimension = 1200;
     settings.targetSize = 85 * 1024; // 85KB
-    settings.initialQuality = 0.70;
-    settings.minQuality = 0.40;
+    settings.initialQuality = 0.7;
+    settings.minQuality = 0.4;
   }
 
   return settings;
@@ -1726,15 +1812,15 @@ const optimizeCompressionSettings = (fileSize, imageWidth, imageHeight) => {
 // Calculate total compressed size from processing files
 const calculateTotalCompressedSize = () => {
   return processingFiles.value
-    .filter(file => file.status === 'completed' && file.compressedSize)
+    .filter((file) => file.status === "completed" && file.compressedSize)
     .reduce((total, file) => {
       // Parse size back to bytes from formatted string
-      const sizeStr = file.compressedSize.replace(/[^\d.]/g, '');
+      const sizeStr = file.compressedSize.replace(/[^\d.]/g, "");
       const size = parseFloat(sizeStr);
       const unit = file.compressedSize.toLowerCase();
-      
-      if (unit.includes('mb')) return total + (size * 1024 * 1024);
-      if (unit.includes('kb')) return total + (size * 1024);
+
+      if (unit.includes("mb")) return total + size * 1024 * 1024;
+      if (unit.includes("kb")) return total + size * 1024;
       return total + size;
     }, 0);
 };
@@ -1743,7 +1829,10 @@ const calculateTotalCompressedSize = () => {
 const calculateOverallCompressionRatio = () => {
   const totalCompressed = calculateTotalCompressedSize();
   if (!totalBytesOriginal.value || !totalCompressed) return 0;
-  return ((totalBytesOriginal.value - totalCompressed) / totalBytesOriginal.value * 100).toFixed(1);
+  return (
+    ((totalBytesOriginal.value - totalCompressed) / totalBytesOriginal.value) *
+    100
+  ).toFixed(1);
 };
 </script>
 

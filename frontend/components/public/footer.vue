@@ -121,7 +121,8 @@
           <div class="flex flex-col gap-4">
             <h4 class="font-semibold hidden md:block">
               {{ $t("download_app") }}
-            </h4>            <ul class="flex gap-2 flex-1 max-md:justify-center">
+            </h4>
+            <ul class="flex gap-2 flex-1 max-md:justify-center">
               <li class="w-[117px]">
                 <nuxt-link
                   to="/coming-soon/"
@@ -319,37 +320,30 @@ const { user } = useAuth();
 const { unreadCount, fetchUnreadCount } = useNotifications(); // Import useNotifications
 const toast = useToast();
 
-watch(toggleStatus, () => {
-  console.log("State Changed");
-});
-
 // Use the app download composable
-import { useAppDownload } from '~/composables/useAppDownload';
+import { useAppDownload } from "~/composables/useAppDownload";
 const { downloadApp } = useAppDownload();
 
 // Download Android app function
 const downloadAndroidApp = async () => {
   try {
-    console.log('Starting APK download...');
-    
     // Use the composable to get the dynamic download URL from admin
     await downloadApp();
-    
+
     // Show success toast
     toast.add({
-      title: 'Download Started',
-      description: 'AdsyClub Android app is downloading...',
-      color: 'green',
-      icon: 'i-heroicons-check-circle'
+      title: "Download Started",
+      description: "AdsyClub Android app is downloading...",
+      color: "green",
+      icon: "i-heroicons-check-circle",
     });
-    
   } catch (error) {
-    console.error('Download error:', error);
+    console.error("Download error:", error);
     toast.add({
-      title: 'Download Error',
-      description: 'Failed to start download. Please try again.',
-      color: 'red',
-      icon: 'i-heroicons-exclamation-triangle'
+      title: "Download Error",
+      description: "Failed to start download. Please try again.",
+      color: "red",
+      icon: "i-heroicons-exclamation-triangle",
     });
   }
 };

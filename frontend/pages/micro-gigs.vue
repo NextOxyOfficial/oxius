@@ -273,7 +273,6 @@ const microGigsStatus = ref(microGigsFilter[1]);
 
 const errorIndex = ref([]);
 function handleImageError(index) {
-  console.log(`Broken image detected at index: ${index}`);
   if (!errorIndex.value.includes(index)) {
     errorIndex.value.push(index); // Add index to errorIndex
   }
@@ -333,7 +332,7 @@ const selectCategory = async (category) => {
     );
     microGigs.value = data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     toast.add({ title: "error" });
   }
 };

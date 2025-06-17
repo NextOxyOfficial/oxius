@@ -793,7 +793,6 @@ async function get_nid() {
 
     if (data) {
       form.value = data.data;
-      console.log(data.data);
 
       id_verification.value = Boolean(data.data.approved);
 
@@ -807,7 +806,7 @@ async function get_nid() {
       };
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 

@@ -5,22 +5,63 @@
       <div
         class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium"
         :class="{
-          'bg-yellow-50 text-yellow-800 border border-yellow-200': getSubscriptionStatus.status === 'expired',
-          'bg-blue-50 text-blue-800 border border-blue-200': getSubscriptionStatus.status === 'free',
-          'bg-red-50 text-red-700 border border-red-200': getSubscriptionStatus.status === 'guest',
+          'bg-yellow-50 text-yellow-800 border border-yellow-200':
+            getSubscriptionStatus.status === 'expired',
+          'bg-blue-50 text-blue-800 border border-blue-200':
+            getSubscriptionStatus.status === 'free',
+          'bg-red-50 text-red-700 border border-red-200':
+            getSubscriptionStatus.status === 'guest',
         }"
       >
-        <svg v-if="getSubscriptionStatus.status === 'expired'" class="h-4 w-4 mr-1 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <svg
+          v-if="getSubscriptionStatus.status === 'expired'"
+          class="h-4 w-4 mr-1 text-yellow-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
         </svg>
-        <svg v-else-if="getSubscriptionStatus.status === 'free'" class="h-4 w-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        <svg
+          v-else-if="getSubscriptionStatus.status === 'free'"
+          class="h-4 w-4 mr-1 text-blue-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+          />
         </svg>
-        <svg v-else class="h-4 w-4 mr-1 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" />
+        <svg
+          v-else
+          class="h-4 w-4 mr-1 text-red-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+          />
         </svg>
         <span>{{ getSubscriptionStatus.message }}</span>
-        <span v-if="getSubscriptionStatus.status === 'expired' && daysRemaining > 0" class="ml-2 text-sm text-yellow-700">({{ $t('subscription_expiring') }} {{ daysRemaining }} {{ daysRemaining === 1 ? $t('day') : $t('days') }})</span>
+        <span
+          v-if="getSubscriptionStatus.status === 'expired' && daysRemaining > 0"
+          class="ml-2 text-sm text-yellow-700"
+          >({{ $t("subscription_expiring") }} {{ daysRemaining }}
+          {{ daysRemaining === 1 ? $t("day") : $t("days") }})</span
+        >
       </div>
     </div>
     <!-- Header with title and icon -->
@@ -47,7 +88,8 @@
         <h2 class="text-lg font-bold">{{ $t("video_lessons") }}</h2>
         <p class="text-sm text-gray-600 hidden sm:block">
           {{ $t("video_lessons_desc") }}
-        </p>      </div>
+        </p>
+      </div>
 
       <!-- Total videos count badge -->
       <div class="ml-auto">
@@ -368,36 +410,70 @@
     </div>
 
     <!-- Video grid - Keep the existing grid but with minor styling improvements -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">      <div
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div
         v-for="video in filteredVideos"
         :key="video.id"
         :class="[
-          'overflow-hidden rounded-lg border transition-all hover:shadow-md', 
+          'overflow-hidden rounded-lg border transition-all hover:shadow-md',
           'border-gray-200 hover:border-blue-300',
-          !isAuthenticated ? 'video-locked' : !isProValid ? 'video-upgrade' : ''
+          !isAuthenticated
+            ? 'video-locked'
+            : !isProValid
+            ? 'video-upgrade'
+            : '',
         ]"
-        style="position: relative;"
+        style="position: relative"
       >
         <!-- Per-video access indicator overlay -->
-        <div v-if="!isAuthenticated || (isAuthenticated && !isProValid)" class="absolute top-2 right-2 z-10">
-          <span v-if="!isAuthenticated" class="inline-flex items-center px-2 py-1 bg-red-500/90 text-white text-sm rounded-full shadow">
-            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 20 20" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" />
+        <div
+          v-if="!isAuthenticated || (isAuthenticated && !isProValid)"
+          class="absolute top-2 right-2 z-10"
+        >
+          <span
+            v-if="!isAuthenticated"
+            class="inline-flex items-center px-2 py-1 bg-red-500/90 text-white text-sm rounded-full shadow"
+          >
+            <svg
+              class="h-4 w-4 mr-1"
+              fill="none"
+              viewBox="0 0 20 20"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+              />
             </svg>
-            {{ $t('login_required') }}
+            {{ $t("login_required") }}
           </span>
-          <span v-else class="inline-flex items-center px-2 py-1 bg-yellow-400/90 text-yellow-900 text-sm rounded-full shadow">
-            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 20 20" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
+          <span
+            v-else
+            class="inline-flex items-center px-2 py-1 bg-yellow-400/90 text-yellow-900 text-sm rounded-full shadow"
+          >
+            <svg
+              class="h-4 w-4 mr-1"
+              fill="none"
+              viewBox="0 0 20 20"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+              />
             </svg>
             Pro
           </span>
         </div>
         <!-- Video player -->
         <div class="aspect-w-16 aspect-h-9 bg-gray-100">
-          <youtube-player 
-            :video-id="getYoutubeId(video.url)" 
-            :video="video" 
+          <youtube-player
+            :video-id="getYoutubeId(video.url)"
+            :video="video"
             @video-start="handleVideoStart"
             @video-pause="handleVideoPause"
             @video-resume="handleVideoResume"
@@ -428,7 +504,8 @@
                 )
               "
             ></span>
-          </p>          <!-- Description with enhanced View More button -->
+          </p>
+          <!-- Description with enhanced View More button -->
           <div class="relative mt-1">
             <p
               class="text-sm text-gray-600 line-clamp-2"
@@ -494,7 +571,8 @@
             <span class="ml-2 text-sm text-gray-600">
               {{ video.views }} {{ $t("videos_count") }}
             </span>
-          </div>          <!-- Access indicators - fixed to work with computed property pattern -->
+          </div>
+          <!-- Access indicators - fixed to work with computed property pattern -->
           <div class="mt-2">
             <span
               v-if="!isAuthenticated"
@@ -513,7 +591,8 @@
                 />
               </svg>
               {{ $t("login_required") || "Login Required" }}
-            </span>            <span
+            </span>
+            <span
               v-else-if="isAuthenticated && !isProValid"
               class="text-sm inline-flex items-center px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-100"
             >
@@ -699,7 +778,8 @@
               </button>
             </div>
           </div>
-        </div>      </div>
+        </div>
+      </div>
     </Teleport>
 
     <!-- Upgrade Prompt Modal -->
@@ -774,7 +854,9 @@
             <div class="bg-white px-6 py-4">
               <div class="text-center">
                 <!-- Icon -->
-                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 mb-4">
+                <div
+                  class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 mb-4"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-8 w-8 text-amber-600"
@@ -796,34 +878,77 @@
                   Time limit reached!
                 </h4>
                 <p class="text-sm text-gray-600 mb-6">
-                  You've reached your daily viewing limit of 1 minute. Upgrade to Pro for unlimited access to all video content.
+                  You've reached your daily viewing limit of 1 minute. Upgrade
+                  to Pro for unlimited access to all video content.
                 </p>
 
                 <!-- Features list -->
                 <div class="text-left bg-gray-50 rounded-lg p-4 mb-6">
-                  <h5 class="text-sm font-medium text-gray-900 mb-3">Pro Benefits:</h5>
+                  <h5 class="text-sm font-medium text-gray-900 mb-3">
+                    Pro Benefits:
+                  </h5>
                   <ul class="space-y-2 text-sm text-gray-600">
                     <li class="flex items-center">
-                      <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      <svg
+                        class="h-4 w-4 text-green-500 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                       Unlimited video viewing time
                     </li>
                     <li class="flex items-center">
-                      <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      <svg
+                        class="h-4 w-4 text-green-500 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                       Access to premium content
                     </li>
                     <li class="flex items-center">
-                      <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      <svg
+                        class="h-4 w-4 text-green-500 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                       Multiple device access
                     </li>
                     <li class="flex items-center">
-                      <svg class="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      <svg
+                        class="h-4 w-4 text-green-500 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                       Priority support
                     </li>
@@ -833,7 +958,9 @@
             </div>
 
             <!-- Footer -->
-            <div class="bg-gray-50 px-6 py-4 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
+            <div
+              class="bg-gray-50 px-6 py-4 flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3"
+            >
               <button
                 @click="goToUpgrade"
                 type="button"
@@ -884,7 +1011,8 @@ import { useVideoAccess } from "~/composables/useVideoAccess";
 
 // Authentication and video access control
 const { isAuthenticated } = useAuth();
-const { canAccessVideo, getSubscriptionStatus, daysRemaining, isProValid } = useVideoAccess();
+const { canAccessVideo, getSubscriptionStatus, daysRemaining, isProValid } =
+  useVideoAccess();
 
 const props = defineProps({
   subject: {
@@ -912,7 +1040,6 @@ async function loadVideos() {
       props.subject,
       config.public.baseURL
     );
-    console.log("Loaded videos:", apiVideos.value);
   } catch (err) {
     console.error(`Error loading videos for subject ${props.subject}:`, err);
     error.value = $t("no_videos_found"); // Use translated error message
@@ -947,32 +1074,32 @@ function closeUpgradePrompt() {
 }
 
 function goToUpgrade() {
-  navigateTo('/upgrade-to-pro');
+  navigateTo("/upgrade-to-pro");
 }
 
 // Video event handlers
 function handleVideoStart(success, errorMessage) {
   if (!success) {
-    console.error('Failed to start video:', errorMessage);
+    console.error("Failed to start video:", errorMessage);
   }
 }
 
 function handleVideoPause() {
-  console.log('Video paused');
+  console.log("Video paused");
 }
 
 function handleVideoResume() {
-  console.log('Video resumed');
+  console.log("Video resumed");
 }
 
 function handleVideoStop() {
-  console.log('Video stopped');
+  console.log("Video stopped");
 }
 
 // Access control event handlers
 function handleLoginRequired() {
   // Redirect to login page
-  navigateTo('/auth/login');
+  navigateTo("/auth/login");
 }
 
 function handleSubscriptionRequired() {
@@ -1189,7 +1316,7 @@ async function openDescriptionModal(video) {
       }
     }
   } catch (error) {
-    console.error('Failed to open video:', error);
+    console.error("Failed to open video:", error);
   }
 }
 
@@ -1204,7 +1331,7 @@ function closeDescriptionModal() {
 // Cleanup on component unmount
 onUnmounted(async () => {
   // Component cleanup
-  console.log('VideoLessons component unmounted');
+  console.log("VideoLessons component unmounted");
 });
 
 // Helper function to extract YouTube video ID from URL
@@ -1340,7 +1467,7 @@ function highlightText(text) {
 }
 
 .video-locked::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -1355,7 +1482,7 @@ function highlightText(text) {
 }
 
 .video-upgrade::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;

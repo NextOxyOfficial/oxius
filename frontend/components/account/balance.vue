@@ -10,7 +10,8 @@
       ring: '',
       base: 'bg-gradient-to-br from-green-100 to-teal-100/60   border border-dashed border-emerald-400/70',
     }"
-  >    <!-- Decorative elements -->
+  >
+    <!-- Decorative elements -->
     <div
       class="absolute top-0 right-0 w-32 h-32 bg-emerald-100/20 rounded-full -z-10"
     ></div>
@@ -141,7 +142,7 @@
           :ui="{
             base: 'font-medium',
           }"
-        />        
+        />
         <UButton
           icon="i-material-symbols:mark-email-unread-outline"
           size="md"
@@ -154,11 +155,11 @@
             base: 'font-medium',
           }"
         >
-          <div 
-            v-if="badgeCount > 0" 
+          <div
+            v-if="badgeCount > 0"
             class="notification-badge absolute top-1 right-16 min-w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs px-1 font-semibold shadow-sm animate-pulse-subtle"
           >
-            {{ badgeCount > 99 ? '99+' : badgeCount }}
+            {{ badgeCount > 99 ? "99+" : badgeCount }}
           </div>
         </UButton>
         <UButton
@@ -212,7 +213,7 @@
               class="text-emerald-600 dark:text-emerald-400"
             />
             {{ $t("refer") }}
-          </h3>          
+          </h3>
           <div class="relative w-full max-w-md mx-auto">
             <div
               class="flex items-center bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-emerald-200 dark:border-emerald-700"
@@ -222,7 +223,7 @@
                 class="text-sm py-3 px-4 w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-700 dark:text-slate-200"
                 readonly
                 :value="`https://adsyclub.com/auth/register/?ref=${user.user.referral_code}`"
-              />              
+              />
               <UButton
                 size="sm"
                 color="emerald"
@@ -242,7 +243,7 @@
               </UButton>
             </div>
           </div>
-        </div>        
+        </div>
         <!-- Referral stats -->
         <div
           class="flex gap-6 justify-center items-center bg-white/80 rounded-xl p-3"
@@ -251,7 +252,9 @@
             <p class="text-sm text-slate-500 dark:text-slate-400">
               {{ $t("refer_user") }}
             </p>
-            <p class="text-xl font-semibold text-emerald-700 dark:text-emerald-400">
+            <p
+              class="text-xl font-semibold text-emerald-700 dark:text-emerald-400"
+            >
               {{ user.user.refer_count }}
             </p>
           </div>
@@ -283,9 +286,12 @@ const { unreadTicketCount, totalUnreadCount, fetchUnreadCount } = useTickets();
 const badgeCount = ref(0);
 
 // Update badge count when totalUnreadCount changes
-watch(() => totalUnreadCount.value, (newCount) => {
-  badgeCount.value = newCount;
-});
+watch(
+  () => totalUnreadCount.value,
+  (newCount) => {
+    badgeCount.value = newCount;
+  }
+);
 
 // Fetch unread ticket count when component mounts
 onMounted(async () => {
@@ -306,7 +312,6 @@ defineProps({
 
 function CopyToClip(text) {
   //Copy text to clipboard
-  console.log(text);
   navigator.clipboard.writeText(text);
   toast.add({
     title: "Link copied",
@@ -388,7 +393,8 @@ function CopyToClip(text) {
 
 /* Notification badge animation */
 @keyframes pulse-subtle {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.9;
   }
   50% {

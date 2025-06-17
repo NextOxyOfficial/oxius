@@ -184,7 +184,6 @@ async function loadSubjects() {
       props.division,
       config.public.baseURL
     );
-    console.log("Loaded subjects:", apiSubjects.value);
   } catch (err) {
     console.error(
       `Error loading subjects for division ${props.division}:`,

@@ -16,7 +16,8 @@
             name="i-heroicons-arrow-path"
             class="h-6 w-6 animate-spin text-gray-600"
           />
-        </div>        <div class="flex items-center justify-between">
+        </div>
+        <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Total Orders</p>
             <p class="text-xl font-semibold text-gray-800">
@@ -49,7 +50,8 @@
             name="i-heroicons-arrow-path"
             class="h-6 w-6 animate-spin text-gray-600"
           />
-        </div>        <div class="flex items-center justify-between">
+        </div>
+        <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Pending Orders</p>
             <p class="text-xl font-semibold text-gray-800">
@@ -79,7 +81,8 @@
             name="i-heroicons-arrow-path"
             class="h-6 w-6 animate-spin text-gray-600"
           />
-        </div>        <div class="flex items-center justify-between">
+        </div>
+        <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Processing Orders</p>
             <p class="text-xl font-semibold text-gray-800">
@@ -93,7 +96,7 @@
               name="i-heroicons-cog-6-tooth"
               class="h-6 w-6 text-blue-500"
             />
-          </div>        
+          </div>
         </div>
         <p class="mt-2 text-sm font-medium text-blue-600">
           ৳{{ formatAmount(orderStats.processing_amount) }}
@@ -112,7 +115,7 @@
             name="i-heroicons-arrow-path"
             class="h-6 w-6 animate-spin text-gray-600"
           />
-        </div>        
+        </div>
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Delivered Orders</p>
@@ -133,12 +136,13 @@
           ৳{{ formatAmount(orderStats.delivered_amount) }}
         </p>
       </div>
-    </div>    <div class="px-2 sm:px-6 py-5 border-b border-gray-200 bg-gray-50">
+    </div>
+    <div class="px-2 sm:px-6 py-5 border-b border-gray-200 bg-gray-50">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between">
         <div class="flex items-center space-x-2">
           <ShoppingBag class="h-5 w-5 text-indigo-600" />
           <h2 class="text-xl font-semibold text-gray-800">My Orders</h2>
-        </div>        
+        </div>
         <!-- Desktop: Controls on the right with search -->
         <div class="hidden md:flex items-center space-x-4">
           <UButton
@@ -179,7 +183,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Mobile: Centered controls without search -->
         <div class="mt-3 md:hidden flex items-center justify-center space-x-4">
           <UButton
@@ -208,7 +212,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Mobile: Search Section Below (centered) -->
       <div class="mt-4 md:hidden flex justify-center">
         <div class="relative rounded-md shadow-sm w-full max-w-sm">
@@ -324,25 +328,29 @@
                 </button>
               </div>
             </td>
-          </tr>          <tr v-if="orders.length === 0 && !isOrdersLoading">
+          </tr>
+          <tr v-if="orders.length === 0 && !isOrdersLoading">
             <td colspan="6" class="px-6 py-10 text-center text-gray-600">
               <div class="flex flex-col items-center justify-center">
                 <PackageX class="h-10 w-10 text-gray-400 mb-2" />
                 <div v-if="products.length > 0">
                   <p class="mb-2 font-medium">No orders yet</p>
                   <p class="text-sm text-gray-500 mb-3">
-                    You have {{ products.length }} product(s) available, but haven't received any orders yet.
+                    You have {{ products.length }} product(s) available, but
+                    haven't received any orders yet.
                   </p>
                   <p class="text-sm text-gray-500 mb-3">
-                    Make sure your products are visible and promoted to attract customers.
+                    Make sure your products are visible and promoted to attract
+                    customers.
                   </p>
                 </div>
                 <div v-else>
                   <p class="mb-2 font-medium">No orders found</p>
                   <p class="text-sm text-gray-500 mb-3">
-                    You need to add products to your shop before you can receive orders.
+                    You need to add products to your shop before you can receive
+                    orders.
                   </p>
-                  <UButton 
+                  <UButton
                     @click="$emit('switch-tab', 'add-product')"
                     color="indigo"
                     size="sm"
@@ -351,7 +359,7 @@
                     Add Your First Product
                   </UButton>
                 </div>
-                <UButton 
+                <UButton
                   v-if="retryCount > 0"
                   @click="retryLoadOrders"
                   color="indigo"
@@ -373,7 +381,8 @@
     <div
       class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
     >
-      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">        <div>
+      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
           <p class="text-sm text-gray-800">
             Showing
             <span class="font-medium">{{ paginationStart }}</span> to
@@ -386,7 +395,8 @@
           <nav
             class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
             aria-label="Pagination"
-          >            <button
+          >
+            <button
               @click="prevPage"
               :disabled="currentPage === 1"
               class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1236,7 +1246,7 @@
 
 <script setup>
 // Define emits
-defineEmits(['switch-tab']);
+defineEmits(["switch-tab"]);
 
 const { user } = useAuth();
 const { get, patch, put } = useApi();
@@ -1320,7 +1330,7 @@ const orderStats = ref({
   total_amount: 0,
   pending_amount: 0,
   processing_amount: 0,
-  delivered_amount: 0
+  delivered_amount: 0,
 });
 const products = ref([]);
 
@@ -1337,39 +1347,31 @@ async function getOrders(page = 1, isRetry = false) {
   try {
     // Build query parameters for pagination
     const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('page_size', pageSize.toString());
+    params.append("page", page.toString());
+    params.append("page_size", pageSize.toString());
 
     // Add filters to API call if they exist
-    if (orderFilter.value && orderFilter.value !== 'all') {
-      params.append('status', orderFilter.value);
+    if (orderFilter.value && orderFilter.value !== "all") {
+      params.append("status", orderFilter.value);
     }
 
     if (orderSearch.value) {
-      params.append('search', orderSearch.value);
+      params.append("search", orderSearch.value);
     }
 
-    console.log('=== Orders API Call Debug ===');
-    console.log('Endpoint:', `/seller-orders/?${params.toString()}`);
-    console.log('User authenticated:', !!user.value);
-    console.log('User ID:', user.value?.user?.id);
-    console.log('JWT token present:', !!useCookie("adsyclub-jwt").value);
-
-    const res = await get(`/seller-orders/?${params.toString()}`, {}, {
-      headers: {
-        "Cache-Control": "no-cache",
-        Pragma: "no-cache",
-      },
-    });    console.log('=== Orders API Response ===');
-    console.log('Response received:', !!res);
-    console.log('Response data:', res?.data);
-    console.log('Response error:', res?.error);
+    const res = await get(
+      `/seller-orders/?${params.toString()}`,
+      {},
+      {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      }
+    );
 
     if (res && res.data) {
-      console.log('=== Processing Orders Response ===');
       if ("results" in res.data) {
-        console.log('Paginated response detected');
-        console.log('Total count:', res.data.count);        console.log('Results length:', res.data.results?.length || 0);
         // Paginated response
         pagination.value = {
           count: res.data.count,
@@ -1388,9 +1390,8 @@ async function getOrders(page = 1, isRetry = false) {
         } else {
           orders.value = [...orders.value, ...processedOrders];
           allOrders.value = [...allOrders.value, ...processedOrders];
-        }        hasMoreOrders.value = !!res.data.next;
-        console.log(`✅ Orders loaded successfully: ${res.data.results.length} orders (page ${page})`);
-        console.log(`Total orders in system: ${res.data.count}`);
+        }
+        hasMoreOrders.value = !!res.data.next;
       } else if (Array.isArray(res.data)) {
         // Non-paginated response - handle fallback
         const processedOrders = res.data.map((order) => ({
@@ -1400,7 +1401,6 @@ async function getOrders(page = 1, isRetry = false) {
         orders.value = processedOrders;
         allOrders.value = processedOrders;
         hasMoreOrders.value = false;
-        console.log(`Loaded ${res.data.length} orders (non-paginated)`);
       } else {
         console.warn("Unexpected data format received");
         orders.value = [];
@@ -1408,20 +1408,21 @@ async function getOrders(page = 1, isRetry = false) {
         hasMoreOrders.value = false;
       }
     } else {
-      console.warn("No order data received");      orders.value = [];
+      console.warn("No order data received");
+      orders.value = [];
       allOrders.value = [];
       hasMoreOrders.value = false;
     }
   } catch (error) {
     console.error("Error fetching orders:", error);
-    
+
     // Provide more specific error information
     let errorMessage = "Please try again later";
     if (error.response) {
       // Server responded with error status
       const status = error.response.status;
       const data = error.response.data;
-      
+
       if (status === 401) {
         errorMessage = "Authentication required. Please log in again.";
       } else if (status === 403) {
@@ -1433,26 +1434,29 @@ async function getOrders(page = 1, isRetry = false) {
       } else if (data && data.detail) {
         errorMessage = data.detail;
       } else if (data && data.error) {
-        errorMessage = data.error;      } else {
+        errorMessage = data.error;
+      } else {
         errorMessage = `Server error (${status}). Please try again.`;
       }
     } else {
       // Network error or other issues that might be temporary
       errorMessage = "Network error. Please check your internet connection.";
-      
+
       // Auto-retry for network errors
-      if (retryCount.value < maxRetries && (error.request || error.code === 'NETWORK_ERROR')) {
+      if (
+        retryCount.value < maxRetries &&
+        (error.request || error.code === "NETWORK_ERROR")
+      ) {
         retryCount.value++;
-        console.log(`Retrying orders fetch (attempt ${retryCount.value}/${maxRetries})...`);
-        
+
         setTimeout(() => {
           getOrders(page, true);
         }, 1000 * retryCount.value); // Incremental delay
-        
+
         return; // Don't show error toast yet
       }
     }
-    
+
     showToast("error", "Failed to load orders", errorMessage);
     orders.value = [];
     allOrders.value = [];
@@ -1485,12 +1489,16 @@ const loadOrderStats = async () => {
 // Refresh statistics only (for when orders are updated)
 const refreshOrderStats = async () => {
   try {
-    const res = await get("/seller-orders/stats/", {}, {
-      headers: {
-        "Cache-Control": "no-cache",
-        Pragma: "no-cache",
-      },
-    });
+    const res = await get(
+      "/seller-orders/stats/",
+      {},
+      {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      }
+    );
 
     if (res && res.data) {
       orderStats.value = res.data;
@@ -1510,33 +1518,17 @@ const loadMoreOrders = () => {
 
 async function getProducts() {
   try {
-    console.log("=== getProducts started ===");
     const res = await get("/my-products/");
-    console.log("Products API response:", res);
 
     if (res && res.data && Array.isArray(res.data)) {
-      console.log("Raw products count:", res.data.length);
       const filteredProducts = res.data.filter((product) => {
         const isValid =
           product && product.id && product.name && product.quantity > 0; // Only include products with stock
-        console.log(
-          `Product ${product?.name || "unnamed"}: valid=${isValid}, quantity=${
-            product?.quantity
-          }`
-        );
+
         return isValid;
       });
 
       products.value = filteredProducts;
-      console.log("Filtered products count:", products.value.length);
-      console.log(
-        "Filtered products:",
-        products.value.map((p) => ({
-          id: p.id,
-          name: p.name,
-          quantity: p.quantity,
-        }))
-      );
 
       return products.value; // Return the products for verification
     } else {
@@ -1666,26 +1658,16 @@ const selectedProductDetails = computed(() => {
 });
 
 const availableProductsForOrder = computed(() => {
-  console.log("=== availableProductsForOrder computed ===");
-  console.log("products.value.length:", products.value?.length || 0);
-  console.log(
-    "editingOrderItems.value.length:",
-    editingOrderItems.value?.length || 0
-  );
-
   const filtered = products.value.filter((product) => {
     const existingItem = editingOrderItems.value.find(
       (item) => item.product === product.id
     );
     const alreadyInOrder = existingItem ? existingItem.quantity : 0;
     const available = (product.quantity || 0) > alreadyInOrder;
-    console.log(
-      `Filter check - Product ${product.name}: stock=${product.quantity}, inOrder=${alreadyInOrder}, available=${available}`
-    );
+
     return available;
   });
 
-  console.log("availableProductsForOrder result:", filtered.length, filtered);
   return filtered;
 });
 
@@ -1765,12 +1747,10 @@ const saveCustomerChanges = async () => {
         email: editingCustomer.email,
         phone: editingCustomer.phone,
         address: editingCustomer.address,
-      });      if (res.data) {
+      });
+      if (res.data) {
         selectedOrder.value = res.data;
-        await Promise.all([
-          getOrders(currentPage.value),
-          refreshOrderStats()
-        ]);
+        await Promise.all([getOrders(currentPage.value), refreshOrderStats()]);
         showToast(
           "success",
           "Customer Updated",
@@ -1807,11 +1787,8 @@ const calculateSubtotal = () => {
 };
 
 async function handleEditOrderItem() {
-  console.log("=== handleEditOrderItem called ===");
-  console.log("Current editOrderItems.value:", editOrderItems.value);
   const wasEditing = editOrderItems.value;
   editOrderItems.value = !editOrderItems.value;
-  console.log("New editOrderItems.value:", editOrderItems.value);
 
   if (editOrderItems.value && !wasEditing) {
     // Entering edit mode
@@ -1820,9 +1797,8 @@ async function handleEditOrderItem() {
       "Edit Mode Enabled",
       "You can now modify order items and add new products."
     );
-    console.log("Loading products...");
+
     await getProducts();
-    console.log("Products loaded in handleEditOrderItem");
   } else if (!editOrderItems.value && wasEditing) {
     // Exiting edit mode
     showToast(
@@ -1834,21 +1810,14 @@ async function handleEditOrderItem() {
 }
 
 const closeAddItemModal = () => {
-  console.log("=== closeAddItemModal called ===");
-  console.log("showAddItemModal.value before:", showAddItemModal.value);
   showAddItemModal.value = false;
-  console.log("showAddItemModal.value after:", showAddItemModal.value);
+
   selectedProductToAdd.value = null;
   newItemQuantity.value = 1;
 };
 
 async function handleShowAddItemModal() {
   try {
-    console.log("=== handleShowAddItemModal started ===");
-    console.log("editOrderItems.value:", editOrderItems.value);
-    console.log("editingOrderItems.value:", editingOrderItems.value);
-    console.log("selectedOrder.value:", selectedOrder.value);
-
     // Check if edit mode is enabled
     if (!editOrderItems.value) {
       showToast(
@@ -1863,12 +1832,8 @@ async function handleShowAddItemModal() {
     selectedProductToAdd.value = null;
     newItemQuantity.value = 1;
 
-    // Ensure products are loaded
-    console.log("Current products count:", products.value?.length || 0);
     if (!products.value || products.value.length === 0) {
-      console.log("Loading products...");
       await getProducts();
-      console.log("Products loaded:", products.value?.length || 0);
     }
 
     // Filter out products that are out of stock
@@ -1878,16 +1843,11 @@ async function handleShowAddItemModal() {
       );
       const alreadyInOrder = existingItem ? existingItem.quantity : 0;
       const available = (product.quantity || 0) > alreadyInOrder;
-      console.log(
-        `Product ${product.name}: stock=${product.quantity}, inOrder=${alreadyInOrder}, available=${available}`
-      );
+
       return available;
     });
 
-    console.log("Available products count:", availableProducts.length);
-
     if (availableProducts.length === 0) {
-      console.log("No products available for selection");
       showToast(
         "warning",
         "No Products Available",
@@ -1895,23 +1855,11 @@ async function handleShowAddItemModal() {
       );
       return;
     }
-    console.log("Opening add item modal...");
+
     showAddItemModal.value = true;
-    console.log(
-      "showAddItemModal.value after setting:",
-      showAddItemModal.value
-    );
 
     // Force reactivity check
     await nextTick();
-    console.log(
-      "After nextTick - showAddItemModal.value:",
-      showAddItemModal.value
-    );
-    console.log(
-      "availableProductsForOrder.length:",
-      availableProductsForOrder.value.length
-    );
   } catch (error) {
     console.error("Error opening add item modal:", error);
     showToast("error", "Error", "Failed to load products for selection");
@@ -1953,12 +1901,7 @@ const decrementNewItemQuantity = () => {
 };
 
 const addItemToOrder = async () => {
-  console.log("=== addItemToOrder started ===");
-  console.log("isAddingItem.value:", isAddingItem.value);
-  console.log("selectedProductToAdd.value:", selectedProductToAdd.value);
-
   if (isAddingItem.value || !selectedProductToAdd.value) {
-    console.log("Returning early: isAddingItem or no product selected");
     return;
   }
   isAddingItem.value = true;
@@ -1971,16 +1914,11 @@ const addItemToOrder = async () => {
       typeof selectedProductToAdd.value === "number"
     ) {
       product = products.value.find((p) => p.id === selectedProductToAdd.value);
-      console.log("Found product by ID:", product);
     }
 
     if (!product) {
       throw new Error("Product not found");
     }
-
-    console.log("Selected product:", product);
-    console.log("Quantity to add:", newItemQuantity.value);
-    console.log("Product stock:", product.quantity);
 
     // Check stock availability
     if (newItemQuantity.value > product.quantity) {
@@ -2004,15 +1942,10 @@ const addItemToOrder = async () => {
       },
     };
 
-    console.log("New item to add:", newItem);
-    console.log("Current editingOrderItems:", editingOrderItems.value);
-
     // Check if item already exists in order
     const existingItemIndex = editingOrderItems.value.findIndex(
       (item) => item.product === newItem.product
     );
-
-    console.log("Existing item index:", existingItemIndex);
 
     if (existingItemIndex !== -1) {
       // Update existing item quantity
@@ -2026,20 +1959,13 @@ const addItemToOrder = async () => {
         );
         return;
       }
-      console.log(
-        "Updating existing item quantity from",
-        editingOrderItems.value[existingItemIndex].quantity,
-        "to",
-        totalQuantity
-      );
+
       editingOrderItems.value[existingItemIndex].quantity = totalQuantity;
     } else {
       // Add new item
-      console.log("Adding new item to order");
+
       editingOrderItems.value.push(newItem);
     }
-
-    console.log("Updated editingOrderItems:", editingOrderItems.value);
 
     // Reset form
     selectedProductToAdd.value = null;
@@ -2068,16 +1994,14 @@ const saveOrderItemChanges = async () => {
 
     const res2 = await put(`/orders/${selectedOrder.value.id}/update/`, {
       items: editingOrderItems.value,
-    });    if (res.data) {
+    });
+    if (res.data) {
       showToast(
         "success",
         "Order Items Updated",
         "Order items have been successfully updated."
       );
-      await Promise.all([
-        getOrders(currentPage.value),
-        refreshOrderStats()
-      ]);
+      await Promise.all([getOrders(currentPage.value), refreshOrderStats()]);
     } else {
       showToast(
         "error",
@@ -2116,10 +2040,7 @@ const updateOrderStatus = async (id) => {
     );
   } finally {
     isProcessing.value = false;
-    await Promise.all([
-      getOrders(currentPage.value),
-      refreshOrderStats()
-    ]);
+    await Promise.all([getOrders(currentPage.value), refreshOrderStats()]);
   }
 };
 
@@ -2272,7 +2193,6 @@ const prevPage = () => {
 
 // Toast methods
 const showToast = (type, title, message) => {
-  console.log(`=== showToast called: ${type} - ${title} - ${message} ===`);
   // Use Nuxt UI toast if available
   try {
     if (toast) {
@@ -2289,12 +2209,10 @@ const showToast = (type, title, message) => {
         color: colorMap[type] || "gray",
         timeout: type === "error" ? 5000 : 3000,
       });
-      console.log("Toast notification sent successfully");
     } else {
-      console.log(`Toast not available - ${type}: ${title} - ${message}`);
     }
   } catch (error) {
-    console.log(`Toast fallback: ${type} - ${title} - ${message}`);
+    console.error(`Toast fallback: ${type} - ${title} - ${message}`);
   }
 };
 
@@ -2340,7 +2258,7 @@ watch(orderSearch, () => {
   if (searchTimeout.value) {
     clearTimeout(searchTimeout.value);
   }
-  
+
   // Set new timeout for debounced search
   searchTimeout.value = setTimeout(() => {
     currentPage.value = 1;
@@ -2351,17 +2269,13 @@ watch(orderSearch, () => {
 // Initialize data on mount
 let orderUpdateInterval;
 onMounted(async () => {
-  await Promise.all([
-    getOrders(),
-    getProducts(),
-    loadOrderStats()
-  ]);
+  await Promise.all([getOrders(), getProducts(), loadOrderStats()]);
 });
 
 onBeforeUnmount(() => {
   // Clear interval when component is destroyed
   if (orderUpdateInterval) clearInterval(orderUpdateInterval);
-  
+
   // Clear search timeout
   if (searchTimeout.value) {
     clearTimeout(searchTimeout.value);

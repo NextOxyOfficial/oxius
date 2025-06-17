@@ -1,28 +1,43 @@
 <template>
-  <div class="max-w-6xl mx-auto -mt-3 mb-8">      
+  <div class="max-w-6xl mx-auto -mt-3 mb-8">
     <!-- Breadcrumb -->
-    <nav class="flex items-center text-sm my-3 px-3 pt-4 overflow-x-auto overflow-y-hidden whitespace-nowrap scrollbar-hide">
-      <NuxtLink to="/" class="text-gray-500 hover:text-emerald-600 flex-shrink-0">Home</NuxtLink>
+    <nav
+      class="flex items-center text-sm my-3 px-3 pt-4 overflow-x-auto overflow-y-hidden whitespace-nowrap scrollbar-hide"
+    >
+      <NuxtLink
+        to="/"
+        class="text-gray-500 hover:text-emerald-600 flex-shrink-0"
+        >Home</NuxtLink
+      >
       <span class="mx-2 text-gray-400 flex-shrink-0">
         <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
       </span>
-      <NuxtLink to="/classified-categories" class="text-gray-500 hover:text-emerald-600 flex-shrink-0">Classified Categories</NuxtLink>
+      <NuxtLink
+        to="/classified-categories"
+        class="text-gray-500 hover:text-emerald-600 flex-shrink-0"
+        >Classified Categories</NuxtLink
+      >
       <span class="mx-2 text-gray-400 flex-shrink-0">
         <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
       </span>
-      <NuxtLink 
+      <NuxtLink
         v-if="service?.category_details"
-        :to="`/classified-categories/${service?.category_details?.slug}`" 
+        :to="`/classified-categories/${service?.category_details?.slug}`"
         class="text-gray-500 hover:text-emerald-600 flex-shrink-0 max-w-[150px] truncate"
       >
         {{ service?.category_details?.title }}
       </NuxtLink>
-      <span v-if="service?.category_details" class="mx-2 text-gray-400 flex-shrink-0">
+      <span
+        v-if="service?.category_details"
+        class="mx-2 text-gray-400 flex-shrink-0"
+      >
         <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
       </span>
-      <span class="text-gray-700 flex-shrink-0 max-w-[200px] truncate">{{ service?.title }}</span>
+      <span class="text-gray-700 flex-shrink-0 max-w-[200px] truncate">{{
+        service?.title
+      }}</span>
     </nav>
-    
+
     <!-- Main Service Section -->
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-2">
       <div class="lg:col-span-3 relative">
@@ -31,9 +46,15 @@
           class="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200"
           @touchstart="handleTouchStart"
           @touchmove="handleTouchMove"
-          @touchend="handleTouchEnd"        >
-          <div v-if="!service?.medias?.length && !service?.category_details?.image" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center">
-            <div class="bg-white/80 backdrop-blur-sm rounded-full p-6 mb-4 shadow-sm">
+          @touchend="handleTouchEnd"
+        >
+          <div
+            v-if="!service?.medias?.length && !service?.category_details?.image"
+            class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center"
+          >
+            <div
+              class="bg-white/80 backdrop-blur-sm rounded-full p-6 mb-4 shadow-sm"
+            >
               <UIcon name="i-heroicons-photo" class="h-16 w-16 text-gray-400" />
             </div>
             <p class="text-gray-500 text-lg font-medium">No Photo Uploaded</p>
@@ -41,8 +62,8 @@
           <img
             v-else
             :src="
-              service?.medias?.length > 0 
-                ? service.medias[currentImageIndex]?.image 
+              service?.medias?.length > 0
+                ? service.medias[currentImageIndex]?.image
                 : service?.category_details?.image
             "
             :alt="service.title"
@@ -77,8 +98,12 @@
               {{ currentImageIndex + 1 }}/{{ service?.medias?.length }}
             </span>
           </div>
-        </div>        <!-- Thumbnail Gallery -->
-        <div v-if="service?.medias?.length > 1" class="flex mt-3 space-x-2 overflow-x-auto pb-2 px-2">
+        </div>
+        <!-- Thumbnail Gallery -->
+        <div
+          v-if="service?.medias?.length > 1"
+          class="flex mt-3 space-x-2 overflow-x-auto pb-2 px-2"
+        >
           <div
             v-for="(media, index) in service?.medias"
             :key="index"
@@ -89,7 +114,10 @@
             }`"
             @click="selectImage(index)"
           >
-            <div v-if="!media.image" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+            <div
+              v-if="!media.image"
+              class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+            >
               <UIcon name="i-heroicons-photo" class="h-6 w-6 text-gray-400" />
             </div>
             <img
@@ -117,7 +145,8 @@
                 <Share2 class="h-5 w-5" />
               </button>
             </div>
-          </div>          <div class="mt-2 flex items-center text-sm text-gray-600">
+          </div>
+          <div class="mt-2 flex items-center text-sm text-gray-600">
             <span class="font-medium text-gray-600 mr-2"
               >Service ID: {{ numericServiceId }}</span
             >
@@ -127,12 +156,21 @@
             </span>
           </div>
 
-          <div class="mt-4">            
-            <span v-if="!service.negotiable" class="text-2xl font-bold text-emerald-600 inline-flex items-center">
-              <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{ service?.price ? service.price.toLocaleString() : 'Contact for Price' }}
+          <div class="mt-4">
+            <span
+              v-if="!service.negotiable"
+              class="text-2xl font-bold text-emerald-600 inline-flex items-center"
+            >
+              <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{
+                service?.price
+                  ? service.price.toLocaleString()
+                  : "Contact for Price"
+              }}
             </span>
-            <span v-else class="text-2xl font-bold text-emerald-600">Negotiable</span>
-          </div>          
+            <span v-else class="text-2xl font-bold text-emerald-600"
+              >Negotiable</span
+            >
+          </div>
           <div class="mt-4 space-y-3">
             <!-- First row: Location (full width) -->
             <div class="flex items-center mb-4">
@@ -144,7 +182,7 @@
               <div>
                 <div class="text-sm font-medium text-gray-600">Location</div>
                 <div class="text-sm text-gray-800">
-                  {{ service?.location || 'Location not specified' }}
+                  {{ service?.location || "Location not specified" }}
                 </div>
               </div>
             </div>
@@ -252,7 +290,9 @@
                 <div class="bg-emerald-50 rounded-full p-1 mr-3 mt-0.5">
                   <Check class="h-3 w-3 text-emerald-600" />
                 </div>
-                <span>Meet in a safe, public place for initial consultation</span>
+                <span
+                  >Meet in a safe, public place for initial consultation</span
+                >
               </li>
               <li class="flex items-start">
                 <div class="bg-emerald-50 rounded-full p-1 mr-3 mt-0.5">
@@ -284,14 +324,19 @@
                 class="size-16 rounded-full bg-gray-200 overflow-hidden mr-4 border border-gray-200"
               >
                 <img
-                  :src="service.user?.image || '/static/frontend/images/placeholder.jpg'"
+                  :src="
+                    service.user?.image ||
+                    '/static/frontend/images/placeholder.jpg'
+                  "
                   :alt="service.user?.first_name || 'Provider'"
                   class="h-full w-full object-cover"
                 />
-              </div>              <div>
+              </div>
+              <div>
                 <div class="flex items-center justify-between">
                   <h3 class="font-semibold text-gray-800">
-                    {{ service.user?.first_name || 'No Name' }} {{ service.user?.last_name }}
+                    {{ service.user?.first_name || "No Name" }}
+                    {{ service.user?.last_name }}
                   </h3>
                   <div class="flex items-center space-x-1 ml-2">
                     <UIcon
@@ -306,27 +351,36 @@
                         title="Pro Member"
                       >
                         <div class="flex items-center gap-1">
-                          <UIcon name="i-heroicons-shield-check" class="size-3" />
+                          <UIcon
+                            name="i-heroicons-shield-check"
+                            class="size-3"
+                          />
                           <span class="text-2xs">Pro</span>
                         </div>
                       </span>
                     </div>
                   </div>
                 </div>
-                <p class="text-sm text-gray-600">
-                  Service Provider
-                </p>
+                <p class="text-sm text-gray-600">Service Provider</p>
               </div>
             </div>
 
-            <div v-if="service.user?.about" class="mt-4 text-sm text-gray-600" v-html="service.user?.about"></div>
+            <div
+              v-if="service.user?.about"
+              class="mt-4 text-sm text-gray-600"
+              v-html="service.user?.about"
+            ></div>
 
             <div class="mt-4 space-y-3 bg-gray-50 p-4 rounded-md">
               <div class="flex justify-between items-center text-sm">
                 <span class="text-gray-600">Phone</span>
                 <div class="flex items-center">
-                  <span v-if="!showPhone" class="text-gray-800">{{ maskPhoneNumber(service.user?.phone) }}</span>
-                  <span v-else class="text-gray-800">{{ service.user?.phone }}</span>
+                  <span v-if="!showPhone" class="text-gray-800">{{
+                    maskPhoneNumber(service.user?.phone)
+                  }}</span>
+                  <span v-else class="text-gray-800">{{
+                    service.user?.phone
+                  }}</span>
                   <button
                     v-if="service.user?.phone"
                     @click="toggleShowPhone"
@@ -338,9 +392,15 @@
                 </div>
               </div>
 
-              <div v-if="service.user?.email" class="flex justify-between text-sm">
+              <div
+                v-if="service.user?.email"
+                class="flex justify-between text-sm"
+              >
                 <span class="text-gray-600">Email</span>
-                <a :href="'mailto:' + service.user?.email" class="font-medium text-emerald-600 hover:text-emerald-700">
+                <a
+                  :href="'mailto:' + service.user?.email"
+                  class="font-medium text-emerald-600 hover:text-emerald-700"
+                >
                   {{ service.user?.email }}
                 </a>
               </div>
@@ -378,7 +438,8 @@
                   WhatsApp
                 </a>
               </div>
-            </div>            <button
+            </div>
+            <button
               class="w-full mt-4 text-sm border border-gray-200 rounded-md py-2 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-800"
               @click="contactProvider"
             >
@@ -502,7 +563,9 @@
                 value="fake"
                 class="text-emerald-600"
               />
-              <span class="text-sm text-gray-800">Fake or misleading service</span>
+              <span class="text-sm text-gray-800"
+                >Fake or misleading service</span
+              >
             </label>
             <label class="flex items-center space-x-2 cursor-pointer">
               <input
@@ -591,7 +654,8 @@ import {
   Download,
   ClipboardList,
   LayoutGrid,
-  Briefcase,  Clock,
+  Briefcase,
+  Clock,
   Check,
   Phone,
 } from "lucide-vue-next";
@@ -636,35 +700,37 @@ setTimeout(() => {
 
 // Computed property to check if user has social links
 const hasSocialLinks = computed(() => {
-  return service.value.user?.face_link || 
-         service.value.user?.instagram_link || 
-         service.value.user?.whatsapp_link;
+  return (
+    service.value.user?.face_link ||
+    service.value.user?.instagram_link ||
+    service.value.user?.whatsapp_link
+  );
 });
 
 // Generate numeric service ID
 const numericServiceId = computed(() => {
-  if (!service.value?.id) return '';
-  
+  if (!service.value?.id) return "";
+
   // Convert string ID to a consistent numeric format
   let hash = 0;
   const str = service.value.id.toString();
-  
+
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
-  
+
   // Ensure positive number and limit to 10 digits
   const positiveHash = Math.abs(hash);
-  const numericId = positiveHash.toString().padStart(6, '0').slice(0, 10);
-  
+  const numericId = positiveHash.toString().padStart(6, "0").slice(0, 10);
+
   return numericId;
 });
 
 // Format date
 const formatDate = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = new Date(dateString);
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
@@ -675,20 +741,22 @@ const formatDate = (dateString) => {
 
 // Format relative time
 const formatRelativeTime = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = new Date(dateString);
   const now = new Date();
   const diffInSeconds = Math.floor((now - date) / 1000);
-  
-  if (diffInSeconds < 60) return 'Just now';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+
+  if (diffInSeconds < 60) return "Just now";
+  if (diffInSeconds < 3600)
+    return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+  if (diffInSeconds < 86400)
+    return `${Math.floor(diffInSeconds / 3600)} hours ago`;
   return `${Math.floor(diffInSeconds / 86400)} days ago`;
 };
 
 // Mask phone number
 const maskPhoneNumber = (phone) => {
-  if (!phone) return '';
+  if (!phone) return "";
   return "XXXXXXX" + phone?.slice(-3);
 };
 
@@ -741,24 +809,24 @@ const handleTouchEnd = () => {
 const downloadImage = () => {
   // Get the current image URL from the service medias array
   let imageUrl;
-  
+
   if (service.value?.medias?.length > 0) {
     const currentMedia = service.value.medias[currentImageIndex.value];
     imageUrl = currentMedia?.image;
   } else {
     imageUrl = service.value?.category_details?.image;
   }
-  
+
   if (!imageUrl) {
-    console.error('No image URL found for download');
+    console.error("No image URL found for download");
     return;
   }
-  
+
   // Create a download link for the current image
   const link = document.createElement("a");
   link.href = imageUrl;
   link.download = `service-image-${currentImageIndex.value + 1}.jpg`;
-  link.setAttribute('target', '_blank'); // Open in new tab if direct download fails
+  link.setAttribute("target", "_blank"); // Open in new tab if direct download fails
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -773,7 +841,7 @@ const toggleShowPhone = () => {
 const handleShare = () => {
   shareDialogOpen.value = true;
   // Use the current hostname; in production, this will be your domain
-  const productionDomain = 'https://adsyclub.com';
+  const productionDomain = "https://adsyclub.com";
   // Use window.location.pathname to get just the path without hostname
   const pathname = window.location.pathname;
   // Create the full URL using the production domain
@@ -788,18 +856,18 @@ const copyToClipboard = () => {
   navigator.clipboard.writeText(shareUrl.value);
   // Show a toast message
   toast.add({
-    title: 'Link Copied!',
-    description: 'Share link has been copied to clipboard',
-    color: 'green',
-    icon: 'i-heroicons-check-circle'
+    title: "Link Copied!",
+    description: "Share link has been copied to clipboard",
+    color: "green",
+    icon: "i-heroicons-check-circle",
   });
 };
 
 const shareViaMedia = (platform) => {
   let platformShareUrl = "";
   const currentUrl = encodeURIComponent(shareUrl.value);
-  const title = encodeURIComponent(service.value?.title || '');
-  
+  const title = encodeURIComponent(service.value?.title || "");
+
   switch (platform) {
     case "facebook":
       platformShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`;
@@ -834,20 +902,14 @@ const closeReportDialog = () => {
 };
 
 const submitReport = () => {
-  console.log("Report submitted:", {
-    reason: reportReason.value,
-    details: reportDetails.value,
-    serviceId: service.value?.id,
-  });
-  
   // Show success message
   toast.add({
-    title: 'Report Submitted',
-    description: 'Thank you for your report. We will review it shortly.',
-    color: 'green',
-    icon: 'i-heroicons-check-circle'
+    title: "Report Submitted",
+    description: "Thank you for your report. We will review it shortly.",
+    color: "green",
+    icon: "i-heroicons-check-circle",
   });
-  
+
   closeReportDialog();
 };
 
@@ -860,33 +922,38 @@ const capitalizeTitle = (title) => {
 // Contact provider functionality
 const contactProvider = () => {
   if (service.value.user?.phone) {
-    window.open(`tel:${service.value.user.phone}`, '_self');
+    window.open(`tel:${service.value.user.phone}`, "_self");
   } else if (service.value.user?.email) {
-    window.open(`mailto:${service.value.user.email}`, '_self');
+    window.open(`mailto:${service.value.user.email}`, "_self");
   } else if (service.value.user?.whatsapp_link) {
-    window.open(service.value.user.whatsapp_link, '_blank');
+    window.open(service.value.user.whatsapp_link, "_blank");
   } else {
     toast.add({
-      title: 'Contact Information Not Available',
-      description: 'No contact information is available for this provider.',
-      color: 'red',
-      icon: 'i-heroicons-exclamation-triangle'
+      title: "Contact Information Not Available",
+      description: "No contact information is available for this provider.",
+      color: "red",
+      icon: "i-heroicons-exclamation-triangle",
     });
   }
 };
 
 // Legacy share functions for backward compatibility
 const runtimeConfig = useRuntimeConfig();
-const domain = runtimeConfig.public.domain || 'https://adsyclub.com';
-const pageLink = computed(() => `${domain}/classified-categories/details/${service.value?.slug || router.params.id}`);
+const domain = runtimeConfig.public.domain || "https://adsyclub.com";
+const pageLink = computed(
+  () =>
+    `${domain}/classified-categories/details/${
+      service.value?.slug || router.params.id
+    }`
+);
 const pageTitle = computed(() => String(document.title).replace(/\&/g, "%26"));
 
 function fbs_click() {
-  shareViaMedia('facebook');
+  shareViaMedia("facebook");
 }
 
 function tbs_click() {
-  shareViaMedia('twitter');
+  shareViaMedia("twitter");
 }
 
 function lbs_click() {
@@ -920,11 +987,11 @@ function pbs_click() {
 <style scoped>
 /* Hide scrollbar while keeping scroll functionality */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Safari and Chrome */
+  display: none; /* Safari and Chrome */
 }
 </style>

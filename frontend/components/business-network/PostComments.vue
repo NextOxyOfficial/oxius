@@ -49,18 +49,26 @@
             <!-- Gift content with sender info -->
             <div class="gift-comment-premium">
               <div class="gift-label flex gap-1 mb-1">
-                <UIcon name="i-heroicons-gift" class="w-4 h-4 text-pink-500 mt-2 mr-1" />
+                <UIcon
+                  name="i-heroicons-gift"
+                  class="w-4 h-4 text-pink-500 mt-2 mr-1"
+                />
                 <span
                   class="text-sm font-medium text-pink-600 dark:text-pink-400"
                 >
                   Sent {{ highestGiftComment?.diamond_amount }} diamonds to
                   {{ post?.author_details?.name || post?.author?.name }}
                 </span>
-              </div>              <!-- Gift message if available -->
+              </div>
+              <!-- Gift message if available -->
               <div class="gift-message-container">
-                <p 
+                <p
                   class="gift-message-text"
-                  v-html="processGiftMessageWithLineBreaks(extractGiftMessage(highestGiftComment?.content))"
+                  v-html="
+                    processGiftMessageWithLineBreaks(
+                      extractGiftMessage(highestGiftComment?.content)
+                    )
+                  "
                 ></p>
               </div>
             </div>
@@ -78,7 +86,8 @@
           </div>
         </div>
       </div>
-    </div>    <!-- See all comments button with smaller hover effect -->
+    </div>
+    <!-- See all comments button with smaller hover effect -->
     <button
       v-if="(post?.comment_count || 0) > 3"
       class="flex items-center text-sm text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-300 group"
@@ -246,19 +255,28 @@
                     Sent {{ comment?.diamond_amount }} diamonds to
                     {{ post?.author_details?.name || post?.author?.name }}
                   </span>
-                </div>                <!-- Gift message content with improved styling -->
+                </div>
+                <!-- Gift message content with improved styling -->
                 <div class="gift-content">
-                  <p 
+                  <p
                     class="gift-message-text"
-                    v-html="processGiftMessageWithLineBreaks(extractGiftMessage(comment?.content))"
+                    v-html="
+                      processGiftMessageWithLineBreaks(
+                        extractGiftMessage(comment?.content)
+                      )
+                    "
                   ></p>
                 </div>
-              </div>                
+              </div>
               <!-- Regular comment with mention processing -->
               <div
                 v-else
                 class="text-sm text-gray-800 dark:text-gray-300 comment-content"
-                style="word-break: break-word; white-space: pre-wrap; line-height: 2;"
+                style="
+                  word-break: break-word;
+                  white-space: pre-wrap;
+                  line-height: 2;
+                "
                 v-html="processMentionsInComment(comment?.content)"
               ></div>
             </div>
@@ -299,7 +317,7 @@ const props = defineProps({
 });
 
 // Define placeholder path for consistent usage
-const placeholderPath = '/static/frontend/images/placeholder.jpg';
+const placeholderPath = "/static/frontend/images/placeholder.jpg";
 
 const emit = defineEmits([
   "open-comments-modal",
@@ -330,12 +348,8 @@ const highestGiftComment = computed(() => {
 // Filter out the highest gift comment from regular comments to avoid duplication
 const displayedComments = computed(() => {
   if (!props.post?.post_comments?.length) {
-    console.log('📭 No comments to display for post:', props.post?.id);
     return [];
   }
-
-  console.log('📬 Total comments for post:', props.post.id, 'count:', props.post.post_comments.length);
-  console.log('📋 All comments:', props.post.post_comments.map(c => ({ id: c.id, content: c.content?.substring(0, 50) + '...', created_at: c.created_at })));
 
   let comments = [...props.post.post_comments];
   // If there's a highest gift comment, remove it from the regular comments list
@@ -344,14 +358,13 @@ const displayedComments = computed(() => {
       (comment) => comment.id !== highestGiftComment.value.id
     );
   }
-  
+
   // Sort comments by creation date in ascending order (oldest first)
   comments.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-  
+
   // Return the last 3 comments (most recent ones at the bottom)
   const displayed = comments.slice(-3);
-  console.log('📺 Displayed comments:', displayed.map(c => ({ id: c.id, content: c.content?.substring(0, 50) + '...', author: c.author_details?.name })));
-  
+
   return displayed;
 });
 
@@ -450,29 +463,24 @@ const toggleDropdown = (comment) => {
 // Process mentions in comments to make them clickable and preserve line breaks
 const processMentionsInComment = (content) => {
   if (!content) {
-    console.log('⚠️ No content provided to processMentionsInComment');
     return content;
   }
-  
-  console.log('📝 Processing comment content:', `"${content}"`);
-  
+
   // First process mentions
   let processedContent = processMentionsAsHTML(content);
-  
+
   // Then convert line breaks to HTML <br> tags
-  processedContent = processedContent.replace(/\n/g, '<br>');
-  
-  console.log('✅ Processed comment content:', `"${processedContent}"`);
-  
+  processedContent = processedContent.replace(/\n/g, "<br>");
+
   return processedContent;
 };
 
 // Process gift message content and preserve line breaks
 const processGiftMessageWithLineBreaks = (content) => {
   if (!content) return content;
-  
+
   // Convert line breaks to HTML <br> tags
-  return content.replace(/\n/g, '<br>');
+  return content.replace(/\n/g, "<br>");
 };
 
 // Setup mention click handlers when component mounts
@@ -489,14 +497,24 @@ onMounted(() => {
   padding: 0.75rem;
   border-radius: 0.75rem;
   overflow: hidden;
-  background: linear-gradient(to right, rgba(252, 231, 243, 0.9), rgba(253, 244, 255, 0.8), rgba(250, 232, 255, 0.7));
+  background: linear-gradient(
+    to right,
+    rgba(252, 231, 243, 0.9),
+    rgba(253, 244, 255, 0.8),
+    rgba(250, 232, 255, 0.7)
+  );
   border: 1px solid rgba(251, 207, 232, 0.6);
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dark .gift-comment {
-  background: linear-gradient(to right, rgba(131, 24, 67, 0.3), rgba(157, 23, 77, 0.25), rgba(112, 26, 117, 0.3));
+  background: linear-gradient(
+    to right,
+    rgba(131, 24, 67, 0.3),
+    rgba(157, 23, 77, 0.25),
+    rgba(112, 26, 117, 0.3)
+  );
   border-color: rgba(190, 24, 93, 0.4);
 }
 

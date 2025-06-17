@@ -1,4 +1,5 @@
-<template>  <!-- Sidebar with filters -->
+<template>
+  <!-- Sidebar with filters -->
   <div
     class="filter-sidebar lg:w-72 bg-white rounded-lg shadow-sm border border-gray-100"
     :class="[
@@ -7,7 +8,9 @@
     ]"
   >
     <!-- Mobile Header -->
-    <div class="lg:hidden sticky top-0 flex items-center justify-between p-4 border-b border-gray-100 bg-white z-20">
+    <div
+      class="lg:hidden sticky top-0 flex items-center justify-between p-4 border-b border-gray-100 bg-white z-20"
+    >
       <h2 class="text-lg font-medium text-primary-700">
         <span class="flex items-center gap-2">
           <UIcon name="i-heroicons-funnel" class="h-5 w-5" />
@@ -26,11 +29,18 @@
     </div>
 
     <!-- Main Content Area -->
-    <div class="overflow-y-auto sidebar-content p-5 flex-grow sidebar-scrollable-content">
+    <div
+      class="overflow-y-auto sidebar-content p-5 flex-grow sidebar-scrollable-content"
+    >
       <!-- Categories Section -->
       <div class="mb-6 border-b border-gray-100 pb-6">
-        <h2 class="text-base font-semibold text-gray-800 mb-4 flex items-center">
-          <UIcon name="i-heroicons-squares-2x2" class="w-5 h-5 mr-2 text-primary-600" />
+        <h2
+          class="text-base font-semibold text-gray-800 mb-4 flex items-center"
+        >
+          <UIcon
+            name="i-heroicons-squares-2x2"
+            class="w-5 h-5 mr-2 text-primary-600"
+          />
           Categories
         </h2>
         <ul class="space-y-1.5">
@@ -67,17 +77,19 @@
                     ? 'bg-primary-50 text-primary-700 font-medium shadow-sm'
                     : 'text-gray-800 hover:bg-gray-50'
                 "
-              >                <span class="flex items-center gap-2">
+              >
+                <span class="flex items-center gap-2">
                   <!-- Use dynamic icon from backend or fallback to icon mapping -->
-                  <img 
-                    v-if="category.icon" 
-                    :src="category.icon" 
+                  <img
+                    v-if="category.icon"
+                    :src="category.icon"
                     :alt="category.name + ' icon'"
                     class="w-4 h-4 object-contain"
-                  />                  <UIcon 
-                    v-else 
-                    :name="getCategoryIcon(category.id, category.name)" 
-                    class="w-4 h-4" 
+                  />
+                  <UIcon
+                    v-else
+                    :name="getCategoryIcon(category.id, category.name)"
+                    class="w-4 h-4"
                   />
                   {{ category.name }}
                 </span>
@@ -86,9 +98,9 @@
                   <span
                     :class="[
                       'text-xs px-2 py-0.5 rounded-full',
-                      selectedCategory === category.id 
-                        ? 'bg-primary-100 text-primary-600 font-medium' 
-                        : 'bg-gray-100 text-gray-600'
+                      selectedCategory === category.id
+                        ? 'bg-primary-100 text-primary-600 font-medium'
+                        : 'bg-gray-100 text-gray-600',
                     ]"
                   >
                     {{ category?.post_count }}
@@ -99,7 +111,7 @@
           </li>
         </ul>
       </div>
-      
+
       <!-- Post Ad CTA for Desktop & Tablets (Moved from bottom) -->
       <div class="mb-6">
         <div
@@ -110,18 +122,18 @@
           >
             <UIcon name="i-heroicons-tag" class="w-4 h-4" />
             Looking to List a Sale?
-          </h3>          
+          </h3>
           <p class="text-sm text-gray-600 mb-3">
-            List your items easily and reach thousands of potential buyers in your
-            area.
+            List your items easily and reach thousands of potential buyers in
+            your area.
           </p>
           <NuxtLink
-                    to="/sale/my-posts?tab=post-sale"
-                    class="whitespace-nowrap flex items-center text-center gap-1 px-3 py-2 h-10 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm"
-                  >
-                    <UIcon name="i-heroicons-plus-circle" class="h-4 w-4" />
-                    Post Your Ad
-                  </NuxtLink>
+            to="/sale/my-posts?tab=post-sale"
+            class="whitespace-nowrap flex items-center text-center gap-1 px-3 py-2 h-10 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm"
+          >
+            <UIcon name="i-heroicons-plus-circle" class="h-4 w-4" />
+            Post Your Ad
+          </NuxtLink>
         </div>
       </div>
 
@@ -146,15 +158,22 @@
                   alt="Ad"
                   class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                <div class="absolute inset-0 bg-gradient-to-tr from-primary-900/10 to-transparent"></div>
+                <div
+                  class="absolute inset-0 bg-gradient-to-tr from-primary-900/10 to-transparent"
+                ></div>
               </div>
             </div>
             <div class="w-2/3 p-3">
               <div class="flex items-start justify-between">
-                <h4 class="font-medium text-gray-800 text-sm group-hover:text-primary-600 transition-colors">
+                <h4
+                  class="font-medium text-gray-800 text-sm group-hover:text-primary-600 transition-colors"
+                >
                   Latest Electronics
                 </h4>
-                <span class="text-xs bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded font-medium">Ad</span>
+                <span
+                  class="text-xs bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded font-medium"
+                  >Ad</span
+                >
               </div>
               <p class="text-primary-600 text-xs font-medium mt-1">
                 Discounts up to 30%
@@ -183,7 +202,9 @@
               alt="Special Featured Deal"
               class="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"
+            ></div>
             <div class="absolute top-3 left-3">
               <span
                 class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1 shadow-sm"
@@ -192,22 +213,28 @@
                 Limited Time
               </span>
             </div>
-            <div
-              class="absolute bottom-0 left-0 w-full p-4"
-            >
+            <div class="absolute bottom-0 left-0 w-full p-4">
               <h4 class="font-semibold text-white text-base">Summer Sale</h4>
               <p class="text-blue-50 text-sm font-medium mt-1">
                 Up to 50% off on selected items
               </p>
-              <UButton href='/eshop' color="white" class="mt-3 shadow-sm hover:bg-white hover:text-blue-600 transition-colors" variant="solid">
+              <UButton
+                href="/eshop"
+                color="white"
+                class="mt-3 shadow-sm hover:bg-white hover:text-blue-600 transition-colors"
+                variant="solid"
+              >
                 Shop Now
               </UButton>
             </div>
           </div>
         </div>
       </div>
-    </div>    <!-- Fixed bottom CTA for mobile -->
-    <div class="lg:hidden sticky bottom-0 p-4 bg-white border-t border-gray-100 shadow-sm z-20">
+    </div>
+    <!-- Fixed bottom CTA for mobile -->
+    <div
+      class="lg:hidden sticky bottom-0 p-4 bg-white border-t border-gray-100 shadow-sm z-20"
+    >
       <UButton
         to="/sale/my-posts?tab=post-sale"
         color="primary"
@@ -250,13 +277,15 @@ const props = defineProps({
 });
 
 // Debug: Log categories to see the structure
-import { watch } from 'vue';
-watch(() => props.categories, (newCategories) => {
-  console.log('Categories data:', newCategories);
-  if (newCategories?.length > 0) {
-    console.log('First category structure:', newCategories[0]);
-  }
-}, { immediate: true });
+import { watch } from "vue";
+watch(
+  () => props.categories,
+  (newCategories) => {
+    if (newCategories?.length > 0) {
+    }
+  },
+  { immediate: true }
+);
 
 const emits = defineEmits([
   "toggle-mobile-sidebar",
@@ -273,9 +302,9 @@ function toggleMobileSidebar() {
 // Category selection function
 function selectCategory(categoryId) {
   emits("select-category", categoryId);
-  
+
   // Close the sidebar on mobile when a category is selected
-  if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+  if (typeof window !== "undefined" && window.innerWidth < 1024) {
     toggleMobileSidebar();
   }
 }
@@ -283,9 +312,9 @@ function selectCategory(categoryId) {
 // Subcategory selection function
 function selectSubcategory(subcategoryId) {
   emits("select-subcategory", subcategoryId);
-  
+
   // Close the sidebar on mobile when a subcategory is selected
-  if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+  if (typeof window !== "undefined" && window.innerWidth < 1024) {
     toggleMobileSidebar();
   }
 }
@@ -296,29 +325,29 @@ function toggleSubcategories(category) {
 }
 
 // Get category icon - now with better fallbacks based on category names
-function getCategoryIcon(categoryId, categoryName = '') {
+function getCategoryIcon(categoryId, categoryName = "") {
   // First try ID-based mapping for known categories
   const idIconMapping = {
-    1: "i-heroicons-home",                    // Home & Garden
-    2: "i-heroicons-truck",                   // Vehicles
-    3: "i-heroicons-device-phone-mobile",     // Electronics/Mobile
-    4: "i-heroicons-trophy",                  // Sports & Hobbies
-    5: "i-heroicons-building-office-2",       // Real Estate/Property
-    6: "i-heroicons-cube",                    // Products/Items
-    7: "i-heroicons-computer-desktop",        // Electronics/Computers
-    8: "i-heroicons-musical-note",            // Entertainment/Music
-    9: "i-heroicons-sparkles",                // Fashion/Beauty
-    10: "i-heroicons-academic-cap",           // Education/Books
-    11: "i-heroicons-briefcase",              // Business/Services
-    12: "i-heroicons-heart",                  // Health & Wellness
-    13: "i-heroicons-wrench-screwdriver",     // Tools & Equipment
-    14: "i-heroicons-gift",                   // Gifts & Collectibles
-    15: "i-heroicons-camera",                 // Photography
-    16: "i-heroicons-beaker",                 // Baby & Kids
-    17: "i-heroicons-shopping-bag",           // Shopping/Retail
-    18: "i-heroicons-cog-6-tooth",            // Machinery/Industrial
-    19: "i-heroicons-puzzle-piece",           // Games & Toys
-    20: "i-heroicons-map",                    // Travel & Tourism
+    1: "i-heroicons-home", // Home & Garden
+    2: "i-heroicons-truck", // Vehicles
+    3: "i-heroicons-device-phone-mobile", // Electronics/Mobile
+    4: "i-heroicons-trophy", // Sports & Hobbies
+    5: "i-heroicons-building-office-2", // Real Estate/Property
+    6: "i-heroicons-cube", // Products/Items
+    7: "i-heroicons-computer-desktop", // Electronics/Computers
+    8: "i-heroicons-musical-note", // Entertainment/Music
+    9: "i-heroicons-sparkles", // Fashion/Beauty
+    10: "i-heroicons-academic-cap", // Education/Books
+    11: "i-heroicons-briefcase", // Business/Services
+    12: "i-heroicons-heart", // Health & Wellness
+    13: "i-heroicons-wrench-screwdriver", // Tools & Equipment
+    14: "i-heroicons-gift", // Gifts & Collectibles
+    15: "i-heroicons-camera", // Photography
+    16: "i-heroicons-beaker", // Baby & Kids
+    17: "i-heroicons-shopping-bag", // Shopping/Retail
+    18: "i-heroicons-cog-6-tooth", // Machinery/Industrial
+    19: "i-heroicons-puzzle-piece", // Games & Toys
+    20: "i-heroicons-map", // Travel & Tourism
   };
 
   if (idIconMapping[categoryId]) {
@@ -327,22 +356,46 @@ function getCategoryIcon(categoryId, categoryName = '') {
 
   // Fallback to name-based mapping (case insensitive)
   const lowerName = categoryName.toLowerCase();
-  if (lowerName.includes('vehicle') || lowerName.includes('car') || lowerName.includes('bike')) {
+  if (
+    lowerName.includes("vehicle") ||
+    lowerName.includes("car") ||
+    lowerName.includes("bike")
+  ) {
     return "i-heroicons-truck";
   }
-  if (lowerName.includes('home') || lowerName.includes('house') || lowerName.includes('property')) {
+  if (
+    lowerName.includes("home") ||
+    lowerName.includes("house") ||
+    lowerName.includes("property")
+  ) {
     return "i-heroicons-home";
   }
-  if (lowerName.includes('electronic') || lowerName.includes('mobile') || lowerName.includes('phone')) {
+  if (
+    lowerName.includes("electronic") ||
+    lowerName.includes("mobile") ||
+    lowerName.includes("phone")
+  ) {
     return "i-heroicons-device-phone-mobile";
   }
-  if (lowerName.includes('fashion') || lowerName.includes('cloth') || lowerName.includes('beauty')) {
+  if (
+    lowerName.includes("fashion") ||
+    lowerName.includes("cloth") ||
+    lowerName.includes("beauty")
+  ) {
     return "i-heroicons-sparkles";
   }
-  if (lowerName.includes('sport') || lowerName.includes('game') || lowerName.includes('toy')) {
+  if (
+    lowerName.includes("sport") ||
+    lowerName.includes("game") ||
+    lowerName.includes("toy")
+  ) {
     return "i-heroicons-trophy";
   }
-  if (lowerName.includes('business') || lowerName.includes('service') || lowerName.includes('job')) {
+  if (
+    lowerName.includes("business") ||
+    lowerName.includes("service") ||
+    lowerName.includes("job")
+  ) {
     return "i-heroicons-briefcase";
   }
 
@@ -379,7 +432,7 @@ function getCategoryIcon(categoryId, categoryName = '') {
     transform: translateX(0);
     box-shadow: 0 0 25px rgba(0, 0, 0, 0.15);
   }
-  
+
   .sidebar-scrollable-content {
     max-height: calc(100vh - 140px);
     scrollbar-width: thin;
@@ -410,12 +463,12 @@ function getCategoryIcon(categoryId, categoryName = '') {
   .filter-sidebar:hover {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   }
-  
+
   .sidebar-scrollable-content {
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
   }
-  
+
   .sidebar-scrollable-content::-webkit-scrollbar {
     width: 4px;
   }

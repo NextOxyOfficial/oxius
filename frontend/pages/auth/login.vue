@@ -1,6 +1,8 @@
 <template>
   <UContainer class="py-10 md:py-16">
-    <div class="flex flex-col-reverse md:flex-row items-center gap-8 max-w-5xl mx-auto">
+    <div
+      class="flex flex-col-reverse md:flex-row items-center gap-8 max-w-5xl mx-auto"
+    >
       <div class="w-full md:w-3/5 relative">
         <div class="relative">
           <NuxtImg
@@ -15,13 +17,15 @@
             class="rounded-xl shadow-sm w-full"
             alt="Login"
           />
-            <!-- Overlay text removed -->
-          <div class="absolute inset-0 flex flex-col items-start justify-end p-8 bg-gradient-to-t from-black/70 to-transparent rounded-xl text-white">
+          <!-- Overlay text removed -->
+          <div
+            class="absolute inset-0 flex flex-col items-start justify-end p-8 bg-gradient-to-t from-black/70 to-transparent rounded-xl text-white"
+          >
             <!-- Text removed as requested -->
           </div>
         </div>
       </div>
-      
+
       <div class="w-full md:w-2/5 md:py-5">
         <CommonLoginForm />
       </div>
@@ -38,14 +42,12 @@ const banner = ref({});
 async function getBanner() {
   const res = await get("/authentication-banner/");
   banner.value = res.data;
-  console.log(res.data);
 }
 
 getBanner();
 
 onMounted(() => {
   if (user?.user) {
-    console.log(user);
     navigateTo("/");
   }
   if (useCookie("adsyclub-jwt").value) {

@@ -810,7 +810,7 @@ const trust_badges = ref([
     icon: "i-heroicons-credit-card",
     enabled: true,
     description: "Emphasize the security of your payment process",
-    editorField: "cta_badge1", 
+    editorField: "cta_badge1",
   },
   {
     id: "guarantee",
@@ -818,7 +818,7 @@ const trust_badges = ref([
     icon: "i-heroicons-shield-check",
     enabled: true,
     description: "Build customer confidence with a guarantee",
-    editorField: "cta_badge2", 
+    editorField: "cta_badge2",
   },
   {
     id: "delivery",
@@ -826,7 +826,7 @@ const trust_badges = ref([
     icon: "i-heroicons-truck",
     enabled: true,
     description: "Highlight your quick shipping options",
-    editorField: "cta_badge3", 
+    editorField: "cta_badge3",
   },
 ]);
 
@@ -963,12 +963,6 @@ function saveTrustBadges() {
 // Save the current edit
 const originalSaveEdit = saveEdit;
 function saveEdit() {
-  console.log("Before saving edit:", {
-    editingField: editingField.value,
-    editingFieldValue: editingFieldValue.value,
-    editingBenefitIndex: editingBenefitIndex.value,
-  });
-
   if (editingBenefitIndex.value !== -1) {
     // Editing a benefit
     const index = editingBenefitIndex.value;
@@ -1004,13 +998,6 @@ function saveEdit() {
     color: "green",
     timeout: 3000,
   });
-
-  console.log("After saving edit:", {
-    editorData,
-    benefits: benefits.value,
-    faqs: editableFaqs.value,
-    trust_badges: trust_badges.value,
-  });
 }
 
 // Emit content update with detailed logging
@@ -1022,8 +1009,6 @@ function emitContentUpdate() {
     faqs: editableFaqs.value,
     trust_badges: trust_badges.value,
   };
-
-  console.log("Emitting update:content event with data:", compiledData);
 
   // Emit update event for parent components
   emit("update:content", compiledData);
@@ -1115,9 +1100,6 @@ async function saveChanges() {
       trust_badges: [...trust_badges.value],
     };
 
-    // Log the data being saved (this will show in browser console)
-    console.log("Saving Advanced Editor data:", compiledData);
-
     // Emit update event to parent component
     emitContentUpdate();
 
@@ -1145,56 +1127,16 @@ async function saveChanges() {
 }
 
 // Watch for changes to editor data
-watch(
-  editorData,
-  (newValue, oldValue) => {
-    console.log("Editor data changed:", {
-      newValue,
-      oldValue,
-      changedFields: getChangedFields(newValue, oldValue),
-    });
-  },
-  { deep: true }
-);
+watch(editorData, (newValue, oldValue) => {}, { deep: true });
 
 // Watch for changes to benefits
-watch(
-  benefits,
-  (newValue, oldValue) => {
-    console.log("Benefits changed:", {
-      newValue,
-      oldValue,
-      diff: getDiffBetweenArrays(newValue, oldValue),
-    });
-  },
-  { deep: true }
-);
+watch(benefits, (newValue, oldValue) => {}, { deep: true });
 
 // Watch for changes to FAQs
-watch(
-  editableFaqs,
-  (newValue, oldValue) => {
-    console.log("FAQs changed:", {
-      newValue,
-      oldValue,
-      diff: getDiffBetweenArrays(newValue, oldValue),
-    });
-  },
-  { deep: true }
-);
+watch(editableFaqs, (newValue, oldValue) => {}, { deep: true });
 
 // Watch for changes to trust badges
-watch(
-  trust_badges,
-  (newValue, oldValue) => {
-    console.log("Trust badges changed:", {
-      newValue,
-      oldValue,
-      diff: getDiffBetweenArrays(newValue, oldValue),
-    });
-  },
-  { deep: true }
-);
+watch(trust_badges, (newValue, oldValue) => {}, { deep: true });
 
 // Helper function to identify changed fields between objects
 function getChangedFields(newObj, oldObj) {

@@ -113,7 +113,7 @@ const pendingGigs = ref([]);
 
 async function getPendingTasks() {
   const { data, error } = await get(`/user-pending-tasks/`);
-  console.log(data);
+
   pendingGigs.value = data;
 }
 getPendingTasks();

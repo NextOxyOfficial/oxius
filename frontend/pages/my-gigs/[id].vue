@@ -172,7 +172,9 @@
 
         <!-- Title and Description -->
         <div class="text-center mb-8">
-          <h3 class="text-xl font-semibold text-gray-800 mb-2">Stop this gig?</h3>
+          <h3 class="text-xl font-semibold text-gray-800 mb-2">
+            Stop this gig?
+          </h3>
           <p class="text-gray-600 max-w-sm">
             This action will permanently stop the current gig and cannot be
             undone.
@@ -337,9 +339,8 @@ async function getUserGigs() {
     const res = await get(`/user-micro-gigs/${route.params.id}/`);
 
     gigs.value = res.data;
-    console.log(res.data);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 getUserGigs();

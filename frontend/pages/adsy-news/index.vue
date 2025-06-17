@@ -589,7 +589,6 @@ const formatArticleForDisplay = (article) => {
 
 // Latest article (most recent by date)
 const latestArticle = computed(() => {
-  console.log("Latest article:", articles.value);
   if (articles.value.length === 0) {
     return {
       id: "",

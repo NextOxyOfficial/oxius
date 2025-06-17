@@ -96,7 +96,8 @@
           >
             <div class="p-2 relative">
               <div class="flex justify-between items-start">
-                <div class="w-full">                  <span
+                <div class="w-full">
+                  <span
                     class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full capitalize"
                     :class="getTagClass(pack.type)"
                   >
@@ -178,7 +179,8 @@
           >
             <div class="p-2 relative">
               <div class="flex justify-between items-start">
-                <div class="w-full">                  <span
+                <div class="w-full">
+                  <span
                     class="inline-block px-2 py-0.5 text-xs font-semibold rounded-full capitalize"
                     :class="getTagClass(pack.type)"
                   >
@@ -273,10 +275,12 @@
 
         <div class="space-y-4">
           <!-- Package Details -->
-          <div class="p-4 bg-gray-50 rounded-lg">           
-             <div class="flex justify-between mb-2">
+          <div class="p-4 bg-gray-50 rounded-lg">
+            <div class="flex justify-between mb-2">
               <span class="text-gray-600">Package</span>
-              <span class="font-medium">{{ capitalizeFirstLetter(selectedPackage?.type) }}</span>
+              <span class="font-medium">{{
+                capitalizeFirstLetter(selectedPackage?.type)
+              }}</span>
             </div>
             <div class="flex justify-between mb-2">
               <span class="text-gray-600">Amount</span>
@@ -382,17 +386,18 @@
       color="green"
       :timeout="3000"
       @close="showToast = false"
-      class="fixed bottom-4 right-4 z-50 shadow-lg"    />      
-      <UModal 
-        v-model="isHistory"
-        :ui="{
-          wrapper: 'fixed inset-0 z-50 overflow-y-auto',
-          inner: 'fixed inset-0 overflow-y-auto',
-          container: 'flex min-h-full items-start justify-center text-center',
-          padding: 'sm:p-6',
-          margin: 'mt-20 sm:mt-16'
-        }"
-      >
+      class="fixed bottom-4 right-4 z-50 shadow-lg"
+    />
+    <UModal
+      v-model="isHistory"
+      :ui="{
+        wrapper: 'fixed inset-0 z-50 overflow-y-auto',
+        inner: 'fixed inset-0 overflow-y-auto',
+        container: 'flex min-h-full items-start justify-center text-center',
+        padding: 'sm:p-6',
+        margin: 'mt-20 sm:mt-16',
+      }"
+    >
       <UCard
         :ui="{
           ring: '',
@@ -462,7 +467,7 @@ onMounted(() => {
 });
 
 function capitalizeFirstLetter(str) {
-  return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
 }
 
 function getTagClass(type) {
@@ -509,7 +514,6 @@ async function handleRecharge() {
     amount: selectedPackage.value.price,
   };
   try {
-    console.log(submitValues);
     const res = await post("/mobile-recharge/recharges/", submitValues);
     if (res.data) {
       toast.add({ title: "Recharge successful!", color: "green" });
@@ -523,7 +527,7 @@ async function handleRecharge() {
       jwtLogin(); // Refresh user balance
     }
   } catch (err) {
-    console.log(err);
+    console.error(err);
     toast.add({
       title: err.response?.data?.message || "Recharge failed",
       color: "red",

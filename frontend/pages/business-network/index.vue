@@ -276,8 +276,6 @@ async function getPosts(isLoadingMore = false, page = 1) {
       params.older_than = lastCreatedAt.value;
     }
 
-    console.log("Fetching posts with params:", params);
-
     const [response] = await Promise.all([
       get(`/bn/posts/?page=${page}`, { params }),
       // Add a minimum delay for UX, shorter for subsequent loads
@@ -300,16 +298,11 @@ async function getPosts(isLoadingMore = false, page = 1) {
       // Filter out duplicate posts based on their IDs
       const uniquePosts = processedPosts.filter((post) => {
         if (loadedPostIds.value.has(post.id)) {
-          console.log(`Filtered out duplicate post ID: ${post.id}`);
           return false;
         }
         loadedPostIds.value.add(post.id);
         return true;
       });
-
-      console.log(
-        `Found ${processedPosts.length} posts, ${uniquePosts.length} are unique`
-      );
 
       // On initial load or load more, append to the end
       allPosts.value = isLoadingMore
@@ -324,7 +317,6 @@ async function getPosts(isLoadingMore = false, page = 1) {
         // Set initial newest timestamp if first load
         if (!newestCreatedAt.value && uniquePosts.length > 0) {
           newestCreatedAt.value = uniquePosts[0].created_at;
-          console.log("Initial newest timestamp set:", newestCreatedAt.value);
         }
       }
 
@@ -343,7 +335,6 @@ async function getPosts(isLoadingMore = false, page = 1) {
       // Update displayed posts
       updateDisplayedPosts();
     } else {
-      console.log("No posts returned from API");
       if (!isLoadingMore) {
         // Only clear on initial load failure
         allPosts.value = [];
@@ -379,8 +370,6 @@ function updateDisplayedPosts() {
 
 // Handle gift sent event from child components
 function handleGiftSent(giftData) {
-  console.log("Gift sent event received:", giftData);
-
   // Reload posts after a short delay to ensure backend is updated
   setTimeout(() => {
     // Reset state and reload posts
@@ -453,10 +442,6 @@ onMounted(() => {
   // Also listen for post-created events from the global event bus
   const globalEventBus = useEventBus();
   globalEventBus.on("post-created", (newPostData) => {
-    console.log(
-      "Caught post-created event from global event bus:",
-      newPostData
-    );
     handleNewPost(newPostData);
   });
 
@@ -470,8 +455,6 @@ onMounted(() => {
 
 // Add this function to handle the new post
 const handleNewPost = async (newPost) => {
-  console.log("handleNewPost called with data:", newPost);
-
   if (newPost) {
     // Process the new post to ensure it has necessary UI properties
     const processedNewPost = {
@@ -482,38 +465,25 @@ const handleNewPost = async (newPost) => {
       isCommentLoading: false,
       isLikeLoading: false,
     };
-    console.log("Processed post data:", processedNewPost);
 
     // Track the new post ID to prevent future duplicates
     if (newPost.id) {
-      console.log("Adding post ID to tracked IDs:", newPost.id);
       loadedPostIds.value.add(newPost.id);
     }
 
     // Add the new post to the beginning of the posts array for immediate display
-    console.log(
-      "Adding post to allPosts array, current length:",
-      allPosts.value.length
-    );
+
     allPosts.value = [processedNewPost, ...allPosts.value];
-    console.log("New allPosts length:", allPosts.value.length);
 
     // Update the displayed posts
-    console.log("Updating displayed posts");
+
     updateDisplayedPosts();
-    console.log(
-      "displayedPosts length after update:",
-      displayedPosts.value.length
-    );
 
     // Update newest timestamp if applicable
     if (processedNewPost.created_at) {
-      console.log("Updating newest timestamp to:", processedNewPost.created_at);
       newestCreatedAt.value = processedNewPost.created_at;
     }
-
   } else {
-    console.log("No post data provided, reloading all posts");
     // If no post data is provided, reload all posts
     await loadData();
   }

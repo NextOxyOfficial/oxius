@@ -258,7 +258,10 @@
                         class="h-6 w-6 rounded-full overflow-hidden mr-2 border border-amber-200 dark:border-amber-700 flex-shrink-0"
                       >
                         <img
-                          :src="sponsor.image || '/static/frontend/images/placeholder.jpg'"
+                          :src="
+                            sponsor.image ||
+                            '/static/frontend/images/placeholder.jpg'
+                          "
                           :alt="sponsor.name || 'Sponsor'"
                           class="h-full w-full object-cover"
                         />
@@ -622,7 +625,7 @@ async function createWorkspace() {
     newWorkspaceName.value = "";
     isCreateWorkspaceModalOpen.value = false;
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -730,7 +733,10 @@ async function fetchGoldSponsorsData() {
             sponsor.title ||
             "Unnamed Sponsor",
           status: sponsor.status || "active",
-          image: sponsor.logo || sponsor.image || "/static/frontend/images/placeholder.jpg",
+          image:
+            sponsor.logo ||
+            sponsor.image ||
+            "/static/frontend/images/placeholder.jpg",
           views: sponsor.views || 0,
         }));
 
@@ -808,12 +814,10 @@ const confirmDelete = async () => {
     const { delete: deleteApi } = useApi();
 
     // Debug sponsor object
-    console.log("Sponsor to delete:", JSON.stringify(deletingSponsor.value));
 
     // Make sure we have a valid ID and use the correct property name
     // Check for both id and ID properties as APIs sometimes use different casing
     const sponsorId = deletingSponsor.value.id || deletingSponsor.value.ID;
-    console.log("Extracted sponsor ID:", sponsorId, typeof sponsorId);
 
     if (!sponsorId) {
       throw new Error("Sponsor ID is missing");
@@ -821,7 +825,6 @@ const confirmDelete = async () => {
 
     // Get the current auth token
     const authToken = useCookie("adsyclub-jwt").value;
-    console.log("Auth token available:", !!authToken);
 
     // Check if token exists before proceeding
     if (!authToken) {
@@ -830,12 +833,10 @@ const confirmDelete = async () => {
 
     // Try the correct endpoint path
     try {
-      console.log("Attempting to delete sponsor with ID:", sponsorId);
       // This is the correct path according to the backend URLs configuration
       const response = await deleteApi(
         `/business_network/gold-sponsors/delete/${sponsorId}/`
       );
-      console.log("Delete response:", response);
 
       // Handle successful deletion
       featuredSponsors.value = featuredSponsors.value.filter(
@@ -860,7 +861,6 @@ const confirmDelete = async () => {
         const token = `Bearer ${authToken}`;
         // Based on URLs, this is the endpoint the backend should be exposing
         const apiUrl = `${window.location.origin}/api/business_network/gold-sponsors/delete/${sponsorId}/`;
-        console.log("Making direct fetch DELETE request to:", apiUrl);
 
         const response = await fetch(apiUrl, {
           method: "DELETE",
@@ -870,8 +870,6 @@ const confirmDelete = async () => {
           },
           credentials: "include", // Include cookies
         });
-
-        console.log("Direct fetch response status:", response.status);
 
         if (response.ok) {
           // Handle successful deletion
@@ -1001,7 +999,6 @@ const handleMenuClick = (path) => {
 };
 
 const handleTagClick = (tag) => {
-  console.log(`Tag clicked:`, tag);
   // Implement the navigation or filtering by tag functionality
   handleNavigation(`/business-network/search-results/${tag.tag}`);
 };
@@ -1019,7 +1016,6 @@ const redirectToLoginWithReturnPath = (returnPath = "/business-network") => {
 // Handle Gold Sponsor form submission
 const handleGoldSponsorSubmit = async (formData) => {
   try {
-    console.log("Gold Sponsor application submitted:", formData);
     // Submit the data to the backend with the original endpoint path
     let response;
     try {
@@ -1027,7 +1023,6 @@ const handleGoldSponsorSubmit = async (formData) => {
       response = await post("/bn/gold-sponsors/apply/", formData);
     } catch (err) {
       // Try alternative paths
-      console.log("Trying alternative endpoint format for submission...");
       try {
         response = await post("/api/bn/gold-sponsors/apply/", formData);
       } catch (err2) {

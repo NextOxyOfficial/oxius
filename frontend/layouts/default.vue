@@ -26,75 +26,125 @@
             @click="closeMobileAppPopup"
             class="absolute flex top-4 right-4 z-10 p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           >
-            <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <UIcon
+              name="i-heroicons-x-mark"
+              class="w-5 h-5 text-gray-600 dark:text-gray-400"
+            />
           </button>
 
           <!-- Header with Gradient Background -->
-          <div class="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-blue-600 text-white p-6 pb-8">
+          <div
+            class="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-blue-600 text-white p-6 pb-8"
+          >
             <!-- Background Pattern -->
             <div
               class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_1px_1px,white_1px,transparent_0)]"
               style="background-size: 20px 20px"
             ></div>
-            
+
             <div class="relative text-center">
-              <div class="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                <UIcon name="i-heroicons-device-phone-mobile" class="w-8 h-8 text-white" />
+              <div
+                class="w-16 h-16 mx-auto mb-4 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center"
+              >
+                <UIcon
+                  name="i-heroicons-device-phone-mobile"
+                  class="w-8 h-8 text-white"
+                />
               </div>
               <h3 class="text-xl font-bold mb-2">Get Our Mobile App!</h3>
-              <p class="text-emerald-100 text-sm">Experience AdsyClub on the go with our mobile application</p>
+              <p class="text-emerald-100 text-sm">
+                Experience AdsyClub on the go with our mobile application
+              </p>
             </div>
-          </div>          
+          </div>
           <!-- Content -->
           <div class="p-6">
             <!-- Version Information (if available) -->
-            <div v-if="appVersion || versionCode" class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div
+              v-if="appVersion || versionCode"
+              class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+            >
               <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400">Latest Version:</span>
+                <span class="text-gray-600 dark:text-gray-400"
+                  >Latest Version:</span
+                >
                 <div class="flex items-center space-x-2">
-                  <span v-if="appVersion" class="font-semibold text-emerald-600 dark:text-emerald-400">{{ appVersion }}</span>
-                  <span v-if="versionCode" class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded text-xs">
+                  <span
+                    v-if="appVersion"
+                    class="font-semibold text-emerald-600 dark:text-emerald-400"
+                    >{{ appVersion }}</span
+                  >
+                  <span
+                    v-if="versionCode"
+                    class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded text-xs"
+                  >
                     Build {{ versionCode }}
                   </span>
                 </div>
               </div>
             </div>
-            
+
             <div class="space-y-4 mb-6">
               <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
-                  <UIcon name="i-heroicons-lightning-bolt" class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <div
+                  class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-heroicons-lightning-bolt"
+                    class="w-4 h-4 text-emerald-600 dark:text-emerald-400"
+                  />
                 </div>
-                <span class="text-gray-700 dark:text-gray-300 text-sm">Lightning fast performance</span>
+                <span class="text-gray-700 dark:text-gray-300 text-sm"
+                  >Lightning fast performance</span
+                >
               </div>
-              
+
               <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                  <UIcon name="i-heroicons-bell" class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <div
+                  class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-heroicons-bell"
+                    class="w-4 h-4 text-blue-600 dark:text-blue-400"
+                  />
                 </div>
-                <span class="text-gray-700 dark:text-gray-300 text-sm">Push notifications for deals</span>
+                <span class="text-gray-700 dark:text-gray-300 text-sm"
+                  >Push notifications for deals</span
+                >
               </div>
-              
+
               <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
-                  <UIcon name="i-heroicons-wifi" class="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <div
+                  class="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center"
+                >
+                  <UIcon
+                    name="i-heroicons-wifi"
+                    class="w-4 h-4 text-purple-600 dark:text-purple-400"
+                  />
                 </div>
-                <span class="text-gray-700 dark:text-gray-300 text-sm">Works offline for saved content</span>
+                <span class="text-gray-700 dark:text-gray-300 text-sm"
+                  >Works offline for saved content</span
+                >
               </div>
-            </div>            
+            </div>
             <!-- Action Buttons -->
-            <div class="space-y-3">              
+            <div class="space-y-3">
               <UButton
                 @click="downloadMobileApp"
                 color="emerald"
                 variant="solid"
                 class="w-full py-3 font-semibold shadow-lg hover:shadow-xl transition-all group"
                 size="lg"
-              >                
-              <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 mr-2 group-hover:animate-bounce" />
-                Download APK {{ appVersion ? `v${appVersion}` : '' }}{{ versionCode ? ` (${versionCode})` : '' }}{{ fileSize ? ` - ${fileSize}` : '' }}
+              >
+                <UIcon
+                  name="i-heroicons-arrow-down-tray"
+                  class="w-5 h-5 mr-2 group-hover:animate-bounce"
+                />
+                Download APK {{ appVersion ? `v${appVersion}` : ""
+                }}{{ versionCode ? ` (${versionCode})` : ""
+                }}{{ fileSize ? ` - ${fileSize}` : "" }}
               </UButton>
-              
+
               <div class="flex gap-2">
                 <UButton
                   @click="remindMeLater"
@@ -105,7 +155,7 @@
                 >
                   Remind me later
                 </UButton>
-                
+
                 <UButton
                   @click="dontShowAgain"
                   color="gray"
@@ -119,8 +169,11 @@
             </div>
 
             <!-- Privacy Note -->
-            <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
-              Safe download from our official servers. Your privacy is protected.
+            <p
+              class="text-xs text-gray-500 dark:text-gray-400 text-center mt-4"
+            >
+              Safe download from our official servers. Your privacy is
+              protected.
             </p>
           </div>
         </div>
@@ -144,7 +197,7 @@ const route = useRoute();
 
 const loader = ref(true);
 const showMobileAppPopup = ref(false);
-const appSize = ref(''); // Will be populated from API
+const appSize = ref(""); // Will be populated from API
 
 // Header spacing management
 const headerSpacer = ref(null);
@@ -152,31 +205,29 @@ const isHeaderFixed = ref(false);
 
 // Handle header fixed positioning compensation
 const handleHeaderSpacing = () => {
-  const headerContainer = document.querySelector('#header-container');
-  const header = headerContainer?.querySelector('.py-3');
+  const headerContainer = document.querySelector("#header-container");
+  const header = headerContainer?.querySelector(".py-3");
   if (!header || !headerSpacer.value) {
-    console.log('Header spacing: Missing elements', { header: !!header, spacer: !!headerSpacer.value });
     return;
   }
-  
+
   const scrollY = window.scrollY;
   const isFixed = scrollY > 80;
-  
+
   if (isFixed !== isHeaderFixed.value) {
     isHeaderFixed.value = isFixed;
-    console.log('Header state changed:', { isFixed, scrollY });
-    
+
     if (isFixed) {
       // When header becomes fixed, set spacer height to maintain space
       const headerHeight = header.offsetHeight;
-      console.log('Setting spacer height to:', headerHeight);
+
       headerSpacer.value.style.height = `${headerHeight}px`;
-      headerSpacer.value.style.display = 'block';
+      headerSpacer.value.style.display = "block";
     } else {
       // When header returns to sticky, remove spacer
-      console.log('Removing spacer');
-      headerSpacer.value.style.height = '0px';
-      headerSpacer.value.style.display = 'none';
+
+      headerSpacer.value.style.height = "0px";
+      headerSpacer.value.style.display = "none";
     }
   }
 };
@@ -185,17 +236,17 @@ const handleHeaderSpacing = () => {
 const setCookie = (name, value, hours = 24) => {
   if (!process.client) return;
   const expires = new Date();
-  expires.setTime(expires.getTime() + (hours * 60 * 60 * 1000));
+  expires.setTime(expires.getTime() + hours * 60 * 60 * 1000);
   document.cookie = `${name}=${value}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
 };
 
 const getCookie = (name) => {
   if (!process.client) return null;
   const nameEQ = name + "=";
-  const ca = document.cookie.split(';');
+  const ca = document.cookie.split(";");
   for (let i = 0; i < ca.length; i++) {
     let c = ca[i];
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    while (c.charAt(0) === " ") c = c.substring(1, c.length);
     if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
   }
   return null;
@@ -204,59 +255,65 @@ const getCookie = (name) => {
 // Check if mobile app is already installed
 const isMobileAppInstalled = () => {
   if (!process.client) return false;
-  
+
   // Check if PWA is installed (standalone mode)
-  if (window.matchMedia('(display-mode: standalone)').matches) {
+  if (window.matchMedia("(display-mode: standalone)").matches) {
     return true;
   }
-  
+
   // Check for iOS standalone mode
   if (window.navigator.standalone === true) {
     return true;
   }
-  
+
   // Check for Android app webview
-  if (document.referrer.includes('android-app://')) {
+  if (document.referrer.includes("android-app://")) {
     return true;
   }
-  
+
   // Check user agent for mobile app indicators
-  const userAgent = navigator.userAgent || '';
-  
+  const userAgent = navigator.userAgent || "";
+
   // Check for common webview indicators
-  if (userAgent.includes('AdsyClub') || 
-      userAgent.includes('wv') || 
-      userAgent.includes('Version') && userAgent.includes('Mobile')) {
+  if (
+    userAgent.includes("AdsyClub") ||
+    userAgent.includes("wv") ||
+    (userAgent.includes("Version") && userAgent.includes("Mobile"))
+  ) {
     return true;
   }
-  
+
   // Check for specific webview patterns
-  if (userAgent.match(/\bwv\b/) || 
-      userAgent.match(/Android.*Mobile.*Chrome\/\d+\.\d+\.\d+\.\d+/) ||
-      userAgent.includes('FB_IAB') || 
-      userAgent.includes('FBAN') ||
-      userAgent.includes('Instagram')) {
+  if (
+    userAgent.match(/\bwv\b/) ||
+    userAgent.match(/Android.*Mobile.*Chrome\/\d+\.\d+\.\d+\.\d+/) ||
+    userAgent.includes("FB_IAB") ||
+    userAgent.includes("FBAN") ||
+    userAgent.includes("Instagram")
+  ) {
     return true;
   }
-  
+
   // Check window properties that indicate app context
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     // Check for Android app bridge
     if (window.Android || window.AndroidInterface) {
       return true;
     }
-    
-    // Check for iOS app bridge  
+
+    // Check for iOS app bridge
     if (window.webkit && window.webkit.messageHandlers) {
       return true;
     }
   }
-    // Check if user has previously installed and dismissed permanently (check both localStorage and cookies)
-  if (localStorage.getItem('mobileAppInstalled') === 'true' || 
-      getCookie('mobileAppInstalled') === 'true') {
+  // Check if user has previously installed and dismissed permanently (check both localStorage and cookies)
+  if (
+    localStorage.getItem("mobileAppInstalled") === "true" ||
+    getCookie("mobileAppInstalled") === "true"
+  ) {
     return true;
   }
-  
+
   return false;
 };
 
@@ -266,84 +323,82 @@ const shouldShowMobileAppPopup = () => {
   if (user.value) {
     return false;
   }
-  
+
   // Don't show if mobile app is already installed
   if (isMobileAppInstalled()) {
     return false;
   }
-  
+
   // Don't show if user has permanently dismissed (check both localStorage and cookies)
-  if (localStorage.getItem('mobileAppPopupPermanentlyDismissed') === 'true' || 
-      getCookie('mobileAppDismissed') === 'permanently') {
+  if (
+    localStorage.getItem("mobileAppPopupPermanentlyDismissed") === "true" ||
+    getCookie("mobileAppDismissed") === "permanently"
+  ) {
     return false;
   }
-  
+
   // Check if popup was shown in the last 24 hours using cookies
-  const lastShownCookie = getCookie('mobileAppPopupLastShown');
+  const lastShownCookie = getCookie("mobileAppPopupLastShown");
   if (lastShownCookie) {
     const lastShownTime = parseInt(lastShownCookie);
     const now = new Date().getTime();
     const hoursDiff = Math.floor((now - lastShownTime) / (1000 * 60 * 60));
-    
+
     // Show only if 24 hours have passed
     if (hoursDiff < 24) {
       return false;
     }
   }
-  
+
   // Show popup if conditions are met
   return true;
 };
 
 // Use the app download composable
-import { useAppDownload } from '~/composables/useAppDownload';
-const { downloadApp, fileSize, appVersion, versionCode, fetchDownloadUrl } = useAppDownload();
+import { useAppDownload } from "~/composables/useAppDownload";
+const { downloadApp, fileSize, appVersion, versionCode, fetchDownloadUrl } =
+  useAppDownload();
 
 // Download mobile app function
 const downloadMobileApp = async () => {
   try {
-    console.log('Starting APK download...');
-    
     // Use the composable to get the dynamic download URL from admin
     const success = await downloadApp();
-    
+
     if (success) {
-      console.log('Opened dynamic download link in new tab');
-      
       // Mark app as downloaded/installed to prevent future popups (use both cookies and localStorage)
-      localStorage.setItem('mobileAppInstalled', 'true');
-      setCookie('mobileAppInstalled', 'true', 24 * 365); // Set for 1 year
+      localStorage.setItem("mobileAppInstalled", "true");
+      setCookie("mobileAppInstalled", "true", 24 * 365); // Set for 1 year
     } else {
-      throw new Error('No download URL available from admin panel');
+      throw new Error("No download URL available from admin panel");
     }
-    
+
     // Show success toast
     toast.add({
-      title: 'Download Started',
-      description: 'AdsyClub mobile app is downloading...',
-      color: 'green',
-      icon: 'i-heroicons-check-circle'
+      title: "Download Started",
+      description: "AdsyClub mobile app is downloading...",
+      color: "green",
+      icon: "i-heroicons-check-circle",
     });
-    
+
     // Close popup and update last shown time
     closeMobileAppPopup();
-    
   } catch (error) {
-    console.error('Download error:', error);
-    
+    console.error("Download error:", error);
+
     // More specific error handling
-    let errorMessage = 'Failed to start download. Please try again.';
-    if (error.message && error.message.includes('not found')) {
-      errorMessage = 'APK file not found. Please contact support.';
-    } else if (error.message && error.message.includes('network')) {
-      errorMessage = 'Network error. Please check your connection.';
+    let errorMessage = "Failed to start download. Please try again.";
+    if (error.message && error.message.includes("not found")) {
+      errorMessage = "APK file not found. Please contact support.";
+    } else if (error.message && error.message.includes("network")) {
+      errorMessage = "Network error. Please check your connection.";
     }
-    
+
     toast.add({
-      title: 'Download Error',
+      title: "Download Error",
       description: errorMessage,
-      color: 'red',
-      icon: 'i-heroicons-exclamation-triangle'
+      color: "red",
+      icon: "i-heroicons-exclamation-triangle",
     });
   }
 };
@@ -352,31 +407,31 @@ const downloadMobileApp = async () => {
 const remindMeLater = () => {
   // Set reminder for 24 hours using cookies
   const now = new Date().getTime();
-  setCookie('mobileAppPopupLastShown', now.toString(), 24);
-  
+  setCookie("mobileAppPopupLastShown", now.toString(), 24);
+
   showMobileAppPopup.value = false;
-  
+
   toast.add({
-    title: 'Reminder Set',
-    description: 'We\'ll remind you about our mobile app in 24 hours',
-    color: 'blue',
-    icon: 'i-heroicons-clock'
+    title: "Reminder Set",
+    description: "We'll remind you about our mobile app in 24 hours",
+    color: "blue",
+    icon: "i-heroicons-clock",
   });
 };
 
 // Don't show again function
 const dontShowAgain = () => {
   // Mark as permanently dismissed (use both cookies and localStorage for redundancy)
-  localStorage.setItem('mobileAppPopupPermanentlyDismissed', 'true');
-  setCookie('mobileAppDismissed', 'permanently', 24 * 365); // Set for 1 year
-  
+  localStorage.setItem("mobileAppPopupPermanentlyDismissed", "true");
+  setCookie("mobileAppDismissed", "permanently", 24 * 365); // Set for 1 year
+
   showMobileAppPopup.value = false;
-  
+
   toast.add({
-    title: 'Notification Disabled',
-    description: 'You won\'t see this popup again',
-    color: 'gray',
-    icon: 'i-heroicons-eye-slash'
+    title: "Notification Disabled",
+    description: "You won't see this popup again",
+    color: "gray",
+    icon: "i-heroicons-eye-slash",
   });
 };
 
@@ -385,7 +440,7 @@ const closeMobileAppPopup = () => {
   showMobileAppPopup.value = false;
   // Update last shown time using cookies (24 hours)
   const now = new Date().getTime();
-  setCookie('mobileAppPopupLastShown', now.toString(), 24);
+  setCookie("mobileAppPopupLastShown", now.toString(), 24);
 };
 
 // Initialize popup logic
@@ -404,7 +459,7 @@ const initializeAuth = async () => {
     // For default layout, try to authenticate but don't force login
     const jwt = useCookie("adsyclub-jwt");
     const refreshToken = useCookie("adsyclub-refresh");
-    
+
     if (jwt.value || refreshToken.value) {
       // If we have tokens, try to validate/refresh them
       const validToken = await getValidToken();
@@ -425,14 +480,14 @@ initializeAuth();
 onMounted(async () => {
   // Fetch app details early
   await fetchDownloadUrl();
-  
+
   // Set up header spacing management with a small delay to ensure DOM is ready
   setTimeout(() => {
-    window.addEventListener('scroll', handleHeaderSpacing);
+    window.addEventListener("scroll", handleHeaderSpacing);
     // Initialize the spacer state
     handleHeaderSpacing();
   }, 100);
-  
+
   setTimeout(() => {
     loader.value = false;
     // Initialize mobile app popup after loader is done
@@ -441,7 +496,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleHeaderSpacing);
+  window.removeEventListener("scroll", handleHeaderSpacing);
 });
 
 useHead({

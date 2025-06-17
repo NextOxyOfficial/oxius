@@ -23,10 +23,14 @@
               {{ gig.title }}
             </span>
           </div>
-          <p class="text-lg font-semibold text-green-900 inline-flex items-center pl-5">
+          <p
+            class="text-lg font-semibold text-green-900 inline-flex items-center pl-5"
+          >
             Earn:
             <span class="inline-flex items-center"
-              ><UIcon name="i-mdi:currency-bdt" class="text-xl" />{{ gig.price }}</span
+              ><UIcon name="i-mdi:currency-bdt" class="text-xl" />{{
+                gig.price
+              }}</span
             >
           </p>
         </div>
@@ -64,7 +68,10 @@
             :href="'/media-viewer?url=' + m.video + '&type=video'"
             v-if="m.video"
           >
-            <video class="h-48 w-64 object-contain shadow" :src="m.video"></video>
+            <video
+              class="h-48 w-64 object-contain shadow"
+              :src="m.video"
+            ></video>
           </a>
         </div>
       </div>
@@ -82,7 +89,11 @@
       <div>
         <p class="text-xl font-medium !mb-2 !mt-8">Upload Proof</p>
         <div class="flex flex-wrap gap-5">
-          <div class="relative max-w-[200px] max-h-[200px]" v-for="(img, i) in medias" :key="i">
+          <div
+            class="relative max-w-[200px] max-h-[200px]"
+            v-for="(img, i) in medias"
+            :key="i"
+          >
             <img :src="img" :alt="`Uploaded file ${i}`" />
             <div
               class="absolute top-2 right-2 rounded-sm bg-white cursor-pointer"
@@ -145,7 +156,6 @@ async function submitGig() {
     gig: props.gid,
     medias,
   });
-  console.log(res);
 }
 
 function handleFileUpload(event, field) {
@@ -158,7 +168,7 @@ function handleFileUpload(event, field) {
   };
 
   // Event listener for errors
-  reader.onerror = error => reject(error);
+  reader.onerror = (error) => reject(error);
 
   // Read the file as a data URL (Base64 string)
   reader.readAsDataURL(files[0]);

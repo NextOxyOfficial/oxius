@@ -2225,7 +2225,6 @@ async function fetchPostedAds() {
   try {
     const response = await get("/bn/abn-ads-panels/");
     postedAds.value = response.data;
-    console.log("Posted ads:", postedAds.value);
   } catch (error) {
     console.error("Error fetching posted ads:", error);
   }

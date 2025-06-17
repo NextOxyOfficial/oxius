@@ -1,10 +1,14 @@
 <template>
   <div class="max-w-6xl mx-auto px-1 py-3">
-    <!-- Seller Profile Header -->    
-     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <!-- Seller Profile Header -->
+    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <div
         class="relative h-40 bg-gradient-to-r from-emerald-600 to-emerald-800 overflow-hidden"
-        :style="seller.image ? `background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('${seller.image}'); background-size: cover; background-position: center;` : ''"
+        :style="
+          seller.image
+            ? `background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url('${seller.image}'); background-size: cover; background-position: center;`
+            : ''
+        "
       >
         <!-- Profile Actions -->
         <div class="absolute top-4 right-4 flex space-x-2 z-10">
@@ -23,8 +27,8 @@
             Report
           </button>
         </div>
-      </div>      
-      <div class="p-2 relative">          
+      </div>
+      <div class="p-2 relative">
         <!-- Profile Avatar -->
         <div
           class="relative -top-8 left-6 h-24 w-24 rounded-full border-4 border-white bg-white overflow-hidden cursor-pointer"
@@ -41,7 +45,7 @@
         <div
           class="flex flex-col md:flex-row md:items-end justify-between -mt-4"
         >
-          <div>            
+          <div>
             <div class="flex items-center">
               <h1 class="text-2xl font-bold text-gray-800">
                 {{ seller.name }}
@@ -82,7 +86,8 @@
                 <span class="text-sm text-gray-600">{{ seller.address }}</span>
               </div>
             </div>
-          </div>          <div class="mt-4 md:mt-0">
+          </div>
+          <div class="mt-4 md:mt-0">
             <button
               class="border border-gray-200 hover:bg-gray-50 text-gray-800 px-4 py-2 rounded-md text-sm transition-colors duration-200 flex items-center"
               @click="contactSeller"
@@ -160,13 +165,19 @@
       <div class="lg:col-span-2">
         <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div class="py-5 px-1 sm:px-4">
-            <div class="max-sm:flex-block items-center justify-between max-sm:mb-4">
-              <h2 class="text-lg mb-4 font-bold text-gray-800 flex items-center">
+            <div
+              class="max-sm:flex-block items-center justify-between max-sm:mb-4"
+            >
+              <h2
+                class="text-lg mb-4 font-bold text-gray-800 flex items-center"
+              >
                 <ShoppingBag class="h-5 w-5 mr-2 text-emerald-600" />
                 {{ seller.name }}'s Listings ({{ seller.sale_post_count }})
               </h2>
 
-              <div class="flex items-center sm:mb-2 max-sm:justify-center space-x-2">
+              <div
+                class="flex items-center sm:mb-2 max-sm:justify-center space-x-2"
+              >
                 <select
                   v-model="sortOption"
                   class="text-sm border border-gray-200 rounded-md px-2 py-1.5 text-gray-600 bg-white"
@@ -202,7 +213,7 @@
                   </button>
                 </div>
               </div>
-            </div>            
+            </div>
             <!-- Filter Bar -->
             <div
               class="flex flex-wrap items-center justify-center gap-2 mb-4 pb-4 border-b border-gray-100"
@@ -249,32 +260,63 @@
             </div>
 
             <!-- Active Filters Display -->
-            <div v-if="categoryFilter || conditionFilter" class="flex flex-wrap items-center gap-2 mb-4">
+            <div
+              v-if="categoryFilter || conditionFilter"
+              class="flex flex-wrap items-center gap-2 mb-4"
+            >
               <span class="text-xs text-gray-500">Active filters:</span>
-              <span v-if="categoryFilter" class="inline-flex items-center px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded-full">
+              <span
+                v-if="categoryFilter"
+                class="inline-flex items-center px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded-full"
+              >
                 Category: {{ categoryFilter }}
-                <button @click="clearCategoryFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
+                <button
+                  @click="clearCategoryFilter"
+                  class="ml-1 text-emerald-600 hover:text-emerald-800"
+                >
                   <X class="h-3 w-3" />
                 </button>
               </span>
-              <span v-if="conditionFilter" class="inline-flex items-center px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded-full">
+              <span
+                v-if="conditionFilter"
+                class="inline-flex items-center px-2 py-1 text-xs bg-emerald-100 text-emerald-800 rounded-full"
+              >
                 Condition: {{ getConditionName(conditionFilter) }}
-                <button @click="clearConditionFilter" class="ml-1 text-emerald-600 hover:text-emerald-800">
+                <button
+                  @click="clearConditionFilter"
+                  class="ml-1 text-emerald-600 hover:text-emerald-800"
+                >
                   <X class="h-3 w-3" />
                 </button>
               </span>
-            </div><!-- Grid View -->
+            </div>
+            <!-- Grid View -->
             <div v-if="viewMode === 'grid'" class="grid grid-cols-2 gap-2">
               <div
                 v-for="product in products"
                 :key="product.id"
                 class="bg-white rounded-lg overflow-hidden border border-gray-200"
-              >                <div class="relative aspect-video cursor-pointer" @click="navigateToPost(product.slug)">
-                  <div v-if="!product.main_image" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center group hover:from-gray-200 hover:to-gray-300 transition-all duration-300">
-                    <div class="bg-white/80 backdrop-blur-sm rounded-full p-3 mb-2 shadow-sm group-hover:shadow-md transition-all duration-300">
-                      <ImageOff class="h-8 w-8 text-gray-400 group-hover:text-gray-500 transition-colors duration-300" />
+              >
+                <div
+                  class="relative aspect-video cursor-pointer"
+                  @click="navigateToPost(product.slug)"
+                >
+                  <div
+                    v-if="!product.main_image"
+                    class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center group hover:from-gray-200 hover:to-gray-300 transition-all duration-300"
+                  >
+                    <div
+                      class="bg-white/80 backdrop-blur-sm rounded-full p-3 mb-2 shadow-sm group-hover:shadow-md transition-all duration-300"
+                    >
+                      <ImageOff
+                        class="h-8 w-8 text-gray-400 group-hover:text-gray-500 transition-colors duration-300"
+                      />
                     </div>
-                    <p class="text-gray-500 text-xs font-medium group-hover:text-gray-600 transition-colors duration-300">No Photo Uploaded</p>
+                    <p
+                      class="text-gray-500 text-xs font-medium group-hover:text-gray-600 transition-colors duration-300"
+                    >
+                      No Photo Uploaded
+                    </p>
                   </div>
                   <img
                     v-else
@@ -283,16 +325,22 @@
                     class="absolute inset-0 w-full h-full object-contain hover:scale-105 transition-transform duration-300"
                   />
                 </div>
-                <div class="p-2">                  
+                <div class="p-2">
                   <h3 class="font-semibold text-gray-800 mb-1 line-clamp-2">
-                    <NuxtLink :to="`/sale/${product.slug}`" 
-                    class="hover:text-emerald-600 transition-colors">
+                    <NuxtLink
+                      :to="`/sale/${product.slug}`"
+                      class="hover:text-emerald-600 transition-colors"
+                    >
                       {{ capitalizeTitle(product.title) }}
                     </NuxtLink>
-                  </h3>                  
+                  </h3>
                   <div class="flex items-center justify-between mt-2">
                     <span class="font-bold text-emerald-700"
-                      >৳{{ product.price ? product.price.toLocaleString() : 'Contact for Price' }}</span
+                      >৳{{
+                        product.price
+                          ? product.price.toLocaleString()
+                          : "Contact for Price"
+                      }}</span
                     >
                     <span class="text-sm text-gray-600">{{
                       formatDate(product.created_at)
@@ -309,7 +357,8 @@
                         ? `${product?.division}, ${product?.district}, ${product?.area}`
                         : `All Over Bagnladesh`
                     }}</span>
-                  </div>                  <div
+                  </div>
+                  <div
                     class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100"
                   >
                     <NuxtLink
@@ -330,12 +379,27 @@
                 v-for="product in products"
                 :key="product.id"
                 class="flex flex-col sm:flex-row bg-white rounded-lg overflow-hidden"
-              >                <div class="relative sm:w-1/3 aspect-video sm:aspect-none cursor-pointer" @click="navigateToPost(product.slug)">
-                  <div v-if="!product.main_image" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center group hover:from-gray-200 hover:to-gray-300 transition-all duration-300">
-                    <div class="bg-white/80 backdrop-blur-sm rounded-full p-4 mb-3 shadow-sm group-hover:shadow-md transition-all duration-300">
-                      <ImageOff class="h-10 w-10 text-gray-400 group-hover:text-gray-500 transition-colors duration-300" />
+              >
+                <div
+                  class="relative sm:w-1/3 aspect-video sm:aspect-none cursor-pointer"
+                  @click="navigateToPost(product.slug)"
+                >
+                  <div
+                    v-if="!product.main_image"
+                    class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center group hover:from-gray-200 hover:to-gray-300 transition-all duration-300"
+                  >
+                    <div
+                      class="bg-white/80 backdrop-blur-sm rounded-full p-4 mb-3 shadow-sm group-hover:shadow-md transition-all duration-300"
+                    >
+                      <ImageOff
+                        class="h-10 w-10 text-gray-400 group-hover:text-gray-500 transition-colors duration-300"
+                      />
                     </div>
-                    <p class="text-gray-500 text-sm font-medium group-hover:text-gray-600 transition-colors duration-300">No Photo Uploaded</p>
+                    <p
+                      class="text-gray-500 text-sm font-medium group-hover:text-gray-600 transition-colors duration-300"
+                    >
+                      No Photo Uploaded
+                    </p>
                   </div>
                   <img
                     v-else
@@ -345,13 +409,22 @@
                   />
                 </div>
 
-                <div class="p-2 sm:w-2/3 flex flex-col">                  
+                <div class="p-2 sm:w-2/3 flex flex-col">
                   <h3 class="font-semibold text-gray-800 mb-1">
-                    <NuxtLink :to="`/sale/${product.slug}`" class="hover:text-emerald-600 transition-colors">
+                    <NuxtLink
+                      :to="`/sale/${product.slug}`"
+                      class="hover:text-emerald-600 transition-colors"
+                    >
                       {{ capitalizeTitle(product.title) }}
-                    </NuxtLink>                  </h3><div class="flex items-center justify-between mt-2">
+                    </NuxtLink>
+                  </h3>
+                  <div class="flex items-center justify-between mt-2">
                     <span class="font-bold text-emerald-700"
-                      >৳{{ product.price ? product.price.toLocaleString() : 'Contact for Price' }}</span
+                      >৳{{
+                        product.price
+                          ? product.price.toLocaleString()
+                          : "Contact for Price"
+                      }}</span
                     >
                     <span class="text-sm text-gray-600">{{
                       formatDate(product.created_at)
@@ -368,9 +441,11 @@
                         ? `${product?.division}, ${product?.district}, ${product?.area}`
                         : `All Over Bagnladesh`
                     }}</span>
-                  </div>                  
-                  <div class="text-sm text-gray-600 mt-2 line-clamp-2" v-html="product.description || 'No description available.'">
                   </div>
+                  <div
+                    class="text-sm text-gray-600 mt-2 line-clamp-2"
+                    v-html="product.description || 'No description available.'"
+                  ></div>
                   <div
                     class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100"
                   >
@@ -383,13 +458,17 @@
                     </NuxtLink>
                   </div>
                 </div>
-              </div>            
+              </div>
             </div>
 
             <!-- Loading State -->
             <div v-if="isLoading" class="py-8 text-center">
-              <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
-                <div class="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+              <div
+                class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4 animate-pulse"
+              >
+                <div
+                  class="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"
+                ></div>
               </div>
               <p class="text-gray-600 text-sm">Loading products...</p>
             </div>
@@ -411,7 +490,7 @@
               >
                 Clear all filters
               </button>
-            </div>            
+            </div>
             <!-- Pagination -->
             <div
               v-if="!isLoading && products?.length > 0"
@@ -556,7 +635,8 @@
           </div>
         </div>
       </div>
-    </div>    <!-- Share Dialog -->
+    </div>
+    <!-- Share Dialog -->
     <div
       v-if="showShareDialog"
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
@@ -646,7 +726,8 @@
           </div>
         </div>
       </div>
-    </div><!-- Profile Photo Modal -->
+    </div>
+    <!-- Profile Photo Modal -->
     <MediaViewer
       v-if="showProfilePhotoModal"
       :activeMedia="profilePhotoMedia"
@@ -715,7 +796,6 @@ async function getSellerDetails() {
   try {
     const response = await get(`/user/${params.id}/`);
     if (response.data) {
-      console.log(response.data);
       seller.value = response.data;
     }
   } catch (error) {
@@ -734,37 +814,39 @@ async function getProducts(page = 1) {
 
     // Build query parameters
     const queryParams = new URLSearchParams();
-    queryParams.append('page', page.toString());
-    queryParams.append('page_size', itemsPerPage.value.toString());
-    queryParams.append('seller', params.id);
+    queryParams.append("page", page.toString());
+    queryParams.append("page_size", itemsPerPage.value.toString());
+    queryParams.append("seller", params.id);
 
     // Add filters if they exist
     if (categoryFilter.value) {
       // Find category by name and use its ID
-      const category = categories.value.find(cat => cat.name === categoryFilter.value);
+      const category = categories.value.find(
+        (cat) => cat.name === categoryFilter.value
+      );
       if (category) {
-        queryParams.append('category', category.id.toString());
+        queryParams.append("category", category.id.toString());
       }
     }
     if (conditionFilter.value) {
-      // Use the condition value directly 
-      queryParams.append('condition', conditionFilter.value);
+      // Use the condition value directly
+      queryParams.append("condition", conditionFilter.value);
     }
 
     // Add sorting
     const sortMapping = {
-      recent: '-created_at',
-      'price-low': 'price',
-      'price-high': '-price',
-      popular: '-views'
+      recent: "-created_at",
+      "price-low": "price",
+      "price-high": "-price",
+      popular: "-views",
     };
-    queryParams.append('ordering', sortMapping[sortOption.value] || '-created_at');
+    queryParams.append(
+      "ordering",
+      sortMapping[sortOption.value] || "-created_at"
+    );
 
     const response = await get(`/sale/posts/?${queryParams.toString()}`);
-    
-    console.log("API Request URL:", `/sale/posts/?${queryParams.toString()}`);
-    console.log("API Response:", response.data);
-    
+
     if (response.data) {
       if ("results" in response.data) {
         // Paginated response
@@ -779,8 +861,6 @@ async function getProducts(page = 1) {
 
         // Update pagination info
         totalPages.value = Math.ceil(response.data.count / itemsPerPage.value);
-        
-        console.log(`Loaded ${response.data.results.length} products for page ${page}, total: ${response.data.count}`);
       } else if (Array.isArray(response.data)) {
         // Non-paginated response (fallback)
         products.value = response.data;
@@ -807,7 +887,7 @@ const categories = ref([]);
 async function getCategories() {
   try {
     const response = await get("/sale/categories/");
-    console.log(response.data);
+
     if (response.data) {
       categories.value = response.data;
     }
@@ -823,7 +903,7 @@ const conditions = ref([]);
 async function getConditions() {
   try {
     const response = await get("/sale/conditions/");
-    console.log("conditions", response.data);
+
     if (response.data) {
       conditions.value = response.data;
     }
@@ -844,7 +924,7 @@ const pages = computed(() => {
 // Contact seller function
 const contactSeller = () => {
   if (seller.value?.phone) {
-    window.open(`tel:${seller.value.phone}`, '_self');
+    window.open(`tel:${seller.value.phone}`, "_self");
   }
 };
 
@@ -926,7 +1006,7 @@ const applyFilters = () => {
 
 // Get condition name by value
 const getConditionName = (value) => {
-  const condition = conditions.value.find(c => c.value === value);
+  const condition = conditions.value.find((c) => c.value === value);
   return condition ? condition.name : value;
 };
 
@@ -962,7 +1042,7 @@ const submitReport = () => {
 const handleShare = () => {
   showShareDialog.value = true;
   // Use the production domain for sharing
-  const productionDomain = 'https://adsyclub.com';
+  const productionDomain = "https://adsyclub.com";
   const pathname = window.location.pathname;
   shareUrl.value = productionDomain + pathname;
 };
@@ -975,10 +1055,10 @@ const copyToClipboard = () => {
   navigator.clipboard.writeText(shareUrl.value);
   // Show a toast message
   toast.add({
-    title: 'Link Copied!',
-    description: 'Profile link has been copied to clipboard',
-    color: 'green',
-    icon: 'i-heroicons-check-circle'
+    title: "Link Copied!",
+    description: "Profile link has been copied to clipboard",
+    color: "green",
+    icon: "i-heroicons-check-circle",
   });
 };
 
@@ -1013,11 +1093,11 @@ const shareViaMedia = (platform) => {
 const openProfilePhotoModal = () => {
   // Create a media object for the profile photo
   profilePhotoMedia.value = {
-    image: seller.value?.image || '/placeholder.svg',
-    type: 'image',
-    id: seller.value?.id || 'profile'
+    image: seller.value?.image || "/placeholder.svg",
+    type: "image",
+    id: seller.value?.id || "profile",
   };
-  
+
   showProfilePhotoModal.value = true;
 };
 

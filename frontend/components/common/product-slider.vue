@@ -1,18 +1,30 @@
-<template>  <UContainer class="relative">
+<template>
+  <UContainer class="relative">
     <!-- Professional App-like Header -->
     <div class="relative sm:mb-6">
       <!-- Mobile-First Background Design -->
-      <div class="relative p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 backdrop-blur-sm overflow-hidden">
-        
+      <div
+        class="relative p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800 backdrop-blur-sm overflow-hidden"
+      >
         <!-- Dynamic Background Pattern -->
         <div class="absolute inset-0 opacity-40 dark:opacity-20">
           <!-- Subtle grid pattern -->
-          <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"></div>
-          <div class="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(0deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"></div>
-              <!-- Floating elements for visual interest -->
-        <div class="absolute top-2 right-4 w-2 h-2 rounded-full bg-blue-400/20"></div>
-        <div class="absolute bottom-3 left-6 w-1 h-1 rounded-full bg-emerald-400/30"></div>
-        <div class="absolute top-1/2 right-1/4 w-1.5 h-1.5 rounded-full bg-purple-400/20"></div>
+          <div
+            class="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"
+          ></div>
+          <div
+            class="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:20px_20px] dark:bg-[linear-gradient(0deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"
+          ></div>
+          <!-- Floating elements for visual interest -->
+          <div
+            class="absolute top-2 right-4 w-2 h-2 rounded-full bg-blue-400/20"
+          ></div>
+          <div
+            class="absolute bottom-3 left-6 w-1 h-1 rounded-full bg-emerald-400/30"
+          ></div>
+          <div
+            class="absolute top-1/2 right-1/4 w-1.5 h-1.5 rounded-full bg-purple-400/20"
+          ></div>
         </div>
 
         <!-- Header Content -->
@@ -23,34 +35,46 @@
               <!-- App-style Icon -->
               <div class="relative">
                 <!-- Icon background with modern design -->
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                <div
+                  class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"
+                >
                   <UIcon
                     name="i-heroicons-shopping-bag"
                     class="w-5 h-5 sm:w-6 sm:h-6 text-white"
                   />
                   <!-- Subtle shine effect -->
-                  <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent"></div>
-                </div>                
+                  <div
+                    class="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/20 to-transparent"
+                  ></div>
+                </div>
                 <!-- Active indicator dot -->
-                <div class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-800"></div>
+                <div
+                  class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-800"
+                ></div>
               </div>
 
               <!-- Title and description -->
               <div class="flex-1 min-w-0">
-                <h2 class="text-lg sm:text-xl font-medium text-slate-900 dark:text-white truncate">
+                <h2
+                  class="text-lg sm:text-xl font-medium text-slate-900 dark:text-white truncate"
+                >
                   {{ $t("eshop") }}
                 </h2>
-                <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                <p
+                  class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium"
+                >
                   Discover amazing products
                 </p>
               </div>
-            </div>            
-            <!-- Action button - mobile optimized -->            
-             <NuxtLink
+            </div>
+            <!-- Action button - mobile optimized -->
+            <NuxtLink
               to="/shop-manager"
               class="flex-shrink-0 group relative inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-xs sm:text-sm transition-colors duration-200 overflow-hidden"
             >
-              <span class="relative z-10 truncate">{{ $t("sell_on_eshop") }}</span>
+              <span class="relative z-10 truncate">{{
+                $t("sell_on_eshop")
+              }}</span>
               <UIcon
                 name="i-heroicons-arrow-right"
                 class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0"
@@ -61,13 +85,17 @@
       </div>
     </div>
 
-    <CommonCategoryLayout/>    
+    <CommonCategoryLayout />
     <!-- Professional Loading State -->
     <div v-if="isLoading" class="flex justify-center py-12">
       <div class="relative">
         <!-- Modern spinner -->
-        <div class="w-12 h-12 rounded-full border-4 border-slate-200 dark:border-slate-700"></div>
-        <div class="w-12 h-12 rounded-full border-t-4 border-blue-600 animate-spin absolute top-0"></div>        
+        <div
+          class="w-12 h-12 rounded-full border-4 border-slate-200 dark:border-slate-700"
+        ></div>
+        <div
+          class="w-12 h-12 rounded-full border-t-4 border-blue-600 animate-spin absolute top-0"
+        ></div>
         <!-- Pulsing dots -->
         <div class="flex justify-center gap-1 mt-4">
           <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
@@ -75,9 +103,12 @@
           <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
         </div>
       </div>
-    </div>    <!-- Professional Product Slider -->
-    <div v-else-if="productsCount > 0" class="relative product-slider-container group">
-
+    </div>
+    <!-- Professional Product Slider -->
+    <div
+      v-else-if="productsCount > 0"
+      class="relative product-slider-container group"
+    >
       <!-- Modern Product Container -->
       <div
         ref="sliderContainer"
@@ -94,15 +125,12 @@
                 :key="product.id"
                 class="product-card-wrapper flex-shrink-0"
               >
-                <CommonProductCard
-                  :product="product"
-                  class="product-card"
-                />
+                <CommonProductCard :product="product" class="product-card" />
               </div>
             </div>
           </div>
         </div>
-        
+
         <div class="slider-content inline-flex py-1 mb-2">
           <!-- Second row of products -->
           <div class="product-row">
@@ -112,29 +140,23 @@
                 :key="product.id"
                 class="product-card-wrapper flex-shrink-0"
               >
-                <CommonProductCard
-                  :product="product"
-                  class="product-card"
-                />
+                <CommonProductCard :product="product" class="product-card" />
               </div>
             </div>
           </div>
         </div>
-      </div>  
+      </div>
 
       <!-- Professional CTA Section -->
-      <div class="text-center mt-6 sm:mt-8">        
-        <!-- Mobile: Compact button -->        
-         <NuxtLink
+      <div class="text-center mt-6 sm:mt-8">
+        <!-- Mobile: Compact button -->
+        <NuxtLink
           to="/eshop"
           class="sm:hidden group relative inline-flex items-center justify-center gap-2 px-4 py-2 font-semibold text-xs text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl transition-colors duration-200 overflow-hidden"
         >
           <span class="relative z-10">{{ $t("all_product") }}</span>
-          <UIcon
-            name="i-heroicons-arrow-right"
-            class="w-3 h-3 relative z-10"
-          />
-        </NuxtLink>        
+          <UIcon name="i-heroicons-arrow-right" class="w-3 h-3 relative z-10" />
+        </NuxtLink>
         <!-- Desktop: Enhanced button -->
         <NuxtLink
           to="/eshop"
@@ -147,7 +169,7 @@
           />
         </NuxtLink>
       </div>
-    </div>    
+    </div>
     <!-- Professional Empty State -->
     <div
       v-else
@@ -155,16 +177,27 @@
     >
       <!-- Modern Empty State Icon -->
       <div class="relative mb-6">
-        <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-3xl flex items-center justify-center">
-          <UIcon name="i-heroicons-shopping-bag" class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 dark:text-slate-500" />
+        <div
+          class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 rounded-3xl flex items-center justify-center"
+        >
+          <UIcon
+            name="i-heroicons-shopping-bag"
+            class="w-10 h-10 sm:w-12 sm:h-12 text-slate-400 dark:text-slate-500"
+          />
         </div>
         <!-- Floating elements around the icon -->
-        <div class="absolute -top-1 -right-1 w-4 h-4 bg-blue-400/20 rounded-full animate-ping"></div>
-        <div class="absolute -bottom-2 -left-2 w-3 h-3 bg-purple-400/20 rounded-full animate-pulse"></div>
+        <div
+          class="absolute -top-1 -right-1 w-4 h-4 bg-blue-400/20 rounded-full animate-ping"
+        ></div>
+        <div
+          class="absolute -bottom-2 -left-2 w-3 h-3 bg-purple-400/20 rounded-full animate-pulse"
+        ></div>
       </div>
 
       <!-- Professional messaging -->
-      <h3 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white mb-2">
+      <h3
+        class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white mb-2"
+      >
         No Products Available
       </h3>
       <p class="text-slate-600 dark:text-slate-400 mb-6 max-w-sm">
@@ -176,18 +209,21 @@
         @click="fetchProducts"
         class="group inline-flex items-center gap-2 px-6 py-3 font-semibold text-sm text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
       >
-        <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        <UIcon name="i-heroicons-arrow-path" class="w-4 h-4 relative z-10 group-hover:rotate-180 transition-transform duration-500" />
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        ></div>
+        <UIcon
+          name="i-heroicons-arrow-path"
+          class="w-4 h-4 relative z-10 group-hover:rotate-180 transition-transform duration-500"
+        />
         <span class="relative z-10">Refresh</span>
       </button>
     </div>
-
-    
   </UContainer>
 </template>
 
 <script setup>
-import { CommonCategoryLayout } from '#components';
+import { CommonCategoryLayout } from "#components";
 
 const { get } = useApi();
 
@@ -229,7 +265,7 @@ const secondRowProducts = computed(() => {
 const scrollPositions = computed(() => {
   if (productsCount.value === 0) return [];
   const cardsPerView = getCardsPerView();
-  const totalPositions = Math.ceil((productsCount.value / 2) / cardsPerView);
+  const totalPositions = Math.ceil(productsCount.value / 2 / cardsPerView);
   return Array.from({ length: totalPositions });
 });
 
@@ -240,7 +276,6 @@ async function fetchProducts() {
   try {
     // Add limit parameter to fetch exactly 20 products
     const response = await get(`/all-products/?limit=${productsLimit}`);
-    console.log("API Response:", response);
 
     if (response && response.data) {
       debugData.value = response.data;
@@ -310,31 +345,44 @@ function updateResponsiveDisplay() {
 // Smooth scrolling function for arrow navigation
 function scrollSlider(direction) {
   if (!sliderContainer.value) return;
-  
+
   isScrolling.value = true;
-  
+
   const container = sliderContainer.value;
   const scrollWidth = container.scrollWidth;
   const containerWidth = container.clientWidth;
   const scrollLeft = container.scrollLeft;
-  
+
   const cardWidth = containerWidth / getCardsPerView();
-  const scrollAmount = direction === 'left' ? -cardWidth * 2 : cardWidth * 2;
-  const targetScroll = Math.max(0, Math.min(scrollLeft + scrollAmount, scrollWidth - containerWidth));
-  
+  const scrollAmount = direction === "left" ? -cardWidth * 2 : cardWidth * 2;
+  const targetScroll = Math.max(
+    0,
+    Math.min(scrollLeft + scrollAmount, scrollWidth - containerWidth)
+  );
+
   container.scrollTo({
     left: targetScroll,
-    behavior: 'smooth'
+    behavior: "smooth",
   });
-    // Update scroll indicator
-  const scrollIndex = Math.round((targetScroll / (scrollWidth - containerWidth)) * (scrollPositions.value.length - 1));
-  currentScrollIndex.value = Math.max(0, Math.min(scrollIndex, scrollPositions.value.length - 1));
-  
+  // Update scroll indicator
+  const scrollIndex = Math.round(
+    (targetScroll / (scrollWidth - containerWidth)) *
+      (scrollPositions.value.length - 1)
+  );
+  currentScrollIndex.value = Math.max(
+    0,
+    Math.min(scrollIndex, scrollPositions.value.length - 1)
+  );
+
   // Reset scrolling flag after animation completes
-  container.addEventListener('scrollend', () => {
-    isScrolling.value = false;
-  }, { once: true });
-  
+  container.addEventListener(
+    "scrollend",
+    () => {
+      isScrolling.value = false;
+    },
+    { once: true }
+  );
+
   // Fallback timeout in case scrollend isn't supported
   setTimeout(() => {
     isScrolling.value = false;
@@ -344,28 +392,30 @@ function scrollSlider(direction) {
 // Handle mouse click for slider interaction
 function handleSliderClick(event) {
   // Ignore clicks on product cards to allow normal card interactions
-  if (event.target.closest('.product-card') || 
-      event.target.closest('a') || 
-      event.target.closest('button')) {
+  if (
+    event.target.closest(".product-card") ||
+    event.target.closest("a") ||
+    event.target.closest("button")
+  ) {
     return;
   }
-  
+
   event.preventDefault();
   clickStartX.value = event.clientX;
   clickStartTime.value = Date.now();
   isMouseDown.value = true;
-  
+
   // Add event listeners for mouse movement and release
-  window.addEventListener('mousemove', handleMouseMove, { once: false });
-  window.addEventListener('mouseup', handleMouseUp, { once: true });
+  window.addEventListener("mousemove", handleMouseMove, { once: false });
+  window.addEventListener("mouseup", handleMouseUp, { once: true });
 }
 
 // Handle mouse movement during click
 function handleMouseMove(event) {
   if (!isMouseDown.value) return;
-  
+
   const deltaX = event.clientX - clickStartX.value;
-  
+
   // Only track movement for gesture detection, don't manually manipulate scroll
   if (Math.abs(deltaX) > 5) {
     // Mark as dragging but let native scrolling handle the movement
@@ -376,72 +426,78 @@ function handleMouseMove(event) {
 // Handle mouse up after click
 function handleMouseUp(event) {
   if (!isMouseDown.value) return;
-  
-  window.removeEventListener('mousemove', handleMouseMove);
-  
+
+  window.removeEventListener("mousemove", handleMouseMove);
+
   const deltaX = event.clientX - clickStartX.value;
   const timeDiff = Date.now() - clickStartTime.value;
-  
+
   // If it's a quick click (not a drag) and barely moved, scroll in the direction of the click
   if (Math.abs(deltaX) < 5 && timeDiff < 300) {
     const container = sliderContainer.value;
     if (container) {
       const containerWidth = container.clientWidth;
-      const clickPosition = event.clientX - container.getBoundingClientRect().left;
-      
+      const clickPosition =
+        event.clientX - container.getBoundingClientRect().left;
+
       // Click on left half scrolls left, right half scrolls right
       if (clickPosition < containerWidth / 2) {
-        scrollSlider('left');
+        scrollSlider("left");
       } else {
-        scrollSlider('right');
+        scrollSlider("right");
       }
     }
   }
-  
+
   isMouseDown.value = false;
 }
 
 // Handle touch events for mobile devices
 function handleSliderTouch(event) {
   // Ignore touches on product cards to allow normal card interactions
-  if (event.target.closest('.product-card') || 
-      event.target.closest('a') || 
-      event.target.closest('button')) {
+  if (
+    event.target.closest(".product-card") ||
+    event.target.closest("a") ||
+    event.target.closest("button")
+  ) {
     return;
   }
-  
+
   const touch = event.touches[0];
   clickStartX.value = touch.clientX;
   clickStartTime.value = Date.now();
-  
+
   // Add event listeners for touch movement and end
-  window.addEventListener('touchend', handleTouchEnd, { once: true });
+  window.addEventListener("touchend", handleTouchEnd, { once: true });
 }
 
 // Handle touch end
 function handleTouchEnd(event) {
-  if (event.target.closest('.product-card') || 
-      event.target.closest('a') || 
-      event.target.closest('button')) {
+  if (
+    event.target.closest(".product-card") ||
+    event.target.closest("a") ||
+    event.target.closest("button")
+  ) {
     return;
   }
-  
+
   const touch = event.changedTouches[0];
   const deltaX = touch.clientX - clickStartX.value;
   const timeDiff = Date.now() - clickStartTime.value;
-  
+
   // If it's a quick tap (not a swipe) and barely moved, scroll in the direction of the tap
   if (Math.abs(deltaX) < 5 && timeDiff < 300) {
     const container = sliderContainer.value;
     if (container) {
       const containerWidth = container.clientWidth;
-      const touchPosition = touch.clientX - container.getBoundingClientRect().left;
-      
+      const touchPosition =
+        touch.clientX - container.getBoundingClientRect().left;
+
       // Tap on left half scrolls left, right half scrolls right
       if (touchPosition < containerWidth / 2) {
-        scrollSlider('left');
+        scrollSlider("left");
       } else {
-        scrollSlider('right');
+        scrollSlider("right");
       }
     }
   }
@@ -450,26 +506,33 @@ function handleTouchEnd(event) {
 // Scroll to specific position (for indicator dots)
 function scrollToPosition(index) {
   if (!sliderContainer.value || isScrolling.value) return;
-  
+
   isScrolling.value = true;
   currentScrollIndex.value = index;
-  
+
   const container = sliderContainer.value;
   const scrollWidth = container.scrollWidth;
   const containerWidth = container.clientWidth;
-  
+
   const scrollableWidth = scrollWidth - containerWidth;
-  const targetScroll = index === 0 ? 0 : (index / (scrollPositions.value.length - 1)) * scrollableWidth;
-    container.scrollTo({
+  const targetScroll =
+    index === 0
+      ? 0
+      : (index / (scrollPositions.value.length - 1)) * scrollableWidth;
+  container.scrollTo({
     left: targetScroll,
-    behavior: 'smooth'
+    behavior: "smooth",
   });
-  
+
   // Reset scrolling flag after animation completes
-  container.addEventListener('scrollend', () => {
-    isScrolling.value = false;
-  }, { once: true });
-  
+  container.addEventListener(
+    "scrollend",
+    () => {
+      isScrolling.value = false;
+    },
+    { once: true }
+  );
+
   // Fallback timeout in case scrollend isn't supported
   setTimeout(() => {
     isScrolling.value = false;
@@ -486,38 +549,48 @@ function resetScrollPosition() {
 // Update scroll position when screen size changes
 function updateScrollPosition() {
   if (!sliderContainer.value || scrollPositions.value.length === 0) return;
-  
+
   const container = sliderContainer.value;
   const scrollWidth = container.scrollWidth;
   const containerWidth = container.clientWidth;
-  
+
   const scrollableWidth = scrollWidth - containerWidth;
-  const targetScroll = currentScrollIndex.value === 0 ? 0 : 
-    (currentScrollIndex.value / (scrollPositions.value.length - 1)) * scrollableWidth;
-  
+  const targetScroll =
+    currentScrollIndex.value === 0
+      ? 0
+      : (currentScrollIndex.value / (scrollPositions.value.length - 1)) *
+        scrollableWidth;
+
   container.scrollTo({
     left: targetScroll,
-    behavior: 'auto'
+    behavior: "auto",
   });
 }
 
 // Watch for scroll events
 function handleScroll() {
-  if (!sliderContainer.value || isScrolling.value || scrollPositions.value.length <= 1) return;
-  
+  if (
+    !sliderContainer.value ||
+    isScrolling.value ||
+    scrollPositions.value.length <= 1
+  )
+    return;
+
   // Throttle scroll event handling to improve performance
   requestAnimationFrame(() => {
     if (!sliderContainer.value) return;
-    
+
     const container = sliderContainer.value;
     const scrollWidth = container.scrollWidth;
     const containerWidth = container.clientWidth;
     const scrollLeft = container.scrollLeft;
-    
+
     const scrollableWidth = scrollWidth - containerWidth;
     const scrollRatio = scrollLeft / scrollableWidth;
-    
-    currentScrollIndex.value = Math.round(scrollRatio * (scrollPositions.value.length - 1));
+
+    currentScrollIndex.value = Math.round(
+      scrollRatio * (scrollPositions.value.length - 1)
+    );
   });
 }
 
@@ -529,17 +602,17 @@ onMounted(() => {
   fetchProducts();
   updateResponsiveDisplay();
   window.addEventListener("resize", updateResponsiveDisplay);
-  
+
   // Set up ResizeObserver to adjust on container size changes
   nextTick(() => {
     if (window.ResizeObserver) {
       resizeObserver = new ResizeObserver(() => {
         updateResponsiveDisplay();
       });
-      
+
       if (sliderContainer.value) {
         resizeObserver.observe(sliderContainer.value);
-        sliderContainer.value.addEventListener('scroll', handleScroll);
+        sliderContainer.value.addEventListener("scroll", handleScroll);
       }
     }
   });
@@ -547,15 +620,15 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", updateResponsiveDisplay);
-  window.removeEventListener('mousemove', handleMouseMove);
-  window.removeEventListener('mouseup', handleMouseUp);
-  window.removeEventListener('touchend', handleTouchEnd);
-  
+  window.removeEventListener("mousemove", handleMouseMove);
+  window.removeEventListener("mouseup", handleMouseUp);
+  window.removeEventListener("touchend", handleTouchEnd);
+
   // Clean up ResizeObserver and event listeners
   if (resizeObserver && sliderContainer.value) {
     resizeObserver.unobserve(sliderContainer.value);
     resizeObserver.disconnect();
-    sliderContainer.value.removeEventListener('scroll', handleScroll);
+    sliderContainer.value.removeEventListener("scroll", handleScroll);
   }
 });
 
@@ -681,7 +754,7 @@ watch(
   .product-card-wrapper {
     width: calc(50% - 10px); /* 2 cards per row on mobile */
   }
-  
+
   .product-row .flex {
     gap: 10px; /* Smaller gap on mobile */
   }
@@ -760,12 +833,12 @@ button:focus-visible,
     min-width: 44px;
     min-height: 44px;
   }
-  
+
   /* Better touch feedback - reduced animation for performance */
   .product-card-wrapper {
     transition: transform 0.1s ease;
   }
-  
+
   .product-card-wrapper:active {
     transform: scale(0.99);
   }
@@ -801,7 +874,8 @@ button:focus-visible,
 
 /* Professional loading states */
 @keyframes pulse-soft {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.6;
   }
   50% {

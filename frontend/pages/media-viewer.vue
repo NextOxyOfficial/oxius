@@ -22,7 +22,6 @@
 
 <script setup>
 const router = useRoute();
-console.log(router);
 </script>
 
 <style scoped></style>

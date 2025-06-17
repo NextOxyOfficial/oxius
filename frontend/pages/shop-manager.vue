@@ -1,5 +1,7 @@
 <template>
-  <div class="bg-gradient-to-br from-gray-50 to-gray-100 py-2 md:py-4 page-shop-manager">    
+  <div
+    class="bg-gradient-to-br from-gray-50 to-gray-100 py-2 md:py-4 page-shop-manager"
+  >
     <!-- Main Content -->
     <UContainer class="shop-manager-content">
       <PublicEshopTitle />
@@ -114,11 +116,15 @@
               <UIcon
                 name="i-heroicons-shopping-bag"
                 class="h-5 w-5 text-white mr-2 relative z-10"
-              />              <h3
+              />
+              <h3
                 class="text-base font-semibold text-white relative z-10 truncate"
               >
                 My Store Details
-                <span v-if="isEditing" class="ml-2 text-xs bg-yellow-500/90 text-yellow-900 px-2 py-0.5 rounded-full font-medium">
+                <span
+                  v-if="isEditing"
+                  class="ml-2 text-xs bg-yellow-500/90 text-yellow-900 px-2 py-0.5 rounded-full font-medium"
+                >
                   Editing
                 </span>
               </h3>
@@ -128,12 +134,13 @@
                 name="i-heroicons-chevron-down"
                 class="h-5 w-5 text-white ml-2 relative z-10 transition-transform duration-300"
                 :class="{ 'rotate-180': !isStoreDetailsCollapsed }"
-              />              <!-- Edit Button -->
+              />
+              <!-- Edit Button -->
               <UButton
                 v-if="!isEditing"
                 @click.stop="startEdit()"
                 color="white"
-                variant="ghost" 
+                variant="ghost"
                 size="xs"
                 class="ml-auto relative z-10 bg-white/20 hover:bg-white/30 text-white border-white/30 transition-all duration-200"
               >
@@ -142,8 +149,11 @@
                 </template>
                 Edit
               </UButton>
-                <!-- Save and Cancel Buttons -->
-              <div v-else class="ml-auto flex items-center space-x-2 relative z-10">                
+              <!-- Save and Cancel Buttons -->
+              <div
+                v-else
+                class="ml-auto flex items-center space-x-2 relative z-10"
+              >
                 <UButton
                   @click.stop="updateStoreInfo()"
                   color="emerald"
@@ -157,9 +167,12 @@
                     <UIcon name="i-heroicons-check" class="w-3 h-3" />
                   </template>
                   <template #trailing v-if="isSavingStore">
-                    <UIcon name="i-heroicons-arrow-path" class="w-3 h-3 animate-spin" />
+                    <UIcon
+                      name="i-heroicons-arrow-path"
+                      class="w-3 h-3 animate-spin"
+                    />
                   </template>
-                  {{ isSavingStore ? 'Saving...' : 'Save' }}
+                  {{ isSavingStore ? "Saving..." : "Save" }}
                 </UButton>
                 <UButton
                   @click.stop="cancelEdit()"
@@ -201,10 +214,11 @@
                         />
                       </div>
                     </div>
-                    <div class="ml-3 overflow-hidden flex-1">                      
+                    <div class="ml-3 overflow-hidden flex-1">
                       <p class="text-xs font-medium text-gray-600 mb-1">
                         Shop Name <span class="text-red-500">*</span>
-                      </p>                      <UInput
+                      </p>
+                      <UInput
                         v-if="isEditing"
                         v-model="editedUser.store_name"
                         placeholder="Enter shop name (required)"
@@ -298,7 +312,8 @@
                     <div class="ml-3 overflow-hidden flex-1">
                       <p class="text-xs font-medium text-gray-600 mb-1">
                         Shop Address
-                      </p>                      <UInput
+                      </p>
+                      <UInput
                         v-if="isEditing"
                         v-model="editedUser.store_address"
                         placeholder="Enter shop address"
@@ -314,7 +329,7 @@
                         {{ storeDetails?.store_address || "Not set" }}
                       </p>
                     </div>
-                  </div>                  
+                  </div>
                   <!-- Shop Description -->
                   <div class="flex items-start group">
                     <div class="flex-shrink-0 mt-1">
@@ -326,11 +341,11 @@
                           class="h-4 w-4 text-emerald-600"
                         />
                       </div>
-                    </div>                    
+                    </div>
                     <div class="ml-3 overflow-hidden flex-1">
                       <p class="text-xs font-medium text-gray-600 mb-1">
                         Description
-                      </p>                      
+                      </p>
                       <div v-if="isEditing">
                         <UTextarea
                           v-model="editedUser.store_description"
@@ -344,7 +359,8 @@
                           maxlength="500"
                         />
                         <p class="text-xs text-gray-500 mt-1 text-right">
-                          {{ (editedUser.store_description || '').length }}/500 characters
+                          {{ (editedUser.store_description || "").length }}/500
+                          characters
                         </p>
                       </div>
                       <p v-else class="text-sm text-gray-800 line-clamp-2">
@@ -384,8 +400,11 @@
                               remainingProductLimit > 0 &&
                               remainingProductLimit <= 2,
                             'text-emerald-600': remainingProductLimit > 2,
-                          }"                        >
-                          {{ productsDebugInfo.productsLength }}/{{ isUserDataLoaded ? productLimit : '...' }}
+                          }"
+                        >
+                          {{ productsDebugInfo.productsLength }}/{{
+                            isUserDataLoaded ? productLimit : "..."
+                          }}
                         </span>
                         <button
                           v-if="isUserDataLoaded && remainingProductLimit <= 3"
@@ -400,7 +419,7 @@
                         </button>
                       </span>
                     </div>
-                    <span class="text-gray-400">|</span>                    
+                    <span class="text-gray-400">|</span>
                     <span>
                       Last order:
                       {{
@@ -869,7 +888,8 @@
           </div>
         </div>
       </div>
-    </div>    <!-- Toast Notifications -->
+    </div>
+    <!-- Toast Notifications -->
     <div class="fixed right-0 p-6 z-[9999] bottom-20 sm:bottom-4">
       <transition-group name="toast">
         <div
@@ -1019,8 +1039,9 @@
           </div>
         </div>
       </div>
-    </UModal>    <!-- Buy More Slots Modal -->
-    <UModal 
+    </UModal>
+    <!-- Buy More Slots Modal -->
+    <UModal
       v-model="showBuySlotsModal"
       :ui="{
         fullscreen: 'w-full sm:max-w-lg h-auto',
@@ -1047,7 +1068,7 @@
           <div
             class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600"
           ></div>
-          
+
           <!-- Header -->
           <div
             class="bg-gradient-to-r from-emerald-600 to-emerald-500 p-6 text-white relative overflow-hidden"
@@ -1071,186 +1092,194 @@
           </div>
 
           <div class="p-6">
-          <!-- Current slots info -->
-          <div class="flex items-center mb-6 bg-emerald-50 rounded-lg p-4">
-            <UIcon
-              name="i-heroicons-information-circle"
-              class="h-5 w-5 text-emerald-600 mr-3 flex-shrink-0"
-            />
-            <p class="text-sm text-emerald-800">
-              Your shop currently has
-              <span class="font-semibold"
-                >{{ products.length }}/{{ productLimit }}</span
-              >
-              product slots used. You need more slots to add additional
-              products.
-            </p>
-          </div>
-          <!-- Slot package selection -->
-          <div class="space-y-4 mb-6">
-            <h4 class="text-gray-700 font-medium">Select Package:</h4>
-
-            <div
-              v-if="isLoadingPackages"
-              class="flex items-center justify-center py-8"
-            >
+            <!-- Current slots info -->
+            <div class="flex items-center mb-6 bg-emerald-50 rounded-lg p-4">
               <UIcon
-                name="i-heroicons-arrow-path"
-                class="h-6 w-6 text-emerald-600 animate-spin"
+                name="i-heroicons-information-circle"
+                class="h-5 w-5 text-emerald-600 mr-3 flex-shrink-0"
               />
-              <span class="ml-2 text-gray-600">Loading packages...</span>
+              <p class="text-sm text-emerald-800">
+                Your shop currently has
+                <span class="font-semibold"
+                  >{{ products.length }}/{{ productLimit }}</span
+                >
+                product slots used. You need more slots to add additional
+                products.
+              </p>
             </div>
+            <!-- Slot package selection -->
+            <div class="space-y-4 mb-6">
+              <h4 class="text-gray-700 font-medium">Select Package:</h4>
 
-            <div v-else class="grid gap-3">
-              <label
-                v-for="pkg in productSlotPackages"
-                :key="pkg.id"
-                class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none hover:border-emerald-500 transition-all"
-                :class="{
-                  'border-emerald-500 ring-2 ring-emerald-500 ring-opacity-30':
-                    selectedSlotPackage && selectedSlotPackage.id === pkg.id,
-                }"
+              <div
+                v-if="isLoadingPackages"
+                class="flex items-center justify-center py-8"
               >
-                <input
-                  type="radio"
-                  name="slot-package"
-                  :value="pkg"
-                  v-model="selectedSlotPackage"
-                  class="sr-only"
+                <UIcon
+                  name="i-heroicons-arrow-path"
+                  class="h-6 w-6 text-emerald-600 animate-spin"
                 />
-                <span class="flex flex-1">
-                  <span class="flex flex-col">
-                    <span class="block font-medium text-gray-900">
-                      {{ pkg.slots }} Additional Slots
-                      <span
-                        v-if="pkg.is_featured"
-                        class="ml-2 text-xs bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded"
-                        >BEST VALUE</span
-                      >
-                    </span>
-                    <span class="mt-1 flex items-center text-sm text-gray-500">
-                      <UIcon
-                        name="i-heroicons-shopping-bag"
-                        class="h-3.5 w-3.5 mr-1.5 text-emerald-500"
-                      />
-                      Add {{ pkg.slots }} more product listings
-                    </span>
-                    <span
-                      class="mt-2 text-emerald-600 font-medium flex items-center"
-                    >
-                      <UIcon name="i-heroicons-tag" class="h-4 w-4 mr-1" /> ৳{{
-                        pkg.price
-                      }}
-                      <template
-                        v-if="
-                          pkg.original_price && pkg.original_price > pkg.price
-                        "
-                      >
-                        <span class="text-xs text-gray-500 line-through ml-2"
-                          >৳{{ pkg.original_price }}</span
-                        >
+                <span class="ml-2 text-gray-600">Loading packages...</span>
+              </div>
+
+              <div v-else class="grid gap-3">
+                <label
+                  v-for="pkg in productSlotPackages"
+                  :key="pkg.id"
+                  class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none hover:border-emerald-500 transition-all"
+                  :class="{
+                    'border-emerald-500 ring-2 ring-emerald-500 ring-opacity-30':
+                      selectedSlotPackage && selectedSlotPackage.id === pkg.id,
+                  }"
+                >
+                  <input
+                    type="radio"
+                    name="slot-package"
+                    :value="pkg"
+                    v-model="selectedSlotPackage"
+                    class="sr-only"
+                  />
+                  <span class="flex flex-1">
+                    <span class="flex flex-col">
+                      <span class="block font-medium text-gray-900">
+                        {{ pkg.slots }} Additional Slots
                         <span
-                          class="text-xs bg-emerald-100 text-emerald-800 ml-2 px-1.5 py-0.5 rounded"
+                          v-if="pkg.is_featured"
+                          class="ml-2 text-xs bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded"
+                          >BEST VALUE</span
                         >
-                          Save
-                          {{
-                            Math.round(
-                              ((pkg.original_price - pkg.price) /
-                                pkg.original_price) *
-                                100
-                            )
-                          }}%
-                        </span>
-                      </template>
+                      </span>
+                      <span
+                        class="mt-1 flex items-center text-sm text-gray-500"
+                      >
+                        <UIcon
+                          name="i-heroicons-shopping-bag"
+                          class="h-3.5 w-3.5 mr-1.5 text-emerald-500"
+                        />
+                        Add {{ pkg.slots }} more product listings
+                      </span>
+                      <span
+                        class="mt-2 text-emerald-600 font-medium flex items-center"
+                      >
+                        <UIcon name="i-heroicons-tag" class="h-4 w-4 mr-1" />
+                        ৳{{ pkg.price }}
+                        <template
+                          v-if="
+                            pkg.original_price && pkg.original_price > pkg.price
+                          "
+                        >
+                          <span class="text-xs text-gray-500 line-through ml-2"
+                            >৳{{ pkg.original_price }}</span
+                          >
+                          <span
+                            class="text-xs bg-emerald-100 text-emerald-800 ml-2 px-1.5 py-0.5 rounded"
+                          >
+                            Save
+                            {{
+                              Math.round(
+                                ((pkg.original_price - pkg.price) /
+                                  pkg.original_price) *
+                                  100
+                              )
+                            }}%
+                          </span>
+                        </template>
+                      </span>
                     </span>
                   </span>
-                </span>
-                <UIcon
-                  name="i-heroicons-check-circle"
-                  class="h-5 w-5 text-emerald-600"
-                  :class="{
-                    'opacity-100':
-                      selectedSlotPackage && selectedSlotPackage.id === pkg.id,
-                    'opacity-0':
-                      !selectedSlotPackage || selectedSlotPackage.id !== pkg.id,
-                  }"
-                />
-              </label>
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="h-5 w-5 text-emerald-600"
+                    :class="{
+                      'opacity-100':
+                        selectedSlotPackage &&
+                        selectedSlotPackage.id === pkg.id,
+                      'opacity-0':
+                        !selectedSlotPackage ||
+                        selectedSlotPackage.id !== pkg.id,
+                    }"
+                  />
+                </label>
+              </div>
             </div>
-          </div>
 
-          <!-- Account balance -->
-          <div
-            class="bg-gray-50 p-4 rounded-lg flex justify-between items-center mb-6"
-          >
-            <div>
-              <p class="text-sm font-medium text-gray-700">
-                Your Account Balance
-              </p>
-              <p class="text-lg font-semibold text-gray-900">
-                ৳{{ user?.user?.balance || 0 }}
-              </p>
-            </div>
-            <NuxtLink
-              to="/deposit-withdraw"
-              class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center"
+            <!-- Account balance -->
+            <div
+              class="bg-gray-50 p-4 rounded-lg flex justify-between items-center mb-6"
             >
-              <UIcon name="i-heroicons-plus-circle" class="h-3.5 w-3.5 mr-1" />
-              Add Funds
-            </NuxtLink>
-          </div>
-          <!-- Insufficient balance warning -->
-          <div
-            v-if="
-              selectedSlotPackage &&
-              user?.user?.balance < selectedSlotPackage.price
-            "
-            class="bg-red-50 border border-red-100 rounded-lg p-3 mb-6 text-sm text-red-800 flex items-start"
-          >
-            <UIcon
-              name="i-heroicons-exclamation-circle"
-              class="h-5 w-5 text-red-500 mr-2 flex-shrink-0"
-            />
-            <div>
-              <p class="mb-1">
-                You have insufficient balance to purchase this package. Please
-                add funds to your account.
-              </p>
+              <div>
+                <p class="text-sm font-medium text-gray-700">
+                  Your Account Balance
+                </p>
+                <p class="text-lg font-semibold text-gray-900">
+                  ৳{{ user?.user?.balance || 0 }}
+                </p>
+              </div>
               <NuxtLink
                 to="/deposit-withdraw"
-                class="text-red-600 hover:text-red-800 flex items-center font-medium text-xs"
+                class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center"
               >
                 <UIcon
                   name="i-heroicons-plus-circle"
                   class="h-3.5 w-3.5 mr-1"
                 />
-                Add Funds to Your Account
+                Add Funds
               </NuxtLink>
             </div>
-          </div>          <div class="flex sm:flex-row gap-4 w-full">
-            <UButton
-              color="primary"
-              icon="i-heroicons-shopping-cart"
-              @click="purchaseProductSlots"
-              class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 py-4"
-              :disabled="
-                !selectedSlotPackage ||
-                user?.user?.balance < (selectedSlotPackage?.price || 0) ||
-                isPurchasing
+            <!-- Insufficient balance warning -->
+            <div
+              v-if="
+                selectedSlotPackage &&
+                user?.user?.balance < selectedSlotPackage.price
               "
-              :loading="isPurchasing"
+              class="bg-red-50 border border-red-100 rounded-lg p-3 mb-6 text-sm text-red-800 flex items-start"
             >
-              {{ isPurchasing ? "Processing..." : "Purchase Now" }}
-            </UButton>
-            <UButton
-              color="gray"
-              variant="outline"
-              @click="showBuySlotsModal = false"
-              class="flex-1 py-4"
-            >
-              Cancel            </UButton>
+              <UIcon
+                name="i-heroicons-exclamation-circle"
+                class="h-5 w-5 text-red-500 mr-2 flex-shrink-0"
+              />
+              <div>
+                <p class="mb-1">
+                  You have insufficient balance to purchase this package. Please
+                  add funds to your account.
+                </p>
+                <NuxtLink
+                  to="/deposit-withdraw"
+                  class="text-red-600 hover:text-red-800 flex items-center font-medium text-xs"
+                >
+                  <UIcon
+                    name="i-heroicons-plus-circle"
+                    class="h-3.5 w-3.5 mr-1"
+                  />
+                  Add Funds to Your Account
+                </NuxtLink>
+              </div>
+            </div>
+            <div class="flex sm:flex-row gap-4 w-full">
+              <UButton
+                color="primary"
+                icon="i-heroicons-shopping-cart"
+                @click="purchaseProductSlots"
+                class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 py-4"
+                :disabled="
+                  !selectedSlotPackage ||
+                  user?.user?.balance < (selectedSlotPackage?.price || 0) ||
+                  isPurchasing
+                "
+                :loading="isPurchasing"
+              >
+                {{ isPurchasing ? "Processing..." : "Purchase Now" }}
+              </UButton>
+              <UButton
+                color="gray"
+                variant="outline"
+                @click="showBuySlotsModal = false"
+                class="flex-1 py-4"
+              >
+                Cancel
+              </UButton>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </UModal>
@@ -1292,7 +1321,7 @@ const products = ref([]);
 // Product limit configuration (dynamic from user data)
 const productLimit = computed(() => {
   const limit = user.value?.user?.product_limit;
-  console.log('Product limit from user:', limit);
+
   return limit || 10;
 });
 const remainingProductLimit = computed(
@@ -1301,7 +1330,9 @@ const remainingProductLimit = computed(
 
 // Add computed property to check if user data is fully loaded
 const isUserDataLoaded = computed(() => {
-  return user.value && user.value.user && user.value.user.product_limit !== undefined;
+  return (
+    user.value && user.value.user && user.value.user.product_limit !== undefined
+  );
 });
 
 // Debug computed property for products
@@ -1311,7 +1342,7 @@ const productsDebugInfo = computed(() => {
     productsArray: products.value,
     isArray: Array.isArray(products.value),
     productLimit: productLimit.value,
-    isUserDataLoaded: isUserDataLoaded.value
+    isUserDataLoaded: isUserDataLoaded.value,
   };
 });
 
@@ -1353,33 +1384,36 @@ function startEdit() {
 }
 
 // Watch for user data changes to ensure product limit is updated
-watch(user, (newUser) => {  if (newUser && newUser.user) {
-    console.log('User data updated:', newUser.user);
-    console.log('Product limit from updated user:', newUser.user.product_limit);
-    
-    // Reload products when user data becomes available (only if not already loaded)
-    if (newUser.user.product_limit && products.value.length === 0 && !mounted.value) {
-      console.log('User data now available, reloading products...');
-      getProducts();
+watch(
+  user,
+  (newUser) => {
+    if (newUser && newUser.user) {
+      // Reload products when user data becomes available (only if not already loaded)
+      if (
+        newUser.user.product_limit &&
+        products.value.length === 0 &&
+        !mounted.value
+      ) {
+        getProducts();
+      }
     }
-  }
-}, { deep: true });
-
-// Watch for productLimit changes
-watch(productLimit, (newLimit) => {
-  console.log('Product limit changed to:', newLimit);
-});
+  },
+  { deep: true }
+);
 
 // Watch for products changes
-watch(products, (newProducts, oldProducts) => {
-  console.log('Products updated, count:', newProducts?.length || 0);
-  // Only reset toast flag if the number of products actually changed (not just a reload)
-  const oldCount = oldProducts?.length || 0;
-  const newCount = newProducts?.length || 0;
-  if (oldCount !== newCount) {
-    hasShownProductLimitToast.value = false;
-  }
-}, { deep: true });
+watch(
+  products,
+  (newProducts, oldProducts) => {
+    // Only reset toast flag if the number of products actually changed (not just a reload)
+    const oldCount = oldProducts?.length || 0;
+    const newCount = newProducts?.length || 0;
+    if (oldCount !== newCount) {
+      hasShownProductLimitToast.value = false;
+    }
+  },
+  { deep: true }
+);
 
 // Watch for active tab changes to handle product limit
 watch(activeTab, (newTab) => {
@@ -1404,21 +1438,13 @@ const sparkles = [
 // Lifecycle hooks
 onMounted(async () => {
   mounted.value = true;
-  
-  console.log('Shop manager mounted, user data:', user.value);
-  
+
   // Wait a bit for user data to be available if it's not loaded yet
   if (!user.value || !user.value.user) {
-    console.log('User data not available yet, waiting...');
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
-  
-  // Load initial data
-  console.log('Loading initial data...');
-  await Promise.all([
-    getOrders(),
-    getProducts()
-  ]);
+
+  await Promise.all([getOrders(), getProducts()]);
 
   // Randomize sparkle animations
   const interval = setInterval(() => {
@@ -1439,17 +1465,16 @@ async function getOrders() {
   isOrdersLoading.value = true;
   try {
     const res = await get("/seller-orders/");
-    console.log('Orders API response:', res);
-    
+
     if (res && res.data) {
       // Handle both paginated and non-paginated responses
       const orderData = res.data.results || res.data;
-      orders.value = Array.isArray(orderData) ? orderData.map((order) => ({
-        ...order,
-        id: Array.isArray(order.id) ? order.id[0] : order.id,
-      })) : [];
-      
-      console.log(`Loaded ${orders.value.length} orders for shop manager`);
+      orders.value = Array.isArray(orderData)
+        ? orderData.map((order) => ({
+            ...order,
+            id: Array.isArray(order.id) ? order.id[0] : order.id,
+          }))
+        : [];
     } else {
       orders.value = [];
     }
@@ -1490,7 +1515,6 @@ const totalOrdersAmount = computed(() => {
 
 // Computed property to get the most recent order date
 const lastOrderDate = computed(() => {
-  console.log('Computing lastOrderDate, orders count:', orders.value.length);
   if (orders.value.length === 0) {
     return null;
   }
@@ -1500,37 +1524,39 @@ const lastOrderDate = computed(() => {
     (a, b) => new Date(b.created_at) - new Date(a.created_at)
   );
 
-  console.log('Most recent order:', sortedOrders[0]?.created_at);  return new Date(sortedOrders[0].created_at);
+  return new Date(sortedOrders[0].created_at);
 });
 
 // Products management functions
 async function getProducts() {
-  console.log('getProducts() called, hasShownProductLimitToast:', hasShownProductLimitToast.value);
   try {
-    console.log('Fetching products for shop manager...');
-    const res = await get("/my-products/", {}, {
-      headers: {
-        "Cache-Control": "no-cache",
-        Pragma: "no-cache",
-      },
-    });
-    console.log('Products API response:', res);
-    
+    const res = await get(
+      "/my-products/",
+      {},
+      {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      }
+    );
+
     if (res && res.data) {
       // Handle both paginated and non-paginated responses
       if ("results" in res.data) {
         // Paginated response
         products.value = res.data.results;
-        console.log(`Loaded ${products.value.length} products (paginated)`);
       } else if (Array.isArray(res.data)) {
         // Direct array response
         products.value = res.data;
-        console.log(`Loaded ${products.value.length} products (direct array)`);
       } else {
         console.warn("Unexpected products data structure:", res.data);
         products.value = [];
-      }      // Check product limit and show notification if close to limit
-      if (products.value.length >= productLimit.value && !hasShownProductLimitToast.value) {
+      } // Check product limit and show notification if close to limit
+      if (
+        products.value.length >= productLimit.value &&
+        !hasShownProductLimitToast.value
+      ) {
         showToast(
           "info",
           "Product Limit Reached",
@@ -1541,7 +1567,10 @@ async function getProducts() {
         setTimeout(() => {
           hasShownProductLimitToast.value = false;
         }, 30000);
-      } else if (products.value.length >= productLimit.value - 2 && !hasShownProductLimitToast.value) {
+      } else if (
+        products.value.length >= productLimit.value - 2 &&
+        !hasShownProductLimitToast.value
+      ) {
         // Show warning when approaching limit (within 2 products)
         showToast(
           "warning",
@@ -1660,7 +1689,6 @@ async function getStoreDetails() {
     const { data } = await get(`/store/${user.value.user.store_username}/`);
     if (data) {
       storeDetails.value = data;
-      console.log("Store details loaded successfully");
 
       // Also update the edited user object for consistency
       editedUser.store_name = data.store_name || "";
@@ -1681,26 +1709,30 @@ async function getStoreDetails() {
 
 async function updateStoreInfo() {
   if (isSavingStore.value) return; // Prevent double-clicking
-  
+
   // Basic validation
   if (!editedUser.store_name?.trim()) {
     showToast("error", "Validation Error", "Store name is required.");
     return;
   }
-  
+
   if (editedUser.store_name.trim().length < 2) {
-    showToast("error", "Validation Error", "Store name must be at least 2 characters long.");
+    showToast(
+      "error",
+      "Validation Error",
+      "Store name must be at least 2 characters long."
+    );
     return;
   }
-  
+
   isSavingStore.value = true;
   try {
     const { data } = await patch(`/store/${user.value.user.store_username}/`, {
       store_name: editedUser.store_name.trim(),
-      store_address: editedUser.store_address?.trim() || '',
-      store_description: editedUser.store_description?.trim() || '',
+      store_address: editedUser.store_address?.trim() || "",
+      store_description: editedUser.store_description?.trim() || "",
     });
-    
+
     if (data) {
       await getStoreDetails();
       isEditing.value = false;
@@ -1713,15 +1745,11 @@ async function updateStoreInfo() {
     }
   } catch (error) {
     console.error("Error updating store:", error);
-    const errorMessage = error.response?.data?.store_name?.[0] || 
-                        error.response?.data?.message || 
-                        "Failed to update store information. Please check your connection and try again.";
-    showToast(
-      "error",
-      "❌ Update Failed", 
-      errorMessage,
-      { timeout: 6000 }
-    );
+    const errorMessage =
+      error.response?.data?.store_name?.[0] ||
+      error.response?.data?.message ||
+      "Failed to update store information. Please check your connection and try again.";
+    showToast("error", "❌ Update Failed", errorMessage, { timeout: 6000 });
   } finally {
     isSavingStore.value = false;
   }
@@ -1730,12 +1758,12 @@ async function updateStoreInfo() {
 // Cancel edit with optional confirmation for unsaved changes
 function cancelEdit() {
   // Check if there are unsaved changes
-  const hasChanges = storeDetails.value && (
-    editedUser.store_name !== storeDetails.value.store_name ||
-    editedUser.store_address !== storeDetails.value.store_address ||
-    editedUser.store_description !== storeDetails.value.store_description
-  );
-  
+  const hasChanges =
+    storeDetails.value &&
+    (editedUser.store_name !== storeDetails.value.store_name ||
+      editedUser.store_address !== storeDetails.value.store_address ||
+      editedUser.store_description !== storeDetails.value.store_description);
+
   if (hasChanges && isSavingStore.value === false) {
     // Show confirmation toast
     showToast(
@@ -1745,12 +1773,12 @@ function cancelEdit() {
       { timeout: 3000 }
     );
   }
-  
+
   // Reset to original values
   if (storeDetails.value) {
-    editedUser.store_name = storeDetails.value.store_name || '';
-    editedUser.store_address = storeDetails.value.store_address || '';
-    editedUser.store_description = storeDetails.value.store_description || '';
+    editedUser.store_name = storeDetails.value.store_name || "";
+    editedUser.store_address = storeDetails.value.store_address || "";
+    editedUser.store_description = storeDetails.value.store_description || "";
   }
   isEditing.value = false;
 }
@@ -1848,7 +1876,8 @@ async function purchaseProductSlots() {
       "Could not complete the purchase. Please try again."
     );
   } finally {
-    isPurchasing.value = false;  }
+    isPurchasing.value = false;
+  }
 }
 </script>
 

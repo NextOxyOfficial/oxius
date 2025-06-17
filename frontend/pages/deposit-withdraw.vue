@@ -10,7 +10,9 @@
         class="mb-6 bg-gray-100 shadow-sm border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-xl"
       >
         <div class="flex gap-2">
-          <h2 class="text-base text-gray-800 sm:text-xl text-center">Mobile Recharge</h2>
+          <h2 class="text-base text-gray-800 sm:text-xl text-center">
+            Mobile Recharge
+          </h2>
           <div class="flex justify-center gap-2">
             <NuxtImg
               v-for="operator in operators"
@@ -24,7 +26,9 @@
       </NuxtLink>
       <UDivider label="" class="mb-4" />
       <div class="flex flex-col md:flex-row justify-between items-center">
-        <p class="text-lg py-2 max-w-fit w-full text-green-800 dark:text-green-600 font-semibold">
+        <p
+          class="text-lg py-2 max-w-fit w-full text-green-800 dark:text-green-600 font-semibold"
+        >
           <span class="inline-flex items-center"
             >{{ $t("available_balance") }}:&nbsp;
             <UIcon name="i-mdi:currency-bdt" class="" />
@@ -32,7 +36,9 @@
           </span>
         </p>
       </div>
-      <div class="mb-5 flex justify-center shadow-sm bg-gray-100 max-w-fit mx-auto">
+      <div
+        class="mb-5 flex justify-center shadow-sm bg-gray-100 max-w-fit mx-auto"
+      >
         <UButton
           :color="`${currentTab == 1 ? 'green' : 'gray'}`"
           variant="outline"
@@ -55,7 +61,9 @@
             rounded: 'rounded-s-none rounded-e-none',
           }"
           @click="currentTab = 2"
-          ><UIcon name="i-ic:baseline-arrow-upward" />{{ $t("withdraw") }}</UButton
+          ><UIcon name="i-ic:baseline-arrow-upward" />{{
+            $t("withdraw")
+          }}</UButton
         >
 
         <UButton
@@ -83,7 +91,8 @@
               <!-- <UIcon
                 name="i-heroicons-banknotes"
                 class="input-icon text-primary-400"
-              /> -->              <UInput
+              /> -->
+              <UInput
                 icon="i-heroicons-banknotes"
                 placeholder=""
                 size="lg"
@@ -98,10 +107,14 @@
                 @input="validateAmountInput('amount')"
               />
               <label class="floating-label">Enter Amount</label>
-                </div>
+            </div>
           </div>
           <p v-if="depositErrors.amount" class="text-sm text-red-500">
-            {{ typeof depositErrors.amount === 'string' ? depositErrors.amount : 'Please enter an amount' }}
+            {{
+              typeof depositErrors.amount === "string"
+                ? depositErrors.amount
+                : "Please enter an amount"
+            }}
           </p>
           <p v-if="depositErrors.min_deposit" class="text-sm text-red-500">
             Minimum deposit amount is ৳{{ min_deposit }}
@@ -110,11 +123,17 @@
             <span class="text-green-600">* </span>
             <span class="inline-flex items-center">
               Minimum deposit
-              <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ min_deposit }}</span
+              <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
+                min_deposit
+              }}</span
             >
           </p>
           <div class="mt-4">
-            <img src="/static/frontend/images/payment.png" class="w-60" alt="Payment Method" />
+            <img
+              src="/static/frontend/images/payment.png"
+              class="w-60"
+              alt="Payment Method"
+            />
           </div>
           <div class="my-4">
             <!-- Modern Terms & Conditions Checkbox -->
@@ -145,7 +164,9 @@
             </UFormGroup>
           </div>
 
-          <p v-if="depositErrors.policy" class="text-sm text-red-500">Please select this field</p>
+          <p v-if="depositErrors.policy" class="text-sm text-red-500">
+            Please select this field
+          </p>
           <div class="my-2 space-x-3">
             <UButton size="sm" @click="deposit" :loading="isDepositLoading">{{
               $t("diposit")
@@ -169,13 +190,18 @@
                     <div class="radio-dot"></div>
                   </div>
                   <div class="method-card">
-                    <img :src="'/static/frontend/images/' + option.icon" class="method-icon" />
+                    <img
+                      :src="'/static/frontend/images/' + option.icon"
+                      class="method-icon"
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <p v-if="errors?.selected" class="text-sm text-red-500">Please enter a payment method</p>
+          <p v-if="errors?.selected" class="text-sm text-red-500">
+            Please enter a payment method
+          </p>
           <div class="mb-3">
             <!-- Modern Phone Number Input -->
             <div
@@ -198,7 +224,9 @@
                 v-model="payment_number"
               />
               <label class="floating-label">{{
-                selected === "nagad" ? "Enter Nagad Number" : "Enter Bkash Number"
+                selected === "nagad"
+                  ? "Enter Nagad Number"
+                  : "Enter Bkash Number"
               }}</label>
               <!-- <div class="input-backdrop"></div> -->
             </div>
@@ -206,7 +234,8 @@
               Please enter a payment number
             </p>
           </div>
-          <div class="space-y-2">            <UInput
+          <div class="space-y-2">
+            <UInput
               icon="i-heroicons-banknotes"
               placeholder="Enter Amount"
               size="md"
@@ -219,8 +248,13 @@
               min="0"
               step="0.01"
               @input="validateAmountInput('withdraw')"
-            />            <p v-if="errors?.withdrawAmount" class="text-sm text-red-500">
-              {{ typeof errors.withdrawAmount === 'string' ? errors.withdrawAmount : 'Please enter an amount' }}
+            />
+            <p v-if="errors?.withdrawAmount" class="text-sm text-red-500">
+              {{
+                typeof errors.withdrawAmount === "string"
+                  ? errors.withdrawAmount
+                  : "Please enter an amount"
+              }}
             </p>
             <p class="text-sm">
               Total Deduction:
@@ -230,10 +264,14 @@
               <span class="text-red-500">* </span>
               <span class="inline-flex items-center">
                 Minimum withdrawal
-                <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ min_withdrawal }}</span
+                <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
+                  min_withdrawal
+                }}</span
               >
             </p>
-            <p class="text-sm"><span class="text-red-500">*</span> 2.95% Charges applicable</p>
+            <p class="text-sm">
+              <span class="text-red-500">*</span> 2.95% Charges applicable
+            </p>
             <p v-if="errors?.insufficient" class="text-sm text-red-500">
               You do not have enough balance
             </p>
@@ -268,7 +306,9 @@
               </template>
               <UCheckbox name="check" v-model="policy" />
             </UFormGroup>
-            <p v-if="errors?.policy" class="text-sm text-red-500">Check this field</p>
+            <p v-if="errors?.policy" class="text-sm text-red-500">
+              Check this field
+            </p>
           </div>
           <div class="my-2 space-x-3 mb-4">
             <!-- <UButton size="sm" @click="deposit">Deposit</UButton> -->
@@ -284,7 +324,9 @@
               "
               >{{ $t("withdraw") }}</UButton
             >
-            <UButton v-else size="sm" @click="isOpen = true">{{ $t("withdraw") }}</UButton>
+            <UButton v-else size="sm" @click="isOpen = true">{{
+              $t("withdraw")
+            }}</UButton>
           </div>
         </div>
         <div v-if="currentTab === 3" class="max-sm:w-full">
@@ -298,7 +340,8 @@
               @click="showQr = !showQr"
               block
               class="max-w-40 mx-auto"
-            />            <CommonQrCodeModal
+            />
+            <CommonQrCodeModal
               v-model="showQr"
               title="Scan My QR Code"
               :qr-data="user.user.phone"
@@ -336,7 +379,7 @@
 
                   <qrcode-stream
                     @scanned="
-                      res => {
+                      (res) => {
                         scanQr = false;
                         transfer.contact = res;
                       }
@@ -353,7 +396,8 @@
               placeholder="Enter Email/Phone Or Scan Code"
               v-model="transfer.contact"
             />
-            <p class="text-sm text-red-500">{{ transferErrors.contact }}</p>            <UInput
+            <p class="text-sm text-red-500">{{ transferErrors.contact }}</p>
+            <UInput
               icon="i-heroicons-banknotes"
               type="number"
               size="md"
@@ -364,7 +408,8 @@
               step="0.01"
               v-model="transfer.payable_amount"
               @input="validateAmountInput('transfer')"
-            />            <p class="text-sm text-red-500 mb-2" v-if="transferErrors.transfer">
+            />
+            <p class="text-sm text-red-500 mb-2" v-if="transferErrors.transfer">
               {{ transferErrors.limit || transferErrors.transfer }}
             </p>
             <p class="text-sm text-red-500" v-if="transferErrors.min_transfer">
@@ -377,7 +422,9 @@
               <span class="text-blue-600">* </span>
               <span class="inline-flex items-center">
                 Minimum transfer
-                <UIcon name="i-mdi:currency-bdt" class="text-base" />{{ min_transfer }}</span
+                <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
+                  min_transfer
+                }}</span
               >
             </p>
             <UFormGroup
@@ -442,7 +489,8 @@
             class="px-4 py-2 text-sm font-medium border border-gray-200 rounded-l-lg"
             :class="{
               'bg-primary-600 text-white': transactionTab === 'sent',
-              'bg-white text-gray-800 hover:bg-gray-50': transactionTab !== 'sent',
+              'bg-white text-gray-800 hover:bg-gray-50':
+                transactionTab !== 'sent',
             }"
           >
             Sent Transactions
@@ -453,7 +501,8 @@
             class="px-4 py-2 text-sm font-medium border border-gray-200 rounded-r-lg"
             :class="{
               'bg-primary-600 text-white': transactionTab === 'received',
-              'bg-white text-gray-800 hover:bg-gray-50': transactionTab !== 'received',
+              'bg-white text-gray-800 hover:bg-gray-50':
+                transactionTab !== 'received',
             }"
           >
             Received Transactions
@@ -462,19 +511,32 @@
       </div>
 
       <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="flex max-sm:justify-between gap-2">            <USelect
+        <div
+          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+        >
+          <div class="flex max-sm:justify-between gap-2">
+            <USelect
               v-model="filters.type"
-              :options="transactionTypeOptions.map(option => ({ name: option.label, value: option.value }))"
+              :options="
+                transactionTypeOptions.map((option) => ({
+                  name: option.label,
+                  value: option.value,
+                }))
+              "
               option-attribute="name"
               value-attribute="value"
               placeholder="Filter by type"
             />
-            
+
             <USelect
               v-model="filters.status"
-              :options="transactionStatusOptions.map(option => ({ name: option.label, value: option.value }))"
-              option-attribute="name" 
+              :options="
+                transactionStatusOptions.map((option) => ({
+                  name: option.label,
+                  value: option.value,
+                }))
+              "
+              option-attribute="name"
               value-attribute="value"
               placeholder="Filter by status"
             />
@@ -491,7 +553,8 @@
         </div>
       </div>
       <div class="overflow-hidden">
-        <UTable :columns="columns" :rows="paginatedTransactions">          <template #type-data="{ row }">
+        <UTable :columns="columns" :rows="paginatedTransactions">
+          <template #type-data="{ row }">
             <div class="flex items-center">
               <!-- Deposit icon -->
               <span
@@ -511,7 +574,7 @@
                   <path d="m19 12-7 7-7-7" />
                 </svg>
               </span>
-              
+
               <!-- Withdraw icon -->
               <span
                 v-else-if="row.transaction_type?.toLowerCase() === 'withdraw'"
@@ -530,10 +593,10 @@
                   <path d="m5 12 7-7 7 7" />
                 </svg>
               </span>
-              
+
               <!-- Transfer icon -->
-              <span 
-                v-else-if="row.transaction_type?.toLowerCase() === 'transfer'" 
+              <span
+                v-else-if="row.transaction_type?.toLowerCase() === 'transfer'"
                 class="flex-shrink-0 h-5 w-5 text-blue-500"
               >
                 <svg
@@ -551,10 +614,12 @@
                   <path d="M20 17H4" />
                 </svg>
               </span>
-              
+
               <!-- Diamond transactions icon -->
               <span
-                v-else-if="row.transaction_type?.toLowerCase().startsWith('diamond_')"
+                v-else-if="
+                  row.transaction_type?.toLowerCase().startsWith('diamond_')
+                "
                 class="flex-shrink-0 h-5 w-5 text-purple-500"
               >
                 <svg
@@ -570,10 +635,12 @@
                   <path d="M4 8l8 14 8-14-8 14z" />
                 </svg>
               </span>
-              
+
               <!-- Mobile recharge icon -->
               <span
-                v-else-if="row.transaction_type?.toLowerCase() === 'mobile_recharge'"
+                v-else-if="
+                  row.transaction_type?.toLowerCase() === 'mobile_recharge'
+                "
                 class="flex-shrink-0 h-5 w-5 text-blue-500"
               >
                 <svg
@@ -590,10 +657,12 @@
                   <path d="M12 7V6.02" />
                 </svg>
               </span>
-              
+
               <!-- Purchase icon -->
               <span
-                v-else-if="row.transaction_type?.toLowerCase() === 'order_payment'"
+                v-else-if="
+                  row.transaction_type?.toLowerCase() === 'order_payment'
+                "
                 class="flex-shrink-0 h-5 w-5 text-green-600"
               >
                 <svg
@@ -605,15 +674,19 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 >
-                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                  <path
+                    d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"
+                  />
                   <path d="M3 6h18" />
                   <path d="M16 10a4 4 0 0 1-8 0" />
                 </svg>
               </span>
-              
+
               <!-- Subscription icon -->
               <span
-                v-else-if="row.transaction_type?.toLowerCase() === 'pro_subscription'"
+                v-else-if="
+                  row.transaction_type?.toLowerCase() === 'pro_subscription'
+                "
                 class="flex-shrink-0 h-5 w-5 text-amber-500"
               >
                 <svg
@@ -629,17 +702,19 @@
                   <path d="M5 12h14" />
                 </svg>
               </span>
-              
+
               <!-- Commission icon -->
               <span
-                v-else-if="row.transaction_type?.toLowerCase() === 'referral_commission'"
+                v-else-if="
+                  row.transaction_type?.toLowerCase() === 'referral_commission'
+                "
                 class="flex-shrink-0 h-5 w-5 text-yellow-500"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="currentColor" 
+                  stroke="currentColor"
                   stroke-width="2"
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -652,7 +727,7 @@
                   <path d="M9 7 6 5" />
                 </svg>
               </span>
-              
+
               <!-- Default icon for other types -->
               <span v-else class="flex-shrink-0 h-5 w-5 text-gray-600">
                 <svg
@@ -669,56 +744,124 @@
                   <path d="M12 8h.01" />
                 </svg>
               </span>
-              
+
               <!-- Display transaction type name -->
               <span class="ml-2 text-sm text-gray-800">
                 {{ getTransactionTypeName(row.transaction_type) }}
               </span>
-            </div>          </template>          <template #recipient-data="{ row }">
+            </div>
+          </template>
+          <template #recipient-data="{ row }">
             <!-- Show recipient details if available -->
-            <div class="text-sm text-gray-600 capitalize" v-if="row?.to_user_details">
+            <div
+              class="text-sm text-gray-600 capitalize"
+              v-if="row?.to_user_details"
+            >
               {{ row.to_user_details.first_name }}
               {{ row.to_user_details.last_name }}
             </div>
-              <!-- For self-transactions like deposits, purchases, etc. show "Myself" -->
-            <div class="text-sm text-gray-600" v-else-if="['deposit', 'diamond_purchase', 'pro_subscription', 'mobile_recharge', 'order_payment', 'diamond_bonus', 'diamond_refund', 'diamond_admin'].includes(row.transaction_type?.toLowerCase())">
+            <!-- For self-transactions like deposits, purchases, etc. show "Myself" -->
+            <div
+              class="text-sm text-gray-600"
+              v-else-if="
+                [
+                  'deposit',
+                  'diamond_purchase',
+                  'pro_subscription',
+                  'mobile_recharge',
+                  'order_payment',
+                  'diamond_bonus',
+                  'diamond_refund',
+                  'diamond_admin',
+                ].includes(row.transaction_type?.toLowerCase())
+              "
+            >
               Myself
             </div>
-            
+
             <!-- For withdraw transactions, show payment method and number in recipients -->
-            <div class="text-sm text-gray-600" v-else-if="row.transaction_type?.toLowerCase() === 'withdraw'">
-              {{ row.payment_method ? (row.payment_method.charAt(0).toUpperCase() + row.payment_method.slice(1)) : 'N/A' }}
-              <span v-if="row.card_number" class="block text-xs text-gray-500 font-mono">{{ row.card_number }}</span>
+            <div
+              class="text-sm text-gray-600"
+              v-else-if="row.transaction_type?.toLowerCase() === 'withdraw'"
+            >
+              {{
+                row.payment_method
+                  ? row.payment_method.charAt(0).toUpperCase() +
+                    row.payment_method.slice(1)
+                  : "N/A"
+              }}
+              <span
+                v-if="row.card_number"
+                class="block text-xs text-gray-500 font-mono"
+                >{{ row.card_number }}</span
+              >
             </div>
-            
+
             <!-- For diamond transactions without recipient -->
-            <div class="text-sm text-gray-600" v-else-if="row.transaction_type?.toLowerCase()?.startsWith('diamond_') && !row.to_user_details">
+            <div
+              class="text-sm text-gray-600"
+              v-else-if="
+                row.transaction_type?.toLowerCase()?.startsWith('diamond_') &&
+                !row.to_user_details
+              "
+            >
               Personal Account
             </div>
-          </template>          <template #sender-data="{ row }">
+          </template>
+          <template #sender-data="{ row }">
             <!-- Show sender details if available -->
-            <div class="text-sm text-gray-600 capitalize" v-if="row?.user_details">
+            <div
+              class="text-sm text-gray-600 capitalize"
+              v-if="row?.user_details"
+            >
               {{ row.user_details.first_name }}
               {{ row.user_details.last_name }}
             </div>
-            
+
             <!-- For system-generated transactions -->
-            <div class="text-sm text-gray-600" v-else-if="row.transaction_type?.toLowerCase()?.includes('system') || row.transaction_type?.toLowerCase()?.includes('admin')">
+            <div
+              class="text-sm text-gray-600"
+              v-else-if="
+                row.transaction_type?.toLowerCase()?.includes('system') ||
+                row.transaction_type?.toLowerCase()?.includes('admin')
+              "
+            >
               System
             </div>
-              <!-- For payments to self -->
-            <div class="text-sm text-gray-600" v-else-if="['deposit', 'diamond_purchase'].includes(row.transaction_type?.toLowerCase())">
+            <!-- For payments to self -->
+            <div
+              class="text-sm text-gray-600"
+              v-else-if="
+                ['deposit', 'diamond_purchase'].includes(
+                  row.transaction_type?.toLowerCase()
+                )
+              "
+            >
               Payment Gateway
             </div>
-            
+
             <!-- For system-generated diamond additions -->
-            <div class="text-sm text-gray-600" v-else-if="['diamond_bonus', 'diamond_refund'].includes(row.transaction_type?.toLowerCase())">
+            <div
+              class="text-sm text-gray-600"
+              v-else-if="
+                ['diamond_bonus', 'diamond_refund'].includes(
+                  row.transaction_type?.toLowerCase()
+                )
+              "
+            >
               System
             </div>
-          </template>          <template #method-data="{ row }">
+          </template>
+          <template #method-data="{ row }">
             <div class="text-sm text-gray-600 capitalize">
               {{ row?.payment_method }}
-              <span v-if="row?.transaction_type?.toLowerCase() === 'withdraw' && row?.card_number" class="block text-xs text-gray-500 font-mono">
+              <span
+                v-if="
+                  row?.transaction_type?.toLowerCase() === 'withdraw' &&
+                  row?.card_number
+                "
+                class="block text-xs text-gray-500 font-mono"
+              >
                 {{ row.card_number }}
               </span>
             </div>
@@ -727,48 +870,102 @@
             <div class="text-sm text-gray-600">
               {{ formatDate(row.created_at) }}
             </div>
-          </template>          <template #amount-data="{ row }">
+          </template>
+          <template #amount-data="{ row }">
             <div
               class="text-sm font-medium"
               :class="{
-                'text-green-600': ['deposit', 'diamond_bonus', 'diamond_refund', 'referral_commission'].includes(row.transaction_type?.toLowerCase()),
-                'text-red-600': ['withdraw', 'diamond_purchase', 'pro_subscription', 'order_payment', 'mobile_recharge'].includes(row.transaction_type?.toLowerCase()),
-                'text-blue-600': row.transaction_type?.toLowerCase() === 'transfer',
-                'text-purple-600': row.transaction_type?.toLowerCase()?.startsWith('diamond_') && !['diamond_bonus', 'diamond_refund', 'diamond_purchase'].includes(row.transaction_type?.toLowerCase()),
-                'text-gray-800': !row.transaction_type
+                'text-green-600': [
+                  'deposit',
+                  'diamond_bonus',
+                  'diamond_refund',
+                  'referral_commission',
+                ].includes(row.transaction_type?.toLowerCase()),
+                'text-red-600': [
+                  'withdraw',
+                  'diamond_purchase',
+                  'pro_subscription',
+                  'order_payment',
+                  'mobile_recharge',
+                ].includes(row.transaction_type?.toLowerCase()),
+                'text-blue-600':
+                  row.transaction_type?.toLowerCase() === 'transfer',
+                'text-purple-600':
+                  row.transaction_type?.toLowerCase()?.startsWith('diamond_') &&
+                  ![
+                    'diamond_bonus',
+                    'diamond_refund',
+                    'diamond_purchase',
+                  ].includes(row.transaction_type?.toLowerCase()),
+                'text-gray-800': !row.transaction_type,
               }"
-            >              {{ 
+            >
+              {{
                 formatAmount(
-                  row.amount !== '0.00' ? 
-                  row.amount : 
-                  (row.payable_amount || row.cost || 0), 
+                  row.amount !== "0.00"
+                    ? row.amount
+                    : row.payable_amount || row.cost || 0,
                   row.transaction_type?.toLowerCase()
-                ) 
-              }}              <span v-if="row.transaction_type?.toLowerCase()?.startsWith('diamond_')" class="text-xs ml-1 whitespace-nowrap">
-                ({{ row.diamonds || parseInt(row.quantity) || row.quantity || row.amount || 0 }} 💎)
+                )
+              }}
+              <span
+                v-if="
+                  row.transaction_type?.toLowerCase()?.startsWith('diamond_')
+                "
+                class="text-xs ml-1 whitespace-nowrap"
+              >
+                ({{
+                  row.diamonds ||
+                  parseInt(row.quantity) ||
+                  row.quantity ||
+                  row.amount ||
+                  0
+                }}
+                💎)
               </span>
             </div>
-          </template>          <template #status-data="{ row }">
+          </template>
+          <template #status-data="{ row }">
             <span
               class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
               :class="{
-                'bg-green-100 text-green-800': 
-                  row.bank_status === 'completed' || row.status === 'completed' || row.completed,
-                'bg-yellow-100 text-yellow-800': 
-                  row.bank_status === 'pending' || row.status === 'pending' || (!row.completed && !row.rejected),
-                'bg-red-100 text-red-800': 
-                  row.bank_status === 'failed' || row.bank_status === 'rejected' ||
-                  row.status === 'failed' || row.status === 'rejected' ||
-                  row.rejected
+                'bg-green-100 text-green-800':
+                  row.bank_status === 'completed' ||
+                  row.status === 'completed' ||
+                  row.completed,
+                'bg-yellow-100 text-yellow-800':
+                  row.bank_status === 'pending' ||
+                  row.status === 'pending' ||
+                  (!row.completed && !row.rejected),
+                'bg-red-100 text-red-800':
+                  row.bank_status === 'failed' ||
+                  row.bank_status === 'rejected' ||
+                  row.status === 'failed' ||
+                  row.status === 'rejected' ||
+                  row.rejected,
               }"
             >
-              {{ 
-                (row.bank_status || row.status || 
-                  (row.completed ? 'Completed' : (row.rejected ? 'Rejected' : 'Pending'))
-                ).charAt(0).toUpperCase() + 
-                (row.bank_status || row.status || 
-                  (row.completed ? 'Completed' : (row.rejected ? 'Rejected' : 'Pending'))
-                ).slice(1) 
+              {{
+                (
+                  row.bank_status ||
+                  row.status ||
+                  (row.completed
+                    ? "Completed"
+                    : row.rejected
+                    ? "Rejected"
+                    : "Pending")
+                )
+                  .charAt(0)
+                  .toUpperCase() +
+                (
+                  row.bank_status ||
+                  row.status ||
+                  (row.completed
+                    ? "Completed"
+                    : row.rejected
+                    ? "Rejected"
+                    : "Pending")
+                ).slice(1)
               }}
             </span>
           </template>
@@ -801,7 +998,9 @@
         v-if="totalPages > 1"
         class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between"
       >
-        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div
+          class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between"
+        >
           <div>
             <p class="text-sm text-gray-800">
               Showing
@@ -959,7 +1158,8 @@
       v-model="isOpenTransfer"
       :ui="{
         inner: 'fixed inset-0 overflow-y-auto flex item-center justify-center',
-        container: 'flex min-h-full items-center justify-center text-center max-w-sm w-full',
+        container:
+          'flex min-h-full items-center justify-center text-center max-w-sm w-full',
       }"
     >
       <div class="flex items-center justify-center" v-if="!showSuccess">
@@ -970,7 +1170,9 @@
           >
             <div class="border p-4 bg-slate-50 rounded-xl">
               <!-- Title -->
-              <h2 class="text-lg font-medium text-gray-800 mb-4">Confirm Transfer</h2>
+              <h2 class="text-lg font-medium text-gray-800 mb-4">
+                Confirm Transfer
+              </h2>
 
               <!-- Transfer Details -->
               <div class="space-y-4 mb-6">
@@ -986,7 +1188,10 @@
                   <!-- Recipient Field -->
                   <div class="space-y-1">
                     <label class="text-xs text-gray-600">Recipient:</label>
-                    <p class="text-sm text-gray-800 font-medium" v-if="transfer?.to_user">
+                    <p
+                      class="text-sm text-gray-800 font-medium"
+                      v-if="transfer?.to_user"
+                    >
                       {{ transfer?.to_user }}
                     </p>
                   </div>
@@ -1003,7 +1208,8 @@
                   <!-- <div class="space-y-1">
                   <label class="text-xs text-gray-600">Name:</label>
                   <p class="text-sm text-gray-800 font-medium">John Smith</p>
-                </div> -->                  <!-- Time Field -->
+                </div> -->
+                  <!-- Time Field -->
                   <div class="flex items-center gap-2">
                     <label class="text-xs text-gray-600">Time:</label>
                     <span
@@ -1013,10 +1219,13 @@
                     </span>
                   </div>
                 </div>
-              </div>              <!-- Password Confirmation -->
+              </div>
+              <!-- Password Confirmation -->
               <div class="mb-6">
                 <div class="space-y-2">
-                  <label class="text-xs text-gray-600 font-medium">Enter your password to confirm:</label>
+                  <label class="text-xs text-gray-600 font-medium"
+                    >Enter your password to confirm:</label
+                  >
                   <UInput
                     v-model="transfer.password"
                     type="password"
@@ -1028,28 +1237,35 @@
                       placeholder: 'placeholder-gray-400',
                       color: {
                         white: {
-                          outline: 'shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400'
-                        }
-                      }
+                          outline:
+                            'shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400',
+                        },
+                      },
                     }"
                     class="text-sm"
                     autocomplete="current-password"
                     @input="passwordError = ''"
                   />
-                  <div v-if="passwordError" class="text-red-600 text-xs mt-1 font-medium">
+                  <div
+                    v-if="passwordError"
+                    class="text-red-600 text-xs mt-1 font-medium"
+                  >
                     {{ passwordError }}
                   </div>
                 </div>
               </div>
 
               <!-- Final Amount -->
-              <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
+              <div
+                class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
+              >
                 <p class="text-xs text-gray-600">Final amount</p>
                 <p class="text-gray-800 font-semibold">
                   <UIcon name="i-mdi:currency-bdt" class="" />
                   {{ transfer?.payable_amount }}
                 </p>
-              </div>              <!-- Confirm Button -->
+              </div>
+              <!-- Confirm Button -->
               <UButton
                 @click="handleTransfer"
                 :disabled="!transfer.password || isLoading"
@@ -1084,7 +1300,10 @@
                 <h2 class="text-lg sm:text-xl font-semibold text-green-700">
                   Transfer Successful
                 </h2>
-                <UIcon name="i-rivet-icons-check-circle-breakout" class="size-7 text-green-700" />
+                <UIcon
+                  name="i-rivet-icons-check-circle-breakout"
+                  class="size-7 text-green-700"
+                />
               </div>
 
               <!-- Transfer Details -->
@@ -1126,7 +1345,9 @@
               </div>
 
               <!-- Final Amount -->
-              <div class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200">
+              <div
+                class="flex justify-between items-center mb-6 pt-4 border-t border-gray-200"
+              >
                 <p class="text-xs text-gray-600">Final amount</p>
                 <p class="text-gray-800 font-semibold sm:text-lg">
                   <UIcon name="i-mdi:currency-bdt" class="" />
@@ -1180,24 +1401,34 @@
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="flex items-start">
               <div class="mt-3 sm:mt-0 sm:ml-4 text-left w-full">
-                <h3 class="text-lg leading-6 font-medium text-gray-800 py-2" id="modal-title">
+                <h3
+                  class="text-lg leading-6 font-medium text-gray-800 py-2"
+                  id="modal-title"
+                >
                   Transaction Details
                 </h3>
                 <div class="mt-4 border-t border-gray-200 pt-4">
                   <dl class="divide-y divide-gray-200">
                     <div class="py-3 grid grid-cols-3 gap-4">
-                      <dt class="text-sm font-medium text-gray-600">Transaction ID</dt>
-                      <dd class="text-sm text-gray-800 mt-0 col-span-2 font-mono">
+                      <dt class="text-sm font-medium text-gray-600">
+                        Transaction ID
+                      </dt>
+                      <dd
+                        class="text-sm text-gray-800 mt-0 col-span-2 font-mono"
+                      >
                         {{ selectedTransaction?.id }}
                       </dd>
-                    </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
+                    </div>
+                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-600">Type</dt>
                       <dd
                         class="text-sm text-gray-800 mt-0 col-span-2 flex items-center"
                       >
                         <!-- Deposit icon -->
                         <span
-                          v-if="selectedTransaction?.transaction_type === 'deposit'"
+                          v-if="
+                            selectedTransaction?.transaction_type === 'deposit'
+                          "
                           class="flex-shrink-0 h-5 w-5 text-green-500 mr-2"
                         >
                           <svg
@@ -1213,10 +1444,12 @@
                             <path d="m19 12-7 7-7-7" />
                           </svg>
                         </span>
-                        
+
                         <!-- Withdraw icon -->
                         <span
-                          v-else-if="selectedTransaction?.transaction_type === 'withdraw'"
+                          v-else-if="
+                            selectedTransaction?.transaction_type === 'withdraw'
+                          "
                           class="flex-shrink-0 h-5 w-5 text-red-500 mr-2"
                         >
                           <svg
@@ -1232,10 +1465,14 @@
                             <path d="m5 12 7-7 7 7" />
                           </svg>
                         </span>
-                        
+
                         <!-- Diamond icons -->
                         <span
-                          v-else-if="selectedTransaction?.transaction_type?.startsWith('diamond_')"
+                          v-else-if="
+                            selectedTransaction?.transaction_type?.startsWith(
+                              'diamond_'
+                            )
+                          "
                           class="flex-shrink-0 h-5 w-5 text-purple-500 mr-2"
                         >
                           <svg
@@ -1251,10 +1488,13 @@
                             <path d="M4 8l8 14 8-14-8 14z" />
                           </svg>
                         </span>
-                        
+
                         <!-- Mobile recharge icon -->
                         <span
-                          v-else-if="selectedTransaction?.transaction_type === 'mobile_recharge'"
+                          v-else-if="
+                            selectedTransaction?.transaction_type ===
+                            'mobile_recharge'
+                          "
                           class="flex-shrink-0 h-5 w-5 text-blue-500 mr-2"
                         >
                           <svg
@@ -1273,10 +1513,13 @@
                             <path d="M16 12 8 12" />
                           </svg>
                         </span>
-                        
+
                         <!-- Subscription icon -->
                         <span
-                          v-else-if="selectedTransaction?.transaction_type === 'pro_subscription'"
+                          v-else-if="
+                            selectedTransaction?.transaction_type ===
+                            'pro_subscription'
+                          "
                           class="flex-shrink-0 h-5 w-5 text-amber-500 mr-2"
                         >
                           <svg
@@ -1292,10 +1535,12 @@
                             <path d="M5 12h14" />
                           </svg>
                         </span>
-                        
+
                         <!-- Transfer icon -->
                         <span
-                          v-else-if="selectedTransaction?.transaction_type === 'transfer'"
+                          v-else-if="
+                            selectedTransaction?.transaction_type === 'transfer'
+                          "
                           class="flex-shrink-0 h-5 w-5 text-blue-500 mr-2"
                         >
                           <svg
@@ -1313,10 +1558,13 @@
                             <path d="M20 17H4" />
                           </svg>
                         </span>
-                        
+
                         <!-- Purchase icon -->
                         <span
-                          v-else-if="selectedTransaction?.transaction_type === 'order_payment'"
+                          v-else-if="
+                            selectedTransaction?.transaction_type ===
+                            'order_payment'
+                          "
                           class="flex-shrink-0 h-5 w-5 text-green-600 mr-2"
                         >
                           <svg
@@ -1328,22 +1576,27 @@
                             stroke-linecap="round"
                             stroke-linejoin="round"
                           >
-                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                            <path
+                              d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"
+                            />
                             <path d="M3 6h18" />
                             <path d="M16 10a4 4 0 0 1-8 0" />
                           </svg>
                         </span>
-                        
+
                         <!-- Commission icon -->
                         <span
-                          v-else-if="selectedTransaction?.transaction_type === 'referral_commission'"
+                          v-else-if="
+                            selectedTransaction?.transaction_type ===
+                            'referral_commission'
+                          "
                           class="flex-shrink-0 h-5 w-5 text-yellow-500 mr-2"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
                             fill="none"
-                            stroke="currentColor" 
+                            stroke="currentColor"
                             stroke-width="2"
                             stroke-linecap="round"
                             stroke-linejoin="round"
@@ -1356,9 +1609,12 @@
                             <path d="M9 7 6 5" />
                           </svg>
                         </span>
-                        
+
                         <!-- Default icon for other types -->
-                        <span v-else class="flex-shrink-0 h-5 w-5 text-gray-600 mr-2">
+                        <span
+                          v-else
+                          class="flex-shrink-0 h-5 w-5 text-gray-600 mr-2"
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -1373,46 +1629,74 @@
                             <path d="M12 8h.01" />
                           </svg>
                         </span>
-                        
+
                         <!-- Transaction type name -->
-                        {{ getTransactionTypeName(selectedTransaction?.transaction_type) }}
+                        {{
+                          getTransactionTypeName(
+                            selectedTransaction?.transaction_type
+                          )
+                        }}
                       </dd>
-                    </div>                    <!-- Sender information -->
+                    </div>
+                    <!-- Sender information -->
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-600">Sender</dt>
-                      
+
                       <!-- When sender details are available -->
                       <dd
                         v-if="selectedTransaction?.user_details"
                         class="text-sm text-gray-800 mt-0 col-span-2 font-mono"
                       >
-                        <p>{{ selectedTransaction?.user_details?.name || '' }}</p>
-                        <p>{{ selectedTransaction?.user_details?.phone || '' }}</p>
-                        {{ selectedTransaction?.user_details?.email || '' }}
+                        <p>
+                          {{ selectedTransaction?.user_details?.name || "" }}
+                        </p>
+                        <p>
+                          {{ selectedTransaction?.user_details?.phone || "" }}
+                        </p>
+                        {{ selectedTransaction?.user_details?.email || "" }}
                       </dd>
-                      
+
                       <!-- For payments through gateway -->
-                      <dd v-else-if="['deposit', 'diamond_purchase'].includes(selectedTransaction?.transaction_type)" 
-                          class="text-sm text-gray-800 mt-0 col-span-2">
+                      <dd
+                        v-else-if="
+                          ['deposit', 'diamond_purchase'].includes(
+                            selectedTransaction?.transaction_type
+                          )
+                        "
+                        class="text-sm text-gray-800 mt-0 col-span-2"
+                      >
                         Payment Gateway
                       </dd>
-                      
+
                       <!-- For system-generated transactions -->
-                      <dd v-else-if="['diamond_bonus', 'diamond_refund', 'diamond_admin'].includes(selectedTransaction?.transaction_type) || selectedTransaction?.transaction_type?.toLowerCase()?.includes('system')" 
-                          class="text-sm text-gray-800 mt-0 col-span-2">
+                      <dd
+                        v-else-if="
+                          [
+                            'diamond_bonus',
+                            'diamond_refund',
+                            'diamond_admin',
+                          ].includes(selectedTransaction?.transaction_type) ||
+                          selectedTransaction?.transaction_type
+                            ?.toLowerCase()
+                            ?.includes('system')
+                        "
+                        class="text-sm text-gray-800 mt-0 col-span-2"
+                      >
                         System
                       </dd>
-                      
+
                       <!-- For other transactions -->
                       <dd v-else class="text-sm text-gray-800 mt-0 col-span-2">
                         Unknown
                       </dd>
                     </div>
-                    
+
                     <!-- Recipient information -->
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-600">Recipient</dt>
-                      
+                      <dt class="text-sm font-medium text-gray-600">
+                        Recipient
+                      </dt>
+
                       <!-- When recipient details are available -->
                       <dd
                         v-if="selectedTransaction?.to_user_details"
@@ -1423,70 +1707,155 @@
                         </p>
                         {{ selectedTransaction?.to_user_details?.email }}
                       </dd>
-                        <!-- For self-transactions like deposits, purchases -->
-                      <dd v-else-if="['deposit', 'diamond_purchase', 'pro_subscription', 'mobile_recharge', 'order_payment', 'diamond_bonus', 'diamond_refund', 'diamond_admin'].includes(selectedTransaction?.transaction_type)" 
-                          class="text-sm text-gray-800 mt-0 col-span-2">
+                      <!-- For self-transactions like deposits, purchases -->
+                      <dd
+                        v-else-if="
+                          [
+                            'deposit',
+                            'diamond_purchase',
+                            'pro_subscription',
+                            'mobile_recharge',
+                            'order_payment',
+                            'diamond_bonus',
+                            'diamond_refund',
+                            'diamond_admin',
+                          ].includes(selectedTransaction?.transaction_type)
+                        "
+                        class="text-sm text-gray-800 mt-0 col-span-2"
+                      >
                         Myself
                       </dd>
-                      
+
                       <!-- For diamond transactions without recipient -->
-                      <dd v-else-if="selectedTransaction?.transaction_type?.startsWith('diamond_') && !selectedTransaction?.to_user_details"
-                          class="text-sm text-gray-800 mt-0 col-span-2">
+                      <dd
+                        v-else-if="
+                          selectedTransaction?.transaction_type?.startsWith(
+                            'diamond_'
+                          ) && !selectedTransaction?.to_user_details
+                        "
+                        class="text-sm text-gray-800 mt-0 col-span-2"
+                      >
                         Personal Account
-                      </dd>                        <!-- For withdraw transactions, show payment method and number -->
-                      <dd v-else-if="selectedTransaction?.transaction_type?.toLowerCase() === 'withdraw'" class="text-sm text-gray-800 mt-0 col-span-2">
-                        {{ selectedTransaction?.payment_method ? (selectedTransaction?.payment_method.charAt(0).toUpperCase() + selectedTransaction?.payment_method.slice(1)) : 'N/A' }} 
-                        <span v-if="selectedTransaction?.card_number" class="block mt-1 font-mono">
+                      </dd>
+                      <!-- For withdraw transactions, show payment method and number -->
+                      <dd
+                        v-else-if="
+                          selectedTransaction?.transaction_type?.toLowerCase() ===
+                          'withdraw'
+                        "
+                        class="text-sm text-gray-800 mt-0 col-span-2"
+                      >
+                        {{
+                          selectedTransaction?.payment_method
+                            ? selectedTransaction?.payment_method
+                                .charAt(0)
+                                .toUpperCase() +
+                              selectedTransaction?.payment_method.slice(1)
+                            : "N/A"
+                        }}
+                        <span
+                          v-if="selectedTransaction?.card_number"
+                          class="block mt-1 font-mono"
+                        >
                           Account: {{ selectedTransaction?.card_number }}
                         </span>
                       </dd>
                       <!-- For other transactions, show payment method if available -->
                       <dd v-else class="text-sm text-gray-800 mt-0 col-span-2">
-                        {{ selectedTransaction?.payment_method || 'N/A' }}
+                        {{ selectedTransaction?.payment_method || "N/A" }}
                       </dd>
                     </div>
-                    
+
                     <!-- Name information -->
-                    <div v-if="selectedTransaction?.to_user_details" class="py-3 grid grid-cols-3 sm:gap-4">
+                    <div
+                      v-if="selectedTransaction?.to_user_details"
+                      class="py-3 grid grid-cols-3 sm:gap-4"
+                    >
                       <dt class="text-sm font-medium text-gray-600">Name</dt>
                       <dd class="text-sm text-gray-800 mt-0 col-span-2">
                         {{ selectedTransaction?.to_user_details.name }}
                       </dd>
                     </div>
-                      <!-- Diamond transaction details -->                    <div v-if="selectedTransaction?.transaction_type?.startsWith('diamond_')" class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-600">Diamond Count</dt>
+                    <!-- Diamond transaction details -->
+                    <div
+                      v-if="
+                        selectedTransaction?.transaction_type?.startsWith(
+                          'diamond_'
+                        )
+                      "
+                      class="py-3 grid grid-cols-3 sm:gap-4"
+                    >
+                      <dt class="text-sm font-medium text-gray-600">
+                        Diamond Count
+                      </dt>
                       <dd class="text-sm text-gray-800 mt-0 col-span-2">
-                        {{ selectedTransaction?.diamonds || parseInt(selectedTransaction?.quantity) || selectedTransaction?.quantity || selectedTransaction?.amount || 0 }} 💎
+                        {{
+                          selectedTransaction?.diamonds ||
+                          parseInt(selectedTransaction?.quantity) ||
+                          selectedTransaction?.quantity ||
+                          selectedTransaction?.amount ||
+                          0
+                        }}
+                        💎
                       </dd>
                     </div>
                     <div class="py-3 grid grid-cols-3 sm:gap-4">
-                      <dt class="text-sm font-medium text-gray-600">Date & Time</dt>
+                      <dt class="text-sm font-medium text-gray-600">
+                        Date & Time
+                      </dt>
                       <dd class="text-sm text-gray-800 mt-0 col-span-2">
                         {{ formatDate(selectedTransaction?.created_at) }}
                       </dd>
-                    </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
+                    </div>
+                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-600">Amount</dt>
                       <dd
                         class="text-sm font-medium mt-0 col-span-2"
                         :class="{
-                          'text-green-600': ['deposit', 'diamond_bonus', 'diamond_refund', 'referral_commission'].includes(selectedTransaction?.transaction_type),
-                          'text-red-600': ['withdraw', 'diamond_purchase', 'pro_subscription', 'order_payment', 'mobile_recharge'].includes(selectedTransaction?.transaction_type),
-                          'text-blue-600': selectedTransaction?.transaction_type === 'transfer',
-                          'text-purple-600': selectedTransaction?.transaction_type?.startsWith('diamond_') && !['diamond_bonus', 'diamond_refund', 'diamond_purchase'].includes(selectedTransaction?.transaction_type),
-                          'text-gray-800': !selectedTransaction?.transaction_type
+                          'text-green-600': [
+                            'deposit',
+                            'diamond_bonus',
+                            'diamond_refund',
+                            'referral_commission',
+                          ].includes(selectedTransaction?.transaction_type),
+                          'text-red-600': [
+                            'withdraw',
+                            'diamond_purchase',
+                            'pro_subscription',
+                            'order_payment',
+                            'mobile_recharge',
+                          ].includes(selectedTransaction?.transaction_type),
+                          'text-blue-600':
+                            selectedTransaction?.transaction_type ===
+                            'transfer',
+                          'text-purple-600':
+                            selectedTransaction?.transaction_type?.startsWith(
+                              'diamond_'
+                            ) &&
+                            ![
+                              'diamond_bonus',
+                              'diamond_refund',
+                              'diamond_purchase',
+                            ].includes(selectedTransaction?.transaction_type),
+                          'text-gray-800':
+                            !selectedTransaction?.transaction_type,
                         }"
-                      >                        {{
+                      >
+                        {{
                           selectedTransaction
                             ? formatAmount(
-                                selectedTransaction.amount !== '0.00' ? 
-                                selectedTransaction.amount : 
-                                (selectedTransaction.payable_amount || selectedTransaction.cost || 0),
+                                selectedTransaction.amount !== "0.00"
+                                  ? selectedTransaction.amount
+                                  : selectedTransaction.payable_amount ||
+                                      selectedTransaction.cost ||
+                                      0,
                                 selectedTransaction.transaction_type?.toLowerCase()
                               )
                             : ""
                         }}
                       </dd>
-                    </div>                    <div class="py-3 grid grid-cols-3 sm:gap-4">
+                    </div>
+                    <div class="py-3 grid grid-cols-3 sm:gap-4">
                       <dt class="text-sm font-medium text-gray-600">Status</dt>
                       <dd class="text-sm text-gray-800 mt-0 col-span-2">
                         <span
@@ -1494,20 +1863,31 @@
                           class="px-2 inline-flex text-sm leading-5 font-medium rounded-full capitalize"
                           :class="{
                             'bg-green-100 text-green-800':
-                              (selectedTransaction?.bank_status === 'completed' || selectedTransaction?.status === 'completed' || selectedTransaction?.completed),
+                              selectedTransaction?.bank_status ===
+                                'completed' ||
+                              selectedTransaction?.status === 'completed' ||
+                              selectedTransaction?.completed,
                             'bg-yellow-100 text-yellow-800':
-                              (selectedTransaction?.bank_status === 'pending' || selectedTransaction?.status === 'pending' || (!selectedTransaction?.completed && !selectedTransaction?.rejected)),
-                            'bg-red-100 text-red-800': 
-                              (selectedTransaction?.bank_status === 'failed' || selectedTransaction?.bank_status === 'rejected' || 
-                              selectedTransaction?.status === 'failed' || selectedTransaction?.status === 'rejected' || 
-                              selectedTransaction?.rejected)
+                              selectedTransaction?.bank_status === 'pending' ||
+                              selectedTransaction?.status === 'pending' ||
+                              (!selectedTransaction?.completed &&
+                                !selectedTransaction?.rejected),
+                            'bg-red-100 text-red-800':
+                              selectedTransaction?.bank_status === 'failed' ||
+                              selectedTransaction?.bank_status === 'rejected' ||
+                              selectedTransaction?.status === 'failed' ||
+                              selectedTransaction?.status === 'rejected' ||
+                              selectedTransaction?.rejected,
                           }"
                         >
-                          {{ 
-                            selectedTransaction?.bank_status || 
-                            selectedTransaction?.status || 
-                            (selectedTransaction?.completed ? 'Completed' : 
-                              (selectedTransaction?.rejected ? 'Rejected' : 'Pending'))
+                          {{
+                            selectedTransaction?.bank_status ||
+                            selectedTransaction?.status ||
+                            (selectedTransaction?.completed
+                              ? "Completed"
+                              : selectedTransaction?.rejected
+                              ? "Rejected"
+                              : "Pending")
                           }}
                         </span>
                       </dd>
@@ -1568,18 +1948,21 @@ const receivedTransactions = ref([]);
 async function receivedTransactionsFetch() {
   try {
     const { data } = await get("/received-transfers/");
-    console.log(data, "received");
-    receivedTransactions.value = data;  } catch (error) {
+
+    receivedTransactions.value = data;
+  } catch (error) {
     toast.add({
       title: "📊 Failed to Load Data",
       description: `Unable to load received transactions. Please try again.`,
       icon: "i-heroicons-exclamation-circle-20-solid",
       color: "red",
       timeout: 6000,
-      actions: [{
-        label: 'Retry',
-        click: () => receivedTransactionsFetch()
-      }]
+      actions: [
+        {
+          label: "Retry",
+          click: () => receivedTransactionsFetch(),
+        },
+      ],
     });
     console.error("Error fetching received transactions:", error);
   }
@@ -1613,7 +1996,7 @@ const columns = computed(() => {
   ];
 
   // Add payment method column for deposit/withdraw transactions
-  if (filters.value.type === 'deposit' || filters.value.type === 'withdraw') {
+  if (filters.value.type === "deposit" || filters.value.type === "withdraw") {
     baseColumns.splice(3, 0, {
       key: "method",
       label: "Method",
@@ -1622,7 +2005,7 @@ const columns = computed(() => {
 
   // Add sender/recipient columns based on active tab
   // But only if diamond transaction types are not being filtered
-  if (!filters.value.type?.startsWith('diamond_')) {
+  if (!filters.value.type?.startsWith("diamond_")) {
     if (transactionTab.value === "sent") {
       baseColumns.splice(1, 0, {
         key: "recipient",
@@ -1655,38 +2038,56 @@ const statements = ref([]);
 // Filter transactions based on selected filters and active tab
 const filteredTransactions = computed(() => {
   const activeTransactions =
-    transactionTab.value === "sent" ? statements.value : receivedTransactions.value;
+    transactionTab.value === "sent"
+      ? statements.value
+      : receivedTransactions.value;
 
-  return activeTransactions.filter(transaction => {
+  return activeTransactions.filter((transaction) => {
     // Skip transactions without transaction_type
     if (!transaction.transaction_type) return false;
-    
+
     // Group transaction types for filtering
-    const transactionGroup = getTransactionGroup(transaction.transaction_type.toLowerCase());
-    
+    const transactionGroup = getTransactionGroup(
+      transaction.transaction_type.toLowerCase()
+    );
+
     // Handle Type filter (by group)
     if (filters.value.type) {
       // For diamond transactions, check if it starts with diamond_
-      if (filters.value.type === 'diamond' && !transaction.transaction_type.toLowerCase().startsWith('diamond_')) {
+      if (
+        filters.value.type === "diamond" &&
+        !transaction.transaction_type.toLowerCase().startsWith("diamond_")
+      ) {
         return false;
       }
       // For specific diamond transaction types
-      else if (filters.value.type.startsWith('diamond_') && transaction.transaction_type.toLowerCase() !== filters.value.type) {
+      else if (
+        filters.value.type.startsWith("diamond_") &&
+        transaction.transaction_type.toLowerCase() !== filters.value.type
+      ) {
         return false;
       }
       // For other transaction groups
-      else if (!filters.value.type.startsWith('diamond_') && filters.value.type !== 'diamond' && transactionGroup !== filters.value.type) {
+      else if (
+        !filters.value.type.startsWith("diamond_") &&
+        filters.value.type !== "diamond" &&
+        transactionGroup !== filters.value.type
+      ) {
         return false;
       }
     }
 
     // Handle Status filter - check multiple status fields
     if (filters.value.status) {
-      const transactionStatus = transaction.bank_status || 
-                               transaction.status || 
-                               (transaction.completed ? 'completed' : 
-                                 (transaction.rejected ? 'rejected' : 'pending'));
-                                 
+      const transactionStatus =
+        transaction.bank_status ||
+        transaction.status ||
+        (transaction.completed
+          ? "completed"
+          : transaction.rejected
+          ? "rejected"
+          : "pending");
+
       if (transactionStatus !== filters.value.status) {
         return false;
       }
@@ -1695,41 +2096,42 @@ const filteredTransactions = computed(() => {
     // Search across all relevant fields
     if (filters.value.search) {
       const searchTerm = filters.value.search.toLowerCase();
-      
+
       // Build array of all searchable fields from the transaction
       const searchableFields = [
         // Payment information
         transaction.payment_method?.toLowerCase() || "",
-        
+
         // Amount fields
         transaction.payable_amount?.toString() || "",
         transaction.amount?.toString() || "",
         transaction.cost?.toString() || "",
-        
+
         // Type and status
         transaction.transaction_type?.toLowerCase() || "",
-        getTransactionTypeName(transaction.transaction_type)?.toLowerCase() || "",
+        getTransactionTypeName(transaction.transaction_type)?.toLowerCase() ||
+          "",
         transaction.bank_status?.toLowerCase() || "",
         transaction.status?.toLowerCase() || "",
-        
+
         // Description and notes
         transaction.description?.toLowerCase() || "",
         transaction.notes?.toLowerCase() || "",
-        
+
         // Diamond count for diamond transactions
-        (transaction.transaction_type?.toLowerCase().startsWith('diamond_') ? 
-          transaction.diamonds?.toString() + " diamonds" : ""),
-          
+        transaction.transaction_type?.toLowerCase().startsWith("diamond_")
+          ? transaction.diamonds?.toString() + " diamonds"
+          : "",
         // User details
         transaction.user_details?.name?.toLowerCase() || "",
         transaction.user_details?.email?.toLowerCase() || "",
         transaction.user_details?.phone?.toLowerCase() || "",
         transaction.to_user_details?.name?.toLowerCase() || "",
         transaction.to_user_details?.email?.toLowerCase() || "",
-        transaction.to_user_details?.phone?.toLowerCase() || ""
+        transaction.to_user_details?.phone?.toLowerCase() || "",
       ];
 
-      if (!searchableFields.some(field => field.includes(searchTerm))) {
+      if (!searchableFields.some((field) => field.includes(searchTerm))) {
         return false;
       }
     }
@@ -1739,10 +2141,15 @@ const filteredTransactions = computed(() => {
 });
 
 // Pagination
-const totalPages = computed(() => Math.ceil(filteredTransactions.value.length / itemsPerPage));
+const totalPages = computed(() =>
+  Math.ceil(filteredTransactions.value.length / itemsPerPage)
+);
 
 const paginatedTransactions = computed(() => {
-  return filteredTransactions.value.slice(startIndex.value, startIndex.value + itemsPerPage);
+  return filteredTransactions.value.slice(
+    startIndex.value,
+    startIndex.value + itemsPerPage
+  );
 });
 
 // Calculate displayed page numbers for pagination
@@ -1777,33 +2184,33 @@ function goToPage(page) {
 function formatAmount(amount, type) {
   // Ensure amount is properly formatted
   const formattedAmount = amount ? parseFloat(amount).toFixed(2) : "0.00";
-  
+
   // Types that increase balance (positive)
   const positiveTypes = [
-    "deposit", 
-    "diamond_bonus", 
-    "diamond_refund", 
-    "referral_commission", 
-    "diamond_gift_received"
+    "deposit",
+    "diamond_bonus",
+    "diamond_refund",
+    "referral_commission",
+    "diamond_gift_received",
   ];
-  
+
   // Types that decrease balance (negative)
   const negativeTypes = [
-    "withdraw", 
-    "transfer", 
-    "diamond_purchase", 
-    "diamond_gift", 
-    "pro_subscription", 
-    "order_payment", 
-    "mobile_recharge"
+    "withdraw",
+    "transfer",
+    "diamond_purchase",
+    "diamond_gift",
+    "pro_subscription",
+    "order_payment",
+    "mobile_recharge",
   ];
-  
+
   if (positiveTypes.includes(type)) {
     return `+৳${formattedAmount}`;
   } else if (negativeTypes.includes(type)) {
     return `-৳${formattedAmount}`;
   }
-  
+
   // Default formatting for unknown types
   return `৳${formattedAmount}`;
 }
@@ -1812,41 +2219,54 @@ function formatAmount(amount, type) {
 function openTransactionDetails(transaction) {
   // Create a copy of the transaction to avoid modifying the original
   const enhancedTransaction = { ...transaction };
-  
+
   // Ensure consistent transaction type case for comparison
   if (enhancedTransaction.transaction_type) {
-    enhancedTransaction.transaction_type = enhancedTransaction.transaction_type.toLowerCase();
+    enhancedTransaction.transaction_type =
+      enhancedTransaction.transaction_type.toLowerCase();
   }
-  
+
   // Handle status field consistency
-  const status = enhancedTransaction.bank_status || 
-                enhancedTransaction.status || 
-                (enhancedTransaction.completed ? 'completed' : 
-                  (enhancedTransaction.rejected ? 'rejected' : 'pending'));
-                    enhancedTransaction.bank_status = status;
-      // For diamond transactions, make sure we have a consistent diamond count display
-  if (enhancedTransaction.transaction_type?.startsWith('diamond_')) {
+  const status =
+    enhancedTransaction.bank_status ||
+    enhancedTransaction.status ||
+    (enhancedTransaction.completed
+      ? "completed"
+      : enhancedTransaction.rejected
+      ? "rejected"
+      : "pending");
+  enhancedTransaction.bank_status = status;
+  // For diamond transactions, make sure we have a consistent diamond count display
+  if (enhancedTransaction.transaction_type?.startsWith("diamond_")) {
     // Get diamond count from any available field
-    enhancedTransaction.diamonds = enhancedTransaction.diamonds || 
-                                 parseInt(enhancedTransaction.quantity) || 
-                                 enhancedTransaction.quantity || 
-                                 enhancedTransaction.amount || 
-                                 0;
-    
+    enhancedTransaction.diamonds =
+      enhancedTransaction.diamonds ||
+      parseInt(enhancedTransaction.quantity) ||
+      enhancedTransaction.quantity ||
+      enhancedTransaction.amount ||
+      0;
+
     // If payment amount is missing, calculate it from diamonds
-    if (!enhancedTransaction.amount && !enhancedTransaction.payable_amount && !enhancedTransaction.cost) {
+    if (
+      !enhancedTransaction.amount &&
+      !enhancedTransaction.payable_amount &&
+      !enhancedTransaction.cost
+    ) {
       enhancedTransaction.amount = enhancedTransaction.diamonds * 10; // Assuming 10 BDT per diamond as default
     }
   }
-    // For withdraw transactions, make sure we have proper amount display
+  // For withdraw transactions, make sure we have proper amount display
   // The withdrawal amount is stored in payable_amount including fees
-  if (enhancedTransaction.transaction_type === 'withdraw' && enhancedTransaction.payable_amount) {
+  if (
+    enhancedTransaction.transaction_type === "withdraw" &&
+    enhancedTransaction.payable_amount
+  ) {
     // The payable_amount includes the 2.95% fee, so we calculate the original withdrawal amount
     const payableAmount = parseFloat(enhancedTransaction.payable_amount);
     const originalAmount = payableAmount / 1.0295; // Reversing the fee calculation
     enhancedTransaction.amount = originalAmount.toFixed(2); // Set the amount to display
   }
-  
+
   selectedTransaction.value = enhancedTransaction;
   showDetailsModal.value = true;
 }
@@ -1872,19 +2292,26 @@ const passwordError = ref("");
 const getTransactionHistory = async () => {
   try {
     isLoading.value = true;
-    
+
     // 1. Get balance transactions (deposits, withdrawals, transfers)
     const balanceRes = await get(`/user-balance/${user.value.user.email}/`);
     const balanceData = balanceRes.data || [];
-      // 2. Get diamond transactions
-    const diamondRes = await get(`/diamonds-transactions/`);    const diamondData = (diamondRes.data?.results || diamondRes.data || []).map(item => ({
-      ...item,
-      transaction_type: `diamond_${item.transaction_type}`,
-      payable_amount: item.cost,
-      amount: item.cost,
-      diamonds: item.diamonds || parseInt(item.quantity) || item.amount || 0, // Ensure diamonds count is captured from all possible fields
-      bank_status: item.completed ? 'completed' : (item.rejected ? 'rejected' : 'pending')
-    }));
+    // 2. Get diamond transactions
+    const diamondRes = await get(`/diamonds-transactions/`);
+    const diamondData = (diamondRes.data?.results || diamondRes.data || []).map(
+      (item) => ({
+        ...item,
+        transaction_type: `diamond_${item.transaction_type}`,
+        payable_amount: item.cost,
+        amount: item.cost,
+        diamonds: item.diamonds || parseInt(item.quantity) || item.amount || 0, // Ensure diamonds count is captured from all possible fields
+        bank_status: item.completed
+          ? "completed"
+          : item.rejected
+          ? "rejected"
+          : "pending",
+      })
+    );
 
     // 3. Combine all transactions
     statements.value = [...balanceData, ...diamondData].sort((a, b) => {
@@ -1892,19 +2319,21 @@ const getTransactionHistory = async () => {
       const dateB = new Date(b.created_at || b.updated_at);
       return dateB - dateA; // Sort by date descending (newest first)
     });
-    
-    console.log("All transactions:", statements.value);
-    currentPage.value = 1;  } catch (error) {
+
+    currentPage.value = 1;
+  } catch (error) {
     toast.add({
       title: "📈 Transaction History Error",
       description: `Unable to load transaction history. Please refresh the page.`,
       icon: "i-heroicons-exclamation-triangle-20-solid",
       color: "red",
       timeout: 6000,
-      actions: [{
-        label: 'Retry',
-        click: () => getTransactionHistory()
-      }]
+      actions: [
+        {
+          label: "Retry",
+          click: () => getTransactionHistory(),
+        },
+      ],
     });
     console.error("Error fetching transactions:", error);
   } finally {
@@ -1928,201 +2357,234 @@ const formatErrorMessage = (error) => {
   // If error has a response with data
   if (error.response?.data) {
     const errorData = error.response.data;
-    
+
     // Handle validation errors for specific fields
-    if (typeof errorData === 'object' && errorData !== null) {
+    if (typeof errorData === "object" && errorData !== null) {
       // Check for amount validation errors
       if (errorData.amount) {
-        const amountError = Array.isArray(errorData.amount) ? errorData.amount[0] : errorData.amount;
-        
+        const amountError = Array.isArray(errorData.amount)
+          ? errorData.amount[0]
+          : errorData.amount;
+
         // Convert common API error messages to user-friendly ones
-        if (typeof amountError === 'string') {
-          if (amountError.toLowerCase().includes('invalid') || amountError.toLowerCase().includes('not a valid number')) {
+        if (typeof amountError === "string") {
+          if (
+            amountError.toLowerCase().includes("invalid") ||
+            amountError.toLowerCase().includes("not a valid number")
+          ) {
             return "Please enter a valid amount (numbers only)";
           }
-          if (amountError.toLowerCase().includes('required') || amountError.toLowerCase().includes('field may not be blank')) {
+          if (
+            amountError.toLowerCase().includes("required") ||
+            amountError.toLowerCase().includes("field may not be blank")
+          ) {
             return "Amount is required";
           }
-          if (amountError.toLowerCase().includes('minimum')) {
+          if (amountError.toLowerCase().includes("minimum")) {
             return `Minimum amount is ৳${min_deposit.value}`;
           }
-          if (amountError.toLowerCase().includes('maximum')) {
+          if (amountError.toLowerCase().includes("maximum")) {
             return "Amount exceeds maximum limit";
           }
         }
-        
+
         return amountError;
       }
-      
+
       // Check for contact/user validation errors
       if (errorData.contact) {
-        const contactError = Array.isArray(errorData.contact) ? errorData.contact[0] : errorData.contact;
-        if (typeof contactError === 'string' && contactError.toLowerCase().includes('not found')) {
+        const contactError = Array.isArray(errorData.contact)
+          ? errorData.contact[0]
+          : errorData.contact;
+        if (
+          typeof contactError === "string" &&
+          contactError.toLowerCase().includes("not found")
+        ) {
           return "User not found. Please check the email or phone number";
         }
         return contactError;
       }
-      
+
       // Check for payment method errors
       if (errorData.payment_method) {
-        const paymentError = Array.isArray(errorData.payment_method) ? errorData.payment_method[0] : errorData.payment_method;
-        if (typeof paymentError === 'string' && paymentError.toLowerCase().includes('required')) {
+        const paymentError = Array.isArray(errorData.payment_method)
+          ? errorData.payment_method[0]
+          : errorData.payment_method;
+        if (
+          typeof paymentError === "string" &&
+          paymentError.toLowerCase().includes("required")
+        ) {
           return "Please select a payment method";
         }
         return paymentError;
       }
-      
+
       // Check for general validation errors
       if (errorData.error) {
         return errorData.error;
       }
-      
+
       // Check for non_field_errors (common in Django REST framework)
-      if (errorData.non_field_errors && Array.isArray(errorData.non_field_errors)) {
+      if (
+        errorData.non_field_errors &&
+        Array.isArray(errorData.non_field_errors)
+      ) {
         const nonFieldError = errorData.non_field_errors[0];
-        
+
         // Convert common non-field errors to user-friendly messages
-        if (typeof nonFieldError === 'string') {
-          if (nonFieldError.toLowerCase().includes('insufficient')) {
+        if (typeof nonFieldError === "string") {
+          if (nonFieldError.toLowerCase().includes("insufficient")) {
             return "Insufficient balance for this transaction";
           }
-          if (nonFieldError.toLowerCase().includes('limit')) {
+          if (nonFieldError.toLowerCase().includes("limit")) {
             return "Transaction limit exceeded";
           }
-          if (nonFieldError.toLowerCase().includes('user not found')) {
+          if (nonFieldError.toLowerCase().includes("user not found")) {
             return "Recipient not found. Please check the contact information";
           }
         }
-        
+
         return nonFieldError;
       }
-      
+
       // Check for detail field
       if (errorData.detail) {
         const detailError = errorData.detail;
-        
+
         // Convert common detail errors to user-friendly messages
-        if (typeof detailError === 'string') {
-          if (detailError.toLowerCase().includes('not found')) {
+        if (typeof detailError === "string") {
+          if (detailError.toLowerCase().includes("not found")) {
             return "The requested information was not found";
           }
-          if (detailError.toLowerCase().includes('permission')) {
+          if (detailError.toLowerCase().includes("permission")) {
             return "You don't have permission to perform this action";
           }
-          if (detailError.toLowerCase().includes('authentication')) {
+          if (detailError.toLowerCase().includes("authentication")) {
             return "Please log in again to continue";
           }
         }
-        
+
         return detailError;
       }
-      
+
       // Handle field-specific validation errors
       const fieldErrors = [];
       const errorFields = {
-        'payable_amount': 'Please enter a valid transfer amount',
-        'card_number': 'Please enter a valid payment number',
-        'phone': 'Please enter a valid phone number',
-        'email': 'Please enter a valid email address'
+        payable_amount: "Please enter a valid transfer amount",
+        card_number: "Please enter a valid payment number",
+        phone: "Please enter a valid phone number",
+        email: "Please enter a valid email address",
       };
-      
-      Object.keys(errorData).forEach(field => {
+
+      Object.keys(errorData).forEach((field) => {
         if (Array.isArray(errorData[field])) {
-          errorData[field].forEach(msg => {
+          errorData[field].forEach((msg) => {
             // Convert field-specific errors to user-friendly messages
-            if (errorFields[field] && typeof msg === 'string' && msg.toLowerCase().includes('invalid')) {
+            if (
+              errorFields[field] &&
+              typeof msg === "string" &&
+              msg.toLowerCase().includes("invalid")
+            ) {
               fieldErrors.push(errorFields[field]);
             } else {
               fieldErrors.push(msg);
             }
           });
-        } else if (typeof errorData[field] === 'string') {
-          if (errorFields[field] && errorData[field].toLowerCase().includes('invalid')) {
+        } else if (typeof errorData[field] === "string") {
+          if (
+            errorFields[field] &&
+            errorData[field].toLowerCase().includes("invalid")
+          ) {
             fieldErrors.push(errorFields[field]);
           } else {
             fieldErrors.push(errorData[field]);
           }
         }
       });
-      
+
       if (fieldErrors.length > 0) {
         return fieldErrors[0]; // Return the first error message
       }
     }
-    
+
     // If errorData is a string
-    if (typeof errorData === 'string') {
+    if (typeof errorData === "string") {
       // Convert common string errors to user-friendly messages
-      if (errorData.toLowerCase().includes('invalid characters')) {
+      if (errorData.toLowerCase().includes("invalid characters")) {
         return "Please enter valid characters only";
       }
-      if (errorData.toLowerCase().includes('network')) {
+      if (errorData.toLowerCase().includes("network")) {
         return "Network error. Please check your connection and try again";
       }
-      if (errorData.toLowerCase().includes('timeout')) {
+      if (errorData.toLowerCase().includes("timeout")) {
         return "Request timeout. Please try again";
       }
-      
+
       return errorData;
     }
   }
-  
+
   // Handle specific error types
   if (error.message) {
     // Check for common validation patterns
-    if (error.message.includes('amount') && error.message.includes('invalid')) {
+    if (error.message.includes("amount") && error.message.includes("invalid")) {
       return "Please enter a valid amount (numbers only)";
     }
-    if (error.message.includes('required')) {
+    if (error.message.includes("required")) {
       return "Please fill in all required fields";
     }
-    if (error.message.includes('minimum')) {
+    if (error.message.includes("minimum")) {
       return `Minimum amount is ৳${min_deposit.value}`;
     }
-    if (error.message.includes('balance')) {
+    if (error.message.includes("balance")) {
       return "Insufficient balance for this transaction";
     }
-    if (error.message.includes('not found') || error.message.includes('404')) {
+    if (error.message.includes("not found") || error.message.includes("404")) {
       return "Information not found. Please check your input";
     }
-    if (error.message.includes('network') || error.message.includes('fetch')) {
+    if (error.message.includes("network") || error.message.includes("fetch")) {
       return "Network error. Please check your connection and try again";
     }
-    if (error.message.includes('timeout')) {
+    if (error.message.includes("timeout")) {
       return "Request timeout. Please try again";
     }
-    if (error.message.includes('500') || error.message.includes('server')) {
+    if (error.message.includes("500") || error.message.includes("server")) {
       return "Server error. Please try again later";
     }
-    if (error.message.includes('unauthorized') || error.message.includes('401')) {
+    if (
+      error.message.includes("unauthorized") ||
+      error.message.includes("401")
+    ) {
       return "Session expired. Please log in again";
     }
-    if (error.message.includes('forbidden') || error.message.includes('403')) {
+    if (error.message.includes("forbidden") || error.message.includes("403")) {
       return "You don't have permission to perform this action";
     }
-    
+
     // Return the error message if it's user-friendly (doesn't contain technical details)
-    if (!error.message.includes('http://') && 
-        !error.message.includes('https://') && 
-        !error.message.includes('API') && 
-        !error.message.toLowerCase().includes('fetch') &&
-        !error.message.includes('XMLHttpRequest') &&
-        !error.message.includes('TypeError') &&
-        !error.message.includes('ReferenceError')) {
+    if (
+      !error.message.includes("http://") &&
+      !error.message.includes("https://") &&
+      !error.message.includes("API") &&
+      !error.message.toLowerCase().includes("fetch") &&
+      !error.message.includes("XMLHttpRequest") &&
+      !error.message.includes("TypeError") &&
+      !error.message.includes("ReferenceError")
+    ) {
       return error.message;
     }
   }
-  
+
   // Handle network errors
-  if (error.code === 'NETWORK_ERROR' || error.name === 'NetworkError') {
+  if (error.code === "NETWORK_ERROR" || error.name === "NetworkError") {
     return "Network error. Please check your internet connection and try again";
   }
-  
+
   // Handle timeout errors
-  if (error.code === 'TIMEOUT' || error.name === 'TimeoutError') {
+  if (error.code === "TIMEOUT" || error.name === "TimeoutError") {
     return "Request timeout. Please try again";
   }
-  
+
   // Default user-friendly message for unknown errors
   return "Something went wrong. Please check your input and try again.";
 };
@@ -2131,24 +2593,24 @@ const formatErrorMessage = (error) => {
 const validateAmountInput = (type) => {
   let value;
   let errorField;
-  
-  switch(type) {
-    case 'amount':
+
+  switch (type) {
+    case "amount":
       value = amount.value;
-      errorField = 'amount';
+      errorField = "amount";
       break;
-    case 'withdraw':
+    case "withdraw":
       value = withdrawAmount.value;
-      errorField = 'withdrawAmount';
+      errorField = "withdrawAmount";
       break;
-    case 'transfer':
+    case "transfer":
       value = transfer.value.payable_amount;
-      errorField = 'payable_amount';
+      errorField = "payable_amount";
       break;
   }
-  
+
   // Clear previous errors for this field
-  if (type === 'transfer') {
+  if (type === "transfer") {
     if (transferErrors.value[errorField]) {
       delete transferErrors.value[errorField];
     }
@@ -2160,21 +2622,21 @@ const validateAmountInput = (type) => {
       delete depositErrors.value[errorField];
     }
   }
-  
+
   // Validate the input
-  if (value !== null && value !== undefined && value !== '') {
+  if (value !== null && value !== undefined && value !== "") {
     // Check if it's a valid number
     if (isNaN(value) || value < 0) {
       const errorMessage = "Please enter a valid amount (numbers only)";
-      
-      if (type === 'transfer') {
+
+      if (type === "transfer") {
         transferErrors.value[errorField] = errorMessage;
-      } else if (type === 'amount') {
+      } else if (type === "amount") {
         depositErrors.value[errorField] = errorMessage;
       } else {
         errors.value[errorField] = errorMessage;
       }
-      
+
       // Show toast for immediate feedback
       toast.add({
         title: "❌ Invalid Input",
@@ -2185,20 +2647,20 @@ const validateAmountInput = (type) => {
       });
       return;
     }
-    
+
     // Check for decimal places (max 2)
-    const decimalPlaces = (value.toString().split('.')[1] || '').length;
+    const decimalPlaces = (value.toString().split(".")[1] || "").length;
     if (decimalPlaces > 2) {
       const errorMessage = "Amount can have maximum 2 decimal places";
-      
-      if (type === 'transfer') {
+
+      if (type === "transfer") {
         transferErrors.value[errorField] = errorMessage;
-      } else if (type === 'amount') {
+      } else if (type === "amount") {
         depositErrors.value[errorField] = errorMessage;
       } else {
         errors.value[errorField] = errorMessage;
       }
-      
+
       toast.add({
         title: "❌ Invalid Format",
         description: errorMessage,
@@ -2208,19 +2670,19 @@ const validateAmountInput = (type) => {
       });
       return;
     }
-    
+
     // Check for very large amounts (optional safeguard)
     if (parseFloat(value) > 1000000) {
       const errorMessage = "Amount cannot exceed 1,000,000";
-      
-      if (type === 'transfer') {
+
+      if (type === "transfer") {
         transferErrors.value[errorField] = errorMessage;
-      } else if (type === 'amount') {
+      } else if (type === "amount") {
         depositErrors.value[errorField] = errorMessage;
       } else {
         errors.value[errorField] = errorMessage;
       }
-      
+
       toast.add({
         title: "❌ Amount Too Large",
         description: errorMessage,
@@ -2243,7 +2705,7 @@ const deposit = async () => {
   if (!policy.value) {
     depositErrors.value.policy = true;
   }
-  
+
   // Validate amount format
   if (amount.value && (isNaN(amount.value) || amount.value <= 0)) {
     toast.add({
@@ -2255,11 +2717,12 @@ const deposit = async () => {
     });
     return;
   }
-  
+
   if (!amount.value || !policy.value) {
     toast.add({
       title: "⚠️ Missing Information",
-      description: "Please fill in all required fields and accept the terms & conditions",
+      description:
+        "Please fill in all required fields and accept the terms & conditions",
       icon: "i-heroicons-information-circle-20-solid",
       color: "amber",
       timeout: 5000,
@@ -2274,10 +2737,10 @@ const deposit = async () => {
   }
   try {
     isDepositLoading.value = true;
-    
+
     // Generate a unique order ID using timestamp
     const uniqueOrderId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    
+
     // Validate required fields and provide defaults if missing
     const firstName = user.value.user.first_name || "User";
     const lastName = user.value.user.last_name || "";
@@ -2285,65 +2748,75 @@ const deposit = async () => {
     const phone = user.value.user.phone || "N/A";
     const city = user.value.user.city || "N/A";
     const zip = user.value.user.zip || "0000";
-    
+
     // Create payment URL with proper encoding and validation
-    const paymentUrl = `/pay/?amount=${encodeURIComponent(amount.value)}` +
+    const paymentUrl =
+      `/pay/?amount=${encodeURIComponent(amount.value)}` +
       `&order_id=${encodeURIComponent(uniqueOrderId)}` +
       `&currency=BDT` +
-      `&customer_name=${encodeURIComponent(firstName)}+${encodeURIComponent(lastName)}` +
+      `&customer_name=${encodeURIComponent(firstName)}+${encodeURIComponent(
+        lastName
+      )}` +
       `&customer_address=${encodeURIComponent(address)}` +
       `&customer_phone=${encodeURIComponent(phone)}` +
       `&customer_city=${encodeURIComponent(city)}` +
       `&customer_post_code=${encodeURIComponent(zip)}`;
-    
-    console.log("Payment URL:", paymentUrl);
-    
+
     const payment = await get(paymentUrl);
-    
+
     if (payment.data?.checkout_url) {
       window.open(payment.data.checkout_url, "_blank");
     } else {
       console.error("Payment response:", payment);
-      throw new Error("Failed to get payment URL. Please check your personal information in your profile.");
+      throw new Error(
+        "Failed to get payment URL. Please check your personal information in your profile."
+      );
     }
 
     // Reset form and update data
     amount.value = "";
     policy.value = false;
-    await getTransactionHistory();  } catch (error) {
+    await getTransactionHistory();
+  } catch (error) {
     console.error("Deposit error:", error);
-    
+
     // Use the formatted error message helper
     const userFriendlyMessage = formatErrorMessage(error);
-      
+
     toast.add({
       title: "💳 Payment Gateway Error",
       description: userFriendlyMessage,
       icon: "i-heroicons-exclamation-triangle-20-solid",
       color: "red",
       timeout: 8000,
-      actions: [{
-        label: 'Try Again',
-        click: () => deposit()
-      }]
+      actions: [
+        {
+          label: "Try Again",
+          click: () => deposit(),
+        },
+      ],
     });
-    
+
     // If the error is related to missing user info, suggest profile completion
     if (
-      userFriendlyMessage.includes("Missing mandatory parameters") || 
-      !user.value.user.address || 
+      userFriendlyMessage.includes("Missing mandatory parameters") ||
+      !user.value.user.address ||
       !user.value.user.phone
     ) {
-      setTimeout(() => {        toast.add({
+      setTimeout(() => {
+        toast.add({
           title: "📝 Profile Incomplete",
-          description: "Please complete your profile with address, phone, and other required details.",
+          description:
+            "Please complete your profile with address, phone, and other required details.",
           icon: "i-heroicons-user-circle-20-solid",
           color: "orange",
           timeout: 8000,
-          actions: [{
-            label: 'Complete Profile',
-            click: () => navigateTo('/my-account')
-          }]
+          actions: [
+            {
+              label: "Complete Profile",
+              click: () => navigateTo("/my-account"),
+            },
+          ],
         });
       }, 1000);
     }
@@ -2377,7 +2850,10 @@ const withdraw = async () => {
   }
 
   // Validate withdrawal amount format
-  if (withdrawAmount.value && (isNaN(withdrawAmount.value) || withdrawAmount.value <= 0)) {
+  if (
+    withdrawAmount.value &&
+    (isNaN(withdrawAmount.value) || withdrawAmount.value <= 0)
+  ) {
     toast.add({
       title: "❌ Invalid Amount",
       description: "Please enter a valid withdrawal amount (numbers only)",
@@ -2400,7 +2876,9 @@ const withdraw = async () => {
   try {
     isWithdrawLoading.value = true;
 
-    const totalAmount = withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100;    const res = await post(`/add-user-balance/`, {
+    const totalAmount =
+      withdrawAmount.value * 1 + (withdrawAmount.value * 2.95) / 100;
+    const res = await post(`/add-user-balance/`, {
       payment_method: selected.value,
       card_number: payment_number.value,
       payable_amount: totalAmount,
@@ -2413,19 +2891,23 @@ const withdraw = async () => {
     }
 
     // Check if response indicates success
-    if (res.data || res.status === 201) {      toast.add({
+    if (res.data || res.status === 201) {
+      toast.add({
         title: "✅ Withdrawal Submitted",
-        description: "Your withdrawal request has been submitted successfully and is being processed.",
+        description:
+          "Your withdrawal request has been submitted successfully and is being processed.",
         icon: "i-heroicons-check-circle-20-solid",
         color: "green",
         timeout: 6000,
-        actions: [{
-          label: 'View History',
-          click: () => {
-            currentTab.value = 1;
-            getTransactionHistory();
-          }
-        }]
+        actions: [
+          {
+            label: "View History",
+            click: () => {
+              currentTab.value = 1;
+              getTransactionHistory();
+            },
+          },
+        ],
       });
 
       // Reset form and update data
@@ -2433,27 +2915,32 @@ const withdraw = async () => {
       payment_number.value = "";
       policy.value = false;
       await getTransactionHistory();
-      await jwtLogin();    } else {
+      await jwtLogin();
+    } else {
       throw new Error("Unexpected response format");
-    }} catch (error) {
-    console.log(error);
-    
+    }
+  } catch (error) {
+    console.error(error);
+
     // Use the formatted error message helper
     const userFriendlyMessage = formatErrorMessage(error);
-      
+
     toast.add({
       title: "❌ Withdrawal Failed",
       description: userFriendlyMessage,
       icon: "i-heroicons-x-circle-20-solid",
       color: "red",
       timeout: 8000,
-      actions: [{
-        label: 'Try Again',
-        click: () => withdraw()
-      }, {
-        label: 'Contact Support',
-        click: () => navigateTo('/support')
-      }]
+      actions: [
+        {
+          label: "Try Again",
+          click: () => withdraw(),
+        },
+        {
+          label: "Contact Support",
+          click: () => navigateTo("/support"),
+        },
+      ],
     });
     console.error("Withdraw error:", error);
   } finally {
@@ -2472,13 +2959,17 @@ async function sendToUser() {
   if (!transfer.value.payable_amount) {
     transferErrors.value.payable_amount = "Amount is required";
   }
-  
+
   // Validate transfer amount format
-  if (transfer.value.payable_amount && (isNaN(transfer.value.payable_amount) || transfer.value.payable_amount <= 0)) {
-    transferErrors.value.payable_amount = "Please enter a valid amount (numbers only)";
+  if (
+    transfer.value.payable_amount &&
+    (isNaN(transfer.value.payable_amount) || transfer.value.payable_amount <= 0)
+  ) {
+    transferErrors.value.payable_amount =
+      "Please enter a valid amount (numbers only)";
     return;
   }
-  
+
   if (Number(transfer.value.payable_amount) > 25000) {
     transferErrors.value.limit = "Maximum single transfer limit is 25,000/=";
   }
@@ -2500,7 +2991,11 @@ async function sendToUser() {
   const currentUserPhone = user.value?.user?.phone;
   const transferContact = transfer.value.contact;
 
-  if (transferContact && (transferContact === currentUserEmail || transferContact === currentUserPhone)) {
+  if (
+    transferContact &&
+    (transferContact === currentUserEmail ||
+      transferContact === currentUserPhone)
+  ) {
     transferErrors.value.contact = "You cannot transfer money to yourself";
   }
 
@@ -2523,23 +3018,27 @@ async function sendToUser() {
     }
 
     transfer.value.to_user = data.name;
-    isOpenTransfer.value = true;    isLoading.value = false;  } catch (error) {
+    isOpenTransfer.value = true;
+    isLoading.value = false;
+  } catch (error) {
     // Use the formatted error message helper
     const userFriendlyMessage = formatErrorMessage(error);
-    
+
     toast.add({
       title: "👤 User Search Failed",
       description: userFriendlyMessage,
       icon: "i-heroicons-user-minus-20-solid",
       color: "red",
       timeout: 6000,
-      actions: [{
-        label: 'Try Again',
-        click: () => {
-          transfer.value.contact = '';
-          transferErrors.value = {};
-        }
-      }]
+      actions: [
+        {
+          label: "Try Again",
+          click: () => {
+            transfer.value.contact = "";
+            transferErrors.value = {};
+          },
+        },
+      ],
     });
     console.error("User search error:", error);
   } finally {
@@ -2569,31 +3068,38 @@ async function handleTransfer() {
     // Verify password with backend using change-password endpoint
     // We'll attempt to change password to the same password to verify the current one
     try {
-      const { data: passwordVerification, error: passwordVerifyError } = await post(`/change-password/`, {
-        old_password: transfer.value.password,
-        new_password: transfer.value.password
-      });
+      const { data: passwordVerification, error: passwordVerifyError } =
+        await post(`/change-password/`, {
+          old_password: transfer.value.password,
+          new_password: transfer.value.password,
+        });
 
       if (passwordVerifyError) {
         // Check if it's specifically about incorrect current password
-        if (passwordVerifyError.data?.error?.includes('incorrect') || 
-            passwordVerifyError.data?.error?.includes('Current password')) {
-          passwordError.value = "Incorrect password. Please retry with the correct password.";
+        if (
+          passwordVerifyError.data?.error?.includes("incorrect") ||
+          passwordVerifyError.data?.error?.includes("Current password")
+        ) {
+          passwordError.value =
+            "Incorrect password. Please retry with the correct password.";
         } else {
-          passwordError.value = "Password verification failed. Please try again.";
+          passwordError.value =
+            "Password verification failed. Please try again.";
         }
         isLoading.value = false;
         return;
       }
     } catch (passwordVerifyError) {
-      passwordError.value = "Incorrect password. Please retry with the correct password.";
+      passwordError.value =
+        "Incorrect password. Please retry with the correct password.";
       isLoading.value = false;
       return;
     }
 
     const { to_user, password, ...rest } = transfer.value;
 
-    const { data, error } = await post(`/add-user-balance/`, rest);    if (error) {
+    const { data, error } = await post(`/add-user-balance/`, rest);
+    if (error) {
       throw new Error(error);
     }
 
@@ -2604,32 +3110,39 @@ async function handleTransfer() {
       icon: "i-heroicons-check-circle-20-solid",
       color: "green",
       timeout: 6000,
-      actions: [{
-        label: 'View History',
-        click: () => {
-          reset();
-          getTransactionHistory();
-        }
-      }]
-    });    showSuccess.value = true;
+      actions: [
+        {
+          label: "View History",
+          click: () => {
+            reset();
+            getTransactionHistory();
+          },
+        },
+      ],
+    });
+    showSuccess.value = true;
     await getTransactionHistory();
-    await jwtLogin();} catch (error) {
+    await jwtLogin();
+  } catch (error) {
     // Use the formatted error message helper
     const userFriendlyMessage = formatErrorMessage(error);
-    
+
     toast.add({
       title: "💸 Transfer Failed",
       description: userFriendlyMessage,
       icon: "i-heroicons-exclamation-triangle-20-solid",
       color: "red",
       timeout: 8000,
-      actions: [{
-        label: 'Retry Transfer',
-        click: () => handleTransfer()
-      }, {
-        label: 'Contact Support',
-        click: () => navigateTo('/support')
-      }]
+      actions: [
+        {
+          label: "Retry Transfer",
+          click: () => handleTransfer(),
+        },
+        {
+          label: "Contact Support",
+          click: () => navigateTo("/support"),
+        },
+      ],
     });
     console.error("Transfer error:", error);
     isOpenTransfer.value = false;
@@ -2678,7 +3191,7 @@ const transactionTypeOptions = [
   { value: "subscription", label: "Subscriptions" },
   { value: "purchase", label: "Purchases" },
   { value: "commission", label: "Commissions" },
-  { value: "other", label: "Other" }
+  { value: "other", label: "Other" },
 ];
 
 // Transaction status filter options
@@ -2686,7 +3199,7 @@ const transactionStatusOptions = [
   { value: "", label: "All Statuses" },
   { value: "completed", label: "Completed" },
   { value: "pending", label: "Pending" },
-  { value: "rejected", label: "Rejected" }
+  { value: "rejected", label: "Rejected" },
 ];
 
 // Function to get transaction group based on transaction type
@@ -2695,16 +3208,16 @@ function getTransactionGroup(transactionType) {
   if (["deposit"].includes(transactionType)) return "deposit";
   if (["withdraw"].includes(transactionType)) return "withdraw";
   if (["transfer"].includes(transactionType)) return "transfer";
-  
+
   // Diamond-related transactions
   if (transactionType?.startsWith("diamond_")) return "diamond";
-  
+
   // Other specific types
   if (["mobile_recharge"].includes(transactionType)) return "mobile_recharge";
   if (["pro_subscription"].includes(transactionType)) return "subscription";
   if (["order_payment"].includes(transactionType)) return "purchase";
   if (["referral_commission"].includes(transactionType)) return "commission";
-  
+
   // Default case
   return "other";
 }
@@ -2712,21 +3225,27 @@ function getTransactionGroup(transactionType) {
 // Function to get a user-friendly transaction type name
 function getTransactionTypeName(transactionType) {
   const typeMap = {
-    "deposit": "Deposit",
-    "withdraw": "Withdrawal",
-    "transfer": "Transfer",
-    "diamond_purchase": "Diamond Purchase",
-    "diamond_gift": "Diamond Gift Sent",
-    "diamond_bonus": "Diamond Bonus",
-    "diamond_refund": "Diamond Refund",
-    "diamond_admin": "Diamond Adjustment",
-    "mobile_recharge": "Mobile Recharge",
-    "pro_subscription": "Pro Subscription",
-    "order_payment": "Product Purchase",
-    "referral_commission": "Referral Commission"
+    deposit: "Deposit",
+    withdraw: "Withdrawal",
+    transfer: "Transfer",
+    diamond_purchase: "Diamond Purchase",
+    diamond_gift: "Diamond Gift Sent",
+    diamond_bonus: "Diamond Bonus",
+    diamond_refund: "Diamond Refund",
+    diamond_admin: "Diamond Adjustment",
+    mobile_recharge: "Mobile Recharge",
+    pro_subscription: "Pro Subscription",
+    order_payment: "Product Purchase",
+    referral_commission: "Referral Commission",
   };
-  
-  return typeMap[transactionType] || transactionType?.replace("_", " ")?.replace(/\b\w/g, l => l.toUpperCase()) || "Other";
+
+  return (
+    typeMap[transactionType] ||
+    transactionType
+      ?.replace("_", " ")
+      ?.replace(/\b\w/g, (l) => l.toUpperCase()) ||
+    "Other"
+  );
 }
 </script>
 
@@ -2741,18 +3260,23 @@ function getTransactionTypeName(transactionType) {
 .input-backdrop {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(249, 250, 251, 0.9));
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.9),
+    rgba(249, 250, 251, 0.9)
+  );
   border-radius: 0.75rem;
   z-index: -1;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03),
-    inset 0 2px 4px rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03), inset 0 2px 4px rgba(255, 255, 255, 0.7);
   transform: translateY(0);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .modern-input-container:focus-within .input-backdrop {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15), 0 5px 10px -5px rgba(59, 130, 246, 0.1),
+  box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15),
+    0 5px 10px -5px rgba(59, 130, 246, 0.1),
     inset 0 2px 4px rgba(255, 255, 255, 0.7);
 }
 
@@ -2814,7 +3338,8 @@ function getTransactionTypeName(transactionType) {
 
 /* Focus shadow glow effect */
 .focus\:shadow-glow:focus {
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15), 0 2px 8px rgba(99, 102, 241, 0.25) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15),
+    0 2px 8px rgba(99, 102, 241, 0.25) !important;
 }
 
 /* Modern Payment Method Radio Group */
@@ -2930,7 +3455,11 @@ function getTransactionTypeName(transactionType) {
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--color-primary-100) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    var(--color-primary-100) 0%,
+    transparent 70%
+  );
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0);
@@ -3017,60 +3546,69 @@ function getTransactionTypeName(transactionType) {
 :deep(.u-toast) {
   border-radius: 0.75rem !important;
   backdrop-filter: blur(12px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 
-              0 10px 10px -5px rgba(0, 0, 0, 0.04),
-              0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
   position: relative;
 }
 
 :deep(.u-toast::before) {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, 
-    var(--toast-accent-color, #10b981) 0%, 
-    color-mix(in srgb, var(--toast-accent-color, #10b981) 80%, white) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--toast-accent-color, #10b981) 0%,
+    color-mix(in srgb, var(--toast-accent-color, #10b981) 80%, white) 100%
+  );
   z-index: 1;
 }
 
 /* Success Toast Styling */
 :deep(.u-toast[data-color="green"]) {
   --toast-accent-color: #10b981;
-  background: linear-gradient(135deg, 
-    rgba(16, 185, 129, 0.05) 0%, 
-    rgba(5, 150, 105, 0.02) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.05) 0%,
+    rgba(5, 150, 105, 0.02) 100%
+  );
   border-color: rgba(16, 185, 129, 0.2);
 }
 
 /* Error Toast Styling */
 :deep(.u-toast[data-color="red"]) {
   --toast-accent-color: #ef4444;
-  background: linear-gradient(135deg, 
-    rgba(239, 68, 68, 0.05) 0%, 
-    rgba(220, 38, 38, 0.02) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.05) 0%,
+    rgba(220, 38, 38, 0.02) 100%
+  );
   border-color: rgba(239, 68, 68, 0.2);
 }
 
 /* Warning Toast Styling */
 :deep(.u-toast[data-color="amber"]) {
   --toast-accent-color: #f59e0b;
-  background: linear-gradient(135deg, 
-    rgba(245, 158, 11, 0.05) 0%, 
-    rgba(217, 119, 6, 0.02) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.05) 0%,
+    rgba(217, 119, 6, 0.02) 100%
+  );
   border-color: rgba(245, 158, 11, 0.2);
 }
 
 /* Orange Toast Styling */
 :deep(.u-toast[data-color="orange"]) {
   --toast-accent-color: #f97316;
-  background: linear-gradient(135deg, 
-    rgba(249, 115, 22, 0.05) 0%, 
-    rgba(234, 88, 12, 0.02) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(249, 115, 22, 0.05) 0%,
+    rgba(234, 88, 12, 0.02) 100%
+  );
   border-color: rgba(249, 115, 22, 0.2);
 }
 
@@ -3141,9 +3679,11 @@ function getTransactionTypeName(transactionType) {
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   :deep(.u-toast) {
-    background: linear-gradient(135deg, 
-      rgba(17, 24, 39, 0.95) 0%, 
-      rgba(31, 41, 55, 0.95) 100%) !important;
+    background: linear-gradient(
+      135deg,
+      rgba(17, 24, 39, 0.95) 0%,
+      rgba(31, 41, 55, 0.95) 100%
+    ) !important;
     border-color: rgba(75, 85, 99, 0.3) !important;
     color: #e5e7eb !important;
   }

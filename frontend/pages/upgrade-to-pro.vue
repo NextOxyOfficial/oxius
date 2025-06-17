@@ -1,4 +1,5 @@
-<template>  <UContainer>
+<template>
+  <UContainer>
     <div
       class="min-h-screen py-4 px-4 sm:px-6 bg-gradient-to-b from-slate-100 via-blue-50 to-white dark:from-slate-900 dark:via-blue-950/20 dark:to-slate-800"
     >
@@ -6,44 +7,67 @@
         <!-- Section Header -->
         <div class="text-center mb-16 relative">
           <!-- Decorative elements -->
-          <div class="absolute -top-10 left-1/2 transform -translate-x-1/2 w-20 h-20 rounded-full bg-gradient-to-r from-sky-200/30 to-blue-300/30 dark:from-sky-500/20 dark:to-blue-600/20 blur-2xl"></div>
-          <div class="absolute top-6 left-1/4 transform -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-r from-purple-200/30 to-pink-200/30 dark:from-purple-500/10 dark:to-pink-500/10 blur-2xl"></div>
-          <div class="absolute top-2 right-1/4 transform translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-r from-amber-200/20 to-orange-200/20 dark:from-amber-500/10 dark:to-orange-500/10 blur-2xl"></div>
-          
+          <div
+            class="absolute -top-10 left-1/2 transform -translate-x-1/2 w-20 h-20 rounded-full bg-gradient-to-r from-sky-200/30 to-blue-300/30 dark:from-sky-500/20 dark:to-blue-600/20 blur-2xl"
+          ></div>
+          <div
+            class="absolute top-6 left-1/4 transform -translate-x-1/2 w-12 h-12 rounded-full bg-gradient-to-r from-purple-200/30 to-pink-200/30 dark:from-purple-500/10 dark:to-pink-500/10 blur-2xl"
+          ></div>
+          <div
+            class="absolute top-2 right-1/4 transform translate-x-1/2 w-16 h-16 rounded-full bg-gradient-to-r from-amber-200/20 to-orange-200/20 dark:from-amber-500/10 dark:to-orange-500/10 blur-2xl"
+          ></div>
+
           <h2
             class="text-3xl font-bold text-slate-800 dark:text-white md:text-4xl relative inline-block"
           >
-            Choose Your <span class="text-sky-500 dark:text-sky-400 relative">
+            Choose Your
+            <span class="text-sky-500 dark:text-sky-400 relative">
               Plan
-              <span class="absolute -bottom-2 left-0 w-full h-1.5 bg-gradient-to-r from-sky-400 to-blue-500 rounded-full transform scale-x-100 origin-left"></span>
+              <span
+                class="absolute -bottom-2 left-0 w-full h-1.5 bg-gradient-to-r from-sky-400 to-blue-500 rounded-full transform scale-x-100 origin-left"
+              ></span>
             </span>
           </h2>
-          <p class="mt-6 text-slate-500 dark:text-slate-300 max-w-2xl mx-auto text-lg">
+          <p
+            class="mt-6 text-slate-500 dark:text-slate-300 max-w-2xl mx-auto text-lg"
+          >
             Select the perfect plan for your needs. Upgrade anytime as your
             business grows.
           </p>
-        </div>        <!-- Pricing Cards Container with Enhanced 3D Effect -->
-        <div class="flex flex-col lg:flex-row gap-10 perspective-[1200px] relative">
+        </div>
+        <!-- Pricing Cards Container with Enhanced 3D Effect -->
+        <div
+          class="flex flex-col lg:flex-row gap-10 perspective-[1200px] relative"
+        >
           <!-- Decorative background elements -->
-          <div class="absolute -z-10 top-1/3 left-5 w-32 h-32 bg-gradient-to-r from-sky-200/20 to-blue-300/20 dark:from-sky-700/10 dark:to-blue-800/10 rounded-full blur-3xl"></div>
-          <div class="absolute -z-10 bottom-10 right-5 w-40 h-40 bg-gradient-to-r from-indigo-200/20 to-violet-300/20 dark:from-indigo-700/10 dark:to-violet-800/10 rounded-full blur-3xl"></div>
-          
+          <div
+            class="absolute -z-10 top-1/3 left-5 w-32 h-32 bg-gradient-to-r from-sky-200/20 to-blue-300/20 dark:from-sky-700/10 dark:to-blue-800/10 rounded-full blur-3xl"
+          ></div>
+          <div
+            class="absolute -z-10 bottom-10 right-5 w-40 h-40 bg-gradient-to-r from-indigo-200/20 to-violet-300/20 dark:from-indigo-700/10 dark:to-violet-800/10 rounded-full blur-3xl"
+          ></div>
+
           <!-- Free Plan - Enhanced Modern Design -->
           <div
             class="w-full lg:w-1/2 bg-white dark:bg-slate-800/90 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 hover:rotate-1 border border-slate-100/80 dark:border-slate-700/50 group"
-          >            <!-- Enhanced Card Header with Modern Design -->
+          >
+            <!-- Enhanced Card Header with Modern Design -->
             <div
               class="p-8 bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 dark:from-sky-900/30 dark:via-blue-900/20 dark:to-indigo-900/10 border-b border-slate-100 dark:border-slate-700/50 relative overflow-hidden"
             >
               <!-- Subtle animated pattern background -->
               <div class="absolute inset-0 opacity-5">
-                <div class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))]"></div>
+                <div
+                  class="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))]"
+                ></div>
               </div>
-              
+
               <h3
                 class="text-xl font-bold text-slate-800 dark:text-white flex items-center"
               >
-                <span class="bg-sky-100 dark:bg-sky-800/40 p-2.5 rounded-xl mr-4 shadow-sm">
+                <span
+                  class="bg-sky-100 dark:bg-sky-800/40 p-2.5 rounded-xl mr-4 shadow-sm"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-6 w-6 text-sky-500 dark:text-sky-400"
@@ -64,7 +88,8 @@
                 <span class="text-3xl font-bold text-slate-800 dark:text-white"
                   >৳ 0</span
                 >
-                <span class="ml-2 text-sm font-medium text-slate-500 dark:text-slate-400"
+                <span
+                  class="ml-2 text-sm font-medium text-slate-500 dark:text-slate-400"
                   >/Month</span
                 >
               </div>
@@ -72,7 +97,8 @@
               <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">
                 Perfect for getting started
               </p>
-            </div>            <!-- Card Body with Enhanced Features List -->
+            </div>
+            <!-- Card Body with Enhanced Features List -->
             <div class="p-6">
               <ul class="space-y-4 mb-8 capitalize">
                 <li class="flex items-center text-sm group/item">
@@ -93,7 +119,9 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-600/90 dark:text-slate-400/90 line-through font-medium"
+                  </div>
+                  <span
+                    class="text-gray-600/90 dark:text-slate-400/90 line-through font-medium"
                     >Access to eShop manager</span
                   >
                 </li>
@@ -115,7 +143,9 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-600/90 dark:text-slate-400/90 line-through font-medium"
+                  </div>
+                  <span
+                    class="text-gray-600/90 dark:text-slate-400/90 line-through font-medium"
                     >Sell Products on AdsyClub</span
                   >
                 </li>
@@ -137,7 +167,9 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-600/90 dark:text-slate-400/90 line-through font-medium"
+                  </div>
+                  <span
+                    class="text-gray-600/90 dark:text-slate-400/90 line-through font-medium"
                     >Receive Unlimited Order</span
                   >
                 </li>
@@ -159,7 +191,9 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-600/90 dark:text-slate-400/90 line-through font-medium"
+                  </div>
+                  <span
+                    class="text-gray-600/90 dark:text-slate-400/90 line-through font-medium"
                     >Add up to 10 Products</span
                   >
                 </li>
@@ -181,7 +215,8 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-800 dark:text-slate-100 font-medium"
+                  </div>
+                  <span class="text-gray-800 dark:text-slate-100 font-medium"
                     >Post unlimited ads</span
                   >
                 </li>
@@ -203,7 +238,8 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-800 dark:text-slate-100 font-medium"
+                  </div>
+                  <span class="text-gray-800 dark:text-slate-100 font-medium"
                     >Earn money by completing task</span
                   >
                 </li>
@@ -225,7 +261,8 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-800 dark:text-slate-100 font-medium"
+                  </div>
+                  <span class="text-gray-800 dark:text-slate-100 font-medium"
                     >Fast deposit and withdraw</span
                   >
                 </li>
@@ -247,11 +284,13 @@
                         d="M5 13l4 4L19 7"
                       ></path>
                     </svg>
-                  </div>                  <span class="text-gray-800 dark:text-slate-100 font-medium"
+                  </div>
+                  <span class="text-gray-800 dark:text-slate-100 font-medium"
                     >Regular support via Email</span
                   >
                 </li>
-              </ul>              <button
+              </ul>
+              <button
                 class="w-full py-3.5 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20 text-sky-600 dark:text-sky-400 rounded-xl text-sm font-medium hover:shadow-md hover:from-sky-100 hover:to-blue-100 dark:hover:from-sky-900/30 dark:hover:to-blue-900/30 border border-sky-100 dark:border-sky-800/30 transition-all duration-300 relative overflow-hidden group-hover:border-sky-200 dark:group-hover:border-sky-700/50"
               >
                 <span
@@ -275,17 +314,21 @@
                 </span>
               </button>
             </div>
-          </div>          <!-- Pro - Enhanced Premium Design with Advanced Effects -->
+          </div>
+          <!-- Pro - Enhanced Premium Design with Advanced Effects -->
           <div
             class="w-full lg:w-1/2 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-3 hover:rotate-1 border-2 border-sky-300/50 dark:border-sky-500/30 bg-white dark:bg-slate-800/90 backdrop-blur-sm relative group"
-          >            <!-- Enhanced Premium Badge with Animation -->
+          >
+            <!-- Enhanced Premium Badge with Animation -->
             <div class="absolute -top-1 -right-1 z-10">
               <div
                 class="bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 text-white text-xs font-bold py-1.5 px-4 rounded-bl-xl rounded-tr-xl shadow-md flex items-center gap-1.5 animate-pulse-slow relative overflow-hidden"
               >
                 <!-- Animated glint effect -->
-                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-white/0 via-white/30 to-white/0 -skew-x-45 animate-shimmer"></div>
-                
+                <div
+                  class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-white/0 via-white/30 to-white/0 -skew-x-45 animate-shimmer"
+                ></div>
+
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="h-4 w-4 animate-subtle-bounce"
@@ -305,7 +348,8 @@
               class="absolute -inset-0.5 bg-gradient-to-r from-sky-300 to-blue-300 dark:from-sky-500 dark:to-blue-500 rounded-xl blur-lg opacity-0 group-hover:opacity-10 transition-all duration-700 animate-pulse"
             ></div>
 
-            <!-- Card Header -->            <div
+            <!-- Card Header -->
+            <div
               class="p-8 bg-gradient-to-br from-sky-500 via-blue-500 to-indigo-600 dark:from-sky-600 dark:via-blue-600 dark:to-indigo-700 relative overflow-hidden"
             >
               <h3 class="text-xl font-semibold text-white flex items-center">
@@ -352,12 +396,14 @@
                   animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite 0.5s;
                 "
               ></div>
-            </div>              <!-- Card Body -->
+            </div>
+            <!-- Card Body -->
             <div class="p-6 relative">
               <!-- Animated Background Effect with enhanced gradient -->
               <div
                 class="absolute inset-0 bg-gradient-to-br from-sky-50/80 via-blue-50/80 to-indigo-50/80 dark:from-sky-900/10 dark:via-blue-900/10 dark:to-indigo-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-              ></div>              <ul class="space-y-4 mb-8 relative z-10 capitalize">
+              ></div>
+              <ul class="space-y-4 mb-8 relative z-10 capitalize">
                 <li class="flex items-center text-sm group/item">
                   <div
                     class="w-7 h-7 rounded-full bg-gradient-to-br from-sky-100 to-blue-100 dark:from-sky-800/40 dark:to-blue-800/40 flex items-center justify-center mr-3 flex-shrink-0 group-hover/item:scale-110 transition-transform duration-300 shadow-sm border border-sky-200/50 dark:border-sky-700/30"
@@ -543,7 +589,8 @@
                     Email/WhatsApp/Telegram</span
                   >
                 </li>
-              </ul>              <!-- Enhanced Premium CTA Button -->
+              </ul>
+              <!-- Enhanced Premium CTA Button -->
               <button
                 class="w-full py-3.5 bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white rounded-xl text-sm font-bold transition-all duration-300 shadow-md hover:shadow-lg relative overflow-hidden group-hover:scale-[1.02] border border-sky-400/20"
                 @click="showModal"
@@ -553,8 +600,17 @@
                 >
                   <span v-if="user?.user.is_pro">Already Upgraded!</span>
                   <span v-else class="flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                        clip-rule="evenodd"
+                      />
                     </svg>
                     Upgrade Now!
                   </span>
@@ -568,30 +624,51 @@
                   class="absolute bottom-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-sky-300 to-transparent opacity-70 group-hover:opacity-100 transition-opacity"
                 ></div>
               </button>
-            </div>            <!-- Enhanced Best Value Tag -->
+            </div>
+            <!-- Enhanced Best Value Tag -->
             <div
               class="absolute -rotate-90 -end-9 top-12 bg-gradient-to-r from-sky-500 to-blue-500 text-xs text-white py-1.5 px-8 font-bold shadow-md"
             >
               <div class="relative flex items-center">
                 <span class="relative z-10">BEST VALUE</span>
                 <!-- Animated shimmer effect -->
-                <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer"></div>
+                <div
+                  class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-shimmer"
+                ></div>
               </div>
             </div>
           </div>
-        </div>        <!-- Decorative Shapes -->
+        </div>
+        <!-- Decorative Shapes -->
         <div class="relative py-12">
           <!-- Animated Shapes -->
-          <div class="absolute left-10 -top-5 w-24 h-24 opacity-20 dark:opacity-10">
-            <div class="absolute w-16 h-16 rounded-full border-8 border-sky-200 dark:border-sky-700 animate-ping-slow"></div>
-            <div class="absolute w-12 h-12 top-8 left-8 rounded-full border-8 border-blue-200 dark:border-blue-700" 
-                 style="animation: ping-slow 4s cubic-bezier(0, 0, 0.2, 1) infinite 1s"></div>
+          <div
+            class="absolute left-10 -top-5 w-24 h-24 opacity-20 dark:opacity-10"
+          >
+            <div
+              class="absolute w-16 h-16 rounded-full border-8 border-sky-200 dark:border-sky-700 animate-ping-slow"
+            ></div>
+            <div
+              class="absolute w-12 h-12 top-8 left-8 rounded-full border-8 border-blue-200 dark:border-blue-700"
+              style="
+                animation: ping-slow 4s cubic-bezier(0, 0, 0.2, 1) infinite 1s;
+              "
+            ></div>
           </div>
-          
-          <div class="absolute right-20 -bottom-2 w-20 h-20 opacity-20 dark:opacity-10">
-            <div class="absolute w-10 h-10 rounded-full border-6 border-indigo-200 dark:border-indigo-700 animate-ping-slow"></div>
-            <div class="absolute w-12 h-12 top-4 -left-4 rounded-full border-6 border-purple-200 dark:border-purple-700"
-                 style="animation: ping-slow 3.5s cubic-bezier(0, 0, 0.2, 1) infinite 0.7s"></div>
+
+          <div
+            class="absolute right-20 -bottom-2 w-20 h-20 opacity-20 dark:opacity-10"
+          >
+            <div
+              class="absolute w-10 h-10 rounded-full border-6 border-indigo-200 dark:border-indigo-700 animate-ping-slow"
+            ></div>
+            <div
+              class="absolute w-12 h-12 top-4 -left-4 rounded-full border-6 border-purple-200 dark:border-purple-700"
+              style="
+                animation: ping-slow 3.5s cubic-bezier(0, 0, 0.2, 1) infinite
+                  0.7s;
+              "
+            ></div>
           </div>
         </div>
       </div>
@@ -1144,7 +1221,9 @@
               </div>
             </div>
 
-            <h2 class="text-white font-semibold text-xl mb-1">Payment Failed</h2>
+            <h2 class="text-white font-semibold text-xl mb-1">
+              Payment Failed
+            </h2>
             <p class="text-red-50 text-sm">We couldn't process your payment</p>
           </div>
         </div>
@@ -1399,7 +1478,7 @@ async function createSubscription() {
       const result = await get(
         `/subscribe/?months=${months.value}&total=${total}`
       );
-      console.log(result);
+
       // Simulate successful payment
       const response = {
         success: true,

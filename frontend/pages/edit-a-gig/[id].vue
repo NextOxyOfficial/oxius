@@ -422,7 +422,7 @@ async function handleUpdateGig() {
   const additional_cost =
     form.value.additional_quantity * form.value.price +
     (form.value.price * form.value.additional_quantity * 10) / 100;
-  console.log({ required_quantity, additional_cost });
+
   isLoading.value = true;
   const res = await put(`/update-user-micro-gig/${route.params.id}/`, {
     required_quantity,
@@ -458,7 +458,6 @@ async function getMicroGigsCategory() {
     network.value = networksResponse.data;
     country.value = countriesResponse.data;
     form.value = microGigResponse.data;
-    console.log(microGigResponse.data);
   } catch (error) {
     console.error("Error fetching micro-gigs data:", error);
   }

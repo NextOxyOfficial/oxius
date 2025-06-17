@@ -1,10 +1,12 @@
-<template>  <UContainer class="py-4 md:py-6 page-eshop">
+<template>
+  <UContainer class="py-4 md:py-6 page-eshop">
     <div class="min-h-screen">
       <!-- Modern Hero Banner with Layered Design -->
       <div
         class="relative bg-white rounded-xl md:rounded-2xl shadow-sm mb-8 md:mb-10 overflow-hidden"
       >
-        <div class="absolute inset-0 z-0">          <!-- Banner Background -->
+        <div class="absolute inset-0 z-0">
+          <!-- Banner Background -->
           <div
             class="h-40 sm:h-48 md:h-60 w-full bg-cover bg-center relative"
             :style="{
@@ -627,7 +629,6 @@ async function getMyProducts() {
   try {
     const response = await get(`/store/${router.params.id}/products/`);
     products.value = response.data;
-    console.log("Products loaded:", products.value.length);
   } catch (error) {
     console.error("Error fetching products:", error);
     toast.add({
@@ -646,7 +647,6 @@ async function getStoreDetails() {
   try {
     const { data } = await get(`/store/${router.params.id}/`);
     storeDetails.value = data;
-    console.log("Store details loaded successfully");
   } catch (error) {
     console.error("Error fetching store details:", error);
     toast.add({

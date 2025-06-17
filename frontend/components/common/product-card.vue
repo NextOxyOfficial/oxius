@@ -1,12 +1,12 @@
 <template>
   <div ref="productCardRef">
-    <div class="transition-all duration-200">      
-      <!-- Simplified Card Container -->      
-       <div
+    <div class="transition-all duration-200">
+      <!-- Simplified Card Container -->
+      <div
         class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden h-full flex flex-col"
-      >        
-      <!-- Product Image Section -->
-        <div class="relative pt-[100%] overflow-hidden">          
+      >
+        <!-- Product Image Section -->
+        <div class="relative pt-[100%] overflow-hidden">
           <!-- Simplified Discount Badge -->
           <div
             v-if="
@@ -15,19 +15,25 @@
             "
             class="absolute top-2 left-2 z-20"
           >
-            <div class="px-2 py-1 bg-red-500 rounded text-white text-xs font-semibold flex items-center">
+            <div
+              class="px-2 py-1 bg-red-500 rounded text-white text-xs font-semibold flex items-center"
+            >
               <UIcon name="i-heroicons-bolt" class="size-3 mr-1" />
-              <span>{{
-                calculateDiscount(product.sale_price, product.regular_price)
-              }}% OFF</span>
+              <span
+                >{{
+                  calculateDiscount(product.sale_price, product.regular_price)
+                }}% OFF</span
+              >
             </div>
-          </div>          
+          </div>
           <!-- Simplified Free Delivery Badge -->
           <div
             v-if="product.is_free_delivery"
             class="absolute bottom-2 left-2 z-20"
           >
-            <div class="px-2 py-1 bg-green-500/90 rounded text-white text-xs font-semibold flex items-center">
+            <div
+              class="px-2 py-1 bg-green-500/90 rounded text-white text-xs font-semibold flex items-center"
+            >
               <UIcon name="i-heroicons-truck" class="size-3 mr-1" />
               <span>FREE DELIVERY</span>
             </div>
@@ -41,7 +47,9 @@
           />
 
           <!-- Simplified Quick View Button -->
-          <div class="absolute inset-0 z-10 flex items-center justify-center opacity-0 bg-gray-100 hover:opacity-100 transition-opacity">
+          <div
+            class="absolute inset-0 z-10 flex items-center justify-center opacity-0 bg-gray-100 hover:opacity-100 transition-opacity"
+          >
             <button
               @click="openProductModal(product)"
               class="px-3 py-2 bg-white dark:bg-slate-900 text-sm font-medium rounded shadow-sm flex items-center"
@@ -49,15 +57,18 @@
               <UIcon name="i-heroicons-eye" class="mr-2 size-4" />
               <span>Quick View</span>
             </button>
-          </div>        
-        </div>        
-          <!-- Product Details -->
-        <div class="my-2 px-2 flex-grow flex flex-col">          
+          </div>
+        </div>
+        <!-- Product Details -->
+        <div class="my-2 px-2 flex-grow flex flex-col">
           <!-- Price Section - Moved to top -->
           <div class="mb-2">
             <div class="flex items-center gap-2">
-              <span class="font-semibold text-gray-800 dark:text-white text-base flex items-center">
-                <span class="text-xs mr-1 text-slate-500">৳</span>{{
+              <span
+                class="font-semibold text-gray-800 dark:text-white text-base flex items-center"
+              >
+                <span class="text-xs mr-1 text-slate-500">৳</span
+                >{{
                   product.sale_price && parseFloat(product.sale_price) > 0
                     ? product.sale_price
                     : product.regular_price
@@ -75,14 +86,16 @@
               >
                 <span class="text-xs mr-0.5">৳</span>{{ product.regular_price }}
               </span>
-            </div>         
-           </div>          
-            <!-- Product Title - Moved above store name -->
+            </div>
+          </div>
+          <!-- Product Title - Moved above store name -->
           <NuxtLink :to="`/product-details/${product?.slug}`" class="mb-2">
-            <h3 class="font-medium text-gray-800 dark:text-white line-clamp-1 text-sm text-left capitalize">
+            <h3
+              class="font-medium text-gray-800 dark:text-white line-clamp-1 text-sm text-left capitalize"
+            >
               {{ product.name }}
             </h3>
-          </NuxtLink>          
+          </NuxtLink>
           <!-- Store Link - Moved below product name -->
           <NuxtLink
             :to="`/eshop/${
@@ -91,58 +104,66 @@
             }`"
             class="text-gray-600 dark:text-gray-400 text-sm mb-3 inline-flex items-center gap-2 hover:text-primary-600 transition-colors duration-200 bg-gray-50 dark:bg-slate-700 px-2 py-1 rounded-lg"
           >
-            <div class="flex items-center justify-center size-5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-sm">
+            <div
+              class="flex items-center justify-center size-5 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full shadow-sm"
+            >
               <UIcon
                 name="i-material-symbols-storefront-outline-rounded"
                 class="size-3 text-white"
-              />            </div>
+              />
+            </div>
             <span class="line-clamp-1 font-medium text-xs">
               {{
                 product?.owner_details?.store_name ||
                 product?.owner?.store_name ||
                 "Store"
               }}
-            </span>          
+            </span>
           </NuxtLink>
-              <!-- Full Width Buy Now Button -->
+          <!-- Full Width Buy Now Button -->
           <button
             :disabled="loadingStates[product.id]"
             class="w-full flex items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gray-700 hover:bg-gray-800 rounded transition-colors duration-200 disabled:opacity-70"
             @click="addToCart(product, quantity)"
           >
-            <span v-if="!loadingStates[product.id]" class="flex items-center gap-2">
+            <span
+              v-if="!loadingStates[product.id]"
+              class="flex items-center gap-2"
+            >
               <UIcon name="i-heroicons-shopping-cart" class="size-4" />
               <span class="text-sm font-medium">Buy Now</span>
             </span>
             <span v-else class="flex items-center gap-2">
-              <UIcon name="i-heroicons-arrow-path" class="size-4 animate-spin" />
+              <UIcon
+                name="i-heroicons-arrow-path"
+                class="size-4 animate-spin"
+              />
               <span class="text-sm">Processing...</span>
             </span>
           </button>
         </div>
       </div>
-    </div>        
-    <!-- Simplified Product Details Modal -->       
-     <UModal
+    </div>
+    <!-- Simplified Product Details Modal -->
+    <UModal
       v-model="isModalOpen"
       :ui="{
         width: 'w-full sm:max-w-4xl',
         height: 'h-auto',
         container: 'flex flex-col h-auto mt-20 p-0 sm:p-0',
-        padding: 'p-0'
+        padding: 'p-0',
       }"
     >
-    <div>
-      <div class="bg-white dark:bg-slate-800 rounded-xl"
-      >        
-      <CommonProductDetailsCard
-          :current-product="selectedProduct"
-          :modal="true"
-          :seeDetails="true"
-          @close-modal="closeProductModal"
-        />
+      <div>
+        <div class="bg-white dark:bg-slate-800 rounded-xl">
+          <CommonProductDetailsCard
+            :current-product="selectedProduct"
+            :modal="true"
+            :seeDetails="true"
+            @close-modal="closeProductModal"
+          />
+        </div>
       </div>
-    </div>
     </UModal>
   </div>
 </template>
@@ -230,14 +251,12 @@ function closeProductModal() {
 }
 
 async function increaseProductViews() {
-  console.log(product.views);
   try {
     const { data } = await patch(`/products/${product.slug}/`, {
       views: product.views + 1,
     });
-    console.log("patch", data);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 
@@ -276,5 +295,9 @@ onMounted(() => {
 
 <style scoped>
 /* Optimized and minified CSS for better performance */
-:root{--primary-400:#38bdf8;--primary-500:#0ea5e9;--primary-600:#0284c7}
+:root {
+  --primary-400: #38bdf8;
+  --primary-500: #0ea5e9;
+  --primary-600: #0284c7;
+}
 </style>

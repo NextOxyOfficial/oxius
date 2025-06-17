@@ -59,7 +59,7 @@ async function addBalance() {
     shurjopay_order_id,
     payment_confirmed_at,
   });
-  console.log(res);
+
   if (res.data) {
     toast.add({ title: "Payment successfully!" });
     await jwtLogin();
@@ -74,7 +74,7 @@ async function VerifyPayment() {
   const response = await get(
     "/verify-pay/?sp_order_id=" + router.query.order_id
   );
-  console.log(response.data);
+
   if (response.data) {
     verifyPaymentDetails.value = response.data;
   } else {

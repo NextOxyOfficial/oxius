@@ -1026,7 +1026,6 @@ const processCheckout = async () => {
 
     // Send data to API
     const response = await post("/orders/create-with-items/", orderPayload);
-    console.log(response.data);
 
     if (response.data) {
       // Show success modal

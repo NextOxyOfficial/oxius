@@ -604,7 +604,6 @@ const openFileUpload = () => {
     fileInput.value.value = "";
     // Trigger the file picker
     fileInput.value.click();
-    console.log("File picker opened");
   } else {
     console.error("File input reference not found");
   }
@@ -618,7 +617,6 @@ const handleFileUpload = async (event) => {
   }
 
   const file = files[0];
-  console.log("File selected:", file.name, file.type, file.size);
 
   // Validate file
   if (!file.type.match("image.*")) {
@@ -643,7 +641,6 @@ const handleFileUpload = async (event) => {
       if (emptyIndex !== -1) {
         imagePreviewUrls.value[emptyIndex] = compressedImage;
         formData.images[emptyIndex] = compressedImage;
-        console.log("Image added to slot:", emptyIndex);
       } else {
         uploadError.value = "Maximum 8 images allowed";
       }
@@ -750,11 +747,6 @@ const processImageWithCompression = (file) => {
           resultSize = Math.round((resultImage.length * 3) / 4);
         }
 
-        console.log(
-          `Image compressed: ${formatFileSize(file.size)} → ${formatFileSize(
-            resultSize
-          )} (${(quality * 100).toFixed(0)}% quality)`
-        );
         resolve(resultImage);
       };
       img.onerror = reject;
@@ -915,10 +907,6 @@ const submitForm = async () => {
       const size = Math.round((img.length * 3) / 4);
       return formatFileSize(size);
     });
-    console.log(
-      `Submitting ${validImages.length} images with sizes:`,
-      imageSizes
-    );
 
     // Prepare submission data following business network pattern
     const submissionData = {
@@ -954,14 +942,7 @@ const submitForm = async () => {
       submissionData.price = parseFloat(formData.price);
     }
 
-    console.log(
-      "Submitting data with payload size:",
-      JSON.stringify(submissionData).length,
-      "bytes"
-    );
-
     const result = await createSalePost(submissionData);
-    console.log("Submission successful:", result);
 
     // Emit success event
     emit("post-created", result);

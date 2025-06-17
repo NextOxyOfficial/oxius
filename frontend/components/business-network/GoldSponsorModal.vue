@@ -20,7 +20,7 @@
       >
         <!-- Background overlay -->
         <div
-          class="fixed  inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
           aria-hidden="true"
           @click="close"
         ></div>
@@ -389,7 +389,8 @@
                     >
                       Try again
                     </button>
-                  </div>                  <!-- Package list -->
+                  </div>
+                  <!-- Package list -->
                   <div v-else class="space-y-2">
                     <div
                       v-for="pkg in sortedPackages"
@@ -803,15 +804,8 @@ const fetchUserBalance = async () => {
     // Get balance from the user store instead of making an API call
     if (user.value?.user?.balance !== undefined) {
       userBalance.value = Number(user.value.user.balance);
-      console.log(
-        "User balance loaded:",
-        userBalance.value,
-        "Type:",
-        typeof userBalance.value
-      );
     } else {
       balanceError.value = "Balance information not available";
-      console.log("Balance not available in user store");
     }
   } catch (error) {
     console.error("Error accessing user balance:", error);
@@ -831,12 +825,8 @@ const hasInsufficientBalance = computed(() => {
   const userBal = Number(userBalance.value);
   const pkgPrice = Number(selectedPkg?.price || 0);
   const result = selectedPkg && userBal < pkgPrice;
-  console.log("Balance check:", {
-    userBalance: userBal,
-    packagePrice: pkgPrice,
-    comparison: `${userBal} < ${pkgPrice}`,
-    result,
-  });  return result;
+
+  return result;
 });
 
 // Sorted packages by price (smallest first)
@@ -855,13 +845,6 @@ const fetchPackages = async () => {
   packageError.value = "";
 
   try {
-    console.log("Fetching sponsorship packages...");
-    console.log(
-      "API endpoint URL (direct fetch):",
-      "/api/bn/gold-sponsors/packages/"
-    );
-    console.log("API endpoint URL (useApi):", "/bn/gold-sponsors/packages/");
-
     // Try direct fetch first as a more reliable option
     try {
       const directResponse = await $fetch("/api/bn/gold-sponsors/packages/", {
@@ -871,13 +854,9 @@ const fetchPackages = async () => {
         },
       });
 
-      console.log("Direct fetch response:", directResponse);
       if (Array.isArray(directResponse)) {
         packages.value = directResponse;
-        console.log(
-          "Packages loaded successfully (direct):",
-          packages.value.length
-        );
+
         return;
       }
     } catch (directError) {
@@ -899,9 +878,7 @@ const fetchPackages = async () => {
       );
     } else if (result.data && Array.isArray(result.data)) {
       packages.value = result.data;
-      console.log("Packages loaded successfully:", packages.value.length);
     } else {
-      console.log("No packages data received");
       packageError.value = "No sponsorship packages available.";
       packages.value = [];
     }
@@ -909,7 +886,6 @@ const fetchPackages = async () => {
     console.error("Error fetching packages:", error);
     packageError.value =
       "Using default package options. You can still submit your application.";
-    console.log("Setting fallback packages");
 
     // Fallback to default packages
     packages.value = [
@@ -983,10 +959,6 @@ const submitFormDirectFetch = async () => {
       formData.append("logo", form.value.logo);
     }
 
-    console.log("Using direct axios fetch as fallback");
-
-    // Debug formData in direct fetch
-    console.log("FormData entries for direct fetch:");
     for (let pair of formData.entries()) {
       console.log(
         pair[0] + ": " + (pair[0] === "logo" ? "File object" : pair[1])
@@ -995,7 +967,6 @@ const submitFormDirectFetch = async () => {
 
     // Try with post method from useApi first
     try {
-      console.log("Trying with useApi post method");
       const apiResponse = await post("/bn/gold-sponsors/apply/", formData);
 
       if (apiResponse.error) {
@@ -1004,7 +975,6 @@ const submitFormDirectFetch = async () => {
         );
       }
 
-      console.log("useApi response:", apiResponse);
       const responseData = apiResponse.data;
 
       // Additional validation to ensure success
@@ -1027,7 +997,6 @@ const submitFormDirectFetch = async () => {
       return;
     } catch (apiError) {
       console.error("useApi approach failed:", apiError);
-      console.log("Falling back to raw fetch");
 
       // Fall back to direct fetch with credentials
       const response = await fetch("/api/bn/gold-sponsors/apply/", {
@@ -1085,7 +1054,6 @@ const submitFormDirectFetch = async () => {
       let responseData;
       try {
         responseData = await response.json();
-        console.log("Direct fetch parsed response:", responseData);
 
         // Validate the response to ensure it's actually successful
         if (responseData && responseData.error) {
@@ -1094,20 +1062,12 @@ const submitFormDirectFetch = async () => {
       } catch (parseError) {
         console.error("Error parsing response as JSON:", parseError);
         const rawText = await response.text();
-        console.log("Raw response text:", rawText);
         throw new Error("Invalid JSON response from server");
       }
-
-      console.log("Direct fetch response:", responseData);
 
       // IMPORTANT: First clear any previous error to avoid displaying both error and success
       submitError.value = "";
       submitSuccess.value = true;
-
-      // Check for success message in the response
-      if (responseData && responseData.message) {
-        console.log("Success message from server:", responseData.message);
-      }
 
       emit("submit", responseData);
 
@@ -1119,18 +1079,10 @@ const submitFormDirectFetch = async () => {
     }
   } catch (error) {
     console.error("Error in direct fetch submission:", error);
-    console.log("Direct fetch error object:", {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-      response: error.response,
-      data: error.data,
-    });
 
     // More detailed error handling for direct fetch
     if (error.response?.data) {
       const errorData = error.response.data;
-      console.log("Direct fetch error response data:", errorData);
 
       if (typeof errorData === "object" && !Array.isArray(errorData)) {
         const errorMessages = [];
@@ -1165,7 +1117,7 @@ const submitFormDirectFetch = async () => {
       }
     } else if (error.data) {
       // Some fetch libraries put the response data in error.data
-      console.log("Direct fetch error data:", error.data);
+
       submitError.value = `Alternative method error: ${
         typeof error.data === "string" ? error.data : JSON.stringify(error.data)
       }`;
@@ -1195,20 +1147,6 @@ const submitForm = async () => {
   isSubmitting.value = true;
   submitError.value = "";
   submitSuccess.value = false;
-
-  // Debug information
-  console.log("Form values before submission:", {
-    businessName: form.value.businessName,
-    businessDescription: form.value.businessDescription,
-    contactEmail: form.value.contactEmail,
-    phoneNumber: form.value.phoneNumber,
-    website: form.value.website,
-    profileUrl: form.value.profileUrl,
-    selectedPackage: form.value.selectedPackage,
-    hasLogo: !!form.value.logo,
-    bannersCount: banners.value.length,
-    isEditMode: isEditMode.value,
-  });
 
   try {
     // Create FormData for file upload
@@ -1248,7 +1186,7 @@ const submitForm = async () => {
 
     if (form.value.logo) {
       formData.append("logo", form.value.logo);
-    }    // Add banner data - Send as separate fields that the backend can handle
+    } // Add banner data - Send as separate fields that the backend can handle
     banners.value.forEach((banner, index) => {
       if (banner.title) {
         formData.append(`banner_${index}_title`, banner.title);
@@ -1265,9 +1203,9 @@ const submitForm = async () => {
         formData.append(`banner_${index}_id`, banner.existingId.toString());
       }
     });
-    
+
     // Add banner count for backend processing
-    formData.append('banner_count', banners.value.length.toString());
+    formData.append("banner_count", banners.value.length.toString());
 
     // Determine endpoint based on mode
     const endpoint = isEditMode.value
@@ -1276,13 +1214,6 @@ const submitForm = async () => {
 
     const method = isEditMode.value ? "PUT" : "POST";
 
-    console.log(
-      `${isEditMode.value ? "Updating" : "Creating"} sponsor with endpoint:`,
-      endpoint
-    );
-
-    // Debug formData entries
-    console.log("FormData entries:");
     for (let pair of formData.entries()) {
       console.log(
         pair[0] +
@@ -1330,7 +1261,6 @@ const submitForm = async () => {
 
       try {
         responseData = await response.json();
-        console.log("Response parsed successfully:", responseData);
 
         // Additional validation to ensure the response is actually successful
         if (
@@ -1346,12 +1276,11 @@ const submitForm = async () => {
       } catch (parseError) {
         console.error("Error parsing response as JSON:", parseError);
         const rawText = await response.text();
-        console.log("Raw response text:", rawText);
+
         throw new Error("Invalid JSON response from server");
       }
     } catch (fetchError) {
       console.error("Fetch attempt failed:", fetchError);
-      console.log("Trying with useApi as fallback");
 
       // Try useApi as fallback
       const apiMethod = isEditMode.value ? put : post;
@@ -1377,12 +1306,6 @@ const submitForm = async () => {
       }
     }
 
-    // If we've reached this point, the submission was successful
-    console.log(
-      `${isEditMode.value ? "Update" : "Creation"} successful, response data:`,
-      responseData
-    );
-
     // IMPORTANT: Clear any previous error to prevent showing both error and success
     submitError.value = "";
     submitSuccess.value = true;
@@ -1407,20 +1330,10 @@ const submitForm = async () => {
       error
     );
 
-    // Detailed error logging
-    console.log("Error object:", {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-      response: error.response,
-      data: error.data,
-    });
-
     // Improved error handling to show more detailed error messages
     if (error.response?.data) {
       // Handle Django REST framework validation errors
       const errorData = error.response.data;
-      console.log("Error response data:", errorData);
 
       if (typeof errorData === "object" && !Array.isArray(errorData)) {
         const errorMessages = [];
@@ -1450,7 +1363,7 @@ const submitForm = async () => {
       }
     } else if (error.data) {
       // Some fetch libraries put the response data in error.data
-      console.log("Error data:", error.data);
+
       submitError.value =
         typeof error.data === "string"
           ? error.data

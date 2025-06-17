@@ -1,4 +1,5 @@
-<template>  <div class="min-h-screen bg-gray-50">
+<template>
+  <div class="min-h-screen bg-gray-50">
     <main class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 pb-4">
       <!-- Category Title -->
       <div class="flex justify-between items-center mb-8">
@@ -71,7 +72,7 @@
                   {{ article.title }}
                 </h3>
               </NuxtLink>
-             
+
               <div class="flex justify-between items-center">
                 <div class="flex items-center">
                   <img
@@ -98,7 +99,8 @@
               </div>
             </div>
           </article>
-        </div>        <!-- Load More Button -->
+        </div>
+        <!-- Load More Button -->
         <div v-if="filteredArticles.length > 12" class="mt-12 text-center">
           <button
             @click="loadMoreArticles"
@@ -418,7 +420,7 @@ async function getCategoryDetails() {
   try {
     isCategoryLoading.value = true;
     const res = await get(`/news/categories/${route.params.id}/`);
-    
+
     if (res.data && res.data.title) {
       categoryName.value = res.data.title;
     }
@@ -646,7 +648,6 @@ const formatArticleForDisplay = (article) => {
 
 // Latest article (most recent by date)
 const latestArticle = computed(() => {
-  console.log("Latest article:", articles.value);
   if (articles.value.length === 0) {
     return {
       id: "",
@@ -715,12 +716,16 @@ onMounted(() => {
 });
 
 // Watch for route parameter changes
-watch(() => route.params.id, async (newId, oldId) => {
-  if (newId && newId !== oldId) {
-    await getCategoryDetails();
-    await getArticlesByCategory();
-  }
-}, { immediate: false });
+watch(
+  () => route.params.id,
+  async (newId, oldId) => {
+    if (newId && newId !== oldId) {
+      await getCategoryDetails();
+      await getArticlesByCategory();
+    }
+  },
+  { immediate: false }
+);
 
 onUnmounted(() => {
   stopCarousel();

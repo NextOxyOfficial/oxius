@@ -16,7 +16,8 @@
 
         <!-- User Info Summary -->
         <div class="text-center flex gap-2 items-center justify-center mb-8">
-          <div class="relative">            <img
+          <div class="relative">
+            <img
               v-if="userProfile.image"
               :src="userProfile.image"
               alt="Profile"
@@ -262,7 +263,8 @@
                 >
                 <div class="flex flex-wrap items-center gap-5">
                   <!-- Current image preview -->
-                  <div v-if="userProfile.image" class="relative">                    <img
+                  <div v-if="userProfile.image" class="relative">
+                    <img
                       :src="userProfile.image"
                       alt="Profile"
                       class="w-24 h-24 rounded-full object-cover border-2 border-white shadow"
@@ -1030,15 +1032,6 @@ async function handleForm() {
       dataToSend.store_banner = "";
     }
 
-    console.log(
-      "Sending profile update with image type:",
-      dataToSend.image
-        ? typeof dataToSend.image === "string"
-          ? "string"
-          : typeof dataToSend.image
-        : "empty"
-    );
-    console.log("data to send:", dataToSend);
     if (dataToSend.store_banner === "" || dataToSend.store_banner === null) {
       delete dataToSend.store_banner;
     }

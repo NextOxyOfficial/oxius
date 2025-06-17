@@ -117,7 +117,9 @@
               >
                 <div class="absolute inset-0 rounded-full golden-border"></div>
                 <img
-                  :src="sponsor.image || '/static/frontend/images/placeholder.jpg'"
+                  :src="
+                    sponsor.image || '/static/frontend/images/placeholder.jpg'
+                  "
                   :alt="sponsor.name"
                   class="size-20 rounded-full object-cover border-2 border-white dark:border-slate-700 relative z-10"
                 />
@@ -158,7 +160,9 @@
               >
                 <div class="absolute inset-0 rounded-full golden-border"></div>
                 <img
-                  :src="sponsor.image || '/static/frontend/images/placeholder.jpg'"
+                  :src="
+                    sponsor.image || '/static/frontend/images/placeholder.jpg'
+                  "
                   :alt="sponsor.name"
                   class="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-slate-700 relative z-10"
                 />
@@ -501,7 +505,9 @@ async function fetchGoldSponsors() {
         id: sponsor.id,
         name: sponsor.business_name,
         banners: sponsor.banners,
-        image: sponsor.logo ? sponsor.logo : "/static/frontend/images/placeholder.jpg",
+        image: sponsor.logo
+          ? sponsor.logo
+          : "/static/frontend/images/placeholder.jpg",
         business_description: sponsor.business_description,
         contact_email: sponsor.contact_email,
         phone_number: sponsor.phone_number,
@@ -513,11 +519,9 @@ async function fetchGoldSponsors() {
         status: sponsor.status,
         is_featured: sponsor.is_featured,
       }));
-
-      console.log("Gold sponsors loaded:", sponsors.value.length);
     } else {
       // If no sponsors or unexpected response format
-      console.log("No sponsors data received");
+
       sponsors.value = [];
     }
 
@@ -551,7 +555,7 @@ async function incrementSponsorViews(sponsorId) {
 async function fetchSponsorBanners(sponsorId) {
   try {
     const result = await get(`/bn/gold-sponsors/${sponsorId}/banners/`);
-    console.log("Banners fetched:", result.data);
+
     if (result.error) {
       console.error("Error fetching sponsor banners:", result.error);
       sponsorBanners.value = [];
@@ -598,9 +602,6 @@ function setupIntersectionObserver() {
             // Increment the views for this sponsor
             try {
               await incrementSponsorViews(sponsorId);
-              console.log(
-                `Incremented view count for sponsor ID: ${sponsorId}`
-              );
             } catch (error) {
               console.error(
                 `Failed to increment views for sponsor ID: ${sponsorId}`,

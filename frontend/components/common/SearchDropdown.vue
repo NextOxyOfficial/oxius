@@ -873,7 +873,6 @@ const navigateToProfile = (person) => {
       return;
     }
 
-    console.log("Navigating to profile:", profileUrl, person);
     router.push(profileUrl);
     showSearchDropdown.value = false;
   }
@@ -932,7 +931,7 @@ async function checkFollowing(personId) {
     const { data } = await get(
       `/bn/check-follow-status/${user.value?.user?.id}/${personId}/`
     );
-    console.log(data, "check-follow-status");
+
     followingStatus.value[personId] = data.is_following;
   } catch (error) {
     console.error(error);
@@ -966,7 +965,8 @@ const toggleFollow = async (personId) => {
 
   if (!followingStatus.value[personId]) {
     try {
-      const { data } = await post(`/bn/users/${personId}/follow/`);      if (data) {
+      const { data } = await post(`/bn/users/${personId}/follow/`);
+      if (data) {
         // Update followers count accordingly
       }
     } catch (error) {
@@ -977,7 +977,8 @@ const toggleFollow = async (personId) => {
     }
   } else {
     try {
-      const res = await del(`/bn/users/${personId}/unfollow/`);      if (res.data === undefined) {
+      const res = await del(`/bn/users/${personId}/unfollow/`);
+      if (res.data === undefined) {
         // Update followers count accordingly
       }
     } catch (error) {
@@ -1341,18 +1342,11 @@ const performSearch = async (query, useFuzzySearch = false) => {
       peopleEndpoint += "&fuzzy=true";
     }
 
-    console.log(`Searching posts: ${postsEndpoint}`);
-    console.log(`Searching users: ${peopleEndpoint}`);
-
     // Make parallel requests for posts and people
     const [postsRes, peopleRes] = await Promise.all([
       get(postsEndpoint),
       get(peopleEndpoint),
     ]);
-
-    // Log response data to help debug
-    console.log("Posts search response:", postsRes);
-    console.log("People search response:", peopleRes);
 
     const postResults = postsRes.data?.results || []; // Process people results to ensure we have the required fields
     let peopleResults = [];

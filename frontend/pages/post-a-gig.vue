@@ -167,7 +167,8 @@
                 class="text-emerald-600"
               />
               Instructions & Details
-            </h2>            <UFormGroup label="Task URL" class="mb-5">
+            </h2>
+            <UFormGroup label="Task URL" class="mb-5">
               <UInput
                 type="text"
                 size="md"
@@ -181,7 +182,8 @@
                 </template>
               </UInput>
               <p class="text-sm text-gray-500 mt-1">
-                Optional: Provide a link to the website or page where the task should be completed
+                Optional: Provide a link to the website or page where the task
+                should be completed
               </p>
             </UFormGroup>
 
@@ -511,8 +513,8 @@ function isValidUrl(string) {
   try {
     // Add protocol if missing
     let url = string;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://' + url;
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = "https://" + url;
     }
     new URL(url);
     return true;
@@ -587,8 +589,6 @@ function validateForm() {
 }
 
 async function handlePostGig() {
-  console.log(form.value.instructions);
-
   if (!validateForm()) {
     checkSubmit.value = true;
     toast.add({ title: "Please fill in all required fields." });
@@ -596,10 +596,14 @@ async function handlePostGig() {
   }
 
   // Validate action_link if provided
-  if (form.value.action_link && form.value.action_link.trim() && !isValidUrl(form.value.action_link.trim())) {
-    toast.add({ 
-      title: "Invalid URL format", 
-      description: "Please enter a valid URL (e.g., https://example.com)" 
+  if (
+    form.value.action_link &&
+    form.value.action_link.trim() &&
+    !isValidUrl(form.value.action_link.trim())
+  ) {
+    toast.add({
+      title: "Invalid URL format",
+      description: "Please enter a valid URL (e.g., https://example.com)",
     });
     return;
   }
@@ -607,25 +611,26 @@ async function handlePostGig() {
   isLoading.value = true;
   const balance = form.value.required_quantity * form.value.price;
   const total_cost = balance + (balance * 10) / 100;
-  
+
   // Handle action_link - if empty, set to null, otherwise validate URL format
   let action_link = form.value.action_link;
   if (action_link && action_link.trim()) {
     // Add protocol if missing
-    if (!action_link.startsWith('http://') && !action_link.startsWith('https://')) {
-      action_link = 'https://' + action_link;
+    if (
+      !action_link.startsWith("http://") &&
+      !action_link.startsWith("https://")
+    ) {
+      action_link = "https://" + action_link;
     }
   } else {
     // Set to null if empty
     action_link = null;
   }
-  
+
   const submitValue = { ...form.value, action_link, total_cost, balance };
-  console.log(submitValue);
 
   try {
     const res = await post("/post-micro-gigs/", submitValue);
-    console.log(res);
 
     if (res.data) {
       navigateTo("/");

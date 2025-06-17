@@ -1,12 +1,14 @@
-<template>  <div class="w-full max-w-7xl sm:px-2 mx-auto bg-slate-50">
+<template>
+  <div class="w-full max-w-7xl sm:px-2 mx-auto bg-slate-50">
     <!-- Content Container -->
-    <div class="relative z-10"><!-- 1. Main Carousel -->
+    <div class="relative z-10">
+      <!-- 1. Main Carousel -->
       <section class="mb-8 pt-2">
-        <CommonEshopBanner 
+        <CommonEshopBanner
           :customHeight="{
             mobile: '38%',
             tablet: '25%',
-            desktop: '22%'
+            desktop: '22%',
           }"
           endpoint="/eshop-banner/"
           :autoplayInterval="5000"
@@ -22,7 +24,7 @@
           <div class="flex items-center">
             <div
               class="w-1 h-6 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full mr-2"
-            ></div>            
+            ></div>
             <h2 class="text-lg font-medium text-gray-800">
               New & Hot Arrivals
             </h2>
@@ -34,8 +36,9 @@
           </div>
           <a
             href="/eshop"
-            class="text-emerald-600 hover:underline flex items-center text-sm font-medium"          >
-            {{ $t('view_all') }}
+            class="text-emerald-600 hover:underline flex items-center text-sm font-medium"
+          >
+            {{ $t("view_all") }}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -51,14 +54,14 @@
               <path d="m9 18 6-6-6-6" />
             </svg>
           </a>
-        </div>        
+        </div>
         <!-- Optimized card container -->
         <div class="relative overflow-hidden">
           <div
             ref="arrivalsContainer"
             class="flex space-x-2 overflow-x-auto pb-4 pt-2 px-2 -mx-2 hide-scrollbar snap-x arrivals-container"
-          >            
-          <!-- Optimized New Arrivals Cards -->
+          >
+            <!-- Optimized New Arrivals Cards -->
             <div
               v-for="(card, index) in hotArrivals"
               :key="card.id"
@@ -108,7 +111,6 @@ async function fetchHotArrivals() {
   try {
     const response = await get("/product-categories/?hot_arrival=true");
     hotArrivals.value = response.data;
-    console.log("Hot Arrivals:", hotArrivals.value);
   } catch (error) {
     console.error("Error fetching hot deals:", error);
   }
@@ -164,13 +166,39 @@ onUnmounted(() => {
 
 <style scoped>
 /* Optimized and minified CSS for better performance */
-.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
-.hide-scrollbar::-webkit-scrollbar{display:none}
-.snap-x{scroll-snap-type:x mandatory;scroll-behavior:smooth}
-.snap-start{scroll-snap-align:start}
-.card-hover{transition:transform 0.2s ease;cursor:pointer}
-.card-hover:hover{transform:translateY(-2px)}
-.arrivals-container{cursor:grab;user-select:none}
-.arrivals-container:active{cursor:grabbing}
-@media (min-width:768px){.hide-scrollbar{overflow-x:auto;display:flex;flex-wrap:nowrap}}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.snap-x {
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
+.snap-start {
+  scroll-snap-align: start;
+}
+.card-hover {
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+}
+.arrivals-container {
+  cursor: grab;
+  user-select: none;
+}
+.arrivals-container:active {
+  cursor: grabbing;
+}
+@media (min-width: 768px) {
+  .hide-scrollbar {
+    overflow-x: auto;
+    display: flex;
+    flex-wrap: nowrap;
+  }
+}
 </style>

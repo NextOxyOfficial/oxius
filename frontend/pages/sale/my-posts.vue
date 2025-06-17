@@ -215,13 +215,11 @@ const handleEditPost = (post) => {
 };
 
 const handleDeletePost = (postId) => {
-  console.log("Delete post with ID:", postId);
   // Refresh stats after deletion
   updatePostsCount();
 };
 
 const handlePostCreated = (post) => {
-  console.log("Post created:", post);
   // Switch to my posts tab and refresh
   activeTab.value = "my-posts";
   updatePostsCount();

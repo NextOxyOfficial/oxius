@@ -10,22 +10,30 @@
         <!-- Enhanced backdrop with subtle blur effect -->
         <div
           class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
-          aria-hidden="true"          
+          aria-hidden="true"
           @click="$emit('close-likes-modal')"
-        ></div>        <div
+        ></div>
+        <div
           class="flex items-end justify-center min-h-screen pt-4 pb-20 sm:block sm:p-0"
         >
           <!-- Modal with enhanced styling -->
           <div
             class="relative max-w-3xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden max-h-[80vh] sm:max-h-none flex flex-col sm:block"
-            @click.stop          >
+            @click.stop
+          >
             <!-- Premium scrollbar styling -->
             <div
               class="w-full custom-scrollbar overflow-hidden p-2 sm:px-6 flex-1 flex flex-col sm:block overflow-y-auto sm:overflow-visible"
             >
-              <div class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left">
+              <div
+                class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left"
+              >
                 <div class="flex items-center justify-between mb-1">
-                  <h3 class="font-semibold text-gray-800 dark:text-white text-left">Liked by</h3>
+                  <h3
+                    class="font-semibold text-gray-800 dark:text-white text-left"
+                  >
+                    Liked by
+                  </h3>
                   <button
                     @click="$emit('close-likes-modal')"
                     class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -33,8 +41,10 @@
                   >
                     <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
                   </button>
-                </div>                
-                <p class="text-sm text-gray-600 dark:text-slate-400 truncate text-left">
+                </div>
+                <p
+                  class="text-sm text-gray-600 dark:text-slate-400 truncate text-left"
+                >
                   {{ activeLikesPost.title }}
                 </p>
               </div>
@@ -51,11 +61,9 @@
                         <div
                           v-if="user.user_details?.is_pro"
                           class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
-                        ></div>                    
+                        ></div>
                         <img
-                          :src="
-                            user.user_details.image || placeholderPath
-                          "
+                          :src="user.user_details.image || placeholderPath"
                           :alt="user.user_details.name"
                           class="w-10 h-10 rounded-full cursor-pointer object-cover"
                         />
@@ -77,7 +85,9 @@
                       </NuxtLink>
                       <p class="text-sm text-gray-600 dark:text-slate-400">
                         @{{
-                          user.user_details.name.toLowerCase().replace(/\s+/g, "")
+                          user.user_details.name
+                            .toLowerCase()
+                            .replace(/\s+/g, "")
                         }}
                       </p>
                     </div>
@@ -95,19 +105,19 @@
                     <component
                       :is="user.isFollowing ? Check : UserPlus"
                       class="h-3.5 w-3.5"
-                    />                    
+                    />
                     {{ user.isFollowing ? "Following" : "Follow" }}
                   </button>
                 </div>
               </div>
             </div>
-          </div>        
+          </div>
         </div>
       </div>
     </Teleport>
 
     <!-- Comments Modal -->
-    <Teleport to="body">      
+    <Teleport to="body">
       <div
         v-if="activeCommentsPost"
         class="fixed inset-0 top-14 z-50 overflow-y-auto"
@@ -116,23 +126,28 @@
         <!-- Enhanced backdrop with subtle blur effect -->
         <div
           class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity backdrop-blur-sm"
-          aria-hidden="true"          
+          aria-hidden="true"
           @click="$emit('close-comments-modal')"
-        ></div>        
+        ></div>
         <div
           class="flex items-end justify-center min-h-screen pt-4 pb-20 sm:block sm:p-0"
-        >          
-        <!-- Modal with enhanced styling -->
+        >
+          <!-- Modal with enhanced styling -->
           <div
             class="relative max-w-3xl w-full mx-auto my-8 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-sm border border-white/20 dark:border-slate-700/40 overflow-hidden"
             @click.stop
           >
             <!-- Premium scrollbar styling -->
-            <div
-              class="w-full custom-scrollbar overflow-hidden p-2"
-            ><div class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left">
+            <div class="w-full custom-scrollbar overflow-hidden p-2">
+              <div
+                class="p-4 sm:p-5 border-b border-gray-200 dark:border-slate-700 text-left"
+              >
                 <div class="flex items-center justify-between mb-1">
-                  <h3 class="font-semibold text-gray-800 dark:text-white text-left">Comments</h3>
+                  <h3
+                    class="font-semibold text-gray-800 dark:text-white text-left"
+                  >
+                    Comments
+                  </h3>
                   <button
                     @click="$emit('close-comments-modal')"
                     class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -140,40 +155,46 @@
                   >
                     <X class="h-5 w-5 text-slate-500 dark:text-slate-400" />
                   </button>
-                </div>                
-                <p class="text-sm text-gray-600 dark:text-slate-400 truncate text-left">
-                  {{ activeCommentsPost.title }}                </p>              
-              </div>              
+                </div>
+                <p
+                  class="text-sm text-gray-600 dark:text-slate-400 truncate text-left"
+                >
+                  {{ activeCommentsPost.title }}
+                </p>
+              </div>
               <!-- Comments Section -->
-              <div
-                ref="commentsContainerRef"
-                class="p-3 sm:p-5 space-y-3"              >                <!-- Load More Text at the top for older comments -->
+              <div ref="commentsContainerRef" class="p-3 sm:p-5 space-y-3">
+                <!-- Load More Text at the top for older comments -->
                 <div
-                  v-if="hasMoreComments && !isLoadingMoreComments && activeCommentsPost?.post_comments?.length > 0"
+                  v-if="
+                    hasMoreComments &&
+                    !isLoadingMoreComments &&
+                    activeCommentsPost?.post_comments?.length > 0
+                  "
                   class="py-2 flex items-center justify-between"
-                >                  <span
+                >
+                  <span
                     @click="loadMoreComments"
                     class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer transition-colors duration-200"
                   >
                     See more comments
                   </span>
-                    <!-- Comments count in same row, aligned right -->
+                  <!-- Comments count in same row, aligned right -->
                   <p class="text-xs text-gray-500 dark:text-slate-500">
                     {{ commentsCountText }}
                   </p>
                 </div>
 
                 <!-- Loading indicator at top when loading older comments -->
-                <div
-                  v-if="isLoadingMoreComments"
-                  class="py-2"
-                >
+                <div v-if="isLoadingMoreComments" class="py-2">
                   <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2 text-gray-500 dark:text-slate-400">
+                    <div
+                      class="flex items-center space-x-2 text-gray-500 dark:text-slate-400"
+                    >
                       <div class="loading-spinner"></div>
                       <span class="text-sm">Loading older comments...</span>
                     </div>
-                      <!-- Comments count during loading, aligned right -->
+                    <!-- Comments count during loading, aligned right -->
                     <p class="text-xs text-gray-500 dark:text-slate-500">
                       {{ commentsCountText }}
                     </p>
@@ -182,9 +203,13 @@
 
                 <!-- Comments count when no load more needed -->
                 <div
-                  v-if="!hasMoreComments && activeCommentsPost?.post_comments?.length > 0"
+                  v-if="
+                    !hasMoreComments &&
+                    activeCommentsPost?.post_comments?.length > 0
+                  "
                   class="py-2"
-                >                  <p class="text-xs text-gray-500 dark:text-slate-500">
+                >
+                  <p class="text-xs text-gray-500 dark:text-slate-500">
                     {{ commentsCountText }}
                   </p>
                 </div>
@@ -198,217 +223,235 @@
                 >
                   <!-- ...existing comment structure... -->
                   <div class="flex items-start space-x-2.5 w-full">
-                <NuxtLink :to="`/business-network/profile/${comment?.author}`">
-                  <div class="relative group">                    <img
-                      :src="comment.author_details?.image || placeholderPath"
-                      :alt="comment.author_details?.name"
-                      class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-sm transition-all duration-300"
-                    />
-                  </div>
-                </NuxtLink>
-
-                <div class="flex-1">
-                  <div
-                    class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl pb-2 pt-0.5 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50"
-                  >
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-1">
-                        <NuxtLink
-                          :to="`/business-network/profile/${comment.author}`"
-                          class="text-sm font-medium text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                        >
-                          {{ comment.author_details?.name }}
-                        </NuxtLink>
-                        <!-- Verified Badge -->
-                        <div
-                          v-if="comment.author_details?.kyc"
-                          class="text-blue-500 flex items-center"
-                        >
-                          <UIcon name="i-mdi-check-decagram" class="w-3 h-3" />
-                        </div>
+                    <NuxtLink
+                      :to="`/business-network/profile/${comment?.author}`"
+                    >
+                      <div class="relative group">
+                        <img
+                          :src="
+                            comment.author_details?.image || placeholderPath
+                          "
+                          :alt="comment.author_details?.name"
+                          class="w-8 h-8 rounded-full mt-0.5 cursor-pointer object-cover border border-gray-200/70 dark:border-slate-700/70 shadow-sm group-hover:shadow-sm transition-all duration-300"
+                        />
                       </div>
+                    </NuxtLink>
 
-                      <!-- Only edit/delete buttons for comment owner - Fixing action buttons -->
+                    <div class="flex-1">
                       <div
-                        v-if="comment.author === user?.user?.id"
-                        class="relative"
+                        class="bg-gray-50/80 dark:bg-slate-800/70 backdrop-blur-[2px] rounded-xl pb-2 pt-0.5 px-3 shadow-sm border border-gray-100/50 dark:border-slate-700/50"
                       >
-                        <button
-                          type="button"
-                          @click.stop="toggleDropdown(comment)"
-                          class="p-1.5 rounded-full text-gray-600 dark:text-gray-600 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
-                          aria-label="Comment options"
-                        >
-                          <UIcon
-                            name="i-heroicons-ellipsis-horizontal"
-                            class="size-4"
-                          />
-                        </button>
-
-                        <!-- Dropdown menu -->
-                        <div
-                          v-if="comment.showDropdown"
-                          class="absolute right-0 -mt-10 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 backdrop-blur-sm z-20 transition-all duration-200 origin-top-right"
-                          @click.stop
-                        >
-                          <div class="py-1">
-                            <button
-                              @click.stop="
-                                editComment(activeCommentsPost, comment);
-                                comment.showDropdown = false;
-                              "
-                              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
+                        <div class="flex items-center justify-between">
+                          <div class="flex items-center gap-1">
+                            <NuxtLink
+                              :to="`/business-network/profile/${comment.author}`"
+                              class="text-sm font-medium text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            >
+                              {{ comment.author_details?.name }}
+                            </NuxtLink>
+                            <!-- Verified Badge -->
+                            <div
+                              v-if="comment.author_details?.kyc"
+                              class="text-blue-500 flex items-center"
                             >
                               <UIcon
-                                name="i-heroicons-pencil-square"
-                                class="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400"
+                                name="i-mdi-check-decagram"
+                                class="w-3 h-3"
                               />
-                              <span>Edit</span>
+                            </div>
+                          </div>
+
+                          <!-- Only edit/delete buttons for comment owner - Fixing action buttons -->
+                          <div
+                            v-if="comment.author === user?.user?.id"
+                            class="relative"
+                          >
+                            <button
+                              type="button"
+                              @click.stop="toggleDropdown(comment)"
+                              class="p-1.5 rounded-full text-gray-600 dark:text-gray-600 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all"
+                              aria-label="Comment options"
+                            >
+                              <UIcon
+                                name="i-heroicons-ellipsis-horizontal"
+                                class="size-4"
+                              />
                             </button>
 
-                            <button
-                              @click.stop="
-                                deleteComment(activeCommentsPost, comment);
-                                comment.showDropdown = false;
-                              "
-                              class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
-                              :disabled="comment.isDeleting"
+                            <!-- Dropdown menu -->
+                            <div
+                              v-if="comment.showDropdown"
+                              class="absolute right-0 -mt-10 w-36 bg-white/95 dark:bg-slate-800/95 rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 backdrop-blur-sm z-20 transition-all duration-200 origin-top-right"
+                              @click.stop
                             >
-                              <div v-if="comment.isDeleting" class="mr-2">
-                                <Loader2
-                                  class="h-4 w-4 text-red-500 animate-spin"
-                                />
+                              <div class="py-1">
+                                <button
+                                  @click.stop="
+                                    editComment(activeCommentsPost, comment);
+                                    comment.showDropdown = false;
+                                  "
+                                  class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors"
+                                >
+                                  <UIcon
+                                    name="i-heroicons-pencil-square"
+                                    class="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400"
+                                  />
+                                  <span>Edit</span>
+                                </button>
+
+                                <button
+                                  @click.stop="
+                                    deleteComment(activeCommentsPost, comment);
+                                    comment.showDropdown = false;
+                                  "
+                                  class="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors"
+                                  :disabled="comment.isDeleting"
+                                >
+                                  <div v-if="comment.isDeleting" class="mr-2">
+                                    <Loader2
+                                      class="h-4 w-4 text-red-500 animate-spin"
+                                    />
+                                  </div>
+                                  <UIcon
+                                    v-else
+                                    name="i-heroicons-trash"
+                                    class="h-4 w-4 mr-2 text-red-500 dark:text-red-400"
+                                  />
+                                  <span>Delete</span>
+                                </button>
                               </div>
-                              <UIcon
-                                v-else
-                                name="i-heroicons-trash"
-                                class="h-4 w-4 mr-2 text-red-500 dark:text-red-400"
+                            </div>
+
+                            <!-- Click outside directive to close dropdown -->
+                            <div
+                              v-if="comment.showDropdown"
+                              class="fixed inset-0 z-10"
+                              @click="comment.showDropdown = false"
+                            ></div>
+                          </div>
+                        </div>
+
+                        <!-- Comment editing form with glassmorphism -->
+                        <div v-if="comment.isEditing">
+                          <textarea
+                            :id="`comment-edit-${comment.id}`"
+                            v-model="comment.editText"
+                            class="w-full text-sm p-2 bg-white/90 dark:bg-slate-700/90 border border-blue-200/70 dark:border-blue-700/50 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 backdrop-blur-sm shadow-sm transition-all duration-300"
+                            rows="2"
+                          ></textarea>
+                          <div class="flex justify-end space-x-2 mt-2">
+                            <button
+                              type="button"
+                              @click.prevent="
+                                $emit('cancel-edit-comment', comment)
+                              "
+                              class="text-xs text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              @click.prevent="
+                                saveEditComment(activeCommentsPost, comment)
+                              "
+                              class="text-xs bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-lg px-3 py-1.5 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600 disabled:opacity-50 shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5"
+                              :disabled="
+                                !comment.editText?.trim() ||
+                                comment.editText === comment.content ||
+                                comment.isSaving
+                              "
+                            >
+                              <Loader2
+                                v-if="comment.isSaving"
+                                class="h-3 w-3 animate-spin"
                               />
-                              <span>Delete</span>
+                              <span v-if="comment.isSaving">Saving...</span>
+                              <span v-else>Save</span>
                             </button>
                           </div>
                         </div>
 
-                        <!-- Click outside directive to close dropdown -->
-                        <div
-                          v-if="comment.showDropdown"
-                          class="fixed inset-0 z-10"
-                          @click="comment.showDropdown = false"
-                        ></div>
-                      </div>
-                    </div>
-
-                    <!-- Comment editing form with glassmorphism -->
-                    <div v-if="comment.isEditing">
-                      <textarea
-                        :id="`comment-edit-${comment.id}`"
-                        v-model="comment.editText"
-                        class="w-full text-sm p-2 bg-white/90 dark:bg-slate-700/90 border border-blue-200/70 dark:border-blue-700/50 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500/50 dark:focus:ring-blue-400/50 backdrop-blur-sm shadow-sm transition-all duration-300"
-                        rows="2"
-                      ></textarea>
-                      <div class="flex justify-end space-x-2 mt-2">
-                        <button
-                          type="button"
-                          @click.prevent="$emit('cancel-edit-comment', comment)"
-                          class="text-xs text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-100/80 dark:hover:bg-gray-700/80 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          @click.prevent="
-                            saveEditComment(activeCommentsPost, comment)
-                          "
-                          class="text-xs bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-lg px-3 py-1.5 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600 disabled:opacity-50 shadow-sm hover:shadow transition-all flex items-center justify-center gap-1.5"
-                          :disabled="
-                            !comment.editText?.trim() ||
-                            comment.editText === comment.content ||
-                            comment.isSaving
-                          "
-                        >
-                          <Loader2
-                            v-if="comment.isSaving"
-                            class="h-3 w-3 animate-spin"
-                          />
-                          <span v-if="comment.isSaving">Saving...</span>
-                          <span v-else>Save</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Comment content with premium styling and special gift display -->
-                    <div v-else>
-                      <!-- Gift comment with enhanced styling -->
-                      <div v-if="comment?.is_gift_comment" class="gift-comment">
-                        <!-- "Sent X diamonds" label -->
-                        <div class="gift-sender-info flex items-center gap-1">
-                          <UIcon
-                            name="material-symbols:diamond-outline"
-                            class="w-4 h-4 text-pink-500"
-                          />
-                          <span
-                            class="text-sm font-medium text-pink-600 dark:text-pink-400"
+                        <!-- Comment content with premium styling and special gift display -->
+                        <div v-else>
+                          <!-- Gift comment with enhanced styling -->
+                          <div
+                            v-if="comment?.is_gift_comment"
+                            class="gift-comment"
                           >
-                            Sent {{ comment?.diamond_amount }} diamonds to
-                            {{ activeCommentsPost.author_details.name }}
-                          </span>
-                        </div>
+                            <!-- "Sent X diamonds" label -->
+                            <div
+                              class="gift-sender-info flex items-center gap-1"
+                            >
+                              <UIcon
+                                name="material-symbols:diamond-outline"
+                                class="w-4 h-4 text-pink-500"
+                              />
+                              <span
+                                class="text-sm font-medium text-pink-600 dark:text-pink-400"
+                              >
+                                Sent {{ comment?.diamond_amount }} diamonds to
+                                {{ activeCommentsPost.author_details.name }}
+                              </span>
+                            </div>
 
-                        <!-- Gift message content with improved styling -->
-                        <div class="gift-content">
-                          <p class="gift-message-text">
-                            {{ extractGiftMessage(comment?.content) }}
-                          </p>
-                        </div>                      
+                            <!-- Gift message content with improved styling -->
+                            <div class="gift-content">
+                              <p class="gift-message-text">
+                                {{ extractGiftMessage(comment?.content) }}
+                              </p>
+                            </div>
+                          </div>
+                          <!-- Regular comment with mention processing -->
+                          <div
+                            v-else
+                            class="text-sm sm:text-sm text-gray-800 dark:text-gray-300"
+                            style="word-break: break-word"
+                            v-html="processMentionsInComment(comment?.content)"
+                          ></div>
+                        </div>
                       </div>
-                      <!-- Regular comment with mention processing -->
-                      <div
-                        v-else
-                        class="text-sm sm:text-sm text-gray-800 dark:text-gray-300"
-                        style="word-break: break-word"
-                        v-html="processMentionsInComment(comment?.content)"
-                      ></div>
+
+                      <!-- Timestamp with premium styling -->
+                      <div class="flex items-center mt-1 pl-1">
+                        <UIcon
+                          name="i-heroicons-clock"
+                          class="w-3 h-3 text-gray-600 dark:text-gray-600 mr-1"
+                        />
+                        <span class="text-sm text-gray-600 dark:text-gray-600">
+                          {{ formatTimeAgo(comment?.created_at) }}
+                        </span>
+                      </div>
                     </div>
                   </div>
-
-                  <!-- Timestamp with premium styling -->
-                  <div class="flex items-center mt-1 pl-1">
-                    <UIcon
-                      name="i-heroicons-clock"
-                      class="w-3 h-3 text-gray-600 dark:text-gray-600 mr-1"
-                    />                    
-                    <span class="text-sm text-gray-600 dark:text-gray-600">
-                      {{ formatTimeAgo(comment?.created_at) }}
-                    </span>
-                  </div>                  
                 </div>
-                </div>              
-              </div>
 
-              <!-- Empty state -->
-              <div
-                v-if="!(activeCommentsPost?.comment_count || 0)"
-                class="text-center py-12"
-              >
-                <div class="flex flex-col items-center justify-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-200 dark:border-slate-700">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="40"
-                    height="40"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="text-slate-400 dark:text-slate-500 mb-3"
+                <!-- Empty state -->
+                <div
+                  v-if="!(activeCommentsPost?.comment_count || 0)"
+                  class="text-center py-12"
+                >
+                  <div
+                    class="flex flex-col items-center justify-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-200 dark:border-slate-700"
                   >
-                    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
-                  </svg>
-                  <p class="text-slate-500 dark:text-slate-400 text-center">
-                    No comments yet. Be the first to comment!
-                  </p>                    </div>                
-              </div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="40"
+                      height="40"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="text-slate-400 dark:text-slate-500 mb-3"
+                    >
+                      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
+                    </svg>
+                    <p class="text-slate-500 dark:text-slate-400 text-center">
+                      No comments yet. Be the first to comment!
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -422,7 +465,8 @@
         v-if="commentToDelete"
         class="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center"
         @click="$emit('cancel-delete-comment')"
-      >        <div
+      >
+        <div
           class="bg-white rounded-lg max-w-sm w-full p-4 shadow-sm text-left"
           @click.stop
         >
@@ -565,7 +609,7 @@ import { onMounted, ref, nextTick, computed } from "vue";
 const { processMentionsAsHTML, setupMentionClickHandlers } = useMentions();
 
 // Define placeholder path for consistent usage across components
-const placeholderPath = '/static/frontend/images/placeholder.jpg';
+const placeholderPath = "/static/frontend/images/placeholder.jpg";
 
 const props = defineProps({
   activeLikesPost: {
@@ -579,7 +623,8 @@ const props = defineProps({
   commentToDelete: {
     type: Object,
     default: null,
-  },  user: {
+  },
+  user: {
     type: Object,
     default: null,
   },
@@ -590,7 +635,8 @@ const props = defineProps({
   isLoadingMoreComments: {
     type: Boolean,
     default: false,
-  },  hasMoreComments: {
+  },
+  hasMoreComments: {
     type: Boolean,
     default: false,
   },
@@ -622,10 +668,10 @@ defineExpose({ commentsContainerRef });
 // Computed property for comments count text
 const commentsCountText = computed(() => {
   const post = props.activeCommentsPost;
-  if (!post) return '';
-  
+  if (!post) return "";
+
   const count = post.comment_count || post.post_comments?.length || 0;
-  return `${count} ${count === 1 ? 'comment' : 'comments'}`;
+  return `${count} ${count === 1 ? "comment" : "comments"}`;
 });
 
 // Format time ago function
@@ -671,7 +717,8 @@ const downloadImage = (url) => {
 
   const link = document.createElement("a");
   link.href = url;
-  link.download = url.split("/").pop() || "download.jpg";  document.body.appendChild(link);
+  link.download = url.split("/").pop() || "download.jpg";
+  document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 };
@@ -736,27 +783,22 @@ onMounted(() => {
 
 // Load more comments function for button click
 const loadMoreComments = async () => {
-  console.log('PostModals loadMoreComments called');
-  console.log('Props state:', {
-    isLoadingMoreComments: props.isLoadingMoreComments,
-    hasMoreComments: props.hasMoreComments,
-    activeCommentsPost: !!props.activeCommentsPost,
-    postId: props.activeCommentsPost?.id
-  });
-  
-  if (props.isLoadingMoreComments || !props.hasMoreComments || !props.activeCommentsPost) {
-    console.log('Conditions not met for loading more comments');
+  if (
+    props.isLoadingMoreComments ||
+    !props.hasMoreComments ||
+    !props.activeCommentsPost
+  ) {
     return;
   }
-  
+
   try {
     // Emit event to parent to load more comments
-    console.log('Emitting load-more-comments event with postId:', props.activeCommentsPost.id);
-    emit('load-more-comments', {
-      postId: props.activeCommentsPost.id
+
+    emit("load-more-comments", {
+      postId: props.activeCommentsPost.id,
     });
   } catch (error) {
-    console.error('Error loading more comments:', error);
+    console.error("Error loading more comments:", error);
   }
 };
 </script>
@@ -825,14 +867,24 @@ const loadMoreComments = async () => {
   padding: 0.75rem;
   border-radius: 0.75rem;
   overflow: hidden;
-  background: linear-gradient(to right, rgba(251, 207, 232, 0.9), rgba(251, 207, 232, 0.8), rgba(232, 121, 249, 0.7));
+  background: linear-gradient(
+    to right,
+    rgba(251, 207, 232, 0.9),
+    rgba(251, 207, 232, 0.8),
+    rgba(232, 121, 249, 0.7)
+  );
   border: 1px solid rgba(244, 114, 182, 0.6);
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
 .dark .gift-comment {
-  background: linear-gradient(to right, rgba(131, 24, 67, 0.3), rgba(190, 24, 93, 0.25), rgba(131, 24, 67, 0.3));
+  background: linear-gradient(
+    to right,
+    rgba(131, 24, 67, 0.3),
+    rgba(190, 24, 93, 0.25),
+    rgba(131, 24, 67, 0.3)
+  );
   border-color: rgba(190, 24, 93, 0.4);
 }
 
@@ -906,6 +958,7 @@ const loadMoreComments = async () => {
     transform: rotate(0deg);
   }
   to {
-    transform: rotate(360deg);  }
+    transform: rotate(360deg);
+  }
 }
 </style>

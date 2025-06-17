@@ -24,7 +24,8 @@
             </UBadge>
             <UBadge v-else color="red"> Out of Stock </UBadge>
           </div>
-          <div class="flex gap-3 justify-between items-start">            <h3
+          <div class="flex gap-3 justify-between items-start">
+            <h3
               class="text-lg ml-1 md:text-lg font-medium text-primary-700 dark:text-primary-300 text-left"
             >
               {{ capitalizedProductName }}
@@ -70,7 +71,7 @@
                 class="absolute inset-0 flex items-center justify-center text-slate-400"
               >
                 <UIcon name="i-heroicons-photo" class="w-20 h-20" />
-              </div>              
+              </div>
               <!-- Discount Badge with Improved Design -->
               <div
                 v-if="currentProduct.discount"
@@ -134,7 +135,8 @@
             <div v-if="currentProduct.weight" class="text-xs text-slate-500">
               Weight: {{ currentProduct.weight }}kg
             </div>
-          </div>          <!-- Ratings section with dynamic data -->
+          </div>
+          <!-- Ratings section with dynamic data -->
           <div class="flex items-center gap-2 mb-4">
             <div class="rating-stars relative inline-block">
               <!-- Background stars -->
@@ -265,7 +267,7 @@
 
             <!-- Buy Now Button with Enhanced Design -->
             <button
-              type="button"              
+              type="button"
               class="flex-1 relative overflow-hidden group bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 rounded-lg py-3 px-6 text-white font-medium shadow-sm hover:shadow-sm transition-colors duration-200"
               @click="addToCart(currentProduct, quantity)"
               :disabled="currentProduct.quantity <= 0"
@@ -273,10 +275,7 @@
               <!-- Content container -->
               <div class="relative flex items-center justify-center gap-2">
                 <!-- Shopping cart icon -->
-                <UIcon
-                  name="i-heroicons-shopping-cart"
-                  class="w-5 h-5"
-                />
+                <UIcon name="i-heroicons-shopping-cart" class="w-5 h-5" />
 
                 <!-- Button text with animated dot -->
                 <span class="text-base font-medium">
@@ -389,36 +388,48 @@
               >
                 <UIcon name="i-heroicons-check" class="w-3 h-3" />
               </div>
-            </div>              <div class="ml-3 flex-1 min-w-0">
-              <div class="flex items-center gap-2">                
-                <NuxtLink 
-                  v-if="currentProduct.owner_details?.store_username || currentProduct.owner_details?.id"
+            </div>
+            <div class="ml-3 flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <NuxtLink
+                  v-if="
+                    currentProduct.owner_details?.store_username ||
+                    currentProduct.owner_details?.id
+                  "
                   :to="`/eshop/${
                     currentProduct.owner_details?.store_username ||
                     currentProduct.owner_details?.id
                   }`"
                   class="hover:text-emerald-600 transition-colors"
                 >
-                  <h4 class="font-medium text-green-800 dark:text-white truncate">
+                  <h4
+                    class="font-medium text-green-800 dark:text-white truncate"
+                  >
                     {{
                       currentProduct.owner_details?.store_name ||
                       "Anonymous Seller"
                     }}
                   </h4>
                 </NuxtLink>
-                <h4 v-else class="font-medium text-gray-800 dark:text-white truncate">
+                <h4
+                  v-else
+                  class="font-medium text-gray-800 dark:text-white truncate"
+                >
                   {{
                     currentProduct.owner_details?.store_name ||
                     "Anonymous Seller"
                   }}
                 </h4>
               </div>
-              
+
               <!-- Pro and Verified Badges -->
               <div class="flex items-center gap-2 mt-1">
                 <!-- Pro Badge -->
                 <UBadge
-                  v-if="currentProduct.owner_details?.is_pro || currentProduct.owner_details?.subscription_type === 'pro'"
+                  v-if="
+                    currentProduct.owner_details?.is_pro ||
+                    currentProduct.owner_details?.subscription_type === 'pro'
+                  "
                   color="amber"
                   variant="solid"
                   size="xs"
@@ -427,16 +438,22 @@
                   <UIcon name="i-heroicons-star-solid" class="w-3 h-3 mr-1" />
                   Pro
                 </UBadge>
-                
+
                 <!-- Verified Badge -->
                 <UBadge
-                  v-if="currentProduct.owner_details?.kyc || currentProduct.owner_details?.is_verified"
+                  v-if="
+                    currentProduct.owner_details?.kyc ||
+                    currentProduct.owner_details?.is_verified
+                  "
                   color="blue"
                   variant="solid"
                   size="xs"
                   class="font-semibold"
                 >
-                  <UIcon name="i-heroicons-check-badge-solid" class="w-3 h-3 mr-1" />
+                  <UIcon
+                    name="i-heroicons-check-badge-solid"
+                    class="w-3 h-3 mr-1"
+                  />
                   Verified
                 </UBadge>
               </div>
@@ -508,7 +525,10 @@
 
             <!-- Store Button -->
             <UButton
-              v-if="currentProduct.owner_details?.store_username || currentProduct.owner_details?.id"
+              v-if="
+                currentProduct.owner_details?.store_username ||
+                currentProduct.owner_details?.id
+              "
               color="gray"
               variant="soft"
               size="sm"
@@ -537,7 +557,8 @@
               class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400"
             />
             Detailed Description
-          </h3>          <div
+          </h3>
+          <div
             class="prose prose-slate max-w-none dark:prose-invert prose-img:rounded-xl prose-headings:font-medium prose-a:text-primary-600 dark:prose-a:text-primary-400 text-left px-4"
             v-html="
               currentProduct.description || 'No detailed description available.'
@@ -546,7 +567,9 @@
         </div>
 
         <!-- Customer Reviews Section -->
-        <div class="mt-8 border-t border-slate-200 dark:border-slate-700 pt-6 customer-reviews-section">
+        <div
+          class="mt-8 border-t border-slate-200 dark:border-slate-700 pt-6 customer-reviews-section"
+        >
           <h3
             class="text-base font-medium mb-6 text-gray-800 dark:text-white flex items-center"
           >
@@ -558,9 +581,7 @@
           </h3>
 
           <!-- Reviews Summary -->
-          <div
-            class=" bg-white dark:bg-slate-800/80 rounded-xl shadow-sm p-6"
-          >
+          <div class="bg-white dark:bg-slate-800/80 rounded-xl shadow-sm p-6">
             <div class="flex flex-col md:flex-row gap-6 md:items-center">
               <div
                 class="text-center md:border-r md:border-slate-200 dark:md:border-slate-700 md:pr-6"
@@ -569,13 +590,22 @@
                   class="text-2xl font-semibold text-gray-800 dark:text-white mb-2"
                 >
                   {{ reviewsAverageRating }}
-                </div>                <div class="flex justify-center text-amber-400 my-1">
+                </div>
+                <div class="flex justify-center text-amber-400 my-1">
                   <UIcon
                     v-for="i in 5"
                     :key="i"
-                    :name="i <= Math.round(parseFloat(reviewsAverageRating)) ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                    :name="
+                      i <= Math.round(parseFloat(reviewsAverageRating))
+                        ? 'i-heroicons-star-solid'
+                        : 'i-heroicons-star'
+                    "
                     class="w-6 h-6"
-                    :class="i <= Math.round(parseFloat(reviewsAverageRating)) ? 'text-amber-400' : 'text-gray-300 dark:text-gray-600'"
+                    :class="
+                      i <= Math.round(parseFloat(reviewsAverageRating))
+                        ? 'text-amber-400'
+                        : 'text-gray-300 dark:text-gray-600'
+                    "
                   />
                 </div>
                 <div class="text-sm text-slate-500 dark:text-slate-400">
@@ -611,32 +641,52 @@
           <!-- Featured Reviews with Pagination -->
           <div class="max-w-6xl mx-auto mb-10">
             <!-- Loading state -->
-            <div v-if="isLoadingReviews" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div 
-                v-for="n in 3" 
+            <div
+              v-if="isLoadingReviews"
+              class="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
+              <div
+                v-for="n in 3"
                 :key="n"
                 class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 animate-pulse"
               >
                 <div class="flex mb-3">
-                  <div v-for="i in 5" :key="i" class="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded mr-1"></div>
+                  <div
+                    v-for="i in 5"
+                    :key="i"
+                    class="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded mr-1"
+                  ></div>
                 </div>
-                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-3/4"></div>
+                <div
+                  class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"
+                ></div>
+                <div
+                  class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4 w-3/4"
+                ></div>
                 <div class="flex items-center">
-                  <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full mr-3"></div>
+                  <div
+                    class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full mr-3"
+                  ></div>
                   <div>
-                    <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1 w-20"></div>
-                    <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                    <div
+                      class="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1 w-20"
+                    ></div>
+                    <div
+                      class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"
+                    ></div>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Reviews grid -->
-            <div v-else-if="displayedReviews.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              v-else-if="displayedReviews.length > 0"
+              class="grid grid-cols-1 md:grid-cols-3 gap-6"
+            >
               <div
                 v-for="(review, index) in displayedReviews"
-                :key="review.id || index"                
+                :key="review.id || index"
                 class="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 transition-opacity hover:opacity-90"
               >
                 <div class="flex text-amber-400 mb-3">
@@ -661,11 +711,19 @@
                   <div
                     class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mr-3 text-primary-700 dark:text-primary-300 font-medium"
                   >
-                    {{ review.user?.display_name?.charAt(0) || review.reviewer_name?.charAt(0) || "U" }}
+                    {{
+                      review.user?.display_name?.charAt(0) ||
+                      review.reviewer_name?.charAt(0) ||
+                      "U"
+                    }}
                   </div>
                   <div>
                     <div class="font-medium text-gray-800 dark:text-white">
-                      {{ review.user?.display_name || review.reviewer_name || "Anonymous" }}
+                      {{
+                        review.user?.display_name ||
+                        review.reviewer_name ||
+                        "Anonymous"
+                      }}
                     </div>
                     <div class="text-xs text-slate-500 dark:text-slate-400">
                       {{ review.formatted_date || "Verified Purchase" }}
@@ -677,17 +735,21 @@
 
             <!-- Empty state -->
             <div v-else class="text-center">
-              <UIcon 
-                name="i-heroicons-chat-bubble-bottom-center-text" 
+              <UIcon
+                name="i-heroicons-chat-bubble-bottom-center-text"
                 class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto my-2"
               />
-              <p class="text-gray-500 dark:text-gray-400 text-lg">No reviews yet</p>
-              <p class="text-gray-400 dark:text-gray-500 text-sm">Be the first to share your experience!</p>
+              <p class="text-gray-500 dark:text-gray-400 text-lg">
+                No reviews yet
+              </p>
+              <p class="text-gray-400 dark:text-gray-500 text-sm">
+                Be the first to share your experience!
+              </p>
             </div>
           </div>
 
           <!-- Pagination Controls -->
-          <div v-if="totalReviewPages > 1" class="flex justify-center ">
+          <div v-if="totalReviewPages > 1" class="flex justify-center">
             <div class="flex items-center gap-2">
               <!-- Previous button -->
               <UButton
@@ -731,7 +793,9 @@
                 icon="i-heroicons-chevron-right"
                 color="gray"
                 variant="ghost"
-                :disabled="currentReviewPage === totalReviewPages || isLoadingReviews"
+                :disabled="
+                  currentReviewPage === totalReviewPages || isLoadingReviews
+                "
                 @click="nextReviewPage"
                 size="sm"
                 class="rounded-full"
@@ -745,8 +809,10 @@
             class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 max-w-3xl mx-auto"
           >
             <!-- Only show title if user can submit a review or needs to log in -->
-            <h3 
-              v-if="!isLoggedIn || (!userExistingReview && !isCheckingUserReview)" 
+            <h3
+              v-if="
+                !isLoggedIn || (!userExistingReview && !isCheckingUserReview)
+              "
               class="text-xl font-semibold mb-4 text-center"
             >
               Share Your Experience
@@ -754,38 +820,62 @@
 
             <!-- Loading state for checking user review -->
             <div v-if="isCheckingUserReview" class="text-center p-6">
-              <div class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p class="text-gray-600 dark:text-slate-400">Checking your review status...</p>
+              <div
+                class="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"
+              ></div>
+              <p class="text-gray-600 dark:text-slate-400">
+                Checking your review status...
+              </p>
             </div>
 
             <!-- User has already submitted a review -->
-            <div v-else-if="isLoggedIn && userExistingReview" class="text-center p-6">
+            <div
+              v-else-if="isLoggedIn && userExistingReview"
+              class="text-center p-6"
+            >
               <UIcon
                 name="i-heroicons-check-circle"
                 class="w-12 h-12 text-green-500 mx-auto mb-4"
               />
-              <h4 class="text-lg font-medium mb-2 text-green-700 dark:text-green-400">Thank You for Your Review!</h4>
+              <h4
+                class="text-lg font-medium mb-2 text-green-700 dark:text-green-400"
+              >
+                Thank You for Your Review!
+              </h4>
               <p class="text-gray-600 dark:text-slate-400 mb-4">
                 You have already submitted a review for this product.
               </p>
-              
+
               <!-- Show the user's existing review -->
-              <div class="bg-white dark:bg-slate-700 rounded-lg p-4 text-left max-w-md mx-auto">
+              <div
+                class="bg-white dark:bg-slate-700 rounded-lg p-4 text-left max-w-md mx-auto"
+              >
                 <div class="flex text-amber-400 mb-2">
                   <UIcon
                     v-for="star in 5"
                     :key="star"
-                    :name="star <= userExistingReview.rating ? 'i-heroicons-star-solid' : 'i-heroicons-star'"
+                    :name="
+                      star <= userExistingReview.rating
+                        ? 'i-heroicons-star-solid'
+                        : 'i-heroicons-star'
+                    "
                     class="w-4 h-4"
-                    :class="star <= userExistingReview.rating ? 'text-amber-400' : 'text-gray-300'"
+                    :class="
+                      star <= userExistingReview.rating
+                        ? 'text-amber-400'
+                        : 'text-gray-300'
+                    "
                   />
-                  <span class="ml-2 text-sm text-gray-600 dark:text-slate-400">Your Rating</span>
+                  <span class="ml-2 text-sm text-gray-600 dark:text-slate-400"
+                    >Your Rating</span
+                  >
                 </div>
                 <p class="text-gray-700 dark:text-slate-300 text-sm">
                   "{{ userExistingReview.comment }}"
                 </p>
                 <p class="text-xs text-gray-500 dark:text-slate-500 mt-2">
-                  Submitted {{ userExistingReview.formatted_date || 'recently' }}
+                  Submitted
+                  {{ userExistingReview.formatted_date || "recently" }}
                 </p>
               </div>
             </div>
@@ -831,7 +921,9 @@
                   >
                     Your Name
                   </label>
-                  <div class="px-3 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-md text-gray-800 dark:text-white font-medium">
+                  <div
+                    class="px-3 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-md text-gray-800 dark:text-white font-medium"
+                  >
                     {{ displayName }}
                   </div>
                 </div>
@@ -855,7 +947,7 @@
                     :loading="isSubmittingReview"
                     block
                   >
-                    {{ isSubmittingReview ? 'Submitting...' : 'Submit Review' }}
+                    {{ isSubmittingReview ? "Submitting..." : "Submit Review" }}
                   </UButton>
                 </div>
               </div>
@@ -881,7 +973,7 @@
           </div>
         </div>
         <!-- You may also like Section -->
-        <div class=" bg-slate-50 dark:bg-slate-800/30 rounded-xl">
+        <div class="bg-slate-50 dark:bg-slate-800/30 rounded-xl">
           <h3
             class="text-base font-medium py-3 px-2 text-gray-800 dark:text-white flex items-center"
           >
@@ -1016,7 +1108,7 @@ const productRatingStats = ref({
   rating_4_count: 0,
   rating_3_count: 0,
   rating_2_count: 0,
-  rating_1_count: 0
+  rating_1_count: 0,
 });
 
 // Reviews state
@@ -1026,7 +1118,7 @@ const isSubmittingReview = ref(false);
 const userExistingReview = ref(null);
 const isCheckingUserReview = ref(false);
 
-// Reviews pagination state  
+// Reviews pagination state
 const currentReviewPage = ref(1);
 const totalReviewPages = ref(1);
 const totalReviewCount = ref(0);
@@ -1039,19 +1131,15 @@ const reviewForm = ref({
   comment: "",
 });
 
-// Fetch product rating statistics from API  
+// Fetch product rating statistics from API
 async function fetchProductRatingStats() {
   if (!currentProduct?.id) return;
-  
-  console.log('Fetching rating stats for product:', currentProduct.id);
-  
+
   try {
     const response = await get(`/reviews/products/${currentProduct.id}/stats/`);
-    console.log('Rating stats response:', response);
-    
+
     if (response.data) {
       productRatingStats.value = response.data;
-      console.log('Updated productRatingStats:', productRatingStats.value);
     } else {
       // Set default stats if no data returned
       productRatingStats.value = {
@@ -1061,11 +1149,11 @@ async function fetchProductRatingStats() {
         rating_4_count: 0,
         rating_3_count: 0,
         rating_2_count: 0,
-        rating_1_count: 0
+        rating_1_count: 0,
       };
     }
   } catch (error) {
-    console.error('Error fetching rating stats:', error);
+    console.error("Error fetching rating stats:", error);
     // Set default stats if API fails
     productRatingStats.value = {
       total_reviews: 0,
@@ -1074,7 +1162,7 @@ async function fetchProductRatingStats() {
       rating_4_count: 0,
       rating_3_count: 0,
       rating_2_count: 0,
-      rating_1_count: 0
+      rating_1_count: 0,
     };
   }
 }
@@ -1144,91 +1232,95 @@ function calculateSavings(sale_price, regular_price) {
 
 // Dynamic rating computations
 const capitalizedProductName = computed(() => {
-  if (!currentProduct.name) return '';
-  return currentProduct.name.charAt(0).toUpperCase() + currentProduct.name.slice(1);
+  if (!currentProduct.name) return "";
+  return (
+    currentProduct.name.charAt(0).toUpperCase() + currentProduct.name.slice(1)
+  );
 });
 
 const reviewCount = computed(() => {
   const count = productRatingStats.value?.total_reviews || 0;
-  console.log('reviewCount computed (for main display):', count);
+
   return count;
 });
 
 const averageRating = computed(() => {
   if (productRatingStats.value?.average_rating) {
-    const rating = parseFloat(productRatingStats.value.average_rating).toFixed(1);
-    console.log('averageRating computed (for main display):', rating);
+    const rating = parseFloat(productRatingStats.value.average_rating).toFixed(
+      1
+    );
+
     return rating;
   }
-  console.log('averageRating computed: 0.0 (default)');
+
   return "0.0";
 });
 
 const displayRating = computed(() => {
   const rating = parseFloat(averageRating.value);
-  console.log('displayRating computed (for stars):', rating);
+
   return rating;
 });
 
 // Review-specific computed properties
 const isLoggedIn = computed(() => {
   if (!user.value) return false;
-  
+
   // Check for nested user object or direct user object
   return !!(user.value.user?.id || user.value.id || user.value.username);
 });
 
 const displayName = computed(() => {
-  if (!user.value) return 'Guest';
-  
+  if (!user.value) return "Guest";
+
   // Handle nested user object structure
   const userData = user.value.user || user.value;
-  
+
   if (userData.first_name) {
-    return `${userData.first_name} ${userData.last_name || ''}`.trim();
+    return `${userData.first_name} ${userData.last_name || ""}`.trim();
   }
-  
-  return userData.username || user.value.username || 'User';
+
+  return userData.username || user.value.username || "User";
 });
 
 const reviewsCount = computed(() => {
   const count = productRatingStats.value?.total_reviews || 0;
-  console.log('reviewsCount computed:', count);
+
   return count;
 });
 
 const reviewsAverageRating = computed(() => {
   if (productRatingStats.value?.average_rating) {
-    const rating = parseFloat(productRatingStats.value.average_rating).toFixed(1);
-    console.log('reviewsAverageRating computed:', rating);
+    const rating = parseFloat(productRatingStats.value.average_rating).toFixed(
+      1
+    );
+
     return rating;
   }
-  console.log('reviewsAverageRating computed: 0.0 (default)');
+
   return "0.0";
 });
 
 const isReviewValid = computed(() => {
   const hasRating = reviewForm.value.rating > 0;
   const hasComment = reviewForm.value.comment.trim().length > 0;
-  
+
   // For logged-in users, only need rating and comment (name is auto-filled)
   if (isLoggedIn.value) {
     return hasRating && hasComment;
   }
-  
+
   // For non-logged-in users, also need name (though they won't see the form)
   const hasName = reviewForm.value.name.trim().length > 0;
   return hasRating && hasComment && hasName;
 });
 
 const canSubmitReview = computed(() => {
-  const result = isLoggedIn.value && !userExistingReview.value && !isCheckingUserReview.value;
-  console.log('canSubmitReview calculation:', {
-    isLoggedIn: isLoggedIn.value,
-    userExistingReview: userExistingReview.value,
-    isCheckingUserReview: isCheckingUserReview.value,
-    result
-  });
+  const result =
+    isLoggedIn.value &&
+    !userExistingReview.value &&
+    !isCheckingUserReview.value;
+
   return result;
 });
 
@@ -1236,7 +1328,7 @@ const displayedReviews = computed(() => {
   if (isLoadingReviews.value) {
     return []; // Show loading state
   }
-  
+
   // Use API data directly since pagination is handled by backend
   return productReviews.value || [];
 });
@@ -1275,51 +1367,46 @@ const paginationRange = computed(() => {
 // Review API functions
 async function fetchProductReviews(page = 1) {
   if (!currentProduct?.id) return;
-  
-  console.log('Fetching reviews for product:', currentProduct.id, 'page:', page);
+
   isLoadingReviews.value = true;
   try {
-    const response = await get(`/reviews/products/${currentProduct.id}/reviews/`, {
-      params: {
-        page: page,
-        page_size: reviewsPerPage
+    const response = await get(
+      `/reviews/products/${currentProduct.id}/reviews/`,
+      {
+        params: {
+          page: page,
+          page_size: reviewsPerPage,
+        },
       }
-    });
-    
-    console.log('Reviews API response:', response);
-    
+    );
+
     if (response.data) {
       // Handle paginated response
       if (response.data.results) {
         productReviews.value = response.data.results;
         totalReviewCount.value = response.data.count || 0;
-        totalReviewPages.value = Math.ceil(totalReviewCount.value / reviewsPerPage);
-        console.log('Paginated reviews loaded:', {
-          count: totalReviewCount.value,
-          pages: totalReviewPages.value,
-          currentPage: page,
-          reviewsLength: productReviews.value.length
-        });
+        totalReviewPages.value = Math.ceil(
+          totalReviewCount.value / reviewsPerPage
+        );
       } else if (Array.isArray(response.data)) {
         // Handle non-paginated response (fallback)
         productReviews.value = response.data;
         totalReviewCount.value = response.data.length;
-        totalReviewPages.value = Math.ceil(totalReviewCount.value / reviewsPerPage);
-        console.log('Non-paginated reviews loaded:', totalReviewCount.value);
+        totalReviewPages.value = Math.ceil(
+          totalReviewCount.value / reviewsPerPage
+        );
       } else {
         productReviews.value = [];
         totalReviewCount.value = 0;
         totalReviewPages.value = 1;
-        console.log('No reviews data found');
       }
     } else {
       productReviews.value = [];
       totalReviewCount.value = 0;
       totalReviewPages.value = 1;
-      console.log('Empty response data');
     }
   } catch (error) {
-    console.error('Error fetching reviews:', error);
+    console.error("Error fetching reviews:", error);
     productReviews.value = [];
     totalReviewCount.value = 0;
     totalReviewPages.value = 1;
@@ -1330,30 +1417,27 @@ async function fetchProductReviews(page = 1) {
 
 async function checkUserExistingReview() {
   if (!currentProduct?.id || !isLoggedIn.value) {
-    console.log('Not checking user review - no product ID or not logged in');
     userExistingReview.value = null;
     return;
   }
-  
-  console.log('Checking if user has existing review for product:', currentProduct.id);
+
   isCheckingUserReview.value = true;
   try {
-    const response = await get(`/reviews/products/${currentProduct.id}/my-review/`);
-    console.log('User review check response:', response);
+    const response = await get(
+      `/reviews/products/${currentProduct.id}/my-review/`
+    );
+
     if (response.data) {
       userExistingReview.value = response.data;
-      console.log('User has existing review:', userExistingReview.value);
     } else {
       userExistingReview.value = null;
-      console.log('User has no existing review');
     }
   } catch (error) {
     // 404 means no existing review found, which is expected
     if (error.response?.status === 404) {
       userExistingReview.value = null;
-      console.log('User has no existing review (404)');
     } else {
-      console.error('Error checking user review:', error);
+      console.error("Error checking user review:", error);
       userExistingReview.value = null;
     }
   } finally {
@@ -1362,19 +1446,11 @@ async function checkUserExistingReview() {
 }
 
 async function submitReview() {
-  console.log('=== submitReview started ===');
-  console.log('isReviewValid:', isReviewValid.value);
-  console.log('isLoggedIn:', isLoggedIn.value);
-  console.log('currentProduct.id:', currentProduct?.id);
-  
   if (!isReviewValid.value || !isLoggedIn.value || !currentProduct?.id) {
-    console.log('Early return due to validation failure');
     return;
   }
 
-  console.log('Setting isSubmittingReview to true');
   isSubmittingReview.value = true;
-  console.log('After setting to true:', isSubmittingReview.value);
 
   try {
     const reviewData = {
@@ -1382,48 +1458,43 @@ async function submitReview() {
       comment: reviewForm.value.comment.trim(),
       // Don't send name - it will be set from the authenticated user
     };
-    
-    console.log('Submitting review data:', reviewData);
-    const response = await post(`/reviews/products/${currentProduct.id}/reviews/`, reviewData);
-    console.log('Review submission response:', response);
-    
+
+    const response = await post(
+      `/reviews/products/${currentProduct.id}/reviews/`,
+      reviewData
+    );
+
     if (response.data) {
-      console.log('Review submitted successfully');
-      
       // Show success message using Nuxt UI toast
       const toast = useToast();
       toast.add({
-        title: 'Review Submitted',
-        description: 'Thank you for your feedback! Your review has been submitted successfully.',
-        color: 'green',
-        timeout: 5000
+        title: "Review Submitted",
+        description:
+          "Thank you for your feedback! Your review has been submitted successfully.",
+        color: "green",
+        timeout: 5000,
       });
 
-      // Refresh the reviews list and stats with individual error handling
-      console.log('Refreshing reviews and stats...');
       try {
         await fetchProductReviews(1); // Go back to first page to show the new review
-        console.log('Reviews refreshed successfully');
       } catch (reviewsError) {
-        console.error('Error refreshing reviews:', reviewsError);
+        console.error("Error refreshing reviews:", reviewsError);
       }
-      
+
       try {
         await fetchProductRatingStats();
-        console.log('Stats refreshed successfully');
       } catch (statsError) {
-        console.error('Error refreshing rating stats:', statsError);
+        console.error("Error refreshing rating stats:", statsError);
       }
-      
+
       try {
         await checkUserExistingReview();
-        console.log('User review status refreshed successfully');
       } catch (userReviewError) {
-        console.error('Error refreshing user review status:', userReviewError);
+        console.error("Error refreshing user review status:", userReviewError);
       }
-      
+
       // Reset form
-      console.log('Resetting form...');
+
       reviewForm.value = {
         name: "",
         rating: 0,
@@ -1432,15 +1503,14 @@ async function submitReview() {
 
       // Reset to first page to potentially show the newly added review
       currentReviewPage.value = 1;
-      console.log('Form reset and page set to 1');
     }
   } catch (error) {
-    console.error('Error submitting review:', error);
-    
+    console.error("Error submitting review:", error);
+
     // Show error message using Nuxt UI toast
     const toast = useToast();
-    let errorMessage = 'Failed to submit review. Please try again.';
-    
+    let errorMessage = "Failed to submit review. Please try again.";
+
     if (error.response?.data?.detail) {
       errorMessage = error.response.data.detail;
     } else if (error.response?.data?.message) {
@@ -1448,32 +1518,28 @@ async function submitReview() {
     } else if (error.response?.data?.non_field_errors) {
       errorMessage = error.response.data.non_field_errors[0];
     }
-    
+
     toast.add({
-      title: 'Error Submitting Review',
+      title: "Error Submitting Review",
       description: errorMessage,
-      color: 'red',
-      timeout: 5000
+      color: "red",
+      timeout: 5000,
     });
   } finally {
     // Ensure this always runs regardless of what happens above
-    console.log('FINALLY BLOCK: Setting isSubmittingReview to false');
+
     isSubmittingReview.value = false;
-    console.log('FINALLY BLOCK: isSubmittingReview is now:', isSubmittingReview.value);
-    
+
     // Force reactivity update
-    nextTick(() => {
-      console.log('After nextTick, isSubmittingReview:', isSubmittingReview.value);
-    });
   }
 }
 
 function getRatingPercentage(rating) {
   if (!productRatingStats.value) return "0%";
-  
+
   const total = productRatingStats.value.total_reviews;
   if (total === 0) return "0%";
-  
+
   const count = productRatingStats.value[`rating_${rating}_count`] || 0;
   return `${((count / total) * 100).toFixed(1)}%`;
 }
@@ -1511,19 +1577,17 @@ async function nextReviewPage() {
 watch(
   () => currentProduct?.id,
   async (newId, oldId) => {
-    console.log('Product changed from', oldId, 'to', newId);
     selectedImageIndex.value = 0;
     quantity.value = 1;
-    
+
     // Fetch data for the new product
-    console.log('Fetching similar products and review data...');
+
     fetchSimilarProducts(); // Fetch similar products when current product changes
     await Promise.all([
       fetchProductReviews(1), // Start from page 1
       fetchProductRatingStats(),
-      checkUserExistingReview()
+      checkUserExistingReview(),
     ]);
-    console.log('All product data loaded successfully');
   },
   { immediate: true } // Fetch immediately on component creation
 );

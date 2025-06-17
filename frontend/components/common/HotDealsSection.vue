@@ -1,7 +1,11 @@
-<template>  <!-- Hot Deals Categories - Optimized for Performance -->
+<template>
+  <!-- Hot Deals Categories - Optimized for Performance -->
   <section class="mb-4 relative">
     <!-- Simplified Background -->
-    <div class="absolute inset-0 bg-gradient-to-r from-rose-500 to-orange-500 rounded-xl"></div>    <!-- Content Container -->
+    <div
+      class="absolute inset-0 bg-gradient-to-r from-rose-500 to-orange-500 rounded-xl"
+    ></div>
+    <!-- Content Container -->
     <div class="relative z-10 px-2 py-3">
       <!-- Section Header -->
       <div class="flex items-center justify-between mb-2">
@@ -24,7 +28,8 @@
             <h2 class="text-xl font-semibold text-white drop-shadow-sm">
               Special Deals
             </h2>
-          </div>          <div
+          </div>
+          <div
             class="ml-3 px-2 py-0.5 bg-white/20 text-white text-xs font-semibold rounded-full"
           >
             Limited Time
@@ -33,12 +38,14 @@
       </div>
 
       <!-- Two-column layout: Fixed Budget Finds + Scrollable Cards -->
-      <div class="flex space-x-2">        <!-- Optimized Cards Container -->
+      <div class="flex space-x-2">
+        <!-- Optimized Cards Container -->
         <div class="flex-1 overflow-hidden">
           <div
             ref="hotDealsContainer"
             class="flex py-2 space-x-3 overflow-x-auto hide-scrollbar snap-x hot-deals-container"
-          >            <!-- Simplified Hot Deals Cards -->
+          >
+            <!-- Simplified Hot Deals Cards -->
             <div
               v-for="(deal, index) in specialDeals"
               :key="deal.id"
@@ -74,8 +81,11 @@
             </div>
           </div>
         </div>
-      </div>      <!-- Simple scroll indicator -->
-      <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+      </div>
+      <!-- Simple scroll indicator -->
+      <div
+        class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -104,7 +114,6 @@ async function fetchSpecialDeals() {
   try {
     const response = await get("/product-categories/?special_offer=true");
     specialDeals.value = response.data;
-    console.log("Special Deals:", specialDeals.value);
   } catch (error) {
     console.error("Error fetching hot deals:", error);
   }
@@ -166,12 +175,32 @@ onUnmounted(() => {
 
 <style scoped>
 /* Optimized and minified CSS for better performance */
-.hide-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
-.hide-scrollbar::-webkit-scrollbar{display:none}
-.snap-x{scroll-snap-type:x mandatory;scroll-behavior:smooth}
-.snap-start{scroll-snap-align:start}
-.card-hover{transition:transform 0.2s ease;cursor:pointer}
-.card-hover:hover{transform:translateY(-2px)}
-.hot-deals-container{cursor:grab;user-select:none}
-.hot-deals-container:active{cursor:grabbing}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.snap-x {
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
+.snap-start {
+  scroll-snap-align: start;
+}
+.card-hover {
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+}
+.hot-deals-container {
+  cursor: grab;
+  user-select: none;
+}
+.hot-deals-container:active {
+  cursor: grabbing;
+}
 </style>

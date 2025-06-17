@@ -131,7 +131,8 @@
               </div>
             </template>
           </div>
-          <UTooltip text="Change Location" class="me-auto">            <UButton
+          <UTooltip text="Change Location" class="me-auto">
+            <UButton
               icon="i-heroicons-map-pin"
               size="md"
               color="primary"
@@ -292,7 +293,8 @@
           class="service-card border even:border-t-0 even:border-b-0 bg-white rounded-md"
           v-for="(service, i) in search.filter(
             (service) => service.service_status.toLowerCase() === 'approved'
-          )"          :key="{ i }"
+          )"
+          :key="{ i }"
           data-aos="zoom-out-right"
         >
           <NuxtLink :to="`/classified-details/${service.slug}`">
@@ -436,7 +438,8 @@
 
           <!-- Action buttons -->
           <div class="flex flex-wrap justify-center gap-3 fade-in-up-delay-2">
-            <UButton              color="gray"
+            <UButton
+              color="gray"
               variant="ghost"
               :label="$t('change_location')"
               icon="i-heroicons-map"
@@ -656,7 +659,6 @@ async function getCategoryDetails() {
       `/details/classified-categories/${router.params.id}/`
     );
     if (data) {
-      console.log("category details", data);
       categoryDetails.value = data;
       await fetchServices();
     }
@@ -682,26 +684,22 @@ if (form.value.state) {
     `/geo/cities/?region_name_eng=${form.value.state}`
   );
   cities.value = cities_response.data;
-  console.log(cities_response.data);
 }
 if (form.value.city) {
   const thana_response = await get(
     `/geo/upazila/?city_name_eng=${form.value.city}`
   );
   upazilas.value = thana_response.data;
-  console.log(thana_response.data);
 }
 
 watch(
   () => form.value.state,
   async (newState) => {
-    console.log(newState);
     if (newState) {
       const cities_response = await get(
         `/geo/cities/?region_name_eng=${newState}`
       );
       cities.value = cities_response.data;
-      console.log(cities_response.data);
     }
   }
 );
@@ -709,13 +707,11 @@ watch(
 watch(
   () => form.value.city,
   async (newCity) => {
-    console.log(newCity);
     if (newCity) {
       const thana_response = await get(
         `/geo/upazila/?city_name_eng=${newCity}`
       );
       upazilas.value = thana_response.data;
-      console.log(thana_response.data);
     }
   }
 );
@@ -784,8 +780,6 @@ async function fetchNearbyAds() {
     `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}`
   );
 
-  // If city search has results, use those
-  console.log("near by", citySearchRes.data);
   if (citySearchRes.data?.length > 0) {
     nearby_services.value = citySearchRes.data.filter(
       (service) =>
@@ -815,7 +809,7 @@ await fetchNearbyAds();
 const handleClearLocation = () => {
   clearLocation();
   window.location.reload();
-}
+};
 </script>
 <style scoped>
 /* Empty state transitions */

@@ -582,63 +582,34 @@ const updateInlineMentionCount = () => {
 
   const chips = commentInputRef.value.querySelectorAll(".mention-chip-inline");
   inlineMentionCount.value = chips.length;
-  console.log("📊 Updated inlineMentionCount:", inlineMentionCount.value);
 };
 
 // Computed property to ensure mention stability - prevents accidental clearing
 const stableMentions = computed(() => {
-  console.log(
-    "🔒 stableMentions computed, current mentions:",
-    extractedMentions.value.map((m) => m.name)
-  );
   return extractedMentions.value;
 });
 
 // Protected function to safely clear mentions - only called when intentional
 const safelyClearMentions = (reason) => {
-  console.log("🛡️ safelyClearMentions called, reason:", reason);
-  console.log(
-    "🏷️ Clearing mentions:",
-    extractedMentions.value.map((m) => m.name)
-  );
   extractedMentions.value = [];
 };
 
 // Protected function to safely add mention - with validation
 const safelyAddMention = (mention, reason) => {
-  console.log("🛡️ safelyAddMention called, reason:", reason);
-  console.log("➕ Adding mention:", mention.name);
-
   const mentionExists = extractedMentions.value.some(
     (m) => m.id === mention.id
   );
   if (!mentionExists) {
     extractedMentions.value.push(mention);
-    console.log(
-      "📋 All mentions now:",
-      extractedMentions.value.map((m) => m.name)
-    );
   } else {
-    console.log("⚠️ Mention already exists, skipping");
+    console.error("⚠️ Mention already exists, skipping");
   }
 };
 
 // Protected function to safely remove mention - with validation
 const safelyRemoveMention = (mentionToRemove, reason) => {
-  console.log("🛡️ safelyRemoveMention called, reason:", reason);
-  console.log("🗑️ Removing mention:", mentionToRemove.name);
-  console.log(
-    "🏷️ Mentions before removal:",
-    extractedMentions.value.map((m) => m.name)
-  );
-
   extractedMentions.value = extractedMentions.value.filter(
     (m) => m.id !== mentionToRemove.id
-  );
-
-  console.log(
-    "🏷️ Mentions after removal:",
-    extractedMentions.value.map((m) => m.name)
   );
 };
 
@@ -854,8 +825,6 @@ const onCustomAmountInput = () => {
 const sendGift = async () => {
   // Initialize API utility
 
-  console.log("Send Gift button clicked");
-
   try {
     // Make sure we have a valid gift amount to send
     const giftAmount = parseInt(sendFromBalance.value);
@@ -893,12 +862,8 @@ const sendGift = async () => {
       message: giftMessage.value || `Sent ${giftAmount} diamonds as a gift! ✨`,
     };
 
-    console.log("Sending gift with payload:", payload);
-
     // Call the API endpoint
     const response = await postApi("/diamonds/send-gift/", payload);
-
-    console.log("Gift sent successfully:", response);
 
     // Update the user's diamond balance locally
     if (user.value.user) {
@@ -948,7 +913,7 @@ const sendGift = async () => {
 // Purchase diamonds
 const purchaseDiamonds = async () => {
   // Initialize the API utility
-  console.log(selectedPackage.value, customDiamondAmount.value);
+
   const diamondAmount = selectedPackage.value || customDiamondAmount.value;
   if (!diamondAmount) return;
 
@@ -1077,7 +1042,6 @@ const searchMentions = async (query) => {
 
 // Clear all content - ONLY called by explicit clear button click
 const clearComment = () => {
-  console.log("🧹 clearComment called explicitly");
   props.post.commentText = "";
   displayCommentText.value = "";
 
@@ -1123,15 +1087,6 @@ const hasContent = computed(() => {
   const hasDisplayText =
     displayCommentText.value && displayCommentText.value.trim().length > 0;
 
-  console.log("📊 hasContent check:", {
-    hasText,
-    hasMentions,
-    isTypingMention,
-    hasDisplayText,
-    inlineMentionCount: inlineMentionCount.value,
-    mentionSearchText: mentionSearchText.value,
-  });
-
   return hasText || hasMentions || isTypingMention || hasDisplayText;
 });
 
@@ -1140,15 +1095,6 @@ const handleContentEditableInput = (event) => {
   const content = event.target.textContent || "";
   const previousLength = displayCommentText.value?.length || 0;
   const currentLength = content.length;
-
-  console.log(
-    "📝 Contenteditable input changed:",
-    content,
-    "Length change:",
-    previousLength,
-    "->",
-    currentLength
-  );
 
   // Update displayCommentText for compatibility
   displayCommentText.value = content;
@@ -1187,25 +1133,11 @@ const detectAndShowMentions = (element) => {
   let currentNode = range.startContainer;
   let cursorOffset = range.startOffset;
 
-  console.log(
-    "🔍 Detecting mentions - Node type:",
-    currentNode.nodeType,
-    "Cursor offset:",
-    cursorOffset
-  );
-
   // If we're not in a text node, find the nearest text node
   if (currentNode.nodeType !== Node.TEXT_NODE) {
     // If we're in an element, get the text content up to cursor
     const textBeforeCursor = getTextBeforeCursor(element, range);
     const lastAtIndex = textBeforeCursor.lastIndexOf("@");
-
-    console.log(
-      "📝 Not in text node - textBeforeCursor:",
-      `"${textBeforeCursor}"`,
-      "lastAtIndex:",
-      lastAtIndex
-    );
 
     if (lastAtIndex !== -1) {
       const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
@@ -1225,17 +1157,6 @@ const detectAndShowMentions = (element) => {
         isValidMentionPosition &&
         !textAfterAt.includes("\n") &&
         !textAfterAt.includes("\r");
-
-      console.log(
-        "✅ Element check - textAfterAt:",
-        `"${textAfterAt}"`,
-        "charBeforeAt:",
-        `"${charBeforeAt}"`,
-        "isValid:",
-        isValidMentionPosition,
-        "isActive:",
-        isActiveMention
-      );
 
       if (isActiveMention) {
         mentionSearchText.value = textAfterAt;
@@ -1257,15 +1178,6 @@ const detectAndShowMentions = (element) => {
     const textBeforeCursor = textContent.substring(0, cursorOffset);
     const lastAtIndex = textBeforeCursor.lastIndexOf("@");
 
-    console.log(
-      "📝 In text node - textContent:",
-      `"${textContent}"`,
-      "textBeforeCursor:",
-      `"${textBeforeCursor}"`,
-      "lastAtIndex:",
-      lastAtIndex
-    );
-
     if (lastAtIndex !== -1) {
       const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
       const charBeforeAt =
@@ -1284,17 +1196,6 @@ const detectAndShowMentions = (element) => {
         isValidMentionPosition &&
         !textAfterAt.includes("\n") &&
         !textAfterAt.includes("\r");
-
-      console.log(
-        "✅ Text node check - textAfterAt:",
-        `"${textAfterAt}"`,
-        "charBeforeAt:",
-        `"${charBeforeAt}"`,
-        "isValid:",
-        isValidMentionPosition,
-        "isActive:",
-        isActiveMention
-      );
 
       if (isActiveMention) {
         mentionSearchText.value = textAfterAt;
@@ -1499,17 +1400,6 @@ const selectMention = (selectedUser) => {
 // Override the original handleCommentInput to work with inline mentions
 const handleCommentInput = (event) => {
   const inputValue = event.target.value;
-  console.log("🔍 Text input changed to:", `"${inputValue}"`);
-  console.log(
-    "🏷️ Current mentions (should NOT change):",
-    extractedMentions.value.map((m) => m.name)
-  );
-  console.log(
-    "📏 Input length:",
-    inputValue.length,
-    "Is empty:",
-    inputValue.length === 0
-  );
 
   // CRITICAL: Only update text, NEVER touch mention chips here
   displayCommentText.value = inputValue;
@@ -1519,8 +1409,6 @@ const handleCommentInput = (event) => {
   const textBeforeCursor = inputValue.substring(0, cursorPos);
   const lastAtIndex = textBeforeCursor.lastIndexOf("@");
 
-  console.log("📍 Cursor at:", cursorPos, "Last @ at:", lastAtIndex);
-
   if (lastAtIndex !== -1) {
     const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
     const charBeforeAt =
@@ -1528,19 +1416,10 @@ const handleCommentInput = (event) => {
     const isValidMentionPosition =
       lastAtIndex === 0 || charBeforeAt === " " || charBeforeAt === "\n";
 
-    console.log(
-      "📝 Text after @:",
-      `"${textAfterAt}"`,
-      "Valid pos:",
-      isValidMentionPosition
-    );
-
     const isActiveMention =
       !textAfterAt.includes(" ") &&
       isValidMentionPosition &&
       cursorPos === lastAtIndex + 1 + textAfterAt.length;
-
-    console.log("🎯 Active mention:", isActiveMention);
 
     if (isActiveMention) {
       mentionSearchText.value = textAfterAt;
@@ -1561,25 +1440,10 @@ const handleCommentInput = (event) => {
   // Auto resize the textarea
   autoResize();
 
-  console.log(
-    "🏷️ Mentions after input processing (should be unchanged):",
-    extractedMentions.value.map((m) => m.name)
-  );
-  // CRITICAL DEBUG: Check if props.post.commentText is being set here
-  console.log(
-    "📋 Before emit - props.post.commentText:",
-    `"${props.post.commentText || ""}"`
-  );
-
   // ALWAYS emit, but be careful about what we emit
   // The parent needs to know about input changes, but we shouldn't let empty input
   // cause unwanted side effects
   emit("handle-comment-input", event, props.post);
-
-  console.log(
-    "📋 After emit - props.post.commentText:",
-    `"${props.post.commentText || ""}"`
-  );
 };
 
 // Handle posting comment with mentions and text from contenteditable
@@ -1627,15 +1491,6 @@ const handlePostComment = () => {
 
   // Clean up extra whitespace while preserving intentional line breaks
   finalText = finalText.replace(/\n\s*\n/g, "\n").trim();
-
-  console.log(
-    "📤 Final comment text being posted (multi-line):",
-    `"${finalText}"`
-  );
-  console.log(
-    "📤 Final comment text (with line breaks visible):",
-    finalText.replace(/\n/g, "\\n")
-  );
 
   props.post.commentText = finalText;
 
@@ -1692,12 +1547,6 @@ const autoResize = () => {
           commentInputRef.value.style.transition = "";
         }
       }, 150);
-
-      console.log("🔧 Auto-resize:", {
-        originalHeight,
-        scrollHeight,
-        targetHeight,
-      });
     }
 
     isResizing = false;
@@ -1740,21 +1589,6 @@ watch(
 watch(
   () => props.post.commentText,
   (newText, oldText) => {
-    console.log(
-      "👀 Watcher triggered - oldText:",
-      `"${oldText || ""}"`,
-      "newText:",
-      `"${newText || ""}"`
-    );
-    console.log(
-      "🔍 Input is empty:",
-      !displayCommentText.value || displayCommentText.value.length === 0
-    );
-    console.log(
-      "🏷️ Current mentions before watcher logic:",
-      extractedMentions.value.map((m) => m.name)
-    );
-
     // ONLY clear mentions if this is truly after a successful post
     // We know it's a successful post when:
     // 1. The old text was substantial (contained actual content)
@@ -1767,9 +1601,6 @@ watch(
       wasSubstantialContent && isNowEmpty && hasMentionsToFlear;
 
     if (isFromSuccessfulPost) {
-      console.log(
-        "✅ Legitimate clearing - appears to be after successful post"
-      );
       displayCommentText.value = "";
       safelyClearMentions("legitimate post success or explicit clear");
     } else {

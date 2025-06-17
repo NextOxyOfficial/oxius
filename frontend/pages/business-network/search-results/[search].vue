@@ -1,8 +1,7 @@
 <template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-3 flex-1">    <!-- Enhanced Search Results Header -->
-    <div
-      class="relative bg-white rounded-lg shadow-sm mb-6 border-0"
-    >
+  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl mt-3 flex-1">
+    <!-- Enhanced Search Results Header -->
+    <div class="relative bg-white rounded-lg shadow-sm mb-6 border-0">
       <div
         class="flex flex-col md:flex-row md:items-center justify-between px-6 py-5 bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-t-lg border-b border-blue-200/50"
       >
@@ -12,9 +11,13 @@
               <Search class="h-4 w-4 text-blue-700" />
             </span>
             Search Results
-          </h1>          <p class="text-gray-600 text-sm mt-2 flex items-center">
+          </h1>
+          <p class="text-gray-600 text-sm mt-2 flex items-center">
             <span class="font-medium text-blue-700 flex items-center">
-              <span v-if="$route.params.search && $route.params.search.startsWith('#')" 
+              <span
+                v-if="
+                  $route.params.search && $route.params.search.startsWith('#')
+                "
                 class="mr-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700"
               >
                 <Hash class="h-3 w-3 mr-1" />
@@ -23,12 +26,26 @@
               {{ $route.params.search }}
             </span>
             <span class="mx-2 text-blue-200">•</span>
-            <span v-if="!loading && !usersLoading && (allPosts.length > 0 || userResults.length > 0)"
+            <span
+              v-if="
+                !loading &&
+                !usersLoading &&
+                (allPosts.length > 0 || userResults.length > 0)
+              "
               class="flex items-center gap-1"
             >
-              <span class="font-medium text-gray-800">{{ userResults.length + allPosts.length }}</span>
-              <span>{{ userResults.length + allPosts.length === 1 ? "result" : "results" }}</span>
-              <span v-if="userResults.length > 0 && allPosts.length > 0" class="flex items-center gap-1 ml-1">
+              <span class="font-medium text-gray-800">{{
+                userResults.length + allPosts.length
+              }}</span>
+              <span>{{
+                userResults.length + allPosts.length === 1
+                  ? "result"
+                  : "results"
+              }}</span>
+              <span
+                v-if="userResults.length > 0 && allPosts.length > 0"
+                class="flex items-center gap-1 ml-1"
+              >
                 <span class="text-gray-400 text-xs">(</span>
                 <UsersRound class="h-3 w-3 text-gray-600" />
                 <span class="text-gray-600">{{ userResults.length }}</span>
@@ -38,7 +55,13 @@
                 <span class="text-gray-400 text-xs">)</span>
               </span>
             </span>
-            <span v-else-if="!loading && !usersLoading && allPosts.length === 0 && userResults.length === 0"
+            <span
+              v-else-if="
+                !loading &&
+                !usersLoading &&
+                allPosts.length === 0 &&
+                userResults.length === 0
+              "
               class="text-gray-600"
               >No results found</span
             >
@@ -47,7 +70,8 @@
               Searching...
             </span>
           </p>
-        </div>        <div class="flex items-center">
+        </div>
+        <div class="flex items-center">
           <NuxtLink
             :to="`/business-network`"
             class="flex items-center gap-1.5 px-4 py-1.5 bg-white text-blue-600 rounded-md border border-blue-200 shadow-sm transition-colors text-sm font-medium"
@@ -60,7 +84,14 @@
     </div>
 
     <!-- Enhanced skeleton loaders -->
-    <template v-if="(loading || usersLoading) && !loadingMore && allPosts.length === 0 && userResults.length === 0">
+    <template
+      v-if="
+        (loading || usersLoading) &&
+        !loadingMore &&
+        allPosts.length === 0 &&
+        userResults.length === 0
+      "
+    >
       <div class="p-4">
         <div class="relative mb-8">
           <!-- Pulse loading animation -->
@@ -71,7 +102,8 @@
                 class="absolute inset-0 -m-2 rounded-full animate-ping opacity-30 bg-blue-400"
               ></div>
             </div>
-          </div>          <p class="text-center text-blue-600 text-sm font-medium mt-4">
+          </div>
+          <p class="text-center text-blue-600 text-sm font-medium mt-4">
             Searching for "{{ $route.params.search }}"...
           </p>
         </div>
@@ -167,27 +199,57 @@
           </div>
         </div>
       </div>
-    </template>    <!-- Search Results Section -->
-    <div class="relative" v-if="!loading || !usersLoading || userResults.length > 0 || allPosts.length > 0">        <!-- No Results Message - Professionally styled -->
-      <div 
-        v-if="!loading && !usersLoading && userResults.length === 0 && allPosts.length === 0" 
+    </template>
+    <!-- Search Results Section -->
+    <div
+      class="relative"
+      v-if="
+        !loading ||
+        !usersLoading ||
+        userResults.length > 0 ||
+        allPosts.length > 0
+      "
+    >
+      <!-- No Results Message - Professionally styled -->
+      <div
+        v-if="
+          !loading &&
+          !usersLoading &&
+          userResults.length === 0 &&
+          allPosts.length === 0
+        "
         class="flex flex-col items-center justify-center py-10 text-center bg-white rounded-lg border border-gray-200/80 shadow-sm"
       >
         <div class="mb-4">
-          <div class="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
-            <Search v-if="!$route.params.search.startsWith('#')" class="h-7 w-7 text-blue-500" />
+          <div
+            class="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center"
+          >
+            <Search
+              v-if="!$route.params.search.startsWith('#')"
+              class="h-7 w-7 text-blue-500"
+            />
             <Hash v-else class="h-7 w-7 text-blue-500" />
           </div>
         </div>
         <h3 class="text-xl font-semibold text-gray-800 mb-2">
-          {{ $route.params.search.startsWith('#') ? 'No Results for this Hashtag' : 'No Results Found' }}
+          {{
+            $route.params.search.startsWith("#")
+              ? "No Results for this Hashtag"
+              : "No Results Found"
+          }}
         </h3>
         <p class="text-gray-600 max-w-md mx-auto mb-6 px-4">
           <template v-if="$route.params.search.startsWith('#')">
-            We couldn't find any posts or people using the hashtag "<span class="text-blue-600 font-medium">{{ $route.params.search }}</span>". Try a different hashtag or check the spelling.
+            We couldn't find any posts or people using the hashtag "<span
+              class="text-blue-600 font-medium"
+              >{{ $route.params.search }}</span
+            >". Try a different hashtag or check the spelling.
           </template>
           <template v-else>
-            We couldn't find any matches for "<span class="text-blue-600 font-medium">{{ $route.params.search }}</span>". Try using different keywords or checking for typos.
+            We couldn't find any matches for "<span
+              class="text-blue-600 font-medium"
+              >{{ $route.params.search }}</span
+            >". Try using different keywords or checking for typos.
           </template>
         </p>
         <div class="mt-2">
@@ -200,46 +262,111 @@
           </NuxtLink>
         </div>
       </div>
-        <!-- Search match explanation section -->      <div v-if="!loading && !usersLoading && (userResults.length > 0 || allPosts.length > 0)" class="mb-6 bg-white p-4 rounded-lg border border-blue-100/80">
+      <!-- Search match explanation section -->
+      <div
+        v-if="
+          !loading &&
+          !usersLoading &&
+          (userResults.length > 0 || allPosts.length > 0)
+        "
+        class="mb-6 bg-white p-4 rounded-lg border border-blue-100/80"
+      >
         <div class="flex items-start gap-3">
           <div class="p-2 bg-blue-50 rounded-full mt-1">
             <Search class="h-4 w-4 text-blue-600" />
           </div>
           <div>
-            <h3 class="font-medium text-gray-800 mb-1.5">Search Results For: "<span class="text-blue-600">{{ $route.params.search }}</span>"</h3>
+            <h3 class="font-medium text-gray-800 mb-1.5">
+              Search Results For: "<span class="text-blue-600">{{
+                $route.params.search
+              }}</span
+              >"
+            </h3>
             <p class="text-sm text-gray-600 mb-2">
-              We search through user names, usernames, post titles, content and hashtags to find the best matches. Results are ranked by relevance.
+              We search through user names, usernames, post titles, content and
+              hashtags to find the best matches. Results are ranked by
+              relevance.
             </p>
             <div class="flex flex-wrap gap-2 mt-2">
-              <div class="flex items-center text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-                <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <div
+                class="flex items-center text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full"
+              >
+                <svg
+                  class="h-3 w-3 mr-1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
                 <span class="mr-1 font-medium">Name Match:</span>
                 <span>First/last name or username</span>
               </div>
-              <div class="flex items-center text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">
-                <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              <div
+                class="flex items-center text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full"
+              >
+                <svg
+                  class="h-3 w-3 mr-1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                  ></path>
+                  <path
+                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                  ></path>
                 </svg>
                 <span class="mr-1 font-medium">Title match:</span>
                 <span>Post title</span>
               </div>
-              <div class="flex items-center text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full">
-                <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <div
+                class="flex items-center text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full"
+              >
+                <svg
+                  class="h-3 w-3 mr-1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                  ></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                   <line x1="16" y1="13" x2="8" y2="13"></line>
                   <line x1="16" y1="17" x2="8" y2="17"></line>
                   <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
-                <span class="mr-1 font-medium">Content match:</span> 
+                <span class="mr-1 font-medium">Content match:</span>
                 <span>Post body</span>
               </div>
-              <div class="flex items-center text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">
-                <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <div
+                class="flex items-center text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full"
+              >
+                <svg
+                  class="h-3 w-3 mr-1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
                   <line x1="4" y1="9" x2="20" y2="9"></line>
                   <line x1="4" y1="15" x2="20" y2="15"></line>
                   <line x1="10" y1="3" x2="8" y2="21"></line>
@@ -251,26 +378,36 @@
             </div>
             <div class="mt-2 pt-2 border-t border-gray-100">
               <p class="text-xs text-gray-600">
-                <span class="font-medium">Exact matches and hashtag matches are weighted highest</span> in search results. Content matching your search term will be highlighted.
+                <span class="font-medium"
+                  >Exact matches and hashtag matches are weighted highest</span
+                >
+                in search results. Content matching your search term will be
+                highlighted.
               </p>
             </div>
           </div>
         </div>
       </div>
-      
-      <!-- Users Section - Always displayed first when available -->      <div v-if="!usersLoading && userResults.length > 0" class="mb-8">
+
+      <!-- Users Section - Always displayed first when available -->
+      <div v-if="!usersLoading && userResults.length > 0" class="mb-8">
         <div class="flex justify-between items-center mb-4 px-1">
           <h2 class="text-lg font-medium text-gray-800 flex items-center">
             <UsersRound class="h-4 w-4 text-blue-600 mr-2" />
             People
           </h2>
           <div class="text-sm text-gray-600">
-            Found {{ userResults.length }} {{ userResults.length === 1 ? 'person' : 'people' }} matching "<span class="text-blue-600 font-medium">{{ $route.params.search }}</span>"
+            Found {{ userResults.length }}
+            {{ userResults.length === 1 ? "person" : "people" }} matching "<span
+              class="text-blue-600 font-medium"
+              >{{ $route.params.search }}</span
+            >"
           </div>
         </div>
-        
+
         <div class="bg-white rounded-lg overflow-hidden">
-          <div class="divide-y divide-gray-100">            <BusinessNetworkUserCard
+          <div class="divide-y divide-gray-100">
+            <BusinessNetworkUserCard
               v-for="user in displayedUsers"
               :key="user.id"
               :user="user"
@@ -278,10 +415,14 @@
               class="bg-white hover:bg-blue-50/40 transition-colors"
             />
           </div>
-        </div>        <!-- Load more people button -->
-        <div v-if="userResults.length > initialUserCount" class="flex justify-center bg-gray-50/70 py-3 border-t border-gray-100">
-          <button 
-            v-if="!showAllUsers" 
+        </div>
+        <!-- Load more people button -->
+        <div
+          v-if="userResults.length > initialUserCount"
+          class="flex justify-center bg-gray-50/70 py-3 border-t border-gray-100"
+        >
+          <button
+            v-if="!showAllUsers"
             @click="showAllUsers = true"
             class="flex items-center gap-2 px-5 py-2 bg-white border border-blue-200 rounded text-blue-700 text-sm font-medium hover:bg-blue-50 transition-colors"
           >
@@ -289,17 +430,21 @@
             <span>View All {{ userResults.length }} People</span>
           </button>
         </div>
-        
+
         <div class="border-b border-gray-100 my-6"></div>
-      </div>      <!-- Posts Section -->
+      </div>
+      <!-- Posts Section -->
       <div>
         <!-- Post header with improved styling -->
-        <div class="flex justify-between items-center mb-4 px-1" v-if="allPosts.length > 0">
+        <div
+          class="flex justify-between items-center mb-4 px-1"
+          v-if="allPosts.length > 0"
+        >
           <h2 class="text-lg font-medium text-gray-800 flex items-center">
             <MessageSquare class="h-4 w-4 text-blue-600 mr-2" />
             Posts
           </h2>
-          
+
           <!-- Search result count when posts are loaded -->
           <div
             v-if="!loading && displayedPosts.length > 0"
@@ -311,29 +456,47 @@
               >{{ $route.params.search }}</span
             >"
           </div>
-        </div>        <!-- Empty state for posts when users are found but no posts -->
+        </div>
+        <!-- Empty state for posts when users are found but no posts -->
         <div
-          v-if="!loading && displayedPosts.length === 0 && allPosts.length === 0 && userResults.length > 0"
+          v-if="
+            !loading &&
+            displayedPosts.length === 0 &&
+            allPosts.length === 0 &&
+            userResults.length > 0
+          "
           class="bg-white rounded-lg border border-gray-200 p-6 text-center mb-6"
         >
           <div class="mx-auto w-fit mb-3">
-            <MessageSquare v-if="!$route.params.search.startsWith('#')" class="h-10 w-10 text-gray-300" />
+            <MessageSquare
+              v-if="!$route.params.search.startsWith('#')"
+              class="h-10 w-10 text-gray-300"
+            />
             <Hash v-else class="h-10 w-10 text-blue-200" />
           </div>
           <p class="text-gray-600 font-medium mb-1">
-            {{ $route.params.search.startsWith('#') ? 'No posts with this hashtag' : 'No posts found' }}
+            {{
+              $route.params.search.startsWith("#")
+                ? "No posts with this hashtag"
+                : "No posts found"
+            }}
           </p>
           <p class="text-gray-600 text-sm">
             <template v-if="$route.params.search.startsWith('#')">
-              No posts with the hashtag "{{ $route.params.search }}" were found, but we did find people.
+              No posts with the hashtag "{{ $route.params.search }}" were found,
+              but we did find people.
             </template>
             <template v-else>
-              No posts matching "{{ $route.params.search }}" were found, but we did find people.
+              No posts matching "{{ $route.params.search }}" were found, but we
+              did find people.
             </template>
           </p>
         </div>
-          <!-- Posts container with improved styling -->
-        <div class="bg-white rounded-lg overflow-hidden" v-if="displayedPosts.length > 0">
+        <!-- Posts container with improved styling -->
+        <div
+          class="bg-white rounded-lg overflow-hidden"
+          v-if="displayedPosts.length > 0"
+        >
           <BusinessNetworkPost
             :posts="displayedPosts"
             :id="user?.user?.id"
@@ -342,9 +505,12 @@
           />
         </div>
       </div>
-    </div>    <!-- Enhanced load more indicator with improved styling -->
+    </div>
+    <!-- Enhanced load more indicator with improved styling -->
     <div v-if="loadingMore && !loading" class="pb-6">
-      <div class="flex justify-center items-center py-5 bg-white rounded-lg border border-gray-200/70 mb-6">
+      <div
+        class="flex justify-center items-center py-5 bg-white rounded-lg border border-gray-200/70 mb-6"
+      >
         <div class="flex items-center">
           <Loader2 class="h-5 w-5 text-blue-600 animate-spin mr-3" />
           <span class="text-blue-700 font-medium">Loading more results...</span>
@@ -410,7 +576,8 @@
           </div>
         </div>
       </div>
-    </div>    <!-- Enhanced end of results indicator with professional styling -->
+    </div>
+    <!-- Enhanced end of results indicator with professional styling -->
     <div
       v-if="!loading && !loadingMore && !hasMore && allPosts.length > 0"
       class="flex flex-col items-center justify-center py-8 text-center bg-white rounded-lg border border-gray-200/70 mb-6"
@@ -474,7 +641,13 @@
 
     <!-- Enhanced no results message -->
     <div
-      v-if="!loading && !usersLoading && !loadingMore && allPosts.length === 0 && userResults.length === 0"
+      v-if="
+        !loading &&
+        !usersLoading &&
+        !loadingMore &&
+        allPosts.length === 0 &&
+        userResults.length === 0
+      "
       class="flex flex-col items-center justify-center py-12 text-center bg-white rounded-xl shadow-sm border border-gray-100 px-4"
     >
       <div
@@ -562,7 +735,7 @@ import {
   Home,
   Image,
   UsersRound,
-  MessageSquare
+  MessageSquare,
 } from "lucide-vue-next";
 const route = useRoute();
 
@@ -602,86 +775,102 @@ eventBus.on("start-loading-posts", () => {
 // Calculate the relevance score of a search result with improved weighting
 function calculateRelevanceScore(post, searchQuery) {
   if (!post || !searchQuery) return 0;
-  
+
   let score = 0;
   let matchWeight = 0;
-  const normalizedQuery = searchQuery.startsWith('#') ? searchQuery.substring(1) : searchQuery;
+  const normalizedQuery = searchQuery.startsWith("#")
+    ? searchQuery.substring(1)
+    : searchQuery;
   const lowerQuery = normalizedQuery.toLowerCase();
-  
+
   // Check if this is a hashtag search
-  const isHashtagSearch = searchQuery.startsWith('#');
-  
+  const isHashtagSearch = searchQuery.startsWith("#");
+
   // Check for exact hashtag match (highest weight)
-  if (post.post_tags && post.post_tags.some(tag => tag.tag.toLowerCase() === lowerQuery)) {
+  if (
+    post.post_tags &&
+    post.post_tags.some((tag) => tag.tag.toLowerCase() === lowerQuery)
+  ) {
     score += 150; // Increased weight for exact tag matches
     matchWeight += 5;
   }
   // Check for hashtag contains match
-  else if (post.matchFields?.includes('hashtag') || 
-          (post.post_tags && post.post_tags.some(tag => tag.tag.toLowerCase().includes(lowerQuery)))) {
+  else if (
+    post.matchFields?.includes("hashtag") ||
+    (post.post_tags &&
+      post.post_tags.some((tag) => tag.tag.toLowerCase().includes(lowerQuery)))
+  ) {
     score += 100;
     matchWeight += 4;
   }
-  
+
   // Title exact match (very high weight)
   if (post.title && post.title.toLowerCase() === lowerQuery) {
     score += 110;
     matchWeight += 5;
   }
   // Title contains match (high weight)
-  else if (post.matchFields?.includes('title') || 
-          (post.title && post.title.toLowerCase().includes(lowerQuery))) {
+  else if (
+    post.matchFields?.includes("title") ||
+    (post.title && post.title.toLowerCase().includes(lowerQuery))
+  ) {
     score += 75;
     matchWeight += 3;
   }
-  
+
   // Author exact match (high weight)
   if (post.author_details) {
-    const authorFullName = `${post.author_details.first_name || ''} ${post.author_details.last_name || ''}`.toLowerCase();
-    const authorUsername = (post.author_details.username || '').toLowerCase();
-    
+    const authorFullName = `${post.author_details.first_name || ""} ${
+      post.author_details.last_name || ""
+    }`.toLowerCase();
+    const authorUsername = (post.author_details.username || "").toLowerCase();
+
     // Exact name or username match
     if (authorFullName === lowerQuery || authorUsername === lowerQuery) {
       score += 90;
       matchWeight += 4;
     }
     // Contains match in name or username
-    else if (post.matchFields?.includes('author') || 
-            authorFullName.includes(lowerQuery) || 
-            authorUsername.includes(lowerQuery)) {
+    else if (
+      post.matchFields?.includes("author") ||
+      authorFullName.includes(lowerQuery) ||
+      authorUsername.includes(lowerQuery)
+    ) {
       score += 50;
       matchWeight += 2;
     }
   }
-  
+
   // Content exact match (happens when the full search query appears in content)
   if (post.content && post.content.toLowerCase().includes(` ${lowerQuery} `)) {
     score += 60;
     matchWeight += 3;
   }
   // Content contains match
-  else if (post.matchFields?.includes('content') || 
-          (post.content && post.content.toLowerCase().includes(lowerQuery))) {
+  else if (
+    post.matchFields?.includes("content") ||
+    (post.content && post.content.toLowerCase().includes(lowerQuery))
+  ) {
     score += 25;
     matchWeight += 1;
   }
-  
+
   // Boosting for hashtag searches - give more weight to hashtag matches in hashtag searches
   if (isHashtagSearch && post.hasMatchingHashtag) {
     score = score * 1.5; // 50% boost for matching hashtag in hashtag search
   }
-  
+
   // Boost score based on number of different fields matching (multiplicative)
   if (matchWeight > 0) {
-    score = score * (1 + (matchWeight / 8));
+    score = score * (1 + matchWeight / 8);
   }
-  
+
   // Recency bonus (newer posts get priority, more significant for newer posts)
   if (post.created_at) {
     const postDate = new Date(post.created_at);
     const now = new Date();
     const daysDifference = Math.floor((now - postDate) / (1000 * 60 * 60 * 24));
-    
+
     // Add recency bonus with exponential decay
     if (daysDifference === 0) {
       // Posts from today get a big boost
@@ -694,7 +883,7 @@ function calculateRelevanceScore(post, searchQuery) {
       score += Math.max(0, 8 - Math.log2(daysDifference));
     }
   }
-  
+
   return score;
 }
 
@@ -715,93 +904,101 @@ async function getPosts(isLoadingMore = false, page = 1) {
     if (isLoadingMore && lastCreatedAt.value) {
       // Get older posts (for pagination)
       params.older_than = lastCreatedAt.value;
-    }    // Extract the search query
+    } // Extract the search query
     const searchQuery = route.params.search;
-      // If the search query starts with #, it's a hashtag search
-    const isHashtagSearch = searchQuery.startsWith('#');
-    const normalizedQuery = isHashtagSearch ? searchQuery.substring(1) : searchQuery;
-    
+    // If the search query starts with #, it's a hashtag search
+    const isHashtagSearch = searchQuery.startsWith("#");
+    const normalizedQuery = isHashtagSearch
+      ? searchQuery.substring(1)
+      : searchQuery;
+
     // Debug hashtag search information
-    console.debug('Search info:', {
+    console.debug("Search info:", {
       originalQuery: searchQuery,
       isHashtagSearch,
-      normalizedQuery
+      normalizedQuery,
     });
-    
+
     // Build complete params object for the search
     const searchParams = new URLSearchParams();
-    
+
     // Always include these parameters
-    searchParams.append('page', page.toString());
-    searchParams.append('page_size', params.page_size.toString());
-    
+    searchParams.append("page", page.toString());
+    searchParams.append("page_size", params.page_size.toString());
+
     // Add pagination cursor if available
     if (params.older_than) {
-      searchParams.append('older_than', params.older_than);
+      searchParams.append("older_than", params.older_than);
     }
-      // Always include the search term in the main query for searching in name, title and content
-    searchParams.append('q', normalizedQuery);
-    
+    // Always include the search term in the main query for searching in name, title and content
+    searchParams.append("q", normalizedQuery);
+
     // For hashtag searches, also specifically search in tags
     if (isHashtagSearch) {
-      searchParams.append('tag', normalizedQuery);
+      searchParams.append("tag", normalizedQuery);
     } else {
       // For regular searches, we want to look in tags as well for better results
-      searchParams.append('tag', normalizedQuery);
+      searchParams.append("tag", normalizedQuery);
     }
-    
+
     const queryString = searchParams.toString();
-    console.log("Fetching posts with params:", Object.fromEntries(searchParams));
 
     const [response] = await Promise.all([
       get(`/bn/posts/search/?${queryString}`),
       // Add a minimum delay for UX, shorter for subsequent loads
       new Promise((resolve) => setTimeout(resolve, isLoadingMore ? 300 : 800)),
-    ]);    if (response.data && response.data.results) {
+    ]);
+    if (response.data && response.data.results) {
       const newPosts = response.data.results;
-      
-      console.log("Search results for:", route.params.search, {
-        totalResults: newPosts.length,
-        firstPost: newPosts.length > 0 ? {
-          content: newPosts[0].content?.substring(0, 50) + "...",
-          tags: newPosts[0].tags,
-        } : 'No posts found'
-      });      // Process posts to ensure they have necessary UI properties
+
+      // Process posts to ensure they have necessary UI properties
       const processedPosts = newPosts.map((post) => {
         // Check if this post has matching hashtags when doing a hashtag search
-        const hasMatchingHashtag = isHashtagSearch && 
-          post.post_tags && 
-          post.post_tags.some(tag => 
-            tag.tag.toLowerCase() === normalizedQuery.toLowerCase()
+        const hasMatchingHashtag =
+          isHashtagSearch &&
+          post.post_tags &&
+          post.post_tags.some(
+            (tag) => tag.tag.toLowerCase() === normalizedQuery.toLowerCase()
           );
-        
+
         // Check where the search term appears (for better highlighting)
         const matchFields = [];
-        
+
         // Check author name match
         if (post.author_details) {
-          const authorName = `${post.author_details.first_name || ''} ${post.author_details.last_name || ''}`.toLowerCase();
-          const username = (post.author_details.username || '').toLowerCase();
-          if (authorName.includes(normalizedQuery.toLowerCase()) || username.includes(normalizedQuery.toLowerCase())) {
-            matchFields.push('author');
+          const authorName = `${post.author_details.first_name || ""} ${
+            post.author_details.last_name || ""
+          }`.toLowerCase();
+          const username = (post.author_details.username || "").toLowerCase();
+          if (
+            authorName.includes(normalizedQuery.toLowerCase()) ||
+            username.includes(normalizedQuery.toLowerCase())
+          ) {
+            matchFields.push("author");
           }
         }
-        
+
         // Check title match
-        if (post.title && post.title.toLowerCase().includes(normalizedQuery.toLowerCase())) {
-          matchFields.push('title');
+        if (
+          post.title &&
+          post.title.toLowerCase().includes(normalizedQuery.toLowerCase())
+        ) {
+          matchFields.push("title");
         }
-        
+
         // Check content match
-        if (post.content && post.content.toLowerCase().includes(normalizedQuery.toLowerCase())) {
-          matchFields.push('content');
+        if (
+          post.content &&
+          post.content.toLowerCase().includes(normalizedQuery.toLowerCase())
+        ) {
+          matchFields.push("content");
         }
-        
+
         // Check hashtag match
         if (hasMatchingHashtag) {
-          matchFields.push('hashtag');
+          matchFields.push("hashtag");
         }
-        
+
         return {
           ...post,
           showFullDescription: false,
@@ -817,23 +1014,18 @@ async function getPosts(isLoadingMore = false, page = 1) {
       // Filter out duplicate posts based on their IDs
       const uniquePosts = processedPosts.filter((post) => {
         if (loadedPostIds.value.has(post.id)) {
-          console.log(`Filtered out duplicate post ID: ${post.id}`);
           return false;
         }
         loadedPostIds.value.add(post.id);
         return true;
       });
 
-      console.log(
-        `Found ${processedPosts.length} posts, ${uniquePosts.length} are unique`
-      );
-
       // Sort results by relevance (weighted by match type)
       const sortedUniquePosts = [...uniquePosts].sort((a, b) => {
         // Calculate relevance scores
         const scoreA = calculateRelevanceScore(a, searchQuery);
         const scoreB = calculateRelevanceScore(b, searchQuery);
-        
+
         // Sort by relevance score (higher is better)
         return scoreB - scoreA;
       });
@@ -851,7 +1043,6 @@ async function getPosts(isLoadingMore = false, page = 1) {
         // Set initial newest timestamp if first load
         if (!newestCreatedAt.value && uniquePosts.length > 0) {
           newestCreatedAt.value = uniquePosts[0].created_at;
-          console.log("Initial newest timestamp set:", newestCreatedAt.value);
         }
       }
 
@@ -870,7 +1061,6 @@ async function getPosts(isLoadingMore = false, page = 1) {
       // Update displayed posts
       updateDisplayedPosts();
     } else {
-      console.log("No posts returned from API");
       if (!isLoadingMore) {
         // Only clear on initial load failure
         allPosts.value = [];
@@ -905,19 +1095,18 @@ async function getUsers() {
 
     // Extract the search query
     const searchQuery = route.params.search;
-    
+
     // Build search params for user search
     const searchParams = new URLSearchParams();
-    
+
     // If search starts with #, remove it for user search
-    if (searchQuery.startsWith('#')) {
-      searchParams.append('q', searchQuery.substring(1));
+    if (searchQuery.startsWith("#")) {
+      searchParams.append("q", searchQuery.substring(1));
     } else {
-      searchParams.append('q', searchQuery);
+      searchParams.append("q", searchQuery);
     }
-    
+
     const queryString = searchParams.toString();
-    console.log("Fetching users with params:", Object.fromEntries(searchParams));
 
     const [response] = await Promise.all([
       get(`/bn/user-search/?${queryString}`),
@@ -967,8 +1156,6 @@ watch(showAllUsers, () => {
 
 // Handle gift sent event from child components
 function handleGiftSent(giftData) {
-  console.log("Gift sent event received:", giftData);
-
   // Reload posts after a short delay to ensure backend is updated
   setTimeout(() => {
     // Reset state and reload posts
@@ -998,7 +1185,7 @@ function loadData() {
       await getUsers(); // Get users first
       await getPosts(); // Then get posts
     };
-    
+
     fetchData();
   }, 100); // Small delay to ensure navigation completes first
 }
@@ -1094,12 +1281,12 @@ const handleNewSearch = () => {
   if (newSearchQuery.value && newSearchQuery.value.trim() !== "") {
     // Preserve hashtag format if present
     const query = newSearchQuery.value.trim();
-    
+
     // Properly encode the search query for URLs, maintaining the # character for hashtags
-    const encodedQuery = query.startsWith('#') 
-      ? encodeURIComponent('#') + encodeURIComponent(query.substring(1))
+    const encodedQuery = query.startsWith("#")
+      ? encodeURIComponent("#") + encodeURIComponent(query.substring(1))
       : encodeURIComponent(query);
-    
+
     // Navigate to new search results
     navigateTo(`/business-network/search-results/${encodedQuery}`);
   }
@@ -1298,5 +1485,4 @@ const scrollToTop = () => {
 .filter-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #a0a0a0;
 }
-
 </style>

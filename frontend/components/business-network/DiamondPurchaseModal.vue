@@ -463,7 +463,6 @@ const props = defineProps({
   },
 });
 const isOpen = ref(props.modelValue);
-console.log("DiamondPurchaseModal", props.modelValue);
 watch(
   () => props.modelValue,
   (newValue) => {
@@ -523,9 +522,6 @@ const canPurchase = computed(() => {
     (customDiamondAmount.value && customDiamondAmount.value >= 10);
   // Check if user has enough balance
   const hasBalance = user.value?.user?.balance >= calculateTotal.value;
-  console.log("hasBalance", hasBalance);
-  console.log("calculateTotal.value", calculateTotal.value);
-  console.log("hasAmount", hasAmount);
 
   return hasAmount && hasBalance && calculateTotal.value > 0;
 });
@@ -558,7 +554,6 @@ const calculatePrice = (diamonds) => {
 // API call to purchase diamonds
 const purchaseDiamonds = async () => {
   // Initialize the API utility
-  console.log(selectedPackage.value, customDiamondAmount.value);
   const diamondAmount = selectedPackage.value || customDiamondAmount.value;
   if (!diamondAmount) return;
 
@@ -651,14 +646,13 @@ const loadPurchaseHistory = async () => {
       "/diamonds-transactions/?page=" + currentPage.value
     );
     if (response.data) {
-      console.log(response.data);
       purchaseHistory.value = response.data.results;
       totalPages.value = Math.ceil(
         response.data?.count / response.data?.results?.length
       );
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 

@@ -16,7 +16,8 @@
             >
               <UIcon
                 name="i-heroicons-information-circle"
-                class="text-emerald-600"              />
+                class="text-emerald-600"
+              />
               Basic Information
             </h2>
 
@@ -38,7 +39,8 @@
               >
                 <template #leading>
                   <UIcon name="i-heroicons-pencil-square" />
-                </template>              </UInput>
+                </template>
+              </UInput>
             </UFormGroup>
 
             <UFormGroup
@@ -62,7 +64,8 @@
               >
                 <template #leading>
                   <UIcon name="i-heroicons-squares-2x2" />
-                </template>              </USelectMenu>
+                </template>
+              </USelectMenu>
             </UFormGroup>
           </div>
 
@@ -73,18 +76,21 @@
             <h2
               class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2"
             >
-              <UIcon name="i-heroicons-document-text" class="text-emerald-600" />
+              <UIcon
+                name="i-heroicons-document-text"
+                class="text-emerald-600"
+              />
               Product Details
             </h2>
 
             <UFormGroup label="Description" required class="mb-5">
               <p class="text-sm text-gray-600 mb-3">
                 Provide detailed information about your product
-              </p>              
+              </p>
               <div
                 class="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-100 focus-within:border-emerald-500 transition-all"
-              >                
-              <CommonEditor
+              >
+                <CommonEditor
                   v-if="route.query.id && form.description"
                   :content="form.description"
                   @updateContent="
@@ -111,7 +117,8 @@
                 class="w-full min-h-20 border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
                 resize
                 placeholder="A brief overview that appears in product listings (150 characters max)"
-              />            </UFormGroup>
+              />
+            </UFormGroup>
           </div>
 
           <!-- Product Media Section -->
@@ -193,7 +200,8 @@
               class="mt-3 text-emerald-600 text-sm flex items-center"
             >
               <UIcon name="i-heroicons-arrow-path" class="animate-spin mr-1" />
-              Uploading image...            </p>
+              Uploading image...
+            </p>
           </div>
 
           <!-- Product Pricing Section -->
@@ -215,7 +223,9 @@
                 label="Regular Price"
                 required
                 :error="
-                  !form.regular_price && checkSubmit && 'Regular price is required'
+                  !form.regular_price &&
+                  checkSubmit &&
+                  'Regular price is required'
                 "
                 class="mb-5"
               >
@@ -273,7 +283,8 @@
                   <template #leading>
                     <UIcon name="i-heroicons-cube" />
                   </template>
-                </UInput>              </UFormGroup>
+                </UInput>
+              </UFormGroup>
             </div>
           </div>
 
@@ -303,16 +314,18 @@
                   <UIcon name="i-heroicons-scale" />
                 </template>
               </UInput>
-            </UFormGroup>            
+            </UFormGroup>
             <UFormGroup
               label="Delivery Method"
               required
               :error="
-                !form.deliveryMethod && checkSubmit && 'Please select a delivery method'
+                !form.deliveryMethod &&
+                checkSubmit &&
+                'Please select a delivery method'
               "
               class="my-5"
-              style="margin-bottom: 1.25rem !important;"
-            ><div class="space-y-3">
+              style="margin-bottom: 1.25rem !important"
+              ><div class="space-y-3">
                 <div class="flex items-center mt-4">
                   <URadio
                     v-model="form.deliveryMethod"
@@ -365,7 +378,8 @@
                   >
                     <template #leading>
                       <UIcon name="i-mdi:currency-bdt" />
-                    </template>                  </UInput>
+                    </template>
+                  </UInput>
                 </UFormGroup>
               </div>
             </UFormGroup>
@@ -382,7 +396,7 @@
               v-if="advanceEditMode"
               @update:content="handleEditorUpdate"
             />
-          </UCard>          
+          </UCard>
           <!-- Form Submit Section -->
           <div class="p-6">
             <div class="flex flex-row gap-3 justify-between">
@@ -402,8 +416,8 @@
                 size="lg"
                 :loading="isSubmitting"
                 class="bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-100 flex-1"
-              ><UIcon name="i-heroicons-plus-circle" class="mr-2" />
-                {{ route.query.id ? 'Update Product' : 'Add Product' }}
+                ><UIcon name="i-heroicons-plus-circle" class="mr-2" />
+                {{ route.query.id ? "Update Product" : "Add Product" }}
               </UButton>
             </div>
           </div>
@@ -457,56 +471,14 @@ const productEditorData = ref(null);
 // Function to log advanced editor updates
 function handleEditorUpdate(editorData) {
   console.group("Advanced Editor Data Update");
-  console.log("Received editor data in parent component:", editorData);
-
-  // Log individual sections for better visibility
-  console.log("Header texts:", {
-    benefitsTitle: editorData.benefitsTitle,
-    benefitsCta: editorData.benefitsCta,
-    faqsTitle: editorData.faqsTitle,
-    faqsSubtitle: editorData.faqsSubtitle,
-    ctaTitle: editorData.ctaTitle,
-    ctaSubtitle: editorData.ctaSubtitle,
-    ctaButtonText: editorData.ctaButtonText,
-    ctaButtonSubtext: editorData.ctaButtonSubtext,
-  });
-
-  console.log("Benefits:", editorData.benefits);
-  console.log("FAQs:", editorData.faqs);
-  console.log("Trust badges:", editorData.trustBadges);
 
   // Store the editor data in the form
   if (editorData) {
     const previousData = form.value.editorData;
     form.value.editorData = editorData;
 
-    // Compare with previous data if available
-    if (previousData) {
-      console.log("Changes from previous data:", {
-        headersChanged:
-          JSON.stringify(previousData.benefitsTitle) !==
-            JSON.stringify(editorData.benefitsTitle) ||
-          JSON.stringify(previousData.faqsTitle) !==
-            JSON.stringify(editorData.faqsTitle) ||
-          JSON.stringify(previousData.ctaTitle) !==
-            JSON.stringify(editorData.ctaTitle),
-        benefitsChanged:
-          JSON.stringify(previousData.benefits) !==
-          JSON.stringify(editorData.benefits),
-        faqsChanged:
-          JSON.stringify(previousData.faqs) !== JSON.stringify(editorData.faqs),
-        trustBadgesChanged:
-          JSON.stringify(previousData.trustBadges) !==
-          JSON.stringify(editorData.trustBadges),
-      });
-    }
-
     // Add timestamp to track when changes occurred
     const now = new Date();
-    console.log("Update timestamp:", now.toISOString());
-
-    // Log the full updated form
-    console.log("Updated form with editor data:", form.value);
 
     // Update the reference for display in the template
     productEditorData.value = editorData;
@@ -526,16 +498,6 @@ function handleEditorUpdate(editorData) {
 async function handleAddProduct() {
   // Start logging group
   console.group("Product Submission");
-  console.log("Form data before submission:", form.value);
-
-  if (form.value.editorData) {
-    console.log(
-      "Advanced editor data included in submission:",
-      form.value.editorData
-    );
-  } else {
-    console.log("No advanced editor data in submission");
-  }
 
   checkSubmit.value = true;
 
@@ -552,7 +514,7 @@ async function handleAddProduct() {
       description: "Please fill in all required fields",
       color: "red",
     });
-    console.log("Form validation failed - missing required fields");
+
     console.groupEnd();
     return;
   }
@@ -571,7 +533,7 @@ async function handleAddProduct() {
           color: "red",
           timeout: 8000,
         });
-        console.log("Form validation failed - product limit reached");
+
         console.groupEnd();
         return;
       }
@@ -601,7 +563,6 @@ async function handleAddProduct() {
       ...form.value.editorData,
       is_advanced: advanceEditMode.value,
     };
-    console.log("Product data for API submission:", productData);
 
     // Set is_free_delivery based on delivery method selection
     if (form.value.deliveryMethod === "free") {
@@ -616,8 +577,6 @@ async function handleAddProduct() {
     // Clean up temporary form fields before submission
     delete productData.deliveryMethod;
 
-    console.log("Sending product data to API:", productData);
-
     // Check if we are updating or creating a product
     let res;
     if (props.product?.id) {
@@ -631,7 +590,7 @@ async function handleAddProduct() {
     }
 
     if (res.data) {
-      console.log("API response:", res.data);      toast.add({
+      toast.add({
         title: "Success",
         description: successMessage.value,
         color: "green",
@@ -643,10 +602,10 @@ async function handleAddProduct() {
         resetForm(false);
         checkSubmit.value = false;
         currentStep.value = 1;
-        
+
         // Navigate to my-products page after successful creation
         setTimeout(() => {
-          router.push('/my-products');
+          router.push("/my-products");
         }, 2000); // Wait 2 seconds to show success message
       }
     }
@@ -711,15 +670,16 @@ function handleFileUpload(event) {
       return;
     }
 
-    const reader = new FileReader();    reader.onload = (e) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
         let width = img.width;
         let height = img.height;
-        
+
         // Calculate original file size for comparison
-        const originalSize = file.size;        // Enhanced compression: resize while maintaining aspect ratio
+        const originalSize = file.size; // Enhanced compression: resize while maintaining aspect ratio
         // Increased max size for better product image quality
         const maxSize = 1600; // Higher max size for product photos
         if (width > maxSize || height > maxSize) {
@@ -738,14 +698,16 @@ function handleFileUpload(event) {
         const ctx = canvas.getContext("2d");
         // Enable image smoothing for better quality
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
+        ctx.imageSmoothingQuality = "high";
         ctx.drawImage(img, 0, 0, width, height);
 
         // Higher quality settings for product images
         let quality = 0.9; // High quality for product photos
-        if (originalSize > 10 * 1024 * 1024) { // > 10MB
+        if (originalSize > 10 * 1024 * 1024) {
+          // > 10MB
           quality = 0.85;
-        } else if (originalSize > 5 * 1024 * 1024) { // > 5MB
+        } else if (originalSize > 5 * 1024 * 1024) {
+          // > 5MB
           quality = 0.88;
         }
 
@@ -816,10 +778,6 @@ function deleteUpload(index) {
 
 // Updated function to log changes in the editor content
 function updateContent(p) {
-  console.log(
-    "Content updated:",
-    p.substring(0, 100) + (p.length > 100 ? "..." : "")
-  );
   form.value.description = p;
 }
 
@@ -831,7 +789,6 @@ function resetForm(showConfirm = true) {
     : true;
 
   if (doReset) {
-    console.log("Resetting form");
     form.value = {
       name: "",
       category: "",
@@ -1219,7 +1176,8 @@ function resetForm(showConfirm = true) {
 
 /* Animation keyframes */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
   }
   50% {
@@ -1228,7 +1186,8 @@ function resetForm(showConfirm = true) {
 }
 
 @keyframes success-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
   }

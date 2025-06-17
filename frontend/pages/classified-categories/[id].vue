@@ -131,7 +131,8 @@
               </div>
             </template>
           </div>
-          <UTooltip text="Change Location" class="me-auto">            <UButton
+          <UTooltip text="Change Location" class="me-auto">
+            <UButton
               icon="i-heroicons-map-pin"
               size="md"
               color="primary"
@@ -292,7 +293,8 @@
           class="service-card border even:border-t-0 even:border-b-0 bg-white rounded-md"
           v-for="(service, i) in search.filter(
             (service) => service.service_status.toLowerCase() === 'approved'
-          )"          :key="{ i }"
+          )"
+          :key="{ i }"
           data-aos="zoom-out-right"
         >
           <NuxtLink :to="`/classified-categories/details/${service.slug}`">
@@ -379,11 +381,16 @@
                 </div>
               </div>
             </div>
-          </NuxtLink>        </UCard>          <!-- Simple Pagination Section -->
-        <div v-if="search?.length && pagination && totalPages > 1" class="mt-6 mb-4">
+          </NuxtLink>
+        </UCard>
+        <!-- Simple Pagination Section -->
+        <div
+          v-if="search?.length && pagination && totalPages > 1"
+          class="mt-6 mb-4"
+        >
           <div class="flex items-center justify-center gap-2 text-sm">
             <span>Page {{ currentPage }} of {{ totalPages }}</span>
-            
+
             <!-- Previous button -->
             <button
               :disabled="currentPage === 1"
@@ -392,18 +399,22 @@
             >
               Previous
             </button>
-            
+
             <!-- Page numbers -->
             <button
               v-for="page in getVisiblePages()"
               :key="page"
               @click="goToPage(page)"
               class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
-              :class="page === currentPage ? 'bg-blue-500 text-white border-blue-500' : ''"
+              :class="
+                page === currentPage
+                  ? 'bg-blue-500 text-white border-blue-500'
+                  : ''
+              "
             >
               {{ page }}
             </button>
-            
+
             <!-- Next button -->
             <button
               :disabled="currentPage === totalPages"
@@ -414,7 +425,7 @@
             </button>
           </div>
         </div>
-        
+
         <UDivider label="" class="mt-2 sm:mt-5" />
         <h3
           v-if="!location?.allOverBangladesh"
@@ -471,7 +482,8 @@
           <!-- Action buttons -->
           <div class="flex flex-wrap justify-center gap-3 fade-in-up-delay-2">
             <UButton
-              color="gray"              variant="ghost"
+              color="gray"
+              variant="ghost"
               :label="$t('change_location')"
               icon="i-heroicons-map"
               @click="handleClearLocation"
@@ -631,14 +643,16 @@
           background: 'bg-slate-50 dark:bg-gray-900',
           ring: 'ring-0 ring-gray-200 dark:ring-gray-800',
         }"
-      >        <AiResults
+      >
+        <AiResults
           :country="form.country"
           :state="location?.allOverBangladesh ? 'All Bangladesh' : form.state"
           :city="location?.allOverBangladesh ? 'All Cities' : form.city"
           :upazila="location?.allOverBangladesh ? 'All Areas' : form.upazila"
           :business_type="categoryDetails?.business_type"
         />
-      </UCard>    </UContainer>
+      </UCard>
+    </UContainer>
   </PublicSection>
 </template>
 
@@ -703,7 +717,6 @@ async function getCategoryDetails() {
       `/details/classified-categories/${router.params.id}/`
     );
     if (data) {
-      console.log("category details", data);
       categoryDetails.value = data;
       await fetchServices();
     }
@@ -729,26 +742,22 @@ if (form.value.state) {
     `/geo/cities/?region_name_eng=${form.value.state}`
   );
   cities.value = cities_response.data;
-  console.log(cities_response.data);
 }
 if (form.value.city) {
   const thana_response = await get(
     `/geo/upazila/?city_name_eng=${form.value.city}`
   );
   upazilas.value = thana_response.data;
-  console.log(thana_response.data);
 }
 
 watch(
   () => form.value.state,
   async (newState) => {
-    console.log(newState);
     if (newState) {
       const cities_response = await get(
         `/geo/cities/?region_name_eng=${newState}`
       );
       cities.value = cities_response.data;
-      console.log(cities_response.data);
     }
   }
 );
@@ -756,13 +765,11 @@ watch(
 watch(
   () => form.value.city,
   async (newCity) => {
-    console.log(newCity);
     if (newCity) {
       const thana_response = await get(
         `/geo/upazila/?city_name_eng=${newCity}`
       );
       upazilas.value = thana_response.data;
-      console.log(thana_response.data);
     }
   }
 );
@@ -777,7 +784,7 @@ async function filterSearch(page = 1) {
     allOverBangladesh: location.value?.allOverBangladesh || false,
   };
   location.value = locationData;
-  
+
   if (page === 1) {
     search.value = [];
     currentPage.value = 1;
@@ -804,7 +811,7 @@ async function filterSearch(page = 1) {
         } else {
           search.value = [...search.value, ...res.data.results];
         }
-        
+
         // Update pagination info
         pagination.value = res.data;
         totalCount.value = res.data.count || 0;
@@ -830,7 +837,7 @@ async function filterSearch(page = 1) {
         searchError.value = true;
       }
     }
-    
+
     isLoading.value = false;
     isLoadingMore.value = false;
   }, 2000);
@@ -856,11 +863,11 @@ function getVisiblePages() {
   const pages = [];
   const start = Math.max(1, currentPage.value - 2);
   const end = Math.min(totalPages.value, currentPage.value + 2);
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i);
   }
-  
+
   return pages;
 }
 
@@ -900,10 +907,8 @@ async function fetchNearbyAds() {
     `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}&page=1&page_size=20`
   );
 
-  // If city search has results, use those
-  console.log("near by", citySearchRes.data);
   let nearbyData = [];
-  
+
   if (citySearchRes.data?.results) {
     nearbyData = citySearchRes.data.results;
   } else if (Array.isArray(citySearchRes.data)) {
@@ -946,7 +951,7 @@ await fetchNearbyAds();
 const handleClearLocation = () => {
   clearLocation();
   window.location.reload();
-}
+};
 
 // Add scroll event listeners
 onMounted(() => {
@@ -957,16 +962,19 @@ onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
 });
 
-watch([
-  () => form.value.country,
-  () => form.value.state,
-  () => form.value.city,
-  () => form.value.upazila,
-  () => form.value.title
-], () => {
-  currentPage.value = 1;
-  filterSearch(1);
-});
+watch(
+  [
+    () => form.value.country,
+    () => form.value.state,
+    () => form.value.city,
+    () => form.value.upazila,
+    () => form.value.title,
+  ],
+  () => {
+    currentPage.value = 1;
+    filterSearch(1);
+  }
+);
 </script>
 <style scoped>
 /* Empty state transitions */

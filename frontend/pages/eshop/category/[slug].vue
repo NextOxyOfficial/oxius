@@ -1,37 +1,47 @@
-<template>  <div
+<template>
+  <div
     class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20 pt-4"
   >
     <UContainer>
-        <!-- Modern Header Section -->
-      <div class="mb-4">        
+      <!-- Modern Header Section -->
+      <div class="mb-4">
         <!-- Main Header Card -->
-        <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+        <div
+          class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+        >
           <!-- Subtle gradient overlay -->
-          <div class="absolute inset-0 bg-gradient-to-br from-emerald-100/30 via-transparent to-blue-100/30 dark:from-emerald-900/10 dark:via-transparent dark:to-blue-900/10"></div>
-          
-          <div class="relative py-2 px-4 ">
+          <div
+            class="absolute inset-0 bg-gradient-to-br from-emerald-100/30 via-transparent to-blue-100/30 dark:from-emerald-900/10 dark:via-transparent dark:to-blue-900/10"
+          ></div>
+
+          <div class="relative py-2 px-4">
             <!-- Header Row -->
             <div class="flex items-center justify-between">
               <!-- Left: Back Button + Category Name -->
-              <div class="flex items-center gap-1 flex-1 min-w-0">                
+              <div class="flex items-center gap-1 flex-1 min-w-0">
                 <!-- Back Button -->
                 <button
                   @click="$router.push('/eshop')"
                   class="flex-shrink-0 inline-flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-xl transition-all duration-200"
                 >
                   <span class="sr-only">Back to eShop</span>
-                  <UIcon name="material-symbols-light-arrow-back-ios-rounded" class="size-5" />
+                  <UIcon
+                    name="material-symbols-light-arrow-back-ios-rounded"
+                    class="size-5"
+                  />
                 </button>
 
                 <!-- Category Name -->
                 <div class="flex-1 min-w-0">
-                  <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate">
-                    {{ categoryDetails.name || 'Category' }}
+                  <h1
+                    class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate"
+                  >
+                    {{ categoryDetails.name || "Category" }}
                   </h1>
                 </div>
-              </div>                
+              </div>
               <!-- Right: Search, Filter & Share -->
-              <div class="flex items-center gap-2 flex-shrink-0">                
+              <div class="flex items-center gap-2 flex-shrink-0">
                 <!-- Search Button -->
                 <button
                   @click="toggleSearch"
@@ -46,9 +56,9 @@
                   class="inline-flex items-center justify-center w-10 h-10 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-all duration-200"
                 >
                   <span class="sr-only">Price Filters</span>
-                  <UIcon 
-                    name="mdi-filter-multiple-outline" 
-                    class="size-5 transition-transform duration-200" 
+                  <UIcon
+                    name="mdi-filter-multiple-outline"
+                    class="size-5 transition-transform duration-200"
                   />
                 </button>
                 <!-- Share Button -->
@@ -59,7 +69,8 @@
                   <span class="sr-only">Share Category</span>
                   <UIcon name="i-heroicons-share" class="size-5" />
                 </button>
-              </div></div>
+              </div>
+            </div>
 
             <!-- Search Dropdown Section -->
             <transition
@@ -70,9 +81,17 @@
               leave-from-class="opacity-100 max-h-20"
               leave-to-class="opacity-0 max-h-0 overflow-hidden"
             >
-              <div v-if="isSearchOpen" class="flex flex-col gap-3 px-4 py-4 border-t border-gray-100 dark:border-gray-700/30 search-container">
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 flex-shrink-0">
-                  <UIcon name="i-heroicons-magnifying-glass" class="size-4 text-emerald-500" />
+              <div
+                v-if="isSearchOpen"
+                class="flex flex-col gap-3 px-4 py-4 border-t border-gray-100 dark:border-gray-700/30 search-container"
+              >
+                <label
+                  class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 flex-shrink-0"
+                >
+                  <UIcon
+                    name="i-heroicons-magnifying-glass"
+                    class="size-4 text-emerald-500"
+                  />
                   Search Products
                 </label>
 
@@ -97,7 +116,7 @@
                     <UIcon name="i-heroicons-x-mark" class="size-4" />
                   </button>
                 </div>
-              </div>            
+              </div>
             </transition>
 
             <!-- Price Range Section -->
@@ -109,15 +128,25 @@
               leave-from-class="opacity-100 max-h-20"
               leave-to-class="opacity-0 max-h-0 overflow-hidden"
             >
-              <div v-if="isPriceRangeOpen" class="flex flex-col sm:flex-row gap-3 sm:items-center px-4 py-4 border-t border-gray-100 dark:border-gray-700/30">
-                <label class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 flex-shrink-0">
-                  <UIcon name="i-heroicons-banknotes" class="size-4 text-emerald-500" />
+              <div
+                v-if="isPriceRangeOpen"
+                class="flex flex-col sm:flex-row gap-3 sm:items-center px-4 py-4 border-t border-gray-100 dark:border-gray-700/30"
+              >
+                <label
+                  class="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 flex-shrink-0"
+                >
+                  <UIcon
+                    name="i-heroicons-banknotes"
+                    class="size-4 text-emerald-500"
+                  />
                   Price Range
                 </label>
 
                 <div class="flex items-center gap-3 flex-1">
                   <div class="relative flex-1">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 text-sm font-medium">
+                    <span
+                      class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 text-sm font-medium"
+                    >
                       ৳
                     </span>
                     <input
@@ -132,7 +161,9 @@
                   <span class="text-gray-400 flex-shrink-0">—</span>
 
                   <div class="relative flex-1">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 text-sm font-medium">
+                    <span
+                      class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 text-sm font-medium"
+                    >
                       ৳
                     </span>
                     <input
@@ -157,57 +188,57 @@
             </transition>
           </div>
         </div>
-      </div><!-- Active Filters with elegantly styled badges -->
-        <div
+      </div>
+      <!-- Active Filters with elegantly styled badges -->
+      <div
+        v-if="hasActiveFilters"
+        class="flex flex-wrap items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700/30 mt-4"
+      >
+        <span class="text-sm text-gray-600 dark:text-gray-600 font-medium"
+          >Active filters:</span
+        >
+
+        <UBadge
+          v-if="searchQuery"
+          color="blue"
+          variant="soft"
+          class="pl-3 pr-2 py-1 group cursor-pointer"
+          @click.stop="clearSearch"
+        >
+          Search: "{{ searchQuery }}"
+          <span
+            class="ml-1.5 bg-blue-200/50 dark:bg-blue-800/30 rounded-full p-0.5 group-hover:bg-blue-300/50 dark:group-hover:bg-blue-700/30 transition-colors"
+          >
+            <UIcon name="i-heroicons-x-mark" class="size-3" />
+          </span>
+        </UBadge>
+
+        <UBadge
+          v-if="minPrice || maxPrice"
+          color="emerald"
+          variant="soft"
+          class="pl-3 pr-2 py-1 group cursor-pointer"
+          @click.stop="clearPriceFilter"
+        >
+          Price: {{ minPrice || "0" }} - {{ maxPrice || "∞" }}
+          <span
+            class="ml-1.5 bg-emerald-200/50 dark:bg-emerald-800/30 rounded-full p-0.5 group-hover:bg-emerald-300/50 dark:group-hover:bg-emerald-700/30 transition-colors"
+          >
+            <UIcon name="i-heroicons-x-mark" class="size-3" />
+          </span>
+        </UBadge>
+
+        <UButton
           v-if="hasActiveFilters"
-          class="flex flex-wrap items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700/30 mt-4"
-        >          
-          <span class="text-sm text-gray-600 dark:text-gray-600 font-medium"
-            >Active filters:</span
-          >
-
-          <UBadge
-            v-if="searchQuery"
-            color="blue"
-            variant="soft"
-            class="pl-3 pr-2 py-1 group cursor-pointer"
-            @click.stop="clearSearch"
-          >
-            Search: "{{ searchQuery }}"
-            <span
-              class="ml-1.5 bg-blue-200/50 dark:bg-blue-800/30 rounded-full p-0.5 group-hover:bg-blue-300/50 dark:group-hover:bg-blue-700/30 transition-colors"
-            >
-              <UIcon name="i-heroicons-x-mark" class="size-3" />
-            </span>
-          </UBadge>
-
-          <UBadge
-            v-if="minPrice || maxPrice"
-            color="emerald"
-            variant="soft"
-            class="pl-3 pr-2 py-1 group cursor-pointer"
-            @click.stop="clearPriceFilter"
-          >
-            Price: {{ minPrice || "0" }} - {{ maxPrice || "∞" }}
-            <span
-              class="ml-1.5 bg-emerald-200/50 dark:bg-emerald-800/30 rounded-full p-0.5 group-hover:bg-emerald-300/50 dark:group-hover:bg-emerald-700/30 transition-colors"
-            >
-              <UIcon name="i-heroicons-x-mark" class="size-3" />
-            </span>
-          </UBadge>
-
-          <UButton
-            v-if="hasActiveFilters"
-            color="gray"
-            variant="ghost"
-            size="xs"
-            @click="clearAllFilters"
-            class="ml-2"
-          >
-            Clear all
-          </UButton>
-        </div>
-      
+          color="gray"
+          variant="ghost"
+          size="xs"
+          @click="clearAllFilters"
+          class="ml-2"
+        >
+          Clear all
+        </UButton>
+      </div>
 
       <!-- Enhanced Loading State -->
       <div v-if="isLoading" class="py-20">
@@ -341,18 +372,13 @@ const searchInput = ref(null);
 
 // Computed property to check if any filters are active
 const hasActiveFilters = computed(() => {
-  return (
-    minPrice.value ||
-    maxPrice.value ||
-    searchQuery.value
-  );
+  return minPrice.value || maxPrice.value || searchQuery.value;
 });
 
 // Search functionality
 async function toggleSearch() {
-  console.log('Toggle search clicked, current state:', isSearchOpen.value);
   isSearchOpen.value = !isSearchOpen.value;
-  
+
   if (isSearchOpen.value) {
     await nextTick();
     try {
@@ -360,13 +386,12 @@ async function toggleSearch() {
         searchInput.value.focus();
       }
     } catch (error) {
-      console.error('Error focusing search input:', error);
+      console.error("Error focusing search input:", error);
     }
   }
 }
 
 function closeSearch() {
-  console.log('Closing search');
   isSearchOpen.value = false;
   // Don't clear the search query when closing, just hide the UI
 }
@@ -379,9 +404,11 @@ function togglePriceRange() {
 // Share functionality
 async function shareCategory() {
   const shareData = {
-    title: `${categoryDetails.value.name || 'Category'} - AdsyClub eShop`,
-    text: `Check out ${categoryDetails.value.name || 'this category'} with ${totalProducts.value} amazing products!`,
-    url: window.location.href
+    title: `${categoryDetails.value.name || "Category"} - AdsyClub eShop`,
+    text: `Check out ${categoryDetails.value.name || "this category"} with ${
+      totalProducts.value
+    } amazing products!`,
+    url: window.location.href,
   };
 
   try {
@@ -398,7 +425,7 @@ async function shareCategory() {
       });
     }
   } catch (error) {
-    console.error('Error sharing:', error);
+    console.error("Error sharing:", error);
     // Fallback: copy to clipboard
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -433,7 +460,6 @@ async function getCategoryDetails() {
     const res = await get(`/product-categories/details/${route.params.slug}/`);
     if (res.data) {
       categoryDetails.value = res.data;
-      console.log("Category Details:", categoryDetails.value);
     }
   } catch (error) {
     console.error("Error fetching category details:", error);
@@ -606,29 +632,29 @@ function initInfiniteScroll() {
 await fetchProducts();
 onMounted(() => {
   initInfiniteScroll();
-  
+
   // Detect mobile device
   const checkMobile = () => {
     isMobile.value = window.innerWidth < 768; // Tailwind md breakpoint
   };
-  
+
   checkMobile();
-  window.addEventListener('resize', checkMobile);
-    // Close search when clicking outside
+  window.addEventListener("resize", checkMobile);
+  // Close search when clicking outside
   const handleClickOutside = (event) => {
     if (isSearchOpen.value) {
-      const searchContainer = event.target.closest('.search-container');
+      const searchContainer = event.target.closest(".search-container");
       if (!searchContainer) {
         closeSearch();
       }
     }
   };
-  
-  document.addEventListener('click', handleClickOutside);
-  
+
+  document.addEventListener("click", handleClickOutside);
+
   // Also listen for escape key globally
   const handleEscapeKey = (event) => {
-    if (event.key === 'Escape') {
+    if (event.key === "Escape") {
       if (isSearchOpen.value) {
         closeSearch();
       }
@@ -637,16 +663,16 @@ onMounted(() => {
       }
     }
   };
-  
-  document.addEventListener('keydown', handleEscapeKey);
+
+  document.addEventListener("keydown", handleEscapeKey);
 });
 
 // Clean up on unmount
 onUnmounted(() => {
   // Cleanup event listeners
-  window.removeEventListener('resize', () => {});
-  document.removeEventListener('click', () => {});
-  document.removeEventListener('keydown', () => {});
+  window.removeEventListener("resize", () => {});
+  document.removeEventListener("click", () => {});
+  document.removeEventListener("keydown", () => {});
 });
 </script>
 
@@ -683,7 +709,8 @@ onUnmounted(() => {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) scale(1);
   }
   50% {
@@ -692,7 +719,8 @@ onUnmounted(() => {
 }
 
 @keyframes float-delayed {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) scale(1);
   }
   50% {

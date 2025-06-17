@@ -1,5 +1,5 @@
 <template>
-  <div class="py-12 px-4 relative">    
+  <div class="py-12 px-4 relative">
     <!-- Subtle background effect -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none -z-10">
       <div
@@ -10,7 +10,7 @@
       ></div>
     </div>
 
-    <div class="container mx-auto max-w-4xl">      
+    <div class="container mx-auto max-w-4xl">
       <!-- Centered Header -->
       <div class="text-center mb-12">
         <h1
@@ -18,9 +18,7 @@
         >
           {{ $t("refer_friend") }}
         </h1>
-        <div
-          class="h-1 w-24 bg-primary-500 mx-auto rounded-full mb-3"
-        ></div>
+        <div class="h-1 w-24 bg-primary-500 mx-auto rounded-full mb-3"></div>
         <p class="text-xl text-gray-600 dark:text-gray-400">
           {{ $t("refer") }}
         </p>
@@ -623,7 +621,8 @@
       </div>
 
       <!-- Replace both history sections with this single tabbed component -->
-      <div class="mt-12">        <div
+      <div class="mt-12">
+        <div
           class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden"
         >
           <div class="tab-navigation overflow-hidden relative">
@@ -729,7 +728,8 @@
                         class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         Referred User
-                      </th>                      <th
+                      </th>
+                      <th
                         class="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
                       >
                         Service Type
@@ -743,8 +743,8 @@
                   </thead>
                   <tbody
                     class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700"
-                  >                    
-                  <!-- Loading Skeleton -->
+                  >
+                    <!-- Loading Skeleton -->
                     <tr
                       v-if="isLoadingCommissions"
                       v-for="i in 5"
@@ -789,7 +789,7 @@
                             {{ earning.name }}
                           </div>
                         </div>
-                      </td>                      
+                      </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <UBadge
                           :color="
@@ -812,7 +812,8 @@
                           {{ earning.amount.toFixed(2) }}
                         </div>
                       </td>
-                    </tr>                    <tr
+                    </tr>
+                    <tr
                       v-if="
                         !isLoadingCommissions && filteredEarnings.length === 0
                       "
@@ -901,7 +902,10 @@
                           </div>
                           <UAvatar
                             v-else
-                            :src="user.image || '/static/frontend/images/placeholder.jpg'"
+                            :src="
+                              user.image ||
+                              '/static/frontend/images/placeholder.jpg'
+                            "
                             size="sm"
                             class="user-avatar"
                           />
@@ -913,7 +917,8 @@
                             </div>
                           </div>
                         </div>
-                      </td>                      <td
+                      </td>
+                      <td
                         class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-600"
                       >
                         {{ maskEmail(user.email) }}
@@ -928,7 +933,7 @@
                           {{ user.is_active ? "Active" : "Inactive" }}
                         </UBadge>
                       </td>
-                    </tr>                    
+                    </tr>
                     <tr v-if="referredUsers.length === 0">
                       <td
                         colspan="3"
@@ -1172,25 +1177,24 @@ function getCommissionRate(typeCode) {
 
 // Method to mask email for privacy protection
 function maskEmail(email) {
-  if (!email) return '';
-  
-  const atIndex = email.indexOf('@');
+  if (!email) return "";
+
+  const atIndex = email.indexOf("@");
   if (atIndex <= 3) {
     // If email is too short or @ is at position 3 or less, just mask the domain
-    return email.substring(0, atIndex) + '****@' + email.substring(atIndex + 1);
+    return email.substring(0, atIndex) + "****@" + email.substring(atIndex + 1);
   }
-  
+
   // Keep first 3 characters, mask everything until @, then show domain
   const firstPart = email.substring(0, 3);
-  const maskedPart = '****';
+  const maskedPart = "****";
   const domainPart = email.substring(atIndex);
-  
+
   return firstPart + maskedPart + domainPart;
 }
 
 // Method to show share modal
 function showShareModal() {
-  console.log("showShareModal called, emitting update:show-share-modal");
   // Update custom message with current referral link
   if (referralUrl.value) {
     emit(
@@ -1203,7 +1207,6 @@ function showShareModal() {
 
 // Method to hide share modal
 function hideShareModal() {
-  console.log("hideShareModal called, emitting update:show-share-modal");
   emit("update:show-share-modal", false);
 }
 </script>

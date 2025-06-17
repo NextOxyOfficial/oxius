@@ -1,29 +1,45 @@
-<template>  <div class="max-w-6xl mx-auto -mt-3">    <!-- Breadcrumb -->
-    <nav class="flex items-center justify-between text-sm sm:my-6 my-3 px-3 pt-4">
+<template>
+  <div class="max-w-6xl mx-auto -mt-3">
+    <!-- Breadcrumb -->
+    <nav
+      class="flex items-center justify-between text-sm sm:my-6 my-3 px-3 pt-4"
+    >
       <div class="flex items-center flex-1 min-w-0">
-        <NuxtLink to="/" class="text-gray-500 hover:text-emerald-600">Home</NuxtLink>
+        <NuxtLink to="/" class="text-gray-500 hover:text-emerald-600"
+          >Home</NuxtLink
+        >
         <span class="mx-2 text-gray-400">
           <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
         </span>
-        <NuxtLink to="/sale" class="text-gray-500 hover:text-emerald-600">Marketplace</NuxtLink>
+        <NuxtLink to="/sale" class="text-gray-500 hover:text-emerald-600"
+          >Marketplace</NuxtLink
+        >
         <span class="mx-2 text-gray-400">
           <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
         </span>
-        <NuxtLink 
+        <NuxtLink
           v-if="product?.category_details"
-          :to="`/sale?category=${product?.category}`" 
+          :to="`/sale?category=${product?.category}`"
           class="text-gray-500 hover:text-emerald-600 hidden sm:inline"
         >
           {{ product?.category_details?.name }}
         </NuxtLink>
-        <span v-if="product?.category_details" class="mx-2 text-gray-400 hidden sm:inline">
+        <span
+          v-if="product?.category_details"
+          class="mx-2 text-gray-400 hidden sm:inline"
+        >
           <UIcon name="i-heroicons-chevron-right" class="h-3 w-3" />
         </span>
-        <span class="text-gray-700 truncate max-w-[100px] sm:max-w-[200px]">{{ product?.title }}</span>
+        <span class="text-gray-700 truncate max-w-[100px] sm:max-w-[200px]">{{
+          product?.title
+        }}</span>
       </div>
-      
+
       <!-- Action buttons for logged in users -->
-      <div v-if="isAuthenticated" class="flex items-center gap-2 flex-shrink-0 ml-2">
+      <div
+        v-if="isAuthenticated"
+        class="flex items-center gap-2 flex-shrink-0 ml-2"
+      >
         <NuxtLink
           to="/sale/my-posts"
           class="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs border border-emerald-500 text-emerald-600 rounded-md hover:bg-emerald-50 transition-colors duration-200"
@@ -40,7 +56,7 @@
         </NuxtLink>
       </div>
     </nav>
-    
+
     <!-- Main Product Section -->
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-2">
       <div class="lg:col-span-3 relative">
@@ -49,9 +65,19 @@
           class="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200"
           @touchstart="handleTouchStart"
           @touchmove="handleTouchMove"
-          @touchend="handleTouchEnd"        >
-          <div v-if="!product.images || product.images.length === 0 || !product.images[currentImageIndex]?.image" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center">
-            <div class="bg-white/80 backdrop-blur-sm rounded-full p-6 mb-4 shadow-sm">
+          @touchend="handleTouchEnd"
+        >
+          <div
+            v-if="
+              !product.images ||
+              product.images.length === 0 ||
+              !product.images[currentImageIndex]?.image
+            "
+            class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center"
+          >
+            <div
+              class="bg-white/80 backdrop-blur-sm rounded-full p-6 mb-4 shadow-sm"
+            >
               <UIcon name="i-heroicons-photo" class="h-16 w-16 text-gray-400" />
             </div>
             <p class="text-gray-500 text-lg font-medium">No Photo Uploaded</p>
@@ -61,7 +87,8 @@
             :src="product.images[currentImageIndex]?.image"
             :alt="product.title"
             class="absolute inset-0 w-full h-full object-cover"
-          />          <button
+          />
+          <button
             class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white p-2 transition-all duration-200 opacity-0 hover:opacity-100"
             @click="prevImage"
           >
@@ -87,8 +114,12 @@
               {{ currentImageIndex + 1 }}/{{ product.images?.length }}
             </span>
           </div>
-        </div>        <!-- Thumbnail Gallery -->
-        <div v-if="product?.images && product.images.length > 0" class="flex mt-3 space-x-2 overflow-x-auto pb-2 px-2 scrollbar-hide">
+        </div>
+        <!-- Thumbnail Gallery -->
+        <div
+          v-if="product?.images && product.images.length > 0"
+          class="flex mt-3 space-x-2 overflow-x-auto pb-2 px-2 scrollbar-hide"
+        >
           <div
             v-for="(image, index) in product?.images"
             :key="index"
@@ -99,7 +130,10 @@
             }`"
             @click="selectImage(index)"
           >
-            <div v-if="!image.image" class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+            <div
+              v-if="!image.image"
+              class="absolute inset-0 w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+            >
               <UIcon name="i-heroicons-photo" class="h-6 w-6 text-gray-400" />
             </div>
             <img
@@ -113,7 +147,8 @@
       </div>
 
       <!-- Product Info - 2 columns on large screens -->
-      <div class="lg:col-span-2">        <div class="bg-white rounded-lg p-3 border border-gray-200">
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg p-3 border border-gray-200">
           <div class="flex justify-between items-start">
             <h1 class="text-xl font-bold text-gray-800">
               {{ capitalizeTitle(product?.title) }}
@@ -136,9 +171,14 @@
               <Calendar class="h-3 w-3 mr-1" />
               {{ formatDate(product?.created_at) }}
             </span>
-          </div>          <div class="mt-4">
+          </div>
+          <div class="mt-4">
             <span class="text-2xl font-bold text-emerald-600"
-              >৳{{ product?.price ? product.price.toLocaleString() : 'Contact for Price' }}</span
+              >৳{{
+                product?.price
+                  ? product.price.toLocaleString()
+                  : "Contact for Price"
+              }}</span
             >
           </div>
 
@@ -304,7 +344,8 @@
             <h2 class="text-lg font-bold mb-4 text-gray-800 flex items-center">
               <ClipboardList class="h-5 w-5 mr-2 text-emerald-600" />
               Details
-            </h2>            <div
+            </h2>
+            <div
               class="text-gray-600 sm:px-6 whitespace-pre-line text-sm leading-relaxed"
               v-html="product?.description"
             ></div>
@@ -385,12 +426,14 @@
               >
                 <img
                   :src="
-                    product.user_details?.image || '/static/frontend/images/placeholder.jpg'
+                    product.user_details?.image ||
+                    '/static/frontend/images/placeholder.jpg'
                   "
                   :alt="product.user_details?.name"
                   class="h-full w-full object-cover"
                 />
-              </div>              <div>
+              </div>
+              <div>
                 <div class="flex items-center">
                   <NuxtLink
                     :to="`/sale/user-profile/${product.user_details?.id}`"
@@ -405,13 +448,19 @@
                       class="w-4 h-4 text-blue-600"
                       title="Verified"
                     />
-                    <div class="inline-flex" v-if="product.user_details?.is_pro">
+                    <div
+                      class="inline-flex"
+                      v-if="product.user_details?.is_pro"
+                    >
                       <span
                         class="px-1.5 py-0.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-full text-xs font-medium shadow-sm"
                         title="Pro Member"
                       >
                         <div class="flex items-center gap-1">
-                          <UIcon name="i-heroicons-shield-check" class="size-3" />
+                          <UIcon
+                            name="i-heroicons-shield-check"
+                            class="size-3"
+                          />
                           <span class="text-2xs">Pro</span>
                         </div>
                       </span>
@@ -506,7 +555,8 @@
               :alt="item?.title"
               class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-          </div>          <div class="p-4">
+          </div>
+          <div class="p-4">
             <h3
               class="font-semibold truncate text-sm text-gray-800 hover:text-emerald-600"
             >
@@ -522,9 +572,14 @@
                   ? `${post?.division}, ${post?.district}, ${post?.area}`
                   : `All Over Bangladesh`
               }}
-            </div>            <div class="flex justify-between items-center mt-2">
+            </div>
+            <div class="flex justify-between items-center mt-2">
               <span class="font-bold text-emerald-600 text-sm"
-                >৳{{ item?.price ? item.price.toLocaleString() : 'Contact for Price' }}</span
+                >৳{{
+                  item?.price
+                    ? item.price.toLocaleString()
+                    : "Contact for Price"
+                }}</span
               >
               <span
                 class="text-gray-400 hover:text-emerald-600 h-6 w-6 p-0 transition-colors duration-200"
@@ -568,7 +623,8 @@
               >
                 <span class="text-sm text-gray-600">{{ shareUrl }}</span>
               </div>
-            </div>            <button
+            </div>
+            <button
               class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm transition-colors duration-200"
               @click="copyToClipboard"
             >
@@ -769,7 +825,6 @@ async function getSalePost() {
   try {
     const response = await get(`/sale/posts/${params.slug}/`);
     if (response.data) {
-      console.log(response.data);
       product.value = response.data;
     }
   } catch (error) {
@@ -786,7 +841,6 @@ async function getSimilarProducts() {
     );
     if (response.data) {
       similarProducts.value = response.data.results;
-      console.log(similarProducts.value);
     }
   } catch (error) {
     console.error("Error fetching similar products:", error);
@@ -871,17 +925,17 @@ const downloadImage = () => {
   // Get the current image URL from the product images array
   const currentImage = product.value?.images?.[currentImageIndex.value];
   const imageUrl = currentImage?.image;
-  
+
   if (!imageUrl) {
-    console.error('No image URL found for download');
+    console.error("No image URL found for download");
     return;
   }
-  
+
   // Create a download link for the current image
   const link = document.createElement("a");
   link.href = imageUrl;
   link.download = `product-image-${currentImageIndex.value + 1}.jpg`;
-  link.setAttribute('target', '_blank'); // Open in new tab if direct download fails
+  link.setAttribute("target", "_blank"); // Open in new tab if direct download fails
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -896,7 +950,7 @@ const toggleShowPhone = () => {
 const handleShare = () => {
   shareDialogOpen.value = true;
   // Use the current hostname; in production, this will be your domain
-  const productionDomain = 'https://adsyclub.com';
+  const productionDomain = "https://adsyclub.com";
   // Use window.location.pathname to get just the path without hostname
   const pathname = window.location.pathname;
   // Create the full URL using the production domain
@@ -911,10 +965,10 @@ const copyToClipboard = () => {
   navigator.clipboard.writeText(shareUrl.value);
   // Show a toast message
   toast.add({
-    title: 'Link Copied!',
-    description: 'Share link has been copied to clipboard',
-    color: 'green',
-    icon: 'i-heroicons-check-circle'
+    title: "Link Copied!",
+    description: "Share link has been copied to clipboard",
+    color: "green",
+    icon: "i-heroicons-check-circle",
   });
 };
 
@@ -960,10 +1014,6 @@ const capitalizeTitle = (title) => {
 };
 
 const submitReport = () => {
-  console.log("Report submitted:", {
-    reason: reportReason.value,
-    details: reportDetails.value,
-  });
   closeReportDialog();
 };
 </script>
@@ -971,8 +1021,8 @@ const submitReport = () => {
 <style scoped>
 /* Hide scrollbar but maintain functionality */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {

@@ -9,9 +9,7 @@
         >
           <div class="p-4 sm:p-5">
             <!-- Using ProfileHeader component's skeleton UI -->
-            <ProfileHeader 
-              :isLoading="true" 
-            />
+            <ProfileHeader :isLoading="true" />
           </div>
         </div>
 
@@ -98,7 +96,7 @@
         :allMedia="allMedia"
         :isLoadingSaved="isLoadingSaved"
         :savedPosts="savedPosts"
-                @open-qr-modal="openQrCodeModal"
+        @open-qr-modal="openQrCodeModal"
         @toggle-follow="toggleFollow"
         @open-profile-photo-modal="openProfilePhotoModal"
         @toggle-profile-photo-menu="toggleProfilePhotoMenu"
@@ -114,7 +112,7 @@
       :modelValue="showDiamondModal"
       @close="showDiamondModal = false"
     />
-    
+
     <!-- Profile Photo Modal -->
     <MediaViewer
       v-if="showMediaViewer"
@@ -124,7 +122,7 @@
       :profileUser="user"
       @close-media="closeProfilePhotoModal"
     />
-    
+
     <!-- Followers/Following Modal -->
     <FollowersModal
       :show="showFollowersModal"
@@ -135,7 +133,7 @@
       @close="showFollowersModal = false"
       @follow-changed="handleFollowStatusChange"
     />
-    
+
     <!-- QR Code Modal -->
     <ProfileQrCodeModal
       :modelValue="showQrModal"
@@ -192,7 +190,7 @@ const followLoading = ref(false);
 const isFollowing = ref(false);
 const showDiamondModal = ref(false);
 const showFollowersModal = ref(false);
-const activeFollowersTab = ref('followers');
+const activeFollowersTab = ref("followers");
 const showProfilePhotoMenu = ref(false);
 const showProfilePhotoModal = ref(false);
 
@@ -248,11 +246,11 @@ const openProfilePhotoModal = (event) => {
 
   // Create a media object for the profile photo
   profilePhotoMedia.value = {
-    image: user.value?.image || '/static/frontend/images/placeholder.jpg',
-    type: 'image',
-    id: user.value?.id || 'profile'
+    image: user.value?.image || "/static/frontend/images/placeholder.jpg",
+    type: "image",
+    id: user.value?.id || "profile",
   };
-  
+
   showMediaViewer.value = true;
   showProfilePhotoMenu.value = false; // Close the menu
 
@@ -416,7 +414,6 @@ function setupInfiniteScroll() {
     ) {
       // Stop further API calls if we're already at the end (no more posts OR we've already seen the "all caught up" message)
       if (!hasMorePosts.value) {
-        console.log("End of feed reached - disabling infinite scroll");
         endOfFeedReached.value = true;
         return;
       }
@@ -485,7 +482,7 @@ const isEditProfileOpen = ref(false);
 const isEditPhotoOpen = ref(false);
 const isEditCoverOpen = ref(false);
 
-const tabs = computed(() => 
+const tabs = computed(() =>
   currentUser.value?.user?.id && currentUser.value?.user?.id === route.params.id
     ? [
         { label: "Posts", value: "posts" },
@@ -506,10 +503,10 @@ const openQrCodeModal = () => {
 // Toggle follow action
 const toggleFollow = async () => {
   if (followLoading.value) return;
-  
+
   followLoading.value = true;
   const wasFollowing = isFollowing.value;
-  
+
   // Optimistic UI update
   isFollowing.value = !wasFollowing;
 
@@ -525,7 +522,7 @@ const toggleFollow = async () => {
     } else {
       // Unfollow user
       const res = await del(`/bn/users/${route.params.id}/unfollow/`);
-      
+
       if (res.data === undefined) {
         // Update followers count accordingly
         user.value.followers_count = Math.max(
@@ -559,7 +556,10 @@ const handleFollowStatusChange = ({ userId, isFollowing: newFollowStatus }) => {
       isFollowing.value = true;
     } else {
       // User was unfollowed
-      user.value.followers_count = Math.max(0, (user.value.followers_count || 0) - 1);
+      user.value.followers_count = Math.max(
+        0,
+        (user.value.followers_count || 0) - 1
+      );
       isFollowing.value = false;
     }
   }
@@ -705,7 +705,8 @@ const scrollToTop = () => {
 
 /* Animation for skeleton loading */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.6;
   }
   50% {

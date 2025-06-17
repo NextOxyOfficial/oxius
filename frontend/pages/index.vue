@@ -19,7 +19,8 @@
         <div id="classified-category">
           <PublicTitle />
         </div>
-        <!-- Enhanced search form with premium styling -->        <form
+        <!-- Enhanced search form with premium styling -->
+        <form
           @submit.prevent="handleSearch"
           class="w-full max-w-xl mx-auto relative z-10 transition-all duration-300"
         >
@@ -36,7 +37,8 @@
           <div
             class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-xl h-12 sm:h-14 shadow-sm border border-slate-200/50 dark:border-slate-700/30 overflow-hidden transition-all duration-300 hover:shadow-sm group"
           >
-            <!-- Accent line animation -->            <div
+            <!-- Accent line animation -->
+            <div
               class="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"
             ></div>
 
@@ -84,7 +86,8 @@
                 class="relative overflow-hidden bg-gradient-to-r from-emerald-500 to-blue-500 hover:from-emerald-600 hover:to-blue-600 text-white py-1.5 px-4 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 h-10 sm:h-12 mr-2 shadow-sm hover:shadow-sm text-sm"
                 :disabled="isLoading"
               >
-                <!-- Button background animation -->                <span
+                <!-- Button background animation -->
+                <span
                   class="absolute inset-0 w-full h-full bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"
                 ></span>
 
@@ -124,7 +127,8 @@
           <ul
             class="flex flex-wrap gap-2"
             v-if="searchServices?.results?.length"
-          >            <li
+          >
+            <li
               v-for="service in searchServices?.results"
               :key="service.id"
               class="transition-transform duration-200"
@@ -191,7 +195,8 @@
         <!-- Service categories with premium styling -->
         <PublicServiceCategory :services="services" />
 
-        <!-- Premium load more button -->        <div class="text-center mt-4" v-if="services.next">
+        <!-- Premium load more button -->
+        <div class="text-center mt-4" v-if="services.next">
           <button
             @click="loadMore(services.next)"
             class="group relative inline-flex text-sm items-center justify-center gap-2 px-4 py-2.5 font-medium text-white bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full overflow-hidden shadow-sm hover:shadow-sm transition-all duration-200"
@@ -260,7 +265,8 @@
 
         <AccountBalance v-if="user" :user="user" :isUser="true" class="mb-8" />
 
-        <!-- Mobile recharge link with premium styling -->        <NuxtLink
+        <!-- Mobile recharge link with premium styling -->
+        <NuxtLink
           to="/mobile-recharge"
           class="mb-8 bg-slate-50/70 dark:bg-slate-800 shadow-sm hover:shadow-sm border border-slate-200 dark:border-slate-700 block py-3 px-6 max-w-fit mx-auto rounded-xl transition-all duration-200 group"
         >
@@ -274,7 +280,8 @@
             >
               {{ $t("mobile_recharge") }}
             </h2>
-            <div class="flex justify-center gap-2">              <NuxtImg
+            <div class="flex justify-center gap-2">
+              <NuxtImg
                 v-for="operator in operators"
                 :key="operator.id"
                 :src="operator.icon"
@@ -377,7 +384,8 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                  <!-- Post gig button with premium styling -->                  <UButton
+                  <!-- Post gig button with premium styling -->
+                  <UButton
                     to="/post-a-gig"
                     class="relative overflow-hidden bg-white hover:bg-slate-50 text-emerald-600 font-medium rounded-lg shadow-sm hover:shadow-sm transition-all duration-200 border border-emerald-200 hover:border-emerald-300"
                     :ui="{
@@ -438,7 +446,8 @@
               <!-- Gigs list with premium styling -->
               <div
                 class="flex-1 p-1 space-y-1.5 overflow-y-auto max-h-[600px] scrollbar-thin"
-              >                <div
+              >
+                <div
                   v-for="(gig, i) in displayedMicroGigs"
                   :key="i"
                   class="bg-slate-50/80 dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 border border-slate-200/70 dark:border-slate-700/50 overflow-hidden group hover:border-emerald-200"
@@ -636,22 +645,27 @@
                   </div>
                 </div>
 
-                <!-- Empty state -->                
-                 <div
+                <!-- Empty state -->
+                <div
                   v-if="displayedMicroGigs.length === 0"
                   class="flex flex-col items-center justify-center py-12"
                 >
                   <UIcon
                     name="i-heroicons-briefcase"
                     class="size-16 text-slate-300 dark:text-gray-600 mb-4"
-                  />                  <p class="text-lg text-slate-500 dark:text-slate-400">
-                    {{ $t('no_gigs_available_category') }}
+                  />
+                  <p class="text-lg text-slate-500 dark:text-slate-400">
+                    {{ $t("no_gigs_available_category") }}
                   </p>
                 </div>
-                
+
                 <!-- Load More Button for Micro Gigs -->
-                <div 
-                  v-if="displayedMicroGigs.length > 0 && displayedMicroGigs.length < microGigs.length && !showAllMicroGigs"
+                <div
+                  v-if="
+                    displayedMicroGigs.length > 0 &&
+                    displayedMicroGigs.length < microGigs.length &&
+                    !showAllMicroGigs
+                  "
                   class="text-center py-4"
                 >
                   <button
@@ -662,10 +676,13 @@
                     <span>Load More Gigs</span>
                   </button>
                 </div>
-                
+
                 <!-- Show All Button -->
-                <div 
-                  v-if="microGigs.length > INITIAL_LIMITS.microGigs && !showAllMicroGigs"
+                <div
+                  v-if="
+                    microGigs.length > INITIAL_LIMITS.microGigs &&
+                    !showAllMicroGigs
+                  "
                   class="text-center py-2"
                 >
                   <button
@@ -717,8 +734,8 @@ const previewGid = ref(null);
 // Implement pagination limits for better performance
 const INITIAL_LIMITS = {
   microGigs: 12, // Show only 12 gigs initially
-  services: 20,  // Show only 20 categories initially
-  posts: 10      // Show only 10 recent posts initially
+  services: 20, // Show only 20 categories initially
+  posts: 10, // Show only 10 recent posts initially
 };
 
 // Load micro gigs with pagination
@@ -726,7 +743,9 @@ const { data } = await get(`/micro-gigs/?limit=${INITIAL_LIMITS.microGigs}`);
 microGigs.value = data;
 
 // Load services with pagination
-const res = await get(`/classified-categories/?limit=${INITIAL_LIMITS.services}`);
+const res = await get(
+  `/classified-categories/?limit=${INITIAL_LIMITS.services}`
+);
 // Ensure services has the expected structure
 if (Array.isArray(res.data)) {
   services.value = { results: res.data, next: null };
@@ -758,12 +777,14 @@ const displayedMicroGigs = computed(() => {
 // Function to load more micro gigs
 const loadMoreMicroGigs = async () => {
   if (showAllMicroGigs.value) return;
-  
+
   if (microGigsPage.value * microGigsPerPage.value >= microGigs.value.length) {
     // Need to fetch more from API
     try {
       const currentLength = microGigs.value.length;
-      const { data } = await get(`/micro-gigs/?limit=${INITIAL_LIMITS.microGigs}&offset=${currentLength}`);
+      const { data } = await get(
+        `/micro-gigs/?limit=${INITIAL_LIMITS.microGigs}&offset=${currentLength}`
+      );
       if (data && data.length > 0) {
         microGigs.value = [...microGigs.value, ...data];
         microGigsPage.value++;
@@ -790,7 +811,6 @@ const microGigsStatus = ref(microGigsFilter[1]);
 
 const errorIndex = ref([]);
 function handleImageError(index) {
-  console.log(`Broken image detected at index: ${index}`);
   if (!errorIndex.value.includes(index)) {
     errorIndex.value.push(index); // Add index to errorIndex
   }
@@ -850,7 +870,7 @@ const selectCategory = async (category) => {
     );
     microGigs.value = data;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     toast.add({ title: "error" });
   }
 };
@@ -864,22 +884,31 @@ const loadMore = async (url) => {
     const getRecentNext = async (url) => {
       const res = await $fetch(`${url}`);
       // Ensure services.value has the expected structure
-      if (services.value && typeof services.value === 'object') {
-        if ('results' in services.value && Array.isArray(services.value.results)) {
+      if (services.value && typeof services.value === "object") {
+        if (
+          "results" in services.value &&
+          Array.isArray(services.value.results)
+        ) {
           services.value.next = res.next;
-          services.value.results = [...services.value.results, ...(res.results || [])];
+          services.value.results = [
+            ...services.value.results,
+            ...(res.results || []),
+          ];
         } else {
           // Convert to expected format if needed
           services.value = {
             next: res.next,
-            results: [...(Array.isArray(services.value) ? services.value : []), ...(res.results || [])]
+            results: [
+              ...(Array.isArray(services.value) ? services.value : []),
+              ...(res.results || []),
+            ],
           };
         }
       } else {
         // Initialize with expected format
         services.value = {
           next: res.next,
-          results: res.results || []
+          results: res.results || [],
         };
       }
     };
@@ -925,7 +954,7 @@ async function handleSearch() {
     } else {
       services.value = categoriesRes.data;
     }
-    
+
     classifiedPosts.value = postsRes.data;
   } catch (error) {
     console.error("Search error:", error);

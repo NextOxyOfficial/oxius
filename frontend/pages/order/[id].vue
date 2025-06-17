@@ -100,7 +100,10 @@
                 >
                   View
                 </button>
-                <video class="w-20 object-contain shadow" :src="m.video"></video>
+                <video
+                  class="w-20 object-contain shadow"
+                  :src="m.video"
+                ></video>
               </a>
             </div>
           </div>
@@ -186,7 +189,7 @@
                 </div>
               </div>
             </div>
-           
+
             <div class="!mt-7">
               <UFormGroup class="flex flex-row-reverse justify-end gap-2 mb-4">
                 <template #label>
@@ -252,7 +255,6 @@
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
-          
           <div
             className="relative w-full max-w-sm transform overflow-hidden rounded-lg bg-white shadow-sm transition-all"
           >
@@ -321,9 +323,6 @@ const isOpen = ref(false);
 const errorIndex = ref([]);
 
 function handleImageError(index) {
-  console.log(index);
-
-  console.log(`Broken image detected at index: ${index}`);
   if (!errorIndex.value.includes(index)) {
     errorIndex.value.push(index); // Add index to errorIndex
   }
@@ -355,10 +354,9 @@ async function submitGig() {
     });
 
     if (res.error) {
-      console.log(res.error?.data?.error);
+      console.error(res.error?.data?.error);
       toast.add({ title: res.error?.data?.error });
     } else {
-      console.log(true);
       jwtLogin();
       toast.add({ title: "Order Submitted Successfully!" });
       isLoading.value = false;

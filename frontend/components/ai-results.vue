@@ -199,7 +199,6 @@ async function fetchAILink() {
     const { data, error } = await get("/ai-link/");
     if (data) {
       aiLink.value = data;
-      console.log("AI Link fetched successfully:", aiLink.value);
     } else {
       throw error;
     }
@@ -230,7 +229,6 @@ async function startSearch() {
       }
     );
 
-    console.log("Business data", data.value);
     if (Array.isArray(data.value.data)) {
       result.value = data.value.data;
     } else {

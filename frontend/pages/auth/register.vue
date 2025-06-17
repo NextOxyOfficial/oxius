@@ -1,6 +1,8 @@
 <template>
   <UContainer>
-    <div class="flex flex-col-reverse md:flex-row items-center gap-8 py-5 md:py-0">
+    <div
+      class="flex flex-col-reverse md:flex-row items-center gap-8 py-5 md:py-0"
+    >
       <div class="md:w-3/4">
         <NuxtImg
           v-if="banner && banner.image"
@@ -35,14 +37,12 @@ if (router.query.ref) {
 async function getBanner() {
   const res = await get("/authentication-banner/");
   banner.value = res.data;
-  console.log(res.data);
 }
 
 getBanner();
 
 onMounted(() => {
   if (user?.user) {
-    console.log(user);
     navigateTo("/");
   }
   if (useCookie("adsyclub-jwt").value) {

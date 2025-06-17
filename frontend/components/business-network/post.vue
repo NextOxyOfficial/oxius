@@ -2,15 +2,17 @@
   <div class="max-w-3xl pb-8">
     <!-- Gold Sponsors Slider -->
     <GoldSponsorsSlider class="mb-6" />
-    
+
     <div class="space-y-6">
       <!-- Loop through posts and insert sponsored products after every 5 posts -->
-      <template v-for="(post, index) in posts" :key="post.id">        
+      <template v-for="(post, index) in posts" :key="post.id">
         <!-- Post Card with glassmorphism effect -->
         <div
           :class="[
             'transform transition-all duration-300 bg-white/90 dark:bg-slate-800/90 rounded-xl overflow-hidden backdrop-blur-md shadow-sm hover:shadow-sm dark:shadow-slate-800/20',
-            post.hasMatchingHashtag ? 'border-blue-300 border-2' : 'border border-gray-200/50 dark:border-gray-700/50'
+            post.hasMatchingHashtag
+              ? 'border-blue-300 border-2'
+              : 'border border-gray-200/50 dark:border-gray-700/50',
           ]"
           :style="{
             animationDelay: `${index * 0.05}s`,
@@ -20,8 +22,12 @@
           }"
         >
           <!-- Hashtag search indicator -->
-          <div 
-            v-if="searchQuery && searchQuery.startsWith('#') && post.hasMatchingHashtag"
+          <div
+            v-if="
+              searchQuery &&
+              searchQuery.startsWith('#') &&
+              post.hasMatchingHashtag
+            "
             class="absolute top-0 right-0 bg-blue-600 text-white px-2 py-1 text-xs font-medium rounded-bl"
           >
             <span class="flex items-center">
@@ -61,31 +67,34 @@
               @toggle-save="toggleSave"
             />
 
-            <!-- Tags with clean styling -->            
-             <div
+            <!-- Tags with clean styling -->
+            <div
               v-if="
                 post?.post_details
                   ? post.post_details?.post_tags?.length > 0
                   : post?.post_tags?.length > 0
               "
               class="flex flex-wrap gap-1.5 mb-2 px-2"
-            >              
-            <NuxtLink
+            >
+              <NuxtLink
                 v-for="(tag, idx) in post?.post_details
                   ? post.post_details?.post_tags
                   : post?.post_tags"
                 :key="idx"
-                :to="`/business-network/search-results/${encodeURIComponent('#')}${encodeURIComponent(tag.tag)}`"
+                :to="`/business-network/search-results/${encodeURIComponent(
+                  '#'
+                )}${encodeURIComponent(tag.tag)}`"
                 :class="[
                   'text-sm px-2 py-0.5 rounded-full transition-colors hashtag',
-                  searchQuery && (searchQuery === '#' + tag.tag || searchQuery === tag.tag)
+                  searchQuery &&
+                  (searchQuery === '#' + tag.tag || searchQuery === tag.tag)
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium border border-blue-200 dark:border-blue-700'
-                    : 'text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300'
+                    : 'text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300',
                 ]"
               >
                 #{{ tag.tag }}
               </NuxtLink>
-            </div>            
+            </div>
             <!-- Post Title with enhanced styling -->
             <NuxtLink
               :to="`/business-network/posts/${
@@ -95,36 +104,78 @@
             >
               {{ post?.post_details ? post.post_details.title : post.title }}
             </NuxtLink>
-              <!-- Enhanced match indicators to show which fields matched the search -->
-            <div v-if="searchQuery && searchQuery.trim() !== ''" class="flex flex-wrap gap-1.5 px-2 mb-2">
-              <span 
-                v-for="field in detectMatchedFields(post?.post_details ? post.post_details : post)" 
+            <!-- Enhanced match indicators to show which fields matched the search -->
+            <div
+              v-if="searchQuery && searchQuery.trim() !== ''"
+              class="flex flex-wrap gap-1.5 px-2 mb-2"
+            >
+              <span
+                v-for="field in detectMatchedFields(
+                  post?.post_details ? post.post_details : post
+                )"
                 :key="field"
                 class="text-xs px-2 py-0.5 rounded-full flex items-center"
                 :class="{
-                  'bg-blue-100 text-blue-700 border border-blue-200': field === 'author',
-                  'bg-green-100 text-green-700 border border-green-200': field === 'title',
-                  'bg-yellow-100 text-yellow-700 border border-yellow-200': field === 'content',
-                  'bg-purple-100 text-purple-700 border border-purple-200': field === 'hashtag',
+                  'bg-blue-100 text-blue-700 border border-blue-200':
+                    field === 'author',
+                  'bg-green-100 text-green-700 border border-green-200':
+                    field === 'title',
+                  'bg-yellow-100 text-yellow-700 border border-yellow-200':
+                    field === 'content',
+                  'bg-purple-100 text-purple-700 border border-purple-200':
+                    field === 'hashtag',
                 }"
               >
                 <span v-if="field === 'author'" class="flex items-center">
-                  <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    class="h-3 w-3 mr-1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
                   <span>Name Match</span>
                 </span>
                 <span v-else-if="field === 'title'" class="flex items-center">
-                  <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  <svg
+                    class="h-3 w-3 mr-1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                    ></path>
+                    <path
+                      d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                    ></path>
                   </svg>
                   <span>Title match</span>
                 </span>
                 <span v-else-if="field === 'content'" class="flex items-center">
-                  <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0-2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <svg
+                    class="h-3 w-3 mr-1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0-2 2h12a2 2 0 0 0 2-2V8z"
+                    ></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
                     <line x1="16" y1="13" x2="8" y2="13"></line>
                     <line x1="16" y1="17" x2="8" y2="17"></line>
@@ -133,7 +184,16 @@
                   <span>Content match</span>
                 </span>
                 <span v-else-if="field === 'hashtag'" class="flex items-center">
-                  <svg class="h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    class="h-3 w-3 mr-1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <line x1="4" y1="9" x2="20" y2="9"></line>
                     <line x1="4" y1="15" x2="20" y2="15"></line>
                     <line x1="10" y1="3" x2="8" y2="21"></line>
@@ -142,17 +202,24 @@
                   <span>Hashtag match</span>
                 </span>
               </span>
-            </div><!-- Post Content with improved styling and enhanced search term highlighting -->
+            </div>
+            <!-- Post Content with improved styling and enhanced search term highlighting -->
             <div class="mb-3 min-w-full px-2">
               <!-- Enhanced title highlighting for search results -->
-              <h3 
-                v-if="searchQuery && (post?.post_details ? post.post_details.title : post.title)" 
+              <h3
+                v-if="
+                  searchQuery &&
+                  (post?.post_details ? post.post_details.title : post.title)
+                "
                 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1.5"
                 v-html="
-                  highlightSearchTerms(post?.post_details ? post.post_details.title : post.title, 'title')
+                  highlightSearchTerms(
+                    post?.post_details ? post.post_details.title : post.title,
+                    'title'
+                  )
                 "
               ></h3>
-              
+
               <!-- Content with better highlighting -->
               <p
                 :class="[
@@ -160,7 +227,12 @@
                   !post.showFullDescription && 'line-clamp-4',
                 ]"
                 v-html="
-                  highlightSearchTerms(post?.post_details ? post.post_details.content : post.content, 'content')
+                  highlightSearchTerms(
+                    post?.post_details
+                      ? post.post_details.content
+                      : post.content,
+                    'content'
+                  )
                 "
               ></p>
               <button
@@ -186,8 +258,8 @@
               </button>
             </div>
 
-            <!-- Comments Preview -->            
-             <BusinessNetworkPostComments
+            <!-- Comments Preview -->
+            <BusinessNetworkPostComments
               v-if="
                 post?.post_details
                   ? (post.post_details.comment_count || 0) > 0
@@ -200,7 +272,7 @@
               @delete-comment="deleteComment"
               @cancel-edit-comment="cancelEditComment"
               @save-edit-comment="saveEditComment"
-            />            
+            />
             <!-- Add Comment Input -->
             <BusinessNetworkPostCommentInput
               v-if="user"
@@ -213,7 +285,8 @@
               @gift-sent="$emit('gift-sent', $event)"
             />
           </div>
-        </div>          <!-- User Suggestions Section - Show after every 14th post -->
+        </div>
+        <!-- User Suggestions Section - Show after every 14th post -->
         <BusinessNetworkUserSuggestions
           v-if="(index + 1) % 14 === 0 && user?.user?.id"
           :key="`suggestions-${index}`"
@@ -283,7 +356,7 @@
       @add-media-comment="addMediaComment"
       @edit-media-comment="editMediaComment"
       @delete-media-comment="deleteMediaComment"
-    />    
+    />
     <!-- All Modals -->
     <BusinessNetworkPostModals
       ref="modalsRef"
@@ -296,8 +369,13 @@
       :show-mentions="showMentions"
       :mention-suggestions="mentionSuggestions"
       :active-mention-index="activeMentionIndex"
-      :mention-input-position="mentionInputPosition"      :is-loading-more-comments="isLoadingMoreComments"
-      :has-more-comments="activeCommentsPost ? commentsPagination[activeCommentsPost.id]?.hasMore || false : false"
+      :mention-input-position="mentionInputPosition"
+      :is-loading-more-comments="isLoadingMoreComments"
+      :has-more-comments="
+        activeCommentsPost
+          ? commentsPagination[activeCommentsPost.id]?.hasMore || false
+          : false
+      "
       @close-likes-modal="activeLikesPost = null"
       @toggle-user-follow="toggleUserFollow"
       @close-comments-modal="closeCommentsModal"
@@ -327,8 +405,8 @@
 
 <script setup>
 import { Loader2 } from "lucide-vue-next";
-import GoldSponsorsSlider from './GoldSponsorsSlider.vue';
-import BusinessNetworkUserSuggestions from './UserSuggestions.vue';
+import GoldSponsorsSlider from "./GoldSponsorsSlider.vue";
+import BusinessNetworkUserSuggestions from "./UserSuggestions.vue";
 
 // Props
 const props = defineProps({
@@ -343,7 +421,7 @@ const props = defineProps({
   searchQuery: {
     type: String,
     default: "",
-  }
+  },
 });
 
 // Emits
@@ -355,85 +433,94 @@ const { post, del, put, get } = useApi();
 const toast = useToast();
 
 // Highlight search terms in post content
-const highlightSearchTerms = (content, fieldType = 'content') => {
-  if (!content || !props.searchQuery || props.searchQuery.trim() === '') return content;
-  
+const highlightSearchTerms = (content, fieldType = "content") => {
+  if (!content || !props.searchQuery || props.searchQuery.trim() === "")
+    return content;
+
   let searchText = props.searchQuery;
-  
+
   // Handle hashtag searches
-  if (searchText.startsWith('#')) {
+  if (searchText.startsWith("#")) {
     searchText = searchText.substring(1);
   }
-  
+
   // Don't attempt highlighting if search term is too short
   if (searchText.length < 2) return content;
-  
+
   try {
     // Escape special regex characters to prevent errors
-    const escapedSearchText = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escapedSearchText})`, 'gi');
-    
+    const escapedSearchText = searchText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escapedSearchText})`, "gi");
+
     // Use different highlight colors based on field type
-    let highlightClass = '';
-    switch(fieldType) {
-      case 'title':
-        highlightClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+    let highlightClass = "";
+    switch (fieldType) {
+      case "title":
+        highlightClass =
+          "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
         break;
-      case 'author':
-        highlightClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+      case "author":
+        highlightClass =
+          "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
         break;
-      case 'hashtag':
-        highlightClass = 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300';
+      case "hashtag":
+        highlightClass =
+          "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300";
         break;
-      case 'content':
+      case "content":
       default:
-        highlightClass = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
+        highlightClass =
+          "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
     }
-    
-    return content.replace(regex, `<span class="${highlightClass} px-0.5 rounded">$1</span>`);
+
+    return content.replace(
+      regex,
+      `<span class="${highlightClass} px-0.5 rounded">$1</span>`
+    );
   } catch (e) {
-    console.error('Error highlighting search terms:', e);
+    console.error("Error highlighting search terms:", e);
     return content;
   }
 };
 
 // Detect which fields match the search query
 const detectMatchedFields = (post) => {
-  if (!props.searchQuery || props.searchQuery.trim() === '') return [];
-  
+  if (!props.searchQuery || props.searchQuery.trim() === "") return [];
+
   let searchText = props.searchQuery;
-  
+
   // Handle hashtag searches
-  if (searchText.startsWith('#')) {
+  if (searchText.startsWith("#")) {
     searchText = searchText.substring(1);
   }
-  
+
   const matches = [];
-  const regex = new RegExp(searchText, 'i');
-  
+  const regex = new RegExp(searchText, "i");
+
   // Check post title
   if (post.title && regex.test(post.title)) {
-    matches.push('title');
+    matches.push("title");
   }
-  
+
   // Check post content
   if (post.content && regex.test(post.content)) {
-    matches.push('content');
+    matches.push("content");
   }
-  
+
   // Check author name
   if (post.author_details) {
-    const authorName = post.author_details.first_name + ' ' + post.author_details.last_name;
+    const authorName =
+      post.author_details.first_name + " " + post.author_details.last_name;
     if (regex.test(authorName) || regex.test(post.author_details.username)) {
-      matches.push('author');
+      matches.push("author");
     }
   }
-  
+
   // Check hashtags
-  if (post.post_tags && post.post_tags.some(tag => regex.test(tag.tag))) {
-    matches.push('hashtag');
+  if (post.post_tags && post.post_tags.some((tag) => regex.test(tag.tag))) {
+    matches.push("hashtag");
   }
-  
+
   return matches;
 };
 
@@ -481,7 +568,7 @@ const initCommentsPage = (postId) => {
     commentsPagination.value[postId] = {
       currentPage: 1,
       hasMore: true,
-      isLoading: false
+      isLoading: false,
     };
   }
 };
@@ -489,88 +576,69 @@ const initCommentsPage = (postId) => {
 // Load comments for a specific post
 const loadCommentsForPost = async (postId, page = 1, replace = false) => {
   if (!postId) return;
-  
+
   // Initialize pagination if it doesn't exist
   if (!commentsPagination.value[postId]) {
     initCommentsPage(postId);
   }
-  
-  try {    commentsPagination.value[postId].isLoading = true;
+
+  try {
+    commentsPagination.value[postId].isLoading = true;
     isLoadingMoreComments.value = true;
-    console.log(`Loading comments for post ${postId}, page ${page}, replace: ${replace}`);
-    
+
     const requestParams = {
       page: page,
-      page_size: 10
+      page_size: 10,
     };
-    console.log('Request params:', requestParams);
-    
+
     // Build URL with query parameters manually since the get function doesn't support params
     const queryString = new URLSearchParams(requestParams).toString();
     const requestUrl = `/bn/posts/${postId}/comments/?${queryString}`;
-    console.log('Full request URL with params:', requestUrl);
-    
+
     const response = await get(requestUrl);
-      console.log('Full API response:', response);
+
     const data = response.data || response;
-    console.log('API response data:', data);
-    console.log('Has next page:', !!data.next);
-    console.log('Results count:', data.results?.length);
-    console.log('Total count:', data.count);
-    
-    // Log the actual comment IDs being returned
-    if (data.results) {
-      console.log('Comment IDs returned:', data.results.map(c => c.id));
-    }    // Find the post in our posts array
-    const post = props.posts.find(p => p.id === postId);
+
+    // Find the post in our posts array
+    const post = props.posts.find((p) => p.id === postId);
     if (post) {
       if (replace || page === 1) {
         // Initial load: reverse order to show newest comments at bottom
         post.post_comments = (data.results || []).reverse();
-        console.log('Initial load - set comments:', post.post_comments?.length);
-        console.log('Initial load comment IDs:', post.post_comments?.map(c => c.id));
       } else {
         // Load more (older comments): The API returns them in descending order (newest first)
         // We need to reverse them first, then prepend to show oldest at top
         const olderComments = data.results || [];
         const previousCount = post.post_comments?.length || 0;
-        
-        console.log('Before load more - existing comment IDs:', post.post_comments?.map(c => c.id));
-        console.log('New older comment IDs from API (newest first):', olderComments.map(c => c.id));
-        
+
         // Reverse the older comments so they're in oldest-first order
         const olderCommentsReversed = olderComments.reverse();
-        console.log('New older comment IDs after reverse (oldest first):', olderCommentsReversed.map(c => c.id));
-        
+
         // Filter out any duplicate comments to prevent duplication
-        const existingCommentIds = new Set(post.post_comments?.map(c => c.id) || []);
-        const newUniqueComments = olderCommentsReversed.filter(comment => !existingCommentIds.has(comment.id));
-        
-        console.log('Filtered unique comment IDs:', newUniqueComments.map(c => c.id));
-        
+        const existingCommentIds = new Set(
+          post.post_comments?.map((c) => c.id) || []
+        );
+        const newUniqueComments = olderCommentsReversed.filter(
+          (comment) => !existingCommentIds.has(comment.id)
+        );
+
         // Prepend the older comments (they should appear before the existing comments)
-        post.post_comments = [...newUniqueComments, ...(post.post_comments || [])];
-        console.log(`Load more - added ${newUniqueComments.length} unique comments (${olderComments.length} total from API), total: ${post.post_comments?.length}, previous: ${previousCount}`);
-        console.log('After load more - all comment IDs:', post.post_comments?.map(c => c.id));
+        post.post_comments = [
+          ...newUniqueComments,
+          ...(post.post_comments || []),
+        ];
       }
-      
+
       // Update the post's comment count
       if (data.count !== undefined) {
         post.comment_count = data.count;
       }
     }
-    
+
     // Update pagination state
     commentsPagination.value[postId].currentPage = page;
     commentsPagination.value[postId].hasMore = !!data.next;
     commentsPagination.value[postId].isLoading = false;
-    
-    console.log('Updated pagination state:', {
-      currentPage: page,
-      hasMore: !!data.next,
-      nextUrl: data.next
-    });
-    
   } catch (error) {
     console.error("Error loading comments:", error);
     commentsPagination.value[postId].isLoading = false;
@@ -582,36 +650,29 @@ const loadCommentsForPost = async (postId, page = 1, replace = false) => {
 // Load more comments
 const loadMoreComments = async (eventData) => {
   const postId = eventData.postId || activeCommentsPost.value?.id;
-  
-  console.log('loadMoreComments called with:', { eventData, postId });
-  
+
   if (!postId) {
-    console.log('No postId found');
     return;
   }
-  
+
   // Get the correct next page from pagination state
   const pagination = commentsPagination.value[postId];
-  console.log('Pagination state:', pagination);
-  
+
   if (!pagination) {
-    console.log('No pagination state found, initializing...');
     initCommentsPage(postId);
     return;
   }
-  
+
   if (!pagination.hasMore) {
-    console.log('No more comments to load');
     return;
   }
-  
+
   if (pagination.isLoading) {
-    console.log('Already loading comments');
     return;
   }
-  
+
   const nextPage = pagination.currentPage + 1;
-  console.log('Loading page:', nextPage);
+
   await loadCommentsForPost(postId, nextPage, false);
 };
 
@@ -710,7 +771,8 @@ const toggleFollow = async (post) => {
 
   try {
     const isFollowing = post.author_details.is_following;
-    const endpoint = `/bn/follow/${authorId}/`;    if (isFollowing) {
+    const endpoint = `/bn/follow/${authorId}/`;
+    if (isFollowing) {
       const { data } = await del(endpoint);
       post.author_details.is_following = false;
     } else {
@@ -844,21 +906,22 @@ const addComment = async (postToComment) => {
       content: postToComment.commentText,
     });
 
-    console.log('📤 Comment sent to server:', postToComment.commentText);
-    console.log('📥 Server response:', data);
-
     // Initialize post_comments array if it doesn't exist
     if (!postToComment.post_comments) {
       postToComment.post_comments = [];
-    }    // Ensure the new comment has proper author details
+    } // Ensure the new comment has proper author details
     if (data && !data.author_details && user.value?.user) {
       data.author_details = {
         id: user.value.user.id,
-        name: user.value.user.name || `${user.value.user.first_name || ''} ${user.value.user.last_name || ''}`.trim(),
+        name:
+          user.value.user.name ||
+          `${user.value.user.first_name || ""} ${
+            user.value.user.last_name || ""
+          }`.trim(),
         image: user.value.user.image,
         kyc: user.value.user.kyc,
         is_pro: user.value.user.is_pro,
-        is_topcontributor: user.value.user.is_topcontributor
+        is_topcontributor: user.value.user.is_topcontributor,
       };
     }
 
@@ -871,8 +934,6 @@ const addComment = async (postToComment) => {
     if (data && !data.created_at) {
       data.created_at = new Date().toISOString();
     }
-
-    console.log('📝 Final comment data to display:', data);
 
     // Add the new comment to the beginning
     postToComment.post_comments.unshift(data);
@@ -988,20 +1049,17 @@ const openLikesModal = (postToView) => {
 
 const openCommentsModal = async (postToView) => {
   activeCommentsPost.value = postToView;
-  
+
   // Reset pagination for this post to ensure clean state
   commentsPagination.value[postToView.id] = {
     currentPage: 0, // Start at 0 so first load will be page 1
     hasMore: true,
-    isLoading: false
+    isLoading: false,
   };
-  
-  console.log('Opening comments modal for post:', postToView.id);
-  console.log('Existing comments count:', postToView.post_comments?.length);
-  
+
   // Always load initial 10 comments with pagination (replace existing)
   await loadCommentsForPost(postToView.id, 1, true);
-  
+
   // Set timeout to scroll to top (recent comments) once modal is visible
   setTimeout(() => {
     if (modalsRef.value?.commentsContainerRef) {
@@ -1048,14 +1106,15 @@ const navigateMedia = (direction, index) => {
   const totalMedia = activePost.value.post_media.length;
 
   // If an index is directly provided (for serial view selection)
-  if (typeof index === 'number') {
+  if (typeof index === "number") {
     activeMediaIndex.value = index;
-  } 
+  }
   // For next/prev navigation
   else if (direction === "next") {
     activeMediaIndex.value = (activeMediaIndex.value + 1) % totalMedia;
   } else if (direction === "prev") {
-    activeMediaIndex.value = (activeMediaIndex.value - 1 + totalMedia) % totalMedia;
+    activeMediaIndex.value =
+      (activeMediaIndex.value - 1 + totalMedia) % totalMedia;
   } else if (direction === "select") {
     // This case is for direct selection, but index is required
     console.warn("Index is required for 'select' direction");
@@ -1180,7 +1239,7 @@ const confirmDeleteComment = async () => {
   try {
     commentToDelete.value.isDeleting = true;
 
-    await del(`/bn/comments/${commentToDelete.value.id}/`);    // Remove the comment from the list
+    await del(`/bn/comments/${commentToDelete.value.id}/`); // Remove the comment from the list
     if (
       postWithCommentToDelete.value &&
       postWithCommentToDelete.value.post_comments
@@ -1191,7 +1250,10 @@ const confirmDeleteComment = async () => {
         );
 
       // Update the comment count
-      if (postWithCommentToDelete.value.comment_count !== undefined && postWithCommentToDelete.value.comment_count > 0) {
+      if (
+        postWithCommentToDelete.value.comment_count !== undefined &&
+        postWithCommentToDelete.value.comment_count > 0
+      ) {
         postWithCommentToDelete.value.comment_count -= 1;
       }
     }
@@ -1258,7 +1320,7 @@ const sharePost = (postToShare) => {
         text: "Check out this post on Business Network",
         url: postUrl,
       })
-      .catch((error) => console.log("Error sharing", error));
+      .catch((error) => console.error("Error sharing", error));
   } else {
     navigator.clipboard.writeText(postUrl);
     toast.add({

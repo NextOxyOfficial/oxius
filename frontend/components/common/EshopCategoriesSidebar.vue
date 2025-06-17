@@ -59,9 +59,7 @@
                     "
                   />
                 </div>
-                <span class="truncate font-medium">{{
-                  category.name
-                }}</span>
+                <span class="truncate font-medium">{{ category.name }}</span>
                 <div
                   v-if="selectedCategory === category.id"
                   class="ml-auto flex-shrink-0 size-2 rounded-full bg-emerald-500"
@@ -106,9 +104,7 @@
 
           <div class="relative p-5 text-white">
             <div class="flex items-start">
-              <div
-                class="bg-white/20 backdrop-blur-sm p-2.5 rounded-lg mr-3"
-              >
+              <div class="bg-white/20 backdrop-blur-sm p-2.5 rounded-lg mr-3">
                 <UIcon name="i-heroicons-shopping-bag" class="size-6" />
               </div>
               <div>
@@ -152,8 +148,8 @@
             Customer Support
           </h3>
           <p class="text-sm mt-2 text-gray-600 dark:text-gray-400">
-            Our team is here to help you with any questions about your
-            orders or products.
+            Our team is here to help you with any questions about your orders or
+            products.
           </p>
           <div class="mt-3 flex gap-2">
             <UButton
@@ -163,10 +159,7 @@
               class="flex-1"
               @click="$emit('contactSupport', 'chat')"
             >
-              <UIcon
-                name="i-heroicons-chat-bubble-oval-left"
-                class="mr-1.5"
-              />
+              <UIcon name="i-heroicons-chat-bubble-oval-left" class="mr-1.5" />
               Live Chat
             </UButton>
             <UButton
@@ -216,31 +209,31 @@
 const props = defineProps({
   isOpen: {
     type: Boolean,
-    default: false
+    default: false,
   },
   displayedCategories: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   selectedCategory: {
     type: [String, Number, null],
-    default: null
+    default: null,
   },
   hasMoreCategoriesToLoad: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
 // Emits
 const emit = defineEmits([
-  'close',
-  'categorySelect',
-  'loadMore',
-  'sellerRegistration',
-  'contactSupport',
-  'eshopManager'
-])
+  "close",
+  "categorySelect",
+  "loadMore",
+  "sellerRegistration",
+  "contactSupport",
+  "eshopManager",
+]);
 
 // Get category icon by name
 function getCategoryIcon(categoryName) {
@@ -257,8 +250,7 @@ function getCategoryIcon(categoryName) {
 
 // Handle category selection
 function handleCategorySelect(categoryId) {
-  console.log('Sidebar component: handleCategorySelect called with categoryId:', categoryId);
-  emit('categorySelect', categoryId)
+  emit("categorySelect", categoryId);
   // Remove the automatic close emit - let the parent handle closing
   // emit('close')
 }

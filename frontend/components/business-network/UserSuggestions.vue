@@ -356,11 +356,8 @@ const fetchSuggestions = async () => {
       return;
     }
 
-    console.log("Fetching user suggestions...");
     const { get } = useApi();
     const response = await get("/bn/user-suggestions/");
-
-    console.log("API Response:", response);
 
     // Handle the response object structure from useApi
     if (response.error) {
@@ -376,7 +373,6 @@ const fetchSuggestions = async () => {
       Array.isArray(response.data) &&
       response.data.length > 0
     ) {
-      console.log("Suggestions loaded:", response.data.length, "users");
       // Direct array response from the fixed backend
       suggestions.value = response.data.map((user) => ({
         ...user,
@@ -384,7 +380,6 @@ const fetchSuggestions = async () => {
         mutual_connections: 0, // Simplified API doesn't include this
       }));
     } else {
-      console.log("No suggestions data or empty array");
       error.value = "No suggestions available right now";
       suggestions.value = [];
     }

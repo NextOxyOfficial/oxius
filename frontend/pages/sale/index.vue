@@ -111,7 +111,8 @@
             </div>
             <UTooltip text="Change Location" class="me-auto">
               <UButton
-                icon="i-heroicons-map-pin"                size="md"
+                icon="i-heroicons-map-pin"
+                size="md"
                 color="primary"
                 variant="ghost"
                 trailing-icon="i-heroicons-pencil-square"
@@ -120,7 +121,8 @@
               >
                 <span class="sr-only">Edit Location</span>
               </UButton>
-            </UTooltip>            <UButtonGroup size="md" class="flex-1 hidden md:flex md:w-2/4">
+            </UTooltip>
+            <UButtonGroup size="md" class="flex-1 hidden md:flex md:w-2/4">
               <UInput
                 icon="i-heroicons-magnifying-glass-20-solid"
                 size="md"
@@ -153,7 +155,11 @@
               />
             </UButtonGroup>
           </div>
-        </div>        <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-2 pb-2 ">          
+        </div>
+        <UButtonGroup
+          size="md"
+          class="flex-1 flex md:hidden md:w-2/4 px-2 pb-2"
+        >
           <UInput
             icon="i-heroicons-magnifying-glass-20-solid"
             size="md"
@@ -187,13 +193,14 @@
         </UButtonGroup>
       </UContainer>
     </div>
-    <UContainer class=" sm:py-6">
+    <UContainer class="sm:py-6">
       <!-- Overlay for mobile -->
       <div
         v-if="isMobileFilterOpen"
         class="fixed inset-0 bg-black bg-opacity-60 z-40 lg:hidden"
         @click="toggleMobileSidebar"
-      ></div>      <div class="flex flex-col lg:flex-row gap-6">
+      ></div>
+      <div class="flex flex-col lg:flex-row gap-6">
         <!-- Sale Sidebar Component -->
         <SaleSidebar
           :is-mobile-filter-open="isMobileFilterOpen"
@@ -206,15 +213,17 @@
           @select-category="selectCategory"
           @select-subcategory="selectSubcategory"
           @toggle-subcategories="toggleSubcategories"
-        />        
+        />
         <!-- Main Content Area -->
-        <div class="flex-1 order-1 lg:order-2 min-w-0 overflow-hidden">          
+        <div class="flex-1 order-1 lg:order-2 min-w-0 overflow-hidden">
           <!-- Sorting & View Options -->
           <div
             class="bg-white p-2 rounded-lg shadow-sm mb-4 flex flex-wrap justify-between items-center gap-4"
-          >            
-          <!-- Mobile Layout: Ads found + Post Sale Ad button on same row -->
-            <div class="flex items-center justify-between w-full lg:w-auto lg:justify-start gap-3">
+          >
+            <!-- Mobile Layout: Ads found + Post Sale Ad button on same row -->
+            <div
+              class="flex items-center justify-between w-full lg:w-auto lg:justify-start gap-3"
+            >
               <div class="flex items-center gap-3">
                 <p class="text-gray-600 text-sm">
                   <span class="font-medium text-gray-800">{{
@@ -231,7 +240,7 @@
                   </span>
                 </p>
               </div>
-                <!-- Post Sale Ad Button - Mobile position (right side of ads found row) -->
+              <!-- Post Sale Ad Button - Mobile position (right side of ads found row) -->
               <div class="lg:hidden">
                 <div v-if="isAuthenticated" class="flex items-center gap-2">
                   <NuxtLink
@@ -259,8 +268,8 @@
                   </NuxtLink>
                 </div>
               </div>
-            </div>            
-            
+            </div>
+
             <!-- Desktop Layout: Sorting and Post Sale Ad button -->
             <div class="hidden lg:flex gap-6 items-center">
               <div class="flex items-center gap-2">
@@ -274,12 +283,12 @@
                   class="w-40 h-10 flex"
                   :ui="{
                     padding: {
-                      sm: 'px-3 py-2'
-                    }
+                      sm: 'px-3 py-2',
+                    },
                   }"
                   @update:modelValue="applyFilters"
                 />
-              </div>              
+              </div>
               <div
                 class="flex items-center border-l border-gray-200 pl-4 gap-2"
               >
@@ -310,7 +319,7 @@
                 </div>
               </div>
             </div>
-              <!-- Mobile Sort Options - Separate row -->
+            <!-- Mobile Sort Options - Separate row -->
             <div class="lg:hidden w-full">
               <div class="flex items-center gap-2">
                 <!-- Mobile Filter Button -->
@@ -325,7 +334,8 @@
                 >
                   <span class="text-xs font-medium">Menu</span>
                 </UButton>
-                <span class="text-sm text-gray-600">Sort by:</span>                <USelect
+                <span class="text-sm text-gray-600">Sort by:</span>
+                <USelect
                   v-model="sortOption"
                   :options="sortOptions"
                   option-attribute="label"
@@ -334,16 +344,16 @@
                   class="w-36 h-8 flex compact-select"
                   :ui="{
                     padding: {
-                      sm: 'px-2 py-1'
+                      sm: 'px-2 py-1',
                     },
                     gap: {
-                      sm: 'gap-1'
+                      sm: 'gap-1',
                     },
                     trailing: {
                       padding: {
-                        sm: 'ps-1'
-                      }
-                    }
+                        sm: 'ps-1',
+                      },
+                    },
                   }"
                   @update:modelValue="applyFilters"
                 />
@@ -405,7 +415,8 @@
                   color="gray"
                   variant="ghost"
                   icon="i-heroicons-x-mark"
-                  size="xs"                  class="-mr-1"
+                  size="xs"
+                  class="-mr-1"
                   @click="handleClearLocation"
                 />
               </UBadge>
@@ -443,16 +454,21 @@
                   class="-mr-1"
                   @click="selectedCondition = ''"
                 />
-              </UBadge>              <UBadge
+              </UBadge>
+              <UBadge
                 v-if="searchQuery"
                 color="emerald"
                 variant="subtle"
                 class="flex items-center gap-2"
               >
                 <UIcon name="i-heroicons-magnifying-glass" class="h-3 w-3" />
-                <span>Search: "<strong>{{ searchQuery }}</strong>"</span>
+                <span
+                  >Search: "<strong>{{ searchQuery }}</strong
+                  >"</span
+                >
                 <span v-if="listings?.length" class="text-xs opacity-75">
-                  ({{ listings.length }} {{ listings.length === 1 ? 'result' : 'results' }})
+                  ({{ listings.length }}
+                  {{ listings.length === 1 ? "result" : "results" }})
                 </span>
                 <UButton
                   color="emerald"
@@ -485,27 +501,38 @@
                 class="animate-spin h-6 w-6 mx-auto text-blue-500"
               />
               <p class="mt-2 text-gray-600 text-sm">Loading listings...</p>
-            </div>            <div v-else-if="!listings?.length" class="py-8 text-center">
+            </div>
+            <div v-else-if="!listings?.length" class="py-8 text-center">
               <div class="flex flex-col items-center">
-                <UIcon 
-                  :name="searchQuery ? 'i-heroicons-magnifying-glass' : 'i-heroicons-square-3-stack-3d'" 
-                  class="h-12 w-12 text-gray-400 mb-3" 
+                <UIcon
+                  :name="
+                    searchQuery
+                      ? 'i-heroicons-magnifying-glass'
+                      : 'i-heroicons-square-3-stack-3d'
+                  "
+                  class="h-12 w-12 text-gray-400 mb-3"
                 />
                 <h3 class="text-lg font-medium text-gray-800 mb-2">
-                  {{ searchQuery ? 'No search results found' : 'No listings found' }}
+                  {{
+                    searchQuery
+                      ? "No search results found"
+                      : "No listings found"
+                  }}
                 </h3>
                 <p class="text-gray-600 text-sm max-w-md">
                   <span v-if="searchQuery">
-                    No posts found matching "<strong>{{ searchQuery }}</strong>". Try using different keywords or check the spelling.
+                    No posts found matching "<strong>{{ searchQuery }}</strong
+                    >". Try using different keywords or check the spelling.
                   </span>
                   <span v-else>
-                    No listings found in this category. Try selecting a different category or adjusting your filters.
+                    No listings found in this category. Try selecting a
+                    different category or adjusting your filters.
                   </span>
                 </p>
                 <div v-if="searchQuery" class="mt-4">
-                  <UButton 
-                    color="primary" 
-                    variant="soft" 
+                  <UButton
+                    color="primary"
+                    variant="soft"
                     @click="clearSearch"
                     size="sm"
                   >
@@ -513,19 +540,32 @@
                   </UButton>
                 </div>
               </div>
-            </div><div
+            </div>
+            <div
               v-else
               class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-2 w-full"
-            ><NuxtLink
+            >
+              <NuxtLink
                 v-for="(post, i) in listings"
                 :key="`post-${i}`"
                 :to="`/sale/${post.slug}`"
                 class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 group w-full max-w-full"
-              ><!-- Image -->
-                <div class="relative aspect-square w-full overflow-hidden bg-gray-100">
-                  <div v-if="!getListingImage(post) || getListingImage(post).includes('placeholder')" class="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-2">
+                ><!-- Image -->
+                <div
+                  class="relative aspect-square w-full overflow-hidden bg-gray-100"
+                >
+                  <div
+                    v-if="
+                      !getListingImage(post) ||
+                      getListingImage(post).includes('placeholder')
+                    "
+                    class="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-2"
+                  >
                     <div class="bg-white/90 rounded-full p-2 mb-1">
-                      <UIcon name="i-heroicons-photo" class="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
+                      <UIcon
+                        name="i-heroicons-photo"
+                        class="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
+                      />
                     </div>
                     <p class="text-gray-500 text-xs text-center">No Photo</p>
                   </div>
@@ -552,10 +592,18 @@
                       {{ formatDate(post.created_at) }}
                     </p>
                   </div>
-                </div>                <!-- Title and Location -->
+                </div>
+                <!-- Title and Location -->
                 <div class="p-2">
-                  <div class="text-gray-600 text-sm font-semibold line-clamp-2" v-html="highlightSearchTerm(capitalizeTitle(post?.title) || 'Post title', searchQuery)">
-                  </div>
+                  <div
+                    class="text-gray-600 text-sm font-semibold line-clamp-2"
+                    v-html="
+                      highlightSearchTerm(
+                        capitalizeTitle(post?.title) || 'Post title',
+                        searchQuery
+                      )
+                    "
+                  ></div>
                   <div class="flex items-start mt-1 text-xs text-gray-600">
                     <UIcon
                       name="i-heroicons-map-pin"
@@ -567,33 +615,46 @@
                         : `All Over Bangladesh`
                     }}
                   </div>
-                </div>              
+                </div>
               </NuxtLink>
-            </div>            
+            </div>
             <!-- Load More Button -->
-            <div v-if="hasMoreListings && !loading" class="flex justify-center mt-8">
+            <div
+              v-if="hasMoreListings && !loading"
+              class="flex justify-center mt-8"
+            >
               <button
                 @click="loadMorePosts"
                 :disabled="isLoadingMore"
                 class="text-emerald-600 hover:text-emerald-700 disabled:text-gray-400 font-medium transition-colors duration-200 flex items-center gap-2 hover:underline"
               >
-                <UIcon 
-                  v-if="isLoadingMore" 
-                  name="i-heroicons-arrow-path" 
-                  class="animate-spin h-4 w-4" 
+                <UIcon
+                  v-if="isLoadingMore"
+                  name="i-heroicons-arrow-path"
+                  class="animate-spin h-4 w-4"
                 />
                 <span v-if="isLoadingMore">Loading more...</span>
                 <span v-else>See More</span>
               </button>
             </div>
-            
+
             <!-- All Posts Loaded Message -->
-            <div v-if="!hasMoreListings && listings.length > 0 && !loading" class="text-center py-8">
+            <div
+              v-if="!hasMoreListings && listings.length > 0 && !loading"
+              class="text-center py-8"
+            >
               <div class="flex flex-col items-center justify-center">
-                <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-                  <UIcon name="i-heroicons-check-circle" class="h-8 w-8 text-green-600" />
+                <div
+                  class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4"
+                >
+                  <UIcon
+                    name="i-heroicons-check-circle"
+                    class="h-8 w-8 text-green-600"
+                  />
                 </div>
-                <h3 class="text-lg font-medium text-gray-800 mb-1">All posts loaded!</h3>
+                <h3 class="text-lg font-medium text-gray-800 mb-1">
+                  All posts loaded!
+                </h3>
                 <p class="text-gray-600 text-sm">
                   You've seen all {{ totalListingsCount }} available listings
                 </p>
@@ -610,7 +671,8 @@
                 <UIcon name="i-heroicons-clock" class="mr-2 h-5 w-5" />
                 Recent Listings
               </h2>
-            </div>            <!-- Recent Listings Horizontal Scroll -->
+            </div>
+            <!-- Recent Listings Horizontal Scroll -->
             <div class="overflow-x-auto scrollbar-hide pb-4 -mx-1 px-1">
               <div class="flex gap-4 min-w-max">
                 <NuxtLink
@@ -632,7 +694,8 @@
                         {{ getCategoryName(listing.category) }}
                       </span>
                     </div>
-                  </div>                  <div class="p-3">
+                  </div>
+                  <div class="p-3">
                     <h3
                       class="font-medium text-gray-800 line-clamp-1 group-hover:text-amber-700"
                     >
@@ -678,143 +741,253 @@
               class="animate-spin h-8 w-8 mx-auto text-amber-500"
             />
             <p class="mt-2 text-gray-600 text-sm">Loading recent listings...</p>
-          </div>          <!-- Enhanced Empty State with Professional Design --><!-- Enhanced Tips & Safety Guide -->
+          </div>
+          <!-- Enhanced Empty State with Professional Design --><!-- Enhanced Tips & Safety Guide -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
             <!-- Smart Buying Tips -->
-            <div class="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50 shadow-sm hover:shadow-sm transition-all duration-300">
+            <div
+              class="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50 shadow-sm hover:shadow-sm transition-all duration-300"
+            >
               <!-- Background Pattern -->
-              <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full -translate-y-16 translate-x-16"></div>
-              
+              <div
+                class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full -translate-y-16 translate-x-16"
+              ></div>
+
               <div class="relative z-10 p-8">
                 <div class="flex items-start mb-6">
-                  <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl shadow-sm mr-4 group-hover:scale-110 transition-transform duration-300">
-                    <UIcon name="i-heroicons-light-bulb" class="h-8 w-8 text-white" />
+                  <div
+                    class="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl shadow-sm mr-4 group-hover:scale-110 transition-transform duration-300"
+                  >
+                    <UIcon
+                      name="i-heroicons-light-bulb"
+                      class="h-8 w-8 text-white"
+                    />
                   </div>
                   <div>
-                    <h3 class="text-xl font-bold text-blue-900 mb-2">Smart Buying Tips</h3>
-                    <p class="text-blue-700/80 text-sm">Make informed purchases with confidence</p>
+                    <h3 class="text-xl font-bold text-blue-900 mb-2">
+                      Smart Buying Tips
+                    </h3>
+                    <p class="text-blue-700/80 text-sm">
+                      Make informed purchases with confidence
+                    </p>
                   </div>
                 </div>
 
                 <div class="space-y-4">
                   <div class="flex items-start group/item">
-                    <div class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-eye" class="h-3 w-3 text-white" />
+                    <div
+                      class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
+                    >
+                      <UIcon
+                        name="i-heroicons-eye"
+                        class="h-3 w-3 text-white"
+                      />
                     </div>
                     <div>
-                      <p class="text-gray-800 font-medium text-sm">Inspect Before You Buy</p>
-                      <p class="text-gray-600 text-xs mt-1">Always examine items thoroughly in person before making payment</p>
+                      <p class="text-gray-800 font-medium text-sm">
+                        Inspect Before You Buy
+                      </p>
+                      <p class="text-gray-600 text-xs mt-1">
+                        Always examine items thoroughly in person before making
+                        payment
+                      </p>
                     </div>
                   </div>
 
                   <div class="flex items-start group/item">
-                    <div class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-map-pin" class="h-3 w-3 text-white" />
+                    <div
+                      class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
+                    >
+                      <UIcon
+                        name="i-heroicons-map-pin"
+                        class="h-3 w-3 text-white"
+                      />
                     </div>
                     <div>
-                      <p class="text-gray-800 font-medium text-sm">Meet in Public Places</p>
-                      <p class="text-gray-600 text-xs mt-1">Choose safe, well-lit locations for transactions</p>
+                      <p class="text-gray-800 font-medium text-sm">
+                        Meet in Public Places
+                      </p>
+                      <p class="text-gray-600 text-xs mt-1">
+                        Choose safe, well-lit locations for transactions
+                      </p>
                     </div>
                   </div>
 
                   <div class="flex items-start group/item">
-                    <div class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-document-check" class="h-3 w-3 text-white" />
+                    <div
+                      class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
+                    >
+                      <UIcon
+                        name="i-heroicons-document-check"
+                        class="h-3 w-3 text-white"
+                      />
                     </div>
                     <div>
-                      <p class="text-gray-800 font-medium text-sm">Verify Authenticity</p>
-                      <p class="text-gray-600 text-xs mt-1">Check documentation and authenticity before purchase</p>
+                      <p class="text-gray-800 font-medium text-sm">
+                        Verify Authenticity
+                      </p>
+                      <p class="text-gray-600 text-xs mt-1">
+                        Check documentation and authenticity before purchase
+                      </p>
                     </div>
                   </div>
 
                   <div class="flex items-start group/item">
-                    <div class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-scale" class="h-3 w-3 text-white" />
+                    <div
+                      class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
+                    >
+                      <UIcon
+                        name="i-heroicons-scale"
+                        class="h-3 w-3 text-white"
+                      />
                     </div>
                     <div>
-                      <p class="text-gray-800 font-medium text-sm">Compare Market Prices</p>
-                      <p class="text-gray-600 text-xs mt-1">Research similar listings to ensure fair pricing</p>
+                      <p class="text-gray-800 font-medium text-sm">
+                        Compare Market Prices
+                      </p>
+                      <p class="text-gray-600 text-xs mt-1">
+                        Research similar listings to ensure fair pricing
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                <div class="mt-6 pt-4 border-t border-blue-200/50">                  <NuxtLink 
-                    to="/contact-us" 
+                <div class="mt-6 pt-4 border-t border-blue-200/50">
+                  <NuxtLink
+                    to="/contact-us"
                     class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm group/link"
                   >
                     Complete Buyer's Guide
-                    <UIcon name="i-heroicons-arrow-right" class="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200" />
+                    <UIcon
+                      name="i-heroicons-arrow-right"
+                      class="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200"
+                    />
                   </NuxtLink>
                 </div>
               </div>
             </div>
 
             <!-- Security & Safety -->
-            <div class="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl border border-emerald-200/50 shadow-sm hover:shadow-sm transition-all duration-300">
+            <div
+              class="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl border border-emerald-200/50 shadow-sm hover:shadow-sm transition-all duration-300"
+            >
               <!-- Background Pattern -->
-              <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/10 to-green-400/10 rounded-full -translate-y-16 translate-x-16"></div>
-              
+              <div
+                class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/10 to-green-400/10 rounded-full -translate-y-16 translate-x-16"
+              ></div>
+
               <div class="relative z-10 p-8">
                 <div class="flex items-start mb-6">
-                  <div class="bg-gradient-to-br from-emerald-500 to-green-600 p-3 rounded-xl shadow-sm mr-4 group-hover:scale-110 transition-transform duration-300">
-                    <UIcon name="i-heroicons-shield-check" class="h-8 w-8 text-white" />
+                  <div
+                    class="bg-gradient-to-br from-emerald-500 to-green-600 p-3 rounded-xl shadow-sm mr-4 group-hover:scale-110 transition-transform duration-300"
+                  >
+                    <UIcon
+                      name="i-heroicons-shield-check"
+                      class="h-8 w-8 text-white"
+                    />
                   </div>
                   <div>
-                    <h3 class="text-xl font-bold text-emerald-900 mb-2">Security & Safety</h3>
-                    <p class="text-emerald-700/80 text-sm">Stay protected while shopping online</p>
+                    <h3 class="text-xl font-bold text-emerald-900 mb-2">
+                      Security & Safety
+                    </h3>
+                    <p class="text-emerald-700/80 text-sm">
+                      Stay protected while shopping online
+                    </p>
                   </div>
                 </div>
 
                 <div class="space-y-4">
                   <div class="flex items-start group/item">
-                    <div class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-lock-closed" class="h-3 w-3 text-white" />
+                    <div
+                      class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
+                    >
+                      <UIcon
+                        name="i-heroicons-lock-closed"
+                        class="h-3 w-3 text-white"
+                      />
                     </div>
                     <div>
-                      <p class="text-gray-800 font-medium text-sm">Protect Personal Info</p>
-                      <p class="text-gray-600 text-xs mt-1">Never share banking details or personal financial information</p>
+                      <p class="text-gray-800 font-medium text-sm">
+                        Protect Personal Info
+                      </p>
+                      <p class="text-gray-600 text-xs mt-1">
+                        Never share banking details or personal financial
+                        information
+                      </p>
                     </div>
                   </div>
 
                   <div class="flex items-start group/item">
-                    <div class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-exclamation-triangle" class="h-3 w-3 text-white" />
+                    <div
+                      class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
+                    >
+                      <UIcon
+                        name="i-heroicons-exclamation-triangle"
+                        class="h-3 w-3 text-white"
+                      />
                     </div>
                     <div>
-                      <p class="text-gray-800 font-medium text-sm">Spot Red Flags</p>
-                      <p class="text-gray-600 text-xs mt-1">Be cautious of deals that seem unrealistically good</p>
+                      <p class="text-gray-800 font-medium text-sm">
+                        Spot Red Flags
+                      </p>
+                      <p class="text-gray-600 text-xs mt-1">
+                        Be cautious of deals that seem unrealistically good
+                      </p>
                     </div>
                   </div>
 
                   <div class="flex items-start group/item">
-                    <div class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="h-3 w-3 text-white" />
+                    <div
+                      class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
+                    >
+                      <UIcon
+                        name="i-heroicons-chat-bubble-left-ellipsis"
+                        class="h-3 w-3 text-white"
+                      />
                     </div>
                     <div>
-                      <p class="text-gray-800 font-medium text-sm">Use Platform Messaging</p>
-                      <p class="text-gray-600 text-xs mt-1">Keep communications on our platform for better security</p>
+                      <p class="text-gray-800 font-medium text-sm">
+                        Use Platform Messaging
+                      </p>
+                      <p class="text-gray-600 text-xs mt-1">
+                        Keep communications on our platform for better security
+                      </p>
                     </div>
                   </div>
 
                   <div class="flex items-start group/item">
-                    <div class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200">
-                      <UIcon name="i-heroicons-user-group" class="h-3 w-3 text-white" />
+                    <div
+                      class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
+                    >
+                      <UIcon
+                        name="i-heroicons-user-group"
+                        class="h-3 w-3 text-white"
+                      />
                     </div>
                     <div>
-                      <p class="text-gray-800 font-medium text-sm">Trust Your Instincts</p>
-                      <p class="text-gray-600 text-xs mt-1">If something feels wrong, don't hesitate to walk away</p>
+                      <p class="text-gray-800 font-medium text-sm">
+                        Trust Your Instincts
+                      </p>
+                      <p class="text-gray-600 text-xs mt-1">
+                        If something feels wrong, don't hesitate to walk away
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                <div class="mt-6 pt-4 border-t border-emerald-200/50">                  
-                  <NuxtLink 
-                    to="/contact-us" 
+                <div class="mt-6 pt-4 border-t border-emerald-200/50">
+                  <NuxtLink
+                    to="/contact-us"
                     class="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-medium text-sm group/link"
                   >
                     Complete Safety Guide
-                    <UIcon name="i-heroicons-arrow-right" class="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200" />                  </NuxtLink>
-                </div>              </div>
+                    <UIcon
+                      name="i-heroicons-arrow-right"
+                      class="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200"
+                    />
+                  </NuxtLink>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -881,7 +1054,7 @@ function toggleMobileSidebar() {
 const handleClearLocation = () => {
   clearLocation();
   window.location.reload();
-}
+};
 
 // Function to clear search and reload listings
 async function clearSearch() {
@@ -894,9 +1067,15 @@ async function clearSearch() {
 // Function to highlight search terms in text
 function highlightSearchTerm(text, searchTerm) {
   if (!searchTerm || !text) return text;
-  
-  const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-  return text.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
+
+  const regex = new RegExp(
+    `(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
+    "gi"
+  );
+  return text.replace(
+    regex,
+    '<mark class="bg-yellow-200 px-1 rounded">$1</mark>'
+  );
 }
 
 // Function to handle search form submission
@@ -905,8 +1084,6 @@ async function filterSearch() {
     isLoading.value = true;
     searchQuery.value = form.value.title?.trim() || "";
     currentPage.value = 1;
-
-    console.log("Search query:", searchQuery.value); // Debug log
 
     // Clear other filters when searching to avoid conflicts (only if there's a search query)
     if (searchQuery.value) {
@@ -1087,14 +1264,14 @@ async function loadPosts(page = 1, isLoadMore = false) {
 
     // Add pagination with page size of 10
     params.append("page", page.toString());
-    params.append("page_size", "10");    // Add filters
+    params.append("page_size", "10"); // Add filters
     if (selectedCategory.value)
       params.append("category", selectedCategory.value.toString());
     if (selectedSubcategory.value)
-      params.append("subcategory", selectedSubcategory.value.toString());    if (searchQuery.value) {
+      params.append("subcategory", selectedSubcategory.value.toString());
+    if (searchQuery.value) {
       // Use comprehensive search that looks in title and description
       params.append("search", searchQuery.value);
-      console.log("Adding comprehensive search parameter:", searchQuery.value); // Debug log
     }
     if (priceRange.value.min)
       params.append("min_price", priceRange.value.min.toString());
@@ -1116,22 +1293,16 @@ async function loadPosts(page = 1, isLoadMore = false) {
       price_high: "-price",
       most_viewed: "-views",
     };
-    params.append("sort", sortMapping[sortOption.value] || "-created_at");    // Get data from API
+    params.append("sort", sortMapping[sortOption.value] || "-created_at"); // Get data from API
     const apiUrl = `${API_ENDPOINTS.LISTINGS}?${params.toString()}`;
-    console.log("API URL:", apiUrl); // Debug log
-    console.log("Search Query Value:", searchQuery.value); // Debug log
-    console.log("All URL Params:", params.toString()); // Debug log
-    
+
     const response = await get(apiUrl);
-    console.log("API Response:", response); // Debug log
 
     if (response && response.data) {
-      console.log("Response data:", response.data); // Debug log
       if (response.data.results) {
-        console.log("Number of results:", response.data.results.length); // Debug log
         // Paginated response
         const newListings = mapListingsData(response.data.results);
-        
+
         if (isLoadMore) {
           // Append new listings to existing ones
           listings.value = [...listings.value, ...newListings];
@@ -1139,12 +1310,11 @@ async function loadPosts(page = 1, isLoadMore = false) {
           // Replace listings for fresh load
           listings.value = newListings;
         }
-        
+
         // Update pagination info
         totalPages.value = Math.ceil(response.data.count / 10);
         hasMoreListings.value = !!response.data.next;
         totalListingsCount.value = response.data.count;
-        
       } else if (Array.isArray(response.data)) {
         // Array response
         const newListings = mapListingsData(response.data);
@@ -1357,7 +1527,7 @@ function onPageChange(page) {
 // Load more posts function for pagination
 async function loadMorePosts() {
   if (!hasMoreListings.value || isLoadingMore.value) return;
-  
+
   currentPage.value++;
   await loadPosts(currentPage.value, true);
 }
@@ -1535,8 +1705,10 @@ watch(
       } catch (error) {
         console.error(`Error loading areas for ${newDistrict}:`, error);
       }
-    } else {    upazilas.value = [];
-    }  }
+    } else {
+      upazilas.value = [];
+    }
+  }
 );
 </script>
 
@@ -1562,7 +1734,8 @@ watch(
 
 /* Custom animations */
 @keyframes bounce-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(-5%);
     animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
   }
@@ -1578,12 +1751,12 @@ watch(
 
 /* Hide scrollbar for recent listings */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Safari and Chrome */
+  display: none; /* Safari and Chrome */
 }
 
 /* Compact select styling for mobile */

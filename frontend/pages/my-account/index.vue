@@ -385,11 +385,10 @@ async function handleForm() {
   } else {
     rest.image = image;
   }
-  console.log(rest);
+
   isLoading.value = true;
   try {
     const res = await put(`/persons/update/${userProfile.value.email}/`, rest);
-    console.log(res, "result");
 
     if (res.data?.data?.email) {
       toast.add({ title: res.data?.message });
