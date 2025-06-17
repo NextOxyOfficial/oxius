@@ -23,39 +23,42 @@
     </div>
 
     <!-- User Suggestions -->
-    <div class="p-4">      
-        <div v-if="loading" class="space-y-4">
+    <div class="p-4">        <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Skeleton loaders -->
-        <div v-for="i in (isDesktop ? 3 : 2)" :key="i" class="flex items-center space-x-3">
-          <div class="w-12 h-12 rounded-full bg-gray-200 animate-pulse"></div>
-          <div class="flex-1 space-y-2">
-            <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
-            <div class="h-3 bg-gray-200 rounded animate-pulse w-1/2"></div>
+        <div v-for="i in (isDesktop ? 3 : 2)" :key="i" class="bg-white border border-gray-200 rounded-lg p-4">
+          <div class="flex flex-col items-center text-center space-y-3">
+            <div class="w-16 h-16 rounded-full bg-gray-200 animate-pulse"></div>
+            <div class="w-full space-y-2">
+              <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4 mx-auto"></div>
+              <div class="h-3 bg-gray-200 rounded animate-pulse w-1/2 mx-auto"></div>
+            </div>
+            <div class="h-8 bg-gray-200 rounded animate-pulse w-full"></div>
           </div>
-          <div class="h-8 bg-gray-200 rounded animate-pulse w-16"></div>
         </div>
-      </div><div v-else-if="displayedSuggestions.length > 0" class="space-y-4">
+      </div><div v-else-if="displayedSuggestions.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div 
           v-for="user in displayedSuggestions" 
           :key="user.id"
-          class="flex items-center justify-between hover:bg-gray-50 rounded-lg p-2 transition-colors"
+          class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
         >
-          <!-- User Info -->
-          <div class="flex items-center space-x-3 flex-1">
+          <!-- User Info Card -->
+          <div class="flex flex-col items-center text-center space-y-3">
             <!-- Profile Picture -->
-            <NuxtLink :to="`/business-network/profile/${user.id}`">              <img
+            <NuxtLink :to="`/business-network/profile/${user.id}`">
+              <img
                 src="/static/frontend/images/placeholder.jpg"
                 :alt="getUserDisplayName(user)"
-                class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
+                class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
               />
             </NuxtLink>
-              <!-- User Details -->
-            <div class="flex-1 min-w-0">
+            
+            <!-- User Details -->
+            <div class="flex-1 min-w-0 w-full">
               <NuxtLink 
                 :to="`/business-network/profile/${user.id}`"
                 class="block"
               >
-                <h4 class="font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors">
+                <h4 class="font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors text-sm">
                   {{ getUserDisplayName(user) }}
                 </h4>
               </NuxtLink>
@@ -64,30 +67,30 @@
                 {{ user.mutual_connections }} mutual connection{{ user.mutual_connections > 1 ? 's' : '' }}
               </div>
             </div>
-          </div>
 
-          <!-- Follow Button -->
-          <button
-            @click="toggleFollow(user)"
-            :disabled="user.isFollowing === 'pending'"
-            class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            :class="getFollowButtonClass(user)"
-          >
-            <span v-if="user.isFollowing === 'pending'" class="flex items-center">
-              <Loader2 class="h-4 w-4 animate-spin mr-1" />
-              Loading...
-            </span>
-            <span v-else-if="user.isFollowing" class="flex items-center">
-              <UserCheck class="h-4 w-4 mr-1" />
-              Following
-            </span>
-            <span v-else class="flex items-center">
-              <UserPlus class="h-4 w-4 mr-1" />
-              Follow
-            </span>
-          </button>
+            <!-- Follow Button -->
+            <button
+              @click="toggleFollow(user)"
+              :disabled="user.isFollowing === 'pending'"
+              class="w-full px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              :class="getFollowButtonClass(user)"
+            >
+              <span v-if="user.isFollowing === 'pending'" class="flex items-center justify-center">
+                <Loader2 class="h-4 w-4 animate-spin mr-1" />
+                Loading...
+              </span>
+              <span v-else-if="user.isFollowing" class="flex items-center justify-center">
+                <UserCheck class="h-4 w-4 mr-1" />
+                Following
+              </span>
+              <span v-else class="flex items-center justify-center">
+                <UserPlus class="h-4 w-4 mr-1" />
+                Follow
+              </span>
+            </button>
+          </div>
         </div>
-      </div>      <!-- Empty state -->
+      </div><!-- Empty state -->
       <div v-else-if="!loading" class="text-center py-6">
         <Users class="h-12 w-12 text-gray-300 mx-auto mb-2" />
         <p class="text-gray-500 text-sm">
