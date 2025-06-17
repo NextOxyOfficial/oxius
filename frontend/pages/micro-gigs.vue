@@ -38,10 +38,9 @@
             class="w-full md:w-60 bg-slate-50/70 border-dashed border max-sm:rounded-lg max-sm:overflow-hidden"
           >
             <ul class="py-2 text-center">
-              <li>
-                <p
-                  class="px-2 font-semibold pb-2 text-left"
-                  @click.prevent="selectedCategory = null"
+              <li>                <p
+                  class="px-2 font-semibold pb-2 text-left cursor-pointer"
+                  @click.prevent="selectAllCategories"
                 >
                   {{ $t("all_category") }}
                 </p>
@@ -81,10 +80,9 @@
                 value-attribute="value"
                 option-attribute="title"
               />
-            </div>
-
+            </div>            
             <UCard
-              v-for="(gig, i) in microGigs"
+              v-for="(gig, i) in paginatedGigs"
               :key="i"
               :ui="{
                 rounded: '',
@@ -228,10 +226,56 @@
                     class="w-[70px] justify-center"
                   >
                     Earn
-                  </UButton>
-                </div>
+                  </UButton>                </div>
               </div>
-            </UCard>
+            </UCard>              
+            <!-- Simple Pagination Section -->
+            <div
+              v-if="microGigs?.length"
+              class="mt-6 mb-4"
+            >
+              <div class="flex items-center justify-center gap-2 text-sm">
+                <span>Page {{ currentPage }} of {{ totalPages }}</span>
+
+                <!-- Previous button -->
+                <button
+                  :disabled="currentPage === 1"
+                  @click="goToPage(currentPage - 1)"
+                  class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Previous
+                </button>
+
+                <!-- Page numbers -->
+                <button
+                  v-for="page in getVisiblePages()"
+                  :key="page"
+                  @click="goToPage(page)"
+                  class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
+                  :class="
+                    page === currentPage
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : ''
+                  "
+                >
+                  {{ page }}
+                </button>
+
+                <!-- Next button -->
+                <button
+                  :disabled="currentPage === totalPages"
+                  @click="goToPage(currentPage + 1)"
+                  class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+            
+            <!-- Results Info -->
+            <div class="text-center text-sm text-gray-600 mt-2">
+              Showing {{ startIndex + 1 }}-{{ endIndex }} of {{ totalGigs }} gigs
+            </div>
           </div>
         </div>
       </UCard>
@@ -252,6 +296,45 @@ const categoryArray = ref([]);
 const selectedCategory = ref(null);
 const title = ref(null);
 const isLoading = ref(false);
+
+// Pagination variables
+const currentPage = ref(1);
+const itemsPerPage = 10;
+
+// Computed properties for pagination
+const totalGigs = computed(() => microGigs.value.length);
+const totalPages = computed(() => Math.ceil(totalGigs.value / itemsPerPage));
+const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage);
+const endIndex = computed(() => Math.min(startIndex.value + itemsPerPage, totalGigs.value));
+
+const paginatedGigs = computed(() => {
+  return microGigs.value.slice(startIndex.value, endIndex.value);
+});
+
+// Function to go to specific page
+function goToPage(page) {
+  if (page < 1 || page > totalPages.value || page === currentPage.value) return;
+  currentPage.value = page;
+  // Scroll to top of gigs section
+  document.getElementById('micro-gigs')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Helper function to get visible page numbers
+function getVisiblePages() {
+  const pages = [];
+  const start = Math.max(1, currentPage.value - 2);
+  const end = Math.min(totalPages.value, currentPage.value + 2);
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  return pages;
+}
+
+function resetPagination() {
+  currentPage.value = 1;
+}
 const { data } = await get("/micro-gigs/");
 microGigs.value = data;
 const res = await get("/classified-categories/");
@@ -312,6 +395,7 @@ setTimeout(() => {
 }, 20);
 
 async function getMicroGigsByAvailability(e) {
+  resetPagination();
   if (e === "completed") {
     const { data, error } = await get(`/micro-gigs/?show_submitted=true`);
     microGigs.value = data;
@@ -326,11 +410,25 @@ async function getMicroGigsByAvailability(e) {
 
 const selectCategory = async (category) => {
   selectedCategory.value = category || null;
+  resetPagination();
   try {
     const { data, error } = await get(
       `/micro-gigs/?category=${category.id}&show_submitted=${false}`
     );
     microGigs.value = data;
+  } catch (error) {
+    console.error(error);
+    toast.add({ title: "error" });
+  }
+};
+
+const selectAllCategories = async () => {
+  selectedCategory.value = null;
+  resetPagination();
+  try {
+    const { data, error } = await get(`/micro-gigs/`);
+    microGigs.value = data;
+    getMicroGigsCategories();
   } catch (error) {
     console.error(error);
     toast.add({ title: "error" });
