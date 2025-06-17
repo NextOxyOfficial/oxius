@@ -199,17 +199,40 @@ const fetchSuggestions = async () => {
   try {
     loading.value = true
     error.value = null
-      const { get } = useApi()
+    
+    // Check if user is authenticated first
+    const { isAuthenticated } = useAuth()
+    if (!isAuthenticated.value) {
+      error.value = 'Please log in to see suggestions'
+      suggestions.value = []
+      return
+    }
+    
+    console.log('Fetching user suggestions...')
+    const { get } = useApi()
     const response = await get('/bn/user-suggestions/')
     
-    if (response && Array.isArray(response) && response.length > 0) {
+    console.log('API Response:', response)
+    
+    // Handle the response object structure from useApi
+    if (response.error) {
+      console.error('API Error:', response.error)
+      if (response.error.statusCode === 401) {
+        error.value = 'Please log in to see suggestions'
+      } else {
+        error.value = 'Failed to load suggestions'
+      }
+      suggestions.value = []
+    } else if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+      console.log('Suggestions loaded:', response.data.length, 'users')
       // Direct array response from the fixed backend
-      suggestions.value = response.map(user => ({
+      suggestions.value = response.data.map(user => ({
         ...user,
         isFollowing: false,
         mutual_connections: 0 // Simplified API doesn't include this
       }))
     } else {
+      console.log('No suggestions data or empty array')
       error.value = 'No suggestions available right now'
       suggestions.value = []
     }
@@ -237,11 +260,15 @@ const toggleFollow = async (user) => {
     
     const response = await apiPost(endpoint, {})
     
-    if (response) {
+    // Handle the response object structure from useApi
+    if (response.error) {
+      console.error('Follow API Error:', response.error)
+      throw new Error('Failed to update follow status')
+    } else if (response.data) {
       user.isFollowing = !originalState
-        // With the simplified backend, we no longer track follower_count
+      // With the simplified backend, we no longer track follower_count
       // But we keep the isFollowing state
-        // Remove from suggestions if followed (optional)
+      // Remove from suggestions if followed (optional)
       if (user.isFollowing) {
         const index = suggestions.value.findIndex(s => s.id === user.id)
         if (index > -1) {
