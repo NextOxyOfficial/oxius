@@ -5,17 +5,12 @@
     <!-- Main Content -->
     <div
       class="bg-white rounded-xl shadow-sm border border-gray-100"
-    >
-      <!-- Tabs & Search Component -->
+    >      <!-- Tabs Component -->
       <MindForceTabsSearch
         :tabs="tabs"
         :active-tab="activeTab"
-        :is-searching="isSearching"
-        :search-query="searchQuery"
         @update:active-tab="activeTab = $event"
-        @update:search-query="searchQuery = $event"
-        @search="handleSearch"
-      />      <div class="px-2 py-3 pb-8">
+      /><div class="px-2 py-3 pb-8">
         <!-- Active Problems Tab -->
         <div v-if="activeTab === 'active'" class="space-y-4 min-h-[400px]">
           <!-- Skeleton loading state -->
@@ -226,8 +221,8 @@
 </template>
 
 <script setup>
-import { Search, Plus, MessageSquare, Eye, CheckCircle } from "lucide-vue-next";
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { Plus, MessageSquare, Eye, CheckCircle } from "lucide-vue-next";
+import { ref, computed, onMounted, watch } from "vue";
 import MindForceHeader from "~/components/mindforce/MindForceHeader.vue";
 import MindForceTabsSearch from "~/components/mindforce/MindForceTabsSearch.vue";
 import MindForceProblemCard from "~/components/mindforce/MindForceProblemCard.vue";
@@ -258,8 +253,6 @@ const toast = useToast();
 
 // State
 const isCreating = ref(false);
-const isSearching = ref(false);
-const searchQuery = ref("");
 const activeTab = ref("active");
 const isCreateModalOpen = ref(false);
 const isDetailModalOpen = ref(false);
@@ -428,32 +421,6 @@ const openProblemDetail = async (problem) => {
       description: "Failed to load problem details",
       color: "red",
     });
-  }
-};
-
-const handleSearch = async () => {
-  if (!searchQuery.value.trim()) {
-    await fetchProblems();
-    return;
-  }
-
-  isSearching.value = true;
-  try {
-    const response = await get(`/bn/mindforce/?search=${encodeURIComponent(searchQuery.value)}`);
-    if (response?.data) {
-      problems.value = response.data;
-    } else {
-      problems.value = [];
-    }
-  } catch (error) {
-    console.error("Error searching problems:", error);
-    toast?.add?.({
-      title: "Error",
-      description: "Failed to search problems",
-      color: "red",
-    });
-  } finally {
-    isSearching.value = false;
   }
 };
 
@@ -772,31 +739,6 @@ const markProblemAsSolved = async () => {
     });
   }
 };
-
-// Add debounced search
-const searchDebounceTimer = ref(null);
-
-// Watch for search query changes and debounce
-watch(searchQuery, (newQuery) => {
-  if (searchDebounceTimer.value) {
-    clearTimeout(searchDebounceTimer.value);
-  }
-  
-  searchDebounceTimer.value = setTimeout(() => {
-    if (newQuery.trim()) {
-      handleSearch();
-    } else {
-      fetchProblems();
-    }
-  }, 300);
-});
-
-// Clean up timer on unmount
-onUnmounted(() => {
-  if (searchDebounceTimer.value) {
-    clearTimeout(searchDebounceTimer.value);
-  }
-});
 
 // Initialize data
 onMounted(async () => {
