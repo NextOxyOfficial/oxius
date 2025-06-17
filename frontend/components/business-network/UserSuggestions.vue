@@ -37,11 +37,10 @@
             </div>
           </div>
         </div>        <!-- Mobile: Horizontal Scroll Skeleton -->
-        <div v-else class="overflow-x-auto overflow-y-hidden -mx-4 px-4">
-          <div class="flex space-x-4 pb-2 w-max">
-            <div v-for="i in 4" :key="i" class="bg-white border border-gray-200 rounded-lg p-4 flex-shrink-0 w-48">
-              <div class="flex flex-col items-center text-center space-y-3">
-                <div class="size-20 rounded-lg bg-gray-200 animate-pulse"></div>
+        <div v-else class="overflow-x-scroll overflow-y-hidden -mx-4">
+          <div class="flex space-x-3 px-4 pb-2 min-w-max">
+            <div v-for="i in 6" :key="i" class="bg-white border border-gray-200 rounded-lg p-3 flex-shrink-0" style="width: 160px; min-width: 160px;">              <div class="flex flex-col items-center text-center space-y-3">
+                <div class="w-16 h-16 rounded-lg bg-gray-200 animate-pulse"></div>
                 <div class="w-full space-y-2">
                   <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4 mx-auto"></div>
                   <div class="h-3 bg-gray-200 rounded animate-pulse w-1/2 mx-auto"></div>
@@ -105,21 +104,21 @@
               </button>          </div>
           </div>
         </div>        <!-- Mobile: Horizontal Scroll -->
-        <div v-else class="overflow-x-auto overflow-y-hidden -mx-4 px-4">
-          <div class="flex space-x-4 pb-2 w-max">
+        <div v-else class="overflow-x-scroll overflow-y-hidden -mx-4">
+          <div class="flex space-x-3 px-4 pb-2 min-w-max">
             <div 
               v-for="user in suggestions" 
               :key="user.id"
-              class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200 flex-shrink-0 w-48"
+              class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow duration-200 flex-shrink-0"
+              style="width: 160px; min-width: 160px;"
             >
               <!-- User Info Card -->
               <div class="flex flex-col items-center text-center space-y-3">
                 <!-- Profile Picture -->
-                <NuxtLink :to="`/business-network/profile/${user.id}`">
-                  <img
+                <NuxtLink :to="`/business-network/profile/${user.id}`">                  <img
                     src="/static/frontend/images/placeholder.jpg"
                     :alt="getUserDisplayName(user)"
-                    class="size-20 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
+                    class="w-16 h-16 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
                   />
                 </NuxtLink>
                 
