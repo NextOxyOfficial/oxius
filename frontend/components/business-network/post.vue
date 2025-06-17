@@ -213,9 +213,9 @@
               @gift-sent="$emit('gift-sent', $event)"
             />
           </div>
-        </div>          <!-- User Suggestions Section - Show after every 20th post -->
+        </div>          <!-- User Suggestions Section - Show after every 14th post -->
         <BusinessNetworkUserSuggestions
-          v-if="(index + 1) % 20 === 0 && user?.user?.id"
+          v-if="(index + 1) % 14 === 0 && user?.user?.id"
           :key="`suggestions-${index}`"
           :current-user-id="user?.user?.id"
           class="mt-4 transform transition-all duration-300"

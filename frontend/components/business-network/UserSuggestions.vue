@@ -27,7 +27,7 @@
         <div v-if="isDesktop" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div v-for="i in 3" :key="i" class="bg-white border border-gray-200 rounded-lg p-4">
             <div class="flex flex-col items-center text-center space-y-3">
-              <div class="size-28 rounded-lg bg-gray-200 animate-pulse"></div>
+              <div class="size-32 rounded-lg bg-gray-200 animate-pulse"></div>
               <div class="w-full space-y-2">
                 <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4 mx-auto"></div>
                 <div class="h-3 bg-gray-200 rounded animate-pulse w-1/2 mx-auto"></div>
@@ -39,7 +39,7 @@
         <div v-else class="grid grid-cols-2 gap-3">
           <div v-for="i in 2" :key="i" class="bg-white border border-gray-200 rounded-lg p-3">
             <div class="flex flex-col items-center text-center space-y-3">
-              <div class="w-16 h-16 rounded-lg bg-gray-200 animate-pulse"></div>
+              <div class="w-20 h-20 rounded-lg bg-gray-200 animate-pulse"></div>
               <div class="w-full space-y-2">
                 <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4 mx-auto"></div>
                 <div class="h-3 bg-gray-200 rounded animate-pulse w-1/2 mx-auto"></div>
@@ -59,11 +59,10 @@
             <!-- User Info Card -->
             <div class="flex flex-col items-center text-center space-y-3">              
               <!-- Profile Picture -->
-              <NuxtLink :to="`/business-network/profile/${user.id}`">
-                <img
+              <NuxtLink :to="`/business-network/profile/${user.id}`">                <img
                   :src="user.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="getUserDisplayName(user)"
-                  class="size-28 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
+                  class="size-32 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
                 />
               </NuxtLink>
               
@@ -111,11 +110,10 @@
           >
             <!-- User Info Card -->
             <div class="flex flex-col items-center text-center space-y-3">              <!-- Profile Picture -->
-              <NuxtLink :to="`/business-network/profile/${user.id}`">
-                <img
+              <NuxtLink :to="`/business-network/profile/${user.id}`">                <img
                   :src="user.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="getUserDisplayName(user)"
-                  class="w-16 h-16 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
+                  class="w-20 h-20 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
                 />
               </NuxtLink>
               
