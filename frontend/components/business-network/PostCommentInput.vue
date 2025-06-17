@@ -2009,6 +2009,10 @@ const emit = defineEmits([
   content: attr(data-placeholder);
   color: #9ca3af; /* text-gray-400 */
   pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .dark .comment-input-editable:empty:before {
