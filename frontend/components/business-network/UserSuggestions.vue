@@ -43,9 +43,8 @@
           <!-- User Info -->
           <div class="flex items-center space-x-3 flex-1">
             <!-- Profile Picture -->
-            <NuxtLink :to="`/business-network/profile/${user.id}`">
-              <img
-                :src="user.image || '/static/frontend/images/placeholder.jpg'"
+            <NuxtLink :to="`/business-network/profile/${user.id}`">              <img
+                src="/static/frontend/images/placeholder.jpg"
                 :alt="getUserDisplayName(user)"
                 class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
               />
@@ -60,12 +59,10 @@
                 <h4 class="font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors">
                   {{ getUserDisplayName(user) }}
                 </h4>
-              </NuxtLink>
-              <div class="flex items-center space-x-3 text-sm text-gray-600">
+              </NuxtLink>              <div class="flex items-center space-x-3 text-sm text-gray-600">
                 <span v-if="user.username" class="truncate">@{{ user.username }}</span>
-                <span class="flex items-center">
-                  <Users class="h-3 w-3 mr-1" />
-                  {{ formatFollowerCount(user.follower_count || 0) }} followers
+                <span class="text-xs text-gray-500">
+                  Joined {{ new Date(user.date_joined).toLocaleDateString() }}
                 </span>
               </div>
               <!-- Mutual connections -->
@@ -103,7 +100,6 @@
           {{ error || 'No suggestions available right now' }}
         </p>
         <button 
-          v-if="error" 
           @click="fetchSuggestions"
           class="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
         >
@@ -203,40 +199,19 @@ const fetchSuggestions = async () => {
   try {
     loading.value = true
     error.value = null
-    
-    console.log('Fetching user suggestions...')
-    const { get } = useApi()
+      const { get } = useApi()
     const response = await get('/bn/user-suggestions/')
     
-    console.log('API Response:', response)
-    
-    if (response?.data && Array.isArray(response.data) && response.data.length > 0) {
-      suggestions.value = response.data.map(user => ({
+    if (response && Array.isArray(response) && response.length > 0) {
+      // Direct array response from the fixed backend
+      suggestions.value = response.map(user => ({
         ...user,
         isFollowing: false,
-        mutual_connections: user.mutual_connections || 0
+        mutual_connections: 0 // Simplified API doesn't include this
       }))
-      console.log('Processed suggestions:', suggestions.value)
     } else {
-      console.log('No suggestions from main API, trying user search fallback')
-      // Fallback: try to get random users using search without query params
-      try {
-        const fallbackResponse = await get('/bn/user-search/')
-        if (fallbackResponse?.data?.results && fallbackResponse.data.results.length > 0) {
-          suggestions.value = fallbackResponse.data.results.slice(0, 5).map(user => ({
-            ...user,
-            isFollowing: false,
-            mutual_connections: 0
-          }))
-          console.log('Fallback suggestions from user search:', suggestions.value)
-        } else {
-          console.log('No users from fallback either')
-          suggestions.value = []
-        }
-      } catch (fallbackErr) {
-        console.error('Fallback also failed:', fallbackErr)
-        suggestions.value = []
-      }
+      error.value = 'No suggestions available right now'
+      suggestions.value = []
     }
   } catch (err) {
     console.error('Error fetching user suggestions:', err)
@@ -264,13 +239,8 @@ const toggleFollow = async (user) => {
     
     if (response) {
       user.isFollowing = !originalState
-      
-      // Update follower count
-      if (user.isFollowing) {
-        user.follower_count = (user.follower_count || 0) + 1
-      } else {
-        user.follower_count = Math.max((user.follower_count || 0) - 1, 0)
-      }
+        // With the simplified backend, we no longer track follower_count
+      // But we keep the isFollowing state
         // Remove from suggestions if followed (optional)
       if (user.isFollowing) {
         const index = suggestions.value.findIndex(s => s.id === user.id)
@@ -293,8 +263,7 @@ const toggleFollow = async (user) => {
     toast?.add?.({
       title: 'Error',
       description: 'Failed to update follow status',
-      color: 'red'
-    })
+      color: 'red'    })
   }
 }
 

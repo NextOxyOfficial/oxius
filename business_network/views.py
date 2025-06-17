@@ -750,6 +750,46 @@ class UserSuggestionsView(generics.ListAPIView):
             'count': len(serializer.data)
         }, status=status.HTTP_200_OK)
         
+# Simple User Suggestions View (Fixed version)
+class SimpleUserSuggestionsView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        
+        # Get users that the current user is already following
+        following_users = BusinessNetworkFollowerModel.objects.filter(
+            follower=user
+        ).values_list('following_id', flat=True)
+        
+        # Exclude current user and users they're already following
+        base_queryset = User.objects.exclude(
+            Q(id=user.id) | Q(id__in=following_users)
+        )
+        
+        # If we have any users, return them
+        if base_queryset.exists():
+            return base_queryset.annotate(
+                follower_count=Count('business_network_followers', distinct=True),
+                post_count=Count('business_network_posts', distinct=True),
+                mutual_connections=Value(0, output_field=IntegerField())
+            ).order_by('-date_joined')[:10]
+        
+        # If no users available, return empty queryset
+        return User.objects.none()
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'count': len(serializer.data)
+        }, status=status.HTTP_200_OK)
+        
+
 class BusinessNetworkMediaLikeCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkMediaLikeSerializer
     
@@ -1868,6 +1908,46 @@ class UserSuggestionsView(generics.ListAPIView):
             'count': len(serializer.data)
         }, status=status.HTTP_200_OK)
         
+# Simple User Suggestions View (Fixed version)
+class SimpleUserSuggestionsView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        
+        # Get users that the current user is already following
+        following_users = BusinessNetworkFollowerModel.objects.filter(
+            follower=user
+        ).values_list('following_id', flat=True)
+        
+        # Exclude current user and users they're already following
+        base_queryset = User.objects.exclude(
+            Q(id=user.id) | Q(id__in=following_users)
+        )
+        
+        # If we have any users, return them
+        if base_queryset.exists():
+            return base_queryset.annotate(
+                follower_count=Count('business_network_followers', distinct=True),
+                post_count=Count('business_network_posts', distinct=True),
+                mutual_connections=Value(0, output_field=IntegerField())
+            ).order_by('-date_joined')[:10]
+        
+        # If no users available, return empty queryset
+        return User.objects.none()
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'count': len(serializer.data)
+        }, status=status.HTTP_200_OK)
+        
+
 class BusinessNetworkMediaLikeCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkMediaLikeSerializer
     

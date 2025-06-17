@@ -1,6 +1,7 @@
 from django.urls import path, include
 from .views import *
 from .prioritized_feed import PrioritizedFeedView
+from .views_fixed import FixedUserSuggestionsView
 
 urlpatterns = [
     # Post endpoints
@@ -44,7 +45,8 @@ urlpatterns = [
     path('users/<uuid:user_id>/followers/', UserFollowersListView.as_view(), name='user-followers-list'),
     path('users/<uuid:user_id>/following/', UserFollowingListView.as_view(), name='user-following-list'),
     path('check-follow-status/<uuid:follower_id>/<uuid:following_id>/', CheckUserFollowStatusView.as_view(), name='check-follow-status'),
-    path('user-suggestions/', UserSuggestionsView.as_view(), name='user-suggestions'),
+    path('user-suggestions/', FixedUserSuggestionsView.as_view(), name='user-suggestions'),
+    path('simple-user-suggestions/', SimpleUserSuggestionsView.as_view(), name='simple-user-suggestions'),
 
     # media like endpoints
     path('media/<str:media_id>/like/', BusinessNetworkMediaLikeCreateView.as_view(), name='media-like'),
