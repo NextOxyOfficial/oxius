@@ -182,9 +182,7 @@
               @click="setTicketStatusFilter('closed')"
               label="Closed"
             />
-          </div>
-
-          <div v-if="activeTab === 'updates'" class="flex flex-wrap gap-2 flex-1">
+          </div>          <div v-if="activeTab === 'updates'" class="flex flex-wrap gap-2 flex-1">
             <UButton
               variant="soft"
               :class="{ active: updatesFilter === 'all' }"
@@ -236,16 +234,23 @@
             <UButton
               variant="soft"
               color="cyan"
-              :class="{ active: updatesFilter === 'balance_transfer_sent' }"
-              @click="setUpdatesFilter('balance_transfer_sent')"
+              :class="{ active: updatesFilter === 'transfer_sent' }"
+              @click="setUpdatesFilter('transfer_sent')"
               label="Transfers Sent"
             />
             <UButton
               variant="soft"
               color="emerald"
-              :class="{ active: updatesFilter === 'balance_transfer_received' }"
-              @click="setUpdatesFilter('balance_transfer_received')"
+              :class="{ active: updatesFilter === 'transfer_received' }"
+              @click="setUpdatesFilter('transfer_received')"
               label="Transfers Received"
+            />
+            <UButton
+              variant="soft"
+              color="teal"
+              :class="{ active: updatesFilter === 'deposit_successful' }"
+              @click="setUpdatesFilter('deposit_successful')"
+              label="Deposits"
             />
           </div>
 
@@ -1406,8 +1411,11 @@ function getUpdateIcon(notificationType) {
     pro_subscribed: 'i-heroicons-star',
     pro_expiring: 'i-heroicons-exclamation-triangle',
     gig_posted: 'i-heroicons-briefcase',
-    balance_transfer_sent: 'i-heroicons-arrow-up-right',
-    balance_transfer_received: 'i-heroicons-arrow-down-left',
+    transfer_sent: 'i-heroicons-arrow-up-right',
+    transfer_received: 'i-heroicons-arrow-down-left',
+    deposit_successful: 'i-heroicons-credit-card',
+    gig_approved: 'i-heroicons-check-circle',
+    gig_rejected: 'i-heroicons-x-circle',
     general: 'i-heroicons-bell'
   };
   return iconMap[notificationType] || 'i-heroicons-bell';
@@ -1422,8 +1430,11 @@ function getUpdateIconClass(notificationType) {
     pro_subscribed: 'pro-update',
     pro_expiring: 'expiring-update',
     gig_posted: 'gig-update',
-    balance_transfer_sent: 'transfer-sent-update',
-    balance_transfer_received: 'transfer-received-update',
+    transfer_sent: 'transfer-sent-update',
+    transfer_received: 'transfer-received-update',
+    deposit_successful: 'deposit-update',
+    gig_approved: 'gig-approved-update',
+    gig_rejected: 'gig-rejected-update',
     general: 'general-update'
   };
   return classMap[notificationType] || 'general-update';
@@ -1438,8 +1449,11 @@ function getUpdateTypeColor(notificationType) {
     pro_subscribed: 'purple',
     pro_expiring: 'amber',
     gig_posted: 'gray',
-    balance_transfer_sent: 'cyan',
-    balance_transfer_received: 'emerald',
+    transfer_sent: 'cyan',
+    transfer_received: 'emerald',
+    deposit_successful: 'teal',
+    gig_approved: 'green',
+    gig_rejected: 'red',
     general: 'blue'
   };
   return colorMap[notificationType] || 'blue';
@@ -1454,8 +1468,11 @@ function formatUpdateType(notificationType) {
     pro_subscribed: 'Pro',
     pro_expiring: 'Pro Ending',
     gig_posted: 'Gig Posted',
-    balance_transfer_sent: 'Transfer Sent',
-    balance_transfer_received: 'Transfer Received',
+    transfer_sent: 'Transfer Sent',
+    transfer_received: 'Transfer Received',
+    deposit_successful: 'Deposit',
+    gig_approved: 'Gig Approved',
+    gig_rejected: 'Gig Rejected',
     general: 'General'
   };
   return formatMap[notificationType] || 'Notification';
@@ -2723,6 +2740,21 @@ onBeforeUnmount(() => {
 .message-icon-circle.transfer-received-update {
   background-color: #d1fae5;
   border-color: #6ee7b7;
+}
+
+.message-icon-circle.deposit-update {
+  background-color: #ccfbf1;
+  border-color: #5eead4;
+}
+
+.message-icon-circle.gig-approved-update {
+  background-color: #dcfce7;
+  border-color: #bbf7d0;
+}
+
+.message-icon-circle.gig-rejected-update {
+  background-color: #fee2e2;
+  border-color: #fecaca;
 }
 
 .message-icon-circle.general-update {
