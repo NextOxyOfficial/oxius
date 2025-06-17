@@ -49,8 +49,7 @@
                 class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
               />
             </NuxtLink>
-            
-            <!-- User Details -->
+              <!-- User Details -->
             <div class="flex-1 min-w-0">
               <NuxtLink 
                 :to="`/business-network/profile/${user.id}`"
@@ -59,12 +58,7 @@
                 <h4 class="font-semibold text-gray-900 truncate hover:text-blue-600 transition-colors">
                   {{ getUserDisplayName(user) }}
                 </h4>
-              </NuxtLink>              <div class="flex items-center space-x-3 text-sm text-gray-600">
-                <span v-if="user.username" class="truncate">@{{ user.username }}</span>
-                <span class="text-xs text-gray-500">
-                  Joined {{ new Date(user.date_joined).toLocaleDateString() }}
-                </span>
-              </div>
+              </NuxtLink>
               <!-- Mutual connections -->
               <div v-if="user.mutual_connections > 0" class="text-xs text-blue-600 mt-1">
                 {{ user.mutual_connections }} mutual connection{{ user.mutual_connections > 1 ? 's' : '' }}
@@ -104,16 +98,7 @@
           class="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
         >
           Try again
-        </button>
-      </div>
-    </div>    <!-- View All Link -->
-    <div v-if="displayedSuggestions.length > 0" class="px-4 py-3 border-t border-gray-100 bg-gray-50">
-      <NuxtLink 
-        to="/business-network/discover"
-        class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
-      >
-        View all suggestions →
-      </NuxtLink>
+        </button>      </div>
     </div>
   </div>
 </template>
