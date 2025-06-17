@@ -1,10 +1,10 @@
 <template>
   <div
-    class="flex justify-center items-center px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800/50"
+    class="px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800/50"
   >
     <!-- Enhanced tabs with animated indicator -->
     <div
-      class="relative bg-slate-50 dark:bg-slate-800 rounded-lg inline-flex shadow-sm overflow-hidden"
+      class="relative bg-slate-50 dark:bg-slate-800 rounded-lg flex shadow-sm overflow-hidden w-full max-w-2xl mx-auto"
     >
       <div
         class="absolute h-full transition-all duration-300 bg-white dark:bg-slate-700 rounded-md shadow-sm tab-indicator"
@@ -19,20 +19,20 @@
         :key="tab.value"
         @click="$emit('update:activeTab', tab.value)"
         :class="[
-          'relative px-3 sm:px-5 py-2 font-medium transition-all text-sm z-10 flex-1 text-center',
+          'relative px-2 sm:px-4 py-2.5 font-medium transition-all text-xs sm:text-sm z-10 flex-1 text-center min-w-0',
           activeTab === tab.value
             ? 'text-blue-600 dark:text-blue-400'
             : 'text-slate-500 dark:text-slate-400 hover:text-gray-600 dark:hover:text-slate-300',
         ]"
       >
-        {{ tab.label }}
+        <span class="truncate block">{{ getTabLabel(tab.label) }}</span>
       </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 
 const props = defineProps({
   tabs: {
@@ -46,6 +46,20 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:activeTab"]);
+
+// Helper function to shorten tab labels on mobile
+const getTabLabel = (label) => {
+  // Use computed to make it reactive to screen size
+  if (typeof window !== 'undefined' && window.innerWidth < 640) {
+    const shortLabels = {
+      "Active Problems": "Active",
+      "Solved Problems": "Solved", 
+      "My Problems": "My Posts"
+    };
+    return shortLabels[label] || label;
+  }
+  return label;
+};
 
 // Add subtle animation on mount
 onMounted(() => {
@@ -75,10 +89,17 @@ onMounted(() => {
   animation: pulse-once 1s;
 }
 
-/* Handle responsive tabs */
-@media (max-width: 640px) {
+/* Ensure tabs fit properly on all screen sizes */
+@media (max-width: 480px) {
   .tab-indicator {
-    width: calc(100% / v-bind("tabs.length")) !important;
+    border-radius: 6px;
+  }
+}
+
+/* Handle very small screens */
+@media (max-width: 320px) {
+  button span {
+    font-size: 0.75rem;
   }
 }
 </style>
