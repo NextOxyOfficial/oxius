@@ -4,7 +4,7 @@
   >
     <!-- Enhanced tabs with animated indicator -->
     <div
-      class="relative bg-slate-50 dark:bg-slate-800 rounded-lg flex shadow-sm overflow-hidden w-full max-w-2xl mx-auto"
+      class="relative bg-slate-100 dark:bg-slate-800 rounded-lg flex shadow-sm overflow-hidden w-full max-w-2xl mx-auto"
     >
       <div
         class="absolute h-full transition-all duration-300 bg-white dark:bg-slate-700 rounded-md shadow-sm tab-indicator"
