@@ -152,87 +152,82 @@ class UserSearchView(generics.ListAPIView):
 # Post Views
 class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkPostSerializer
-    pagination_class = StandardResultsSetPagination
+    pagination_class = MediumDevicePagination  # Changed for better performance
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         """
-        Optimized prioritized post feed logic:
-        1. Posts from users I'm following (Priority 1 - highest)
-        2. Posts from followers of users I'm following (Priority 2)
-        3. Posts from users who are following me (Priority 3)
-        4. Posts from users that my followings are following (Priority 4)
-        5. Random posts from users in nearby cities (Priority 5 - lowest)
+        Optimized prioritized post feed logic for medium devices:
         """
         if not self.request.user.is_authenticated:
-            # For unauthenticated users, show recent posts
-            return BusinessNetworkPost.objects.all().order_by('-created_at')
+            # For unauthenticated users, show recent posts with minimal data
+            return BusinessNetworkPost.objects.select_related('author').order_by('-created_at')
         
         user = self.request.user
         
-        # Use subqueries for better performance
-        users_i_follow_subquery = BusinessNetworkFollowerModel.objects.filter(
-            follower=user
-        ).values('following_id')
+        # Check for device-specific optimization
+        device_level = self.request.query_params.get('device_level', 'medium')
         
-        my_followers_subquery = BusinessNetworkFollowerModel.objects.filter(
-            following=user
-        ).values('follower_id')
+        if device_level == 'low':
+            # Ultra-simplified query for low-end devices
+            return BusinessNetworkPost.objects.annotate(
+                like_count=Count('post_likes'),
+                comment_count=Count('post_comments')
+            ).select_related('author').order_by('-created_at')
         
-        followers_of_my_followings_subquery = BusinessNetworkFollowerModel.objects.filter(
-            following_id__in=Subquery(users_i_follow_subquery)
-        ).values('follower_id')
+        # Cache frequently used subqueries for better performance
+        from django.core.cache import cache
+        cache_key = f"user_feed_relationships_{user.id}"
+        cached_data = cache.get(cache_key)
         
-        followings_of_my_followings_subquery = BusinessNetworkFollowerModel.objects.filter(
-            follower_id__in=Subquery(users_i_follow_subquery)
-        ).values('following_id')
-        
-        # Build nearby users subquery
-        nearby_users_conditions = Q()
-        if user.city:
-            # Users from the same city
-            nearby_users_conditions |= Q(city__iexact=user.city)
+        if not cached_data:
+            # Pre-calculate relationships
+            users_following = list(BusinessNetworkFollowerModel.objects.filter(
+                follower=user
+            ).values_list('following_id', flat=True))
             
-            # Users from the same state/division if different from city
-            if user.state and user.state != user.city:
-                nearby_users_conditions |= Q(state__iexact=user.state)
+            users_followers = list(BusinessNetworkFollowerModel.objects.filter(
+                following=user
+            ).values_list('follower_id', flat=True))
+            
+            cached_data = {
+                'following': users_following,
+                'followers': users_followers
+            }
+            cache.set(cache_key, cached_data, 300)  # Cache for 5 minutes
         
-        nearby_users_subquery = User.objects.filter(
-            nearby_users_conditions
-        ).exclude(id=user.id).values('id')
+        users_following = cached_data['following']
+        users_followers = cached_data['followers']
         
-        # Create prioritized queryset with optimized CASE WHEN
-        # Only prioritize user's own posts from the last 24 hours to maintain feed freshness
+        # Simplified priority logic for better performance
         from django.utils import timezone
         from datetime import timedelta
         
         recent_threshold = timezone.now() - timedelta(hours=24)
         
         queryset = BusinessNetworkPost.objects.annotate(
+            # Simplified priority with fewer database operations
             priority=Case(
-                # Priority 1: User's own recent posts (last 24 hours only)
                 When(author=user, created_at__gte=recent_threshold, then=Value(1)),
-                # Priority 2: Posts from users I'm following
-                When(author_id__in=Subquery(users_i_follow_subquery), then=Value(2)),
-                # Priority 3: Posts from followers of users I'm following
-                When(author_id__in=Subquery(followers_of_my_followings_subquery), then=Value(3)),
-                # Priority 4: Posts from users who are following me
-                When(author_id__in=Subquery(my_followers_subquery), then=Value(4)),
-                # Priority 5: Posts from users that my followings are following
-                When(author_id__in=Subquery(followings_of_my_followings_subquery), then=Value(5)),
-                # Priority 6: Posts from users in nearby cities
-                When(author_id__in=Subquery(nearby_users_subquery), then=Value(6)),
-                # Priority 7: Other posts (including user's older posts)
-                default=Value(7),
+                When(author_id__in=users_following, then=Value(2)),
+                When(author_id__in=users_followers, then=Value(3)),
+                default=Value(4),
                 output_field=IntegerField()
-            )
-        ).select_related(
+            ),
+            # Pre-calculate counts to avoid N+1 queries
+            like_count=Count('post_likes', distinct=True),
+            comment_count=Count('post_comments', distinct=True),
+            follower_count=Count('post_followers', distinct=True)        ).select_related(
             'author'  # Optimize author queries
         ).prefetch_related(
-            'media', 'tags', 'post_likes', 'post_comments'  # Optimize related data
+            # Limited prefetch for better performance
+            'media__media_likes__user',
+            'tags', 
+            'post_likes__user',
+            'post_comments__author'
         ).order_by(
-            'priority',  # First by priority (1-7, where 1 is highest)
-            '-created_at'  # Then by newest within each priority level
+            'priority',
+            '-created_at'
         )
         
         return queryset

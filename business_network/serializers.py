@@ -101,8 +101,16 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'slug', 'created_at', 'updated_at']
     
     def get_post_likes(self, obj):
-        # Can be limited or paginated for performance in real-world scenarios
-        return BusinessNetworkPostLikeSerializer(obj.post_likes.all()[:5], many=True).data
+        # Limit likes for better performance on medium devices
+        request = self.context.get('request')
+        device_level = getattr(request, 'query_params', {}).get('device_level', 'medium') if request else 'medium'
+        
+        if device_level == 'low':
+            return []  # No detailed likes for low-end devices
+        elif device_level == 'medium':
+            return BusinessNetworkPostLikeSerializer(obj.post_likes.all()[:3], many=True).data
+        else:
+            return BusinessNetworkPostLikeSerializer(obj.post_likes.all()[:5], many=True).data
     
     def get_like_count(self, obj):
         return obj.post_likes.count()

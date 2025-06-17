@@ -35,7 +35,8 @@
               <div class="h-8 bg-gray-200 rounded animate-pulse w-20"></div>
             </div>
           </div>
-        </div>        <!-- Mobile: Simple Grid Skeleton -->
+        </div>        
+        <!-- Mobile: Simple Grid Skeleton -->
         <div v-else class="grid grid-cols-2 gap-3">
           <div v-for="i in 2" :key="i" class="bg-white border border-gray-200 rounded-lg p-3">
             <div class="flex flex-col items-center text-center space-y-3">

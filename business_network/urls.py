@@ -2,10 +2,12 @@ from django.urls import path, include
 from .views import *
 from .prioritized_feed import PrioritizedFeedView
 from .views_fixed import FixedUserSuggestionsView
+from .optimized_views import get_device_optimized_feed, CachedBusinessNetworkStatsView
 
 urlpatterns = [
     # Post endpoints
     path('posts/', BusinessNetworkPostListCreateView.as_view(), name='post-list-create'),
+    path('posts/optimized/', get_device_optimized_feed, name='optimized-feed'),
     path('posts/prioritized-feed/', PrioritizedFeedView.as_view(), name='prioritized-feed'),
     path('posts/save/', UserSavedPostListCreateView.as_view(), name='user-saved-posts'),
     path('posts/search/', BusinessNetworkPostSearchView.as_view(), name='post-search'),
@@ -13,6 +15,7 @@ urlpatterns = [
     path('posts/<str:id>/', BusinessNetworkPostRetrieveUpdateDestroyView.as_view(), name='post-detail'),
     path('user/<uuid:user_id>/posts/', UserPostsListView.as_view(), name='user-posts'),
     path('user-search/', UserSearchView.as_view(), name='user-search'),
+    path('stats/', CachedBusinessNetworkStatsView.as_view(), name='cached-stats'),
     
     
     # Media endpoints
