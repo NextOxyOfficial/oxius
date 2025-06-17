@@ -108,7 +108,7 @@
           <div
             v-for="user in displayedSuggestions"
             :key="user.id"
-            class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
+            class="bg-white border border-gray-200 rounded-lg p-4"
           >
             <!-- User Info Card -->
             <div class="flex flex-col items-center text-center space-y-3">
@@ -117,7 +117,7 @@
                 <img
                   :src="user.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="getUserDisplayName(user)"
-                  class="size-32 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
+                  class="size-32 rounded-lg object-cover border-2 border-white shadow-sm"
                 />
               </NuxtLink>
 
