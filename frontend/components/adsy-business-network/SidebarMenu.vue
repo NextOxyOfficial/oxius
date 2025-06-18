@@ -5,7 +5,7 @@
     ></div>    <!-- Create Post Button (Added at top of menu) - Now only shown for logged in users -->
     <button
         v-if="user?.user"
-        @click="openCreatePostModal"
+        @click="handleButtonClick('create_post'); openCreatePostModal()"
         class="w-full flex items-center px-3 py-2.5 mb-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:shadow-sm transition-all duration-200 group relative overflow-hidden"
       >
         <!-- Background glow effect -->
@@ -13,7 +13,8 @@
         
         <!-- Icon -->
         <div class="relative z-10 p-1.5 rounded-md mr-2 bg-white/20 flex items-center justify-center">
-          <Plus class="h-4 w-4 text-white" />
+          <div v-if="loadingButtons.has('create_post')" class="dotted-spinner white"></div>
+          <Plus v-else class="h-4 w-4 text-white" />
         </div>
         
         <!-- Label -->
@@ -147,6 +148,19 @@ const route = useRoute();
 const router = useRouter();
 const { user } = useAuth();
 const { unreadCount } = useNotifications();
+
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Handle button clicks with loading states
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+};
+
+// Watch route changes to clear loading states
+watch(() => useRoute().fullPath, () => {
+  loadingButtons.value.clear();
+});
 
 // Create a reactive menu array that updates when unreadCount changes
 const mainMenu = computed(() => [
@@ -308,5 +322,53 @@ const getMenuItemColor = (label, type) => {
 .menu-item-inactive:active {
   transform: translateY(1px) scale(0.99);
   transition: all 0.1s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.emerald {
+  border-color: #059669;
+}
+
+.dotted-spinner.green {
+  border-color: #16a34a;
+}
+
+.dotted-spinner.slate {
+  border-color: #64748b;
+}
+
+.dotted-spinner.blue {
+  border-color: #3b82f6;
+}
+
+.dotted-spinner.violet {
+  border-color: #8b5cf6;
+}
+
+.dotted-spinner.white {
+  border-color: #ffffff;
+}
+
+.dotted-spinner.primary {
+  border-color: #059669;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

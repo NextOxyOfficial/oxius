@@ -350,14 +350,6 @@
                     You need to add products to your shop before you can receive
                     orders.
                   </p>
-                  <UButton
-                    @click="$emit('switch-tab', 'add-product')"
-                    color="indigo"
-                    size="sm"
-                    icon="i-heroicons-plus"
-                  >
-                    Add Your First Product
-                  </UButton>
                 </div>
                 <UButton
                   v-if="retryCount > 0"

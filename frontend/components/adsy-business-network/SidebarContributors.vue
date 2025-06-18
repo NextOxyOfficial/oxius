@@ -6,13 +6,13 @@
       <div class="flex items-center">
         <Users class="h-3.5 w-3.5 mr-1.5" />
         <span>Top Contributors</span>
-      </div>
-      <div
-        @click="showTopContributorsModal = true"
+      </div>      <div
+        @click="handleButtonClick('see_all_contributors'); showTopContributorsModal = true"
         class="text-blue-600 text-xs normal-case font-medium hover:underline flex items-center cursor-pointer hover:text-blue-700 transition-colors"
       >
         <span>See All</span>
-        <ChevronRight class="h-3 w-3 ml-0.5" />
+        <div v-if="loadingButtons.has('see_all_contributors')" class="dotted-spinner blue ml-0.5"></div>
+        <ChevronRight v-else class="h-3 w-3 ml-0.5" />
       </div>
     </h3>
     <div class="space-y-2">
@@ -94,6 +94,19 @@ const props = defineProps({
 // State
 const showTopContributorsModal = ref(false);
 
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Handle button clicks with loading states
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+};
+
+// Watch route changes to clear loading states
+watch(() => useRoute().fullPath, () => {
+  loadingButtons.value.clear();
+});
+
 // Events
 const emit = defineEmits(['navigation']);
 
@@ -111,5 +124,53 @@ a {
 
 a:hover {
   transform: translateX(2px);
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.emerald {
+  border-color: #059669;
+}
+
+.dotted-spinner.green {
+  border-color: #16a34a;
+}
+
+.dotted-spinner.slate {
+  border-color: #64748b;
+}
+
+.dotted-spinner.blue {
+  border-color: #3b82f6;
+}
+
+.dotted-spinner.violet {
+  border-color: #8b5cf6;
+}
+
+.dotted-spinner.white {
+  border-color: #ffffff;
+}
+
+.dotted-spinner.primary {
+  border-color: #059669;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

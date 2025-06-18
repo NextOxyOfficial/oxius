@@ -287,20 +287,21 @@
               <div
                 class="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-indigo-400/20 blur-sm"
               ></div>
-            </NuxtLink>
-
-            <!-- Activate/Deactivate Button -->
+            </NuxtLink>            <!-- Activate/Deactivate Button -->
             <button
-              @click="toggleProductStatus(product)"
-              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 text-gray-600 hover:shadow-sm transition-all duration-300"
+              @click="handleToggleStatus(product)"
+              :disabled="loadingButtons[`toggle_${product.id}`]"
+              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 text-gray-600 hover:shadow-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <!-- Hover effect overlay -->
               <div
                 class="absolute inset-0 bg-gradient-to-r from-slate-600 to-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               ></div>
 
-              <!-- Dynamic icon based on product status -->
+              <!-- Dynamic icon or spinner based on loading state -->
+              <div v-if="loadingButtons[`toggle_${product.id}`]" class="spinner-gray relative z-10"></div>
               <UIcon
+                v-else
                 :name="
                   product.is_active
                     ? 'i-heroicons-eye-slash'
@@ -320,19 +321,21 @@
               <div
                 class="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-slate-400/20 blur-sm"
               ></div>
-            </button>
-            <!-- Delete Button -->
+            </button>            <!-- Delete Button -->
             <button
-              @click="confirmDeleteProduct(product)"
-              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 text-red-600 hover:shadow-sm transition-all duration-300"
+              @click="handleDeleteConfirm(product)"
+              :disabled="loadingButtons[`delete_${product.id}`]"
+              class="btn-action flex-1 group relative overflow-hidden rounded-lg py-2 px-3 flex items-center justify-center gap-2 bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 text-red-600 hover:shadow-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <!-- Hover effect overlay -->
               <div
                 class="absolute inset-0 bg-gradient-to-r from-red-500 to-rose-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               ></div>
 
-              <!-- Text only, no icon -->
+              <!-- Spinner or text based on loading state -->
+              <div v-if="loadingButtons[`delete_${product.id}`]" class="spinner-red relative z-10"></div>
               <span
+                v-else
                 class="font-medium text-sm relative z-10 group-hover:text-white transition-colors duration-300"
                 >Delete</span
               >
@@ -413,12 +416,11 @@
             <span class="font-medium">{{ selectedProduct?.name }}</span
             >? This action cannot be undone.
           </p>
-        </div>
-        <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+        </div>        <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
           <UButton
             color="red"
-            @click="deleteProduct"
-            :loading="isProcessing"
+            @click="handleDeleteProduct"
+            :loading="loadingButtons.modal_delete || isProcessing"
             icon="i-heroicons-trash"
           >
             Delete
@@ -769,6 +771,7 @@ const showDeleteConfirmModal = ref(false);
 const isProcessing = ref(false);
 const isLoading = ref(true);
 const isLoadingMore = ref(false);
+const loadingButtons = ref({});
 
 // Pagination state
 const currentPage = ref(1);
@@ -1116,9 +1119,42 @@ const loadProductStats = async () => {
     const res = await get("/my-products/stats/");
     if (res && res.data) {
       productStats.value = res.data;
-    }
-  } catch (error) {
+    }  } catch (error) {
     console.error("Error loading product statistics:", error);
+  }
+};
+
+// Handle toggle status with loading state
+const handleToggleStatus = async (product) => {
+  const buttonId = `toggle_${product.id}`;
+  loadingButtons.value[buttonId] = true;
+  
+  try {
+    await toggleProductStatus(product);
+  } finally {
+    loadingButtons.value[buttonId] = false;
+  }
+};
+
+// Handle delete confirmation with loading state
+const handleDeleteConfirm = (product) => {
+  const buttonId = `delete_${product.id}`;
+  loadingButtons.value[buttonId] = true;
+  
+  setTimeout(() => {
+    confirmDeleteProduct(product);
+    loadingButtons.value[buttonId] = false;
+  }, 300);
+};
+
+// Handle modal delete with loading state
+const handleDeleteProduct = async () => {
+  loadingButtons.value.modal_delete = true;
+  
+  try {
+    await deleteProduct();
+  } finally {
+    loadingButtons.value.modal_delete = false;
   }
 };
 
@@ -1226,6 +1262,11 @@ watch(productFilter, () => {
   getProducts(1);
 });
 
+// Clear loading states on route change
+watch(() => useRoute().path, () => {
+  loadingButtons.value = {};
+});
+
 // Debounced search
 watch(productSearch, (newSearch) => {
   // Clear existing timeout
@@ -1257,3 +1298,28 @@ onUnmounted(() => {
   }
 });
 </script>
+
+<style scoped>
+/* Gray dotted spinner for activate/deactivate buttons */
+.spinner-gray {
+  width: 16px;
+  height: 16px;
+  border: 2px dotted #6b7280;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Red dotted spinner for delete buttons */
+.spinner-red {
+  width: 16px;
+  height: 16px;
+  border: 2px dotted #dc2626;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>

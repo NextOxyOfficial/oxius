@@ -6,14 +6,14 @@
       <div class="flex items-center">
         <Newspaper class="h-3.5 w-3.5 mr-1.5" />
         <span>Adsy News</span>
-      </div>
-      <a
+      </div>      <a
         href="/adsy-news"
         class="text-blue-700 text-xs normal-case font-medium hover:underline flex items-center"
-        @click.prevent="$emit('navigation', '/adsy-news')"
+        @click.prevent="handleButtonClick('see_all_news'); $emit('navigation', '/adsy-news')"
       >
         <span>See All</span>
-        <ChevronRight class="h-3 w-3 ml-0.5" />
+        <div v-if="loadingButtons.has('see_all_news')" class="dotted-spinner blue ml-0.5"></div>
+        <ChevronRight v-else class="h-3 w-3 ml-0.5" />
       </a>
     </h3>
     <div class="px-3 relative">
@@ -131,6 +131,19 @@ const props = defineProps({
 const currentNewsIndex = ref(0);
 let newsInterval = null;
 
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Handle button clicks with loading states
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+};
+
+// Watch route changes to clear loading states
+watch(() => useRoute().fullPath, () => {
+  loadingButtons.value.clear();
+});
+
 // Function to move to next news item
 const nextNews = () => {
   if (props.newsItems.length === 0) return;
@@ -186,5 +199,53 @@ onUnmounted(() => {
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-clamp: 2; /* Standard property for compatibility */
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.emerald {
+  border-color: #059669;
+}
+
+.dotted-spinner.green {
+  border-color: #16a34a;
+}
+
+.dotted-spinner.slate {
+  border-color: #64748b;
+}
+
+.dotted-spinner.blue {
+  border-color: #3b82f6;
+}
+
+.dotted-spinner.violet {
+  border-color: #8b5cf6;
+}
+
+.dotted-spinner.white {
+  border-color: #ffffff;
+}
+
+.dotted-spinner.primary {
+  border-color: #059669;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

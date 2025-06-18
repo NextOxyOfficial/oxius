@@ -362,15 +362,15 @@
             <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
               Become a Gold Sponsor and showcase your business to our entire
               network with premium visibility.
-            </p>
-
-            <div class="space-y-2">
+            </p>            <div class="space-y-2">
               <button
-                @click="isGoldSponsorModalOpen = true"
+                @click="handleButtonClick('become_gold_sponsor'); isGoldSponsorModalOpen = true"
                 class="w-full py-2 rounded-md bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-sm font-medium shadow-sm transition-all duration-200 flex items-center justify-center group"
               >
                 <span>Become Gold Sponsor</span>
+                <div v-if="loadingButtons.has('become_gold_sponsor')" class="dotted-spinner white ml-1"></div>
                 <UIcon
+                  v-else
                   name="i-heroicons-plus"
                   class="ml-1 w-3.5 h-3.5 group-hover:scale-110 transition-transform"
                 />
@@ -500,6 +500,19 @@ const allProducts = ref([]); // Store all fetched products
 const isCreateWorkspaceModalOpen = ref(false);
 const newWorkspaceName = ref(""); // Store new workspace name
 const { unreadCount, fetchUnreadCount } = useNotifications();
+
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Handle button clicks with loading states
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+};
+
+// Watch route changes to clear loading states
+watch(() => useRoute().fullPath, () => {
+  loadingButtons.value.clear();
+});
 
 // Gold Sponsor modal
 const isGoldSponsorModalOpen = ref(false);

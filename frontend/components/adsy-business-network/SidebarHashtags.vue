@@ -6,13 +6,13 @@
       <div class="flex items-center">
         <Hash class="h-3.5 w-3.5 mr-1.5" />
         <span>Trending Hashtags</span>
-      </div>
-      <div
-        @click="showTopHashtagsModal = true"
+      </div>      <div
+        @click="handleButtonClick('top100')"
         class="text-blue-600 text-xs normal-case font-medium hover:underline flex items-center cursor-pointer hover:text-blue-700 transition-colors"
       >
         <span>Top 100</span>
-        <ChevronRight class="h-3 w-3 ml-0.5" />
+        <div v-if="loadingButtons.top100" class="spinner-blue ml-0.5"></div>
+        <ChevronRight v-else class="h-3 w-3 ml-0.5" />
       </div>
     </h3>
     <div class="px-3">
@@ -92,6 +92,26 @@ const props = defineProps({
 
 // State
 const showTopHashtagsModal = ref(false);
+const loadingButtons = ref({});
+
+// Handle button click with loading state
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value[buttonId] = true;
+  
+  if (buttonId === 'top100') {
+    showTopHashtagsModal.value = true;
+  }
+  
+  // Clear loading state after a brief delay
+  setTimeout(() => {
+    loadingButtons.value[buttonId] = false;
+  }, 800);
+};
+
+// Clear loading states on route change
+watch(() => useRoute().path, () => {
+  loadingButtons.value = {};
+});
 
 // Emit events for tag click
 const emit = defineEmits(['tag-click']);
@@ -122,5 +142,19 @@ li.group {
 
 li.group:hover {
   transform: translateX(2px);
+}
+
+/* Blue dotted spinner */
+.spinner-blue {
+  width: 12px;
+  height: 12px;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
