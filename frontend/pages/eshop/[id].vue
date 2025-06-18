@@ -1,5 +1,5 @@
 <template>  
-<div class="bg-slate-100 dark:bg-slate-900">
+<div class="bg-slate-100 mt-2 dark:bg-slate-900">
     <UContainer>
       <!-- 1. Banner Section -->
       <div class="w-full h-48 md:h-64 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 relative rounded-t-xl md:rounded-t-2xl overflow-hidden">
@@ -71,19 +71,8 @@
                   <span>{{ storeDetails.store_address }}</span>
                 </div>
               </div>
-            </div>
-
-            <!-- Action Buttons -->
+            </div>            <!-- Action Buttons -->
             <div class="flex items-center gap-3 flex-shrink-0">
-              <UButton
-                v-if="!isOwner"
-                @click="toggleFollow"
-                :color="isFollowing ? 'gray' : 'blue'"
-                :variant="isFollowing ? 'soft' : 'solid'"
-                icon="i-heroicons-users"
-              >
-                {{ isFollowing ? 'Following' : 'Follow' }}
-              </UButton>
               <UButton
                 v-if="isOwner"
                 icon="i-heroicons-adjustments-horizontal"
@@ -94,7 +83,8 @@
               </UButton>              
               <UButton
                 v-if="storeDetails?.phone || storeDetails?.email"
-                variant="outline"
+                :color="storeDetails?.phone ? 'blue' : 'gray'"
+                variant="solid"
                 :icon="storeDetails?.phone ? 'i-heroicons-phone' : 'i-heroicons-envelope'"
                 @click="handleContactClick"
               >
@@ -119,11 +109,9 @@
         <div class="grid grid-cols-12 gap-x-0 gap-y-3 md:gap-3">
         <!-- Mobile Search Bar - Visible only on small screens -->
         <div class="col-span-12 md:hidden">
-          <div class="relative">
-            <input
+          <div class="relative">            <input
               type="text"
               v-model="searchValue"
-              @keyup.enter="handleSearch"
               class="w-full bg-white border border-gray-200 rounded-lg py-2.5 pl-10 pr-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300"
               placeholder="Search products..."
             />
@@ -150,7 +138,8 @@
               "
             >
               All Products ({{ activeProductsCount }})
-            </button>            <button
+            </button>            
+            <button
               v-for="category in uniqueCategories"
               :key="category.id"
               @click="selectedCategory = category.id"
@@ -188,11 +177,9 @@
                 <h3 class="font-medium text-gray-800">Search Products</h3>
               </div>
               <div class="p-5">
-                <div class="relative">
-                  <input
+                <div class="relative">                  <input
                     type="text"
                     v-model="searchValue"
-                    @keyup.enter="handleSearch"
                     class="w-full bg-gray-50 border border-gray-200 rounded-md py-2.5 pl-9 pr-3 text-sm focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 focus:outline-none transition-all"
                     placeholder="Find products..."
                   />
@@ -512,14 +499,16 @@
         <!-- Main Content: Product Grid -->
         <div class="col-span-12 md:col-span-8 lg:col-span-9">
           <!-- Products Header -->
-          <div class="flex items-center justify-between mb-4 md:mb-6">
-            <div>
+          <div class="flex items-center justify-between mb-4 md:mb-6">            <div>
               <h2 class="text-lg md:text-xl font-bold text-gray-800">
                 {{ getCategoryName(selectedCategory) }}
                 <span class="text-sm font-normal text-gray-600 ml-2"
-                  >({{ filteredProducts.length }})</span
+                  >({{ filteredProducts.length }}{{ searchValue ? ' found' : '' }})</span
                 >
               </h2>
+              <p v-if="searchValue" class="text-sm text-gray-500 mt-1">
+                Searching for "<span class="font-medium">{{ searchValue }}</span>"
+              </p>
             </div>
 
             <!-- Clear Filters Button -->
@@ -567,14 +556,15 @@
                   class="h-6 w-6 md:h-8 md:w-8 text-gray-400"
                 />
               </div>
-            </div>
-            <h3 class="mt-4 text-base md:text-lg font-medium text-gray-800">
-              No Products Found
+            </div>            <h3 class="mt-4 text-base md:text-lg font-medium text-gray-800">
+              {{ searchValue ? 'No Search Results' : 'No Products Found' }}
             </h3>
             <p class="mt-2 text-sm md:text-base text-gray-600 max-w-md mx-auto">
-              We couldn't find any products matching your current selection. Try
-              changing your search or selecting a different category.
-            </p>            <UButton
+              {{ searchValue 
+                ? `We couldn't find any products matching "${searchValue}". Try a different search term or browse categories.`
+                : 'We couldn\'t find any products matching your current selection. Try changing your search or selecting a different category.'
+              }}
+            </p><UButton
               v-if="searchValue || selectedCategory"
               color="gray"
               variant="soft"              
@@ -610,9 +600,6 @@ const storeDetails = ref({});
 const { user, token } = useAuth();
 const isLoading = ref(false);
 const isSeeMore = ref(false);
-
-// Follow functionality
-const isFollowing = ref(false);
 
 // Review functionality
 const reviewsCount = ref(0);
@@ -689,6 +676,82 @@ async function getStoreReviewsCount() {
   }
 }
 
+// Helper to clean phone number for WhatsApp
+const cleanPhoneNumber = (phone) => {
+  if (!phone) return "";
+  // Remove all non-digit characters and ensure it starts with country code
+  const cleaned = phone.replace(/\D/g, "");
+  // If it doesn't start with a country code, assume Bangladesh (+880)
+  if (cleaned.startsWith("0")) {
+    return "880" + cleaned.substring(1);
+  }
+  if (cleaned.startsWith("880")) {
+    return cleaned;
+  }
+  // Default to Bangladesh if no country code
+  return "880" + cleaned;
+};
+
+// Handle contact button click
+const handleContactClick = () => {
+  if (storeDetails.value?.phone) {
+    // Call phone number
+    window.location.href = `tel:${storeDetails.value.phone}`;
+  } else if (storeDetails.value?.email) {
+    // Send email
+    const subject = encodeURIComponent(`Business Inquiry for ${storeDetails.value.store_name || 'Store'}`);
+    window.location.href = `mailto:${storeDetails.value.email}?subject=${subject}`;
+  }
+};
+
+// Handle share button click
+const handleShareClick = async () => {
+  const shareData = {
+    title: storeDetails.value?.store_name || 'Check out this store',
+    text: `Visit ${storeDetails.value?.store_name || 'this amazing store'} on our platform!`,
+    url: window.location.href
+  };
+
+  try {
+    // Check if Web Share API is supported
+    if (navigator.share && navigator.canShare(shareData)) {
+      await navigator.share(shareData);
+    } else {
+      // Fallback to clipboard
+      await navigator.clipboard.writeText(window.location.href);
+      toast.add({
+        title: "Link copied!",
+        description: "Store link has been copied to clipboard",
+        color: "green",
+      });
+    }
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      // Try clipboard as final fallback
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.add({
+          title: "Link copied!",
+          description: "Store link has been copied to clipboard",
+          color: "green",
+        });
+      } catch (clipboardError) {
+        toast.add({
+          title: "Sharing failed",
+          description: "Unable to share or copy link",
+          color: "red",
+        });
+      }
+    }
+  }
+};
+
+// Clear all filters function
+const clearFilters = () => {
+  searchValue.value = '';
+  selectedCategory.value = null;
+};
+
 // State for category filtering
 const selectedCategory = ref(null);
 const searchFocused = ref(false);
@@ -733,6 +796,40 @@ const activeProductsCount = computed(() => {
   return products.value.filter(product => product.is_active).length;
 });
 
+// Get count of active products by category
+const getProductCountByCategory = (categoryId) => {
+  if (!products.value || products.value.length === 0) return 0;
+  
+  return products.value.filter(product => {
+    // Only count active products
+    if (!product.is_active) return false;
+    
+    // Handle array of categories
+    if (Array.isArray(product.category_details)) {
+      return product.category_details.some(category => category && category.id === categoryId);
+    }
+    // Handle single category object
+    else if (product.category_details && product.category_details.id === categoryId) {
+      return true;
+    }
+    // Fallback: check if category is a direct property
+    else if (product.category === categoryId) {
+      return true;
+    }
+    
+    return false;
+  }).length;
+};
+
+// Get category name by ID for display
+const getCategoryName = (categoryId) => {
+  if (!categoryId) return "All Products";
+  
+  // Find the category in uniqueCategories
+  const category = uniqueCategories.value.find(cat => cat.id === categoryId);
+  return category ? category.name : "Category";
+};
+
 // Filter products by selected category
 const filteredProducts = computed(() => {
   // Start with only active products
@@ -757,7 +854,6 @@ const filteredProducts = computed(() => {
       return false;
     });
   }
-
   // Filter by search term if present
   if (searchValue.value.trim()) {
     const searchTerm = searchValue.value.toLowerCase().trim();
@@ -765,7 +861,14 @@ const filteredProducts = computed(() => {
       (product) =>
         product.name?.toLowerCase().includes(searchTerm) ||
         product.description?.toLowerCase().includes(searchTerm) ||
-        product.price?.toString().includes(searchTerm)
+        product.short_description?.toLowerCase().includes(searchTerm) ||
+        product.regular_price?.toString().includes(searchTerm) ||
+        product.sale_price?.toString().includes(searchTerm) ||
+        // Search in category names
+        (Array.isArray(product.category_details) 
+          ? product.category_details.some(cat => cat.name?.toLowerCase().includes(searchTerm))
+          : product.category_details?.name?.toLowerCase().includes(searchTerm)
+        )
     );
   }
 
@@ -776,131 +879,52 @@ const filteredProducts = computed(() => {
 function handleSearch() {
   // Trigger filtering by setting the search value
   console.log("Searching for:", searchValue.value);
-  // You could add additional logic here if needed
+  // The filteredProducts computed property will automatically update
 }
 
-// Helper function to get product count by category
-function getProductCountByCategory(categoryId) {
-  if (!products.value || products.value.length === 0) return 0;
-
-  return products.value.filter((product) => {
-    // First check if product is active
-    if (!product.is_active) return false;
-    
-    // Handle array of categories
-    if (Array.isArray(product.category_details)) {
-      return product.category_details.some(category => category && category.id === categoryId);
-    }
-    // Handle single category object
-    else if (product.category_details && product.category_details.id === categoryId) {
-      return true;
-    }
-    // Fallback: check if category is a direct property
-    else if (product.category === categoryId) {
-      return true;
-    }
-    
-    return false;
-  }).length;
-}
-
-// Helper function to get category name
-function getCategoryName(categoryId) {
-  if (!categoryId) return "All Products";
-
-  const category = uniqueCategories.value.find((c) => c.id === categoryId);
-  return category ? category.name : "All Products";
-}
-
-// Add function to clear filters
-function clearFilters() {
-  searchValue.value = "";
-  selectedCategory.value = null;
-}
-
-// Refs
-const categoriesRef = ref(null);
-const detailsRef = ref(null);
-const ctaRef = ref(null);
-
-// Helper function to clean phone number for WhatsApp
-function cleanPhoneNumber(phone) {
-  if (!phone) return "";
-  // Remove spaces, dashes, parentheses and other non-numeric characters except +
-  return phone.replace(/[^\d+]/g, "");
-}
-
-// Contact functionality
-const handleContactClick = () => {
-  if (storeDetails.value?.phone) {
-    // Clean the phone number and create tel: link
-    const cleanedPhone = cleanPhoneNumber(storeDetails.value.phone);
-    window.open(`tel:${cleanedPhone}`, '_self');
-    toast.add({
-      title: "Calling Store",
-      description: `Initiating call to ${storeDetails.value.phone}`,
-      color: "green",
-    });
-  } else if (storeDetails.value?.email) {
-    // Fallback to email if no phone number
-    window.open(`mailto:${storeDetails.value.email}`, '_self');
-    toast.add({
-      title: "Opening Email",
-      description: `Composing email to ${storeDetails.value.email}`,
-      color: "blue",
-    });
+// Watch search value for real-time search with debouncing
+let searchTimeout = null;
+watch(searchValue, (newValue) => {
+  // Clear previous timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
   }
-};
+  
+  // Set new timeout for debounced search
+  searchTimeout = setTimeout(() => {
+    console.log("Live search for:", newValue);
+    // The filteredProducts computed will automatically update
+  }, 300); // 300ms delay
+});
 
-// Share functionality
-const handleShareClick = async () => {
-  const shareData = {
-    title: storeDetails.value?.store_name || 'Store',
-    text: `Check out ${storeDetails.value?.store_name || 'this store'} - ${storeDetails.value?.store_description || 'Amazing products and services!'}`,
-    url: window.location.href
-  };
+// Add keyboard shortcut for search (Ctrl/Cmd + K)
+const searchInputRef = ref(null);
 
-  try {
-    // Check if Web Share API is supported
-    if (navigator.share) {
-      await navigator.share(shareData);
-      toast.add({
-        title: "Shared Successfully",
-        description: "Store link has been shared",
-        color: "green",
-      });
-    } else {
-      // Fallback: Copy to clipboard
-      await navigator.clipboard.writeText(window.location.href);
-      toast.add({
-        title: "Link Copied",
-        description: "Store link has been copied to clipboard",
-        color: "blue",
-      });
-    }
-  } catch (error) {
-    if (error.name !== 'AbortError') {
-      // Fallback: Try to copy to clipboard
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        toast.add({
-          title: "Link Copied",
-          description: "Store link has been copied to clipboard",
-          color: "blue",
-        });
-      } catch (clipboardError) {
-        toast.add({
-          title: "Share Failed",
-          description: "Unable to share or copy link",
-          color: "red",
-        });
+onMounted(async () => {
+  // Keyboard shortcut for search
+  const handleKeyboard = (event) => {
+    // Ctrl+K or Cmd+K to focus search
+    if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+      event.preventDefault();
+      const searchInput = document.querySelector('input[placeholder*="Search"], input[placeholder*="Find"]');
+      if (searchInput) {
+        searchInput.focus();
       }
     }
-  }
-};
+    // Escape to clear search
+    if (event.key === 'Escape' && searchValue.value) {
+      searchValue.value = '';
+    }
+  };
 
-// Initialize component
-onMounted(async () => {
+  document.addEventListener('keydown', handleKeyboard);
+  
+  // Clean up
+  onUnmounted(() => {
+    document.removeEventListener('keydown', handleKeyboard);
+  });
+  
+  // Existing onMounted code
   // Get initial data
   await Promise.all([getStoreDetails(), getMyProducts(), getStoreReviewsCount()]);
 
@@ -914,8 +938,7 @@ onMounted(async () => {
     root: null,
     rootMargin: "0px",
     threshold: 0.2,
-  };
-  const sectionObserver = new IntersectionObserver((entries) => {
+  };  const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.target === categoriesRef.value) {
         visibleSections.categories = entry.isIntersecting;
@@ -931,7 +954,6 @@ onMounted(async () => {
   if (categoriesRef.value) sectionObserver.observe(categoriesRef.value);
   if (detailsRef.value) sectionObserver.observe(detailsRef.value);
   if (ctaRef.value) sectionObserver.observe(ctaRef.value);
-
   // Clean up observers
   onUnmounted(() => {
     sectionObserver.disconnect();
