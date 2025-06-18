@@ -61,10 +61,9 @@
                   <b>{{ storeDetails?.rating || 0 }}</b>
                   <span v-if="!isLoadingReviews">({{ reviewsCount }} reviews)</span>
                   <span v-else class="text-slate-400">(Loading...)</span>
-                </div>
-                <div class="flex items-center gap-1">
+                </div>                <div class="flex items-center gap-1">
                   <UIcon name="i-heroicons-cube" class="w-4 h-4" />
-                  <b>{{ products?.length || 0 }}</b>
+                  <b>{{ activeProductsCount }}</b>
                   <span>Products</span>
                 </div>
                 <div v-if="storeDetails?.store_address" class="flex items-center gap-1">
@@ -141,8 +140,7 @@
 
         <!-- Mobile Categories Horizontal Scroll - Visible only on small screens -->
         <div class="col-span-12 md:hidden mt-2">
-          <div class="flex overflow-x-auto gap-2 pb-1.5 hide-scrollbar">
-            <button
+          <div class="flex overflow-x-auto gap-2 pb-1.5 hide-scrollbar">            <button
               @click="selectedCategory = null"
               class="flex-shrink-0 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap text-sm"
               :class="
@@ -151,7 +149,7 @@
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               "
             >
-              All Products ({{ products.length }})
+              All Products ({{ activeProductsCount }})
             </button>
 
             <button
@@ -243,11 +241,10 @@
                         class="h-4 w-4 mr-2 opacity-75"
                       />
                       All Products
-                    </span>
-                    <span
+                    </span>                    <span
                       class="px-2 py-0.5 rounded-md text-xs bg-white shadow-sm border border-gray-100"
                     >
-                      {{ products.length }}
+                      {{ activeProductsCount }}
                     </span>
                   </button>
 
@@ -690,7 +687,8 @@ const uniqueCategories = computed(() => {
   const categories = [];
   const map = new Map();
 
-  products.value.forEach((product) => {
+  // Only process active products
+  products.value.filter(product => product.is_active).forEach((product) => {
     if (Array.isArray(product.category_details)) {
       product.category_details.forEach((category) => {
         if (category && !map.has(category.id)) {
@@ -710,15 +708,35 @@ const uniqueCategories = computed(() => {
   return categories;
 });
 
+// Get count of active products
+const activeProductsCount = computed(() => {
+  if (!products.value || products.value.length === 0) return 0;
+  return products.value.filter(product => product.is_active).length;
+});
+
 // Filter products by selected category
 const filteredProducts = computed(() => {
-  let result = products.value;
+  // Start with only active products
+  let result = products.value.filter(product => product.is_active);
 
   // Filter by category if selected
   if (selectedCategory.value) {
-    result = result.filter(
-      (product) => product.category === selectedCategory.value
-    );
+    result = result.filter((product) => {
+      // Handle array of categories
+      if (Array.isArray(product.category_details)) {
+        return product.category_details.some(category => category && category.id === selectedCategory.value);
+      }
+      // Handle single category object
+      else if (product.category_details && product.category_details.id === selectedCategory.value) {
+        return true;
+      }
+      // Fallback: check if category is a direct property
+      else if (product.category === selectedCategory.value) {
+        return true;
+      }
+      
+      return false;
+    });
   }
 
   // Filter by search term if present
@@ -747,10 +765,22 @@ function getProductCountByCategory(categoryId) {
   if (!products.value || products.value.length === 0) return 0;
 
   return products.value.filter((product) => {
-    // Check if category is a direct property or inside category_details
-    if (product.category === categoryId) return true;
-    if (product.category_details && product.category_details.id === categoryId)
+    // First check if product is active
+    if (!product.is_active) return false;
+    
+    // Handle array of categories
+    if (Array.isArray(product.category_details)) {
+      return product.category_details.some(category => category && category.id === categoryId);
+    }
+    // Handle single category object
+    else if (product.category_details && product.category_details.id === categoryId) {
       return true;
+    }
+    // Fallback: check if category is a direct property
+    else if (product.category === categoryId) {
+      return true;
+    }
+    
     return false;
   }).length;
 }
