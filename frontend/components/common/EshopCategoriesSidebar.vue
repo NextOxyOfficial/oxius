@@ -45,11 +45,23 @@
                     ? 'bg-emerald-200 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
                     : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-800 dark:text-gray-400'
                 "
-              >
-                <div
+              >                <div
                   class="flex-shrink-0 size-8 flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800"
-                >
+                >                  <!-- Dynamic category icon/image -->
+                  <img
+                    v-if="shouldShowImage(category)"
+                    :src="getCategoryImageUrl(category.image)"
+                    :alt="category.name"
+                    class="size-5 object-contain category-image rounded"
+                    :class="{
+                      'brightness-110 saturate-150': selectedCategory === category.id,
+                      'brightness-95 saturate-100': selectedCategory !== category.id
+                    }"
+                    @error="onImageError($event, category)"
+                    loading="lazy"
+                  />
                   <UIcon
+                    v-else
                     :name="getCategoryIcon(category.name)"
                     class="size-4.5"
                     :class="
@@ -235,17 +247,117 @@ const emit = defineEmits([
   "eshopManager",
 ]);
 
-// Get category icon by name
+// Reactive data for tracking image load errors
+const imageErrors = ref(new Set());
+
+// Watch for category changes to reset image errors
+watch(() => props.displayedCategories, () => {
+  imageErrors.value.clear();
+}, { deep: true });
+
+// Get category image URL
+function getCategoryImageUrl(imagePath) {
+  if (!imagePath) return '';
+  
+  let finalUrl;
+  
+  // Handle different URL formats
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    finalUrl = imagePath;
+  } else if (imagePath.startsWith('/media/')) {
+    finalUrl = imagePath;
+  } else if (imagePath.startsWith('media/')) {
+    finalUrl = `/${imagePath}`;
+  } else if (imagePath.startsWith('images/') || imagePath.includes('images/')) {
+    // Django ImageField typically uploads to media/images/
+    finalUrl = `/media/${imagePath}`;
+  } else {
+    // Default to media/category_icons/ folder for backward compatibility
+    finalUrl = `/media/category_icons/${imagePath}`;
+  }
+  
+  return finalUrl;
+}
+
+// Handle image load errors
+function onImageError(event, category) {
+  // Track failed images
+  imageErrors.value.add(category.id);
+}
+
+// Check if image should be shown (not in error state)
+function shouldShowImage(category) {
+  const hasImage = category.image && category.image.trim();
+  const notInError = !imageErrors.value.has(category.id);
+  
+  return hasImage && notInError;
+}
+
+// Get category icon by name (fallback for categories without images)
 function getCategoryIcon(categoryName) {
-  // Example mapping of category names to icons
+  // Enhanced mapping of category names to icons
   const iconMapping = {
-    Electronics: "i-heroicons-device-mobile",
-    Fashion: "i-heroicons-tshirt",
+    // Technology & Electronics
+    Electronics: "i-heroicons-device-phone-mobile",
+    Computer: "i-heroicons-computer-desktop",
+    Mobile: "i-heroicons-device-phone-mobile",
+    Laptop: "i-heroicons-computer-desktop",
+    Gaming: "i-heroicons-puzzle-piece",
+    
+    // Fashion & Apparel
+    Fashion: "i-heroicons-sparkles",
+    Clothing: "i-heroicons-sparkles",
+    Shoes: "i-heroicons-sparkles",
+    Accessories: "i-heroicons-sparkles",
+    Jewelry: "i-heroicons-sparkles",
+    
+    // Home & Living
     Home: "i-heroicons-home",
-    Beauty: "i-heroicons-sparkles",
-    Sports: "i-heroicons-football",
+    Furniture: "i-heroicons-home",
+    Kitchen: "i-heroicons-home",
+    Garden: "i-heroicons-home",
+    Appliances: "i-heroicons-home",
+    
+    // Health & Beauty
+    Beauty: "i-heroicons-heart",
+    Health: "i-heroicons-heart",
+    Skincare: "i-heroicons-heart",
+    Makeup: "i-heroicons-heart",
+    Wellness: "i-heroicons-heart",
+    
+    // Sports & Recreation
+    Sports: "i-heroicons-trophy",
+    Fitness: "i-heroicons-trophy",
+    Outdoor: "i-heroicons-trophy",
+    
+    // Food & Groceries
+    Food: "i-heroicons-shopping-bag",
+    Groceries: "i-heroicons-shopping-bag",
+    Beverages: "i-heroicons-shopping-bag",
+    
+    // Books & Education
+    Books: "i-heroicons-book-open",
+    Education: "i-heroicons-book-open",
+    Stationery: "i-heroicons-book-open",
+    
+    // Automotive
+    Automotive: "i-heroicons-truck",
+    Car: "i-heroicons-truck",
+    Vehicle: "i-heroicons-truck",
+    
+    // Default categories
+    Others: "i-heroicons-tag",
+    Miscellaneous: "i-heroicons-tag",
   };
-  return iconMapping[categoryName] || "i-heroicons-tag";
+  
+  // Case-insensitive matching
+  const normalizedName = categoryName ? categoryName.toLowerCase() : '';
+  const matchedKey = Object.keys(iconMapping).find(key => 
+    key.toLowerCase() === normalizedName || 
+    normalizedName.includes(key.toLowerCase())
+  );
+  
+  return iconMapping[matchedKey] || iconMapping[categoryName] || "i-heroicons-tag";
 }
 
 // Handle category selection
@@ -266,5 +378,40 @@ function handleCategorySelect(categoryId) {
 .slide-enter-from,
 .slide-leave-to {
   transform: translateX(-100%);
+}
+
+/* Category image styling */
+.category-image {
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.category-image:hover {
+  transform: scale(1.05);
+}
+
+/* Loading state for images */
+.category-image-loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Dark mode image adjustments */
+.dark .category-image {
+  filter: brightness(0.9);
+}
+
+.dark .category-image:hover {
+  filter: brightness(1.1);
 }
 </style>
