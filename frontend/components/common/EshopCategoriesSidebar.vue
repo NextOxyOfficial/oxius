@@ -414,4 +414,24 @@ function handleCategorySelect(categoryId) {
 .dark .category-image:hover {
   filter: brightness(1.1);
 }
+
+/* Hide scrollbar */
+.overflow-y-auto {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
+
+/* Alternative class for hiding scrollbar if needed */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
 </style>
