@@ -78,10 +78,8 @@
                 ></div>
               </button>
             </li>
-          </ul>
-
-          <div
-            v-if="hasMoreCategoriesToLoad"
+          </ul>          <div
+            v-if="hasMoreCategoriesToLoad && !props.isLoadingMore"
             class="pt-4 pb-2 flex justify-center"
           >
             <UButton
@@ -90,10 +88,27 @@
               variant="soft"
               size="sm"
               class="w-full"
+              :loading="props.isLoadingMore"
+              :disabled="props.isLoadingMore"
             >
-              <UIcon name="i-heroicons-arrow-down" class="size-4 mr-1" />
-              Load more categories
+              <UIcon 
+                v-if="!props.isLoadingMore"
+                name="i-heroicons-arrow-down" 
+                class="size-4 mr-1" 
+              />
+              {{ props.isLoadingMore ? 'Loading...' : 'Load more categories' }}
             </UButton>
+          </div>
+
+          <!-- Loading indicator when loading more -->
+          <div
+            v-if="props.isLoadingMore"
+            class="pt-4 pb-2 flex justify-center"
+          >
+            <div class="flex items-center gap-2 text-gray-500 text-sm">
+              <UIcon name="i-heroicons-arrow-path" class="size-4 animate-spin" />
+              Loading more categories...
+            </div>
           </div>
         </div>
 
@@ -230,8 +245,11 @@ const props = defineProps({
   selectedCategory: {
     type: [String, Number, null],
     default: null,
+  },  hasMoreCategoriesToLoad: {
+    type: Boolean,
+    default: false,
   },
-  hasMoreCategoriesToLoad: {
+  isLoadingMore: {
     type: Boolean,
     default: false,
   },

@@ -17,12 +17,12 @@
       </UContainer>
     </div>
     <UContainer>
-      <!-- Categories Sidebar Component -->
-      <CommonEshopCategoriesSidebar
+      <!-- Categories Sidebar Component -->      <CommonEshopCategoriesSidebar
         :isOpen="isSidebarOpen"
         :displayedCategories="displayedCategories"
         :selectedCategory="selectedCategory"
         :hasMoreCategoriesToLoad="hasMoreCategoriesToLoad"
+        :isLoadingMore="isLoadingMoreCategories"
         @close="toggleSidebar"
         @categorySelect="selectCategoryAndCloseSidebar"
         @loadMore="loadMoreCategories"
@@ -359,6 +359,7 @@ const isSidebarOpen = ref(false);
 // Sidebar state
 const displayedCategories = ref([]);
 const hasMoreCategoriesToLoad = ref(false);
+const isLoadingMoreCategories = ref(false);
 
 // Computed property to check if any filters are active
 const hasActiveFilters = computed(() => {
@@ -445,13 +446,25 @@ function selectCategoryAndCloseSidebar(categoryId) {
 
 // Load more categories
 async function loadMoreCategories() {
-  // Example implementation for loading more categories
+  // Check if already loading or no more categories to load
+  if (isLoadingMoreCategories.value || !hasMoreCategoriesToLoad.value) {
+    return;
+  }
+
   try {
-    const res = await get("/product-categories/", {
-      params: { offset: displayedCategories.value.length },
-    });
-    displayedCategories.value.push(...res.data);
-    hasMoreCategoriesToLoad.value = res.data.length > 0;
+    isLoadingMoreCategories.value = true;
+    
+    // Calculate how many categories to load next
+    const currentCount = displayedCategories.value.length;
+    const batchSize = 10;
+    const nextBatch = categories.value.slice(currentCount, currentCount + batchSize);
+    
+    // Add the next batch to displayed categories
+    displayedCategories.value.push(...nextBatch);
+    
+    // Update hasMoreCategoriesToLoad based on whether there are more categories
+    hasMoreCategoriesToLoad.value = displayedCategories.value.length < categories.value.length;
+    
   } catch (error) {
     console.error("Error loading more categories:", error);
     toast.add({
@@ -460,6 +473,8 @@ async function loadMoreCategories() {
       color: "red",
       timeout: 3000,
     });
+  } finally {
+    isLoadingMoreCategories.value = false;
   }
 }
 
