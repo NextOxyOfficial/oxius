@@ -130,50 +130,61 @@
       </div>
 
       <!-- Action buttons -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-        <UButton
-          icon="i-token:cusd"
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">        <UButton
           size="md"
           color="emerald"
           variant="soft"
-          :label="t('transaction')"
           to="/deposit-withdraw/"
           class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5"
           :ui="{
             base: 'font-medium',
           }"
-        />
-        <UButton
-          icon="i-material-symbols:mark-email-unread-outline"
+          @click="handleButtonClick('transaction')"
+        >
+          <template #leading>
+            <div v-if="loadingButtons.has('transaction')" class="dotted-spinner emerald"></div>
+            <UIcon v-else name="i-token:cusd" />
+          </template>
+          <span v-if="!loadingButtons.has('transaction')">{{ t('transaction') }}</span>
+        </UButton>        <UButton
           size="md"
           color="blue"
           variant="soft"
-          :label="t('inbox')"
           to="/inbox/"
           class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-blue-500/10 to-blue-500/5 relative"
           :ui="{
             base: 'font-medium',
           }"
+          @click="handleButtonClick('inbox')"
         >
+          <template #leading>
+            <div v-if="loadingButtons.has('inbox')" class="dotted-spinner blue"></div>
+            <UIcon v-else name="i-material-symbols:mark-email-unread-outline" />
+          </template>
+          <span v-if="!loadingButtons.has('inbox')">{{ t('inbox') }}</span>
           <div
             v-if="badgeCount > 0"
             class="notification-badge absolute top-1 right-16 min-w-5 h-5 flex items-center justify-center rounded-full bg-red-500 text-white text-xs px-1 font-semibold shadow-sm animate-pulse-subtle"
           >
             {{ badgeCount > 99 ? "99+" : badgeCount }}
           </div>
-        </UButton>
-        <UButton
-          icon="i-material-symbols:list-rounded"
+        </UButton>        <UButton
           size="md"
           color="violet"
           variant="soft"
-          :label="t('my_gigs')"
           :to="isUser ? '/my-gigs/' + user?.user.id : '/my-gigs/'"
           class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-violet-500/10 to-violet-500/5"
           :ui="{
             base: 'font-medium',
           }"
-        />        <UButton
+          @click="handleButtonClick('my-gigs')"
+        >
+          <template #leading>
+            <div v-if="loadingButtons.has('my-gigs')" class="dotted-spinner violet"></div>
+            <UIcon v-else name="i-material-symbols:list-rounded" />
+          </template>
+          <span v-if="!loadingButtons.has('my-gigs')">{{ t('my_gigs') }}</span>
+        </UButton><UButton
           size="md"
           color="slate"
           variant="soft"
@@ -451,6 +462,18 @@ function CopyToClip(text) {
 /* Color variations for dotted spinner */
 .dotted-spinner.slate {
   border-color: #64748b;
+}
+
+.dotted-spinner.emerald {
+  border-color: #059669;
+}
+
+.dotted-spinner.blue {
+  border-color: #2563eb;
+}
+
+.dotted-spinner.violet {
+  border-color: #7c3aed;
 }
 
 @keyframes spin {
