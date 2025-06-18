@@ -47,7 +47,7 @@
             <!-- Text Details -->
             <div class="flex-1 text-center md:text-left">
               <div class="flex items-center justify-center md:justify-start gap-3 mb-1">
-                <h1 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
+                <h1 class="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white">
                   {{ storeDetails?.store_name || "Store Name" }}
                 </h1>
                 <span class="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
