@@ -39,19 +39,21 @@
       <div
         v-if="isAuthenticated"
         class="flex items-center gap-2 flex-shrink-0 ml-2"
-      >
-        <NuxtLink
+      >        <NuxtLink
           to="/sale/my-posts"
           class="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs border border-emerald-500 text-emerald-600 rounded-md hover:bg-emerald-50 transition-colors duration-200"
+          @click="handleButtonClick('my_posts')"
         >
-          <List class="h-3 w-3" />
+          <div v-if="loadingButtons.has('my_posts')" class="dotted-spinner emerald"></div>
+          <List v-else class="h-3 w-3" />
           <span class="hidden sm:inline">My Posts</span>
-        </NuxtLink>
-        <NuxtLink
+        </NuxtLink>        <NuxtLink
           to="/sale/my-posts?tab=post-sale"
           class="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors duration-200"
+          @click="handleButtonClick('post_ad')"
         >
-          <UIcon name="i-heroicons-plus-circle" class="h-3 w-3" />
+          <div v-if="loadingButtons.has('post_ad')" class="dotted-spinner white"></div>
+          <UIcon v-else name="i-heroicons-plus-circle" class="h-3 w-3" />
           <span class="hidden sm:inline">Post Ad</span>
         </NuxtLink>
       </div>
@@ -500,26 +502,26 @@
                   </button>
                 </div>
               </div>
-            </div>
-
-            <button
+            </div>            <button
               class="w-full mt-4 text-sm border border-gray-200 rounded-md py-2 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-800"
               @click="
+                handleButtonClick('view_seller_profile');
                 navigateTo('/sale/user-profile/' + product.user_details?.id)
               "
             >
-              <User class="h-4 w-4 mr-2 text-emerald-600" />
+              <div v-if="loadingButtons.has('view_seller_profile')" class="dotted-spinner slate mr-2"></div>
+              <User v-else class="h-4 w-4 mr-2 text-emerald-600" />
               View Seller Profile
-            </button>
-
-            <NuxtLink
+            </button>            <NuxtLink
               @click="
+                handleButtonClick('view_more_listings');
                 navigateTo('/sale/user-profile/' + product.user_details?.id)
               "
               class="cursorpointer mt-3 text-emerald-600 hover:text-emerald-600 text-sm flex items-center justify-center"
             >
               View more listings from this seller
-              <ChevronRight class="h-3 w-3 ml-1" />
+              <div v-if="loadingButtons.has('view_more_listings')" class="dotted-spinner emerald ml-1"></div>
+              <ChevronRight v-else class="h-3 w-3 ml-1" />
             </NuxtLink>
           </div>
         </div>
@@ -532,13 +534,14 @@
         <h2 class="text-lg font-bold text-gray-800 flex items-center">
           <LayoutGrid class="h-5 w-5 mr-2 text-emerald-600" />
           Similar Listings You May Like
-        </h2>
-        <NuxtLink
+        </h2>        <NuxtLink
           href="/sale"
           class="text-emerald-600 hover:text-emerald-600 text-sm flex items-center"
+          @click="handleButtonClick('view_all')"
         >
           View all
-          <ChevronRight class="h-3 w-3 ml-1" />
+          <div v-if="loadingButtons.has('view_all')" class="dotted-spinner emerald ml-1"></div>
+          <ChevronRight v-else class="h-3 w-3 ml-1" />
         </NuxtLink>
       </div>
 
@@ -860,6 +863,19 @@ const shareUrl = ref("");
 const reportReason = ref("");
 const reportDetails = ref("");
 
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Handle button clicks with loading states
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+};
+
+// Watch route changes to clear loading states
+watch(() => useRoute().fullPath, () => {
+  loadingButtons.value.clear();
+});
+
 // Format date
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -1027,5 +1043,49 @@ const submitReport = () => {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.emerald {
+  border-color: #059669;
+}
+
+.dotted-spinner.slate {
+  border-color: #64748b;
+}
+
+.dotted-spinner.blue {
+  border-color: #3b82f6;
+}
+
+.dotted-spinner.violet {
+  border-color: #8b5cf6;
+}
+
+.dotted-spinner.white {
+  border-color: #ffffff;
+}
+
+.dotted-spinner.primary {
+  border-color: #059669;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
