@@ -16,26 +16,43 @@ class PopupDesktopView(APIView):
         user = request.user if request.user.is_authenticated else None
         session_key = request.session.session_key
 
+        # Debug: Log authentication status
+        print(f"DEBUG: User authenticated: {request.user.is_authenticated}")
+        print(f"DEBUG: User: {user}")
+        print(f"DEBUG: Session key: {session_key}")
+
         # Ensure session exists for anonymous users
         if not user and not session_key:
             request.session.create()
-            # Get active popups based on user authentication status
             session_key = request.session.session_key
+
+        # Get active popups based on user authentication status
         if user:
             # For logged-in users: get popups that are active AND allow logged-in users
             popups = PopupDesktop.objects.filter(
                 is_active=True,
                 show_for_logged_in_users=True
             )
+            print(
+                f"DEBUG: Found {popups.count()} desktop popups for logged-in users")
         else:
             # For anonymous users: get popups that are active AND allow anonymous users
             popups = PopupDesktop.objects.filter(
                 is_active=True,
                 show_for_anonymous_users=True
             )
+            print(
+                f"DEBUG: Found {popups.count()} desktop popups for anonymous users")
+
+        # Debug: Show popup settings
+        for popup in popups:
+            print(f"DEBUG: Popup {popup.id} - active: {popup.is_active}, "
+                  f"logged_in: {popup.show_for_logged_in_users}, "
+                  f"anonymous: {popup.show_for_anonymous_users}")
 
         # Additional safety check: if no user type is allowed, return empty
         if not popups.exists():
+            print("DEBUG: No popups found, returning empty response")
             return Response([])
 
         # Filter popups based on viewing conditions
