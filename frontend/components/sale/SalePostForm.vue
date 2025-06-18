@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="submitForm" class="space-y-6">
     <!-- Basic Details Section -->
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <div class="bg-white rounded-b-lg border border-gray-200 p-6">
       <h3
         class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
       >

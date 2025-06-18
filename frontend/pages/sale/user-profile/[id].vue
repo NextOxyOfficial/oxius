@@ -190,8 +190,7 @@
 
                 <div
                   class="flex border border-gray-200 rounded-md overflow-hidden"
-                >
-                  <button
+                >                  <button
                     :class="`px-3 py-3 ${
                       viewMode === 'grid'
                         ? 'bg-emerald-50 text-emerald-600'
@@ -200,8 +199,7 @@
                     @click="viewMode = 'grid'"
                   >
                     <LayoutGrid class="h-4 w-4" />
-                  </button>
-                  <button
+                  </button>                  <button
                     :class="`px-3 py-3 ${
                       viewMode === 'list'
                         ? 'bg-emerald-50 text-emerald-600'
@@ -357,16 +355,17 @@
                         ? `${product?.division}, ${product?.district}, ${product?.area}`
                         : `All Over Bagnladesh`
                     }}</span>
-                  </div>
-                  <div
+                  </div>                  <div
                     class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100"
                   >
                     <NuxtLink
                       :to="`/sale/${product.slug}`"
                       class="text-emerald-600 hover:text-emerald-700 text-sm flex items-center"
+                      @click="handleButtonClick(`view_details_grid_${product.id}`)"
                     >
                       View Details
-                      <ChevronRight class="h-3 w-3 ml-1" />
+                      <div v-if="loadingButtons.has(`view_details_grid_${product.id}`)" class="dotted-spinner emerald ml-1"></div>
+                      <ChevronRight v-else class="h-3 w-3 ml-1" />
                     </NuxtLink>
                   </div>
                 </div>
@@ -441,8 +440,7 @@
                         ? `${product?.division}, ${product?.district}, ${product?.area}`
                         : `All Over Bagnladesh`
                     }}</span>
-                  </div>
-                  <div
+                  </div>                  <div
                     class="text-sm text-gray-600 mt-2 line-clamp-2"
                     v-html="product.description || 'No description available.'"
                   ></div>
@@ -452,9 +450,11 @@
                     <NuxtLink
                       :to="`/sale/${product.slug}`"
                       class="text-emerald-600 hover:text-emerald-700 text-sm flex items-center"
+                      @click="handleButtonClick(`view_details_list_${product.id}`)"
                     >
                       View Details
-                      <ChevronRight class="h-3 w-3 ml-1" />
+                      <div v-if="loadingButtons.has(`view_details_list_${product.id}`)" class="dotted-spinner emerald ml-1"></div>
+                      <ChevronRight v-else class="h-3 w-3 ml-1" />
                     </NuxtLink>
                   </div>
                 </div>
@@ -790,6 +790,19 @@ const totalPages = ref(0);
 const isLoading = ref(false);
 const pagination = ref(null);
 
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Handle button clicks with loading states
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+};
+
+// Watch route changes to clear loading states
+watch(() => useRoute().fullPath, () => {
+  loadingButtons.value.clear();
+});
+
 const seller = ref({});
 
 async function getSellerDetails() {
@@ -1114,6 +1127,52 @@ const navigateToPost = (slug) => {
   }
 };
 </script>
+
+<style scoped>
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.emerald {
+  border-color: #059669;
+}
+
+.dotted-spinner.slate {
+  border-color: #64748b;
+}
+
+.dotted-spinner.blue {
+  border-color: #3b82f6;
+}
+
+.dotted-spinner.violet {
+  border-color: #8b5cf6;
+}
+
+.dotted-spinner.white {
+  border-color: #ffffff;
+}
+
+.dotted-spinner.primary {
+  border-color: #059669;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
 
 <style scoped>
 /* Additional custom styles */
