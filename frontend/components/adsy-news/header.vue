@@ -80,24 +80,26 @@
               aria-label="Search"
             >
               <SearchIcon class="h-5 w-5" />
-            </button>
-
-            <!-- Navigation Buttons -->
+            </button>            <!-- Navigation Buttons -->
             <NuxtLink
+              @click="handleButtonClick('adsyclub')"
               to="/"
               class="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 transition-all"
               aria-label="Go to AdsyClub"
             >
-              <BarChartBig class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <div v-if="loadingButtons.adsyclub" class="spinner-white"></div>
+              <BarChartBig v-else class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span>AdsyClub</span>
             </NuxtLink>
 
             <NuxtLink
+              @click="handleButtonClick('adsybn')"
               to="/business-network"
               class="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 transition-all"
               aria-label="Go to Business Network"
             >
-              <Globe class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <div v-if="loadingButtons.adsybn" class="spinner-white"></div>
+              <Globe v-else class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span class="whitespace-nowrap">Adsy BN</span>
             </NuxtLink>
           </div>
@@ -299,6 +301,24 @@
 <script setup>
 const { get } = useApi();
 const logo = ref({});
+
+// Loading state for buttons
+const loadingButtons = ref({});
+
+// Handle button click with loading state
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value[buttonId] = true;
+  
+  // Clear loading state after a brief delay
+  setTimeout(() => {
+    loadingButtons.value[buttonId] = false;
+  }, 800);
+};
+
+// Clear loading states on route change
+watch(() => useRoute().path, () => {
+  loadingButtons.value = {};
+});
 
 async function getLogo() {
   const { data } = await get("/news-logo/");
@@ -657,7 +677,22 @@ const vClickOutside = {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* White dotted spinner for navigation buttons */
+.spinner-white {
+  width: 14px;
+  height: 14px;
+  border: 2px dotted #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
