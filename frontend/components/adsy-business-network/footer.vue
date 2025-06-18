@@ -121,8 +121,7 @@
             ></div>
             <div class="icon-reflection"></div>
           </div>
-        </div>
-        <span class="font-medium tracking-wide">Profile</span>
+        </div>        <span class="font-medium tracking-wide">Profile</span>
       </NuxtLink>
 
       <!-- Adsy Club -->
@@ -134,10 +133,13 @@
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
             : 'text-gray-600 hover:text-blue-500'
         "
+        @click="handleButtonClick('adsyclub_logged')"
       >
         <div class="relative">
           <div class="icon-wrapper">
+            <div v-if="loadingButtons.has('adsyclub_logged')" class="dotted-spinner green mb-1"></div>
             <BarChart2
+              v-else
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
               :class="$route.path === '/' ? 'text-green-500' : 'text-gray-600'"
             />
@@ -214,9 +216,7 @@
         <div class="create-post-button-disabled">
           <Plus class="h-7 w-7 text-gray-300" />
         </div>
-      </div>
-
-      <!-- Earn -->
+      </div>      <!-- Earn -->
       <NuxtLink
         to="/#micro-gigs"
         class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
@@ -225,10 +225,13 @@
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
             : 'text-gray-600 hover:text-blue-500'
         "
+        @click="handleButtonClick('earn_guest')"
       >
         <div class="relative">
           <div class="icon-wrapper">
+            <div v-if="loadingButtons.has('earn_guest')" class="dotted-spinner amber mb-1"></div>
             <UIcon
+              v-else
               name="i-material-symbols-attach-money"
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
               :class="
@@ -245,9 +248,7 @@
           </div>
         </div>
         <span class="font-medium tracking-wide">Earn</span>
-      </NuxtLink>
-
-      <!-- Adsy Club -->
+      </NuxtLink>      <!-- Adsy Club -->
       <NuxtLink
         to="/"
         class="flex flex-col items-center py-2 px-1.5 text-xs relative group transition-all duration-300"
@@ -256,10 +257,13 @@
             ? 'text-blue-600 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-8 after:h-0.5 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-purple-500 after:shadow-sm'
             : 'text-gray-600 hover:text-blue-500'
         "
+        @click="handleButtonClick('adsyclub_guest')"
       >
         <div class="relative">
           <div class="icon-wrapper">
+            <div v-if="loadingButtons.has('adsyclub_guest')" class="dotted-spinner green mb-1"></div>
             <BarChart2
+              v-else
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
               :class="$route.path === '/' ? 'text-green-500' : 'text-gray-600'"
             />
@@ -288,6 +292,19 @@ import {
 const { user } = useAuth();
 const eventBus = useEventBus();
 const { unreadCount, fetchUnreadCount } = useNotifications();
+
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Handle button clicks with loading states
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+};
+
+// Watch route changes to clear loading states
+watch(() => useRoute().fullPath, () => {
+  loadingButtons.value.clear();
+});
 
 // Fetch unread count when component is mounted
 onMounted(() => {
@@ -603,6 +620,58 @@ function handleCreatePostClick() {
   }
   100% {
     box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  }
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.emerald {
+  border-color: #059669;
+}
+
+.dotted-spinner.green {
+  border-color: #16a34a;
+}
+
+.dotted-spinner.slate {
+  border-color: #64748b;
+}
+
+.dotted-spinner.blue {
+  border-color: #3b82f6;
+}
+
+.dotted-spinner.violet {
+  border-color: #8b5cf6;
+}
+
+.dotted-spinner.white {
+  border-color: #ffffff;
+}
+
+.dotted-spinner.primary {
+  border-color: #059669;
+}
+
+.dotted-spinner.amber {
+  border-color: #f59e0b;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>
