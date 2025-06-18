@@ -1,130 +1,128 @@
-<template>
-  <UContainer class="py-4 md:py-6 page-eshop">
-    <div class="min-h-screen">
-      <!-- Modern Hero Banner with Layered Design -->
-      <div
-        class="relative bg-white rounded-xl md:rounded-2xl shadow-sm mb-8 md:mb-10 overflow-hidden"
-      >
-        <div class="absolute inset-0 z-0">
-          <!-- Banner Background -->
-          <div
-            class="h-40 sm:h-48 md:h-60 w-full bg-cover bg-center relative"
-            :style="{
-              backgroundImage: storeDetails?.store_banner
-                ? `url(${storeDetails?.store_banner})`
-                : 'url(\'/images/placeholder.jpg?height=800&width=1600\')',
-            }"
-          >
-            <!-- Color Overlay -->
-            <div
-              class="absolute inset-0 bg-indigo-900/40 mix-blend-multiply"
-            ></div>
-          </div>
-        </div>
+<template>  
+<div class="bg-slate-100 dark:bg-slate-900">
+    <UContainer>
+      <!-- 1. Banner Section -->
+      <div class="w-full h-48 md:h-64 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 relative rounded-t-xl md:rounded-t-2xl overflow-hidden">
+        <img
+          v-if="storeDetails?.store_banner"
+          :src="storeDetails?.store_banner"
+          alt="Vendor banner"
+          class="absolute inset-0 w-full h-full object-cover opacity-50"
+        />
+        <img
+          v-else
+          src="/images/placeholder.jpg"
+          alt="Vendor banner"
+          class="absolute inset-0 w-full h-full object-cover opacity-50"
+        />
+        <div class="absolute inset-0 bg-black/20"></div>
+      </div>
 
-        <!-- Store Content Section -->
-        <div
-          class="relative z-10 pt-20 sm:pt-32 md:pt-32 px-4 sm:px-6 md:px-8 pb-5 md:pb-6"
-        >
-          <!-- Store Info Flex Container -->
-          <div
-            class="flex flex-col md:flex-row md:items-end gap-4 md:gap-6 lg:gap-8 md:flex-none mt-20"
-          >
-            <!-- Store Logo with Border -->
-            <div
-              class="flex-shrink-0 -mt-20 pt-2 md:-mt-24 lg:-mt-28 relative mx-auto md:mx-0"
-            >
+      <!-- 2. Info Section (Logo + Details) -->
+      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-b-xl md:rounded-b-2xl">
+        <div class="flex flex-col md:flex-row items-center md:items-start py-6 gap-6 px-4 sm:px-6 lg:px-8">
+          <!-- Vendor Logo -->
+          <div class="flex-shrink-0 -mt-16 md:-mt-20">
+            <div class="relative w-32 h-32 md:w-40 md:h-40 rounded-full bg-white dark:bg-slate-900 p-2 shadow-lg ring-4 ring-white dark:ring-slate-800">
+              <img
+                v-if="storeDetails?.image"
+                :src="storeDetails?.image"
+                :alt="`${storeDetails?.store_name || 'Store'} Logo`"
+                class="w-full h-full rounded-full object-cover"
+              />
               <div
-                class="h-24 w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 rounded-xl bg-white p-1.5 shadow-sm"
+                v-else
+                class="w-full h-full rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl md:text-3xl"
               >
-                <div
-                  class="w-full h-full rounded-lg overflow-hidden bg-gray-100"
-                >
-                  <img
-                    v-if="storeDetails?.image"
-                    :src="storeDetails?.image"
-                    alt="Store Logo"
-                    class="w-full h-full object-cover"
-                  />
-                  <div
-                    v-else
-                    class="w-full h-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl md:text-3xl"
-                  >
-                    {{ getInitials(storeDetails?.store_name || "Store") }}
-                  </div>
+                {{ getInitials(storeDetails?.store_name || "Store") }}
+              </div>
+              <div class="absolute bottom-1 right-1 md:bottom-2 md:right-2 w-8 h-8 bg-green-500 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center">
+                <UIcon name="i-heroicons-check-circle" class="w-5 h-5 text-white" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Store Details & Actions -->
+          <div class="flex-1 flex flex-col md:flex-row items-center md:items-start gap-6 w-full">
+            <!-- Text Details -->
+            <div class="flex-1 text-center md:text-left">
+              <div class="flex items-center justify-center md:justify-start gap-3 mb-1">
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
+                  {{ storeDetails?.store_name || "Store Name" }}
+                </h1>
+                <span class="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                  Verified
+                </span>
+              </div>
+              <p class="text-slate-500 dark:text-slate-400 mb-3 max-w-xl mx-auto md:mx-0">
+                {{ storeDetails?.store_description || "Your premium destination for quality products and excellent service." }}
+              </p>
+              <div class="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
+                <div class="flex items-center gap-1">
+                  <UIcon name="i-heroicons-star" class="w-4 h-4 text-yellow-500" />
+                  <b>4.8</b>
+                  <span>(2.3k reviews)</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <UIcon name="i-heroicons-users" class="w-4 h-4" />
+                  <b>12.5K</b>
+                  <span>Followers</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <UIcon name="i-heroicons-cube" class="w-4 h-4" />
+                  <b>{{ products?.length || 0 }}</b>
+                  <span>Products</span>
+                </div>
+                <div v-if="storeDetails?.store_address" class="flex items-center gap-1">
+                  <UIcon name="i-heroicons-map-pin" class="w-4 h-4" />
+                  <span>{{ storeDetails.store_address }}</span>
                 </div>
               </div>
             </div>
 
-            <!-- Store Actions -->
-            <div class="mt-3 md:mt-0 flex-shrink-0 text-center md:text-left">
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-3 flex-shrink-0">
+              <UButton
+                v-if="!isOwner"
+                @click="toggleFollow"
+                :color="isFollowing ? 'gray' : 'blue'"
+                :variant="isFollowing ? 'soft' : 'solid'"
+                icon="i-heroicons-users"
+              >
+                {{ isFollowing ? 'Following' : 'Follow' }}
+              </UButton>
               <UButton
                 v-if="isOwner"
                 icon="i-heroicons-adjustments-horizontal"
-                size="sm"
                 color="indigo"
                 @click="$router.push('/shop-manager')"
               >
                 Manage Store
               </UButton>
+              <UButton
+                v-if="storeDetails?.phone || storeDetails?.email"
+                variant="outline"
+                icon="i-heroicons-chat-bubble-left-right"
+              >
+                Contact
+              </UButton>              
+              <UButton
+                variant="outline"
+                icon="i-heroicons-share"
+                square
+              />
             </div>
-          </div>
-
-          <!-- Store Name and Description -->
-          <div class="flex-grow text-center md:text-left">
-            <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
-              {{ storeDetails?.store_name || "Store Name" }}
-            </h1>
-            <p
-              class="text-gray-600 text-sm md:text-base mt-1.5 md:mt-2 max-w-2xl"
-              :class="isSeeMore ? '' : 'line-clamp-2'"
-            >
-              {{
-                storeDetails?.store_description ||
-                "Store description will appear here."
-              }}
-            </p>
-            <UButton
-              v-if="storeDetails?.store_description"
-              @click="isSeeMore = !isSeeMore"
-              :label="isSeeMore ? 'Read Less' : 'Read More'"
-              variant="link"
-              size="xs"
-              color="gray"
-              class="ml-0 pl-0 mt-1"
-            />
-          </div>
-          <!-- Store Info Badges -->
-
-          <div
-            class="flex flex-wrap justify-center md:justify-start gap-2 mt-3 md:mt-4"
-          >
-            <span
-              v-if="storeDetails?.store_address"
-              class="inline-flex items-center bg-gray-100 text-gray-800 rounded-full px-3 py-1 text-xs"
-            >
-              <MapPin class="w-3 h-3 mr-1" />
-              {{ storeDetails?.store_address }}
-            </span>
-            <span
-              v-if="storeDetails?.phone"
-              class="inline-flex items-center bg-gray-100 text-gray-800 rounded-full px-3 py-1 text-xs"
-            >
-              <Phone class="w-3 h-3 mr-1" />
-              {{ storeDetails?.phone }}
-            </span>
-            <span
-              class="inline-flex items-center bg-indigo-100 text-indigo-800 rounded-full px-3 py-1 text-xs"
-            >
-              <UIcon name="i-heroicons-shopping-bag" class="w-3 h-3 mr-1" />
-              {{ products?.length }} Products
-            </span>
           </div>
         </div>
       </div>
+    </UContainer>
+  </div>
 
-      <!-- Products Section with Improved Layout -->
-      <div class="grid grid-cols-12 gap-x-0 gap-y-3 md:gap-3">
+    <!-- Rest of the page content -->
+    <UContainer class="py-4 md:py-6 page-eshop">
+      <div class="min-h-screen">
+        <!-- Products Section with Improved Layout -->
+        <div class="grid grid-cols-12 gap-x-0 gap-y-3 md:gap-3">
         <!-- Mobile Search Bar - Visible only on small screens -->
         <div class="col-span-12 md:hidden">
           <div class="relative">
@@ -565,43 +563,23 @@
             <p class="mt-2 text-sm md:text-base text-gray-600 max-w-md mx-auto">
               We couldn't find any products matching your current selection. Try
               changing your search or selecting a different category.
-            </p>
-            <UButton
+            </p>            <UButton
               v-if="searchValue || selectedCategory"
               color="gray"
-              variant="soft"
+              variant="soft"              
               class="mt-5 md:mt-6"
               @click="clearFilters"
             >
-              Clear Filters
-            </UButton>
-          </div>
-        </div>
+              Clear Filters            
+            </UButton>          
+          </div>        
+        </div>        
       </div>
-    </div>
-
-    <!-- Modals remain unchanged -->
-    <!-- ...existing code... -->
-  </UContainer>
+      </div> <!-- Close min-h-screen div -->
+    </UContainer>
 </template>
 
 <script setup>
-const { get, patch } = useApi();
-const router = useRoute();
-const toast = useToast();
-const products = ref([]);
-const storeDetails = ref({});
-const { user, token } = useAuth();
-const isLoading = ref(false);
-const isSeeMore = ref(false);
-
-// Check if current user is store owner
-const isOwner = computed(() => {
-  return (
-    user.value?.user?.store_username === storeDetails.value?.store_username
-  );
-});
-
 import {
   Search,
   MapPin,
@@ -612,6 +590,29 @@ import {
   Phone,
   LocateIcon,
 } from "lucide-vue-next";
+
+const { get, patch } = useApi();
+const router = useRoute();
+const toast = useToast();
+const products = ref([]);
+const storeDetails = ref({});
+const { user, token } = useAuth();
+const isLoading = ref(false);
+const isSeeMore = ref(false);
+
+// Follow functionality
+const isFollowing = ref(false);
+
+const toggleFollow = () => {
+  isFollowing.value = !isFollowing.value;
+}
+
+// Check if current user is store owner
+const isOwner = computed(() => {
+  return (
+    user.value?.user?.store_username === storeDetails.value?.store_username
+  );
+});
 
 // Helper to get initials from name
 const getInitials = (name) => {
