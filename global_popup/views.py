@@ -19,19 +19,24 @@ class PopupDesktopView(APIView):
         # Ensure session exists for anonymous users
         if not user and not session_key:
             request.session.create()
+            # Get active popups based on user authentication status
             session_key = request.session.session_key
-
-        # Get active popups based on user authentication status
         if user:
+            # For logged-in users: get popups that are active AND allow logged-in users
             popups = PopupDesktop.objects.filter(
                 is_active=True,
                 show_for_logged_in_users=True
             )
         else:
+            # For anonymous users: get popups that are active AND allow anonymous users
             popups = PopupDesktop.objects.filter(
                 is_active=True,
                 show_for_anonymous_users=True
             )
+
+        # Additional safety check: if no user type is allowed, return empty
+        if not popups.exists():
+            return Response([])
 
         # Filter popups based on viewing conditions
         available_popups = []
@@ -86,19 +91,24 @@ class PopupMobileView(APIView):
         # Ensure session exists for anonymous users
         if not user and not session_key:
             request.session.create()
+            # Get active popups based on user authentication status
             session_key = request.session.session_key
-
-        # Get active popups based on user authentication status
         if user:
+            # For logged-in users: get popups that are active AND allow logged-in users
             popups = PopupMobile.objects.filter(
                 is_active=True,
                 show_for_logged_in_users=True
             )
         else:
+            # For anonymous users: get popups that are active AND allow anonymous users
             popups = PopupMobile.objects.filter(
                 is_active=True,
                 show_for_anonymous_users=True
             )
+
+        # Additional safety check: if no user type is allowed, return empty
+        if not popups.exists():
+            return Response([])
 
         # Filter popups based on viewing conditions
         available_popups = []
