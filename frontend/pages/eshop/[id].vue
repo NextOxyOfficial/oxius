@@ -150,19 +150,30 @@
               "
             >
               All Products ({{ activeProductsCount }})
-            </button>
-
-            <button
+            </button>            <button
               v-for="category in uniqueCategories"
               :key="category.id"
               @click="selectedCategory = category.id"
-              class="flex-shrink-0 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap text-sm"
+              class="flex-shrink-0 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap text-sm flex items-center"
               :class="
                 selectedCategory === category.id
                   ? 'bg-indigo-100 text-indigo-800 font-medium'
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               "
-            >
+            >              <div class="flex-shrink-0 mr-1.5">
+                <img
+                  v-if="category.image"
+                  :src="category.image"
+                  :alt="category.name"
+                  class="h-4 w-4 rounded object-cover border border-gray-200"
+                  @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='inline-block'"
+                />
+                <UIcon
+                  name="i-heroicons-tag"
+                  class="h-4 w-4 opacity-75"
+                  :class="category.image ? 'hidden' : 'inline-block'"
+                />
+              </div>
               {{ category.name }} ({{ getProductCountByCategory(category.id) }})
             </button>
           </div>
@@ -258,12 +269,20 @@
                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 font-medium shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50'
                     "
-                  >
-                    <span class="truncate mr-1 flex items-center">
-                      <UIcon
-                        name="i-heroicons-tag"
-                        class="h-4 w-4 mr-2 opacity-75"
-                      />
+                  >                    <span class="truncate mr-1 flex items-center">                      <div class="flex-shrink-0 mr-2">
+                        <img
+                          v-if="category.image"
+                          :src="category.image"
+                          :alt="category.name"
+                          class="h-4 w-4 rounded object-cover border border-gray-200"
+                          @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='inline-block'"
+                        />
+                        <UIcon
+                          name="i-heroicons-tag"
+                          class="h-4 w-4 opacity-75"
+                          :class="category.image ? 'hidden' : 'inline-block'"
+                        />
+                      </div>
                       {{ category.name }}
                     </span>
                     <span
