@@ -13,17 +13,17 @@
           </h1>
           <p class="text-lg text-gray-600 max-w-lg mx-auto mb-4">
             View, edit, and manage all your sale listings in one place
-          </p>
-          <UButton
+          </p>          <UButton
             @click="navigateToMarketplace"
             color="emerald"
             variant="outline"
             size="sm"
           >
             <template #leading>
-              <UIcon name="i-heroicons-shopping-bag" />
+              <div v-if="loadingButtons.has('go-to-marketplace')" class="dotted-spinner emerald"></div>
+              <UIcon v-else name="i-heroicons-shopping-bag" />
             </template>
-            Go to Marketplace
+            <span v-if="!loadingButtons.has('go-to-marketplace')">Go to Marketplace</span>
           </UButton>
         </div>
         <!-- Quick Stats -->
@@ -165,6 +165,18 @@ definePageMeta({
   middleware: "auth",
 });
 
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Function to handle button click and show loading
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+  // Remove loading state after navigation (cleanup happens in route change)
+  setTimeout(() => {
+    loadingButtons.value.delete(buttonId);
+  }, 3000); // Fallback timeout
+};
+
 // State
 const activeTab = ref("my-posts");
 const refreshing = ref(false);
@@ -198,6 +210,11 @@ if (route.query.tab) {
     activeTab.value = route.query.tab;
   }
 }
+
+// Watch for route changes to clear loading states
+watch(() => route.path, () => {
+  loadingButtons.value.clear();
+});
 
 // Methods
 const refreshPosts = async () => {
@@ -255,6 +272,7 @@ const updatePostsCount = (data) => {
 };
 
 const navigateToMarketplace = () => {
+  handleButtonClick('go-to-marketplace');
   navigateTo("/sale");
 };
 
@@ -296,6 +314,30 @@ useHead({
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.emerald {
+  border-color: #059669;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>
