@@ -111,12 +111,11 @@
     >      <!-- Modern Product Container -->
       <div
         ref="sliderContainer"
-        class="overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50/80 to-white dark:from-slate-900/80 dark:to-slate-800 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50"
-      >
-        <!-- First row of products -->
-        <div class="slider-content py-3 px-2 sm:px-4">
+        class="rounded-2xl bg-gradient-to-br from-slate-50/80 to-white dark:from-slate-900/80 dark:to-slate-800 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 overflow-hidden"
+      >        <!-- First row of products -->
+        <div class="slider-content py-3 px-1 sm:px-4">
           <div class="product-row">
-            <div class="flex gap-2 sm:gap-3 md:gap-4">
+            <div class="flex gap-1 sm:gap-3 md:gap-4 overflow-x-auto hide-scrollbar scroll-smooth" style="-webkit-overflow-scrolling: touch;">
               <div
                 v-for="product in firstRowProducts"
                 :key="product.id"
@@ -126,12 +125,10 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Second row of products -->
-        <div class="slider-content py-3 px-2 sm:px-4 pb-4">
+        </div>        <!-- Second row of products -->
+        <div class="slider-content py-3 px-1 sm:px-4 pb-4">
           <div class="product-row">
-            <div class="flex gap-2 sm:gap-3 md:gap-4">
+            <div class="flex gap-1 sm:gap-3 md:gap-4 overflow-x-auto hide-scrollbar scroll-smooth" style="-webkit-overflow-scrolling: touch;">
               <div
                 v-for="product in secondRowProducts"
                 :key="product.id"
@@ -451,12 +448,18 @@ function handleMouseUp(event) {
 
 // Handle touch events for mobile devices
 function handleSliderTouch(event) {
-  // Ignore touches on product cards to allow normal card interactions
+  // For mobile, let native scrolling handle the interaction
+  // Only prevent if it's not a product card interaction
   if (
     event.target.closest(".product-card") ||
     event.target.closest("a") ||
     event.target.closest("button")
   ) {
+    return;
+  }
+
+  // Don't interfere with native scrolling on mobile
+  if (window.innerWidth < 640) {
     return;
   }
 
@@ -475,6 +478,11 @@ function handleTouchEnd(event) {
     event.target.closest("a") ||
     event.target.closest("button")
   ) {
+    return;
+  }
+
+  // Don't interfere with native scrolling on mobile
+  if (window.innerWidth < 640) {
     return;
   }
 
@@ -609,7 +617,10 @@ onMounted(() => {
 
       if (sliderContainer.value) {
         resizeObserver.observe(sliderContainer.value);
-        sliderContainer.value.addEventListener("scroll", handleScroll);
+        // Only add scroll listener for non-mobile devices
+        if (window.innerWidth >= 640) {
+          sliderContainer.value.addEventListener("scroll", handleScroll);
+        }
       }
     }
   });
@@ -717,12 +728,18 @@ watch(
 
 /* Improved clickable areas */
 .slider-content {
-  cursor: grab;
   width: 100%;
 }
 
-.slider-content:active {
-  cursor: grabbing;
+/* On mobile, don't change cursor since we want native scrolling */
+@media (min-width: 640px) {
+  .slider-content {
+    cursor: grab;
+  }
+
+  .slider-content:active {
+    cursor: grabbing;
+  }
 }
 
 /* Product cards should have pointer cursor */
@@ -731,7 +748,7 @@ watch(
   cursor: pointer;
 }
 
-/* Card sizes based on screen size - ensuring both rows fit screen width */
+/* Card sizes based on screen size - ensuring proper mobile scrolling */
 @media (min-width: 1024px) {
   .product-card-wrapper {
     width: calc(20% - 12px); /* 5 cards per row on desktop, accounting for gaps */
@@ -773,15 +790,18 @@ watch(
 
 @media (max-width: 639px) {
   .product-card-wrapper {
-    width: calc(50% - 8px); /* 2 cards per row on mobile */
-    min-width: calc(50% - 8px);
-    max-width: calc(50% - 8px);
+    width: calc(50% - 2px); /* 2 cards per row on mobile, accounting for smaller gaps */
+    min-width: calc(50% - 2px);
+    max-width: calc(50% - 2px);
+    flex-shrink: 0;
   }
 
   .product-row .flex {
-    width: 100%;
-    justify-content: space-between;
-    gap: 8px !important; /* Smaller gap on mobile */
+    width: 100%; /* Full width container */
+    justify-content: space-between; /* Even distribution */
+    gap: 4px !important; /* Smaller gap on mobile to fit 2 cards perfectly */
+    flex-wrap: nowrap; /* Prevent wrapping to maintain 2 per row */
+    overflow-x: auto; /* Allow horizontal scrolling for additional products */
   }
 }
 
@@ -807,6 +827,18 @@ watch(
 @media (hover: none) and (pointer: coarse) {
   .slider-content {
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Ensure smooth scrolling on mobile */
+  .overflow-x-auto {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
   }
 }
 

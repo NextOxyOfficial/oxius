@@ -421,7 +421,7 @@
                   }"
                 >
                   <div
-                    class="flex items-center gap-4 p-4 cursor-pointer"
+                    class="flex items-center gap-2 py-3 px-1.5 cursor-pointer"
                     @click="markUpdateAsRead(update)"
                   >
                     <!-- Left Status Stripe -->
@@ -559,7 +559,7 @@
               <div
                 class="w-full overflow-hidden overflow-y-auto custom-scrollbar"
               >
-                <UCard class="shadow-2xl border-0">
+                <UCard class="shadow-sm border-0">
                   <template #header>
                     <div
                       class="flex justify-between items-center bg-gradient-to-r from-primary-50 to-white p-1 rounded-t-lg"
@@ -674,7 +674,7 @@
               <div
                 class="w-full overflow-hidden overflow-y-auto custom-scrollbar"
               >
-                <UCard class="shadow-2xl border-0">
+                <UCard class="shadow-sm border-0">
                   <template #header>
                     <div
                       class="flex justify-between items-center bg-gradient-to-r from-blue-50 to-white p-1 rounded-t-lg"
@@ -802,7 +802,7 @@
               >
                 <UCard
                   v-if="activeTicket"
-                  class="shadow-2xl border-0 flex flex-col"
+                  class="shadow-sm border-0 flex flex-col"
                 >
                   <template #header>
                     <div
@@ -962,7 +962,7 @@
                             <div
                               v-for="(reply, index) in displayedReplies"
                               :key="reply.id"
-                              class="p-4 rounded-lg shadow-sm transition-all duration-200 hover:shadow-md"
+                              class="p-4 rounded-lg shadow-sm transition-all duration-200 hover:shadow-sm"
                               :class="{
                                 'bg-primary-50 border-l-4 border-primary-300':
                                   reply.is_from_admin,

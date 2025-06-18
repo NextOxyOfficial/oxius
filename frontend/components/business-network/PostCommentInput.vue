@@ -1,13 +1,12 @@
 <template>
   <div
     class="flex items-start gap-2.5 mt-4 pt-3 border-t border-gray-100/60 dark:border-slate-700/40 px-2"
-  >
-    <!-- User avatar with enhanced styling -->
-    <div class="relative group">
+  >    <!-- User avatar with enhanced styling -->
+    <div class="relative group flex-shrink-0">
       <img
         :src="user?.user?.image"
         alt="Your avatar"
-        class="size-9 rounded-full mt-1.5 object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:shadow-sm transition-all duration-300"
+        class="size-9 rounded-full mt-1.5 object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:shadow-sm transition-all duration-300 avatar-mobile"
       />
       <!-- Subtle glow effect on hover -->
       <div
@@ -1826,6 +1825,23 @@ const emit = defineEmits([
   .mention-chip {
     font-size: 0.7rem;
     padding: 0.375rem 0.75rem;
+  }
+  
+  /* Ensure avatar is always visible on mobile */
+  .relative.group.flex-shrink-0 {
+    min-width: 36px !important;
+    width: 36px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .avatar-mobile {
+    width: 36px !important;
+    height: 36px !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 10 !important;
   }
 }
 
