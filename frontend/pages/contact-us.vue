@@ -24,7 +24,7 @@
       <div class="grid md:grid-cols-2 gap-8">
         <!-- General Support Card -->
         <div
-          class="bg-white rounded-lg shadow-sm p-8 border border-slate-100 hover:border-slate-200 transition-all duration-300"
+          class="bg-white rounded-lg shadow-sm py-6 sm:py-8 px-2 border border-slate-100 hover:border-slate-200 transition-all duration-300"
         >
           <div class="flex items-start space-x-5">
             <div class="flex-shrink-0">
@@ -72,7 +72,7 @@
 
         <!-- Partnership Card -->
         <div
-          class="bg-white rounded-lg shadow-sm p-8 border border-slate-100 hover:border-slate-200 transition-all duration-300"
+          class="bg-white rounded-lg shadow-sm py-6 sm:py-8 px-2 border border-slate-100 hover:border-slate-200 transition-all duration-300"
         >
           <div class="flex items-start space-x-5">
             <div class="flex-shrink-0">
