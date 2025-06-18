@@ -7,7 +7,7 @@
         class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
       >
         <div
-          class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl sm:max-w-3xl h-[40vh] w-full mx-4 overflow-hidden animate-scale-in"
+          class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl sm:max-w-3xl h-[45vh] sm:h-[40vh] w-full mx-4 overflow-hidden animate-scale-in"
           @click.stop
         >
           <!-- Close Button -->
@@ -47,16 +47,22 @@
             </div>
 
             <!-- Try to load image -->
-            <img
+            <NuxtLink
               v-else
-              :src="getImageUrl(currentPopup.image)"
-              :alt="`Popup ${currentPopup.id}`"
-              class="w-full h-full object-cover rounded-t-2xl"
-              @load="onPopupShown"
-              @error="onImageError"
-              loading="eager"
-              crossorigin="anonymous"
-            />
+              :to="currentPopup.link"
+              :target="currentPopup.open_external ? '_blank' : '_self'"
+              class="block w-full h-full hover:cursor-pointer"
+            >
+              <img
+                :src="getImageUrl(currentPopup.image)"
+                :alt="`Popup ${currentPopup.id}`"
+                class="w-full h-full object-cover rounded-t-2xl"
+                @load="onPopupShown"
+                @error="onImageError"
+                loading="eager"
+                crossorigin="anonymous"
+              />
+            </NuxtLink>
           </div>
         </div>
       </div>

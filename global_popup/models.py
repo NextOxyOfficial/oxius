@@ -23,6 +23,11 @@ class PopupDesktop(models.Model):
     ]
     id = models.BigIntegerField(
         primary_key=True, default=generate_unique_id, editable=False)
+    link = models.CharField(
+        max_length=255, blank=True, null=True,
+
+    )
+    open_external = models.BooleanField(default=False)
     image = models.ImageField(
         upload_to='popup_desktop_images/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -50,6 +55,11 @@ class PopupMobile(models.Model):
         primary_key=True, default=generate_unique_id, editable=False)
     image = models.ImageField(
         upload_to='popup_mobile_images/', blank=True, null=True)
+    link = models.CharField(
+        max_length=255, blank=True, null=True,
+
+    )
+    open_external = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     show_for_logged_in_users = models.BooleanField(default=True)
     show_for_anonymous_users = models.BooleanField(default=True)
