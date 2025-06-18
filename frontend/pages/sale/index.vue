@@ -239,23 +239,26 @@
                     }}</span>
                   </span>
                 </p>
-              </div>
-              <!-- Post Sale Ad Button - Mobile position (right side of ads found row) -->
+              </div>              <!-- Post Sale Ad Button - Mobile position (right side of ads found row) -->
               <div class="lg:hidden">
                 <div v-if="isAuthenticated" class="flex items-center gap-2">
                   <NuxtLink
                     to="/sale/my-posts"
                     class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-xs"
+                    @click="handleButtonClick('my-posts-mobile')"
                   >
-                    <UIcon name="i-heroicons-list-bullet" class="h-3 w-3" />
-                    My Posts
+                    <div v-if="loadingButtons.has('my-posts-mobile')" class="dotted-spinner primary h-3 w-3"></div>
+                    <UIcon v-else name="i-heroicons-list-bullet" class="h-3 w-3" />
+                    <span v-if="!loadingButtons.has('my-posts-mobile')">My Posts</span>
                   </NuxtLink>
                   <NuxtLink
                     to="/sale/my-posts?tab=post-sale"
                     class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-xs"
+                    @click="handleButtonClick('post-ad-mobile')"
                   >
-                    <UIcon name="i-heroicons-plus-circle" class="h-3 w-3" />
-                    Post Ad
+                    <div v-if="loadingButtons.has('post-ad-mobile')" class="dotted-spinner white h-3 w-3"></div>
+                    <UIcon v-else name="i-heroicons-plus-circle" class="h-3 w-3" />
+                    <span v-if="!loadingButtons.has('post-ad-mobile')">Post Ad</span>
                   </NuxtLink>
                 </div>
                 <div v-else>
@@ -291,30 +294,35 @@
               </div>
               <div
                 class="flex items-center border-l border-gray-200 pl-4 gap-2"
-              >
-                <div v-if="isAuthenticated" class="flex items-center gap-2">
+              >                <div v-if="isAuthenticated" class="flex items-center gap-2">
                   <NuxtLink
                     to="/sale/my-posts"
                     class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-sm"
+                    @click="handleButtonClick('my-posts-desktop')"
                   >
-                    <UIcon name="i-heroicons-list-bullet" class="h-4 w-4" />
-                    My Posts
+                    <div v-if="loadingButtons.has('my-posts-desktop')" class="dotted-spinner primary h-4 w-4"></div>
+                    <UIcon v-else name="i-heroicons-list-bullet" class="h-4 w-4" />
+                    <span v-if="!loadingButtons.has('my-posts-desktop')">My Posts</span>
                   </NuxtLink>
                   <NuxtLink
                     to="/sale/my-posts?tab=post-sale"
                     class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm"
+                    @click="handleButtonClick('post-sale-ad-desktop')"
                   >
-                    <UIcon name="i-heroicons-plus-circle" class="h-4 w-4" />
-                    Post Sale Ad
+                    <div v-if="loadingButtons.has('post-sale-ad-desktop')" class="dotted-spinner white h-4 w-4"></div>
+                    <UIcon v-else name="i-heroicons-plus-circle" class="h-4 w-4" />
+                    <span v-if="!loadingButtons.has('post-sale-ad-desktop')">Post Sale Ad</span>
                   </NuxtLink>
                 </div>
                 <div v-else>
                   <NuxtLink
                     to="/sale/my-posts?tab=post-sale"
                     class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-sm"
+                    @click="handleButtonClick('post-sale-ad-guest')"
                   >
-                    <UIcon name="i-heroicons-plus-circle" class="h-4 w-4" />
-                    Post Sale Ad
+                    <div v-if="loadingButtons.has('post-sale-ad-guest')" class="dotted-spinner primary h-4 w-4"></div>
+                    <UIcon v-else name="i-heroicons-plus-circle" class="h-4 w-4" />
+                    <span v-if="!loadingButtons.has('post-sale-ad-guest')">Post Sale Ad</span>
                   </NuxtLink>
                 </div>
               </div>
@@ -1004,6 +1012,24 @@ import SaleSidebar from "~/components/sale/SaleSidebar.vue";
 
 const { user, isAuthenticated } = useAuth();
 const { query } = useRoute();
+
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Function to handle button click and show loading
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+  // Remove loading state after navigation (cleanup happens in route change)
+  setTimeout(() => {
+    loadingButtons.value.delete(buttonId);
+  }, 3000); // Fallback timeout
+};
+
+// Watch for route changes to clear loading states
+const route = useRoute();
+watch(() => route.path, () => {
+  loadingButtons.value.clear();
+});
 
 // API endpoints
 const API_ENDPOINTS = {
@@ -1772,5 +1798,31 @@ watch(
 
 .compact-select svg {
   margin-left: 2px !important;
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.primary {
+  border-color: #3b82f6;
+}
+
+.dotted-spinner.white {
+  border-color: #ffffff;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

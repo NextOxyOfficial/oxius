@@ -126,13 +126,14 @@
           <p class="text-sm text-gray-600 mb-3">
             List your items easily and reach thousands of potential buyers in
             your area.
-          </p>
-          <NuxtLink
+          </p>          <NuxtLink
             to="/sale/my-posts?tab=post-sale"
             class="whitespace-nowrap flex items-center text-center gap-1 px-3 py-2 h-10 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm"
+            @click="handleButtonClick('post-your-ad-1')"
           >
-            <UIcon name="i-heroicons-plus-circle" class="h-4 w-4" />
-            Post Your Ad
+            <div v-if="loadingButtons.has('post-your-ad-1')" class="dotted-spinner white h-4 w-4"></div>
+            <UIcon v-else name="i-heroicons-plus-circle" class="h-4 w-4" />
+            <span v-if="!loadingButtons.has('post-your-ad-1')">Post Your Ad</span>
           </NuxtLink>
         </div>
       </div>
@@ -234,21 +235,42 @@
     <!-- Fixed bottom CTA for mobile -->
     <div
       class="lg:hidden sticky bottom-0 p-4 bg-white border-t border-gray-100 shadow-sm z-20"
-    >
-      <UButton
+    >      <UButton
         to="/sale/my-posts?tab=post-sale"
         color="primary"
         size="sm"
         class="w-full flex items-center justify-center gap-1 shadow-sm"
+        @click="handleButtonClick('post-your-ad-2')"
       >
-        <UIcon name="i-heroicons-plus-circle" class="w-4 h-4" />
-        Post Your Ad
+        <template #leading>
+          <div v-if="loadingButtons.has('post-your-ad-2')" class="dotted-spinner white w-4 h-4"></div>
+          <UIcon v-else name="i-heroicons-plus-circle" class="w-4 h-4" />
+        </template>
+        <span v-if="!loadingButtons.has('post-your-ad-2')">Post Your Ad</span>
       </UButton>
     </div>
   </div>
 </template>
 
 <script setup>
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Function to handle button click and show loading
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+  // Remove loading state after navigation (cleanup happens in route change)
+  setTimeout(() => {
+    loadingButtons.value.delete(buttonId);
+  }, 3000); // Fallback timeout
+};
+
+// Watch for route changes to clear loading states
+const route = useRoute();
+watch(() => route.path, () => {
+  loadingButtons.value.clear();
+});
+
 const props = defineProps({
   isMobileFilterOpen: {
     type: Boolean,
@@ -476,10 +498,31 @@ function getCategoryIcon(categoryId, categoryName = "") {
   .sidebar-scrollable-content::-webkit-scrollbar-track {
     background: transparent;
   }
-
   .sidebar-scrollable-content::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 10px;
+  }
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.white {
+  border-color: #ffffff;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>
