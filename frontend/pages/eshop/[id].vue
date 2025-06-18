@@ -56,12 +56,11 @@
               </div>
               <p class="text-slate-500 dark:text-slate-400 mb-3 max-w-xl mx-auto md:mx-0">
                 {{ storeDetails?.store_description || "Your premium destination for quality products and excellent service." }}
-              </p>              
-              <div class="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
-                <div class="flex items-center gap-1">
+              </p>                <div class="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300">                <div class="flex items-center gap-1">
                   <UIcon name="i-heroicons-star" class="w-4 h-4 text-yellow-500" />
-                  <b>{{ storeDetails?.rating || '4.8' }}</b>
-                  <span>({{ storeDetails?.reviews_count || 0 }} reviews)</span>
+                  <b>{{ storeDetails?.rating || 0 }}</b>
+                  <span v-if="!isLoadingReviews">({{ reviewsCount }} reviews)</span>
+                  <span v-else class="text-slate-400">(Loading...)</span>
                 </div>
                 <div class="flex items-center gap-1">
                   <UIcon name="i-heroicons-cube" class="w-4 h-4" />
@@ -599,9 +598,9 @@ const isSeeMore = ref(false);
 // Follow functionality
 const isFollowing = ref(false);
 
-const toggleFollow = () => {
-  isFollowing.value = !isFollowing.value;
-}
+// Review functionality
+const reviewsCount = ref(0);
+const isLoadingReviews = ref(false);
 
 // Check if current user is store owner
 const isOwner = computed(() => {
@@ -653,6 +652,24 @@ async function getStoreDetails() {
     });
   } finally {
     isLoading.value = false;
+  }
+}
+
+// Get store reviews count for the specific store
+async function getStoreReviewsCount() {
+  try {
+    isLoadingReviews.value = true;
+    // Use the new public endpoint that accepts store_username
+    const res = await get(`/reviews/store/${router.params.id}/reviews/count/`);
+    if (res && res.data) {
+      reviewsCount.value = res.data.count || 0;
+      isLoadingReviews.value = false;
+      return;
+    }
+  } catch (error) {
+    console.error("Error fetching store reviews count:", error);
+    reviewsCount.value = 0;
+    isLoadingReviews.value = false;
   }
 }
 
@@ -836,7 +853,7 @@ const handleShareClick = async () => {
 // Initialize component
 onMounted(async () => {
   // Get initial data
-  await Promise.all([getStoreDetails(), getMyProducts()]);
+  await Promise.all([getStoreDetails(), getMyProducts(), getStoreReviewsCount()]);
 
   // If there's only one category, auto-select it
   if (uniqueCategories.value.length === 1) {
@@ -872,25 +889,3 @@ onMounted(async () => {
   });
 });
 </script>
-
-<style>
-/* Remove any unnecessary animations to keep the design clean */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  transition: all 0.2s ease;
-  line-clamp: 2; /* Standard property for compatibility */
-}
-
-/* Add new style for hiding scrollbars while allowing scrolling */
-.hide-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
-}
-</style>

@@ -43,4 +43,9 @@ urlpatterns = [
     path('store-reviews/count/', 
          views.store_reviews_count, 
          name='store-reviews-count'),
+    
+    # Public store reviews count by store_username
+    path('store/<str:store_username>/reviews/count/', 
+         views.public_store_reviews_count, 
+         name='public-store-reviews-count'),
 ]
