@@ -173,19 +173,23 @@
           :ui="{
             base: 'font-medium',
           }"
-        />
-        <UButton
-          icon="i-heroicons-plus-circle"
+        />        <UButton
           size="md"
           color="slate"
           variant="soft"
-          :label="t('post_gigs')"
           to="/post-a-gig"
           class="action-button justify-center py-3 rounded-xl shadow-sm hover:shadow-sm transition-all duration-300 hover:scale-102 bg-gradient-to-r from-slate-500/10 to-slate-500/5"
           :ui="{
             base: 'font-medium',
           }"
-        />
+          @click="handleButtonClick('post-gigs-balance')"
+        >
+          <template #leading>
+            <div v-if="loadingButtons.has('post-gigs-balance')" class="dotted-spinner slate"></div>
+            <UIcon v-else name="i-heroicons-plus-circle" />
+          </template>
+          <span v-if="!loadingButtons.has('post-gigs-balance')">{{ t('post_gigs') }}</span>
+        </UButton>
       </div>
     </div>
 
@@ -284,6 +288,24 @@ const { t } = useI18n();
 const toast = useToast();
 const { unreadTicketCount, totalUnreadCount, fetchUnreadCount } = useTickets();
 const badgeCount = ref(0);
+
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Function to handle button click and show loading
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+  // Remove loading state after navigation (cleanup happens in route change)
+  setTimeout(() => {
+    loadingButtons.value.delete(buttonId);
+  }, 3000); // Fallback timeout
+};
+
+// Watch for route changes to clear loading states
+const route = useRoute();
+watch(() => route.path, () => {
+  loadingButtons.value.clear();
+});
 
 // Update badge count when totalUnreadCount changes
 watch(
@@ -414,5 +436,29 @@ function CopyToClip(text) {
 /* Notification badge hover effect */
 .action-button:hover .notification-badge {
   transform: scale(1.1);
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.slate {
+  border-color: #64748b;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

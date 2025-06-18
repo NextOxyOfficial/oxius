@@ -383,8 +383,7 @@
                   </p>
                 </div>
 
-                <div class="flex items-center gap-2">
-                  <!-- Post gig button with premium styling -->
+                <div class="flex items-center gap-2">                  <!-- Post gig button with premium styling -->
                   <UButton
                     to="/post-a-gig"
                     class="relative overflow-hidden bg-white hover:bg-slate-50 text-emerald-600 font-medium rounded-lg shadow-sm hover:shadow-sm transition-all duration-200 border border-emerald-200 hover:border-emerald-300"
@@ -401,6 +400,7 @@
                         },
                       },
                     }"
+                    @click="handleButtonClick('post-gigs')"
                   >
                     <!-- Ripple Effect Background -->
                     <span class="absolute inset-0 overflow-hidden">
@@ -413,11 +413,13 @@
                     <div
                       class="relative z-10 flex items-center justify-center space-x-2"
                     >
+                      <div v-if="loadingButtons.has('post-gigs')" class="dotted-spinner emerald"></div>
                       <UIcon
+                        v-else
                         name="i-heroicons-plus-circle"
                         class="text-emerald-500"
                       />
-                      <span class="font-medium">{{ $t("post_gigs") }}</span>
+                      <span v-if="!loadingButtons.has('post-gigs')" class="font-medium">{{ $t("post_gigs") }}</span>
                     </div>
                   </UButton>
 
@@ -722,6 +724,25 @@ const { formatDate } = useUtils();
 const isOpen = ref(false);
 const { get, baseURL } = useApi();
 const { user } = useAuth();
+
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Function to handle button click and show loading
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+  // Remove loading state after navigation (cleanup happens in route change)
+  setTimeout(() => {
+    loadingButtons.value.delete(buttonId);
+  }, 3000); // Fallback timeout
+};
+
+// Watch for route changes to clear loading states
+const route = useRoute();
+watch(() => route.path, () => {
+  loadingButtons.value.clear();
+});
+
 const services = ref({ results: [], next: null });
 const searchServices = ref({ results: [], next: null });
 const microGigs = ref([]);
@@ -1199,5 +1220,29 @@ onBeforeUnmount(() => {
 .backdrop-blur-sm {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.emerald {
+  border-color: #059669;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

@@ -33,13 +33,15 @@
             >
               Just In
             </div>
-          </div>
-          <a
+          </div>          <a
             href="/eshop"
             class="text-emerald-600 hover:underline flex items-center text-sm font-medium"
+            @click="handleButtonClick('view-all-eshop')"
           >
-            {{ $t("view_all") }}
+            <div v-if="loadingButtons.has('view-all-eshop')" class="dotted-spinner emerald mr-2"></div>
+            <span v-else>{{ $t("view_all") }}</span>
             <svg
+              v-if="!loadingButtons.has('view-all-eshop')"
               xmlns="http://www.w3.org/2000/svg"
               width="16"
               height="16"
@@ -104,6 +106,24 @@
 import { ref, onMounted, onUnmounted } from "vue";
 
 const { get } = useApi();
+
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Function to handle button click and show loading
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+  // Remove loading state after navigation (cleanup happens in route change)
+  setTimeout(() => {
+    loadingButtons.value.delete(buttonId);
+  }, 3000); // Fallback timeout
+};
+
+// Watch for route changes to clear loading states
+const route = useRoute();
+watch(() => route.path, () => {
+  loadingButtons.value.clear();
+});
 
 const hotArrivals = ref([]);
 
@@ -199,6 +219,30 @@ onUnmounted(() => {
     overflow-x: auto;
     display: flex;
     flex-wrap: nowrap;
+  }
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.emerald {
+  border-color: #059669;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

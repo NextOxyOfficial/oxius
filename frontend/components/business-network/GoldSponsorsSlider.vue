@@ -20,13 +20,15 @@
         <span class="text-gold-gradient">
           {{ $t("gold_sponsors") }}
         </span>
-      </h3>
-      <NuxtLink
+      </h3>      <NuxtLink
         to="/business-network/gold-sponsors"
         class="text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium flex items-center group transition-colors"
+        @click="handleButtonClick('view-all-gold-sponsors')"
       >
-        {{ $t("view_all") }}
+        <div v-if="loadingButtons.has('view-all-gold-sponsors')" class="dotted-spinner amber mr-2"></div>
+        <span v-else>{{ $t("view_all") }}</span>
         <UIcon
+          v-if="!loadingButtons.has('view-all-gold-sponsors')"
           name="i-heroicons-chevron-right"
           class="w-4 h-4 ml-0.5 group-hover:translate-x-0.5 transition-transform"
         />
@@ -409,6 +411,24 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const { get, post } = useApi();
 
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Function to handle button click and show loading
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+  // Remove loading state after navigation (cleanup happens in route change)
+  setTimeout(() => {
+    loadingButtons.value.delete(buttonId);
+  }, 3000); // Fallback timeout
+};
+
+// Watch for route changes to clear loading states
+const route = useRoute();
+watch(() => route.path, () => {
+  loadingButtons.value.clear();
+});
+
 // Sample data (will be replaced with API call)
 const sponsors = ref([]);
 const isLoading = ref(true);
@@ -786,5 +806,29 @@ onMounted(() => {
 }
 .swiper-container:active {
   cursor: grabbing;
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.amber {
+  border-color: #d97706;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

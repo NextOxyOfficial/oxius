@@ -334,13 +334,14 @@
             <h3 class="text-lg font-semibold">
               {{ getSelectedCategoryName() }}
             </h3>
-          </div>
-          <NuxtLink
+          </div>          <NuxtLink
             :to="`/sale`"
             class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"
+            @click="handleButtonClick('view-all-sale')"
           >
-            {{ $t("view_all") }}
-            <Icon name="heroicons:arrow-right" size="14px" />
+            <div v-if="loadingButtons.has('view-all-sale')" class="dotted-spinner emerald mr-1"></div>
+            <span v-else>{{ $t("view_all") }}</span>
+            <Icon v-if="!loadingButtons.has('view-all-sale')" name="heroicons:arrow-right" size="14px" />
           </NuxtLink>
         </div>
 
@@ -476,6 +477,24 @@
 <script setup>
 const { user } = useAuth();
 const { get } = useApi();
+
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Function to handle button click and show loading
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+  // Remove loading state after navigation (cleanup happens in route change)
+  setTimeout(() => {
+    loadingButtons.value.delete(buttonId);
+  }, 3000); // Fallback timeout
+};
+
+// Watch for route changes to clear loading states
+const route = useRoute();
+watch(() => route.path, () => {
+  loadingButtons.value.clear();
+});
 
 // State for categories and banners now from API
 const categories = ref([]);
@@ -839,5 +858,29 @@ const capitalizeTitle = (title) => {
 /* Banner styles */
 .banner-container {
   width: 100%;
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.emerald {
+  border-color: #059669;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

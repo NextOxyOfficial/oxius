@@ -66,16 +66,18 @@
                   Discover amazing products
                 </p>
               </div>
-            </div>
-            <!-- Action button - mobile optimized -->
+            </div>            <!-- Action button - mobile optimized -->
             <NuxtLink
               to="/shop-manager"
               class="flex-shrink-0 group relative inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-xs sm:text-sm transition-colors duration-200 overflow-hidden"
+              @click="handleButtonClick('sell-on-eshop')"
             >
-              <span class="relative z-10 truncate">{{
+              <div v-if="loadingButtons.has('sell-on-eshop')" class="dotted-spinner white mr-2"></div>
+              <span v-else class="relative z-10 truncate">{{
                 $t("sell_on_eshop")
               }}</span>
               <UIcon
+                v-if="!loadingButtons.has('sell-on-eshop')"
                 name="i-heroicons-arrow-right"
                 class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0"
               />
@@ -220,6 +222,24 @@
 import { CommonCategoryLayout } from "#components";
 
 const { get } = useApi();
+
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Function to handle button click and show loading
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+  // Remove loading state after navigation (cleanup happens in route change)
+  setTimeout(() => {
+    loadingButtons.value.delete(buttonId);
+  }, 3000); // Fallback timeout
+};
+
+// Watch for route changes to clear loading states
+const route = useRoute();
+watch(() => route.path, () => {
+  loadingButtons.value.clear();
+});
 
 // Core state
 const products = ref([]);
@@ -964,5 +984,29 @@ button:focus-visible,
   --secondary-400: #c084fc;
   --secondary-500: #a855f7;
   --secondary-600: #9333ea;
+}
+
+/* Dotted Spinner Styles */
+.dotted-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px dotted #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Color variations for dotted spinner */
+.dotted-spinner.white {
+  border-color: #ffffff;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

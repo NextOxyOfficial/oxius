@@ -43,7 +43,8 @@
                 />
               </div>
             </div>
-            <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->            <button
+            <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->            
+             <button
               @click="prevSlide"
               class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
               :class="{ 'opacity-100': isHovering }"
