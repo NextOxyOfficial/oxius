@@ -56,17 +56,12 @@
               </div>
               <p class="text-slate-500 dark:text-slate-400 mb-3 max-w-xl mx-auto md:mx-0">
                 {{ storeDetails?.store_description || "Your premium destination for quality products and excellent service." }}
-              </p>
+              </p>              
               <div class="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
                 <div class="flex items-center gap-1">
                   <UIcon name="i-heroicons-star" class="w-4 h-4 text-yellow-500" />
-                  <b>4.8</b>
-                  <span>(2.3k reviews)</span>
-                </div>
-                <div class="flex items-center gap-1">
-                  <UIcon name="i-heroicons-users" class="w-4 h-4" />
-                  <b>12.5K</b>
-                  <span>Followers</span>
+                  <b>{{ storeDetails?.rating || '4.8' }}</b>
+                  <span>({{ storeDetails?.reviews_count || 0 }} reviews)</span>
                 </div>
                 <div class="flex items-center gap-1">
                   <UIcon name="i-heroicons-cube" class="w-4 h-4" />
@@ -98,18 +93,19 @@
                 @click="$router.push('/shop-manager')"
               >
                 Manage Store
-              </UButton>
+              </UButton>              
               <UButton
                 v-if="storeDetails?.phone || storeDetails?.email"
                 variant="outline"
-                icon="i-heroicons-chat-bubble-left-right"
+                :icon="storeDetails?.phone ? 'i-heroicons-phone' : 'i-heroicons-envelope'"
+                @click="handleContactClick"
               >
-                Contact
-              </UButton>              
-              <UButton
+                {{ storeDetails?.phone ? 'Call' : 'Email' }}
+              </UButton>              <UButton
                 variant="outline"
                 icon="i-heroicons-share"
                 square
+                @click="handleShareClick"
               />
             </div>
           </div>
@@ -764,9 +760,78 @@ const ctaRef = ref(null);
 // Helper function to clean phone number for WhatsApp
 function cleanPhoneNumber(phone) {
   if (!phone) return "";
-  // Remove spaces, dashes, parentheses and other non-numeric characters
+  // Remove spaces, dashes, parentheses and other non-numeric characters except +
   return phone.replace(/[^\d+]/g, "");
 }
+
+// Contact functionality
+const handleContactClick = () => {
+  if (storeDetails.value?.phone) {
+    // Clean the phone number and create tel: link
+    const cleanedPhone = cleanPhoneNumber(storeDetails.value.phone);
+    window.open(`tel:${cleanedPhone}`, '_self');
+    toast.add({
+      title: "Calling Store",
+      description: `Initiating call to ${storeDetails.value.phone}`,
+      color: "green",
+    });
+  } else if (storeDetails.value?.email) {
+    // Fallback to email if no phone number
+    window.open(`mailto:${storeDetails.value.email}`, '_self');
+    toast.add({
+      title: "Opening Email",
+      description: `Composing email to ${storeDetails.value.email}`,
+      color: "blue",
+    });
+  }
+};
+
+// Share functionality
+const handleShareClick = async () => {
+  const shareData = {
+    title: storeDetails.value?.store_name || 'Store',
+    text: `Check out ${storeDetails.value?.store_name || 'this store'} - ${storeDetails.value?.store_description || 'Amazing products and services!'}`,
+    url: window.location.href
+  };
+
+  try {
+    // Check if Web Share API is supported
+    if (navigator.share) {
+      await navigator.share(shareData);
+      toast.add({
+        title: "Shared Successfully",
+        description: "Store link has been shared",
+        color: "green",
+      });
+    } else {
+      // Fallback: Copy to clipboard
+      await navigator.clipboard.writeText(window.location.href);
+      toast.add({
+        title: "Link Copied",
+        description: "Store link has been copied to clipboard",
+        color: "blue",
+      });
+    }
+  } catch (error) {
+    if (error.name !== 'AbortError') {
+      // Fallback: Try to copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.add({
+          title: "Link Copied",
+          description: "Store link has been copied to clipboard",
+          color: "blue",
+        });
+      } catch (clipboardError) {
+        toast.add({
+          title: "Share Failed",
+          description: "Unable to share or copy link",
+          color: "red",
+        });
+      }
+    }
+  }
+};
 
 // Initialize component
 onMounted(async () => {
