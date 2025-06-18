@@ -31,7 +31,7 @@ AUTH_USER_MODEL = 'base.User'
 # Application definition
 
 INSTALLED_APPS = [
-  'jazzmin',
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',    'django.contrib.sessions',
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'elearning',
     'news',
     'sale',  # Add the sale app here
+    'global_popup',  # Global popup system
     'support',  # Support ticket system
     'reviews',  # Reviews system
     'django_filters',
@@ -93,7 +94,8 @@ SIMPLE_JWT = {
 
 # Session settings to prevent automatic logout
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days (same as JWT tokens)
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Keep session even after browser close
+# Keep session even after browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = True  # Refresh session on every request
 SESSION_COOKIE_HTTPONLY = True  # Security: prevent JS access to session cookie
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
@@ -101,7 +103,8 @@ SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add whitenoise middleware right after security middleware
+    # Add whitenoise middleware right after security middleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -231,12 +234,12 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 # ShurjoPay Settings
-SP_USERNAME="lyriczsoft"
-SP_PASSWORD="lyrikskdzprvz&ud"
-SP_ENDPOINT="https://engine.shurjopayment.com"
-SP_RETURN="https://adsyclub.com/verify-payment"
-SP_CANCEL="https://adsyclub.com/deposit-withdraw/"
-SP_PREFIX="ADSYCLUB_"
+SP_USERNAME = "lyriczsoft"
+SP_PASSWORD = "lyrikskdzprvz&ud"
+SP_ENDPOINT = "https://engine.shurjopayment.com"
+SP_RETURN = "https://adsyclub.com/verify-payment"
+SP_CANCEL = "https://adsyclub.com/deposit-withdraw/"
+SP_PREFIX = "ADSYCLUB_"
 API_SMS = 'SplZ3f60tlt69pkZAEc8WHk3MbHkGeLYtJ1jElCd'
 
 # TinyMCE Configuration

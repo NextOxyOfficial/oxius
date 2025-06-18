@@ -179,6 +179,8 @@
         </div>
       </div>
     </Teleport>
+    <!-- global popup  -->
+    <PublicGlobalpopup />
 
     <div v-if="loader" class="fixed inset-0 z-[99999999] bg-white">
       <NuxtLoadingIndicator class="!opacity-[1]" />
