@@ -26,8 +26,8 @@
               class="rounded-xl mt-2 sm:mt-6 overflow-hidden relative pb-[45%] md:pb-[45%] lg:pb-[45%] shadow-sm"
             >
               <div
-                v-for="({ id, image }, index) in sliderImages"
-                :key="id"
+                v-for="(banner, index) in sliderImages"
+                :key="banner.id"
                 class="absolute inset-0 transition-all duration-500 ease-out transform"
                 :class="{
                   'opacity-100 translate-x-0': index === currentSlide,
@@ -35,23 +35,42 @@
                   'opacity-0 -translate-x-full': index < currentSlide,
                 }"
               >
+                <!-- Banner Link Wrapper -->
+                <NuxtLink
+                  v-if="banner.link"
+                  :to="banner.link"
+                  class="absolute inset-0 z-10 cursor-pointer"
+                  :external="banner.link.startsWith('http')"
+                ></NuxtLink>
+
+                <!-- Banner Image -->
                 <img
-                  v-if="image"
-                  :src="image"
-                  :alt="`Slide ${index + 1}`"
+                  v-if="banner.image"
+                  :src="banner.image"
+                  :alt="banner.title || `Slide ${index + 1}`"
                   class="w-full h-full object-cover"
+                  :class="{ 'cursor-pointer': banner.link }"
                 />
+
+                <!-- Banner Title Overlay (optional) -->
+                <div
+                  v-if="banner.title"
+                  class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white z-5"
+                >
+                  <h3 class="text-lg font-semibold">{{ banner.title }}</h3>
+                </div>
               </div>
             </div>
-            <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->            
-             <button
+            <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->
+            <button
               @click="prevSlide"
               class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
               :class="{ 'opacity-100': isHovering }"
               aria-label="Previous slide"
             >
               <ChevronLeft class="h-5 w-5 text-white" />
-            </button>            <button
+            </button>
+            <button
               @click="nextSlide"
               class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100"
               :class="{ 'opacity-100': isHovering }"
@@ -66,7 +85,8 @@
               <button
                 v-for="(_, index) in sliderImages"
                 :key="index"
-                @click="goToSlide(index)"                class="w-2.5 h-2.5 rounded-full transition-all duration-200 relative"
+                @click="goToSlide(index)"
+                class="w-2.5 h-2.5 rounded-full transition-all duration-200 relative"
                 :class="{
                   'bg-white': index === currentSlide,
                   'bg-white/40 hover:bg-white/60': index !== currentSlide,
@@ -90,15 +110,18 @@
               <!-- Service buttons grid with cool design -->
               <div
                 class="grid grid-cols-4 gap-0 hidden md:grid border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-200/80"
-              >                
-              <!-- Business Network -->
+              >
+                <!-- Business Network -->
                 <NuxtLink
                   to="/business-network"
                   class="service-btn bg-white hover:bg-blue-50 text-gray-800"
                   @click="handleButtonClick('desktop-business-network')"
                 >
                   <div class="icon-circle bg-blue-50">
-                    <div v-if="loadingButtons.has('desktop-business-network')" class="dotted-spinner"></div>
+                    <div
+                      v-if="loadingButtons.has('desktop-business-network')"
+                      class="dotted-spinner"
+                    ></div>
                     <Globe v-else class="icon text-blue-600" />
                   </div>
                   <span>{{ $t("business_network") }}</span>
@@ -110,7 +133,10 @@
                   @click="handleButtonClick('desktop-news')"
                 >
                   <div class="icon-circle bg-amber-50">
-                    <div v-if="loadingButtons.has('desktop-news')" class="dotted-spinner amber"></div>
+                    <div
+                      v-if="loadingButtons.has('desktop-news')"
+                      class="dotted-spinner amber"
+                    ></div>
                     <Newspaper v-else class="icon text-amber-600" />
                   </div>
                   <span>{{ $t("adsy_news") }}</span>
@@ -122,7 +148,10 @@
                   @click="handleButtonClick('desktop-earn-money')"
                 >
                   <div class="icon-circle bg-emerald-50">
-                    <div v-if="loadingButtons.has('desktop-earn-money')" class="dotted-spinner emerald"></div>
+                    <div
+                      v-if="loadingButtons.has('desktop-earn-money')"
+                      class="dotted-spinner emerald"
+                    ></div>
                     <BadgeDollarSign v-else class="icon text-emerald-600" />
                   </div>
                   <span>{{ $t("earn_money") }}</span>
@@ -134,18 +163,25 @@
                   @click="handleButtonClick('desktop-eshop')"
                 >
                   <div class="icon-circle bg-purple-50">
-                    <div v-if="loadingButtons.has('desktop-eshop')" class="dotted-spinner purple"></div>
+                    <div
+                      v-if="loadingButtons.has('desktop-eshop')"
+                      class="dotted-spinner purple"
+                    ></div>
                     <ShoppingCart v-else class="icon text-purple-600" />
                   </div>
                   <span>{{ $t("eshop") }}</span>
-                </NuxtLink>                <!-- Sale Listings -->
+                </NuxtLink>
+                <!-- Sale Listings -->
                 <NuxtLink
                   to="/sale"
                   class="service-btn bg-white hover:bg-indigo-50 text-gray-800"
                   @click="handleButtonClick('desktop-sale')"
                 >
                   <div class="icon-circle bg-indigo-50">
-                    <div v-if="loadingButtons.has('desktop-sale')" class="dotted-spinner indigo"></div>
+                    <div
+                      v-if="loadingButtons.has('desktop-sale')"
+                      class="dotted-spinner indigo"
+                    ></div>
                     <ListFilter v-else class="icon text-indigo-600" />
                   </div>
                   <span>{{ $t("sale_listing") }}</span>
@@ -158,7 +194,10 @@
                   @click="handleButtonClick('desktop-mindforce')"
                 >
                   <div class="icon-circle bg-cyan-50">
-                    <div v-if="loadingButtons.has('desktop-mindforce')" class="dotted-spinner cyan"></div>
+                    <div
+                      v-if="loadingButtons.has('desktop-mindforce')"
+                      class="dotted-spinner cyan"
+                    ></div>
                     <Brain v-else class="icon text-cyan-600" />
                   </div>
                   <span>{{ $t("mindforce") }}</span>
@@ -171,7 +210,10 @@
                   @click="handleButtonClick('desktop-courses')"
                 >
                   <div class="icon-circle bg-rose-50">
-                    <div v-if="loadingButtons.has('desktop-courses')" class="dotted-spinner rose"></div>
+                    <div
+                      v-if="loadingButtons.has('desktop-courses')"
+                      class="dotted-spinner rose"
+                    ></div>
                     <UIcon
                       v-else
                       name="i-heroicons-academic-cap"
@@ -210,14 +252,18 @@
                     class="absolute top-1 -right-1 bg-gray-400 text-white text-[8px] px-1 py-0.5 rounded-sm"
                     >Coming Soon</span
                   >
-                </div>                <!-- Mobile Recharge -->
+                </div>
+                <!-- Mobile Recharge -->
                 <NuxtLink
                   to="/mobile-recharge"
                   class="service-btn bg-white hover:bg-orange-50 text-gray-800"
                   @click="handleButtonClick('desktop-mobile-recharge')"
                 >
                   <div class="icon-circle bg-orange-50">
-                    <div v-if="loadingButtons.has('desktop-mobile-recharge')" class="dotted-spinner orange"></div>
+                    <div
+                      v-if="loadingButtons.has('desktop-mobile-recharge')"
+                      class="dotted-spinner orange"
+                    ></div>
                     <Smartphone v-else class="icon text-orange-600" />
                   </div>
                   <span>{{ $t("mobile_recharge") }}</span>
@@ -229,7 +275,10 @@
                   @click="handleButtonClick('desktop-transactions')"
                 >
                   <div class="icon-circle bg-lime-50">
-                    <div v-if="loadingButtons.has('desktop-transactions')" class="dotted-spinner lime"></div>
+                    <div
+                      v-if="loadingButtons.has('desktop-transactions')"
+                      class="dotted-spinner lime"
+                    ></div>
                     <CreditCard v-else class="icon text-lime-600" />
                   </div>
                   <span>{{ $t("adsy_pay") }}</span>
@@ -242,7 +291,10 @@
                   @click="handleButtonClick('desktop-membership')"
                 >
                   <div class="icon-circle bg-pink-50">
-                    <div v-if="loadingButtons.has('desktop-membership')" class="dotted-spinner pink"></div>
+                    <div
+                      v-if="loadingButtons.has('desktop-membership')"
+                      class="dotted-spinner pink"
+                    ></div>
                     <User v-else class="icon text-pink-600" />
                   </div>
                   <span>{{ $t("packeges") }}</span>
@@ -259,14 +311,18 @@
     >
       <div
         class="grid grid-cols-4 gap-0 border border-gray-100 rounded-lg overflow-hidden divide-x divide-y divide-gray-200 shadow-sm relative z-10"
-      >        <!-- Business Network -->
-        <NuxtLink 
-          to="/business-network" 
+      >
+        <!-- Business Network -->
+        <NuxtLink
+          to="/business-network"
           class="mobile-btn bg-white"
           @click="handleButtonClick('mobile-business-network')"
         >
           <div class="mobile-icon-circle bg-blue-50">
-            <div v-if="loadingButtons.has('mobile-business-network')" class="dotted-spinner mobile"></div>
+            <div
+              v-if="loadingButtons.has('mobile-business-network')"
+              class="dotted-spinner mobile"
+            ></div>
             <Globe v-else class="mobile-icon text-blue-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -276,13 +332,16 @@
           </div>
         </NuxtLink>
         <!-- News -->
-        <NuxtLink 
-          to="/adsy-news" 
+        <NuxtLink
+          to="/adsy-news"
           class="mobile-btn bg-white"
           @click="handleButtonClick('mobile-news')"
         >
           <div class="mobile-icon-circle bg-amber-50">
-            <div v-if="loadingButtons.has('mobile-news')" class="dotted-spinner mobile amber"></div>
+            <div
+              v-if="loadingButtons.has('mobile-news')"
+              class="dotted-spinner mobile amber"
+            ></div>
             <Newspaper v-else class="mobile-icon text-amber-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -292,13 +351,16 @@
           </div>
         </NuxtLink>
         <!-- Earn Money -->
-        <NuxtLink 
-          to="/#micro-gigs" 
+        <NuxtLink
+          to="/#micro-gigs"
           class="mobile-btn bg-white"
           @click="handleButtonClick('mobile-earn-money')"
         >
           <div class="mobile-icon-circle bg-emerald-50">
-            <div v-if="loadingButtons.has('mobile-earn-money')" class="dotted-spinner mobile emerald"></div>
+            <div
+              v-if="loadingButtons.has('mobile-earn-money')"
+              class="dotted-spinner mobile emerald"
+            ></div>
             <BadgeDollarSign v-else class="mobile-icon text-emerald-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -308,13 +370,16 @@
           </div>
         </NuxtLink>
         <!-- Eshop -->
-        <NuxtLink 
-          to="/eshop" 
+        <NuxtLink
+          to="/eshop"
           class="mobile-btn bg-white"
           @click="handleButtonClick('mobile-eshop')"
         >
           <div class="mobile-icon-circle bg-purple-50">
-            <div v-if="loadingButtons.has('mobile-eshop')" class="dotted-spinner mobile purple"></div>
+            <div
+              v-if="loadingButtons.has('mobile-eshop')"
+              class="dotted-spinner mobile purple"
+            ></div>
             <ShoppingCart v-else class="mobile-icon text-purple-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -322,14 +387,18 @@
               $t("eshop")
             }}</span>
           </div>
-        </NuxtLink>        <!-- Sale Listings -->
-        <NuxtLink 
-          to="/sale" 
+        </NuxtLink>
+        <!-- Sale Listings -->
+        <NuxtLink
+          to="/sale"
           class="mobile-btn bg-white"
           @click="handleButtonClick('mobile-sale')"
         >
           <div class="mobile-icon-circle bg-indigo-50">
-            <div v-if="loadingButtons.has('mobile-sale')" class="dotted-spinner mobile indigo"></div>
+            <div
+              v-if="loadingButtons.has('mobile-sale')"
+              class="dotted-spinner mobile indigo"
+            ></div>
             <ListFilter v-else class="mobile-icon text-indigo-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -339,13 +408,16 @@
           </div>
         </NuxtLink>
         <!-- MindForce -->
-        <NuxtLink 
-          to="/business-network/mindforce" 
+        <NuxtLink
+          to="/business-network/mindforce"
           class="mobile-btn bg-white"
           @click="handleButtonClick('mobile-mindforce')"
         >
           <div class="mobile-icon-circle bg-cyan-50">
-            <div v-if="loadingButtons.has('mobile-mindforce')" class="dotted-spinner mobile cyan"></div>
+            <div
+              v-if="loadingButtons.has('mobile-mindforce')"
+              class="dotted-spinner mobile cyan"
+            ></div>
             <Brain v-else class="mobile-icon text-cyan-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -356,18 +428,22 @@
         </NuxtLink>
 
         <!-- elearning -->
-        <NuxtLink 
-          to="/courses" 
+        <NuxtLink
+          to="/courses"
           class="mobile-btn bg-white"
           @click="handleButtonClick('mobile-courses')"
         >
           <div class="mobile-icon-circle bg-rose-50">
-            <div v-if="loadingButtons.has('mobile-courses')" class="dotted-spinner mobile rose"></div>
+            <div
+              v-if="loadingButtons.has('mobile-courses')"
+              class="dotted-spinner mobile rose"
+            ></div>
             <GraduationCap v-else class="mobile-icon text-rose-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-800">
-              {{ $t("elearning") }}</span>
+              {{ $t("elearning") }}</span
+            >
           </div>
         </NuxtLink>
         <!-- Shastho Sheba (Coming Soon) - Disabled appearance -->
@@ -404,14 +480,18 @@
             class="absolute top-1 right-1 bg-gray-400 text-white text-[8px] px-0.5 rounded-sm"
             >Coming Soon</span
           >
-        </div>          <!-- Mobile Recharge -->
-        <NuxtLink 
-          to="/mobile-recharge" 
+        </div>
+        <!-- Mobile Recharge -->
+        <NuxtLink
+          to="/mobile-recharge"
           class="mobile-btn bg-white"
           @click="handleButtonClick('mobile-mobile-recharge')"
         >
           <div class="mobile-icon-circle bg-orange-50">
-            <div v-if="loadingButtons.has('mobile-mobile-recharge')" class="dotted-spinner mobile orange"></div>
+            <div
+              v-if="loadingButtons.has('mobile-mobile-recharge')"
+              class="dotted-spinner mobile orange"
+            ></div>
             <Smartphone v-else class="mobile-icon text-orange-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -421,13 +501,16 @@
           </div>
         </NuxtLink>
         <!-- Transactions -->
-        <NuxtLink 
-          to="/deposit-withdraw" 
+        <NuxtLink
+          to="/deposit-withdraw"
           class="mobile-btn bg-white"
           @click="handleButtonClick('mobile-transactions')"
         >
           <div class="mobile-icon-circle bg-lime-50">
-            <div v-if="loadingButtons.has('mobile-transactions')" class="dotted-spinner mobile lime"></div>
+            <div
+              v-if="loadingButtons.has('mobile-transactions')"
+              class="dotted-spinner mobile lime"
+            ></div>
             <CreditCard v-else class="mobile-icon text-lime-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -438,13 +521,16 @@
         </NuxtLink>
 
         <!-- Membership -->
-        <NuxtLink 
-          to="/upgrade-to-pro" 
+        <NuxtLink
+          to="/upgrade-to-pro"
           class="mobile-btn bg-white"
           @click="handleButtonClick('mobile-membership')"
         >
           <div class="mobile-icon-circle bg-pink-50">
-            <div v-if="loadingButtons.has('mobile-membership')" class="dotted-spinner mobile pink"></div>
+            <div
+              v-if="loadingButtons.has('mobile-membership')"
+              class="dotted-spinner mobile pink"
+            ></div>
             <User v-else class="mobile-icon text-pink-600" />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -494,9 +580,12 @@ const handleButtonClick = (buttonId) => {
 
 // Watch for route changes to clear loading states
 const route = useRoute();
-watch(() => route.path, () => {
-  loadingButtons.value.clear();
-});
+watch(
+  () => route.path,
+  () => {
+    loadingButtons.value.clear();
+  }
+);
 
 // Sample slider images - replace with your actual images
 const sliderImages = ref([]);
@@ -568,10 +657,13 @@ const handleTouchMove = (e) => {
   // Calculate horizontal and vertical differences
   const swipeDiffX = touchEndX - touchStartX;
   const swipeDiffY = touchEndY - touchStartY;
-  
+
   // Only prevent default for horizontal swipes that are more horizontal than vertical
   // This allows vertical swipes (pull-to-refresh) to work normally
-  if (Math.abs(swipeDiffX) > 30 && Math.abs(swipeDiffX) > Math.abs(swipeDiffY)) {
+  if (
+    Math.abs(swipeDiffX) > 30 &&
+    Math.abs(swipeDiffX) > Math.abs(swipeDiffY)
+  ) {
     e.preventDefault(); // Only prevent for horizontal swipes
 
     // Add visual feedback with classes
@@ -594,7 +686,10 @@ const handleTouchEnd = () => {
   const minSwipeDistance = 50; // Minimum distance to consider it a swipe
 
   // Only handle horizontal swipes that are more horizontal than vertical
-  if (Math.abs(swipeDiffX) > Math.abs(swipeDiffY) && Math.abs(swipeDiffX) > minSwipeDistance) {
+  if (
+    Math.abs(swipeDiffX) > Math.abs(swipeDiffY) &&
+    Math.abs(swipeDiffX) > minSwipeDistance
+  ) {
     if (swipeDiffX > 0) {
       prevSlide(); // Swipe right = previous slide
     } else {
