@@ -40,7 +40,6 @@
                   v-if="banner.link"
                   :to="banner.link"
                   class="absolute inset-0 z-10 cursor-pointer"
-                  :external="banner.link.startsWith('http')"
                 ></NuxtLink>
 
                 <!-- Banner Image -->
