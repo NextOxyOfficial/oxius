@@ -56,7 +56,7 @@
               <img
                 :src="currentPopup?.image"
                 :alt="`Popup ${currentPopup.id}`"
-                class="w-full h-full object-cover rounded-t-2xl"
+                class="w-full h-full object-contain rounded-t-2xl"
                 @load="onPopupShown"
                 loading="eager"
                 crossorigin="anonymous"
