@@ -4,10 +4,10 @@
     <Teleport to="body">
       <div
         v-if="showPopup && currentPopup"
-        class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+        class="fixed inset-0 z-[80] flex items-center justify-center p-2 bg-black/50 backdrop-blur-sm animate-fade-in"
       >
         <div
-          class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl sm:max-w-3xl h-[45vh] sm:h-[40vh] w-full mx-4 overflow-hidden animate-scale-in"
+          class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl sm:max-w-3xl h-[45vh] w-full overflow-hidden animate-scale-in"
           @click.stop
         >
           <!-- Close Button -->
