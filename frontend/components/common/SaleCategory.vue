@@ -369,94 +369,186 @@
               </div>
             </div>
           </div>
-        </div>
+        </div>        <!-- Display actual posts from the database -->
+        <div v-else-if="categoryPosts.length > 0">
+          <!-- Mobile: Horizontal scrollable row showing 5 random posts -->
+          <div class="block md:hidden">
+            <div 
+              class="flex gap-3 overflow-x-auto pb-4"
+              style="scrollbar-width: none; -ms-overflow-style: none;"
+              ref="mobilePostsContainer"
+            >
+              <NuxtLink
+                v-for="post in randomMobilePosts"
+                :key="post.id"
+                :to="`/sale/${post.slug}`"
+                class="item-card bg-white rounded-lg transition-all overflow-hidden border border-gray-100 flex flex-col h-full transform flex-shrink-0"
+                style="width: 45vw; min-width: 160px;"
+              >
+                <div class="relative">
+                  <!-- Price overlay in top right -->
+                  <div class="absolute top-0 right-0 m-2 z-10">
+                    <div
+                      class="px-2 py-1 bg-primary text-white text-xs font-semibold rounded"
+                    >
+                      ৳{{ post.price ? post.price.toLocaleString() : "Negotiable" }}
+                    </div>
+                  </div>
 
-        <!-- Display actual posts from the database -->
-        <div
-          v-else-if="categoryPosts.length > 0"
-          class="grid grid-cols-2 md:grid-cols-5 gap-2"
-        >
-          <NuxtLink
-            v-for="post in categoryPosts"
-            :key="post.id"
-            :to="`/sale/${post.slug}`"
-            class="item-card bg-white rounded-lg transition-all overflow-hidden border border-gray-100 flex flex-col h-full transform"
-          >
-            <div class="relative">
-              <!-- Price overlay in top right -->
-              <div class="absolute top-0 right-0 m-2 z-10">
-                <div
-                  class="px-2 py-1 bg-primary text-white text-sm font-semibold rounded"
-                >
-                  ৳{{ post.price ? post.price.toLocaleString() : "Negotiable" }}
+                  <!-- Status badges in top left -->
+                  <div class="absolute top-0 left-0 m-2 z-10">
+                    <span
+                      v-if="post.featured"
+                      class="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded"
+                      >Featured</span
+                    >
+                    <span
+                      v-else-if="post.status === 'sold'"
+                      class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded"
+                      >Sold</span
+                    >
+                  </div>
+
+                  <!-- Image with gradient overlay -->
+                  <div class="h-32 overflow-hidden relative">
+                    <div
+                      class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-0"
+                    ></div>
+                    <img
+                      :src="post.main_image"
+                      :alt="post.title"
+                      class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <!-- Status badges in top left -->
-              <div class="absolute top-0 left-0 m-2 z-10">
-                <span
-                  v-if="post.featured"
-                  class="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded"
-                  >Featured</span
-                >
-                <span
-                  v-else-if="post.status === 'sold'"
-                  class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded"
-                  >Sold</span
-                >
-              </div>
+                <div class="p-2 flex-grow flex flex-col">
+                  <!-- Title with truncation -->
+                  <h4 class="font-medium text-gray-800 line-clamp-1 text-xs">
+                    {{ capitalizeTitle(post.title) }}
+                  </h4>
+                  <!-- Address with location icon -->
+                  <div class="flex items-start mt-1 mb-2 text-xs text-gray-600">
+                    <Icon
+                      name="heroicons:map-pin"
+                      class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-600"
+                    />
+                    <span class="line-clamp-1">
+                      {{
+                        post?.division && post?.district && post?.area
+                          ? `${post?.division}, ${post?.district}, ${post?.area}`
+                          : `All Over Bangladesh`
+                      }}
+                    </span>
+                  </div>
 
-              <!-- Image with gradient overlay -->
-              <div class="h-36 overflow-hidden relative">
-                <div
-                  class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-0"
-                ></div>
-                <img
-                  :src="post.main_image"
-                  :alt="post.title"
-                  class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
+                  <div class="mt-auto flex justify-between items-center pt-1">
+                    <!-- Condition tag -->
+                    <div
+                      class="text-xs text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-full"
+                    >
+                      {{ post.condition }}
+                    </div>
+
+                    <!-- Date or other secondary info -->
+                    <div class="text-xs text-gray-600 flex items-center">
+                      <Icon
+                        name="heroicons:clock"
+                        class="h-3 w-3 mr-1 text-gray-600"
+                      />
+                      {{ formatDate(post.created_at) }}
+                    </div>
+                  </div>
+                </div>
+              </NuxtLink>
             </div>
+          </div>          <!-- Desktop: Grid layout -->
+          <div class="hidden md:block">
+            <div class="grid grid-cols-5 gap-2">
+              <NuxtLink
+                v-for="post in categoryPosts"
+                :key="post.id"
+                :to="`/sale/${post.slug}`"
+                class="item-card bg-white rounded-lg transition-all overflow-hidden border border-gray-100 flex flex-col h-full transform"
+              >
+                <div class="relative">
+                  <!-- Price overlay in top right -->
+                  <div class="absolute top-0 right-0 m-2 z-10">
+                    <div
+                      class="px-2 py-1 bg-primary text-white text-sm font-semibold rounded"
+                    >
+                      ৳{{ post.price ? post.price.toLocaleString() : "Negotiable" }}
+                    </div>
+                  </div>
 
-            <div class="p-3 flex-grow flex flex-col">
-              <!-- Title with truncation -->
-              <h4 class="font-medium text-gray-800 line-clamp-1 text-sm">
-                {{ capitalizeTitle(post.title) }}
-              </h4>
-              <!-- Address with location icon -->
-              <div class="flex items-start mt-1 mb-2 text-xs text-gray-600">
-                <Icon
-                  name="heroicons:map-pin"
-                  class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-600"
-                />
-                {{
-                  post?.division && post?.district && post?.area
-                    ? `${post?.division}, ${post?.district}, ${post?.area}`
-                    : `All Over Bangladesh`
-                }}
-              </div>
+                  <!-- Status badges in top left -->
+                  <div class="absolute top-0 left-0 m-2 z-10">
+                    <span
+                      v-if="post.featured"
+                      class="bg-yellow-500 text-white text-xs px-2 py-0.5 rounded"
+                      >Featured</span
+                    >
+                    <span
+                      v-else-if="post.status === 'sold'"
+                      class="bg-blue-500 text-white text-xs px-2 py-0.5 rounded"
+                      >Sold</span
+                    >
+                  </div>
 
-              <div class="mt-auto flex justify-between items-center pt-1">
-                <!-- Condition tag -->
-                <div
-                  class="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full"
-                >
-                  {{ post.condition }}
+                  <!-- Image with gradient overlay -->
+                  <div class="h-36 overflow-hidden relative">
+                    <div
+                      class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-0"
+                    ></div>
+                    <img
+                      :src="post.main_image"
+                      :alt="post.title"
+                      class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
                 </div>
 
-                <!-- Date or other secondary info -->
-                <div class="text-xs text-gray-600 flex items-center">
-                  <Icon
-                    name="heroicons:clock"
-                    class="h-3 w-3 mr-1 text-gray-600"
-                  />
-                  {{ formatDate(post.created_at) }}
+                <div class="p-3 flex-grow flex flex-col">
+                  <!-- Title with truncation -->
+                  <h4 class="font-medium text-gray-800 line-clamp-1 text-sm">
+                    {{ capitalizeTitle(post.title) }}
+                  </h4>
+                  <!-- Address with location icon -->
+                  <div class="flex items-start mt-1 mb-2 text-xs text-gray-600">
+                    <Icon
+                      name="heroicons:map-pin"
+                      class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-600"
+                    />
+                    {{
+                      post?.division && post?.district && post?.area
+                        ? `${post?.division}, ${post?.district}, ${post?.area}`
+                        : `All Over Bangladesh`
+                    }}
+                  </div>
+
+                  <div class="mt-auto flex justify-between items-center pt-1">
+                    <!-- Condition tag -->
+                    <div
+                      class="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full"
+                    >
+                      {{ post.condition }}
+                    </div>
+
+                    <!-- Date or other secondary info -->
+                    <div class="text-xs text-gray-600 flex items-center">
+                      <Icon
+                        name="heroicons:clock"
+                        class="h-3 w-3 mr-1 text-gray-600"
+                      />
+                      {{ formatDate(post.created_at) }}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </NuxtLink>
             </div>
-          </NuxtLink>
+          </div>
         </div>
 
         <!-- No posts found message -->
@@ -676,6 +768,24 @@ const categoryPosts = ref([]);
 const categoryPostsPage = ref(1);
 const categoryPostsLimit = ref(6); // Show only 6 posts initially
 const showAllCategoryPosts = ref(false);
+const mobilePostsContainer = ref(null);
+
+// Computed property to get 5 random posts for mobile display
+const randomMobilePosts = computed(() => {
+  if (categoryPosts.value.length === 0) return [];
+  
+  // Create a copy of the array to avoid mutating the original
+  const shuffled = [...categoryPosts.value];
+  
+  // Fisher-Yates shuffle algorithm
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  
+  // Return only 5 posts
+  return shuffled.slice(0, 5);
+});
 
 const fetchCategoryPosts = async () => {
   if (!selectedCategory.value) return;
@@ -823,6 +933,28 @@ const capitalizeTitle = (title) => {
 .overflow-x-auto {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+}
+
+/* Mobile posts container specific scrollbar hiding */
+[ref="mobilePostsContainer"]::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ensure smooth scrolling on mobile */
+@media (max-width: 767px) {
+  .overflow-x-auto {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Line clamp utility */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* Animation for loading skeleton */
