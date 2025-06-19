@@ -58,7 +58,6 @@
                 :alt="`Popup ${currentPopup.id}`"
                 class="w-full h-full object-cover rounded-t-2xl"
                 @load="onPopupShown"
-                @error="onImageError"
                 loading="eager"
                 crossorigin="anonymous"
               />
