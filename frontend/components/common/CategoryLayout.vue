@@ -33,12 +33,16 @@
             >
               Just In
             </div>
-          </div>          <a
+          </div>
+          <a
             href="/eshop"
             class="text-emerald-600 hover:underline flex items-center text-sm font-medium"
             @click="handleButtonClick('view-all-eshop')"
           >
-            <div v-if="loadingButtons.has('view-all-eshop')" class="dotted-spinner emerald mr-2"></div>
+            <div
+              v-if="loadingButtons.has('view-all-eshop')"
+              class="dotted-spinner emerald mr-2"
+            ></div>
             <span v-else>{{ $t("view_all") }}</span>
             <svg
               v-if="!loadingButtons.has('view-all-eshop')"
@@ -61,13 +65,13 @@
         <div class="relative overflow-hidden">
           <div
             ref="arrivalsContainer"
-            class="flex space-x-2 overflow-x-auto pb-4 pt-2 px-2 -mx-2 hide-scrollbar snap-x arrivals-container"
+            class="flex space-x-2 overflow-x-auto pb-4 pt-2 px-2 -mx-2 hide-scrollbar arrivals-container"
           >
             <!-- Optimized New Arrivals Cards -->
             <div
               v-for="(card, index) in hotArrivals"
               :key="card.id"
-              class="flex-shrink-0 w-[26%] sm:w-[11%] bg-white rounded-lg overflow-hidden border border-gray-100 snap-start card-hover"
+              class="flex-shrink-0 w-[26%] sm:w-[11%] bg-white rounded-lg overflow-hidden border border-gray-100 card-hover"
             >
               <NuxtLink :to="`/eshop/category/${card.slug}`" class="block">
                 <div class="relative h-[70px] overflow-hidden rounded-t-lg">
@@ -121,9 +125,12 @@ const handleButtonClick = (buttonId) => {
 
 // Watch for route changes to clear loading states
 const route = useRoute();
-watch(() => route.path, () => {
-  loadingButtons.value.clear();
-});
+watch(
+  () => route.path,
+  () => {
+    loadingButtons.value.clear();
+  }
+);
 
 const hotArrivals = ref([]);
 
@@ -193,13 +200,7 @@ onUnmounted(() => {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
-.snap-x {
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-}
-.snap-start {
-  scroll-snap-align: start;
-}
+
 .card-hover {
   transition: transform 0.2s ease;
   cursor: pointer;
