@@ -34,8 +34,8 @@
               Just In
             </div>
           </div>
-          <a
-            href="/eshop"
+          <NuxtLink
+            to="/eshop"
             class="text-emerald-600 hover:underline flex items-center text-sm font-medium"
             @click="handleButtonClick('view-all-eshop')"
           >
@@ -59,7 +59,7 @@
             >
               <path d="m9 18 6-6-6-6" />
             </svg>
-          </a>
+          </NuxtLink>
         </div>
         <!-- Optimized card container -->
         <div class="relative overflow-hidden">

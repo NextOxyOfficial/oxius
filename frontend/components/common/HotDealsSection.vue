@@ -43,13 +43,13 @@
         <div class="flex-1 overflow-hidden">
           <div
             ref="hotDealsContainer"
-            class="flex py-2 space-x-3 overflow-x-auto hide-scrollbar snap-x hot-deals-container"
+            class="flex py-2 space-x-3 overflow-x-auto hide-scrollbar hot-deals-container"
           >
             <!-- Simplified Hot Deals Cards -->
             <div
               v-for="(deal, index) in specialDeals"
               :key="deal.id"
-              class="flex-shrink-0 w-24 sm:w-[13%] bg-white/90 rounded-lg overflow-hidden border border-white/50 snap-start card-hover"
+              class="flex-shrink-0 w-24 sm:w-[13%] bg-white/90 rounded-lg overflow-hidden border border-white/50 card-hover"
               @click="handleCardClick(deal)"
             >
               <NuxtLink :to="`/eshop/category/${deal.slug}`" class="block">
@@ -182,13 +182,7 @@ onUnmounted(() => {
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
-.snap-x {
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-}
-.snap-start {
-  scroll-snap-align: start;
-}
+
 .card-hover {
   transition: transform 0.2s ease;
   cursor: pointer;

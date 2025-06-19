@@ -104,7 +104,8 @@
                 </div>
               </div>
               <!-- Always show buttons, handle auth at page level -->
-              <div class="flex gap-2 sm:gap-3">                <!-- Marketplace Button - Enhanced (Outlined) -->
+              <div class="flex gap-2 sm:gap-3">
+                <!-- Marketplace Button - Enhanced (Outlined) -->
                 <NuxtLink
                   to="/sale"
                   class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium text-xs sm:text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
@@ -114,16 +115,22 @@
                   <div
                     class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   ></div>
-                  <div v-if="loadingButtons.has('marketplace')" class="dotted-spinner slate mr-1"></div>
+                  <div
+                    v-if="loadingButtons.has('marketplace')"
+                    class="dotted-spinner slate mr-1"
+                  ></div>
                   <Icon
                     v-else
                     name="heroicons:shopping-bag"
                     class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0"
                   />
-                  <span v-if="!loadingButtons.has('marketplace')" class="relative z-10 truncate">{{
-                    $t("marketplace")
-                  }}</span>
-                </NuxtLink>                <!-- My Posts Button - Enhanced (Navigate to page) - Only show for logged in users -->
+                  <span
+                    v-if="!loadingButtons.has('marketplace')"
+                    class="relative z-10 truncate"
+                    >{{ $t("marketplace") }}</span
+                  >
+                </NuxtLink>
+                <!-- My Posts Button - Enhanced (Navigate to page) - Only show for logged in users -->
                 <NuxtLink
                   v-if="user?.user"
                   to="/sale/my-posts"
@@ -135,16 +142,22 @@
                     class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   ></div>
 
-                  <div v-if="loadingButtons.has('my-posts')" class="dotted-spinner slate mr-1"></div>
+                  <div
+                    v-if="loadingButtons.has('my-posts')"
+                    class="dotted-spinner slate mr-1"
+                  ></div>
                   <Icon
                     v-else
                     name="heroicons:document-text"
                     class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0"
                   />
-                  <span v-if="!loadingButtons.has('my-posts')" class="relative z-10 truncate">{{
-                    $t("my_post")
-                  }}</span> </NuxtLink
-                >                <!-- Post Sale Button - Enhanced (Outlined) - Always visible -->
+                  <span
+                    v-if="!loadingButtons.has('my-posts')"
+                    class="relative z-10 truncate"
+                    >{{ $t("my_post") }}</span
+                  >
+                </NuxtLink>
+                <!-- Post Sale Button - Enhanced (Outlined) - Always visible -->
                 <NuxtLink
                   to="/sale/my-posts?tab=post-sale"
                   class="flex-shrink-0 group relative inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-medium text-xs sm:text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden"
@@ -155,15 +168,20 @@
                     class="absolute inset-0 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   ></div>
 
-                  <div v-if="loadingButtons.has('post-a-sale')" class="dotted-spinner emerald mr-1"></div>
+                  <div
+                    v-if="loadingButtons.has('post-a-sale')"
+                    class="dotted-spinner emerald mr-1"
+                  ></div>
                   <Icon
                     v-else
                     name="heroicons:plus-circle"
                     class="w-3 h-3 sm:w-4 sm:h-4 relative z-10 flex-shrink-0"
                   />
-                  <span v-if="!loadingButtons.has('post-a-sale')" class="relative z-10 truncate">{{
-                    $t("post_a_sale")
-                  }}</span>
+                  <span
+                    v-if="!loadingButtons.has('post-a-sale')"
+                    class="relative z-10 truncate"
+                    >{{ $t("post_a_sale") }}</span
+                  >
                 </NuxtLink>
               </div>
             </div>
@@ -341,14 +359,32 @@
             <h3 class="text-lg font-semibold">
               {{ getSelectedCategoryName() }}
             </h3>
-          </div>          <NuxtLink
+          </div>
+          <NuxtLink
             :to="`/sale`"
-            class="my-post-btn border border-emerald-600 hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center gap-1"
+            class="my-post-btn hover:bg-gray-50 rounded-md px-2 py-1 sm:px-3 sm:py-1.5 text-emerald-600 text-sm sm:text-sm flex items-center"
             @click="handleButtonClick('view-all-sale')"
           >
-            <div v-if="loadingButtons.has('view-all-sale')" class="dotted-spinner emerald mr-1"></div>
+            <div
+              v-if="loadingButtons.has('view-all-sale')"
+              class="dotted-spinner emerald mr-1"
+            ></div>
             <span v-else>{{ $t("view_all") }}</span>
-            <Icon v-if="!loadingButtons.has('view-all-sale')" name="heroicons:arrow-right" size="14px" />
+            <svg
+              v-if="!loadingButtons.has('view-all-eshop')"
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="ml-1"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
           </NuxtLink>
         </div>
 
@@ -369,13 +405,14 @@
               </div>
             </div>
           </div>
-        </div>        <!-- Display actual posts from the database -->
+        </div>
+        <!-- Display actual posts from the database -->
         <div v-else-if="categoryPosts.length > 0">
           <!-- Mobile: Horizontal scrollable row showing 5 random posts -->
           <div class="block md:hidden">
-            <div 
+            <div
               class="flex gap-3 overflow-x-auto pb-4"
-              style="scrollbar-width: none; -ms-overflow-style: none;"
+              style="scrollbar-width: none; -ms-overflow-style: none"
               ref="mobilePostsContainer"
             >
               <NuxtLink
@@ -383,7 +420,7 @@
                 :key="post.id"
                 :to="`/sale/${post.slug}`"
                 class="item-card bg-white rounded-lg transition-all overflow-hidden border border-gray-100 flex flex-col h-full transform flex-shrink-0"
-                style="width: 45vw; min-width: 160px;"
+                style="width: 45vw; min-width: 160px"
               >
                 <div class="relative">
                   <!-- Price overlay in top right -->
@@ -391,7 +428,9 @@
                     <div
                       class="px-2 py-1 bg-primary text-white text-xs font-semibold rounded"
                     >
-                      ৳{{ post.price ? post.price.toLocaleString() : "Negotiable" }}
+                      ৳{{
+                        post.price ? post.price.toLocaleString() : "Negotiable"
+                      }}
                     </div>
                   </div>
 
@@ -463,7 +502,8 @@
                 </div>
               </NuxtLink>
             </div>
-          </div>          <!-- Desktop: Grid layout -->
+          </div>
+          <!-- Desktop: Grid layout -->
           <div class="hidden md:block">
             <div class="grid grid-cols-5 gap-2">
               <NuxtLink
@@ -478,7 +518,9 @@
                     <div
                       class="px-2 py-1 bg-primary text-white text-sm font-semibold rounded"
                     >
-                      ৳{{ post.price ? post.price.toLocaleString() : "Negotiable" }}
+                      ৳{{
+                        post.price ? post.price.toLocaleString() : "Negotiable"
+                      }}
                     </div>
                   </div>
 
@@ -591,9 +633,12 @@ const handleButtonClick = (buttonId) => {
 
 // Watch for route changes to clear loading states
 const route = useRoute();
-watch(() => route.path, () => {
-  loadingButtons.value.clear();
-});
+watch(
+  () => route.path,
+  () => {
+    loadingButtons.value.clear();
+  }
+);
 
 // State for categories and banners now from API
 const categories = ref([]);
@@ -773,16 +818,16 @@ const mobilePostsContainer = ref(null);
 // Computed property to get 5 random posts for mobile display
 const randomMobilePosts = computed(() => {
   if (categoryPosts.value.length === 0) return [];
-  
+
   // Create a copy of the array to avoid mutating the original
   const shuffled = [...categoryPosts.value];
-  
+
   // Fisher-Yates shuffle algorithm
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  
+
   // Return only 5 posts
   return shuffled.slice(0, 5);
 });
