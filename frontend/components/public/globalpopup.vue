@@ -58,8 +58,6 @@
                 :alt="`Popup ${currentPopup.id}`"
                 class="w-full h-full object-contain rounded-t-2xl"
                 @load="onPopupShown"
-                loading="eager"
-                crossorigin="anonymous"
               />
             </NuxtLink>
           </div>
