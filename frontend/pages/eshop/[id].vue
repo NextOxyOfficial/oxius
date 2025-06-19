@@ -1,8 +1,10 @@
-<template>  
-<div class="bg-slate-100 mt-2 dark:bg-slate-900">
+<template>
+  <div class="bg-slate-100 mt-2 dark:bg-slate-900">
     <UContainer>
       <!-- 1. Banner Section -->
-      <div class="w-full h-48 md:h-64 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-t-xl md:rounded-t-2xl overflow-hidden">
+      <div
+        class="w-full h-48 md:h-64 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-t-xl md:rounded-t-2xl overflow-hidden relative"
+      >
         <img
           v-if="storeDetails?.store_banner"
           :src="storeDetails?.store_banner"
@@ -18,11 +20,17 @@
       </div>
 
       <!-- 2. Info Section (Logo + Details) -->
-      <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-b-xl md:rounded-b-2xl">
-        <div class="flex flex-col md:flex-row items-center md:items-start py-6 gap-6 px-4 sm:px-6 lg:px-8">
+      <div
+        class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-b-xl md:rounded-b-2xl"
+      >
+        <div
+          class="flex flex-col md:flex-row items-center md:items-start py-6 gap-6 px-4 sm:px-6 lg:px-8"
+        >
           <!-- Vendor Logo -->
           <div class="flex-shrink-0 -mt-16 md:-mt-20">
-            <div class="relative w-32 h-32 md:w-40 md:h-40 rounded-full bg-white dark:bg-slate-900 p-2 shadow-lg ring-4 ring-white dark:ring-slate-800">
+            <div
+              class="relative w-32 h-32 md:w-40 md:h-40 rounded-full bg-white dark:bg-slate-900 p-2 shadow-lg ring-4 ring-white dark:ring-slate-800"
+            >
               <img
                 v-if="storeDetails?.image"
                 :src="storeDetails?.image"
@@ -35,42 +43,74 @@
               >
                 {{ getInitials(storeDetails?.store_name || "Store") }}
               </div>
-              <div class="absolute bottom-1 right-1 md:bottom-2 md:right-2 w-8 h-8 bg-green-500 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center">
-                <UIcon name="i-heroicons-check-circle" class="w-5 h-5 text-white" />
+              <div
+                class="absolute bottom-1 right-1 md:bottom-2 md:right-2 w-8 h-8 bg-green-500 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center"
+              >
+                <UIcon
+                  name="i-heroicons-check-circle"
+                  class="w-5 h-5 text-white"
+                />
               </div>
             </div>
           </div>
 
           <!-- Store Details & Actions -->
-          <div class="flex-1 flex flex-col md:flex-row items-center md:items-start gap-6 w-full">
+          <div
+            class="flex-1 flex flex-col md:flex-row items-center md:items-start gap-6 w-full"
+          >
             <!-- Text Details -->
             <div class="flex-1 text-center md:text-left">
-              <div class="flex items-center justify-center md:justify-start gap-3 mb-1">
-                <h1 class="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white">
+              <div
+                class="flex items-center justify-center md:justify-start gap-3 mb-1"
+              >
+                <h1
+                  class="text-xl md:text-2xl font-semibold text-slate-900 dark:text-white"
+                >
                   {{ storeDetails?.store_name || "Store Name" }}
                 </h1>
-                <span class="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                <span
+                  class="bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 text-xs font-medium px-2.5 py-0.5 rounded-full"
+                >
                   Verified
                 </span>
               </div>
-              <p class="text-slate-500 dark:text-slate-400 mb-3 max-w-xl mx-auto md:mx-0">
-                {{ storeDetails?.store_description || "Your premium destination for quality products and excellent service." }}
-              </p>                <div class="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300">                <div class="flex items-center gap-1">
-                  <UIcon name="i-heroicons-star" class="w-4 h-4 text-yellow-500" />
+              <p
+                class="text-slate-500 dark:text-slate-400 mb-3 max-w-xl mx-auto md:mx-0"
+              >
+                {{
+                  storeDetails?.store_description ||
+                  "Your premium destination for quality products and excellent service."
+                }}
+              </p>
+              <div
+                class="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300"
+              >
+                <div class="flex items-center gap-1">
+                  <UIcon
+                    name="i-heroicons-star"
+                    class="w-4 h-4 text-yellow-500"
+                  />
                   <b>{{ storeDetails?.rating || 0 }}</b>
-                  <span v-if="!isLoadingReviews">({{ reviewsCount }} reviews)</span>
+                  <span v-if="!isLoadingReviews"
+                    >({{ reviewsCount }} reviews)</span
+                  >
                   <span v-else class="text-slate-400">(Loading...)</span>
-                </div>                <div class="flex items-center gap-1">
+                </div>
+                <div class="flex items-center gap-1">
                   <UIcon name="i-heroicons-cube" class="w-4 h-4" />
                   <b>{{ activeProductsCount }}</b>
                   <span>Products</span>
                 </div>
-                <div v-if="storeDetails?.store_address" class="flex items-center gap-1">
+                <div
+                  v-if="storeDetails?.store_address"
+                  class="flex items-center gap-1"
+                >
                   <UIcon name="i-heroicons-map-pin" class="w-4 h-4" />
                   <span>{{ storeDetails.store_address }}</span>
                 </div>
               </div>
-            </div>            <!-- Action Buttons -->
+            </div>
+            <!-- Action Buttons -->
             <div class="flex items-center gap-3 flex-shrink-0">
               <UButton
                 v-if="isOwner"
@@ -79,16 +119,21 @@
                 @click="$router.push('/shop-manager')"
               >
                 Manage Store
-              </UButton>              
+              </UButton>
               <UButton
                 v-if="storeDetails?.phone || storeDetails?.email"
                 :color="storeDetails?.phone ? 'blue' : 'gray'"
                 variant="solid"
-                :icon="storeDetails?.phone ? 'i-heroicons-phone' : 'i-heroicons-envelope'"
+                :icon="
+                  storeDetails?.phone
+                    ? 'i-heroicons-phone'
+                    : 'i-heroicons-envelope'
+                "
                 @click="handleContactClick"
               >
-                {{ storeDetails?.phone ? 'Call' : 'Email' }}
-              </UButton>              <UButton
+                {{ storeDetails?.phone ? "Call" : "Email" }}
+              </UButton>
+              <UButton
                 variant="outline"
                 icon="i-heroicons-share"
                 square
@@ -101,14 +146,15 @@
     </UContainer>
   </div>
 
-    <!-- Rest of the page content -->
-    <UContainer class="py-4 md:py-6 page-eshop">
-      <div class="min-h-screen">
-        <!-- Products Section with Improved Layout -->
-        <div class="grid grid-cols-12 gap-x-0 gap-y-3 md:gap-3">
+  <!-- Rest of the page content -->
+  <UContainer class="py-4 md:py-6 page-eshop">
+    <div class="min-h-screen">
+      <!-- Products Section with Improved Layout -->
+      <div class="grid grid-cols-12 gap-x-0 gap-y-3 md:gap-3">
         <!-- Mobile Search Bar - Visible only on small screens -->
         <div class="col-span-12 md:hidden">
-          <div class="relative">            <input
+          <div class="relative">
+            <input
               type="text"
               v-model="searchValue"
               class="w-full bg-white border border-gray-200 rounded-lg py-2.5 pl-10 pr-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300"
@@ -127,7 +173,8 @@
 
         <!-- Mobile Categories Horizontal Scroll - Visible only on small screens -->
         <div class="col-span-12 md:hidden mt-2">
-          <div class="flex overflow-x-auto gap-2 pb-1.5 hide-scrollbar">            <button
+          <div class="flex overflow-x-auto gap-2 pb-1.5 hide-scrollbar">
+            <button
               @click="selectedCategory = null"
               class="flex-shrink-0 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap text-sm"
               :class="
@@ -137,7 +184,7 @@
               "
             >
               All Products ({{ activeProductsCount }})
-            </button>            
+            </button>
             <button
               v-for="category in uniqueCategories"
               :key="category.id"
@@ -148,13 +195,18 @@
                   ? 'bg-indigo-100 text-indigo-800 font-medium'
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
               "
-            >              <div class="flex-shrink-0 mr-1.5">
+            >
+              <div class="flex-shrink-0 mr-1.5">
                 <img
                   v-if="category.image"
                   :src="category.image"
                   :alt="category.name"
                   class="h-4 w-4 rounded object-cover border border-gray-200"
-                  @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='inline-block'"
+                  @error="
+                    $event.target.style.display = 'none';
+                    $event.target.nextElementSibling.style.display =
+                      'inline-block';
+                  "
                 />
                 <UIcon
                   name="i-heroicons-tag"
@@ -176,7 +228,8 @@
                 <h3 class="font-medium text-gray-800">Search Products</h3>
               </div>
               <div class="p-5">
-                <div class="relative">                  <input
+                <div class="relative">
+                  <input
                     type="text"
                     v-model="searchValue"
                     class="w-full bg-gray-50 border border-gray-200 rounded-md py-2.5 pl-9 pr-3 text-sm focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 focus:outline-none transition-all"
@@ -238,7 +291,8 @@
                         class="h-4 w-4 mr-2 opacity-75"
                       />
                       All Products
-                    </span>                    <span
+                    </span>
+                    <span
                       class="px-2 py-0.5 rounded-md text-xs bg-white shadow-sm border border-gray-100"
                     >
                       {{ activeProductsCount }}
@@ -255,13 +309,19 @@
                         ? 'bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 font-medium shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50'
                     "
-                  >                    <span class="truncate mr-1 flex items-center">                      <div class="flex-shrink-0 mr-2">
+                  >
+                    <span class="truncate mr-1 flex items-center">
+                      <div class="flex-shrink-0 mr-2">
                         <img
                           v-if="category.image"
                           :src="category.image"
                           :alt="category.name"
                           class="h-4 w-4 rounded object-cover border border-gray-200"
-                          @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='inline-block'"
+                          @error="
+                            $event.target.style.display = 'none';
+                            $event.target.nextElementSibling.style.display =
+                              'inline-block';
+                          "
                         />
                         <UIcon
                           name="i-heroicons-tag"
@@ -498,15 +558,18 @@
         <!-- Main Content: Product Grid -->
         <div class="col-span-12 md:col-span-8 lg:col-span-9">
           <!-- Products Header -->
-          <div class="flex items-center justify-between mb-4 md:mb-6">            <div>
+          <div class="flex items-center justify-between mb-4 md:mb-6">
+            <div>
               <h2 class="text-lg md:text-xl font-bold text-gray-800">
                 {{ getCategoryName(selectedCategory) }}
                 <span class="text-sm font-normal text-gray-600 ml-2"
-                  >({{ filteredProducts.length }}{{ searchValue ? ' found' : '' }})</span
+                  >({{ filteredProducts.length
+                  }}{{ searchValue ? " found" : "" }})</span
                 >
               </h2>
               <p v-if="searchValue" class="text-sm text-gray-500 mt-1">
-                Searching for "<span class="font-medium">{{ searchValue }}</span>"
+                Searching for "<span class="font-medium">{{ searchValue }}</span
+                >"
               </p>
             </div>
 
@@ -555,28 +618,32 @@
                   class="h-6 w-6 md:h-8 md:w-8 text-gray-400"
                 />
               </div>
-            </div>            <h3 class="mt-4 text-base md:text-lg font-medium text-gray-800">
-              {{ searchValue ? 'No Search Results' : 'No Products Found' }}
+            </div>
+            <h3 class="mt-4 text-base md:text-lg font-medium text-gray-800">
+              {{ searchValue ? "No Search Results" : "No Products Found" }}
             </h3>
             <p class="mt-2 text-sm md:text-base text-gray-600 max-w-md mx-auto">
-              {{ searchValue 
-                ? `We couldn't find any products matching "${searchValue}". Try a different search term or browse categories.`
-                : 'We couldn\'t find any products matching your current selection. Try changing your search or selecting a different category.'
+              {{
+                searchValue
+                  ? `We couldn't find any products matching "${searchValue}". Try a different search term or browse categories.`
+                  : "We couldn't find any products matching your current selection. Try changing your search or selecting a different category."
               }}
-            </p><UButton
+            </p>
+            <UButton
               v-if="searchValue || selectedCategory"
               color="gray"
-              variant="soft"              
+              variant="soft"
               class="mt-5 md:mt-6"
               @click="clearFilters"
             >
-              Clear Filters            
-            </UButton>          
-          </div>        
-        </div>        
+              Clear Filters
+            </UButton>
+          </div>
+        </div>
       </div>
-      </div> <!-- Close min-h-screen div -->
-    </UContainer>
+    </div>
+    <!-- Close min-h-screen div -->
+  </UContainer>
 </template>
 
 <script setup>
@@ -698,7 +765,9 @@ const handleContactClick = () => {
     window.location.href = `tel:${storeDetails.value.phone}`;
   } else if (storeDetails.value?.email) {
     // Send email
-    const subject = encodeURIComponent(`Business Inquiry for ${storeDetails.value.store_name || 'Store'}`);
+    const subject = encodeURIComponent(
+      `Business Inquiry for ${storeDetails.value.store_name || "Store"}`
+    );
     window.location.href = `mailto:${storeDetails.value.email}?subject=${subject}`;
   }
 };
@@ -706,9 +775,11 @@ const handleContactClick = () => {
 // Handle share button click
 const handleShareClick = async () => {
   const shareData = {
-    title: storeDetails.value?.store_name || 'Check out this store',
-    text: `Visit ${storeDetails.value?.store_name || 'this amazing store'} on our platform!`,
-    url: window.location.href
+    title: storeDetails.value?.store_name || "Check out this store",
+    text: `Visit ${
+      storeDetails.value?.store_name || "this amazing store"
+    } on our platform!`,
+    url: window.location.href,
   };
 
   try {
@@ -725,7 +796,7 @@ const handleShareClick = async () => {
       });
     }
   } catch (error) {
-    if (error.name !== 'AbortError') {
+    if (error.name !== "AbortError") {
       // Try clipboard as final fallback
       try {
         await navigator.clipboard.writeText(window.location.href);
@@ -747,7 +818,7 @@ const handleShareClick = async () => {
 
 // Clear all filters function
 const clearFilters = () => {
-  searchValue.value = '';
+  searchValue.value = "";
   selectedCategory.value = null;
 };
 
@@ -769,22 +840,24 @@ const uniqueCategories = computed(() => {
   const map = new Map();
 
   // Only process active products
-  products.value.filter(product => product.is_active).forEach((product) => {
-    if (Array.isArray(product.category_details)) {
-      product.category_details.forEach((category) => {
-        if (category && !map.has(category.id)) {
-          map.set(category.id, true);
-          categories.push(category);
-        }
-      });
-    } else if (
-      product.category_details &&
-      !map.has(product.category_details.id)
-    ) {
-      map.set(product.category_details.id, true);
-      categories.push(product.category_details);
-    }
-  });
+  products.value
+    .filter((product) => product.is_active)
+    .forEach((product) => {
+      if (Array.isArray(product.category_details)) {
+        product.category_details.forEach((category) => {
+          if (category && !map.has(category.id)) {
+            map.set(category.id, true);
+            categories.push(category);
+          }
+        });
+      } else if (
+        product.category_details &&
+        !map.has(product.category_details.id)
+      ) {
+        map.set(product.category_details.id, true);
+        categories.push(product.category_details);
+      }
+    });
 
   return categories;
 });
@@ -792,30 +865,35 @@ const uniqueCategories = computed(() => {
 // Get count of active products
 const activeProductsCount = computed(() => {
   if (!products.value || products.value.length === 0) return 0;
-  return products.value.filter(product => product.is_active).length;
+  return products.value.filter((product) => product.is_active).length;
 });
 
 // Get count of active products by category
 const getProductCountByCategory = (categoryId) => {
   if (!products.value || products.value.length === 0) return 0;
-  
-  return products.value.filter(product => {
+
+  return products.value.filter((product) => {
     // Only count active products
     if (!product.is_active) return false;
-    
+
     // Handle array of categories
     if (Array.isArray(product.category_details)) {
-      return product.category_details.some(category => category && category.id === categoryId);
+      return product.category_details.some(
+        (category) => category && category.id === categoryId
+      );
     }
     // Handle single category object
-    else if (product.category_details && product.category_details.id === categoryId) {
+    else if (
+      product.category_details &&
+      product.category_details.id === categoryId
+    ) {
       return true;
     }
     // Fallback: check if category is a direct property
     else if (product.category === categoryId) {
       return true;
     }
-    
+
     return false;
   }).length;
 };
@@ -823,33 +901,38 @@ const getProductCountByCategory = (categoryId) => {
 // Get category name by ID for display
 const getCategoryName = (categoryId) => {
   if (!categoryId) return "All Products";
-  
+
   // Find the category in uniqueCategories
-  const category = uniqueCategories.value.find(cat => cat.id === categoryId);
+  const category = uniqueCategories.value.find((cat) => cat.id === categoryId);
   return category ? category.name : "Category";
 };
 
 // Filter products by selected category
 const filteredProducts = computed(() => {
   // Start with only active products
-  let result = products.value.filter(product => product.is_active);
+  let result = products.value.filter((product) => product.is_active);
 
   // Filter by category if selected
   if (selectedCategory.value) {
     result = result.filter((product) => {
       // Handle array of categories
       if (Array.isArray(product.category_details)) {
-        return product.category_details.some(category => category && category.id === selectedCategory.value);
+        return product.category_details.some(
+          (category) => category && category.id === selectedCategory.value
+        );
       }
       // Handle single category object
-      else if (product.category_details && product.category_details.id === selectedCategory.value) {
+      else if (
+        product.category_details &&
+        product.category_details.id === selectedCategory.value
+      ) {
         return true;
       }
       // Fallback: check if category is a direct property
       else if (product.category === selectedCategory.value) {
         return true;
       }
-      
+
       return false;
     });
   }
@@ -864,10 +947,11 @@ const filteredProducts = computed(() => {
         product.regular_price?.toString().includes(searchTerm) ||
         product.sale_price?.toString().includes(searchTerm) ||
         // Search in category names
-        (Array.isArray(product.category_details) 
-          ? product.category_details.some(cat => cat.name?.toLowerCase().includes(searchTerm))
-          : product.category_details?.name?.toLowerCase().includes(searchTerm)
-        )
+        (Array.isArray(product.category_details)
+          ? product.category_details.some((cat) =>
+              cat.name?.toLowerCase().includes(searchTerm)
+            )
+          : product.category_details?.name?.toLowerCase().includes(searchTerm))
     );
   }
 
@@ -888,7 +972,7 @@ watch(searchValue, (newValue) => {
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
-  
+
   // Set new timeout for debounced search
   searchTimeout = setTimeout(() => {
     console.log("Live search for:", newValue);
@@ -903,29 +987,35 @@ onMounted(async () => {
   // Keyboard shortcut for search
   const handleKeyboard = (event) => {
     // Ctrl+K or Cmd+K to focus search
-    if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+    if ((event.ctrlKey || event.metaKey) && event.key === "k") {
       event.preventDefault();
-      const searchInput = document.querySelector('input[placeholder*="Search"], input[placeholder*="Find"]');
+      const searchInput = document.querySelector(
+        'input[placeholder*="Search"], input[placeholder*="Find"]'
+      );
       if (searchInput) {
         searchInput.focus();
       }
     }
     // Escape to clear search
-    if (event.key === 'Escape' && searchValue.value) {
-      searchValue.value = '';
+    if (event.key === "Escape" && searchValue.value) {
+      searchValue.value = "";
     }
   };
 
-  document.addEventListener('keydown', handleKeyboard);
-  
+  document.addEventListener("keydown", handleKeyboard);
+
   // Clean up
   onUnmounted(() => {
-    document.removeEventListener('keydown', handleKeyboard);
+    document.removeEventListener("keydown", handleKeyboard);
   });
-  
+
   // Existing onMounted code
   // Get initial data
-  await Promise.all([getStoreDetails(), getMyProducts(), getStoreReviewsCount()]);
+  await Promise.all([
+    getStoreDetails(),
+    getMyProducts(),
+    getStoreReviewsCount(),
+  ]);
 
   // If there's only one category, auto-select it
   if (uniqueCategories.value.length === 1) {
@@ -937,7 +1027,8 @@ onMounted(async () => {
     root: null,
     rootMargin: "0px",
     threshold: 0.2,
-  };  const sectionObserver = new IntersectionObserver((entries) => {
+  };
+  const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.target === categoriesRef.value) {
         visibleSections.categories = entry.isIntersecting;
