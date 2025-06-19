@@ -54,7 +54,7 @@
               class="block w-full h-full hover:cursor-pointer"
             >
               <img
-                :src="getImageUrl(currentPopup.image)"
+                :src="currentPopup?.image"
                 :alt="`Popup ${currentPopup.id}`"
                 class="w-full h-full object-cover rounded-t-2xl"
                 @load="onPopupShown"
