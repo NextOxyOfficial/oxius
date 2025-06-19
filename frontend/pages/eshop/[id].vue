@@ -2,7 +2,7 @@
 <div class="bg-slate-100 mt-2 dark:bg-slate-900">
     <UContainer>
       <!-- 1. Banner Section -->
-      <div class="w-full h-48 md:h-64 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 relative rounded-t-xl md:rounded-t-2xl overflow-hidden">
+      <div class="w-full h-48 md:h-64 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-t-xl md:rounded-t-2xl overflow-hidden">
         <img
           v-if="storeDetails?.store_banner"
           :src="storeDetails?.store_banner"
@@ -15,7 +15,6 @@
           alt="Vendor banner"
           class="absolute inset-0 w-full h-full object-cover opacity-50"
         />
-        <div class="absolute inset-0 bg-black/20"></div>
       </div>
 
       <!-- 2. Info Section (Logo + Details) -->
