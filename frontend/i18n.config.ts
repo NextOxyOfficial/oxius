@@ -303,6 +303,7 @@ export default defineI18nConfig(() => ({
       explore_features: "Explore Features",      
       // Sale category translations
       my_post: "My Posts",
+      read_less: "Read Less",
       post_a_sale: "Post a Sale",
       no_listings_found: "No listings found",
       no_items_currently_listed: "There are no items currently listed in this category",
@@ -554,6 +555,7 @@ export default defineI18nConfig(() => ({
       batch: "ব্যাচ",
 
       subject: "বিষয়",
+      read_less: "ছোট করুন",
       videos: "ভিডিও",
       ssc: "এসএসসি",
       hsc: "এইচএসসি",

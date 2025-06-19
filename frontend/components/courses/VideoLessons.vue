@@ -1,5 +1,5 @@
 <template>
-  <div v-if="subject" class="bg-white rounded-lg shadow-md p-4 mt-3">
+  <div v-if="subject" class="bg-white rounded-lg shadow-md p-1 mt-3">
     <!-- Subscription Status Indicator -->
     <div v-if="getSubscriptionStatus.status !== 'pro'" class="mb-4">
       <div

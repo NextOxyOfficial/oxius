@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="submitForm" class="space-y-6">
     <!-- Basic Details Section -->
-    <div class="bg-white rounded-b-lg border border-gray-200 p-6">
+    <div class="bg-white rounded-b-lg border border-gray-200 sm:p-6 p-2">
       <h3
         class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
       >
@@ -249,7 +249,7 @@
         class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
       >
         <UIcon name="i-heroicons-map-pin" class="text-emerald-600" />
-        Location
+        Ads Showing Location
       </h3>
 
       <UCheckbox
@@ -326,7 +326,14 @@
           />
         </UFormGroup>
       </div>
-
+      <div class="mt-5">
+        <h3
+        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
+      >
+        <UIcon name="i-heroicons-map-pin" class="text-emerald-600" />
+        Product/Property/Service Address
+      </h3>
+      </div>
       <UFormGroup
         label="Detailed Address"
         required
@@ -335,7 +342,6 @@
           checkSubmit &&
           'You must provide a detailed address!'
         "
-        class="mt-4"
       >
         <UTextarea
           v-model="formData.detailedAddress"

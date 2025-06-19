@@ -11,7 +11,7 @@ from .serializers import (
     ReviewSerializer, ReviewCreateSerializer, 
     ProductRatingStatsSerializer, ReviewHelpfulSerializer
 )
-from base.models import Product
+from base.models import Product, User
 
 
 class ReviewPagination(PageNumberPagination):
@@ -203,6 +203,26 @@ def store_reviews_count(request):
     ).count()
     
     return Response({'count': count})
+
+
+@api_view(['GET'])
+def public_store_reviews_count(request, store_username):
+    """
+    Get the total count of reviews for products owned by any store (public endpoint)
+    """
+    try:
+        # Get the store owner by store_username
+        store_owner = get_object_or_404(User, store_username=store_username)
+        
+        # Count reviews for products owned by this store
+        count = Review.objects.filter(
+            product__owner=store_owner,
+            is_approved=True
+        ).count()
+        
+        return Response({'count': count})
+    except User.DoesNotExist:
+        return Response({'error': 'Store not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 # Create your views here.

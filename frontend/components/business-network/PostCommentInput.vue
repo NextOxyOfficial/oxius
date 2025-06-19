@@ -1,58 +1,57 @@
-<template>
-  <div
-    class="flex items-start gap-2.5 mt-4 pt-3 border-t border-gray-100/60 dark:border-slate-700/40 px-2"
+<template>  
+<div
+    class="flex items-start pt-3 border-t border-gray-100/60 dark:border-slate-700/40 px-2 sm:px-4 lg:px-6"
   >    <!-- User avatar with enhanced styling -->
-    <div class="relative group flex-shrink-0">
+    <div class="relative group flex-shrink-0 mr-2 sm:mr-3">
       <img
         :src="user?.user?.image"
         alt="Your avatar"
-        class="size-9 rounded-full mt-1.5 object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:shadow-sm transition-all duration-300 avatar-mobile"
+        class="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-full mt-1.5 object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:shadow-sm transition-all duration-300 avatar-mobile"
       />
       <!-- Subtle glow effect on hover -->
       <div
         class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-blue-500/10 blur-md -z-10"
       ></div>
-    </div>
-    <!-- Comment input with glassmorphism and inline mention display -->
-    <div class="flex items-center gap-1 flex-1 relative">
+    </div>    <!-- Comment input with glassmorphism and inline mention display -->
+    <div class="flex items-center gap-1 sm:gap-2 flex-1 relative">
       <div class="relative group flex-1">
         <!-- Enhanced input container with mention chips inside -->
         <div
-          class="relative min-h-[42px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]"
+          class="relative min-h-[40px] sm:min-h-[42px] lg:min-h-[44px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-xl sm:rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]"
         >
           <!-- Content wrapper with inline editing capability -->
-          <div class="flex items-center gap-1.5 px-3 min-h-[38px]">
+          <div class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 lg:px-4 min-h-[36px] sm:min-h-[38px] lg:min-h-[40px]">
             <!-- Contenteditable div for inline mentions and text -->
             <div
               ref="commentInputRef"
               contenteditable="true"
-              class="flex-1 min-w-[120px] pt-2 text-sm bg-transparent border-none outline-none text-gray-800 dark:text-gray-300 leading-5 max-h-[120px] overflow-y-auto no-scrollbar comment-input-editable"
+              class="flex-1 min-w-[80px] sm:min-w-[120px] pt-2 text-sm lg:text-base bg-transparent border-none outline-none text-gray-800 dark:text-gray-300 leading-5 max-h-[100px] sm:max-h-[120px] lg:max-h-[140px] overflow-y-auto no-scrollbar comment-input-editable"
               :style="{ minHeight: '20px' }"
               @input="handleContentEditableInput"
               @focus="post.showCommentInput = true"
               @keydown="handleKeydown"
               @keyup="handleKeyup"
               @paste="handlePaste"
-              data-placeholder="Add a comment... (Type @ to mention users)"
+              :data-placeholder="isMobile ? 'Add comment...' : 'Add a comment... (Type @ to mention users)'"
             ></div>
             <!-- Action buttons positioned inline with the text -->
             <div
               v-if="hasContent"
-              class="flex items-center gap-1 ml-2 self-end"
+              class="flex items-center gap-0.5 sm:gap-1 ml-1 sm:ml-2 self-end"
             >
               <button
-                class="p-1.5 rounded-full text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
+                class="p-1 sm:p-1.5 rounded-full text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100/80 dark:hover:bg-slate-700/80 transition-all duration-300"
                 @click="clearComment"
                 aria-label="Clear comment"
               >
-                <UIcon name="i-heroicons-x-mark" class="h-4 w-4" />
+                <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </button>
               <button
-                class="p-1.5 rounded-full bg-blue-500/90 hover:bg-blue-600 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300 relative"
+                class="p-1 sm:p-1.5 rounded-full bg-blue-500/90 hover:bg-blue-600 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300 relative"
                 @click="handlePostComment"
                 aria-label="Post comment"
               >
-                <Send class="h-4 w-4" />
+                <Send class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <!-- Subtle glow effect -->
                 <div
                   class="absolute inset-0 rounded-full bg-blue-400/50 blur-md opacity-0 hover:opacity-60 transition-opacity duration-300 -z-10"
@@ -63,20 +62,18 @@
 
           <!-- Subtle gradient line under input on focus -->
           <div
-            class="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 focus-within:scale-x-100 transition-transform duration-300"
+            class="absolute bottom-0 left-3 right-3 sm:left-4 sm:right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 focus-within:scale-x-100 transition-transform duration-300"
           ></div>
         </div>
-      </div>
-
-      <!-- Gift button moved outside of input -->
-      <div class="relative" v-if="post.author_details.id !== user?.user?.id">
+      </div>      <!-- Gift button moved outside of input -->
+      <div class="relative ml-1 sm:ml-2" v-if="post.author_details.id !== user?.user?.id">
         <button
           ref="giftButtonRef"
-          class="px-2 pt-2 rounded-full text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 bg-pink-50/80 dark:bg-pink-900/20 hover:bg-pink-100/80 dark:hover:bg-pink-900/30 transition-all duration-300 shadow-sm hover:shadow"
+          class="px-1.5 sm:px-2 pt-1.5 sm:pt-2 rounded-full text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 bg-pink-50/80 dark:bg-pink-900/20 hover:bg-pink-100/80 dark:hover:bg-pink-900/30 transition-all duration-300 shadow-sm hover:shadow"
           aria-label="Send Gift"
           @click="toggleDiamondDropup"
         >
-          <UIcon name="i-streamline-gift-2" class="size-5" />
+          <UIcon name="i-streamline-gift-2" class="w-4 h-4 sm:w-5 sm:h-5" />
           <span v-if="showDiamondDropup" class="sr-only"
             >Close diamond purchase</span
           >
@@ -86,7 +83,7 @@
         <div
           v-if="showDiamondDropup"
           ref="dropupRef"
-          class="absolute right-0 bottom-full mb-2 w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-sm border border-pink-100/60 dark:border-pink-900/30 z-30 animate-fade-in-up diamond-dropup overflow-hidden"
+          class="absolute right-0 bottom-full mb-2 w-72 sm:w-80 lg:w-96 bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg rounded-xl shadow-sm border border-pink-100/60 dark:border-pink-900/30 z-30 animate-fade-in-up diamond-dropup overflow-hidden max-h-[90vh] overflow-y-auto"
         >
           <!-- Main gift interface -->
           <div v-if="!showBuyDiamonds" class="pt-2 pb-3">
@@ -397,12 +394,12 @@
             </div>
           </div>
         </div>
-      </div>
-      <!-- Mention suggestions dropdown with enhanced glassmorphism -->
+      </div>      <!-- Mention suggestions dropdown with enhanced glassmorphism -->
       <div
         v-if="showMentions"
         ref="mentionDropdownRef"
-        class="absolute left-0 bottom-full mb-2 w-72 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 z-20 max-h-64 overflow-y-auto animate-fade-in-up premium-shadow no-scrollbar"
+        class="absolute left-0 bottom-full mb-2 w-64 sm:w-72 lg:w-80 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-lg shadow-sm border border-gray-100/50 dark:border-slate-700/50 z-20 max-h-48 sm:max-h-64 lg:max-h-72 overflow-y-auto animate-fade-in-up premium-shadow no-scrollbar"
+        :class="{ 'mention-dropdown-mobile': isMobile }"
       >
         <div class="py-2">
           <!-- Show loading state when searching -->
@@ -554,6 +551,27 @@ const { get, post: postApi } = useApi();
 const { user, jwtLogin } = useAuth();
 const router = useRouter();
 const toast = useToast();
+
+// Mobile detection
+const isMobile = ref(false);
+
+// Check if device is mobile
+const checkMobile = () => {
+  if (process.client) {
+    isMobile.value = window.innerWidth < 640; // sm breakpoint
+  }
+};
+
+onMounted(() => {
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+});
+
+onBeforeUnmount(() => {
+  if (process.client) {
+    window.removeEventListener('resize', checkMobile);
+  }
+});
 
 // Add ref for the comment input
 const commentInputRef = ref(null);
@@ -1824,24 +1842,92 @@ const emit = defineEmits([
 @media (max-width: 640px) {
   .mention-chip {
     font-size: 0.7rem;
-    padding: 0.375rem 0.75rem;
+    padding: 0.25rem 0.5rem;
+    margin: 0.125rem 0.25rem 0.125rem 0;
   }
   
   /* Ensure avatar is always visible on mobile */
   .relative.group.flex-shrink-0 {
-    min-width: 36px !important;
-    width: 36px !important;
+    min-width: 32px !important;
+    width: 32px !important;
     flex-shrink: 0 !important;
   }
   
   .avatar-mobile {
-    width: 36px !important;
-    height: 36px !important;
+    width: 32px !important;
+    height: 32px !important;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     position: relative !important;
     z-index: 10 !important;
+  }
+
+  /* Adjust comment input on mobile */
+  .comment-input-editable {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+    padding-top: 0.5rem !important;
+  }
+
+  /* Mobile gift dropdown positioning */
+  .diamond-dropup {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90vw !important;
+    max-width: 320px !important;
+    max-height: 80vh !important;
+    margin: 0 !important;
+  }
+  /* Mobile padding adjustments */
+  .flex.items-start.pt-3 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* Mobile mention dropdown */
+  .mention-dropdown-mobile {
+    position: fixed !important;
+    bottom: 60px !important;
+    left: 1rem !important;
+    right: 1rem !important;
+    width: auto !important;
+    max-height: 40vh !important;
+    margin-bottom: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens */
+  .diamond-dropup {
+    width: 95vw !important;
+    max-width: 280px !important;
+  }
+
+  .comment-input-editable {
+    min-width: 60px !important;
+  }
+
+  .mention-chip {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Large screens - more spacious layout */
+  .comment-input-editable {
+    font-size: 1rem !important;
+    line-height: 1.5rem !important;
+  }
+
+  .mention-chip {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.875rem;
   }
 }
 

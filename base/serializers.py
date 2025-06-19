@@ -16,6 +16,8 @@ class UserSerializer(serializers.ModelSerializer):
     follower_count = serializers.SerializerMethodField()
     follow_count = serializers.SerializerMethodField()
     sale_post_count = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
         # Exclude the password field for security
@@ -34,9 +36,23 @@ class UserSerializer(serializers.ModelSerializer):
     
     def get_follow_count(self, obj):
         return BusinessNetworkFollowerModel.objects.filter(follower=obj).count()
+    
     def get_sale_post_count(self, obj):
         # Only count active sale posts, not pending or other statuses
         return SalePost.objects.filter(user=obj, status='active').count()
+    
+    def get_rating(self, obj):
+        """Calculate the average rating for this store from reviews on their products"""
+        from reviews.models import Review
+        from django.db.models import Avg
+        
+        # Get all reviews for products owned by this store
+        avg_rating = Review.objects.filter(
+            product__owner=obj,
+            is_approved=True
+        ).aggregate(Avg('rating'))['rating__avg']
+        
+        return round(avg_rating, 1) if avg_rating else 0.0
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():

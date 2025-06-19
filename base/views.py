@@ -2312,7 +2312,10 @@ class StoreProductsListView(generics.ListAPIView):
         store_username = self.kwargs.get('store_username')
         try:
             store_owner = User.objects.get(store_username=store_username)
-            return Product.objects.filter(owner=store_owner).order_by('-created_at')
+            return Product.objects.filter(
+                owner=store_owner, 
+                is_active=True
+            ).order_by('-created_at')
         except User.DoesNotExist:
             return Product.objects.none()
 
