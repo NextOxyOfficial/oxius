@@ -1,10 +1,7 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.utils.html import format_html
-from .models import (
-    SaleCategory, SaleChildCategory, SalePost,
-    SaleImage, SaleBanner, SaleCondition
-)
+from .models import *
 
 
 class SaleImageInline(admin.TabularInline):
@@ -126,3 +123,7 @@ class SaleBannerAdmin(admin.ModelAdmin):
         return "No Image"
 
     image_preview.short_description = 'Preview'
+
+
+admin.site.register(SaleSponsoredHorizontal)
+admin.site.register(SaleSponsoredVertical)

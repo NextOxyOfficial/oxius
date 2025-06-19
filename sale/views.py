@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, status, permissions, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,12 +13,8 @@ import datetime
 from .paginations import StandardResultsSetPagination
 
 
-from .models import SaleCategory, SaleChildCategory, SalePost, SaleImage, SaleBanner, SaleCondition
-from .serializers import (
-    SaleCategorySerializer, SaleChildCategorySerializer,
-    SalePostListSerializer, SalePostDetailSerializer, SalePostCreateSerializer,
-    SaleBannerSerializer, SaleConditionSerializer
-)
+from .models import *
+from .serializers import *
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -341,3 +337,15 @@ class SalePostViewSet(viewsets.ModelViewSet):
         # Return updated post data
         serializer = self.get_serializer(sale_post)
         return Response(serializer.data)
+
+
+class SaleSponsoredHorizontalListView(generics.ListAPIView):
+    """List view for sponsored horizontal posts"""
+    queryset = SaleSponsoredHorizontal.objects.all()
+    serializer_class = SaleSponsoredHorizontalSerializer
+
+
+class SaleSponsoredVerticalListView(generics.ListAPIView):
+    """List view for sponsored vertical posts"""
+    queryset = SaleSponsoredVertical.objects.all()
+    serializer_class = SaleSponsoredVerticalSerializer

@@ -1,8 +1,5 @@
 from rest_framework import serializers
-from .models import (
-    SaleCategory, SaleChildCategory, SalePost,
-    SaleImage, SaleBanner, SaleCondition
-)
+from .models import *
 
 from base.serializers import UserSerializer
 
@@ -212,3 +209,17 @@ class SalePostCreateSerializer(serializers.ModelSerializer):
         except Exception as e:
             logger.error(f"Error creating sale post: {e}")
             raise
+
+
+class SaleSponsoredHorizontalSerializer(serializers.ModelSerializer):
+    """Serializer for a sponsored horizontal"""
+    class Meta:
+        model = SaleSponsoredHorizontal
+        fields = '__all__'
+
+
+class SaleSponsoredVerticalSerializer(serializers.ModelSerializer):
+    """Serializer for a sponsored vertical"""
+    class Meta:
+        model = SaleSponsoredVertical
+        fields = '__all__'

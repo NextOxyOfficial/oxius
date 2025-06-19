@@ -230,3 +230,37 @@ class SaleImage(models.Model):
 
     def __str__(self):
         return f"Image for {self.post.title} ({'Main' if self.is_main else 'Regular'})"
+
+
+class SaleSponsoredHorizontal(models.Model):
+    """Sponsored horizontal for sale posts"""
+    id = models.BigIntegerField(
+        primary_key=True, default=generate_unique_id, editable=False)
+    title = models.CharField(max_length=255)
+    offer_title = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    link = models.CharField(max_length=255, blank=True, null=True)
+    open_external = models.BooleanField(default=False)
+    image = models.ImageField(upload_to='sale_sponsored_horizontals/')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class SaleSponsoredVertical(models.Model):
+    """Sponsored verticals for sale posts"""
+    id = models.BigIntegerField(
+        primary_key=True, default=generate_unique_id, editable=False)
+    title = models.CharField(max_length=255)
+    offer_title = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    link = models.CharField(max_length=255, blank=True, null=True)
+    open_external = models.BooleanField(default=False)
+    image = models.ImageField(upload_to='sale_sponsored_verticals/')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

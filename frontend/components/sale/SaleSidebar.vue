@@ -126,20 +126,26 @@
           <p class="text-sm text-gray-600 mb-3">
             List your items easily and reach thousands of potential buyers in
             your area.
-          </p>          <NuxtLink
+          </p>
+          <NuxtLink
             to="/sale/my-posts?tab=post-sale"
             class="whitespace-nowrap flex items-center text-center gap-1 px-3 py-2 h-10 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm"
             @click="handleButtonClick('post-your-ad-1')"
           >
-            <div v-if="loadingButtons.has('post-your-ad-1')" class="dotted-spinner white h-4 w-4"></div>
+            <div
+              v-if="loadingButtons.has('post-your-ad-1')"
+              class="dotted-spinner white h-4 w-4"
+            ></div>
             <UIcon v-else name="i-heroicons-plus-circle" class="h-4 w-4" />
-            <span v-if="!loadingButtons.has('post-your-ad-1')">Post Your Ad</span>
+            <span v-if="!loadingButtons.has('post-your-ad-1')"
+              >Post Your Ad</span
+            >
           </NuxtLink>
         </div>
       </div>
 
       <!-- Sponsored Ad Section -->
-      <div class="mb-6">
+      <div class="mb-6" v-if="saleVerticalAds.length > 0">
         <h3
           class="text-xs uppercase text-gray-600 font-medium mb-3 flex items-center gap-1.5 border-b border-gray-100 pb-2"
         >
@@ -148,14 +154,16 @@
         </h3>
 
         <!-- Small Regular Ad Card - Improved Design -->
-        <div
+        <NuxtLink
           class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm mb-4 group cursor-pointer hover:shadow-sm transition-all duration-300"
+          :to="saleVerticalAds[0].link"
+          :target="saleVerticalAds[0].open_external ? '_blank' : '_self'"
         >
           <div class="flex">
             <div class="w-1/3 bg-gray-50">
               <div class="relative h-full overflow-hidden">
                 <img
-                  src="https://picsum.photos/300/150?ad=2"
+                  :src="saleHorizontalAds[0]?.image"
                   alt="Ad"
                   class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
@@ -169,7 +177,7 @@
                 <h4
                   class="font-medium text-gray-800 text-sm group-hover:text-primary-600 transition-colors"
                 >
-                  Latest Electronics
+                  {{ saleHorizontalAds[0]?.title }}
                 </h4>
                 <span
                   class="text-xs bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded font-medium"
@@ -177,16 +185,18 @@
                 >
               </div>
               <p class="text-primary-600 text-xs font-medium mt-1">
-                Discounts up to 30%
+                {{ saleHorizontalAds[0]?.offer_title }}
               </p>
-              <div class="mt-2 text-xs text-gray-600">Limited time offer</div>
+              <div class="mt-2 text-xs text-gray-600">
+                {{ saleHorizontalAds[0]?.description }}
+              </div>
             </div>
           </div>
-        </div>
+        </NuxtLink>
       </div>
 
       <!-- Long Sponsored Banner - Enhanced Design -->
-      <div class="mb-6">
+      <div class="mb-6" v-if="saleVerticalAds.length > 0">
         <h3
           class="text-xs uppercase text-gray-600 font-medium mb-3 flex items-center gap-1.5 border-b border-gray-100 pb-2"
         >
@@ -199,7 +209,7 @@
         >
           <div class="relative">
             <img
-              src="https://picsum.photos/300/600?ad=special"
+              :src="saleVerticalAds[0]?.image"
               alt="Special Featured Deal"
               class="w-full h-96 object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
             />
@@ -211,16 +221,18 @@
                 class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1 shadow-sm"
               >
                 <UIcon name="i-heroicons-clock" class="w-3 h-3" />
-                Limited Time
+                {{ saleVerticalAds[0]?.offer_title }}
               </span>
             </div>
             <div class="absolute bottom-0 left-0 w-full p-4">
-              <h4 class="font-semibold text-white text-base">Summer Sale</h4>
+              <h4 class="font-semibold text-white text-base">
+                {{ saleVerticalAds[0]?.title }}
+              </h4>
               <p class="text-blue-50 text-sm font-medium mt-1">
-                Up to 50% off on selected items
+                {{ saleVerticalAds[0]?.description }}
               </p>
               <UButton
-                href="/eshop"
+                :to="saleVerticalAds[0].link"
                 color="white"
                 class="mt-3 shadow-sm hover:bg-white hover:text-blue-600 transition-colors"
                 variant="solid"
@@ -235,7 +247,8 @@
     <!-- Fixed bottom CTA for mobile -->
     <div
       class="lg:hidden sticky bottom-0 p-4 bg-white border-t border-gray-100 shadow-sm z-20"
-    >      <UButton
+    >
+      <UButton
         to="/sale/my-posts?tab=post-sale"
         color="primary"
         size="sm"
@@ -243,7 +256,10 @@
         @click="handleButtonClick('post-your-ad-2')"
       >
         <template #leading>
-          <div v-if="loadingButtons.has('post-your-ad-2')" class="dotted-spinner white w-4 h-4"></div>
+          <div
+            v-if="loadingButtons.has('post-your-ad-2')"
+            class="dotted-spinner white w-4 h-4"
+          ></div>
           <UIcon v-else name="i-heroicons-plus-circle" class="w-4 h-4" />
         </template>
         <span v-if="!loadingButtons.has('post-your-ad-2')">Post Your Ad</span>
@@ -254,7 +270,29 @@
 
 <script setup>
 // Loading state for buttons
+const { get } = useApi();
+const saleHorizontalAds = ref([]);
+const saleVerticalAds = ref([]);
 const loadingButtons = ref(new Set());
+
+async function getSaleHorizontalAds() {
+  try {
+    const response = await get(`/sale/sponsored-horizontal/`);
+    saleHorizontalAds.value = response.data;
+  } catch (error) {
+    console.error("Error fetching horizontal ads:", error);
+  }
+}
+await getSaleHorizontalAds();
+async function getSaleVerticalAds() {
+  try {
+    const response = await get(`/sale/sponsored-vertical/`);
+    saleVerticalAds.value = response.data;
+  } catch (error) {
+    console.error("Error fetching vertical ads:", error);
+  }
+}
+await getSaleVerticalAds();
 
 // Function to handle button click and show loading
 const handleButtonClick = (buttonId) => {
@@ -267,9 +305,12 @@ const handleButtonClick = (buttonId) => {
 
 // Watch for route changes to clear loading states
 const route = useRoute();
-watch(() => route.path, () => {
-  loadingButtons.value.clear();
-});
+watch(
+  () => route.path,
+  () => {
+    loadingButtons.value.clear();
+  }
+);
 
 const props = defineProps({
   isMobileFilterOpen: {
