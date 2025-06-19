@@ -39,7 +39,7 @@
                 <NuxtLink
                   v-if="banner.link"
                   :to="banner.link"
-                  class="absolute inset-0 z-10 cursor-pointer"
+                  class="absolute inset-0 z-30 cursor-pointer"
                 ></NuxtLink>
 
                 <!-- Banner Image -->
