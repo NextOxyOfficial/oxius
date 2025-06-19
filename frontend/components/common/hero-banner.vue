@@ -34,13 +34,13 @@
                   'opacity-0 translate-x-full': index > currentSlide,
                   'opacity-0 -translate-x-full': index < currentSlide,
                 }"
-              >                <!-- Banner Link Wrapper -->
-                <div
+              >
+                <!-- Banner Link Wrapper -->
+                <NuxtLink
                   v-if="banner.link"
-                  @click="handleBannerClick(banner.link)"
-                  @touchend.stop="handleBannerTouchEnd($event, banner.link)"
+                  :to="`/${banner.link}`"
                   class="absolute inset-0 z-30 cursor-pointer"
-                ></div>
+                ></NuxtLink>
 
                 <!-- Banner Image -->
                 <img
@@ -709,49 +709,6 @@ const isHovering = ref(false);
 
 const handleSliderHover = (isHover) => {
   isHovering.value = isHover;
-};
-
-// Function to handle banner clicks - internal vs external links
-const handleBannerClick = async (link) => {
-  if (!link) return;
-  
-  // Check if the link is external (starts with http:// or https://)
-  const isExternalLink = link.startsWith('http://') || link.startsWith('https://');
-  
-  if (isExternalLink) {
-    // For mobile apps, try to open in system browser
-    try {
-      // Check if we're in a Capacitor environment
-      if (typeof window !== 'undefined' && window.Capacitor) {
-        // Import Browser plugin dynamically
-        const { Browser } = await import('@capacitor/browser');
-        await Browser.open({ url: link });
-      } else {
-        // Fallback for web or if Browser plugin is not available
-        window.open(link, '_blank');
-      }
-    } catch (error) {
-      console.warn('Could not open external link with Capacitor Browser, falling back to window.open:', error);
-      // Fallback to window.open if Capacitor Browser fails
-      window.open(link, '_blank');
-    }
-  } else {
-    // Navigate to internal links within the app
-    navigateTo(link);
-  }
-};
-
-// Handle touch end for banner links (for better mobile responsiveness)
-const handleBannerTouchEnd = (event, link) => {
-  // Only handle if it's not a swipe (small movement)
-  const touchDiffX = Math.abs(touchEndX - touchStartX);
-  const touchDiffY = Math.abs(touchEndY - touchStartY);
-  
-  // If movement is small (less than 30px), treat as a tap
-  if (touchDiffX < 30 && touchDiffY < 30) {
-    event.preventDefault();
-    handleBannerClick(link);
-  }
 };
 
 // Start auto-sliding when component is mounted
