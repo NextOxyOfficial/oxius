@@ -99,7 +99,7 @@
       <!-- Content -->
       <div
         v-else
-        class="flex py-2 gap-1.5 justify-between md:justify-between overflow-hidden"
+        class="flex gap-1.5 justify-between md:justify-between overflow-hidden"
       >
         <!-- Mobile View (3 sponsors) -->
         <div

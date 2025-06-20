@@ -846,24 +846,16 @@ const toggleLike = async (postToLike) => {
   postToLike.isLikeLoading = true;  try {
     const currentUserId = user.value?.user?.id;
     
-    // Add debug logging
-    console.log('Toggle like for post:', postToLike.id, 'User ID:', currentUserId);
-    console.log('Current post_likes:', postToLike.post_likes);
-    
     const isLiked = postToLike.post_likes?.some(
-      (like) => like && like.user === currentUserId
+      (like) => like && (like.user === currentUserId || like.user === String(currentUserId) || like.user === Number(currentUserId))
     );
-    
-    console.log('Is currently liked:', isLiked);
 
     if (isLiked) {
       // Use the unlike endpoint when already liked
       const endpoint = `/bn/posts/${postToLike.id}/unlike/`;
-      await del(endpoint);
-
-      // Remove user from likes (with null safety)
+      await del(endpoint);      // Remove user from likes (with null safety and type flexibility)
       postToLike.post_likes = postToLike.post_likes.filter(
-        (like) => like && like.user !== currentUserId
+        (like) => like && like.user !== currentUserId && like.user !== String(currentUserId) && like.user !== Number(currentUserId)
       );
 
       // Update like count for UI if needed
@@ -894,8 +886,7 @@ const toggleLike = async (postToLike) => {
         // Update like count for UI if needed
         if (postToLike.likes_count !== undefined) {
           postToLike.likes_count = (postToLike.likes_count || 0) + 1;
-        }
-      } catch (likeError) {
+        }      } catch (likeError) {
         // Handle specific case where user already liked the post
         if (likeError.response?.status === 400) {
           // The user has already liked this post, update the UI accordingly
@@ -905,7 +896,7 @@ const toggleLike = async (postToLike) => {
           
           // Check if the like already exists in the local data
           const existingLike = postToLike.post_likes.find(
-            (like) => like && like.user === currentUserId
+            (like) => like && (like.user === currentUserId || like.user === String(currentUserId) || like.user === Number(currentUserId))
           );
           
           if (!existingLike) {
@@ -920,8 +911,13 @@ const toggleLike = async (postToLike) => {
             }
           }
           
-          // Don't show error toast for this case, just log it
-          console.log("User already liked this post, updating UI state");
+          // Show a different message for this case
+          toast.add({
+            title: "Post already liked",
+            description: "This post was already in your liked posts",
+            color: "blue",
+          });
+          
           return; // Exit early to avoid rethrowing the error
         }
         

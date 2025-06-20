@@ -17,10 +17,10 @@
             />
           </div>          <!-- Heart icon with modern styling -->
           <div v-else class="relative">            <UIcon
-              :name="post.post_likes?.find((like) => like && like.user === user?.user?.id) ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+              :name="post.post_likes?.find((like) => like && (like.user === user?.user?.id || like.user === String(user?.user?.id) || like.user === Number(user?.user?.id))) ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
               :class="[
                 'size-6 transition-colors',
-                post.post_likes?.find((like) => like && like.user === user?.user?.id)
+                post.post_likes?.find((like) => like && (like.user === user?.user?.id || like.user === String(user?.user?.id) || like.user === Number(user?.user?.id)))
                   ? 'text-rose-500 dark:text-rose-400'
                   : 'text-gray-600 dark:text-gray-600 group-hover:text-rose-500 dark:group-hover:text-rose-400',
               ]"
