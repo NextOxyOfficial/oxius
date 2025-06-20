@@ -843,42 +843,90 @@ const toggleLike = async (postToLike) => {
   }
   if (postToLike.isLikeLoading) return;
 
-  postToLike.isLikeLoading = true;
-
-  try {
+  postToLike.isLikeLoading = true;  try {
     const currentUserId = user.value?.user?.id;
+    
+    // Add debug logging
+    console.log('Toggle like for post:', postToLike.id, 'User ID:', currentUserId);
+    console.log('Current post_likes:', postToLike.post_likes);
+    
     const isLiked = postToLike.post_likes?.some(
-      (like) => like.user === currentUserId
+      (like) => like && like.user === currentUserId
     );
+    
+    console.log('Is currently liked:', isLiked);
 
     if (isLiked) {
       // Use the unlike endpoint when already liked
       const endpoint = `/bn/posts/${postToLike.id}/unlike/`;
       await del(endpoint);
 
-      // Remove user from likes
+      // Remove user from likes (with null safety)
       postToLike.post_likes = postToLike.post_likes.filter(
-        (like) => like.user !== currentUserId
+        (like) => like && like.user !== currentUserId
       );
 
       // Update like count for UI if needed
       if (postToLike.likes_count !== undefined) {
         postToLike.likes_count = Math.max(0, (postToLike.likes_count || 0) - 1);
-      }
-    } else {
+      }    } else {
       // Use the like endpoint when not yet liked
       const endpoint = `/bn/posts/${postToLike.id}/like/`;
-      const { data } = await post(endpoint);
+      try {
+        const { data } = await post(endpoint);
 
-      // Add new like data to the post
-      if (!postToLike.post_likes) {
-        postToLike.post_likes = [];
-      }
-      postToLike.post_likes.push(data);
+        // Add new like data to the post
+        if (!postToLike.post_likes) {
+          postToLike.post_likes = [];
+        }
+        
+        // Ensure we have valid like data before pushing
+        if (data && data.user) {
+          postToLike.post_likes.push(data);
+        } else {
+          // Fallback: create like object with current user info
+          postToLike.post_likes.push({
+            user: currentUserId,
+            created_at: new Date().toISOString()
+          });
+        }
 
-      // Update like count for UI if needed
-      if (postToLike.likes_count !== undefined) {
-        postToLike.likes_count = (postToLike.likes_count || 0) + 1;
+        // Update like count for UI if needed
+        if (postToLike.likes_count !== undefined) {
+          postToLike.likes_count = (postToLike.likes_count || 0) + 1;
+        }
+      } catch (likeError) {
+        // Handle specific case where user already liked the post
+        if (likeError.response?.status === 400) {
+          // The user has already liked this post, update the UI accordingly
+          if (!postToLike.post_likes) {
+            postToLike.post_likes = [];
+          }
+          
+          // Check if the like already exists in the local data
+          const existingLike = postToLike.post_likes.find(
+            (like) => like && like.user === currentUserId
+          );
+          
+          if (!existingLike) {
+            // Add the like to local state since it exists on the server
+            postToLike.post_likes.push({
+              user: currentUserId,
+              created_at: new Date().toISOString()
+            });
+            
+            if (postToLike.likes_count !== undefined) {
+              postToLike.likes_count = (postToLike.likes_count || 0) + 1;
+            }
+          }
+          
+          // Don't show error toast for this case, just log it
+          console.log("User already liked this post, updating UI state");
+          return; // Exit early to avoid rethrowing the error
+        }
+        
+        // Re-throw other errors to be handled by the outer catch block
+        throw likeError;
       }
     }
   } catch (error) {

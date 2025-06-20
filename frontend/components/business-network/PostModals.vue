@@ -47,10 +47,9 @@
                 >
                   {{ activeLikesPost.title }}
                 </p>
-              </div>
-              <div class="space-y-2">
+              </div>              <div class="space-y-2">
                 <div
-                  v-for="user in activeLikesPost.post_likes"
+                  v-for="user in (activeLikesPost.post_likes || []).filter(like => like && like.user)"
                   :key="user.id"
                   class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 dark:border-slate-700/50"
                 >

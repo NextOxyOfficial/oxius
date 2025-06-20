@@ -109,7 +109,8 @@
           >
             <!-- User Info Card -->
             <div class="flex flex-col items-center text-center space-y-3">
-              <!-- Profile Picture -->              <NuxtLink :to="`/business-network/profile/${user.id}`">
+              <!-- Profile Picture -->              
+               <NuxtLink :to="`/business-network/profile/${user.id}`">
                 <img
                   :src="user.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="getUserDisplayName(user)"
