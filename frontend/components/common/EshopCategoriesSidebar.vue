@@ -45,17 +45,21 @@
                     ? 'bg-emerald-200 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
                     : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-800 dark:text-gray-400'
                 "
-              >                <div
+              >
+                <div
                   class="flex-shrink-0 size-8 flex items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800"
-                >                  <!-- Dynamic category icon/image -->
+                >
+                  <!-- Dynamic category icon/image -->
                   <img
                     v-if="shouldShowImage(category)"
                     :src="getCategoryImageUrl(category.image)"
                     :alt="category.name"
-                    class="size-5 object-contain category-image rounded"
+                    class="size-10 object-contain category-image rounded"
                     :class="{
-                      'brightness-110 saturate-150': selectedCategory === category.id,
-                      'brightness-95 saturate-100': selectedCategory !== category.id
+                      'brightness-110 saturate-150':
+                        selectedCategory === category.id,
+                      'brightness-95 saturate-100':
+                        selectedCategory !== category.id,
                     }"
                     @error="onImageError($event, category)"
                     loading="lazy"
@@ -78,7 +82,8 @@
                 ></div>
               </button>
             </li>
-          </ul>          <div
+          </ul>
+          <div
             v-if="hasMoreCategoriesToLoad && !props.isLoadingMore"
             class="pt-4 pb-2 flex justify-center"
           >
@@ -91,22 +96,22 @@
               :loading="props.isLoadingMore"
               :disabled="props.isLoadingMore"
             >
-              <UIcon 
+              <UIcon
                 v-if="!props.isLoadingMore"
-                name="i-heroicons-arrow-down" 
-                class="size-4 mr-1" 
+                name="i-heroicons-arrow-down"
+                class="size-4 mr-1"
               />
-              {{ props.isLoadingMore ? 'Loading...' : 'Load more categories' }}
+              {{ props.isLoadingMore ? "Loading..." : "Load more categories" }}
             </UButton>
           </div>
 
           <!-- Loading indicator when loading more -->
-          <div
-            v-if="props.isLoadingMore"
-            class="pt-4 pb-2 flex justify-center"
-          >
+          <div v-if="props.isLoadingMore" class="pt-4 pb-2 flex justify-center">
             <div class="flex items-center gap-2 text-gray-500 text-sm">
-              <UIcon name="i-heroicons-arrow-path" class="size-4 animate-spin" />
+              <UIcon
+                name="i-heroicons-arrow-path"
+                class="size-4 animate-spin"
+              />
               Loading more categories...
             </div>
           </div>
@@ -245,7 +250,8 @@ const props = defineProps({
   selectedCategory: {
     type: [String, Number, null],
     default: null,
-  },  hasMoreCategoriesToLoad: {
+  },
+  hasMoreCategoriesToLoad: {
     type: Boolean,
     default: false,
   },
@@ -269,31 +275,35 @@ const emit = defineEmits([
 const imageErrors = ref(new Set());
 
 // Watch for category changes to reset image errors
-watch(() => props.displayedCategories, () => {
-  imageErrors.value.clear();
-}, { deep: true });
+watch(
+  () => props.displayedCategories,
+  () => {
+    imageErrors.value.clear();
+  },
+  { deep: true }
+);
 
 // Get category image URL
 function getCategoryImageUrl(imagePath) {
-  if (!imagePath) return '';
-  
+  if (!imagePath) return "";
+
   let finalUrl;
-  
+
   // Handle different URL formats
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
     finalUrl = imagePath;
-  } else if (imagePath.startsWith('/media/')) {
+  } else if (imagePath.startsWith("/media/")) {
     finalUrl = imagePath;
-  } else if (imagePath.startsWith('media/')) {
+  } else if (imagePath.startsWith("media/")) {
     finalUrl = `/${imagePath}`;
-  } else if (imagePath.startsWith('images/') || imagePath.includes('images/')) {
+  } else if (imagePath.startsWith("images/") || imagePath.includes("images/")) {
     // Django ImageField typically uploads to media/images/
     finalUrl = `/media/${imagePath}`;
   } else {
     // Default to media/category_icons/ folder for backward compatibility
     finalUrl = `/media/category_icons/${imagePath}`;
   }
-  
+
   return finalUrl;
 }
 
@@ -307,7 +317,7 @@ function onImageError(event, category) {
 function shouldShowImage(category) {
   const hasImage = category.image && category.image.trim();
   const notInError = !imageErrors.value.has(category.id);
-  
+
   return hasImage && notInError;
 }
 
@@ -321,61 +331,64 @@ function getCategoryIcon(categoryName) {
     Mobile: "i-heroicons-device-phone-mobile",
     Laptop: "i-heroicons-computer-desktop",
     Gaming: "i-heroicons-puzzle-piece",
-    
+
     // Fashion & Apparel
     Fashion: "i-heroicons-sparkles",
     Clothing: "i-heroicons-sparkles",
     Shoes: "i-heroicons-sparkles",
     Accessories: "i-heroicons-sparkles",
     Jewelry: "i-heroicons-sparkles",
-    
+
     // Home & Living
     Home: "i-heroicons-home",
     Furniture: "i-heroicons-home",
     Kitchen: "i-heroicons-home",
     Garden: "i-heroicons-home",
     Appliances: "i-heroicons-home",
-    
+
     // Health & Beauty
     Beauty: "i-heroicons-heart",
     Health: "i-heroicons-heart",
     Skincare: "i-heroicons-heart",
     Makeup: "i-heroicons-heart",
     Wellness: "i-heroicons-heart",
-    
+
     // Sports & Recreation
     Sports: "i-heroicons-trophy",
     Fitness: "i-heroicons-trophy",
     Outdoor: "i-heroicons-trophy",
-    
+
     // Food & Groceries
     Food: "i-heroicons-shopping-bag",
     Groceries: "i-heroicons-shopping-bag",
     Beverages: "i-heroicons-shopping-bag",
-    
+
     // Books & Education
     Books: "i-heroicons-book-open",
     Education: "i-heroicons-book-open",
     Stationery: "i-heroicons-book-open",
-    
+
     // Automotive
     Automotive: "i-heroicons-truck",
     Car: "i-heroicons-truck",
     Vehicle: "i-heroicons-truck",
-    
+
     // Default categories
     Others: "i-heroicons-tag",
     Miscellaneous: "i-heroicons-tag",
   };
-  
+
   // Case-insensitive matching
-  const normalizedName = categoryName ? categoryName.toLowerCase() : '';
-  const matchedKey = Object.keys(iconMapping).find(key => 
-    key.toLowerCase() === normalizedName || 
-    normalizedName.includes(key.toLowerCase())
+  const normalizedName = categoryName ? categoryName.toLowerCase() : "";
+  const matchedKey = Object.keys(iconMapping).find(
+    (key) =>
+      key.toLowerCase() === normalizedName ||
+      normalizedName.includes(key.toLowerCase())
   );
-  
-  return iconMapping[matchedKey] || iconMapping[categoryName] || "i-heroicons-tag";
+
+  return (
+    iconMapping[matchedKey] || iconMapping[categoryName] || "i-heroicons-tag"
+  );
 }
 
 // Handle category selection

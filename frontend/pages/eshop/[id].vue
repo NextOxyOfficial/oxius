@@ -201,7 +201,7 @@
                   v-if="category.image"
                   :src="category.image"
                   :alt="category.name"
-                  class="h-4 w-4 rounded object-cover border border-gray-200"
+                  class="size-10 rounded object-contain border border-gray-200"
                   @error="
                     $event.target.style.display = 'none';
                     $event.target.nextElementSibling.style.display =
