@@ -16,8 +16,8 @@ class OptimizedBusinessNetworkPostSerializer(BusinessNetworkPostSerializer):
     """Optimized serializer for medium-level devices"""
     
     def get_post_likes(self, obj):
-        # Limit likes to first 3 for performance
-        return BusinessNetworkPostLikeSerializer(obj.post_likes.all()[:3], many=True).data
+        # Return all likes without artificial limitations
+        return BusinessNetworkPostLikeSerializer(obj.post_likes.all(), many=True).data
     
     def to_representation(self, instance):
         # Use cached counts if available
@@ -96,7 +96,7 @@ class OptimizedBusinessNetworkPostListView(generics.ListAPIView):
             # Optimized prefetch with limited data
             Prefetch('media', queryset=BusinessNetworkMedia.objects.all()[:3]),
             Prefetch('tags', queryset=BusinessNetworkPostTag.objects.all()[:5]),
-            Prefetch('post_likes', queryset=BusinessNetworkPostLike.objects.select_related('user')[:3]),
+            Prefetch('post_likes', queryset=BusinessNetworkPostLike.objects.select_related('user')),
             Prefetch('post_comments', queryset=BusinessNetworkPostComment.objects.select_related('author').order_by('-created_at')[:3])
         ).order_by(
             'priority',
