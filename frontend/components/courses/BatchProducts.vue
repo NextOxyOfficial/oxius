@@ -1,18 +1,28 @@
 <template>
-  <div v-if="selectedBatch && (loading || error || products.length > 0)" class="bg-white rounded-lg shadow-sm border border-gray-200 py-4 mt-4">    
+  <div
+    v-if="selectedBatch && (loading || error || products.length > 0)"
+    class="bg-white rounded-lg shadow-sm border border-gray-200 py-4 mt-4"
+  >
     <div class="flex-block items-center justify-between px-2 mb-4">
       <h3 class="text-lg mb-3 font-medium text-gray-800">
-        <Icon name="heroicons:shopping-bag" class="w-5 h-5 inline mr-2 text-emerald-600" />
+        <Icon
+          name="heroicons:shopping-bag"
+          class="w-5 h-5 inline mr-2 text-emerald-600"
+        />
         {{ selectedBatch }} ব্যাচের গুরুত্বপূর্ণ বই ও শিক্ষা সামগ্রী
       </h3>
-      <span class="bg-emerald-100 text-emerald-700 text-sm px-2 py-1 rounded-full">
+      <span
+        class="bg-emerald-100 text-emerald-700 text-sm px-2 py-1 rounded-full"
+      >
         {{ selectedBatch }}
       </span>
     </div>
 
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center items-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-500"></div>
+      <div
+        class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-500"
+      ></div>
     </div>
 
     <!-- Error state -->
@@ -25,7 +35,7 @@
         @click="loadProducts"
         class="mt-2 text-sm text-blue-600 hover:underline"
       >
-        {{ $t('try_again') }}
+        {{ $t("try_again") }}
       </button>
     </div>
 
@@ -34,9 +44,13 @@
       v-else-if="products.length === 0"
       class="text-center py-8 text-gray-500"
     >
-      <Icon name="heroicons:shopping-bag" class="w-12 h-12 mx-auto mb-2 text-gray-300" />
-      <p class="text-sm">{{ $t('no_products_available') }}</p>
-    </div>    <!-- Products horizontal scroll -->
+      <Icon
+        name="heroicons:shopping-bag"
+        class="w-12 h-12 mx-auto mb-2 text-gray-300"
+      />
+      <p class="text-sm">{{ $t("no_products_available") }}</p>
+    </div>
+    <!-- Products horizontal scroll -->
     <div v-else class="relative">
       <!-- Scroll buttons for desktop -->
       <button
@@ -47,7 +61,7 @@
       >
         <Icon name="heroicons:chevron-left" class="w-4 h-4 text-gray-600" />
       </button>
-      
+
       <button
         v-if="canScrollRight"
         @click="scrollRight"
@@ -58,20 +72,17 @@
       </button>
 
       <!-- Scrollable products container -->
-      <div 
+      <div
         ref="scrollContainer"
         class="flex gap-2 overflow-x-auto scroll-smooth scrollbar-hide px-2 py-2"
         @scroll="updateScrollButtons"
       >
-        <div 
-          v-for="product in randomizedProducts" 
+        <div
+          v-for="product in randomizedProducts"
           :key="product.id"
           class="flex-shrink-0 w-48 sm:w-52"
         >
-          <ProductCard 
-            :product="product"
-            :compact="true"
-          />
+          <ProductCard :product="product" :compact="true" />
         </div>
       </div>
 
@@ -81,7 +92,7 @@
           :to="`/eshop/category/${selectedBatch}`"
           class="inline-flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
         >
-          {{ $t('view_all_products') }}
+          {{ $t("view_all_products") }}
           <Icon name="heroicons:arrow-right" class="w-4 h-4" />
         </NuxtLink>
       </div>
@@ -90,119 +101,154 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted, nextTick } from 'vue'
-import { fetchBatchProducts } from '~/services/elearningApi'
-import ProductCard from '~/components/common/product-card.vue'
+import { ref, watch, computed, onMounted, nextTick } from "vue";
+import { fetchBatchProducts } from "~/services/elearningApi";
+import ProductCard from "~/components/common/product-card.vue";
 
 const props = defineProps({
   selectedBatch: {
     type: String,
-    default: null
-  }
-})
+    default: null,
+  },
+});
 
-const config = useRuntimeConfig()
-const products = ref([])
-const loading = ref(false)
-const error = ref(null)
-const scrollContainer = ref(null)
-const canScrollLeft = ref(false)
-const canScrollRight = ref(false)
+const config = useRuntimeConfig();
+const products = ref([]);
+const loading = ref(false);
+const error = ref(null);
+const scrollContainer = ref(null);
+const canScrollLeft = ref(false);
+const canScrollRight = ref(false);
 
 // Randomize products array
 const randomizedProducts = computed(() => {
-  if (!products.value.length) return []
-  
+  if (!products.value.length) return [];
+
   // Create a copy and shuffle it
-  const shuffled = [...products.value]
+  const shuffled = [...products.value];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-  return shuffled
-})
+  return shuffled;
+});
 
 // Scroll functions
 function scrollLeft() {
   if (scrollContainer.value) {
-    const scrollAmount = 240 // Approximate width of one product card
-    scrollContainer.value.scrollBy({ 
-      left: -scrollAmount, 
-      behavior: 'smooth' 
-    })
+    const scrollAmount = 240; // Approximate width of one product card
+    scrollContainer.value.scrollBy({
+      left: -scrollAmount,
+      behavior: "smooth",
+    });
   }
 }
 
 function scrollRight() {
   if (scrollContainer.value) {
-    const scrollAmount = 240 // Approximate width of one product card
-    scrollContainer.value.scrollBy({ 
-      left: scrollAmount, 
-      behavior: 'smooth' 
-    })
+    const scrollAmount = 240; // Approximate width of one product card
+    scrollContainer.value.scrollBy({
+      left: scrollAmount,
+      behavior: "smooth",
+    });
   }
 }
 
 function updateScrollButtons() {
-  if (!scrollContainer.value) return
-  
-  const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value
-  canScrollLeft.value = scrollLeft > 0
-  canScrollRight.value = scrollLeft < scrollWidth - clientWidth - 1
+  if (!scrollContainer.value) return;
+
+  const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.value;
+  canScrollLeft.value = scrollLeft > 0;
+  canScrollRight.value = scrollLeft < scrollWidth - clientWidth - 1;
 }
 
 // Load products when batch changes
-watch(() => props.selectedBatch, (newBatch) => {
-  if (newBatch) {
-    loadProducts()
-  } else {
-    products.value = []
-  }
-}, { immediate: true })
+watch(
+  () => props.selectedBatch,
+  (newBatch) => {
+    if (newBatch) {
+      loadProducts();
+    } else {
+      products.value = [];
+    }
+  },
+  { immediate: true }
+);
 
 async function loadProducts() {
-  if (!props.selectedBatch) return
+  if (!props.selectedBatch) return;
 
   try {
-    loading.value = true
-    error.value = null
+    loading.value = true;
+    error.value = null;
 
-    const fetchedProducts = await fetchBatchProducts(config.public.baseURL, props.selectedBatch, {
-      limit: 50 // Get all available products for the batch
-    })
+    const fetchedProducts = await fetchBatchProducts(
+      config.public.baseURL,
+      props.selectedBatch,
+      {
+        limit: 50, // Get all available products for the batch
+      }
+    );
 
-    products.value = fetchedProducts || []
-    
+    products.value = fetchedProducts || [];
+
     // Update scroll buttons after products are loaded
-    await nextTick()
-    updateScrollButtons()
+    await nextTick();
+    updateScrollButtons();
   } catch (err) {
-    console.error('Error loading batch products:', err)
-    error.value = 'Failed to load products'
-    products.value = []
+    console.error("Error loading batch products:", err);
+    error.value = "Failed to load products";
+    products.value = [];
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 // Initialize scroll buttons on mount
 onMounted(() => {
   if (scrollContainer.value) {
-    updateScrollButtons()
+    updateScrollButtons();
   }
-})
+});
 </script>
 
 <style scoped>
-/* Hide scrollbar for Chrome, Safari and Opera */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+/* Hide scrollbar on mobile, show on desktop */
+@media (max-width: 768px) {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-.scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+/* Show scrollbar on desktop */
+@media (min-width: 768px) {
+  .scrollbar-hide::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  .scrollbar-hide {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+  }
 }
 
 /* Smooth scrolling behavior */
