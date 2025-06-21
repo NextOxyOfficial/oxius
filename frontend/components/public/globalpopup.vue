@@ -5,20 +5,20 @@
       <div
         v-if="showPopup && currentPopup"
         class="fixed inset-0 z-[80] flex items-center justify-center p-2 bg-black/50 backdrop-blur-sm animate-fade-in"
-      >
-        <div
-          class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl sm:max-w-3xl h-[45vh] w-full overflow-hidden animate-scale-in"
+      >        
+      <div
+          class="relative sm:max-w-3xl h-[45vh] w-full overflow-hidden animate-scale-in"
           @click.stop
         >
-          <!-- Close Button -->
-          <button
+          <!-- Close Button -->          
+           <button
             @click="closePopup"
-            class="absolute flex top-4 right-4 z-[90] p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            class="absolute flex top-4 right-4 z-[90] p-2 rounded-full bg-black/70 hover:bg-black/80 transition-colors"
             :aria-label="`Close popup ${currentPopup.id}`"
-          >
-            <UIcon
+          >            
+          <UIcon
               name="i-heroicons-x-mark"
-              class="w-5 h-5 text-gray-600 dark:text-gray-400"
+              class="w-5 h-5 text-white"
             />
           </button>
 

@@ -12,15 +12,14 @@
           <h3 class="text-sm font-semibold text-gray-800">
             Follow the people you may know
           </h3>
-        </div>
-        <button
-          @click="fetchSuggestions"
-          :disabled="loading"
+        </div>        <button
+          @click="refreshDisplayedSuggestions"
+          :disabled="loading || isRefreshing"
           class="text-blue-600 hover:text-blue-800 disabled:opacity-50 transition-colors"
-          title="Refresh suggestions"
+          title="Show different suggestions"
         >
           <svg
-            v-if="loading"
+            v-if="loading || isRefreshing"
             class="h-4 w-4 animate-spin"
             fill="none"
             stroke="currentColor"
@@ -62,9 +61,8 @@
             v-for="i in 3"
             :key="i"
             class="bg-white border border-gray-200 rounded-lg p-4"
-          >
-            <div class="flex flex-col items-center text-center space-y-3">
-              <div class="size-32 rounded-lg bg-gray-200 animate-pulse"></div>
+          >            <div class="flex flex-col items-center text-center space-y-3">
+              <div class="size-36 rounded-lg bg-gray-200 animate-pulse"></div>
               <div class="w-full space-y-2">
                 <div
                   class="h-4 bg-gray-200 rounded animate-pulse w-3/4 mx-auto"
@@ -83,9 +81,8 @@
             v-for="i in 2"
             :key="i"
             class="bg-white border border-gray-200 rounded-lg p-3"
-          >
-            <div class="flex flex-col items-center text-center space-y-3">
-              <div class="w-20 h-20 rounded-lg bg-gray-200 animate-pulse"></div>
+          >            <div class="flex flex-col items-center text-center space-y-3">
+              <div class="w-24 h-24 rounded-lg bg-gray-200 animate-pulse"></div>
               <div class="w-full space-y-2">
                 <div
                   class="h-4 bg-gray-200 rounded animate-pulse w-3/4 mx-auto"
@@ -112,12 +109,12 @@
           >
             <!-- User Info Card -->
             <div class="flex flex-col items-center text-center space-y-3">
-              <!-- Profile Picture -->
-              <NuxtLink :to="`/business-network/profile/${user.id}`">
+              <!-- Profile Picture -->              
+               <NuxtLink :to="`/business-network/profile/${user.id}`">
                 <img
                   :src="user.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="getUserDisplayName(user)"
-                  class="size-32 rounded-lg object-cover border-2 border-white shadow-sm"
+                  class="size-36 rounded-lg object-cover border-2 border-white shadow-sm"
                 />
               </NuxtLink>
 
@@ -181,12 +178,12 @@
           >
             <!-- User Info Card -->
             <div class="flex flex-col items-center text-center space-y-3">
-              <!-- Profile Picture -->
-              <NuxtLink :to="`/business-network/profile/${user.id}`">
+              <!-- Profile Picture -->              
+               <NuxtLink :to="`/business-network/profile/${user.id}`">
                 <img
                   :src="user.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="getUserDisplayName(user)"
-                  class="w-20 h-20 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
+                  class="w-36 h-32 rounded-lg object-cover border-2 border-white shadow-sm hover:shadow-md transition-shadow"
                 />
               </NuxtLink>
 
@@ -277,34 +274,72 @@ const toast = useToast();
 
 // Reactive data
 const suggestions = ref([]);
+const allSuggestions = ref([]); // Store all suggestions from API
 const loading = ref(true);
 const error = ref(null);
+const isRefreshing = ref(false);
 
 // Responsive display logic
 const isDesktop = ref(true);
-const displayedSuggestions = computed(() => {
-  if (isDesktop.value) {
-    // Desktop: show up to 3 users
-    return suggestions.value.slice(0, 3);
-  } else {
-    // Mobile: show only 2 users
-    return suggestions.value.slice(0, 2);
+
+// Utility function to shuffle array
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
+  return shuffled;
+};
+
+// Function to get random suggestions from all available suggestions
+const getRandomSuggestions = () => {
+  if (allSuggestions.value.length === 0) return [];
+  
+  const shuffled = shuffleArray(allSuggestions.value);
+  const maxSuggestions = isDesktop.value ? 3 : 2;
+  return shuffled.slice(0, maxSuggestions);
+};
+
+const displayedSuggestions = computed(() => {
+  return suggestions.value;
 });
 
-// Check screen size
+// Check screen size and update displayed suggestions
 const checkScreenSize = () => {
   if (process.client) {
-    isDesktop.value = window.innerWidth >= 768; // md breakpoint
+    const newIsDesktop = window.innerWidth >= 768; // md breakpoint
+    if (newIsDesktop !== isDesktop.value) {
+      isDesktop.value = newIsDesktop;
+      // Refresh displayed suggestions when screen size changes
+      if (allSuggestions.value.length > 0) {
+        suggestions.value = getRandomSuggestions();
+      }
+    }
   }
 };
 
-// Listen for window resize
+// Listen for window resize and fetch initial suggestions
 onMounted(() => {
   checkScreenSize();
   if (process.client) {
     window.addEventListener("resize", checkScreenSize);
   }
+  
+  // Fetch initial suggestions
+  fetchSuggestions();
+  
+  // Set up periodic refresh of displayed suggestions (every 30 seconds)
+  const refreshInterval = setInterval(() => {
+    if (allSuggestions.value.length > 0) {
+      refreshDisplayedSuggestions();
+    }
+  }, 30000); // 30 seconds
+  
+  // Cleanup interval on unmount
+  onUnmounted(() => {
+    clearInterval(refreshInterval);
+  });
 });
 
 onUnmounted(() => {
@@ -366,7 +401,7 @@ const fetchSuggestions = async () => {
         error.value = "Please log in to see suggestions";
       } else {
         error.value = "Failed to load suggestions";
-      }
+      }      allSuggestions.value = [];
       suggestions.value = [];
     } else if (
       response.data &&
@@ -374,21 +409,41 @@ const fetchSuggestions = async () => {
       response.data.length > 0
     ) {
       // Direct array response from the fixed backend
-      suggestions.value = response.data.map((user) => ({
+      allSuggestions.value = response.data.map((user) => ({
         ...user,
         isFollowing: false,
         mutual_connections: 0, // Simplified API doesn't include this
       }));
-    } else {
+      
+      // Set random suggestions for display
+      suggestions.value = getRandomSuggestions();    } else {
       error.value = "No suggestions available right now";
+      allSuggestions.value = [];
       suggestions.value = [];
     }
   } catch (err) {
     console.error("Error fetching user suggestions:", err);
     error.value = "Failed to load suggestions";
+    allSuggestions.value = [];
     suggestions.value = [];
   } finally {
     loading.value = false;
+  }
+};
+
+// Refresh displayed suggestions without refetching from API
+const refreshDisplayedSuggestions = () => {
+  if (allSuggestions.value.length > 0) {
+    isRefreshing.value = true;
+    suggestions.value = getRandomSuggestions();
+    
+    // Brief animation delay
+    setTimeout(() => {
+      isRefreshing.value = false;
+    }, 300);
+  } else {
+    // If no cached suggestions, fetch new ones
+    fetchSuggestions();
   }
 };
 
@@ -426,20 +481,16 @@ const toggleFollow = async (user) => {
     // Show error message
     toast?.add?.({
       title: "Error",
-      description: "Failed to update follow status",
+      description: "Failed to update follow status",      
       color: "red",
     });
   }
 };
 
-// Lifecycle
-onMounted(() => {
-  fetchSuggestions();
-});
-
 // Expose methods for parent component
 defineExpose({
   refreshSuggestions: fetchSuggestions,
+  shuffleSuggestions: refreshDisplayedSuggestions,
 });
 </script>
 
