@@ -1,10 +1,11 @@
-<template>  
-<div
+<template>
+  <div
     class="flex items-start pt-3 border-t border-gray-100/60 dark:border-slate-700/40 px-2 sm:px-4 lg:px-6"
-  >    <!-- User avatar with enhanced styling -->
+  >
+    <!-- User avatar with enhanced styling -->
     <div class="relative group flex-shrink-0 mr-2 sm:mr-3">
       <img
-        :src="user?.user?.image"
+        :src="user?.user?.image || '/static/frontend/images/placeholder.jpg'"
         alt="Your avatar"
         class="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-full mt-1.5 object-cover border-2 border-white dark:border-slate-700 shadow-sm group-hover:shadow-sm transition-all duration-300 avatar-mobile"
       />
@@ -12,7 +13,8 @@
       <div
         class="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-blue-500/10 blur-md -z-10"
       ></div>
-    </div>    <!-- Comment input with glassmorphism and inline mention display -->
+    </div>
+    <!-- Comment input with glassmorphism and inline mention display -->
     <div class="flex items-center gap-1 sm:gap-2 flex-1 relative">
       <div class="relative group flex-1">
         <!-- Enhanced input container with mention chips inside -->
@@ -20,7 +22,9 @@
           class="relative min-h-[40px] sm:min-h-[42px] lg:min-h-[44px] w-full bg-gray-50/80 dark:bg-slate-800/70 border border-gray-200/70 dark:border-slate-700/50 rounded-xl sm:rounded-2xl focus-within:ring-2 focus-within:ring-blue-500/50 dark:focus-within:ring-blue-400/40 shadow-sm hover:shadow-sm focus-within:shadow-sm transition-all duration-300 backdrop-blur-[2px]"
         >
           <!-- Content wrapper with inline editing capability -->
-          <div class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 lg:px-4 min-h-[36px] sm:min-h-[38px] lg:min-h-[40px]">
+          <div
+            class="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 lg:px-4 min-h-[36px] sm:min-h-[38px] lg:min-h-[40px]"
+          >
             <!-- Contenteditable div for inline mentions and text -->
             <div
               ref="commentInputRef"
@@ -32,7 +36,11 @@
               @keydown="handleKeydown"
               @keyup="handleKeyup"
               @paste="handlePaste"
-              :data-placeholder="isMobile ? 'Add comment...' : 'Add a comment... (Type @ to mention users)'"
+              :data-placeholder="
+                isMobile
+                  ? 'Add comment...'
+                  : 'Add a comment... (Type @ to mention users)'
+              "
             ></div>
             <!-- Action buttons positioned inline with the text -->
             <div
@@ -44,7 +52,10 @@
                 @click="clearComment"
                 aria-label="Clear comment"
               >
-                <UIcon name="i-heroicons-x-mark" class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <UIcon
+                  name="i-heroicons-x-mark"
+                  class="h-3.5 w-3.5 sm:h-4 sm:w-4"
+                />
               </button>
               <button
                 class="p-1 sm:p-1.5 rounded-full bg-blue-500/90 hover:bg-blue-600 text-white shadow-sm hover:shadow transform hover:scale-105 transition-all duration-300 relative"
@@ -65,8 +76,12 @@
             class="absolute bottom-0 left-3 right-3 sm:left-4 sm:right-4 h-0.5 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 transform scale-x-0 focus-within:scale-x-100 transition-transform duration-300"
           ></div>
         </div>
-      </div>      <!-- Gift button moved outside of input -->
-      <div class="relative ml-1 sm:ml-2" v-if="post.author_details.id !== user?.user?.id">
+      </div>
+      <!-- Gift button moved outside of input -->
+      <div
+        class="relative ml-1 sm:ml-2"
+        v-if="post.author_details.id !== user?.user?.id"
+      >
         <button
           ref="giftButtonRef"
           class="px-1.5 sm:px-2 pt-1.5 sm:pt-2 rounded-full text-pink-500 hover:text-pink-600 dark:text-pink-400 dark:hover:text-pink-300 bg-pink-50/80 dark:bg-pink-900/20 hover:bg-pink-100/80 dark:hover:bg-pink-900/30 transition-all duration-300 shadow-sm hover:shadow"
@@ -394,7 +409,8 @@
             </div>
           </div>
         </div>
-      </div>      <!-- Mention suggestions dropdown with enhanced glassmorphism -->
+      </div>
+      <!-- Mention suggestions dropdown with enhanced glassmorphism -->
       <div
         v-if="showMentions"
         ref="mentionDropdownRef"
@@ -564,12 +580,12 @@ const checkMobile = () => {
 
 onMounted(() => {
   checkMobile();
-  window.addEventListener('resize', checkMobile);
+  window.addEventListener("resize", checkMobile);
 });
 
 onBeforeUnmount(() => {
   if (process.client) {
-    window.removeEventListener('resize', checkMobile);
+    window.removeEventListener("resize", checkMobile);
   }
 });
 
@@ -1845,14 +1861,14 @@ const emit = defineEmits([
     padding: 0.25rem 0.5rem;
     margin: 0.125rem 0.25rem 0.125rem 0;
   }
-  
+
   /* Ensure avatar is always visible on mobile */
   .relative.group.flex-shrink-0 {
     min-width: 32px !important;
     width: 32px !important;
     flex-shrink: 0 !important;
   }
-  
+
   .avatar-mobile {
     width: 32px !important;
     height: 32px !important;
