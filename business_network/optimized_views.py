@@ -89,15 +89,14 @@ class OptimizedBusinessNetworkPostListView(generics.ListAPIView):
             # Pre-calculate counts to avoid N+1 queries
             like_count=Count('post_likes', distinct=True),
             comment_count=Count('post_comments', distinct=True),
-            follower_count=Count('post_followers', distinct=True)
-        ).select_related(
+            follower_count=Count('post_followers', distinct=True)        ).select_related(
             'author'  # Only fetch author details
         ).prefetch_related(
             # Optimized prefetch with limited data
             Prefetch('media', queryset=BusinessNetworkMedia.objects.all()[:3]),
             Prefetch('tags', queryset=BusinessNetworkPostTag.objects.all()[:5]),
             Prefetch('post_likes', queryset=BusinessNetworkPostLike.objects.select_related('user')),
-            Prefetch('post_comments', queryset=BusinessNetworkPostComment.objects.select_related('author').order_by('-created_at')[:3])
+            Prefetch('post_comments', queryset=BusinessNetworkPostComment.objects.select_related('author').order_by('-created_at'))
         ).order_by(
             'priority',
             '-created_at'
