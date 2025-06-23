@@ -431,6 +431,9 @@
 const props = defineProps({
   product: Object,
 });
+
+const emit = defineEmits(["tabChange"]);
+
 const { get, post, put } = useApi();
 const route = useRoute();
 const router = useRouter();
@@ -605,7 +608,7 @@ async function handleAddProduct() {
 
         // Navigate to my-products page after successful creation
         setTimeout(() => {
-          router.push("/my-products");
+          emit("tabChange", "products");
         }, 2000); // Wait 2 seconds to show success message
       }
     }

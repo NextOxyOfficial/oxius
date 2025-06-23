@@ -501,7 +501,10 @@
             v-if="activeTab === 'add-product'"
             class="text-center text-gray-600"
           >
-            <CommonAddProductTab v-if="products.length < productLimit" />
+            <CommonAddProductTab
+              v-if="products.length < productLimit"
+              @tab-change="handleTabChange"
+            />
             <div
               v-else
               class="bg-white rounded-lg shadow-sm p-8 flex flex-col items-center"
@@ -1460,6 +1463,10 @@ onMounted(async () => {
 // Data fetching
 const orders = ref([]);
 const isOrdersLoading = ref(false);
+
+function handleTabChange(tab) {
+  activeTab.value = tab;
+}
 
 async function getOrders() {
   isOrdersLoading.value = true;

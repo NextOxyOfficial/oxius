@@ -132,7 +132,10 @@
             >
               {{ currentProduct?.category_details[0]?.name || "Uncategorized" }}
             </UBadge>
-            <div v-if="currentProduct.weight" class="text-xs text-slate-500">
+            <div
+              v-if="currentProduct.weight && currentProduct.weight > 0"
+              class="text-xs text-slate-500"
+            >
               Weight: {{ currentProduct.weight }}kg
             </div>
           </div>
