@@ -1018,7 +1018,7 @@
           </div>          <div v-else>
             <!-- Mobile Similar Products - Horizontal scroll with multiple items -->
             <div class="sm:hidden">
-              <div class="flex overflow-x-auto gap-3 py-2 px-2 hide-scrollbar">
+              <div class="flex overflow-x-auto gap-1.5 py-2 px-2 hide-scrollbar">
                 <div
                   v-for="(product, index) in similarProducts"
                   :key="`mobile-${product.id}`"
