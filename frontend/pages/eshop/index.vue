@@ -17,7 +17,8 @@
       </UContainer>
     </div>
     <UContainer>
-      <!-- Categories Sidebar Component -->      <CommonEshopCategoriesSidebar
+      <!-- Categories Sidebar Component -->      
+       <CommonEshopCategoriesSidebar
         :isOpen="isSidebarOpen"
         :displayedCategories="displayedCategories"
         :selectedCategory="selectedCategory"
@@ -526,12 +527,81 @@ async function fetchCategories() {
   }
 }
 
+// Fetch diverse products from different categories
+async function fetchDiverseProducts() {
+  try {
+    if (categories.value.length === 0) {
+      // Fallback to regular fetch if no categories
+      const res = await get(`/all-products/?page=1&page_size=${itemsPerPage.value}&ordering=random`);
+      return res.data.results || [];
+    }
+
+    const diverseProducts = [];
+    const productsPerCategory = Math.max(2, Math.floor(itemsPerPage.value / categories.value.length));
+    const maxCategoriesToFetch = Math.min(8, categories.value.length); // Limit to 8 categories for performance
+    
+    // Shuffle categories to get random selection
+    const shuffledCategories = [...categories.value].sort(() => Math.random() - 0.5);
+    
+    // Fetch products from each category
+    const categoryPromises = shuffledCategories.slice(0, maxCategoriesToFetch).map(async (category) => {
+      try {
+        const res = await get(`/all-products/?category=${category.id}&page_size=${productsPerCategory}&ordering=random`);
+        return res.data.results || [];
+      } catch (error) {
+        console.error(`Error fetching products for category ${category.name}:`, error);
+        return [];
+      }
+    });
+
+    const categoryResults = await Promise.all(categoryPromises);
+    
+    // Combine all products
+    categoryResults.forEach(products => {
+      diverseProducts.push(...products);
+    });
+
+    // If we don't have enough products, fetch more random products
+    if (diverseProducts.length < itemsPerPage.value) {
+      try {
+        const additionalCount = itemsPerPage.value - diverseProducts.length;
+        const res = await get(`/all-products/?page_size=${additionalCount}&ordering=random`);
+        const additionalProducts = (res.data.results || []).filter(
+          product => !diverseProducts.some(existing => existing.id === product.id)
+        );
+        diverseProducts.push(...additionalProducts);
+      } catch (error) {
+        console.error("Error fetching additional products:", error);
+      }
+    }
+
+    // Shuffle the final results and limit to requested count
+    return diverseProducts
+      .sort(() => Math.random() - 0.5)
+      .slice(0, itemsPerPage.value);
+
+  } catch (error) {
+    console.error("Error fetching diverse products:", error);
+    // Fallback to regular fetch
+    const res = await get(`/all-products/?page=1&page_size=${itemsPerPage.value}&ordering=random`);
+    return res.data.results || [];
+  }
+}
+
 async function fetchProducts() {
   try {
     isLoading.value = true;
 
     // Build query parameters
     let queryParams = `page=${currentPage.value}&page_size=${itemsPerPage.value}`;
+
+    // Add random ordering when no specific filters are applied
+    if (!selectedCategory.value && !searchQuery.value && !minPrice.value && !maxPrice.value) {
+      queryParams += `&ordering=random`;
+    } else {
+      // Use mixed ordering for filtered results
+      queryParams += `&ordering=-created_at`;
+    }
 
     if (selectedCategory.value) {
       queryParams += `&category=${selectedCategory.value}`;
@@ -550,13 +620,21 @@ async function fetchProducts() {
     }
 
     const res = await get(`/all-products/?${queryParams}`);
-    products.value = res.data;
-    totalProducts.value = res.data.count;
-
-    // Reset allProducts and populate with initial results
-    if (currentPage.value === 1) {
-      allProducts.value = res.data.results || [];
+    
+    // If no specific filters and we want diverse categories, fetch mixed results
+    if (!selectedCategory.value && !searchQuery.value && !minPrice.value && !maxPrice.value && currentPage.value === 1) {
+      const diverseProducts = await fetchDiverseProducts();
+      products.value = { ...res.data, results: diverseProducts };
+      allProducts.value = diverseProducts;
+    } else {
+      products.value = res.data;
+      // Reset allProducts and populate with initial results
+      if (currentPage.value === 1) {
+        allProducts.value = res.data.results || [];
+      }
     }
+
+    totalProducts.value = res.data.count;
 
     // Update hasMoreProducts status
     hasMoreProducts.value =
@@ -585,6 +663,13 @@ async function loadMoreProducts() {
     // Build query parameters
     let queryParams = `page=${currentPage.value}&page_size=${itemsPerPage.value}`;
 
+    // Add random ordering when no specific filters are applied
+    if (!selectedCategory.value && !searchQuery.value && !minPrice.value && !maxPrice.value) {
+      queryParams += `&ordering=random`;
+    } else {
+      queryParams += `&ordering=-created_at`;
+    }
+
     if (selectedCategory.value) {
       queryParams += `&category=${selectedCategory.value}`;
     }
@@ -601,8 +686,19 @@ async function loadMoreProducts() {
       queryParams += `&max_price=${maxPrice.value}`;
     }
 
-    const res = await get(`/all-products/?${queryParams}`);
-    const newProducts = res.data.results;
+    let newProducts = [];
+
+    // If no filters, fetch diverse products for better variety
+    if (!selectedCategory.value && !searchQuery.value && !minPrice.value && !maxPrice.value) {
+      newProducts = await fetchDiverseProducts();
+      // Filter out products that already exist to avoid duplicates
+      newProducts = newProducts.filter(
+        product => !allProducts.value.some(existing => existing.id === product.id)
+      );
+    } else {
+      const res = await get(`/all-products/?${queryParams}`);
+      newProducts = res.data.results || [];
+    }
 
     // Add new products to the existing list
     if (newProducts && newProducts.length > 0) {
