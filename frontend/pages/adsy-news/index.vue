@@ -172,7 +172,7 @@
           ]"
         >
           <article
-            v-for="article in filteredArticles.slice(0, 12)"
+            v-for="article in filteredArticles"
             :key="article.id"
             :class="[
               'bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-sm transition-all duration-300 transform hover:-translate-y-1',
@@ -213,11 +213,11 @@
         </div>
 
         <!-- Load More Button -->
-        <div v-if="filteredArticles.length > 12" class="mt-12 text-center">
+        <div v-if="hasMoreArticles" class="mt-12 text-center">
           <button
             @click="loadMoreArticles"
             class="px-6 py-3 bg-gray-200 text-gray-800 rounded-full hover:bg-gray-300 transition-colors duration-200 font-medium"
-            :disabled="isLoading"
+            :disabled="isLoading || !hasMoreArticles"
           >
             <span v-if="isLoading">Loading...</span>
             <span v-else>Load More Articles</span>
@@ -229,15 +229,15 @@
             Trending Topics
           </h2>
           <div class="flex flex-wrap gap-y-3 gap-x-1 sm:gap-3">
-            <a
+            <NuxtLink
               v-for="(topic, index) in trendingTopics"
               :key="index"
-              href="#"
+              :to="`/adsy-news/categories/${topic.slug}/`"
               class="px-2 sm:px-4 py-2 bg-white rounded-full text-gray-800 shadow-sm hover:shadow-sm transition-shadow duration-200 text-xs sm:text-sm font-medium flex items-center"
             >
               <TrendingUpIcon class="h-4 w-4 mr-2 text-primary" />
-              {{ topic }}
-            </a>
+              {{ topic.title }}
+            </NuxtLink>
           </div>
         </div>
 
@@ -353,9 +353,10 @@ import {
 
 // Articles state
 const articles = ref([]);
+const forTrendingArticles = ref([]);
 const totalPages = ref(0);
 const isLoading = ref(false);
-const hasMoreArticles = ref(true);
+const hasMoreArticles = ref(false);
 const currentPage = ref(1);
 const allArticlesLoaded = ref(false);
 
@@ -375,6 +376,9 @@ async function getArticles(page = 1, append = false) {
     if (res.data) {
       if (res.data.results) {
         // Handle paginated response
+        if (page === 1) {
+          forTrendingArticles.value = res.data.results;
+        }
         if (append) {
           articles.value = [...articles.value, ...res.data.results];
         } else {
@@ -382,6 +386,7 @@ async function getArticles(page = 1, append = false) {
         }
 
         // Check if there are more pages
+        console.log("Response Data:", res.data, !!res.data.next);
         hasMoreArticles.value = !!res.data.next;
         // Update allArticlesLoaded state
         allArticlesLoaded.value = !hasMoreArticles.value;
@@ -501,7 +506,12 @@ async function getTrendingTopics() {
     if (res.data && Array.isArray(res.data.results)) {
       // Extract unique tags and take the first 7 (or fewer if there aren't 7)
       const uniqueTags = [
-        ...new Set(res.data.results.map((category) => category.title)),
+        ...new Set(
+          res.data.results.map((category) => ({
+            title: category.title,
+            slug: category.slug,
+          }))
+        ),
       ];
       trendingTopics.value = uniqueTags.slice(0, 7);
     }
@@ -624,7 +634,7 @@ const filteredArticles = computed(() => {
 // Trending articles (based on comment count)
 const trendingArticles = computed(() => {
   // Sort articles by comment count (or can be replaced with other engagement metrics if available)
-  return [...articles.value]
+  return [...forTrendingArticles.value]
     .sort((a, b) => {
       const aComments = a.post_comments ? a.post_comments.length : 0;
       const bComments = b.post_comments ? b.post_comments.length : 0;
