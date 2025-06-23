@@ -330,7 +330,7 @@ class ProductAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Basic Information', {
-            'fields': ('owner', 'name', 'image', 'slug', 'description', 'short_description')
+            'fields': ('owner', 'name', 'image', 'slug', 'description', 'short_description', )
         }),
         ('Pricing & Inventory', {
             'fields': ('regular_price', 'sale_price', 'quantity', 'weight')
