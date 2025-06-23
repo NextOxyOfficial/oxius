@@ -974,8 +974,7 @@
               </div>
             </div>
           </div>
-        </div>
-        <!-- You may also like Section -->
+        </div>        <!-- You may also like Section -->
         <div class="bg-slate-50 dark:bg-slate-800/30 rounded-xl">
           <h3
             class="text-base font-medium py-3 px-2 text-gray-800 dark:text-white flex items-center"
@@ -984,7 +983,7 @@
               name="i-heroicons-squares-2x2"
               class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400"
             />
-            You may also like
+            {{ similarProductsTitle }}
           </h3>
           <div v-if="isSimilarProductsLoading" class="flex justify-center py-6">
             <div class="flex flex-col items-center">
@@ -1016,16 +1015,14 @@
             <p class="mt-4 text-sm text-gray-600 dark:text-slate-400">
               No similar products found
             </p>
-          </div>
-
-          <div v-else>
-            <!-- Mobile Similar Products - 2 items on small screens -->
+          </div>          <div v-else>
+            <!-- Mobile Similar Products - Horizontal scroll with multiple items -->
             <div class="sm:hidden">
-              <div class="flex overflow-x-auto gap-2 py-2 hide-scrollbar px-1">
+              <div class="flex overflow-x-auto gap-3 py-2 px-2 hide-scrollbar">
                 <div
-                  v-for="(product, index) in similarProducts.slice(0, 2)"
+                  v-for="(product, index) in similarProducts"
                   :key="`mobile-${product.id}`"
-                  class="flex-shrink-0 w-[48%] similar-product-fade-in"
+                  class="flex-shrink-0 w-[45%] similar-product-fade-in"
                   style="animation-delay: calc(var(--i) * 0.1s)"
                   :style="{ '--i': index }"
                 >
@@ -1033,14 +1030,15 @@
                 </div>
               </div>
             </div>
-            <!-- Desktop Similar Products - 5 items in a single row -->
+            
+            <!-- Desktop Similar Products - 4 items in a single row -->
             <div
-              class="hidden sm:flex sm:space-x-2 overflow-x-auto pb-4 hide-scrollbar"
+              class="hidden sm:grid sm:grid-cols-4 gap-3 px-2 pb-4"
             >
               <div
-                v-for="(product, index) in similarProducts.slice(0, 5)"
+                v-for="(product, index) in similarProducts.slice(0, 4)"
                 :key="`desktop-${product.id}`"
-                class="similar-product-fade-in w-1/4 flex-shrink-0"
+                class="similar-product-fade-in"
                 style="animation-delay: calc(var(--i) * 0.1s)"
                 :style="{ '--i': index }"
               >
@@ -1187,22 +1185,85 @@ function openMessageModal() {
 
 // Fetch similar products based on the current product's category
 async function fetchSimilarProducts() {
-  if (!currentProduct || !currentProduct.category) return;
+  if (!currentProduct) return;
 
   isSimilarProductsLoading.value = true;
+  const targetCount = 8; // Target number of similar products to show (more for mobile scroll)
 
   try {
-    // Get products from the same category, excluding current product
     const { get } = useApi();
-    let queryParams = `category=${currentProduct.category}&page_size=6`;
+    let similarProductsList = [];
 
-    const response = await get(`/all-products/?${queryParams}`);
-    if (response && response.data && response.data.results) {
-      // Filter out current product and limit to 5 items
-      similarProducts.value = response.data.results
-        .filter((product) => product.id !== currentProduct.id)
-        .slice(0, 5);
+    // First, try to get products from the same category
+    if (currentProduct.category) {
+      try {
+        let queryParams = `category=${currentProduct.category}&page_size=12&ordering=random`;
+        const sameCategory = await get(`/all-products/?${queryParams}`);
+        
+        if (sameCategory && sameCategory.data && sameCategory.data.results) {
+          // Filter out current product
+          const sameCategoryProducts = sameCategory.data.results
+            .filter((product) => product.id !== currentProduct.id);
+          
+          similarProductsList.push(...sameCategoryProducts);
+        }
+      } catch (error) {
+        console.error("Error fetching same category products:", error);
+      }
     }
+
+    // If we don't have enough products from the same category, fetch from other categories
+    if (similarProductsList.length < targetCount) {
+      try {
+        const remainingCount = targetCount - similarProductsList.length + 6; // Get a few extra for filtering
+        let additionalQueryParams = `page_size=${remainingCount}&ordering=random`;
+        
+        // Exclude current category if it exists
+        if (currentProduct.category) {
+          additionalQueryParams += `&exclude_category=${currentProduct.category}`;
+        }
+
+        const additionalResponse = await get(`/all-products/?${additionalQueryParams}`);
+        
+        if (additionalResponse && additionalResponse.data && additionalResponse.data.results) {
+          const additionalProducts = additionalResponse.data.results
+            .filter((product) => 
+              product.id !== currentProduct.id && 
+              !similarProductsList.some(existing => existing.id === product.id)
+            );
+          
+          similarProductsList.push(...additionalProducts);
+        }
+      } catch (error) {
+        console.error("Error fetching additional category products:", error);
+      }
+    }
+
+    // If we still don't have enough, get any random products as fallback
+    if (similarProductsList.length < targetCount) {
+      try {
+        const fallbackCount = targetCount - similarProductsList.length + 4;
+        const fallbackResponse = await get(`/all-products/?page_size=${fallbackCount}&ordering=random`);
+        
+        if (fallbackResponse && fallbackResponse.data && fallbackResponse.data.results) {
+          const fallbackProducts = fallbackResponse.data.results
+            .filter((product) => 
+              product.id !== currentProduct.id && 
+              !similarProductsList.some(existing => existing.id === product.id)
+            );
+          
+          similarProductsList.push(...fallbackProducts);
+        }
+      } catch (error) {
+        console.error("Error fetching fallback products:", error);
+      }
+    }
+
+    // Shuffle the final list and limit to target count
+    similarProducts.value = similarProductsList
+      .sort(() => Math.random() - 0.5)
+      .slice(0, targetCount);
+
   } catch (error) {
     console.error("Error fetching similar products:", error);
     similarProducts.value = [];
@@ -1365,6 +1426,32 @@ const paginationRange = computed(() => {
     "...",
     totalReviewPages.value,
   ];
+});
+
+const similarProductsTitle = computed(() => {
+  if (similarProducts.value.length === 0) {
+    return "You may also like";
+  }
+  
+  if (!currentProduct?.category_details?.length) {
+    return "You may also like";
+  }
+  
+  // Check if we have products from the same category
+  const sameCategoryProducts = similarProducts.value.filter(product => 
+    product.category === currentProduct.category
+  );
+  
+  if (sameCategoryProducts.length === similarProducts.value.length) {
+    // All products are from the same category
+    return `More from ${currentProduct.category_details[0]?.name || 'this category'}`;
+  } else if (sameCategoryProducts.length > 0) {
+    // Mixed products from same and different categories
+    return "You may also like";
+  } else {
+    // All products are from different categories
+    return "You may also like";
+  }
 });
 
 // Review API functions
