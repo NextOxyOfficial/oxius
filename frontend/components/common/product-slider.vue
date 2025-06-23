@@ -59,14 +59,14 @@
                   class="text-lg sm:text-xl font-medium text-slate-900 dark:text-white truncate"
                 >
                   {{ $t("eshop") }}
-                </h2>
-                <p
+                </h2>                <p
                   class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium"
                 >
-                  Discover amazing products
+                  Diverse products from various categories
                 </p>
               </div>
-            </div>            <!-- Action button - mobile optimized -->
+            </div>            
+            <!-- Action button - mobile optimized -->
             <NuxtLink
               to="/shop-manager"
               class="flex-shrink-0 group relative inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-xs sm:text-sm transition-colors duration-200 overflow-hidden"
@@ -127,7 +127,8 @@
               </div>
             </div>
           </div>
-        </div>        <!-- Second row of products -->
+        </div>        
+        <!-- Second row of products -->
         <div class="slider-content py-3 px-1 sm:px-4 pb-4">
           <div class="product-row">
             <div class="flex gap-1 sm:gap-3 md:gap-4 overflow-x-auto hide-scrollbar scroll-smooth" style="-webkit-overflow-scrolling: touch;">
@@ -288,8 +289,8 @@ async function fetchProducts() {
   isLoading.value = true;
 
   try {
-    // Add limit parameter to fetch exactly 10 products
-    const response = await get(`/all-products/?limit=${productsLimit}`);
+    // Add limit and random parameters to fetch exactly 10 random products from different categories
+    const response = await get(`/all-products/?limit=${productsLimit}&random=true`);
 
     if (response && response.data) {
       debugData.value = response.data;
