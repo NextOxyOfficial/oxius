@@ -3,25 +3,19 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.adsyclub.app',
   appName: 'AdsyClub',
-  webDir: 'dist',
-  server: {
+  webDir: 'dist',  server: {
     androidScheme: 'https'
-  },
-  plugins: {
+  },  plugins: {
     SplashScreen: {
-      launchShowDuration: 3000,
+      launchShowDuration: 0,
       launchAutoHide: true,
-      backgroundColor: "#10b981",
-      androidSplashResourceName: "splash",
-      androidScaleType: "CENTER_CROP",
       showSpinner: false,
-      androidSpinnerStyle: "large",
-      iosSpinnerStyle: "small",
-      spinnerColor: "#999999",
+      androidSplashResourceName: "splash",
       splashFullScreen: true,
-      splashImmersive: true,
-      layoutName: "launch_screen",
-      useDialog: true,
+      splashImmersive: true
+    },
+    Camera: {
+      permissions: ['camera', 'photos']
     }
   }
 };
