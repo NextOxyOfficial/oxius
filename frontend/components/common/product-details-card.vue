@@ -1194,10 +1194,26 @@ async function fetchSimilarProducts() {
     const { get } = useApi();
     let similarProductsList = [];
 
-    // First, try to get products from the same category
+    // Get the primary category ID - handle different data structures
+    let primaryCategoryId = null;
     if (currentProduct.category) {
+      // Handle if category is an array, comma-separated string, or single ID
+      if (Array.isArray(currentProduct.category)) {
+        primaryCategoryId = currentProduct.category[0];
+      } else if (typeof currentProduct.category === 'string' && currentProduct.category.includes(',')) {
+        primaryCategoryId = currentProduct.category.split(',')[0].trim();
+      } else {
+        primaryCategoryId = currentProduct.category;
+      }
+    } else if (currentProduct.category_details && currentProduct.category_details.length > 0) {
+      // Fallback to category_details if available
+      primaryCategoryId = currentProduct.category_details[0].id;
+    }
+
+    // First, try to get products from the same category
+    if (primaryCategoryId) {
       try {
-        let queryParams = `category=${currentProduct.category}&page_size=12&ordering=random`;
+        let queryParams = `category=${primaryCategoryId}&page_size=12&ordering=random`;
         const sameCategory = await get(`/all-products/?${queryParams}`);
         
         if (sameCategory && sameCategory.data && sameCategory.data.results) {
@@ -1219,8 +1235,8 @@ async function fetchSimilarProducts() {
         let additionalQueryParams = `page_size=${remainingCount}&ordering=random`;
         
         // Exclude current category if it exists
-        if (currentProduct.category) {
-          additionalQueryParams += `&exclude_category=${currentProduct.category}`;
+        if (primaryCategoryId) {
+          additionalQueryParams += `&exclude_category=${primaryCategoryId}`;
         }
 
         const additionalResponse = await get(`/all-products/?${additionalQueryParams}`);
@@ -1437,9 +1453,23 @@ const similarProductsTitle = computed(() => {
     return "You may also like";
   }
   
+  // Get the primary category ID for comparison
+  let primaryCategoryId = null;
+  if (currentProduct.category) {
+    if (Array.isArray(currentProduct.category)) {
+      primaryCategoryId = currentProduct.category[0];
+    } else if (typeof currentProduct.category === 'string' && currentProduct.category.includes(',')) {
+      primaryCategoryId = currentProduct.category.split(',')[0].trim();
+    } else {
+      primaryCategoryId = currentProduct.category;
+    }
+  } else if (currentProduct.category_details && currentProduct.category_details.length > 0) {
+    primaryCategoryId = currentProduct.category_details[0].id;
+  }
+  
   // Check if we have products from the same category
   const sameCategoryProducts = similarProducts.value.filter(product => 
-    product.category === currentProduct.category
+    product.category === primaryCategoryId
   );
   
   if (sameCategoryProducts.length === similarProducts.value.length) {
