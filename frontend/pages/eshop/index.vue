@@ -17,8 +17,8 @@
       </UContainer>
     </div>
     <UContainer>
-      <!-- Categories Sidebar Component -->      
-       <CommonEshopCategoriesSidebar
+      <!-- Categories Sidebar Component -->
+      <CommonEshopCategoriesSidebar
         :isOpen="isSidebarOpen"
         :displayedCategories="displayedCategories"
         :selectedCategory="selectedCategory"
@@ -333,7 +333,7 @@ import {
   CommonEshopBanner,
   CommonEshopCategoriesSidebar,
 } from "#components";
-import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 const { get } = useApi();
 const products = ref({});
 const categories = ref([]);
@@ -377,6 +377,9 @@ let searchTimeout = null;
 function debouncedSearch() {
   clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
+    currentPage.value = 1;
+    allProducts.value = [];
+    hasMoreProducts.value = true;
     fetchProducts();
   }, 500);
 }
@@ -395,27 +398,40 @@ function toggleCategory(categoryId) {
     selectedCategory.value = categoryId;
   }
   currentPage.value = 1;
+  allProducts.value = [];
+  hasMoreProducts.value = true;
   fetchProducts();
 }
 
 function clearCategoryFilter() {
   selectedCategory.value = null;
+  currentPage.value = 1;
+  allProducts.value = [];
+  hasMoreProducts.value = true;
   fetchProducts();
 }
 
 function clearPriceFilter() {
   minPrice.value = "";
   maxPrice.value = "";
+  currentPage.value = 1;
+  allProducts.value = [];
+  hasMoreProducts.value = true;
   fetchProducts();
 }
 
 function clearSearch() {
   searchQuery.value = "";
+  currentPage.value = 1;
+  allProducts.value = [];
+  hasMoreProducts.value = true;
   fetchProducts();
 }
 
 function applyPriceFilter() {
   currentPage.value = 1;
+  allProducts.value = [];
+  hasMoreProducts.value = true;
   fetchProducts();
 }
 
@@ -425,6 +441,8 @@ function clearAllFilters() {
   maxPrice.value = "";
   searchQuery.value = "";
   currentPage.value = 1;
+  allProducts.value = [];
+  hasMoreProducts.value = true;
   fetchProducts();
 }
 
@@ -441,6 +459,9 @@ function toggleSidebar() {
 // Select category and close sidebar
 function selectCategoryAndCloseSidebar(categoryId) {
   selectedCategory.value = categoryId;
+  currentPage.value = 1;
+  allProducts.value = [];
+  hasMoreProducts.value = true;
   toggleSidebar();
   fetchProducts();
 }
@@ -454,18 +475,21 @@ async function loadMoreCategories() {
 
   try {
     isLoadingMoreCategories.value = true;
-    
+
     // Calculate how many categories to load next
     const currentCount = displayedCategories.value.length;
     const batchSize = 10;
-    const nextBatch = categories.value.slice(currentCount, currentCount + batchSize);
-    
+    const nextBatch = categories.value.slice(
+      currentCount,
+      currentCount + batchSize
+    );
+
     // Add the next batch to displayed categories
     displayedCategories.value.push(...nextBatch);
-    
+
     // Update hasMoreCategoriesToLoad based on whether there are more categories
-    hasMoreCategoriesToLoad.value = displayedCategories.value.length < categories.value.length;
-    
+    hasMoreCategoriesToLoad.value =
+      displayedCategories.value.length < categories.value.length;
   } catch (error) {
     console.error("Error loading more categories:", error);
     toast.add({
@@ -532,32 +556,46 @@ async function fetchDiverseProducts() {
   try {
     if (categories.value.length === 0) {
       // Fallback to regular fetch if no categories
-      const res = await get(`/all-products/?page=1&page_size=${itemsPerPage.value}&ordering=random`);
+      const res = await get(
+        `/all-products/?page=1&page_size=${itemsPerPage.value}&ordering=random`
+      );
       return res.data.results || [];
     }
 
     const diverseProducts = [];
-    const productsPerCategory = Math.max(2, Math.floor(itemsPerPage.value / categories.value.length));
+    const productsPerCategory = Math.max(
+      2,
+      Math.floor(itemsPerPage.value / categories.value.length)
+    );
     const maxCategoriesToFetch = Math.min(8, categories.value.length); // Limit to 8 categories for performance
-    
+
     // Shuffle categories to get random selection
-    const shuffledCategories = [...categories.value].sort(() => Math.random() - 0.5);
-    
+    const shuffledCategories = [...categories.value].sort(
+      () => Math.random() - 0.5
+    );
+
     // Fetch products from each category
-    const categoryPromises = shuffledCategories.slice(0, maxCategoriesToFetch).map(async (category) => {
-      try {
-        const res = await get(`/all-products/?category=${category.id}&page_size=${productsPerCategory}&ordering=random`);
-        return res.data.results || [];
-      } catch (error) {
-        console.error(`Error fetching products for category ${category.name}:`, error);
-        return [];
-      }
-    });
+    const categoryPromises = shuffledCategories
+      .slice(0, maxCategoriesToFetch)
+      .map(async (category) => {
+        try {
+          const res = await get(
+            `/all-products/?category=${category.id}&page_size=${productsPerCategory}&ordering=random`
+          );
+          return res.data.results || [];
+        } catch (error) {
+          console.error(
+            `Error fetching products for category ${category.name}:`,
+            error
+          );
+          return [];
+        }
+      });
 
     const categoryResults = await Promise.all(categoryPromises);
-    
+
     // Combine all products
-    categoryResults.forEach(products => {
+    categoryResults.forEach((products) => {
       diverseProducts.push(...products);
     });
 
@@ -565,9 +603,12 @@ async function fetchDiverseProducts() {
     if (diverseProducts.length < itemsPerPage.value) {
       try {
         const additionalCount = itemsPerPage.value - diverseProducts.length;
-        const res = await get(`/all-products/?page_size=${additionalCount}&ordering=random`);
+        const res = await get(
+          `/all-products/?page_size=${additionalCount}&ordering=random`
+        );
         const additionalProducts = (res.data.results || []).filter(
-          product => !diverseProducts.some(existing => existing.id === product.id)
+          (product) =>
+            !diverseProducts.some((existing) => existing.id === product.id)
         );
         diverseProducts.push(...additionalProducts);
       } catch (error) {
@@ -579,11 +620,12 @@ async function fetchDiverseProducts() {
     return diverseProducts
       .sort(() => Math.random() - 0.5)
       .slice(0, itemsPerPage.value);
-
   } catch (error) {
     console.error("Error fetching diverse products:", error);
     // Fallback to regular fetch
-    const res = await get(`/all-products/?page=1&page_size=${itemsPerPage.value}&ordering=random`);
+    const res = await get(
+      `/all-products/?page=1&page_size=${itemsPerPage.value}&ordering=random`
+    );
     return res.data.results || [];
   }
 }
@@ -596,7 +638,12 @@ async function fetchProducts() {
     let queryParams = `page=${currentPage.value}&page_size=${itemsPerPage.value}`;
 
     // Add random ordering when no specific filters are applied
-    if (!selectedCategory.value && !searchQuery.value && !minPrice.value && !maxPrice.value) {
+    if (
+      !selectedCategory.value &&
+      !searchQuery.value &&
+      !minPrice.value &&
+      !maxPrice.value
+    ) {
       queryParams += `&ordering=random`;
     } else {
       // Use mixed ordering for filtered results
@@ -620,9 +667,15 @@ async function fetchProducts() {
     }
 
     const res = await get(`/all-products/?${queryParams}`);
-    
+
     // If no specific filters and we want diverse categories, fetch mixed results
-    if (!selectedCategory.value && !searchQuery.value && !minPrice.value && !maxPrice.value && currentPage.value === 1) {
+    if (
+      !selectedCategory.value &&
+      !searchQuery.value &&
+      !minPrice.value &&
+      !maxPrice.value &&
+      currentPage.value === 1
+    ) {
       const diverseProducts = await fetchDiverseProducts();
       products.value = { ...res.data, results: diverseProducts };
       allProducts.value = diverseProducts;
@@ -634,11 +687,24 @@ async function fetchProducts() {
       }
     }
 
-    totalProducts.value = res.data.count;
+    totalProducts.value = res.data.count || 0;
 
-    // Update hasMoreProducts status
-    hasMoreProducts.value =
-      res.data.results && res.data.results.length === itemsPerPage.value;
+    // Update hasMoreProducts status based on total count vs current products
+    if (currentPage.value === 1) {
+      hasMoreProducts.value =
+        (res.data.results?.length || 0) >= itemsPerPage.value &&
+        allProducts.value.length < totalProducts.value;
+    } else {
+      hasMoreProducts.value = allProducts.value.length < totalProducts.value;
+    }
+
+    console.log("Fetch Products Debug:", {
+      currentPage: currentPage.value,
+      totalProducts: totalProducts.value,
+      currentProductsCount: allProducts.value.length,
+      hasMoreProducts: hasMoreProducts.value,
+      resultsLength: res.data.results?.length || 0,
+    });
   } catch (error) {
     console.error("Error fetching products:", error);
     toast.add({
@@ -664,7 +730,12 @@ async function loadMoreProducts() {
     let queryParams = `page=${currentPage.value}&page_size=${itemsPerPage.value}`;
 
     // Add random ordering when no specific filters are applied
-    if (!selectedCategory.value && !searchQuery.value && !minPrice.value && !maxPrice.value) {
+    if (
+      !selectedCategory.value &&
+      !searchQuery.value &&
+      !minPrice.value &&
+      !maxPrice.value
+    ) {
       queryParams += `&ordering=random`;
     } else {
       queryParams += `&ordering=-created_at`;
@@ -689,24 +760,45 @@ async function loadMoreProducts() {
     let newProducts = [];
 
     // If no filters, fetch diverse products for better variety
-    if (!selectedCategory.value && !searchQuery.value && !minPrice.value && !maxPrice.value) {
+    if (
+      !selectedCategory.value &&
+      !searchQuery.value &&
+      !minPrice.value &&
+      !maxPrice.value
+    ) {
       newProducts = await fetchDiverseProducts();
       // Filter out products that already exist to avoid duplicates
       newProducts = newProducts.filter(
-        product => !allProducts.value.some(existing => existing.id === product.id)
+        (product) =>
+          !allProducts.value.some((existing) => existing.id === product.id)
       );
     } else {
       const res = await get(`/all-products/?${queryParams}`);
       newProducts = res.data.results || [];
     }
 
+    console.log("Load More Products Debug:", {
+      currentPage: currentPage.value,
+      newProductsLength: newProducts.length,
+      allProductsCountBefore: allProducts.value.length,
+      totalProducts: totalProducts.value,
+    });
+
     // Add new products to the existing list
     if (newProducts && newProducts.length > 0) {
       allProducts.value = [...allProducts.value, ...newProducts];
     }
 
+    console.log("After adding products:", {
+      allProductsCountAfter: allProducts.value.length,
+      totalProducts: totalProducts.value,
+    });
+
     // Check if there are more products to load
-    hasMoreProducts.value = newProducts.length === itemsPerPage.value;
+    // If we got fewer products than requested, or if we've reached the total count, no more products
+    hasMoreProducts.value =
+      newProducts.length === itemsPerPage.value &&
+      allProducts.value.length < (totalProducts.value || 0);
   } catch (error) {
     console.error("Error loading more products:", error);
     toast.add({
@@ -722,32 +814,73 @@ async function loadMoreProducts() {
 }
 
 // Initialize infinite scroll
+let observer = null;
+
 function initInfiniteScroll() {
+  // Clean up existing observer
+  if (observer) {
+    observer.disconnect();
+  }
+
   const options = {
     root: null,
-    rootMargin: "0px",
+    rootMargin: "200px", // Start loading 200px before the element comes into view
     threshold: 0.1,
   };
-
-  const observer = new IntersectionObserver((entries) => {
+  observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
+      console.log("Intersection Observer triggered:", {
+        isIntersecting: entry.isIntersecting,
+        isLoadingMore: isLoadingMore.value,
+        hasMoreProducts: hasMoreProducts.value,
+        allProductsLength: allProducts.value.length,
+      });
+
       if (
         entry.isIntersecting &&
         !isLoadingMore.value &&
-        hasMoreProducts.value
+        hasMoreProducts.value &&
+        allProducts.value.length > 0 // Only load more if we have initial products
       ) {
+        console.log("Loading more products...");
         loadMoreProducts();
       }
     });
   }, options);
 
-  if (loadMoreTrigger.value) {
-    observer.observe(loadMoreTrigger.value);
-  }
+  // Use nextTick to ensure the element is in DOM
+  nextTick(() => {
+    if (loadMoreTrigger.value) {
+      observer.observe(loadMoreTrigger.value);
+    }
+  });
 }
+
+// Clean up observer on unmount
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect();
+  }
+});
+
+// Watch for filter changes and reinitialize infinite scroll
+watch([selectedCategory, searchQuery, minPrice, maxPrice], () => {
+  // Reset pagination state when filters change
+  currentPage.value = 1;
+  allProducts.value = [];
+  hasMoreProducts.value = true;
+
+  // Reinitialize infinite scroll after a brief delay to ensure DOM updates
+  nextTick(() => {
+    setTimeout(() => {
+      initInfiniteScroll();
+    }, 100);
+  });
+});
 
 // Initialize data
 await Promise.all([fetchCategories(), fetchProducts()]);
+
 onMounted(() => {
   initInfiniteScroll();
 });
