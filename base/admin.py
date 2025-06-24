@@ -220,6 +220,7 @@ class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
     list_filter = ('service_status', 'negotiable', 'active_service')
     search_fields = ('title',)
     list_per_page = 20
+    ordering = ['-created_at']
 
     @admin.display(ordering="-created_at")
     def created_at(self, obj):
