@@ -456,8 +456,8 @@
         </div>
 
         <!-- Desktop Navigation Menu -->
-        <nav class="hidden md:block">
-          <div class="flex items-center gap-2 border-b border-transparent">
+        <nav class="hidden md:block sm:text-xs lg:text-base">
+          <div class="flex items-center gap-1 border-b border-transparent">
             <NuxtLink
               to="/#home"
               class="relative flex items-center gap-2 py-1 px-2 font-medium text-blue-600 hover:text-blue-800 transition-all duration-300"
@@ -543,7 +543,7 @@
         <!-- Not Logged In User Section -->
         <div v-if="!user" class="flex relative menu-container items-center">
           <!-- Desktop language switcher - completely hidden on mobile -->
-          <PublicTranslateHandler class="px-2 hidden sm:block" />
+          <PublicTranslateHandler class="px-2 hidden" />
 
           <!-- Mobile Profile Icon -->
           <div class="sm:hidden">
@@ -562,7 +562,7 @@
           <!-- Login Button -->
           <UButton
             to="/auth/login"
-            label="Login/Register"
+            label="Login"
             color="gray"
             class="hidden sm:flex"
             :ui="{
