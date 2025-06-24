@@ -5,17 +5,30 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep Capacitor WebView components
+-keep class com.getcapacitor.** { *; }
+-keep class com.getcapacitor.annotation.** { *; }
+-keepnames class com.getcapacitor.**
+-keepclassmembers class * extends com.getcapacitor.Plugin {
+   @com.getcapacitor.annotation.CapacitorPlugin <methods>;
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep WebView JavaScript interface
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
+# Keep line numbers for debugging
+-keepattributes SourceFile,LineNumberTable
+
+# Keep parameter names for better debugging
+-keepattributes LocalVariableTable,LocalVariableTypeTable
+
+# Keep annotations
+-keepattributes *Annotation*
+
+# Don't warn about missing classes that might not be used
+-dontwarn javax.annotation.**
+-dontwarn kotlin.Unit
+-dontwarn kotlin.jvm.functions.**
 #-renamesourcefileattribute SourceFile
