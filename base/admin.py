@@ -220,7 +220,12 @@ class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
     list_filter = ('service_status', 'negotiable', 'active_service')
     search_fields = ('title',)
     list_per_page = 20
-    ordering = ['-created_at']
+    ordering = ['-created_at']  # Most recent first
+
+    def get_queryset(self, request):
+        """Override queryset to ensure proper ordering"""
+        queryset = super().get_queryset(request)
+        return queryset.order_by('-created_at')
 
     @admin.display(ordering="-created_at")
     def created_at(self, obj):
