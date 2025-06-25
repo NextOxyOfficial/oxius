@@ -315,11 +315,32 @@
           </p>
         </div>
         <div
+          v-else-if="hasMoreProducts && allProducts.length > 0"
+          class="text-center py-4"
+        >
+          <UButton
+            @click="loadMoreProducts"
+            color="emerald"
+            variant="soft"
+            size="lg"
+            :loading="isLoadingMore"
+            class="px-8 py-3"
+          >
+            Load More Products
+          </UButton>
+          <p class="text-xs text-gray-500 mt-2">
+            Showing {{ allProducts.length }} of {{ totalProducts }} products
+          </p>
+        </div>
+        <div
           v-else-if="!hasMoreProducts && allProducts.length > 0"
           class="text-center py-4"
         >
           <p class="text-sm text-gray-600 dark:text-gray-600">
             You've reached the end of the list
+          </p>
+          <p class="text-xs text-gray-500 mt-1">
+            Showing all {{ allProducts.length }} products
           </p>
         </div>
       </div>
@@ -715,6 +736,15 @@ async function fetchProducts() {
     });
   } finally {
     isLoading.value = false;
+
+    // Reinitialize infinite scroll after loading is complete
+    if (currentPage.value === 1) {
+      nextTick(() => {
+        setTimeout(() => {
+          initInfiniteScroll();
+        }, 300);
+      });
+    }
   }
 }
 
@@ -729,14 +759,14 @@ async function loadMoreProducts() {
     // Build query parameters
     let queryParams = `page=${currentPage.value}&page_size=${itemsPerPage.value}`;
 
-    // Add random ordering when no specific filters are applied
+    // Add consistent ordering for pagination
     if (
       !selectedCategory.value &&
       !searchQuery.value &&
       !minPrice.value &&
       !maxPrice.value
     ) {
-      queryParams += `&ordering=random`;
+      queryParams += `&ordering=-created_at`;
     } else {
       queryParams += `&ordering=-created_at`;
     }
@@ -759,23 +789,9 @@ async function loadMoreProducts() {
 
     let newProducts = [];
 
-    // If no filters, fetch diverse products for better variety
-    if (
-      !selectedCategory.value &&
-      !searchQuery.value &&
-      !minPrice.value &&
-      !maxPrice.value
-    ) {
-      newProducts = await fetchDiverseProducts();
-      // Filter out products that already exist to avoid duplicates
-      newProducts = newProducts.filter(
-        (product) =>
-          !allProducts.value.some((existing) => existing.id === product.id)
-      );
-    } else {
-      const res = await get(`/all-products/?${queryParams}`);
-      newProducts = res.data.results || [];
-    }
+    // For pagination, always use standard API call (no diverse products logic)
+    const res = await get(`/all-products/?${queryParams}`);
+    newProducts = res.data.results || [];
 
     console.log("Load More Products Debug:", {
       currentPage: currentPage.value,
@@ -789,16 +805,16 @@ async function loadMoreProducts() {
       allProducts.value = [...allProducts.value, ...newProducts];
     }
 
-    console.log("After adding products:", {
-      allProductsCountAfter: allProducts.value.length,
-      totalProducts: totalProducts.value,
-    });
-
     // Check if there are more products to load
-    // If we got fewer products than requested, or if we've reached the total count, no more products
     hasMoreProducts.value =
-      newProducts.length === itemsPerPage.value &&
       allProducts.value.length < (totalProducts.value || 0);
+
+    console.log("Load More Products Result:", {
+      newProductsLength: newProducts.length,
+      totalProductsAfter: allProducts.value.length,
+      totalAvailable: totalProducts.value,
+      hasMoreProducts: hasMoreProducts.value,
+    });
   } catch (error) {
     console.error("Error loading more products:", error);
     toast.add({
@@ -824,9 +840,10 @@ function initInfiniteScroll() {
 
   const options = {
     root: null,
-    rootMargin: "200px", // Start loading 200px before the element comes into view
+    rootMargin: "100px", // Start loading 100px before the element comes into view
     threshold: 0.1,
   };
+
   observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       console.log("Intersection Observer triggered:", {
@@ -834,13 +851,15 @@ function initInfiniteScroll() {
         isLoadingMore: isLoadingMore.value,
         hasMoreProducts: hasMoreProducts.value,
         allProductsLength: allProducts.value.length,
+        totalProducts: totalProducts.value,
       });
 
       if (
         entry.isIntersecting &&
         !isLoadingMore.value &&
         hasMoreProducts.value &&
-        allProducts.value.length > 0 // Only load more if we have initial products
+        allProducts.value.length > 0 &&
+        !isLoading.value // Don't load more while initial loading
       ) {
         console.log("Loading more products...");
         loadMoreProducts();
@@ -852,6 +871,12 @@ function initInfiniteScroll() {
   nextTick(() => {
     if (loadMoreTrigger.value) {
       observer.observe(loadMoreTrigger.value);
+      console.log(
+        "Infinite scroll observer attached to element:",
+        loadMoreTrigger.value
+      );
+    } else {
+      console.log("Load more trigger element not found");
     }
   });
 }
@@ -878,11 +903,44 @@ watch([selectedCategory, searchQuery, minPrice, maxPrice], () => {
   });
 });
 
+// Debug function to help test infinite scroll
+function debugInfiniteScroll() {
+  console.log("=== Infinite Scroll Debug Info ===");
+  console.log("Current Page:", currentPage.value);
+  console.log("Items Per Page:", itemsPerPage.value);
+  console.log("Total Products:", totalProducts.value);
+  console.log("All Products Length:", allProducts.value.length);
+  console.log("Has More Products:", hasMoreProducts.value);
+  console.log("Is Loading More:", isLoadingMore.value);
+  console.log("Is Loading:", isLoading.value);
+  console.log("Load More Trigger Element:", loadMoreTrigger.value);
+  console.log("Observer:", observer);
+  console.log("===================================");
+}
+
+// Expose debug function to window for manual testing
+if (process.client) {
+  window.debugInfiniteScroll = debugInfiniteScroll;
+  window.manualLoadMore = () => {
+    if (!isLoadingMore.value && hasMoreProducts.value) {
+      loadMoreProducts();
+    } else {
+      console.log("Cannot load more:", {
+        isLoadingMore: isLoadingMore.value,
+        hasMoreProducts: hasMoreProducts.value,
+      });
+    }
+  };
+}
+
 // Initialize data
 await Promise.all([fetchCategories(), fetchProducts()]);
 
 onMounted(() => {
-  initInfiniteScroll();
+  // Initialize infinite scroll after a delay to ensure DOM is ready
+  setTimeout(() => {
+    initInfiniteScroll();
+  }, 500);
 });
 </script>
 
