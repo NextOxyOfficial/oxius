@@ -377,9 +377,49 @@ admin.site.register(Subscription, SubscriptionAdmin)
 admin.site.register(OrderItem)
 
 
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+    readonly_fields = ('product', 'product_owner', 'quantity', 'price',
+                       'created_at', 'updated_at', )
+    can_delete = False
+
+    def product_owner(self, obj):
+        if obj.product and obj.product.owner:
+            return obj.product.owner.store_name  # or .shop_name if your User model has it
+        return "-"
+    product_owner.short_description = 'Product Owner'
+
+
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('order_number', 'created_at', 'updated_at',
+    list_display = ('order_number', 'created_at', 'updated_at', 'product_owners_shops',
                     'user', 'order_status', 'total', 'payment_method',)
+    readonly_fields = ('order_number', 'created_at', 'updated_at')
+
+    fieldsets = (
+        ('Order Details', {
+            'fields': ('order_number', 'user', 'order_status', 'total', 'payment_method')
+
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    inlines = [OrderItemInline]
+
+    @admin.display(description='Product Owners / Shops')
+    def product_owners_shops(self, obj):
+        owners_shops = []
+        for item in obj.items.all():
+            print(f"Processing item: {item}")
+            if item.product and item.product.owner:
+                owners_shops.append(
+                    f"{item.product.owner.store_name}"
+                )
+        # Remove duplicates
+        unique_shops = list(set(owners_shops))
+        return ", ".join(unique_shops)
 
     @admin.display(ordering='-created_at')
     def created_at(self, obj):
