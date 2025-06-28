@@ -240,6 +240,8 @@ SP_ENDPOINT = "https://engine.shurjopayment.com"
 SP_RETURN = "https://adsyclub.com/verify-payment"
 SP_CANCEL = "https://adsyclub.com/deposit-withdraw/"
 SP_PREFIX = "ADSYCLUB_"
+
+# sms settings
 API_SMS = 'SplZ3f60tlt69pkZAEc8WHk3MbHkGeLYtJ1jElCd'
 
 # TinyMCE Configuration
