@@ -1,0 +1,71 @@
+/* Custom CSS for ClassifiedCategoryPost admin row coloring based on service_status */
+
+/* Light yellow for pending status */
+.change-list #result_list tbody tr[data-status="pending"] {
+  background-color: #fff9c4 !important; /* Light yellow */
+}
+
+.change-list #result_list tbody tr[data-status="pending"]:hover {
+  background-color: #fef3a2 !important; /* Slightly darker yellow on hover */
+}
+
+/* Light green for approved and completed status */
+.change-list #result_list tbody tr[data-status="approved"],
+.change-list #result_list tbody tr[data-status="completed"] {
+  background-color: #dcfce7 !important; /* Light green */
+}
+
+.change-list #result_list tbody tr[data-status="approved"]:hover,
+.change-list #result_list tbody tr[data-status="completed"]:hover {
+  background-color: #bbf7d0 !important; /* Slightly darker green on hover */
+}
+
+/* Light red for rejected status */
+.change-list #result_list tbody tr[data-status="rejected"] {
+  background-color: #fee2e2 !important; /* Light red */
+}
+
+.change-list #result_list tbody tr[data-status="rejected"]:hover {
+  background-color: #fecaca !important; /* Slightly darker red on hover */
+}
+
+/* Ensure text remains readable */
+.change-list #result_list tbody tr[data-status] td {
+  color: #374151 !important; /* Dark gray text for readability */
+}
+
+/* Style the status column to make it more prominent */
+.change-list #result_list tbody tr td.field-service_status {
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Status badges styling */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+.status-badge.pending {
+  background-color: #fbbf24;
+  color: #92400e;
+}
+
+.status-badge.approved {
+  background-color: #34d399;
+  color: #065f46;
+}
+
+.status-badge.completed {
+  background-color: #10b981;
+  color: #064e3b;
+}
+
+.status-badge.rejected {
+  background-color: #f87171;
+  color: #991b1b;
+}

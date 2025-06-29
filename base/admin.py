@@ -292,11 +292,17 @@ admin.site.register(TargetNetwork, TargetNetworkAdmin)
 
 class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
     list_display = ('title', 'user', 'category',  'price', 'location', 'negotiable', 'country',
-                    'state', 'city', 'active_service', 'service_status', 'created_at', 'updated_at')
+                    'state', 'city', 'active_service', 'colored_service_status', 'created_at', 'updated_at')
     list_filter = ('service_status', 'negotiable', 'active_service')
     search_fields = ('title',)
     list_per_page = 20
     ordering = ['-created_at']  # Most recent first
+
+    class Media:
+        css = {
+            'all': ('admin/css/classified_post_admin.css',)
+        }
+        js = ('admin/js/classified_post_admin.js',)
 
     def get_queryset(self, request):
         """Override queryset to ensure proper ordering"""
@@ -306,6 +312,30 @@ class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
     @admin.display(ordering="-created_at")
     def created_at(self, obj):
         return obj.created_at
+
+    @admin.display(description='Service Status', ordering='service_status')
+    def colored_service_status(self, obj):
+        """Display service status with colored badge"""
+        status = obj.service_status
+        badge_class = f'status-badge {status}'
+        return format_html(
+            '<span class="{}" data-status="{}">{}</span>',
+            badge_class,
+            status,
+            status.capitalize()
+        )
+
+    def changelist_view(self, request, extra_context=None):
+        """Add custom context for row coloring"""
+        response = super().changelist_view(request, extra_context)
+
+        # Add JavaScript to color rows based on data-status attributes
+        if hasattr(response, 'context_data'):
+            if response.context_data is None:
+                response.context_data = {}
+            response.context_data['add_row_colors'] = True
+
+        return response
 
 
 admin.site.register(ClassifiedCategoryPost, ClassifiedCategoryPostAdmin)
