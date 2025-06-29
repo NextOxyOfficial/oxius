@@ -1762,6 +1762,8 @@ async function updateStoreInfo() {
   }
 }
 
+await getStoreDetails(); // Fetch store details on component mount
+
 // Cancel edit with optional confirmation for unsaved changes
 function cancelEdit() {
   // Check if there are unsaved changes
