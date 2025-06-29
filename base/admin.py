@@ -7,6 +7,14 @@ from django.urls import reverse
 from .models import *
 
 
+# Proxy model for Store management
+class Store(User):
+    class Meta:
+        proxy = True
+        verbose_name = 'Store'
+        verbose_name_plural = 'Stores'
+
+
 admin.site.register(DiamondPackages)
 admin.site.register(ProductSlotPackage)
 admin.site.register(EshopBanner)
@@ -21,6 +29,73 @@ class CustomUserChangeForm(UserChangeForm):
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
+
+
+class StoreAdmin(admin.ModelAdmin):
+    list_display = ('store_name', 'store_username', 'owner_email_link', 'store_address',
+                    'product_limit', 'store_logo_preview', 'is_pro', 'pro_validity', 'date_joined', 'is_active')
+    list_filter = ('is_pro', 'is_active', 'date_joined', 'pro_validity')
+    search_fields = ('store_name', 'store_username',
+                     'email', 'first_name', 'last_name')
+    list_per_page = 20
+    ordering = ('-date_joined',)
+
+    def get_queryset(self, request):
+        """Only show users who have store information"""
+        queryset = super().get_queryset(request)
+        return queryset.exclude(store_name__exact='').exclude(store_name__isnull=True)
+
+    def owner_email_link(self, obj):
+        """Create a clickable link to the user's detail page"""
+        if obj.email:
+            url = reverse('admin:base_user_change', args=[obj.pk])
+            return format_html('<a href="{}" target="_blank">{}</a>', url, obj.email)
+        return "-"
+    owner_email_link.short_description = 'Owner Email'
+    owner_email_link.admin_order_field = 'email'
+
+    def store_logo_preview(self, obj):
+        """Display store logo as small preview image"""
+        if obj.store_logo:
+            return format_html('<img src="{}" style="height: 30px; width: 30px; object-fit: cover; border-radius: 4px;" />', obj.store_logo.url)
+        return "No Logo"
+    store_logo_preview.short_description = 'Logo'
+
+    def store_banner_preview(self, obj):
+        """Display store banner as small preview image"""
+        if obj.store_banner:
+            return format_html('<a href="{}" target="_blank"><img src="{}" style="height: 50px; width: 100px; object-fit: cover; border-radius: 4px;" /></a>', obj.store_banner.url, obj.store_banner.url)
+        return "No Banner"
+    store_banner_preview.short_description = 'Banner Preview'
+
+    def has_add_permission(self, request):
+        """Disable add functionality since stores are managed through User model"""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Disable delete functionality to prevent accidental user deletion"""
+        return False
+
+    fieldsets = (
+        ('Store Information', {
+            'fields': ('store_name', 'store_username', 'store_description', 'store_address')
+        }),
+        ('Store Media', {
+            'fields': ('store_logo', 'store_banner', 'store_banner_preview'),
+            'classes': ('collapse',)
+        }),
+        ('Store Settings', {
+            'fields': ('product_limit', 'is_pro', 'pro_validity'),
+            'classes': ('collapse',)
+        }),
+        ('Owner Information', {
+            'fields': ('email', 'first_name', 'last_name', 'phone', 'is_active'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    readonly_fields = ('email', 'first_name', 'last_name',
+                       'phone', 'date_joined', 'store_banner_preview')
 
 
 class CustomUserAdmin(UserAdmin):
@@ -115,6 +190,7 @@ except admin.sites.NotRegistered:
 
 # Register the custom admin
 admin.site.register(User, CustomUserAdmin)
+admin.site.register(Store, StoreAdmin)
 
 
 class ClassifiedCategoryAdmin(admin.ModelAdmin):
