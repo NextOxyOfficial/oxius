@@ -332,6 +332,8 @@ class ProductAdmin(admin.ModelAdmin):
                     'regular_price', 'created_at', 'updated_at')
     filter_horizontal = ('batches', 'divisions', 'category',
                          'benefits', 'faqs', 'trust_badges')
+    search_fields = ('name', 'owner__email', 'owner__username',
+                     'owner__store_name', 'slug', 'description', 'short_description')
     list_per_page = 10
 
     fieldsets = (
