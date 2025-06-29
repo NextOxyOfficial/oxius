@@ -3,7 +3,24 @@
     <UContainer>
       <!-- 1. Banner Section -->
       <div
+        v-if="!storeDetails"
+        class="flex items-center justify-center min-h-[300px] p-6"
+      >
+        <div
+          class="bg-white rounded-2xl shadow-sm p-8 max-w-md w-full text-center"
+        >
+          <h1 class="text-xl font-semibold text-gray-800 mb-2">
+            Store Not Set Up Yet
+          </h1>
+          <p class="text-gray-500">
+            This store has not completed its setup. Please complete your store
+            setup and come again.
+          </p>
+        </div>
+      </div>
+      <div
         class="w-full h-48 md:h-64 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-t-xl md:rounded-t-2xl overflow-hidden relative"
+        v-else
       >
         <img
           v-if="storeDetails?.store_banner"
