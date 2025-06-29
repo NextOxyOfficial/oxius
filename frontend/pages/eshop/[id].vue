@@ -39,6 +39,7 @@
       <!-- 2. Info Section (Logo + Details) -->
       <div
         class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-b-xl md:rounded-b-2xl"
+        v-if="storeDetails"
       >
         <div
           class="flex flex-col md:flex-row items-center md:items-start py-6 gap-6 px-4 sm:px-6 lg:px-8"
@@ -164,7 +165,7 @@
   </div>
 
   <!-- Rest of the page content -->
-  <UContainer class="py-4 md:py-6 page-eshop">
+  <UContainer class="py-4 md:py-6 page-eshop" v-if="storeDetails">
     <div class="min-h-screen">
       <!-- Products Section with Improved Layout -->
       <div class="grid grid-cols-12 gap-x-0 gap-y-3 md:gap-3">
