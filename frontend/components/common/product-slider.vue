@@ -59,20 +59,24 @@
                   class="text-lg sm:text-xl font-medium text-slate-900 dark:text-white truncate"
                 >
                   {{ $t("eshop") }}
-                </h2>                <p
+                </h2>
+                <p
                   class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium"
                 >
                   Diverse products from various categories
                 </p>
               </div>
-            </div>            
+            </div>
             <!-- Action button - mobile optimized -->
             <NuxtLink
               to="/shop-manager"
               class="flex-shrink-0 group relative inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-xs sm:text-sm transition-colors duration-200 overflow-hidden"
               @click="handleButtonClick('sell-on-eshop')"
             >
-              <div v-if="loadingButtons.has('sell-on-eshop')" class="dotted-spinner white mr-2"></div>
+              <div
+                v-if="loadingButtons.has('sell-on-eshop')"
+                class="dotted-spinner white mr-2"
+              ></div>
               <span v-else class="relative z-10 truncate">{{
                 $t("sell_on_eshop")
               }}</span>
@@ -110,14 +114,19 @@
     <div
       v-else-if="productsCount > 0"
       class="relative product-slider-container group"
-    >      <!-- Modern Product Container -->
+    >
+      <!-- Modern Product Container -->
       <div
         ref="sliderContainer"
         class="rounded-2xl bg-gradient-to-br from-slate-50/80 to-white dark:from-slate-900/80 dark:to-slate-800 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 overflow-hidden"
-      >        <!-- First row of products -->
+      >
+        <!-- First row of products -->
         <div class="slider-content py-3 px-1 sm:px-4">
           <div class="product-row">
-            <div class="flex gap-1 sm:gap-3 md:gap-4 overflow-x-auto hide-scrollbar scroll-smooth" style="-webkit-overflow-scrolling: touch;">
+            <div
+              class="flex gap-1 sm:gap-3 md:gap-4 overflow-x-auto hide-scrollbar scroll-smooth"
+              style="-webkit-overflow-scrolling: touch"
+            >
               <div
                 v-for="product in firstRowProducts"
                 :key="product.id"
@@ -127,13 +136,50 @@
               </div>
             </div>
           </div>
-        </div>        
+        </div>
         <!-- Second row of products -->
         <div class="slider-content py-3 px-1 sm:px-4 pb-4">
           <div class="product-row">
-            <div class="flex gap-1 sm:gap-3 md:gap-4 overflow-x-auto hide-scrollbar scroll-smooth" style="-webkit-overflow-scrolling: touch;">
+            <div
+              class="flex gap-1 sm:gap-3 md:gap-4 overflow-x-auto hide-scrollbar scroll-smooth"
+              style="-webkit-overflow-scrolling: touch"
+            >
               <div
                 v-for="product in secondRowProducts"
+                :key="product.id"
+                class="product-card-wrapper flex-shrink-0"
+              >
+                <CommonProductCard :product="product" class="product-card" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- third row of products -->
+        <div class="slider-content py-3 px-1 sm:px-4 pb-4">
+          <div class="product-row">
+            <div
+              class="flex gap-1 sm:gap-3 md:gap-4 overflow-x-auto hide-scrollbar scroll-smooth"
+              style="-webkit-overflow-scrolling: touch"
+            >
+              <div
+                v-for="product in thirdRowProducts"
+                :key="product.id"
+                class="product-card-wrapper flex-shrink-0"
+              >
+                <CommonProductCard :product="product" class="product-card" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- fourth row of products -->
+        <div class="slider-content py-3 px-1 sm:px-4 pb-4">
+          <div class="product-row">
+            <div
+              class="flex gap-1 sm:gap-3 md:gap-4 overflow-x-auto hide-scrollbar scroll-smooth"
+              style="-webkit-overflow-scrolling: touch"
+            >
+              <div
+                v-for="product in fourthRowProducts"
                 :key="product.id"
                 class="product-card-wrapper flex-shrink-0"
               >
@@ -238,9 +284,12 @@ const handleButtonClick = (buttonId) => {
 
 // Watch for route changes to clear loading states
 const route = useRoute();
-watch(() => route.path, () => {
-  loadingButtons.value.clear();
-});
+watch(
+  () => route.path,
+  () => {
+    loadingButtons.value.clear();
+  }
+);
 
 // Core state
 const products = ref([]);
@@ -249,7 +298,7 @@ const sliderContainer = ref(null);
 
 // Responsive settings
 const itemsPerRow = ref(5); // Default for desktop
-const productsLimit = 10; // Total products to fetch
+const productsLimit = 20; // Total products to fetch
 
 // Scroll state
 const currentScrollIndex = ref(0);
@@ -276,6 +325,16 @@ const secondRowProducts = computed(() => {
   return products.value.slice(5, 10); // Last 5 products (second half)
 });
 
+const thirdRowProducts = computed(() => {
+  if (!products.value.length) return [];
+  return products.value.slice(10, 15); // Last 5 products (second half)
+});
+
+const fourthRowProducts = computed(() => {
+  if (!products.value.length) return [];
+  return products.value.slice(15, 20); // Last 5 products (second half)
+});
+
 // Calculate number of scroll positions based on products and visible items
 const scrollPositions = computed(() => {
   if (productsCount.value === 0) return [];
@@ -290,7 +349,9 @@ async function fetchProducts() {
 
   try {
     // Add limit and random parameters to fetch exactly 10 random products from different categories
-    const response = await get(`/all-products/?limit=${productsLimit}&random=true`);
+    const response = await get(
+      `/all-products/?limit=${productsLimit}&random=true`
+    );
 
     if (response && response.data) {
       debugData.value = response.data;
@@ -772,11 +833,13 @@ watch(
 /* Card sizes based on screen size - ensuring proper mobile scrolling */
 @media (min-width: 1024px) {
   .product-card-wrapper {
-    width: calc(20% - 12px); /* 5 cards per row on desktop, accounting for gaps */
+    width: calc(
+      20% - 12px
+    ); /* 5 cards per row on desktop, accounting for gaps */
     min-width: calc(20% - 12px);
     max-width: calc(20% - 12px);
   }
-  
+
   .product-row .flex {
     width: 100%;
     justify-content: space-between;
@@ -789,7 +852,7 @@ watch(
     min-width: calc(25% - 12px);
     max-width: calc(25% - 12px);
   }
-  
+
   .product-row .flex {
     width: 100%;
     justify-content: space-between;
@@ -802,7 +865,7 @@ watch(
     min-width: calc(33.33% - 10px);
     max-width: calc(33.33% - 10px);
   }
-  
+
   .product-row .flex {
     width: 100%;
     justify-content: space-between;
@@ -811,7 +874,9 @@ watch(
 
 @media (max-width: 639px) {
   .product-card-wrapper {
-    width: calc(50% - 2px); /* 2 cards per row on mobile, accounting for smaller gaps */
+    width: calc(
+      50% - 2px
+    ); /* 2 cards per row on mobile, accounting for smaller gaps */
     min-width: calc(50% - 2px);
     max-width: calc(50% - 2px);
     flex-shrink: 0;
@@ -849,7 +914,7 @@ watch(
   .slider-content {
     -webkit-overflow-scrolling: touch;
   }
-  
+
   /* Ensure smooth scrolling on mobile */
   .overflow-x-auto {
     scroll-behavior: smooth;
@@ -857,7 +922,7 @@ watch(
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE and Edge */
   }
-  
+
   .overflow-x-auto::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
   }
