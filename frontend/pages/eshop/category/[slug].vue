@@ -337,6 +337,9 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: "eshop",
+});
 import { CommonHotDealsSection } from "#components";
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 const { get } = useApi();
