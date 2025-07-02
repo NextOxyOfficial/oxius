@@ -594,11 +594,12 @@ async function fetchDiverseProducts() {
     }
 
     const diverseProducts = [];
+    const targetCount = itemsPerPage.value; // Always aim for exactly 20 products
     const productsPerCategory = Math.max(
       2,
-      Math.floor(itemsPerPage.value / Math.min(8, categories.value.length))
+      Math.floor(targetCount / Math.min(6, categories.value.length))
     );
-    const maxCategoriesToFetch = Math.min(8, categories.value.length); // Limit to 8 categories for performance
+    const maxCategoriesToFetch = Math.min(6, categories.value.length); // Limit to 6 categories for performance
 
     // Shuffle categories to get random selection
     const shuffledCategories = [...categories.value].sort(
@@ -632,38 +633,57 @@ async function fetchDiverseProducts() {
       }
     });
 
-    // If we don't have enough products, fetch more random products
-    if (diverseProducts.length < itemsPerPage.value) {
+    // Always ensure we have exactly the target count
+    if (diverseProducts.length < targetCount) {
       try {
-        const additionalCount = itemsPerPage.value - diverseProducts.length;
+        const additionalCount = targetCount - diverseProducts.length;
         const res = await get(
-          `/all-products/?page_size=${additionalCount}&ordering=-created_at`
+          `/all-products/?page_size=${additionalCount * 2}&ordering=-created_at`
         );
         const additionalProducts = (res.data?.results || []).filter(
           (product) =>
             !diverseProducts.some((existing) => existing.id === product.id)
         );
-        diverseProducts.push(...additionalProducts);
+        diverseProducts.push(...additionalProducts.slice(0, additionalCount));
       } catch (error) {
         console.warn("Error fetching additional products:", error);
       }
     }
 
-    // Shuffle the final results and limit to requested count
+    // If we still don't have enough, fetch more with a larger request
+    if (diverseProducts.length < targetCount) {
+      try {
+        const stillNeeded = targetCount - diverseProducts.length;
+        const res = await get(
+          `/all-products/?page_size=${stillNeeded * 3}&ordering=random`
+        );
+        const moreProducts = (res.data?.results || []).filter(
+          (product) =>
+            !diverseProducts.some((existing) => existing.id === product.id)
+        );
+        diverseProducts.push(...moreProducts.slice(0, stillNeeded));
+      } catch (error) {
+        console.warn("Error fetching backup products:", error);
+      }
+    }
+
+    // Shuffle and ensure exactly the target count
     const finalProducts = diverseProducts
       .sort(() => Math.random() - 0.5)
-      .slice(0, itemsPerPage.value);
+      .slice(0, targetCount);
 
     console.log("Diverse products fetched:", {
       categoriesUsed: maxCategoriesToFetch,
+      targetCount: targetCount,
       totalProductsFetched: diverseProducts.length,
       finalProductsCount: finalProducts.length,
+      itemsPerPageSetting: itemsPerPage.value,
     });
 
     return finalProducts;
   } catch (error) {
     console.error("Error fetching diverse products:", error);
-    // Fallback to regular fetch
+    // Fallback to regular fetch that guarantees the right count
     try {
       const res = await get(
         `/all-products/?page=1&page_size=${itemsPerPage.value}&ordering=-created_at`
