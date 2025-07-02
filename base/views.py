@@ -3509,8 +3509,31 @@ class EshopBannerListView(generics.ListAPIView):
     """
     View to retrieve all eShop banners.
     """
-    queryset = EshopBanner.objects.all().order_by('-created_at')
     serializer_class = EshopBannerSerializer
+    
+    def get_queryset(self):
+        device_type = self.request.GET.get('device_type', 'all')
+        queryset = EshopBanner.objects.filter(is_active=True)
+        
+        if device_type == 'mobile':
+            queryset = queryset.filter(device_type__in=['all', 'mobile'])
+        elif device_type == 'desktop':
+            queryset = queryset.filter(device_type__in=['all', 'desktop'])
+        
+        return queryset.order_by('order', '-created_at')
+
+
+class MobileBannerListView(generics.ListAPIView):
+    """
+    Optimized view specifically for mobile banners
+    """
+    serializer_class = MobileBannerSerializer
+    
+    def get_queryset(self):
+        return EshopBanner.objects.filter(
+            is_active=True,
+            device_type__in=['all', 'mobile']
+        ).order_by('order', '-created_at')
 
 
 @api_view(['GET'])

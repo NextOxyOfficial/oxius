@@ -17,7 +17,41 @@ class Store(User):
 
 admin.site.register(DiamondPackages)
 admin.site.register(ProductSlotPackage)
-admin.site.register(EshopBanner)
+@admin.register(EshopBanner)
+class EshopBannerAdmin(admin.ModelAdmin):
+    list_display = ('title', 'device_type', 'is_active', 'order', 'image_preview', 'mobile_image_preview', 'created_at')
+    list_filter = ('device_type', 'is_active', 'created_at')
+    search_fields = ('title', 'link')
+    list_editable = ('is_active', 'order', 'device_type')
+    ordering = ('order', '-created_at')
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'link', 'device_type', 'is_active', 'order')
+        }),
+        ('Images', {
+            'fields': ('image', 'mobile_image'),
+            'description': 'Upload both desktop and mobile-optimized images for better performance'
+        }),
+    )
+    
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html(
+                '<img src="{}" style="max-height: 50px; max-width: 100px; object-fit: cover;" />',
+                obj.image.url
+            )
+        return "No Image"
+    image_preview.short_description = "Desktop Image"
+    
+    def mobile_image_preview(self, obj):
+        if obj.mobile_image:
+            return format_html(
+                '<img src="{}" style="max-height: 50px; max-width: 100px; object-fit: cover;" />',
+                obj.mobile_image.url
+            )
+        return "Uses Desktop Image"
+    mobile_image_preview.short_description = "Mobile Image"
 admin.site.register(AILink)
 
 

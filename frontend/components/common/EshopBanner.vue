@@ -1,134 +1,154 @@
 <template>
-  <div class="relative overflow-hidden rounded-xl shadow-sm">
-    <!-- Loading State -->
-    <div v-if="isLoading" class="rounded-xl overflow-hidden relative pb-[38%] md:pb-[25%] lg:pb-[22%] bg-slate-200 dark:bg-slate-800 animate-pulse">
-      <div class="absolute inset-0 flex items-center justify-center">
-        <UIcon name="i-heroicons-photo" class="size-12 text-slate-400 dark:text-slate-600" />
-      </div>
+  <div class="relative">
+    <!-- Mobile Banner Component (shown only on mobile) -->
+    <div class="block md:hidden">
+      <MobileBanner 
+        :autoplay-interval="autoplayInterval"
+        :autoplay-enabled="autoplayEnabled"
+        :show-swipe-hint="showSwipeHint"
+      />
     </div>
     
-    <!-- Error State -->
-    <div v-else-if="error" class="rounded-xl overflow-hidden relative pb-[38%] md:pb-[25%] lg:pb-[22%] bg-slate-200 dark:bg-slate-800">
-      <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <UIcon name="i-heroicons-exclamation-triangle" class="size-12 text-amber-500 mb-2" />
-        <p class="text-sm text-slate-600 dark:text-slate-400">{{ error }}</p>
-      </div>
+    <!-- Desktop Banner Component (shown only on desktop) -->
+    <div class="hidden md:block">
+      <DesktopBanner 
+        :autoplay-interval="autoplayInterval * 1.5"
+        :autoplay-enabled="autoplayEnabled"
+      />
     </div>
     
-    <!-- No Banners State -->
-    <div v-else-if="!banners.length" class="rounded-xl overflow-hidden relative pb-[38%] md:pb-[25%] lg:pb-[22%] bg-slate-200 dark:bg-slate-800">
-      <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <UIcon name="i-heroicons-photo" class="size-12 text-slate-400 dark:text-slate-600 mb-2" />
-        <p class="text-sm text-slate-600 dark:text-slate-400">No banner images available</p>
-      </div>
-    </div>
-    
-    <!-- Banner Slider -->
-    <div
-      v-else
-      class="relative overflow-hidden rounded-xl shadow-sm touch-slider"
-      ref="sliderContainer"
-      @mouseenter="handleSliderHover(true)"
-      @mouseleave="handleSliderHover(false)"
-      @touchstart="handleTouchStart"
-      @touchmove="handleTouchMove"
-      @touchend="handleTouchEnd"
-    >
-      <!-- Background pattern for premium look -->
-      <div
-        class="absolute inset-0 bg-gradient-to-r from-slate-900/5 to-slate-900/5 dark:from-slate-950/20 dark:to-slate-950/10 backdrop-blur-[1px] z-0"
-      ></div>
-
-      <!-- Mobile swipe indicator shown only on mobile when multiple banners -->
-      <div
-        v-if="banners.length > 1"
-        class="md:hidden absolute top-1/2 left-0 right-0 -translate-y-1/2 flex justify-between px-3 z-20 opacity-60 pointer-events-none"
-      >
-        <div class="swipe-indicator swipe-indicator-left">
-          <ChevronLeft class="h-8 w-8 text-white" />
-        </div>
-        <div class="swipe-indicator swipe-indicator-right">
-          <ChevronRight class="h-8 w-8 text-white" />
+    <!-- Fallback: Original responsive banner for compatibility -->
+    <div v-if="useFallback" class="relative overflow-hidden rounded-xl shadow-sm">
+      <!-- Loading State -->
+      <div v-if="isLoading" class="rounded-xl overflow-hidden relative pb-[38%] md:pb-[25%] lg:pb-[22%] bg-slate-200 dark:bg-slate-800 animate-pulse">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <UIcon name="i-heroicons-photo" class="size-12 text-slate-400 dark:text-slate-600" />
         </div>
       </div>
       
-      <!-- Aspect ratio container for rounded and consistent height -->
-      <div
-        class="rounded-xl overflow-hidden relative pb-[38%] md:pb-[25%] lg:pb-[22%]"
-      >
-        <div
-          v-for="(banner, index) in banners"
-          :key="index"
-          class="absolute inset-0 transition-all duration-500 ease-out transform"
-          :class="{
-            'opacity-100 translate-x-0': index === currentSlide,
-            'opacity-0 translate-x-full': index > currentSlide,
-            'opacity-0 -translate-x-full': index < currentSlide,
-          }"
-        >
-          <!-- Banner Link Wrapper -->
-          <a 
-            v-if="banner.link" 
-            :href="banner.link" 
-            class="absolute inset-0 z-10"
-            target="_blank"
-          ></a>
-          
-          <!-- Banner Image -->
-          <img
-            v-if="banner.image"
-            :src="banner.image"
-            :alt="banner.title || `Slide ${index + 1}`"
-            class="w-full h-full object-cover"
-          />
-          
-          <!-- Banner Title Overlay (optional) -->
-          <div 
-            v-if="banner.title" 
-            class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white z-5"
-          >
-            <h3 class="text-lg font-semibold">{{ banner.title }}</h3>
-          </div>
+      <!-- Error State -->
+      <div v-else-if="error" class="rounded-xl overflow-hidden relative pb-[38%] md:pb-[25%] lg:pb-[22%] bg-slate-200 dark:bg-slate-800">
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <UIcon name="i-heroicons-exclamation-triangle" class="size-12 text-amber-500 mb-2" />
+          <p class="text-sm text-slate-600 dark:text-slate-400">{{ error }}</p>
         </div>
       </div>
-
-      <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->
-      <button
-        v-if="banners.length > 1"
-        @click="prevSlide"
-        class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 shadow-sm opacity-0 transform -translate-x-2"
-        :class="{ 'opacity-100 translate-x-0': isHovering }"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft class="h-5 w-5 text-white" />
-      </button>
-
-      <button
-        v-if="banners.length > 1"
-        @click="nextSlide"
-        class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 shadow-sm opacity-0 transform translate-x-2"
-        :class="{ 'opacity-100 translate-x-0': isHovering }"
-        aria-label="Next slide"
-      >
-        <ChevronRight class="h-5 w-5 text-white" />
-      </button>
-
-      <!-- Slider indicators - only shown when multiple banners -->
+      
+      <!-- No Banners State -->
+      <div v-else-if="!banners.length" class="rounded-xl overflow-hidden relative pb-[38%] md:pb-[25%] lg:pb-[22%] bg-slate-200 dark:bg-slate-800">
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <UIcon name="i-heroicons-photo" class="size-12 text-slate-400 dark:text-slate-600 mb-2" />
+          <p class="text-sm text-slate-600 dark:text-slate-400">No banner images available</p>
+        </div>
+      </div>
+      
+      <!-- Banner Slider -->
       <div
-        v-if="banners.length > 1"
-        class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3 z-20 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full"
+        v-else
+        class="relative overflow-hidden rounded-xl shadow-sm touch-slider"
+        ref="sliderContainer"
+        @mouseenter="handleSliderHover(true)"
+        @mouseleave="handleSliderHover(false)"
+        @touchstart="handleTouchStart"
+        @touchmove="handleTouchMove"
+        @touchend="handleTouchEnd"
       >
+        <!-- Background pattern for premium look -->
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-slate-900/5 to-slate-900/5 dark:from-slate-950/20 dark:to-slate-950/10 backdrop-blur-[1px] z-0"
+        ></div>
+
+        <!-- Mobile swipe indicator shown only on mobile when multiple banners -->
+        <div
+          v-if="banners.length > 1"
+          class="md:hidden absolute top-1/2 left-0 right-0 -translate-y-1/2 flex justify-between px-3 z-20 opacity-60 pointer-events-none"
+        >
+          <div class="swipe-indicator swipe-indicator-left">
+            <ChevronLeft class="h-8 w-8 text-white" />
+          </div>
+          <div class="swipe-indicator swipe-indicator-right">
+            <ChevronRight class="h-8 w-8 text-white" />
+          </div>
+        </div>
+        
+        <!-- Aspect ratio container for rounded and consistent height -->
+        <div
+          class="rounded-xl overflow-hidden relative pb-[38%] md:pb-[25%] lg:pb-[22%]"
+        >
+          <div
+            v-for="(banner, index) in banners"
+            :key="index"
+            class="absolute inset-0 transition-all duration-500 ease-out transform"
+            :class="{
+              'opacity-100 translate-x-0': index === currentSlide,
+              'opacity-0 translate-x-full': index > currentSlide,
+              'opacity-0 -translate-x-full': index < currentSlide,
+            }"
+          >
+            <!-- Banner Link Wrapper -->
+            <a 
+              v-if="banner.link" 
+              :href="banner.link" 
+              class="absolute inset-0 z-10"
+              target="_blank"
+            ></a>
+            
+            <!-- Banner Image -->
+            <img
+              v-if="banner.image"
+              :src="banner.image"
+              :alt="banner.title || `Slide ${index + 1}`"
+              class="w-full h-full object-cover"
+            />
+            
+            <!-- Banner Title Overlay (optional) -->
+            <div 
+              v-if="banner.title" 
+              class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white z-5"
+            >
+              <h3 class="text-lg font-semibold">{{ banner.title }}</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation arrows - hidden on mobile but visible on desktop on hover -->
         <button
-          v-for="(_, index) in banners"
-          :key="index"
-          @click="goToSlide(index)"
-          class="w-2.5 h-2.5 rounded-full transition-all duration-300 relative"
-          :class="{
-            'bg-white scale-110': index === currentSlide,
-            'bg-white/40 hover:bg-white/60': index !== currentSlide,
-          }"
-          :aria-label="`Go to slide ${index + 1}`"
-        ></button>
+          v-if="banners.length > 1"
+          @click="prevSlide"
+          class="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 shadow-sm opacity-0 transform -translate-x-2"
+          :class="{ 'opacity-100 translate-x-0': isHovering }"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft class="h-5 w-5 text-white" />
+        </button>
+
+        <button
+          v-if="banners.length > 1"
+          @click="nextSlide"
+          class="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 bg-gradient-to-r from-emerald-600/80 to-blue-600/80 backdrop-blur-sm hover:from-emerald-600/90 hover:to-blue-600/90 rounded-full p-2 sm:p-3 z-20 transition-all duration-300 shadow-sm opacity-0 transform translate-x-2"
+          :class="{ 'opacity-100 translate-x-0': isHovering }"
+          aria-label="Next slide"
+        >
+          <ChevronRight class="h-5 w-5 text-white" />
+        </button>
+
+        <!-- Slider indicators - only shown when multiple banners -->
+        <div
+          v-if="banners.length > 1"
+          class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-3 z-20 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full"
+        >
+          <button
+            v-for="(_, index) in banners"
+            :key="index"
+            @click="goToSlide(index)"
+            class="w-2.5 h-2.5 rounded-full transition-all duration-300 relative"
+            :class="{
+              'bg-white scale-110': index === currentSlide,
+              'bg-white/40 hover:bg-white/60': index !== currentSlide,
+            }"
+            :aria-label="`Go to slide ${index + 1}`"
+          ></button>
+        </div>
       </div>
     </div>
   </div>
@@ -137,6 +157,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { ChevronLeft, ChevronRight } from "lucide-vue-next";
+import MobileBanner from "./MobileBanner.vue";
+import DesktopBanner from "./DesktopBanner.vue";
 const { get } = useApi();
 
 // Define props
@@ -155,14 +177,34 @@ const props = defineProps({
     type: String,
     default: "/eshop-banner/"
   },
+  // Use mobile-optimized endpoint
+  useMobileEndpoint: {
+    type: Boolean,
+    default: true
+  },
   // Optional autoplay interval in milliseconds
   autoplayInterval: {
     type: Number,
     default: 5000
+  },
+  // Enable/disable autoplay
+  autoplayEnabled: {
+    type: Boolean,
+    default: true
+  },
+  // Show swipe hint for mobile users
+  showSwipeHint: {
+    type: Boolean,
+    default: false
+  },
+  // Use fallback mode (original component)
+  useFallback: {
+    type: Boolean,
+    default: false
   }
 });
 
-// Banner states
+// Banner states (only used in fallback mode)
 const banners = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
@@ -170,17 +212,40 @@ const currentSlide = ref(0);
 const intervalId = ref(null);
 const sliderContainer = ref(null);
 const isHovering = ref(false);
+const isMobile = ref(false);
 let touchStartX = 0;
 let touchEndX = 0;
 let isHandlingTouch = false;
 
-// Fetch banners from API
+// Device detection (for fallback mode)
+const detectDevice = () => {
+  if (process.client) {
+    isMobile.value = window.innerWidth <= 768;
+  }
+};
+
+// Fetch banners from API (fallback mode)
 async function fetchBanners() {
+  if (!props.useFallback) return;
+  
   try {
     isLoading.value = true;
     error.value = null;
     
-    const res = await get(props.endpoint);
+    // Detect device type
+    detectDevice();
+    
+    // Determine endpoint based on device and props
+    let endpoint = props.endpoint;
+    if (props.useMobileEndpoint && isMobile.value) {
+      endpoint = "/eshop-banner/mobile/";
+    } else {
+      // Add device type parameter for non-mobile endpoints
+      const deviceType = isMobile.value ? 'mobile' : 'desktop';
+      endpoint = `${props.endpoint}?device_type=${deviceType}`;
+    }
+    
+    const res = await get(endpoint);
     banners.value = res.data;
     
     // Start the slider interval only if there are multiple banners
@@ -195,7 +260,7 @@ async function fetchBanners() {
   }
 }
 
-// Banner slider functions
+// Banner slider functions (fallback mode)
 function nextSlide() {
   currentSlide.value = (currentSlide.value + 1) % banners.value.length;
   resetSliderInterval();
@@ -228,7 +293,7 @@ function startSliderInterval() {
   }
 }
 
-// Touch event handlers
+// Touch event handlers (fallback mode)
 function handleTouchStart(e) {
   isHandlingTouch = true;
   touchStartX = e.touches[0].clientX;
@@ -276,19 +341,44 @@ function handleTouchEnd() {
   resetSliderInterval();
 }
 
-// Handle slider hover
+// Handle slider hover (fallback mode)
 function handleSliderHover(isHover) {
   isHovering.value = isHover;
 }
 
+// Handle window resize for responsive device detection (fallback mode)
+function handleResize() {
+  if (!props.useFallback) return;
+  
+  const wasMobile = isMobile.value;
+  detectDevice();
+  
+  // Refetch banners if device type changed
+  if (wasMobile !== isMobile.value) {
+    fetchBanners();
+  }
+}
+
 // Lifecycle hooks
 onMounted(() => {
-  fetchBanners();
+  if (props.useFallback) {
+    fetchBanners();
+    
+    // Add resize listener for responsive behavior
+    if (process.client) {
+      window.addEventListener('resize', handleResize);
+    }
+  }
 });
 
 onUnmounted(() => {
   clearInterval(intervalId.value);
-  // Remove touch event listeners
+  
+  // Remove event listeners
+  if (process.client) {
+    window.removeEventListener('resize', handleResize);
+  }
+  
   if (sliderContainer.value) {
     sliderContainer.value.removeEventListener("touchstart", handleTouchStart);
     sliderContainer.value.removeEventListener("touchmove", handleTouchMove);

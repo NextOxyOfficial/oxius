@@ -486,9 +486,48 @@ class ProductSlotPackageSerializer(serializers.ModelSerializer):
 
 
 class EshopBannerSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+    mobile_image_url = serializers.SerializerMethodField()
+    
     class Meta:
         model = EshopBanner
-        fields = '__all__'
+        fields = ['id', 'image', 'mobile_image', 'image_url', 'mobile_image_url', 
+                 'title', 'link', 'device_type', 'is_active', 'order', 'created_at']
+    
+    def get_image_url(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
+    
+    def get_mobile_image_url(self, obj):
+        if obj.mobile_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.mobile_image.url)
+            return obj.mobile_image.url
+        return None
+
+
+class MobileBannerSerializer(serializers.ModelSerializer):
+    """Serializer specifically for mobile banners with optimized response"""
+    image = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = EshopBanner
+        fields = ['id', 'image', 'title', 'link', 'order']
+    
+    def get_image(self, obj):
+        # Return mobile-optimized image if available, otherwise fallback to regular image
+        image_field = obj.mobile_image if obj.mobile_image else obj.image
+        if image_field:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(image_field.url)
+            return image_field.url
+        return None
 
 # Android App Version Serializer
 class AndroidAppVersionSerializer(serializers.ModelSerializer):

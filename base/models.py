@@ -983,12 +983,36 @@ class ShopBannerImage(models.Model):
 
 
 class EshopBanner(models.Model):
+    DEVICE_CHOICES = [
+        ('all', 'All Devices'),
+        ('mobile', 'Mobile Only'),
+        ('desktop', 'Desktop Only'),
+    ]
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image = models.ImageField(upload_to='eshop_banner/')
+    mobile_image = models.ImageField(upload_to='eshop_banner/mobile/', blank=True, null=True, 
+                                   help_text="Optimized image for mobile devices")
     title = models.CharField(max_length=255, blank=True, null=True)
     link = models.CharField(max_length=255, blank=True, null=True)
+    device_type = models.CharField(max_length=10, choices=DEVICE_CHOICES, default='all',
+                                 help_text="Target device type for this banner")
+    is_active = models.BooleanField(default=True, help_text="Whether this banner should be displayed")
+    order = models.PositiveIntegerField(default=0, help_text="Order of display (lower numbers appear first)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    def __str__(self):
+        return f"{self.title or 'Banner'} - {self.get_device_type_display()}"
+
+    def get_image_for_device(self, is_mobile=False):
+        """Get the appropriate image based on device type"""
+        if is_mobile and self.mobile_image:
+            return self.mobile_image
+        return self.image
 
 
 class BNLogo(models.Model):

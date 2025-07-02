@@ -189,6 +189,7 @@ urlpatterns = [
 
     # eshop banner
     path('eshop-banner/', EshopBannerListView.as_view(), name='eshop_banner'),
+    path('eshop-banner/mobile/', MobileBannerListView.as_view(), name='mobile_eshop_banner'),
 
     # Android app version
     path('android-app/latest/', get_latest_android_app, name='android_app_latest'),
