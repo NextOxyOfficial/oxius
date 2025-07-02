@@ -441,6 +441,7 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'owner__email', 'owner__username',
                      'owner__store_name', 'slug', 'description', 'short_description')
     list_per_page = 10
+    ordering = ('-created_at',)
 
     fieldsets = (
         ('Basic Information', {
