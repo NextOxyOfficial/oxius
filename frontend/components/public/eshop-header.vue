@@ -10,6 +10,21 @@
   >
     <UContainer class="px-2">
       <div class="flex items-center justify-between gap-2">
+        <!-- Sidebar toggle button for mobile -->
+        <button
+          @click="toggleSidebar"
+          class="inline-flex items-center justify-center p-2 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-all duration-200 shadow-sm hover:shadow flex-shrink-0 group mr-2"
+          :class="{
+            'text-emerald-500 border-emerald-200 dark:border-emerald-800/50': isSidebarOpen,
+          }"
+        >
+          <span class="sr-only">Toggle categories</span>
+          <UIcon
+            name="i-heroicons-bars-3"
+            class="size-5 transition-transform group-hover:scale-110"
+          />
+        </button>
+        
         <PublicLogo />
         <div class="flex-1">
           <UInput
@@ -32,11 +47,39 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 80;
 };
 
+// Sidebar state management using event emitter
+const isSidebarOpen = ref(false);
+
+// Create event bus for sidebar communication
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+  // Emit event to communicate with page components
+  if (process.client) {
+    window.dispatchEvent(new CustomEvent('eshop-sidebar-toggle', {
+      detail: { isOpen: isSidebarOpen.value }
+    }));
+  }
+};
+
+// Listen for sidebar state changes from other components
+const handleSidebarStateChange = (event) => {
+  isSidebarOpen.value = event.detail.isOpen;
+};
+
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
+  
+  // Listen for sidebar state updates
+  if (process.client) {
+    window.addEventListener('eshop-sidebar-state-update', handleSidebarStateChange);
+  }
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleScroll);
+  
+  if (process.client) {
+    window.removeEventListener('eshop-sidebar-state-update', handleSidebarStateChange);
+  }
 });
 </script>

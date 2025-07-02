@@ -37,8 +37,8 @@
       <div class="mb-5">
         <!-- Elegant Search Bar & Price Range - Responsive Layout -->
         <div class="flex flex-col lg:flex-row gap-3">
-          <!-- Search Section -->
-          <div class="flex gap-3 items-center lg:flex-1">
+          <!-- Search Section - Hidden on mobile, visible on desktop -->
+          <div class="hidden lg:flex gap-3 items-center lg:flex-1">
             <!-- Sidebar Toggle Button -->
             <button
               @click="toggleSidebar"
@@ -77,7 +77,7 @@
             </div>
           </div>
 
-          <!-- Price Range Section - Desktop: Right side of search -->
+          <!-- Price Range Section - Desktop: Right side of search, Mobile: Full width -->
           <div
             class="flex flex-col sm:flex-row lg:w-[55%] gap-3 sm:items-center"
           >
@@ -485,7 +485,19 @@ function handlePageChange(page) {
 // Sidebar toggle function
 function toggleSidebar() {
   isSidebarOpen.value = !isSidebarOpen.value;
+  
+  // Notify header component of state change
+  if (process.client) {
+    window.dispatchEvent(new CustomEvent('eshop-sidebar-state-update', {
+      detail: { isOpen: isSidebarOpen.value }
+    }));
+  }
 }
+
+// Listen for sidebar toggle from header
+const handleHeaderSidebarToggle = (event) => {
+  isSidebarOpen.value = event.detail.isOpen;
+};
 
 // Select category and close sidebar
 function selectCategoryAndCloseSidebar(categoryId) {
@@ -1023,6 +1035,11 @@ onUnmounted(() => {
   if (observer) {
     observer.disconnect();
   }
+  
+  // Clean up event listeners
+  if (process.client) {
+    window.removeEventListener('eshop-sidebar-toggle', handleHeaderSidebarToggle);
+  }
 });
 
 // Watch for filter changes and reinitialize infinite scroll
@@ -1135,6 +1152,11 @@ onMounted(() => {
   setTimeout(() => {
     initInfiniteScroll();
   }, 500);
+  
+  // Listen for sidebar toggle from header
+  if (process.client) {
+    window.addEventListener('eshop-sidebar-toggle', handleHeaderSidebarToggle);
+  }
 });
 </script>
 
