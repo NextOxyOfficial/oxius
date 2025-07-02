@@ -200,6 +200,13 @@ class Logo(models.Model):
         return f"Site Logo"
 
 
+class EshopLogo(models.Model):
+    image = models.ImageField(upload_to='images/', blank=True, null=True)
+
+    def __str__(self):
+        return f"Eshop Logo"
+
+
 class AuthenticationBanner(models.Model):
     image = models.ImageField(upload_to='images/', blank=True, null=True)
 
@@ -988,17 +995,19 @@ class EshopBanner(models.Model):
         ('mobile', 'Mobile Only'),
         ('desktop', 'Desktop Only'),
     ]
-    
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image = models.ImageField(upload_to='eshop_banner/')
-    mobile_image = models.ImageField(upload_to='eshop_banner/mobile/', blank=True, null=True, 
-                                   help_text="Optimized image for mobile devices")
+    mobile_image = models.ImageField(upload_to='eshop_banner/mobile/', blank=True, null=True,
+                                     help_text="Optimized image for mobile devices")
     title = models.CharField(max_length=255, blank=True, null=True)
     link = models.CharField(max_length=255, blank=True, null=True)
     device_type = models.CharField(max_length=10, choices=DEVICE_CHOICES, default='all',
-                                 help_text="Target device type for this banner")
-    is_active = models.BooleanField(default=True, help_text="Whether this banner should be displayed")
-    order = models.PositiveIntegerField(default=0, help_text="Order of display (lower numbers appear first)")
+                                   help_text="Target device type for this banner")
+    is_active = models.BooleanField(
+        default=True, help_text="Whether this banner should be displayed")
+    order = models.PositiveIntegerField(
+        default=0, help_text="Order of display (lower numbers appear first)")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

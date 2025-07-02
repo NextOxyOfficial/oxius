@@ -94,6 +94,13 @@ def getLogo(request):
 
 
 @api_view(["GET"])
+def get_eshop_logo(request):
+    e_shop_logo = get_object_or_404(EshopLogo)
+    serializer = EshopLogoSerializer(e_shop_logo)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
 def getAuthenticationBanner(request):
     banner = get_object_or_404(AuthenticationBanner)
     serializer = AuthenticationBannerSerializer(banner)
@@ -718,7 +725,7 @@ class ClassifiedCategoryPostFilterView(generics.ListAPIView):
     serializer_class = ClassifiedPostSerializer
     pagination_class = ClassifiedPostPagination
     permission_classes = [AllowAny]
-    
+
     def get_queryset(self):
         country = self.request.GET.get('country')
         state = self.request.GET.get('state')
@@ -748,7 +755,8 @@ class ClassifiedCategoryPostFilterView(generics.ListAPIView):
         if upazila:
             filters &= Q(upazila__iexact=upazila)
 
-        posts = ClassifiedCategoryPost.objects.filter(filters).order_by('-created_at')
+        posts = ClassifiedCategoryPost.objects.filter(
+            filters).order_by('-created_at')
         return posts
 
 
@@ -2198,11 +2206,11 @@ class AllProductsListView(generics.ListAPIView):
         # Check if random parameter is provided
         random_products = self.request.query_params.get('random', None)
         limit = self.request.query_params.get('limit', None)
-        
+
         if random_products and random_products.lower() == 'true':
             # Get random products from different categories
             return self.get_random_products_from_categories(limit)
-        
+
         # Default behavior - return products ordered by creation date
         queryset = Product.objects.filter(
             is_active=True).order_by('-created_at')
@@ -2222,7 +2230,8 @@ class AllProductsListView(generics.ListAPIView):
         # Optional search by name
         name = self.request.query_params.get('name', None)
         if name:
-            queryset = queryset.filter(name__icontains=name)        # Optional filtering by price range
+            # Optional filtering by price range
+            queryset = queryset.filter(name__icontains=name)
         min_price = self.request.query_params.get('min_price', None)
         max_price = self.request.query_params.get('max_price', None)
 
@@ -2232,61 +2241,62 @@ class AllProductsListView(generics.ListAPIView):
             queryset = queryset.filter(sale_price__lte=max_price)
 
         return queryset
-    
+
     def get_random_products_from_categories(self, limit=None):
         """Get random products from different categories"""
         try:
             limit = int(limit) if limit else 10
         except (ValueError, TypeError):
             limit = 10
-            
+
         # Get all categories that have products
         categories_with_products = ProductCategory.objects.filter(
             products__is_active=True
         ).distinct()
-        
+
         if not categories_with_products.exists():
             return Product.objects.none()
-        
+
         # Convert to list for random selection
         categories_list = list(categories_with_products)
-        
+
         # Shuffle categories to get random order
         shuffle(categories_list)
-        
+
         selected_product_ids = []
-        products_per_category = max(1, limit // len(categories_list)) if len(categories_list) > 0 else 1
+        products_per_category = max(
+            1, limit // len(categories_list)) if len(categories_list) > 0 else 1
         remaining_slots = limit
-        
+
         for category in categories_list:
             if remaining_slots <= 0:
                 break
-                
+
             # Get random product IDs from this category
             category_product_ids = list(Product.objects.filter(
                 category=category,
                 is_active=True
             ).order_by('?').values_list('id', flat=True)[:min(products_per_category, remaining_slots)])
-            
+
             selected_product_ids.extend(category_product_ids)
             remaining_slots -= len(category_product_ids)
-        
-        # If we still need more products and have remaining slots, 
+
+        # If we still need more products and have remaining slots,
         # fill with any random products
         if remaining_slots > 0:
             additional_product_ids = list(Product.objects.filter(
                 is_active=True
             ).exclude(id__in=selected_product_ids).order_by('?').values_list('id', flat=True)[:remaining_slots])
             selected_product_ids.extend(additional_product_ids)
-        
+
         # Shuffle the final list to mix categories
         shuffle(selected_product_ids)
-        
+
         # Return queryset with the selected products in random order
         if selected_product_ids:
             # Use Django's __in lookup with preserved order using Case/When
             from django.db.models import Case, When, IntegerField
-            preserved_order = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(selected_product_ids)], 
+            preserved_order = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(selected_product_ids)],
                                    output_field=IntegerField())
             return Product.objects.filter(id__in=selected_product_ids).order_by(preserved_order)
         else:
@@ -2390,7 +2400,7 @@ class StoreProductsListView(generics.ListAPIView):
         try:
             store_owner = User.objects.get(store_username=store_username)
             return Product.objects.filter(
-                owner=store_owner, 
+                owner=store_owner,
                 is_active=True
             ).order_by('-created_at')
         except User.DoesNotExist:
@@ -3510,16 +3520,16 @@ class EshopBannerListView(generics.ListAPIView):
     View to retrieve all eShop banners.
     """
     serializer_class = EshopBannerSerializer
-    
+
     def get_queryset(self):
         device_type = self.request.GET.get('device_type', 'all')
         queryset = EshopBanner.objects.filter(is_active=True)
-        
+
         if device_type == 'mobile':
             queryset = queryset.filter(device_type__in=['all', 'mobile'])
         elif device_type == 'desktop':
             queryset = queryset.filter(device_type__in=['all', 'desktop'])
-        
+
         return queryset.order_by('order', '-created_at')
 
 
@@ -3528,7 +3538,7 @@ class MobileBannerListView(generics.ListAPIView):
     Optimized view specifically for mobile banners
     """
     serializer_class = MobileBannerSerializer
-    
+
     def get_queryset(self):
         return EshopBanner.objects.filter(
             is_active=True,
@@ -3750,11 +3760,11 @@ def index(request, **args):
     # Check if this is an API request
     if request.path.startswith('/api/'):
         return JsonResponse({'error': 'Invalid API endpoint'}, status=404)
-    
+
     # In development, try to redirect to Nuxt.js dev server
     if settings.DEBUG:
         frontend_url = "http://localhost:3000"
-        
+
         # For now, render the fallback template instead of redirecting
         # to avoid redirect loops if frontend is not running
         try:
@@ -3767,7 +3777,7 @@ def index(request, **args):
                 'requested_path': request.path,
                 'note': 'Frontend should be running on port 3000'
             })
-    
+
     # In production, you would serve the built Nuxt.js files
     return JsonResponse({
         'message': 'AdsyClub API Backend',

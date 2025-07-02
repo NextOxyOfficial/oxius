@@ -16,6 +16,7 @@ router.register(r'countries', CountryViewSet)
 
 urlpatterns = [
     path('logo/', getLogo, name='logo'),
+    path('eshop-logo/', get_eshop_logo, name='eshop_logo'),
     path('faq/', get_faq, name='faq'),
     path('authentication-banner/', getAuthenticationBanner,
          name='authenticationBanner'),
@@ -189,7 +190,8 @@ urlpatterns = [
 
     # eshop banner
     path('eshop-banner/', EshopBannerListView.as_view(), name='eshop_banner'),
-    path('eshop-banner/mobile/', MobileBannerListView.as_view(), name='mobile_eshop_banner'),
+    path('eshop-banner/mobile/', MobileBannerListView.as_view(),
+         name='mobile_eshop_banner'),
 
     # Android app version
     path('android-app/latest/', get_latest_android_app, name='android_app_latest'),

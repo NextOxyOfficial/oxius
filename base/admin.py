@@ -17,14 +17,17 @@ class Store(User):
 
 admin.site.register(DiamondPackages)
 admin.site.register(ProductSlotPackage)
+
+
 @admin.register(EshopBanner)
 class EshopBannerAdmin(admin.ModelAdmin):
-    list_display = ('title', 'device_type', 'is_active', 'order', 'image_preview', 'mobile_image_preview', 'created_at')
+    list_display = ('title', 'device_type', 'is_active', 'order',
+                    'image_preview', 'mobile_image_preview', 'created_at')
     list_filter = ('device_type', 'is_active', 'created_at')
     search_fields = ('title', 'link')
     list_editable = ('is_active', 'order', 'device_type')
     ordering = ('order', '-created_at')
-    
+
     fieldsets = (
         ('Basic Information', {
             'fields': ('title', 'link', 'device_type', 'is_active', 'order')
@@ -34,7 +37,7 @@ class EshopBannerAdmin(admin.ModelAdmin):
             'description': 'Upload both desktop and mobile-optimized images for better performance'
         }),
     )
-    
+
     def image_preview(self, obj):
         if obj.image:
             return format_html(
@@ -43,7 +46,7 @@ class EshopBannerAdmin(admin.ModelAdmin):
             )
         return "No Image"
     image_preview.short_description = "Desktop Image"
-    
+
     def mobile_image_preview(self, obj):
         if obj.mobile_image:
             return format_html(
@@ -52,6 +55,8 @@ class EshopBannerAdmin(admin.ModelAdmin):
             )
         return "Uses Desktop Image"
     mobile_image_preview.short_description = "Mobile Image"
+
+
 admin.site.register(AILink)
 
 
@@ -375,6 +380,7 @@ class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
 admin.site.register(ClassifiedCategoryPost, ClassifiedCategoryPostAdmin)
 
 admin.site.register(Logo)
+admin.site.register(EshopLogo)
 admin.site.register(AuthenticationBanner)
 
 
