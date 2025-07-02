@@ -729,8 +729,14 @@ class ClassifiedCategoryPostFilterView(generics.ListAPIView):
 
         # Filter based on the query parameters
         filters = Q()
-        if category:
-            filters &= Q(category__id=category)
+        if category and category != 'undefined' and category.strip():
+            try:
+                # Validate that category is a valid UUID before using it
+                uuid.UUID(str(category))
+                filters &= Q(category__id=category)
+            except (ValueError, AttributeError):
+                # Invalid UUID format, skip category filter
+                pass
         if title:
             filters &= Q(title__icontains=title)
         if country:
@@ -2203,10 +2209,15 @@ class AllProductsListView(generics.ListAPIView):
 
         # Optional filtering by category (ManyToMany)
         category = self.request.query_params.get('category', None)
-        if category:
-            # Assuming the input is a single category ID
-            queryset = queryset.filter(category__id=category)
-            # If using slugs instead, use: category__slug=category
+        if category and category != 'undefined' and category.strip():
+            try:
+                # Validate that category is a valid UUID before using it
+                uuid.UUID(str(category))
+                queryset = queryset.filter(category__id=category)
+                # If using slugs instead, use: category__slug=category
+            except (ValueError, AttributeError):
+                # Invalid UUID format, skip category filter
+                pass
 
         # Optional search by name
         name = self.request.query_params.get('name', None)
