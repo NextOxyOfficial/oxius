@@ -155,7 +155,7 @@
           </div>
         </div>
         <!-- third row of products -->
-        <div class="slider-content py-3 px-1 sm:px-4 pb-4">
+        <!-- <div class="slider-content py-3 px-1 sm:px-4 pb-4">
           <div class="product-row">
             <div
               class="flex gap-1 sm:gap-3 md:gap-4 overflow-x-auto hide-scrollbar scroll-smooth"
@@ -170,9 +170,9 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
         <!-- fourth row of products -->
-        <div class="slider-content py-3 px-1 sm:px-4 pb-4">
+        <!-- <div class="slider-content py-3 px-1 sm:px-4 pb-4">
           <div class="product-row">
             <div
               class="flex gap-1 sm:gap-3 md:gap-4 overflow-x-auto hide-scrollbar scroll-smooth"
@@ -187,7 +187,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
 
       <!-- Professional CTA Section -->
