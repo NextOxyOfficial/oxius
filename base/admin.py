@@ -245,7 +245,7 @@ admin.site.register(MicroGigPostTask, MicroGigPostTaskAdmin)
 
 class BalanceAdmin(admin.ModelAdmin):
 
-    list_display = ('user', 'user__balance', 'bank_status', 'payment_method', 'card_number', 'payment_confirmed_at',
+    list_display = ('user', 'user_balance', 'bank_status', 'payment_method', 'card_number', 'payment_confirmed_at',
                     'payable_amount', 'received_amount', 'merchant_invoice_no', 'created_at', 'updated_at', 'completed', 'approved', 'rejected')
 
     list_filter = ('user', 'bank_status', 'payment_method', 'payment_confirmed_at',
@@ -253,6 +253,10 @@ class BalanceAdmin(admin.ModelAdmin):
 
     list_editable = ('bank_status', 'payment_method',
                      'completed', 'approved', 'rejected')
+
+    @admin.display(description='User Balance')
+    def user_balance(self, obj):
+        return obj.user.balance if obj.user else None
 
     @admin.display(ordering="-created_at")
     def created_at(self, obj):
@@ -434,7 +438,7 @@ admin.site.register(ProductMedia)
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'owner__store_name', 'sale_price',
+    list_display = ('name', 'owner_store_name', 'sale_price',
                     'regular_price', 'created_at', 'updated_at')
     filter_horizontal = ('batches', 'divisions', 'category',
                          'benefits', 'faqs', 'trust_badges')
@@ -442,6 +446,10 @@ class ProductAdmin(admin.ModelAdmin):
                      'owner__store_name', 'slug', 'description', 'short_description')
     list_per_page = 10
     ordering = ('-created_at',)
+
+    @admin.display(description='Store Name')
+    def owner_store_name(self, obj):
+        return obj.owner.store_name if obj.owner else None
 
     fieldsets = (
         ('Basic Information', {
