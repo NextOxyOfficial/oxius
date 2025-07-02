@@ -327,12 +327,8 @@
             :disabled="isLoadingMore"
             class="px-8 py-3"
           >
-            <template v-if="!isLoadingMore">
-              Load More Products
-            </template>
-            <template v-else>
-              Loading...
-            </template>
+            <template v-if="!isLoadingMore"> Load More Products </template>
+            <template v-else> Loading... </template>
           </UButton>
           <p class="text-xs text-gray-500 mt-2">
             Showing {{ allProducts.length }} of {{ totalProducts }} products
@@ -366,6 +362,8 @@ import {
 } from "#components";
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 const { get } = useApi();
+const route = useRoute();
+const router = useRouter();
 const products = ref({});
 const categories = ref([]);
 const isLoading = ref(true);
@@ -387,6 +385,32 @@ const selectedCategory = ref(null);
 const minPrice = ref("");
 const maxPrice = ref("");
 const isSidebarOpen = ref(false);
+
+// Initialize from URL query parameters
+const initializeFromURL = () => {
+  if (route.query.category) {
+    const categorySlug = route.query.category;
+    // Find category by slug to get the ID
+    const category = categories.value.find((cat) => cat.slug === categorySlug);
+    if (category) {
+      selectedCategory.value = category.id;
+    }
+  }
+};
+
+// Update URL when category changes
+const updateURL = (categorySlug = null) => {
+  const query = { ...route.query };
+
+  if (categorySlug) {
+    query.category = categorySlug;
+  } else {
+    delete query.category;
+  }
+
+  // Use replace to avoid adding to browser history for smoother UX
+  router.replace({ query });
+};
 
 // Sidebar state
 const displayedCategories = ref([]);
@@ -425,8 +449,14 @@ function getCategoryName(categoryId) {
 function toggleCategory(categoryId) {
   if (selectedCategory.value === categoryId) {
     selectedCategory.value = null;
+    updateURL(); // Clear category from URL
   } else {
     selectedCategory.value = categoryId;
+    // Find category slug to update URL
+    const category = categories.value.find((cat) => cat.id === categoryId);
+    if (category && category.slug) {
+      updateURL(category.slug);
+    }
   }
   currentPage.value = 1;
   allProducts.value = [];
@@ -436,6 +466,7 @@ function toggleCategory(categoryId) {
 
 function clearCategoryFilter() {
   selectedCategory.value = null;
+  updateURL(); // Clear category from URL
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;
@@ -471,6 +502,7 @@ function clearAllFilters() {
   minPrice.value = "";
   maxPrice.value = "";
   searchQuery.value = "";
+  updateURL(); // Clear category from URL
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;
@@ -485,12 +517,14 @@ function handlePageChange(page) {
 // Sidebar toggle function
 function toggleSidebar() {
   isSidebarOpen.value = !isSidebarOpen.value;
-  
+
   // Notify header component of state change
   if (process.client) {
-    window.dispatchEvent(new CustomEvent('eshop-sidebar-state-update', {
-      detail: { isOpen: isSidebarOpen.value }
-    }));
+    window.dispatchEvent(
+      new CustomEvent("eshop-sidebar-state-update", {
+        detail: { isOpen: isSidebarOpen.value },
+      })
+    );
   }
 }
 
@@ -502,6 +536,11 @@ const handleHeaderSidebarToggle = (event) => {
 // Select category and close sidebar
 function selectCategoryAndCloseSidebar(categoryId) {
   selectedCategory.value = categoryId;
+  // Find category slug to update URL
+  const category = categories.value.find((cat) => cat.id === categoryId);
+  if (category && category.slug) {
+    updateURL(category.slug);
+  }
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;
@@ -640,7 +679,7 @@ async function fetchDiverseProducts() {
 
     // Combine all successful results
     categoryResults.forEach((result) => {
-      if (result.status === 'fulfilled' && result.value) {
+      if (result.status === "fulfilled" && result.value) {
         diverseProducts.push(...result.value);
       }
     });
@@ -731,7 +770,16 @@ async function fetchProducts() {
     }
 
     if (selectedCategory.value) {
-      queryParams += `&category=${selectedCategory.value}`;
+      // Find category slug for API call
+      const category = categories.value.find(
+        (cat) => cat.id === selectedCategory.value
+      );
+      if (category && category.slug) {
+        queryParams += `&category_slug=${encodeURIComponent(category.slug)}`;
+      } else {
+        // Fallback to category ID if slug not found
+        queryParams += `&category=${selectedCategory.value}`;
+      }
     }
 
     if (searchQuery.value) {
@@ -777,16 +825,19 @@ async function fetchProducts() {
         if (diverseProducts && diverseProducts.length > 0) {
           productsToDisplay = diverseProducts;
           // Update response data structure to maintain consistency
-          products.value = { 
-            ...res.data, 
+          products.value = {
+            ...res.data,
             results: diverseProducts,
-            count: res.data.count || diverseProducts.length 
+            count: res.data.count || diverseProducts.length,
           };
         } else {
           products.value = res.data;
         }
       } catch (diverseError) {
-        console.warn("Failed to fetch diverse products, using regular results:", diverseError);
+        console.warn(
+          "Failed to fetch diverse products, using regular results:",
+          diverseError
+        );
         products.value = res.data;
       }
     } else {
@@ -813,10 +864,9 @@ async function fetchProducts() {
       apiTotalCount: res.data.count,
       itemsPerPageSetting: itemsPerPage.value,
     });
-
   } catch (error) {
     console.error("Error fetching products:", error);
-    
+
     // Only show user-friendly errors, not technical details
     toast.add({
       title: "Unable to load products",
@@ -824,7 +874,7 @@ async function fetchProducts() {
       color: "orange",
       timeout: 4000,
     });
-    
+
     // Set safe defaults
     products.value = { results: [], count: 0 };
     totalProducts.value = 0;
@@ -847,7 +897,10 @@ async function fetchProducts() {
 // Load more products function
 async function loadMoreProducts() {
   if (isLoadingMore.value || !hasMoreProducts.value) {
-    console.log("Load more blocked:", { isLoadingMore: isLoadingMore.value, hasMoreProducts: hasMoreProducts.value });
+    console.log("Load more blocked:", {
+      isLoadingMore: isLoadingMore.value,
+      hasMoreProducts: hasMoreProducts.value,
+    });
     return;
   }
 
@@ -859,7 +912,16 @@ async function loadMoreProducts() {
     let queryParams = `page=${nextPage}&page_size=${itemsPerPage.value}&ordering=-created_at`;
 
     if (selectedCategory.value) {
-      queryParams += `&category=${selectedCategory.value}`;
+      // Find category slug for API call
+      const category = categories.value.find(
+        (cat) => cat.id === selectedCategory.value
+      );
+      if (category && category.slug) {
+        queryParams += `&category_slug=${encodeURIComponent(category.slug)}`;
+      } else {
+        // Fallback to category ID if slug not found
+        queryParams += `&category=${selectedCategory.value}`;
+      }
     }
 
     if (searchQuery.value) {
@@ -874,10 +936,13 @@ async function loadMoreProducts() {
       queryParams += `&max_price=${maxPrice.value}`;
     }
 
-    console.log("Loading more products with URL:", `/all-products/?${queryParams}`);
+    console.log(
+      "Loading more products with URL:",
+      `/all-products/?${queryParams}`
+    );
 
     const res = await get(`/all-products/?${queryParams}`);
-    
+
     // More robust response validation
     if (!res) {
       console.warn("No response received from API");
@@ -909,12 +974,14 @@ async function loadMoreProducts() {
     // Add new products to the existing list if we got results
     if (newProducts && newProducts.length > 0) {
       // Filter out any duplicate products to avoid display issues
-      const existingIds = new Set(allProducts.value.map(p => p.id));
-      const uniqueNewProducts = newProducts.filter(p => !existingIds.has(p.id));
-      
+      const existingIds = new Set(allProducts.value.map((p) => p.id));
+      const uniqueNewProducts = newProducts.filter(
+        (p) => !existingIds.has(p.id)
+      );
+
       allProducts.value = [...allProducts.value, ...uniqueNewProducts];
       currentPage.value = nextPage; // Only update page if we successfully got new products
-      
+
       console.log("Added products:", {
         newProductsCount: newProducts.length,
         uniqueNewProductsCount: uniqueNewProducts.length,
@@ -931,11 +998,13 @@ async function loadMoreProducts() {
     } else {
       // We have more products if our current total is less than API total
       hasMoreProducts.value = allProducts.value.length < totalProducts.value;
-      
+
       // Additional safety check: if we got fewer products than requested, we might be at the end
       if (newProducts.length < itemsPerPage.value) {
         hasMoreProducts.value = false;
-        console.log("Received fewer products than requested - likely at end of list");
+        console.log(
+          "Received fewer products than requested - likely at end of list"
+        );
       }
     }
 
@@ -947,13 +1016,15 @@ async function loadMoreProducts() {
       currentPage: currentPage.value,
       shouldHaveMore: allProducts.value.length < totalProducts.value,
     });
-
   } catch (error) {
     console.error("Error loading more products:", error);
-    
+
     // Only show user-friendly errors for network/server issues
     // Don't show technical validation errors
-    if (error.message && !error.message.includes("Invalid response structure")) {
+    if (
+      error.message &&
+      !error.message.includes("Invalid response structure")
+    ) {
       toast.add({
         title: "Unable to load more products",
         description: "Please check your connection and try again.",
@@ -961,7 +1032,7 @@ async function loadMoreProducts() {
         timeout: 3000,
       });
     }
-    
+
     // Don't increment currentPage.value if there was an error
   } finally {
     isLoadingMore.value = false;
@@ -1022,7 +1093,10 @@ function initInfiniteScroll() {
     setTimeout(() => {
       if (loadMoreTrigger.value) {
         observer.observe(loadMoreTrigger.value);
-        console.log("✅ Infinite scroll observer attached to element:", loadMoreTrigger.value);
+        console.log(
+          "✅ Infinite scroll observer attached to element:",
+          loadMoreTrigger.value
+        );
       } else {
         console.warn("⚠️ Load more trigger element not found");
       }
@@ -1035,30 +1109,60 @@ onUnmounted(() => {
   if (observer) {
     observer.disconnect();
   }
-  
+
   // Clean up event listeners
   if (process.client) {
-    window.removeEventListener('eshop-sidebar-toggle', handleHeaderSidebarToggle);
+    window.removeEventListener(
+      "eshop-sidebar-toggle",
+      handleHeaderSidebarToggle
+    );
   }
 });
 
 // Watch for filter changes and reinitialize infinite scroll
-watch([selectedCategory, searchQuery, minPrice, maxPrice], () => {
-  // Reset pagination state when filters change
-  currentPage.value = 1;
-  allProducts.value = [];
-  hasMoreProducts.value = true;
+watch(
+  [selectedCategory, searchQuery, minPrice, maxPrice],
+  () => {
+    // Reset pagination state when filters change
+    currentPage.value = 1;
+    allProducts.value = [];
+    hasMoreProducts.value = true;
 
-  // Fetch new products based on updated filters
-  fetchProducts();
+    // Fetch new products based on updated filters
+    fetchProducts();
 
-  // Reinitialize infinite scroll after a brief delay to ensure DOM updates
-  nextTick(() => {
-    setTimeout(() => {
-      initInfiniteScroll();
-    }, 200);
-  });
-}, { deep: true });
+    // Reinitialize infinite scroll after a brief delay to ensure DOM updates
+    nextTick(() => {
+      setTimeout(() => {
+        initInfiniteScroll();
+      }, 200);
+    });
+  },
+  { deep: true }
+);
+
+// Watch for route changes to handle browser back/forward navigation
+watch(
+  () => route.query.category,
+  (newCategorySlug, oldCategorySlug) => {
+    if (newCategorySlug !== oldCategorySlug) {
+      if (newCategorySlug) {
+        // Find category by slug and set as selected
+        const category = categories.value.find(
+          (cat) => cat.slug === newCategorySlug
+        );
+        if (category && selectedCategory.value !== category.id) {
+          selectedCategory.value = category.id;
+          // Products will be fetched by the filter watcher above
+        }
+      } else if (selectedCategory.value) {
+        // Clear category selection if no category in URL
+        selectedCategory.value = null;
+        // Products will be fetched by the filter watcher above
+      }
+    }
+  }
+);
 
 // Debug function to help test infinite scroll
 function debugInfiniteScroll() {
@@ -1076,7 +1180,10 @@ function debugInfiniteScroll() {
   console.log("Search Query:", searchQuery.value);
   console.log("Min Price:", minPrice.value);
   console.log("Max Price:", maxPrice.value);
-  console.log("Should load more?", allProducts.value.length < totalProducts.value);
+  console.log(
+    "Should load more?",
+    allProducts.value.length < totalProducts.value
+  );
   console.log("Expected products per page:", itemsPerPage.value);
   console.log("===================================");
 }
@@ -1090,7 +1197,12 @@ function forceLoadMore() {
   }
   if (!hasMoreProducts.value) {
     console.log("🛑 No more products available to load");
-    console.log("Current products:", allProducts.value.length, "Total available:", totalProducts.value);
+    console.log(
+      "Current products:",
+      allProducts.value.length,
+      "Total available:",
+      totalProducts.value
+    );
     return;
   }
   console.log("✅ Conditions met, calling loadMoreProducts...");
@@ -1103,14 +1215,14 @@ async function testAPIDirectly() {
   const nextPage = currentPage.value + 1;
   const testUrl = `/all-products/?page=${nextPage}&page_size=${itemsPerPage.value}&ordering=-created_at`;
   console.log("Test URL:", testUrl);
-  
+
   try {
     const res = await get(testUrl);
     console.log("✅ API Response:", {
       resultsLength: res.data?.results?.length || 0,
       totalCount: res.data?.count || 0,
       hasResults: !!res.data?.results,
-      results: res.data?.results || []
+      results: res.data?.results || [],
     });
   } catch (error) {
     console.error("❌ API Error:", error);
@@ -1147,15 +1259,26 @@ if (process.client) {
 // Initialize data
 await Promise.all([fetchCategories(), fetchProducts()]);
 
+// Initialize from URL query parameters after categories are loaded
+initializeFromURL();
+
+// If we loaded a category from URL, fetch products with that filter
+if (selectedCategory.value) {
+  currentPage.value = 1;
+  allProducts.value = [];
+  hasMoreProducts.value = true;
+  await fetchProducts();
+}
+
 onMounted(() => {
   // Initialize infinite scroll after a delay to ensure DOM is ready
   setTimeout(() => {
     initInfiniteScroll();
   }, 500);
-  
+
   // Listen for sidebar toggle from header
   if (process.client) {
-    window.addEventListener('eshop-sidebar-toggle', handleHeaderSidebarToggle);
+    window.addEventListener("eshop-sidebar-toggle", handleHeaderSidebarToggle);
   }
 });
 </script>

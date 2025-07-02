@@ -2215,17 +2215,21 @@ class AllProductsListView(generics.ListAPIView):
         queryset = Product.objects.filter(
             is_active=True).order_by('-created_at')
 
-        # Optional filtering by category (ManyToMany)
+        # Optional filtering by category (ManyToMany) - supports both UUID and slug
         category = self.request.query_params.get('category', None)
+        category_slug = self.request.query_params.get('category_slug', None)
+
         if category and category != 'undefined' and category.strip():
             try:
                 # Validate that category is a valid UUID before using it
                 uuid.UUID(str(category))
                 queryset = queryset.filter(category__id=category)
-                # If using slugs instead, use: category__slug=category
             except (ValueError, AttributeError):
-                # Invalid UUID format, skip category filter
-                pass
+                # Invalid UUID format, try slug filter instead
+                queryset = queryset.filter(category__slug=category)
+        elif category_slug and category_slug != 'undefined' and category_slug.strip():
+            # Filter by category slug
+            queryset = queryset.filter(category__slug=category_slug)
 
         # Optional search by name
         name = self.request.query_params.get('name', None)
