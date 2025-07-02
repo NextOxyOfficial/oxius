@@ -484,6 +484,7 @@ function clearPriceFilter() {
 
 function clearSearch() {
   searchQuery.value = "";
+  syncSearchToHeader(); // Sync to header
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;
@@ -503,6 +504,7 @@ function clearAllFilters() {
   maxPrice.value = "";
   searchQuery.value = "";
   updateURL(); // Clear category from URL
+  syncSearchToHeader(); // Sync to header
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;
@@ -531,6 +533,30 @@ function toggleSidebar() {
 // Listen for sidebar toggle from header
 const handleHeaderSidebarToggle = (event) => {
   isSidebarOpen.value = event.detail.isOpen;
+};
+
+// Listen for search events from header
+const handleHeaderSearch = (event) => {
+  const newSearchQuery = event.detail.searchQuery || "";
+  if (searchQuery.value !== newSearchQuery) {
+    searchQuery.value = newSearchQuery;
+    // The search will be triggered by the watcher
+    currentPage.value = 1;
+    allProducts.value = [];
+    hasMoreProducts.value = true;
+    fetchProducts();
+  }
+};
+
+// Sync search query to header when it changes locally
+const syncSearchToHeader = () => {
+  if (process.client) {
+    window.dispatchEvent(
+      new CustomEvent("eshop-search-sync", {
+        detail: { searchQuery: searchQuery.value },
+      })
+    );
+  }
 };
 
 // Select category and close sidebar
@@ -1116,6 +1142,7 @@ onUnmounted(() => {
       "eshop-sidebar-toggle",
       handleHeaderSidebarToggle
     );
+    window.removeEventListener("eshop-header-search", handleHeaderSearch);
   }
 });
 
@@ -1163,6 +1190,11 @@ watch(
     }
   }
 );
+
+// Watch for search query changes to sync with header
+watch(searchQuery, (newValue) => {
+  syncSearchToHeader();
+});
 
 // Debug function to help test infinite scroll
 function debugInfiniteScroll() {
@@ -1279,6 +1311,10 @@ onMounted(() => {
   // Listen for sidebar toggle from header
   if (process.client) {
     window.addEventListener("eshop-sidebar-toggle", handleHeaderSidebarToggle);
+    window.addEventListener("eshop-header-search", handleHeaderSearch);
+
+    // Sync initial search state to header
+    syncSearchToHeader();
   }
 });
 </script>

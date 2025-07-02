@@ -29,11 +29,14 @@
         <PublicEshopLogo />
         <div class="flex-1">
           <UInput
+            v-model="headerSearchQuery"
             icon="i-heroicons-magnifying-glass-20-solid"
             size="sm"
             color="green"
             :trailing="false"
-            placeholder="Search..."
+            placeholder="Search products, brands, categories..."
+            @input="handleSearchInput"
+            @keydown.enter="handleSearchEnter"
           />
         </div>
       </div>
@@ -42,10 +45,44 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onBeforeUnmount } from "vue";
+
 // Handle scroll events
 const isScrolled = ref(false);
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 80;
+};
+
+// Header search functionality
+const headerSearchQuery = ref("");
+
+// Debounced search function
+let searchTimeout = null;
+function handleSearchInput() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    emitSearchEvent();
+  }, 300); // Slightly faster debounce for header search
+}
+
+function handleSearchEnter() {
+  clearTimeout(searchTimeout);
+  emitSearchEvent();
+}
+
+function emitSearchEvent() {
+  if (process.client) {
+    window.dispatchEvent(
+      new CustomEvent("eshop-header-search", {
+        detail: { searchQuery: headerSearchQuery.value },
+      })
+    );
+  }
+}
+
+// Listen for search updates from the main page to sync the header input
+const handleSearchSync = (event) => {
+  headerSearchQuery.value = event.detail.searchQuery || "";
 };
 
 // Sidebar state management using event emitter
@@ -78,6 +115,9 @@ onMounted(() => {
       "eshop-sidebar-state-update",
       handleSidebarStateChange
     );
+
+    // Listen for search synchronization from main page
+    window.addEventListener("eshop-search-sync", handleSearchSync);
   }
 });
 
@@ -89,6 +129,8 @@ onBeforeUnmount(() => {
       "eshop-sidebar-state-update",
       handleSidebarStateChange
     );
+
+    window.removeEventListener("eshop-search-sync", handleSearchSync);
   }
 });
 </script>
