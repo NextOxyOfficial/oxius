@@ -10,7 +10,7 @@
           <a
             href="tel:+8801896144067"
             class="text-slate-300 text-xl max-w-2xl mx-auto block"
-            >+8801896144067</a
+            >+8801896144066</a
           >
           <p class="text-slate-300 text-lg max-w-2xl mx-auto">
             {{ $t("support_text") }}
