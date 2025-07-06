@@ -134,6 +134,30 @@
             </div>
 
             <form class="space-y-6">
+              <!-- Name Field -->
+              <div>
+                <label
+                  for="name"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Full Name
+                </label>
+                <div class="relative">
+                  <UIcon
+                    name="i-material-symbols-person-outline-rounded"
+                    class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                  />
+                  <input
+                    type="text"
+                    id="name"
+                    v-model="formData.name"
+                    placeholder="Enter your full name"
+                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
               <!-- Email Field -->
               <div>
                 <label
@@ -152,6 +176,30 @@
                     id="email"
                     v-model="formData.email"
                     placeholder="your.email@example.com"
+                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- Phone Number Field -->
+              <div>
+                <label
+                  for="phone"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Phone Number
+                </label>
+                <div class="relative">
+                  <UIcon
+                    name="i-tabler-phone"
+                    class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                  />
+                  <input
+                    type="tel"
+                    id="phone"
+                    v-model="formData.phone"
+                    placeholder="+880 1234 567890"
                     class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white"
                     required
                   />
@@ -188,7 +236,11 @@
                   type="submit"
                   @click.prevent="submitMessage"
                   :disabled="
-                    isSubmitting || !formData.email || !formData.message
+                    isSubmitting ||
+                    !formData.name ||
+                    !formData.email ||
+                    !formData.phone ||
+                    !formData.message
                   "
                   class="inline-flex items-center justify-center px-8 py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -218,7 +270,9 @@ import { ref } from "vue";
 
 // Form data
 const formData = ref({
+  name: "",
   email: "",
+  phone: "",
   message: "",
 });
 
@@ -227,7 +281,12 @@ const isSubmitting = ref(false);
 
 // Form submission handler
 const submitMessage = async () => {
-  if (!formData.value.email || !formData.value.message) {
+  if (
+    !formData.value.name ||
+    !formData.value.email ||
+    !formData.value.phone ||
+    !formData.value.message
+  ) {
     return;
   }
 
@@ -242,7 +301,9 @@ const submitMessage = async () => {
     console.log("Message submitted:", formData.value);
 
     // Reset form after successful submission
+    formData.value.name = "";
     formData.value.email = "";
+    formData.value.phone = "";
     formData.value.message = "";
   } catch (error) {
     console.error("Error submitting message:", error);
