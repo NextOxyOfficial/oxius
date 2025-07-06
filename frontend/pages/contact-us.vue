@@ -134,6 +134,34 @@
             </div>
 
             <form class="space-y-6">
+              <!-- Success Message -->
+              <div
+                v-if="submitStatus === 'success'"
+                class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg"
+              >
+                <div class="flex items-center">
+                  <UIcon name="i-heroicons-check-circle" class="w-5 h-5 mr-2" />
+                  <span
+                    >Thank you for your message! We'll get back to you
+                    soon.</span
+                  >
+                </div>
+              </div>
+
+              <!-- Error Message -->
+              <div
+                v-if="submitStatus === 'error'"
+                class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg"
+              >
+                <div class="flex items-center">
+                  <UIcon name="i-heroicons-x-circle" class="w-5 h-5 mr-2" />
+                  <span>{{
+                    errorMessage ||
+                    "There was an error sending your message. Please try again."
+                  }}</span>
+                </div>
+              </div>
+
               <!-- Name Field -->
               <div>
                 <label
@@ -235,13 +263,7 @@
                 <button
                   type="submit"
                   @click.prevent="submitMessage"
-                  :disabled="
-                    isSubmitting ||
-                    !formData.name ||
-                    !formData.email ||
-                    !formData.phone ||
-                    !formData.message
-                  "
+                  :disabled="isSubmitting"
                   class="inline-flex items-center justify-center px-8 py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <UIcon
@@ -267,6 +289,7 @@
 
 <script setup>
 import { ref } from "vue";
+import { createPublicContact } from "~/services/supportApi";
 
 // Form data
 const formData = ref({
@@ -278,27 +301,67 @@ const formData = ref({
 
 // Form submission state
 const isSubmitting = ref(false);
+const submitStatus = ref(null); // 'success', 'error', or null
+const errorMessage = ref("");
+
+// Form validation
+const validateForm = () => {
+  if (!formData.value.name.trim()) {
+    errorMessage.value = "Please enter your full name";
+    return false;
+  }
+
+  if (!formData.value.email.trim()) {
+    errorMessage.value = "Please enter your email address";
+    return false;
+  }
+
+  // Basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(formData.value.email)) {
+    errorMessage.value = "Please enter a valid email address";
+    return false;
+  }
+
+  if (!formData.value.phone.trim()) {
+    errorMessage.value = "Please enter your phone number";
+    return false;
+  }
+
+  if (!formData.value.message.trim()) {
+    errorMessage.value = "Please enter your message";
+    return false;
+  }
+
+  if (formData.value.message.length < 10) {
+    errorMessage.value = "Message must be at least 10 characters long";
+    return false;
+  }
+
+  return true;
+};
 
 // Form submission handler
 const submitMessage = async () => {
-  if (
-    !formData.value.name ||
-    !formData.value.email ||
-    !formData.value.phone ||
-    !formData.value.message
-  ) {
+  // Reset status
+  submitStatus.value = null;
+  errorMessage.value = "";
+
+  // Validate form
+  if (!validateForm()) {
+    submitStatus.value = "error";
     return;
   }
 
   isSubmitting.value = true;
 
   try {
-    // TODO: Implement actual form submission logic here
-    // For now, just simulate an API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const response = await createPublicContact(formData.value);
 
-    // Show success message (you can use a toast notification)
-    console.log("Message submitted:", formData.value);
+    console.log("Message submitted successfully:", response);
+
+    // Show success message
+    submitStatus.value = "success";
 
     // Reset form after successful submission
     formData.value.name = "";
@@ -307,7 +370,17 @@ const submitMessage = async () => {
     formData.value.message = "";
   } catch (error) {
     console.error("Error submitting message:", error);
-    // Show error message (you can use a toast notification)
+    submitStatus.value = "error";
+
+    // Handle specific error messages
+    if (error.data && error.data.message) {
+      errorMessage.value = error.data.message;
+    } else if (error.message) {
+      errorMessage.value = error.message;
+    } else {
+      errorMessage.value =
+        "There was an error sending your message. Please try again.";
+    }
   } finally {
     isSubmitting.value = false;
   }
