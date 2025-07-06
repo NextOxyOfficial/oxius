@@ -152,6 +152,7 @@ class PublicContactCreateView(generics.CreateAPIView):
     queryset = PublicContact.objects.all()
     serializer_class = PublicContactSerializer
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []  # Disable authentication for this view
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

@@ -19,73 +19,96 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!fhx-*zsy791frr7y538j7bt5mx_*5pr@*inb$w!bxzszqs0^-'
+SECRET_KEY = "django-insecure-!fhx-*zsy791frr7y538j7bt5mx_*5pr@*inb$w!bxzszqs0^-"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
-AUTH_USER_MODEL = 'base.User'
+ALLOWED_HOSTS = ["*"]
+AUTH_USER_MODEL = "base.User"
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'base',
-    'tinymce',
-    'rest_framework',
-    'rest_framework.authtoken',    'cities',
-    'cities_light',
-    'mobile_recharge',
-    'subscription',    'business_network',
-    'elearning',
-    'news',
-    'sale',  # Add the sale app here
-    'global_popup',  # Global popup system
-    'support',  # Support ticket system
-    'reviews',  # Reviews system
-    'django_filters',
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',
-    'corsheaders',
+    "jazzmin",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "base",
+    "tinymce",
+    "rest_framework",
+    "rest_framework.authtoken",
+    "cities",
+    "cities_light",
+    "mobile_recharge",
+    "subscription",
+    "business_network",
+    "elearning",
+    "news",
+    "sale",  # Add the sale app here
+    "global_popup",  # Global popup system
+    "support",  # Support ticket system
+    "reviews",  # Reviews system
+    "django_filters",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+    "corsheaders",
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'https://localhost',
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://adsyclub.com',
-    'https://adsyclub.com',
-    'http://www.adsyclub.com',
-    'https://www.adsyclub.com'
+    "https://localhost",
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://adsyclub.com",
+    "https://adsyclub.com",
+    "http://www.adsyclub.com",
+    "https://www.adsyclub.com",
 ]
+
+# Additional CORS settings for API calls
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True  # For development only
+CORS_ALLOWED_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
 CSRF_TRUSTED_ORIGINS = [
-    'https://localhost',
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://adsyclub.com',
-    'https://adsyclub.com',
-    'http://www.adsyclub.com',
-    'https://www.adsyclub.com'
+    "https://localhost",
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://adsyclub.com",
+    "https://adsyclub.com",
+    "http://www.adsyclub.com",
+    "https://www.adsyclub.com",
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
     ],
 }
 USE_X_FORWARDED_HOST = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
@@ -99,19 +122,19 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_SAVE_EVERY_REQUEST = True  # Refresh session on every request
 SESSION_COOKIE_HTTPONLY = True  # Security: prevent JS access to session cookie
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
-SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    "django.middleware.security.SecurityMiddleware",
     # Add whitenoise middleware right after security middleware
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 # Allow Unicode URLs (for Bangla slugs)
@@ -123,35 +146,35 @@ WHITENOISE_USE_FINDERS = True
 WHITENOISE_MANIFEST_STRICT = False
 WHITENOISE_SERVE_MANIFEST = True
 
-ROOT_URLCONF = 'backend.urls'
+ROOT_URLCONF = "backend.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'frontend/dist')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(BASE_DIR, "frontend/dist")],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'backend.wsgi.application'
+WSGI_APPLICATION = "backend.wsgi.application"
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'adsyclub',
-        'USER': 'postgres',
-        'PASSWORD': 'pgPass7431',
-        'HOST': 'localhost',
-        'PORT': '5432',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "adsyclub",
+        "USER": "postgres",
+        "PASSWORD": "pgPass7431",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 
@@ -161,16 +184,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -178,9 +201,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -191,16 +214,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # Force Django to serve admin static files correctly
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 STATICFILES_DIRS = []  # Empty to avoid conflicts
 
 # Make sure static root is clearly defined
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Make sure admin files are included even in production
 STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
 # WhiteNoise configuration for serving static files
@@ -210,26 +233,26 @@ WHITENOISE_INDEX_FILE = True
 WHITENOISE_MANIFEST_STRICT = False
 
 # This enables compression and caching
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-MEDIA_URL = 'https://adsyclub.com/media/'
+MEDIA_URL = "https://adsyclub.com/media/"
 # MEDIA_URL = 'http://127.0.0.1:8000//media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Increase max upload size to 50MB (default is around 2.5MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB in bytes
 FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB in bytes
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CELERY_BEAT_SCHEDULE = {
-    'auto-approve-tasks': {
-        'task': 'base.tasks.check_and_auto_approve_tasks',
-        'schedule': timedelta(minutes=30),  # Run every 30 minutes
+    "auto-approve-tasks": {
+        "task": "base.tasks.check_and_auto_approve_tasks",
+        "schedule": timedelta(minutes=30),  # Run every 30 minutes
     },
-    'deactivate-expired-subscriptions': {
-        'task': 'subscription.tasks.deactivate_expired_subscriptions',
-        'schedule': timedelta(days=1),  # Run once every day
+    "deactivate-expired-subscriptions": {
+        "task": "subscription.tasks.deactivate_expired_subscriptions",
+        "schedule": timedelta(days=1),  # Run once every day
     },
 }
 
@@ -242,45 +265,60 @@ SP_CANCEL = "https://adsyclub.com/deposit-withdraw/"
 SP_PREFIX = "ADSYCLUB_"
 
 # sms settings
-API_SMS = 'SplZ3f60tlt69pkZAEc8WHk3MbHkGeLYtJ1jElCd'
+API_SMS = "SplZ3f60tlt69pkZAEc8WHk3MbHkGeLYtJ1jElCd"
 
 # TinyMCE Configuration
 TINYMCE_DEFAULT_CONFIG = {
-    'plugins': [
-        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-        'insertdatetime', 'media', 'table', 'paste', 'help', 'wordcount'
+    "plugins": [
+        "advlist",
+        "autolink",
+        "lists",
+        "link",
+        "image",
+        "charmap",
+        "preview",
+        "anchor",
+        "searchreplace",
+        "visualblocks",
+        "code",
+        "fullscreen",
+        "insertdatetime",
+        "media",
+        "table",
+        "paste",
+        "help",
+        "wordcount",
     ],
-    'toolbar': 'undo redo | blocks | '
-               'bold italic forecolor | alignleft aligncenter '
-               'alignright alignjustify | bullist numlist outdent indent | '
-               'removeformat | help',
-    'content_css': 'default',
-    'height': 400,
-    'width': 'auto',
-    'resize': True,
-    'statusbar': True,
-    'branding': False,
-    'elementpath': True,
-    'paste_data_images': True,
-    'paste_as_text': False,
-    'paste_remove_styles_if_webkit': True,
-    'verify_html': False,
-    'cleanup_on_startup': True,
-    'custom_undo_redo_levels': 20,
-    'selector': 'textarea',
-    'theme': 'silver',
-    'skin': 'oxide',
-    'content_style': '''
+    "toolbar": "undo redo | blocks | "
+    "bold italic forecolor | alignleft aligncenter "
+    "alignright alignjustify | bullist numlist outdent indent | "
+    "removeformat | help",
+    "content_css": "default",
+    "height": 400,
+    "width": "auto",
+    "resize": True,
+    "statusbar": True,
+    "branding": False,
+    "elementpath": True,
+    "paste_data_images": True,
+    "paste_as_text": False,
+    "paste_remove_styles_if_webkit": True,
+    "verify_html": False,
+    "cleanup_on_startup": True,
+    "custom_undo_redo_levels": 20,
+    "selector": "textarea",
+    "theme": "silver",
+    "skin": "oxide",
+    "content_style": """
         body { 
             font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; 
             font-size: 14px; 
             line-height: 1.4; 
         }
         p { margin: 0 0 10px 0; }
-    ''',
-    'block_formats': 'Paragraph=p; Header 1=h1; Header 2=h2; Header 3=h3; Header 4=h4; Header 5=h5; Header 6=h6;',
-    'font_formats': '''
+    """,
+    "block_formats": "Paragraph=p; Header 1=h1; Header 2=h2; Header 3=h3; Header 4=h4; Header 5=h5; Header 6=h6;",
+    "font_formats": """
         Andale Mono=andale mono,times; 
         Arial=arial,helvetica,sans-serif; 
         Arial Black=arial black,avant garde; 
@@ -298,5 +336,5 @@ TINYMCE_DEFAULT_CONFIG = {
         Verdana=verdana,geneva; 
         Webdings=webdings; 
         Wingdings=wingdings,zapf dingbats
-    ''',
+    """,
 }
