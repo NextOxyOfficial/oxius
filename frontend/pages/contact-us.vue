@@ -119,37 +119,140 @@
         </div>
       </div>
 
-      <!-- Additional Support Section -->
-      <!-- <div class="mt-16 mb-20">
+      <!-- Message Submission Form -->
+      <div class="mt-16 mb-20">
         <div class="bg-slate-50 rounded-xl p-8 md:p-12">
-          <div class="text-center max-w-3xl mx-auto">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">
-              Need Additional Support?
-            </h2>
-            <p class="text-gray-600 mb-8">
-              Our dedicated team is ready to assist you with any questions or
-              concerns you may have
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                class="inline-flex items-center justify-center px-6 py-3 border border-slate-900 text-gray-800 hover:bg-slate-900 hover:text-white rounded-lg font-medium transition-colors duration-300"
-              >
-                <PhoneIcon class="w-5 h-5 mr-2" />
-                Schedule a Call
-              </button>
-              <button
-                class="inline-flex items-center justify-center px-6 py-3 bg-slate-900 text-white hover:bg-slate-800 rounded-lg font-medium transition-colors duration-300"
-              >
-                <MessageSquareIcon class="w-5 h-5 mr-2" />
-                Live Chat
-              </button>
+          <div class="max-w-2xl mx-auto">
+            <div class="text-center mb-8">
+              <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+                Send us a Message
+              </h2>
+              <p class="text-gray-600">
+                Have a question or feedback? We'd love to hear from you. Send us
+                a message and we'll respond as soon as possible.
+              </p>
             </div>
+
+            <form class="space-y-6">
+              <!-- Email Field -->
+              <div>
+                <label
+                  for="email"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Email Address
+                </label>
+                <div class="relative">
+                  <UIcon
+                    name="i-material-symbols-mail-outline-rounded"
+                    class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                  />
+                  <input
+                    type="email"
+                    id="email"
+                    v-model="formData.email"
+                    placeholder="your.email@example.com"
+                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              <!-- Message Field -->
+              <div>
+                <label
+                  for="message"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Message
+                </label>
+                <div class="relative">
+                  <textarea
+                    id="message"
+                    v-model="formData.message"
+                    rows="6"
+                    maxlength="1000"
+                    placeholder="Please describe your question or concern in detail..."
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white resize-none"
+                    required
+                  ></textarea>
+                  <div class="absolute bottom-3 right-3 text-xs text-gray-400">
+                    {{ formData.message.length }}/1000
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="flex justify-center pt-4">
+                <button
+                  type="submit"
+                  @click.prevent="submitMessage"
+                  :disabled="
+                    isSubmitting || !formData.email || !formData.message
+                  "
+                  class="inline-flex items-center justify-center px-8 py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <UIcon
+                    v-if="isSubmitting"
+                    name="i-material-symbols-progress-activity"
+                    class="w-5 h-5 mr-2 animate-spin"
+                  />
+                  <UIcon
+                    v-else
+                    name="i-material-symbols-send-rounded"
+                    class="w-5 h-5 mr-2"
+                  />
+                  {{ isSubmitting ? "Sending..." : "Send Message" }}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      </div> -->
+      </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { ref } from "vue";
+
+// Form data
+const formData = ref({
+  email: "",
+  message: "",
+});
+
+// Form submission state
+const isSubmitting = ref(false);
+
+// Form submission handler
+const submitMessage = async () => {
+  if (!formData.value.email || !formData.value.message) {
+    return;
+  }
+
+  isSubmitting.value = true;
+
+  try {
+    // TODO: Implement actual form submission logic here
+    // For now, just simulate an API call
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Show success message (you can use a toast notification)
+    console.log("Message submitted:", formData.value);
+
+    // Reset form after successful submission
+    formData.value.email = "";
+    formData.value.message = "";
+  } catch (error) {
+    console.error("Error submitting message:", error);
+    // Show error message (you can use a toast notification)
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+</script>
+
 <style scoped>
 .shadow-sm {
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05),
