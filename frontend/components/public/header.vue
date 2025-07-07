@@ -7,6 +7,7 @@
         : 'sticky top-0 w-full shadow-sm',
       'sm:py-3 py-1.5', // Smaller padding on mobile
     ]"
+    style="padding-top: max(0.75rem, env(safe-area-inset-top)); padding-top: max(12px, env(safe-area-inset-top));"
   >
     <!-- Subscription Warnings Section -->
     <div class="relative px-4">

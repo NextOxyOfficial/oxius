@@ -23,4 +23,24 @@ html, body {
 * {
   box-sizing: border-box;
 }
+
+/* Ensure proper status bar spacing on mobile */
+@media (max-width: 768px) {
+  body {
+    /* Add padding top to account for status bar on mobile devices */
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  /* Ensure the main content doesn't overlap with status bar */
+  #header-container {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Additional mobile adjustments for Capacitor apps */
+.capacitor-app {
+  body {
+    padding-top: env(safe-area-inset-top);
+  }
+}
 </style>

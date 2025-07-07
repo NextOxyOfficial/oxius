@@ -11,11 +11,16 @@ const config: CapacitorConfig = {
       launchAutoHide: true,
       showSpinner: false,
       androidSplashResourceName: "splash",
-      splashFullScreen: true,
-      splashImmersive: true
+      splashFullScreen: false,
+      splashImmersive: false
     },
     Camera: {
       permissions: ['camera', 'photos']
+    },
+    StatusBar: {
+      style: 'light',
+      backgroundColor: '#10b981',
+      overlaysWebView: false
     }
   }
 };
