@@ -175,6 +175,7 @@
                 <input
                   type="file"
                   ref="fileInput"
+                  multiple
                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   @change="handleFileUpload"
                   accept="image/*"
@@ -649,96 +650,120 @@ function handleFileUpload(event) {
       return;
     }
 
-    const file = files[0];
-
-    if (!file.type.startsWith("image/")) {
-      uploadError.value = "Please select a valid image file";
-      isUploading.value = false;
-      return;
-    }
-
-    if (file.size > 12 * 1024 * 1024) {
-      uploadError.value = "Image size must be less than 12MB";
-      isUploading.value = false;
-      return;
-    }
-
     if (!form.value.images) {
       form.value.images = [];
     }
 
-    if (form.value.images.length >= 5) {
-      uploadError.value = "Maximum 5 images allowed";
+    // Check if adding these files would exceed the limit
+    const remainingSlots = 5 - form.value.images.length;
+    if (files.length > remainingSlots) {
+      uploadError.value = `You can only add ${remainingSlots} more image(s). Maximum 5 images allowed.`;
       isUploading.value = false;
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        let width = img.width;
-        let height = img.height;
+    // Validate all files first
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        uploadError.value = `"${file.name}" is not a valid image file`;
+        isUploading.value = false;
+        return;
+      }
 
-        // Calculate original file size for comparison
-        const originalSize = file.size; // Enhanced compression: resize while maintaining aspect ratio
-        // Increased max size for better product image quality
-        const maxSize = 1600; // Higher max size for product photos
-        if (width > maxSize || height > maxSize) {
-          if (width > height) {
-            height = height * (maxSize / width);
-            width = maxSize;
-          } else {
-            width = width * (maxSize / height);
-            height = maxSize;
+      if (file.size > 12 * 1024 * 1024) {
+        uploadError.value = `"${file.name}" is too large. Image size must be less than 12MB`;
+        isUploading.value = false;
+        return;
+      }
+    }
+
+    // Process all files
+    let processedCount = 0;
+    const totalFiles = files.length;
+
+    files.forEach((file, index) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          // Calculate original file size for comparison
+          const originalSize = file.size;
+          // Enhanced compression: resize while maintaining aspect ratio
+          // Increased max size for better product image quality
+          const maxSize = 1600; // Higher max size for product photos
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = height * (maxSize / width);
+              width = maxSize;
+            } else {
+              width = width * (maxSize / height);
+              height = maxSize;
+            }
           }
-        }
 
-        canvas.width = width;
-        canvas.height = height;
+          canvas.width = width;
+          canvas.height = height;
 
-        const ctx = canvas.getContext("2d");
-        // Enable image smoothing for better quality
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(img, 0, 0, width, height);
+          const ctx = canvas.getContext("2d");
+          // Enable image smoothing for better quality
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(img, 0, 0, width, height);
 
-        // Higher quality settings for product images
-        let quality = 0.9; // High quality for product photos
-        if (originalSize > 10 * 1024 * 1024) {
-          // > 10MB
-          quality = 0.85;
-        } else if (originalSize > 5 * 1024 * 1024) {
-          // > 5MB
-          quality = 0.88;
-        }
+          // Higher quality settings for product images
+          let quality = 0.9; // High quality for product photos
+          if (originalSize > 10 * 1024 * 1024) {
+            // > 10MB
+            quality = 0.85;
+          } else if (originalSize > 5 * 1024 * 1024) {
+            // > 5MB
+            quality = 0.88;
+          }
 
-        const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
+          const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
 
-        form.value.images.push(compressedDataUrl);
-        isUploading.value = false;
+          form.value.images.push(compressedDataUrl);
+          processedCount++;
 
-        if (event.target) {
-          event.target.value = null;
-        }
+          // Check if all files have been processed
+          if (processedCount === totalFiles) {
+            isUploading.value = false;
+
+            // Show success message
+            toast.add({
+              title: "Images Uploaded",
+              description: `Successfully uploaded ${totalFiles} image(s)`,
+              color: "green",
+              timeout: 3000,
+            });
+
+            // Reset file input
+            if (event.target) {
+              event.target.value = null;
+            }
+          }
+        };
+
+        img.onerror = () => {
+          uploadError.value = `Invalid image "${file.name}". Please try again.`;
+          isUploading.value = false;
+        };
+
+        img.src = e.target.result;
       };
 
-      img.onerror = () => {
-        uploadError.value = "Invalid image. Please try again.";
+      reader.onerror = (error) => {
+        console.error("FileReader error:", error);
+        uploadError.value = `Error uploading "${file.name}". Please try again.`;
         isUploading.value = false;
       };
 
-      img.src = e.target.result;
-    };
-
-    reader.onerror = (error) => {
-      console.error("FileReader error:", error);
-      uploadError.value = "Error uploading image. Please try again.";
-      isUploading.value = false;
-    };
-
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
+    });
   } catch (error) {
     console.error("File upload error:", error);
     uploadError.value = "Unexpected error occurred during upload";
