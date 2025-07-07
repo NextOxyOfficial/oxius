@@ -123,134 +123,214 @@
       <div class="mt-16 mb-20">
         <div class="bg-slate-50 rounded-xl p-8 md:p-12">
           <div class="max-w-2xl mx-auto">
-            <div class="text-center mb-8">
-              <h2 class="text-2xl font-semibold text-gray-800 mb-4">
-                Send us a Message
-              </h2>
-              <p class="text-gray-600">
-                Have a question or feedback? We'd love to hear from you. Send us
-                a message and we'll respond as soon as possible.
-              </p>
-            </div>
-
-            <form class="space-y-6" @submit.prevent="submitMessage">
-              <!-- Name Field -->
-              <div>
-                <label
-                  for="name"
-                  class="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Full Name
-                </label>
-                <div class="relative">
+            <!-- Success Message -->
+            <div v-if="formSubmitted" class="text-center">
+              <div class="mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                   <UIcon
-                    name="i-material-symbols-person-outline-rounded"
-                    class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-                  />
-                  <input
-                    type="text"
-                    id="name"
-                    v-model="formData.name"
-                    placeholder="Enter your full name"
-                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white"
-                    required
+                    name="i-material-symbols-check-circle-outline-rounded"
+                    class="w-8 h-8 text-green-600"
                   />
                 </div>
-              </div>
-
-              <!-- Email Field -->
-              <div>
-                <label
-                  for="email"
-                  class="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Email Address
-                </label>
-                <div class="relative">
-                  <UIcon
-                    name="i-material-symbols-mail-outline-rounded"
-                    class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-                  />
-                  <input
-                    type="email"
-                    id="email"
-                    v-model="formData.email"
-                    placeholder="your.email@example.com"
-                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white"
-                    required
-                  />
-                </div>
-              </div>
-
-              <!-- Phone Number Field -->
-              <div>
-                <label
-                  for="phone"
-                  class="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Phone Number
-                </label>
-                <div class="relative">
-                  <UIcon
-                    name="i-tabler-phone"
-                    class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-                  />
-                  <input
-                    type="tel"
-                    id="phone"
-                    v-model="formData.phone"
-                    placeholder="+880 1234 567890"
-                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white"
-                    required
-                  />
-                </div>
-              </div>
-
-              <!-- Message Field -->
-              <div>
-                <label
-                  for="message"
-                  class="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Message
-                </label>
-                <div class="relative">
-                  <textarea
-                    id="message"
-                    v-model="formData.message"
-                    rows="6"
-                    maxlength="1000"
-                    placeholder="Please describe your question or concern in detail..."
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white resize-none"
-                    required
-                  ></textarea>
-                  <div class="absolute bottom-3 right-3 text-xs text-gray-400">
-                    {{ formData.message.length }}/1000
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+                  Message Sent Successfully!
+                </h2>
+                <div class="bg-white rounded-lg p-6 border border-green-200">
+                  <p class="text-gray-700 mb-4">
+                    Thank you for contacting us! Your message has been received and a support ticket has been created.
+                  </p>
+                  <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-sm text-gray-600 mb-1">Support Ticket ID:</p>
+                        <p class="font-mono text-lg font-semibold text-green-700">{{ ticketId }}</p>
+                      </div>
+                      <UIcon
+                        name="i-material-symbols-content-copy-outline-rounded"
+                        class="w-5 h-5 text-green-600 cursor-pointer hover:text-green-700"
+                        @click="copyTicketId"
+                      />
+                    </div>
+                  </div>
+                  <div class="mt-4 text-sm text-gray-600">
+                    <p class="mb-2">
+                      <strong>What happens next?</strong>
+                    </p>
+                    <ul class="list-disc list-inside space-y-1 text-left">
+                      <li>Our support team will review your message within 24 hours</li>
+                      <li>You'll receive an email confirmation with your ticket details</li>
+                      <li>We'll respond to your inquiry as soon as possible</li>
+                    </ul>
                   </div>
                 </div>
-              </div>
-
-              <!-- Submit Button -->
-              <div class="flex justify-center pt-4">
                 <button
-                  type="submit"
-                  :disabled="isSubmitting"
-                  class="inline-flex items-center justify-center px-8 py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  @click="resetForm"
+                  class="mt-6 inline-flex items-center justify-center px-6 py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-colors duration-200"
                 >
                   <UIcon
-                    v-if="isSubmitting"
-                    name="i-material-symbols-progress-activity"
-                    class="w-5 h-5 mr-2 animate-spin"
-                  />
-                  <UIcon
-                    v-else
-                    name="i-material-symbols-send-rounded"
+                    name="i-material-symbols-add-circle-outline-rounded"
                     class="w-5 h-5 mr-2"
                   />
-                  {{ isSubmitting ? "Sending..." : "Send Message" }}
+                  Send Another Message
                 </button>
               </div>
-            </form>
+            </div>
+
+            <!-- Contact Form -->
+            <div v-else>
+              <div class="text-center mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+                  Send us a Message
+                </h2>
+                <p class="text-gray-600">
+                  Have a question or feedback? We'd love to hear from you. Send us
+                  a message and we'll respond as soon as possible.
+                </p>
+              </div>
+
+              <form class="space-y-6" @submit.prevent="submitMessage">
+                <!-- Name Field -->
+                <div>
+                  <label
+                    for="name"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Full Name
+                  </label>
+                  <div class="relative">
+                    <UIcon
+                      name="i-material-symbols-person-outline-rounded"
+                      class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                    />
+                    <input
+                      type="text"
+                      id="name"
+                      v-model="formData.name"
+                      placeholder="Enter your full name"
+                      class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <!-- Email Field -->
+                <div>
+                  <label
+                    for="email"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Email Address
+                  </label>
+                  <div class="relative">
+                    <UIcon
+                      name="i-material-symbols-mail-outline-rounded"
+                      class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                    />
+                    <input
+                      type="email"
+                      id="email"
+                      v-model="formData.email"
+                      placeholder="your.email@example.com"
+                      class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <!-- Phone Number Field -->
+                <div>
+                  <label
+                    for="phone"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Phone Number
+                  </label>
+                  <div class="relative">
+                    <UIcon
+                      name="i-tabler-phone"
+                      class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                    />
+                    <input
+                      type="tel"
+                      id="phone"
+                      v-model="formData.phone"
+                      placeholder="+880 1234 567890"
+                      class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <!-- Subject Field -->
+                <div>
+                  <label
+                    for="subject"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Subject
+                  </label>
+                  <div class="relative">
+                    <UIcon
+                      name="i-material-symbols-subject-rounded"
+                      class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                    />
+                    <input
+                      type="text"
+                      id="subject"
+                      v-model="formData.subject"
+                      placeholder="Brief description of your inquiry"
+                      class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <!-- Message Field -->
+                <div>
+                  <label
+                    for="message"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Message
+                  </label>
+                  <div class="relative">
+                    <textarea
+                      id="message"
+                      v-model="formData.message"
+                      rows="6"
+                      maxlength="1000"
+                      placeholder="Please describe your question or concern in detail..."
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 transition-colors duration-200 bg-white resize-none"
+                      required
+                    ></textarea>
+                    <div class="absolute bottom-3 right-3 text-xs text-gray-400">
+                      {{ formData.message.length }}/1000
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-center pt-4">
+                  <button
+                    type="submit"
+                    :disabled="isSubmitting"
+                    class="inline-flex items-center justify-center px-8 py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+                  >
+                    <UIcon
+                      v-if="isSubmitting"
+                      name="i-material-symbols-progress-activity"
+                      class="w-5 h-5 mr-2 animate-spin"
+                    />
+                    <UIcon
+                      v-else
+                      name="i-material-symbols-send-rounded"
+                      class="w-5 h-5 mr-2"
+                    />
+                    {{ isSubmitting ? "Processing..." : "Send Message" }}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -270,11 +350,14 @@ const formData = ref({
   name: "",
   email: "",
   phone: "",
+  subject: "",
   message: "",
 });
 
 // Form submission state
 const isSubmitting = ref(false);
+const formSubmitted = ref(false);
+const ticketId = ref("");
 
 // Toast function
 const showToast = (title, description, color, timeout = 3000) => {
@@ -310,6 +393,11 @@ const validateForm = () => {
     return false;
   }
 
+  if (!formData.value.subject.trim()) {
+    showToast("Validation Error", "Please enter a subject", "red");
+    return false;
+  }
+
   if (!formData.value.message.trim()) {
     showToast("Validation Error", "Please enter your message", "red");
     return false;
@@ -327,6 +415,38 @@ const validateForm = () => {
   return true;
 };
 
+// Generate ticket ID
+const generateTicketId = () => {
+  const prefix = "TKT";
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substr(2, 4).toUpperCase();
+  return `${prefix}-${timestamp}-${random}`;
+};
+
+// Copy ticket ID to clipboard
+const copyTicketId = async () => {
+  try {
+    await navigator.clipboard.writeText(ticketId.value);
+    showToast("Copied!", "Ticket ID copied to clipboard", "green", 2000);
+  } catch (error) {
+    console.error("Failed to copy ticket ID:", error);
+    showToast("Error", "Failed to copy ticket ID", "red");
+  }
+};
+
+// Reset form to initial state
+const resetForm = () => {
+  formSubmitted.value = false;
+  ticketId.value = "";
+  formData.value = {
+    name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: "",
+  };
+};
+
 // Form submission handler
 const submitMessage = async () => {
   // Validate form
@@ -335,6 +455,9 @@ const submitMessage = async () => {
   }
 
   isSubmitting.value = true;
+
+  // Show spinner for 2 seconds before actual submission
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   try {
     const { data, error } = await post("/public-contact/", formData.value);
@@ -346,24 +469,25 @@ const submitMessage = async () => {
         error.data?.message || "Failed to send message. Please try again.",
         "red"
       );
+      isSubmitting.value = false;
     } else {
       console.log("Message submitted successfully:", data);
 
-      // Show success message
+      // Generate ticket ID
+      ticketId.value = generateTicketId();
+
+      // Hide form and show success message
+      formSubmitted.value = true;
+
+      // Show success toast
       showToast(
         "Success!",
-        "Thank you for your message! We'll get back to you soon.",
+        "Your message has been sent and a support ticket has been created.",
         "green",
         5000
       );
 
-      // Reset form after successful submission
-      formData.value = {
-        name: "",
-        email: "",
-        phone: "",
-        message: "",
-      };
+      isSubmitting.value = false;
     }
   } catch (error) {
     console.error("Error submitting message:", error);
@@ -372,7 +496,6 @@ const submitMessage = async () => {
       "An unexpected error occurred. Please try again.",
       "red"
     );
-  } finally {
     isSubmitting.value = false;
   }
 };
