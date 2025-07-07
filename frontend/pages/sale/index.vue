@@ -1,198 +1,12 @@
 <template>
   <div class="bg-gray-50/80 min-h-screen">
     <!-- Top Navigation Bar with Search and Post Button -->
-    <div class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-      <CommonGeoSelector />
-      <UContainer class="py-3">
-        <div class="location-breadcrumb relative mb-3 overflow-hidden">
-          <!-- Subtle background effect -->
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-gray-50 to-primary-50 opacity-70 rounded-lg"
-          ></div>
-
-          <!-- Decorative map pin -->
-          <div
-            class="absolute -left-3 top-1/2 -translate-y-1/2 text-primary-400"
-          >
-            <UIcon name="i-heroicons-map-pin" class="w-16 h-16" />
-          </div>
-
-          <div
-            class="relative z-10 flex items-center justify-between px-3 pl-12 rounded-lg border border-primary-100"
-          >
-            <!-- Location path with icons -->
-            <div class="location-breadcrumb relative my-3 overflow-hidden">
-              <!-- Subtle background effect -->
-              <div
-                class="relative z-10 flex items-center justify-between p-1 rounded-lg border border-primary-100"
-              >
-                <!-- Location path with icons -->
-                <div class="flex items-center flex-wrap location-path">
-                  <!-- Show country if allOverBangladesh is true or only country is set -->
-                  <div
-                    v-if="
-                      location?.allOverBangladesh ||
-                      (location?.country && !location?.state)
-                    "
-                    class="location-segment flex items-center"
-                    data-location="country"
-                  >
-                    <UIcon
-                      name="i-heroicons-globe-asia-australia"
-                      class="text-primary-600 mr-1.5 animate-pulse-slow"
-                    />
-                    <span class="font-medium text-gray-800">{{
-                      location?.country || "Bangladesh"
-                    }}</span>
-                    <span
-                      v-if="location?.allOverBangladesh"
-                      class="ml-2 text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full"
-                    >
-                      All over {{ location?.country || "Bangladesh" }}
-                    </span>
-                  </div>
-
-                  <!-- Show state, city, upazila only if not allOverBangladesh -->
-                  <template v-if="!location?.allOverBangladesh">
-                    <div
-                      v-if="location?.state"
-                      class="location-segment flex items-center"
-                      data-location="state"
-                    >
-                      <UIcon
-                        name="i-heroicons-map"
-                        class="text-primary-600 mr-1.5 animate-pulse-slow"
-                      />
-                      <span class="font-medium text-gray-800">{{
-                        location?.state
-                      }}</span>
-                      <UIcon
-                        v-if="location?.city"
-                        name="i-heroicons-chevron-right"
-                        class="mx-1.5 text-gray-600"
-                      />
-                    </div>
-
-                    <div
-                      v-if="location?.city"
-                      class="location-segment flex items-center"
-                      data-location="city"
-                    >
-                      <UIcon
-                        name="i-heroicons-building-office-2"
-                        class="text-primary-600 mr-1.5 location-icon"
-                      />
-                      <span class="font-medium text-gray-800">{{
-                        location?.city
-                      }}</span>
-                      <UIcon
-                        v-if="location?.upazila"
-                        name="i-heroicons-chevron-right"
-                        class="mx-1.5 text-gray-600"
-                      />
-                    </div>
-
-                    <div
-                      v-if="location?.upazila"
-                      class="location-segment flex items-center"
-                      data-location="upazila"
-                    >
-                      <UIcon
-                        name="i-heroicons-home-modern"
-                        class="text-primary-600 mr-1.5 location-icon"
-                      />
-                      <span class="font-medium text-gray-800">{{
-                        location?.upazila
-                      }}</span>
-                    </div>
-                  </template>
-                </div>
-              </div>
-            </div>
-            <UTooltip text="Change Location" class="me-auto">
-              <UButton
-                icon="i-heroicons-map-pin"
-                size="md"
-                color="primary"
-                variant="ghost"
-                trailing-icon="i-heroicons-pencil-square"
-                class="edit-location-btn ml-2 relative overflow-hidden"
-                @click="handleClearLocation"
-              >
-                <span class="sr-only">Edit Location</span>
-              </UButton>
-            </UTooltip>
-            <UButtonGroup size="md" class="flex-1 hidden md:flex md:w-2/4">
-              <UInput
-                icon="i-heroicons-magnifying-glass-20-solid"
-                size="md"
-                color="white"
-                :trailing="false"
-                placeholder="Search..."
-                v-model="form.title"
-                @keyup.enter="filterSearch"
-                class="w-full"
-                :ui="{
-                  padding: {
-                    md: 'sm:py-2.5',
-                  },
-                }"
-              />
-
-              <UButton
-                size="md"
-                :loading="isLoading"
-                color="primary"
-                variant="solid"
-                :label="t('search')"
-                @click="filterSearch"
-                class="sm:h-10 max-sm:!text-base w-24 justify-center"
-                :ui="{
-                  padding: {
-                    md: 'sm:py-2.5',
-                  },
-                }"
-              />
-            </UButtonGroup>
-          </div>
-        </div>
-        <UButtonGroup
-          size="md"
-          class="flex-1 flex md:hidden md:w-2/4 px-2 pb-2"
-        >
-          <UInput
-            icon="i-heroicons-magnifying-glass-20-solid"
-            size="md"
-            color="white"
-            :trailing="false"
-            placeholder="Search..."
-            v-model="form.title"
-            @keyup.enter="filterSearch"
-            class="w-full"
-            :ui="{
-              padding: {
-                md: 'sm:py-2.5',
-              },
-            }"
-          />
-
-          <UButton
-            size="md"
-            :loading="isLoading"
-            color="primary"
-            variant="solid"
-            icon="i-heroicons-magnifying-glass-20-solid"
-            @click="filterSearch"
-            class="sm:h-10 max-sm:!text-base w-12 justify-center"
-            :ui="{
-              padding: {
-                md: 'sm:py-2.5',
-              },
-            }"
-          />
-        </UButtonGroup>
-      </UContainer>
-    </div>
+    <SaleSearchBar
+      :initial-search-term="form.title"
+      :is-searching="isLoading"
+      @search="handleSearch"
+      @clear-location="handleClearLocation"
+    />
     <UContainer class="sm:py-6">
       <!-- Overlay for mobile -->
       <div
@@ -239,7 +53,8 @@
                     }}</span>
                   </span>
                 </p>
-              </div>              <!-- Post Sale Ad Button - Mobile position (right side of ads found row) -->
+              </div>
+              <!-- Post Sale Ad Button - Mobile position (right side of ads found row) -->
               <div class="lg:hidden">
                 <div v-if="isAuthenticated" class="flex items-center gap-2">
                   <NuxtLink
@@ -247,18 +62,36 @@
                     class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-xs"
                     @click="handleButtonClick('my-posts-mobile')"
                   >
-                    <div v-if="loadingButtons.has('my-posts-mobile')" class="dotted-spinner primary h-3 w-3"></div>
-                    <UIcon v-else name="i-heroicons-list-bullet" class="h-3 w-3" />
-                    <span v-if="!loadingButtons.has('my-posts-mobile')">My Posts</span>
+                    <div
+                      v-if="loadingButtons.has('my-posts-mobile')"
+                      class="dotted-spinner primary h-3 w-3"
+                    ></div>
+                    <UIcon
+                      v-else
+                      name="i-heroicons-list-bullet"
+                      class="h-3 w-3"
+                    />
+                    <span v-if="!loadingButtons.has('my-posts-mobile')"
+                      >My Posts</span
+                    >
                   </NuxtLink>
                   <NuxtLink
                     to="/sale/my-posts?tab=post-sale"
                     class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-xs"
                     @click="handleButtonClick('post-ad-mobile')"
                   >
-                    <div v-if="loadingButtons.has('post-ad-mobile')" class="dotted-spinner white h-3 w-3"></div>
-                    <UIcon v-else name="i-heroicons-plus-circle" class="h-3 w-3" />
-                    <span v-if="!loadingButtons.has('post-ad-mobile')">Post Ad</span>
+                    <div
+                      v-if="loadingButtons.has('post-ad-mobile')"
+                      class="dotted-spinner white h-3 w-3"
+                    ></div>
+                    <UIcon
+                      v-else
+                      name="i-heroicons-plus-circle"
+                      class="h-3 w-3"
+                    />
+                    <span v-if="!loadingButtons.has('post-ad-mobile')"
+                      >Post Ad</span
+                    >
                   </NuxtLink>
                 </div>
                 <div v-else>
@@ -294,24 +127,43 @@
               </div>
               <div
                 class="flex items-center border-l border-gray-200 pl-4 gap-2"
-              >                <div v-if="isAuthenticated" class="flex items-center gap-2">
+              >
+                <div v-if="isAuthenticated" class="flex items-center gap-2">
                   <NuxtLink
                     to="/sale/my-posts"
                     class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-sm"
                     @click="handleButtonClick('my-posts-desktop')"
                   >
-                    <div v-if="loadingButtons.has('my-posts-desktop')" class="dotted-spinner primary h-4 w-4"></div>
-                    <UIcon v-else name="i-heroicons-list-bullet" class="h-4 w-4" />
-                    <span v-if="!loadingButtons.has('my-posts-desktop')">My Posts</span>
+                    <div
+                      v-if="loadingButtons.has('my-posts-desktop')"
+                      class="dotted-spinner primary h-4 w-4"
+                    ></div>
+                    <UIcon
+                      v-else
+                      name="i-heroicons-list-bullet"
+                      class="h-4 w-4"
+                    />
+                    <span v-if="!loadingButtons.has('my-posts-desktop')"
+                      >My Posts</span
+                    >
                   </NuxtLink>
                   <NuxtLink
                     to="/sale/my-posts?tab=post-sale"
                     class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm"
                     @click="handleButtonClick('post-sale-ad-desktop')"
                   >
-                    <div v-if="loadingButtons.has('post-sale-ad-desktop')" class="dotted-spinner white h-4 w-4"></div>
-                    <UIcon v-else name="i-heroicons-plus-circle" class="h-4 w-4" />
-                    <span v-if="!loadingButtons.has('post-sale-ad-desktop')">Post Sale Ad</span>
+                    <div
+                      v-if="loadingButtons.has('post-sale-ad-desktop')"
+                      class="dotted-spinner white h-4 w-4"
+                    ></div>
+                    <UIcon
+                      v-else
+                      name="i-heroicons-plus-circle"
+                      class="h-4 w-4"
+                    />
+                    <span v-if="!loadingButtons.has('post-sale-ad-desktop')"
+                      >Post Sale Ad</span
+                    >
                   </NuxtLink>
                 </div>
                 <div v-else>
@@ -320,9 +172,18 @@
                     class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-sm"
                     @click="handleButtonClick('post-sale-ad-guest')"
                   >
-                    <div v-if="loadingButtons.has('post-sale-ad-guest')" class="dotted-spinner primary h-4 w-4"></div>
-                    <UIcon v-else name="i-heroicons-plus-circle" class="h-4 w-4" />
-                    <span v-if="!loadingButtons.has('post-sale-ad-guest')">Post Sale Ad</span>
+                    <div
+                      v-if="loadingButtons.has('post-sale-ad-guest')"
+                      class="dotted-spinner primary h-4 w-4"
+                    ></div>
+                    <UIcon
+                      v-else
+                      name="i-heroicons-plus-circle"
+                      class="h-4 w-4"
+                    />
+                    <span v-if="!loadingButtons.has('post-sale-ad-guest')"
+                      >Post Sale Ad</span
+                    >
                   </NuxtLink>
                 </div>
               </div>
@@ -1009,6 +870,7 @@ import { ref, computed, onMounted, watch, defineAsyncComponent } from "vue";
 
 import { useApi } from "~/composables/useApi";
 import SaleSidebar from "~/components/sale/SaleSidebar.vue";
+import SaleSearchBar from "~/components/sale/SaleSearchBar.vue";
 
 const { user, isAuthenticated } = useAuth();
 const { query } = useRoute();
@@ -1027,9 +889,12 @@ const handleButtonClick = (buttonId) => {
 
 // Watch for route changes to clear loading states
 const route = useRoute();
-watch(() => route.path, () => {
-  loadingButtons.value.clear();
-});
+watch(
+  () => route.path,
+  () => {
+    loadingButtons.value.clear();
+  }
+);
 
 // API endpoints
 const API_ENDPOINTS = {
@@ -1080,6 +945,12 @@ function toggleMobileSidebar() {
 const handleClearLocation = () => {
   clearLocation();
   window.location.reload();
+};
+
+// Function to handle search from the search bar component
+const handleSearch = (searchTerm) => {
+  form.value.title = searchTerm;
+  filterSearch();
 };
 
 // Function to clear search and reload listings
