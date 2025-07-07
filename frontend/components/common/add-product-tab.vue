@@ -91,7 +91,7 @@
                 class="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-100 focus-within:border-emerald-500 transition-all"
               >
                 <CommonEditor
-                  v-if="route.query.id && form.description"
+                  v-if="route.params.id && form.description"
                   :content="form.description"
                   @updateContent="
                     (content) => {

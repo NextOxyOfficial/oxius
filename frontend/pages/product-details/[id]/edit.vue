@@ -133,8 +133,12 @@
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg">
                   <div class="text-sm text-gray-600">Category</div>
-                  <div class="font-medium text-lg truncate">
-                    {{ currentProduct.category_details?.name || "N/A" }}
+                  <div
+                    v-for="category in currentProduct.category_details"
+                    :key="category.id"
+                    class="font-medium text-lg truncate"
+                  >
+                    {{ category.name || "N/A" }}
                   </div>
                 </div>
               </div>
