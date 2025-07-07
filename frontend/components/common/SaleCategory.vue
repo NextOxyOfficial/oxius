@@ -507,7 +507,7 @@
           <div class="hidden md:block">
             <div class="grid grid-cols-5 gap-2">
               <NuxtLink
-                v-for="post in categoryPosts"
+                v-for="post in randomDesktopPosts"
                 :key="post.id"
                 :to="`/sale/${post.slug}`"
                 class="item-card bg-white rounded-lg transition-all overflow-hidden border border-gray-100 flex flex-col h-full transform"
@@ -738,6 +738,16 @@ const checkIfMobile = () => {
   });
 };
 
+// Helper function to shuffle array (Fisher-Yates algorithm)
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 // Fetch categories from the backend
 const fetchCategories = async () => {
   // Prevent duplicate API calls
@@ -757,9 +767,9 @@ const fetchCategories = async () => {
       Array.isArray(response.data) &&
       response.data.length > 0
     ) {
-      // This will place the most recently added categories at the end
-      const sortedCategories = [...response.data].sort((a, b) => a.id - b.id);
-      categories.value = sortedCategories;
+      // Shuffle categories randomly instead of sorting by ID
+      const shuffledCategories = shuffleArray(response.data);
+      categories.value = shuffledCategories;
 
       // Set initial category if available
       if (categories.value.length > 0) {
@@ -819,16 +829,21 @@ const mobilePostsContainer = ref(null);
 const randomMobilePosts = computed(() => {
   if (categoryPosts.value.length === 0) return [];
 
-  // Create a copy of the array to avoid mutating the original
-  const shuffled = [...categoryPosts.value];
-
-  // Fisher-Yates shuffle algorithm
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
+  // Use the helper function to shuffle posts
+  const shuffled = shuffleArray(categoryPosts.value);
 
   // Return only 5 posts
+  return shuffled.slice(0, 5);
+});
+
+// Computed property to get random posts for desktop display
+const randomDesktopPosts = computed(() => {
+  if (categoryPosts.value.length === 0) return [];
+
+  // Use the helper function to shuffle posts
+  const shuffled = shuffleArray(categoryPosts.value);
+
+  // Return up to 5 posts for desktop grid
   return shuffled.slice(0, 5);
 });
 
@@ -838,8 +853,8 @@ const fetchCategoryPosts = async () => {
   try {
     isLoading.value = true;
 
-    // Use pagination for category posts
-    const limit = showAllCategoryPosts.value ? 50 : categoryPostsLimit.value;
+    // Use pagination for category posts - fetch more posts to have better randomization
+    const limit = showAllCategoryPosts.value ? 50 : 20; // Increased from 6 to 20 for better randomization
     const response = await get(
       `/sale/posts/?category=${selectedCategory.value}&limit=${limit}`
     );
@@ -853,14 +868,14 @@ const fetchCategoryPosts = async () => {
     // Handle different API response formats
     if (response.data) {
       if (Array.isArray(response.data)) {
-        // Direct array of posts
-        categoryPosts.value = response.data;
+        // Direct array of posts - shuffle them
+        categoryPosts.value = shuffleArray(response.data);
       } else if (
         response.data.results &&
         Array.isArray(response.data.results)
       ) {
-        // Paginated response
-        categoryPosts.value = response.data.results;
+        // Paginated response - shuffle the results
+        categoryPosts.value = shuffleArray(response.data.results);
       } else if (typeof response.data === "object") {
         // Single post object (unlikely but handling just in case)
         categoryPosts.value = [response.data];
