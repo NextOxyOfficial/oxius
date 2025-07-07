@@ -127,7 +127,7 @@
                 @click="applyPriceFilter"
                 class="whitespace-nowrap px-4 py-1.5 shadow-sm hover:shadow font-medium"
               >
-                Apply Filter
+                Apply
               </UButton>
             </div>
           </div>
@@ -140,7 +140,7 @@
       >
         <div class="">
           <!-- Categories Column -->
-          <div class="lg:col-span-3">
+          <div class="lg:col-span-3 max-sm:hidden">
             <h3
               class="text-base font-medium mb-3 text-gray-800 dark:text-gray-400 flex items-center"
             >
