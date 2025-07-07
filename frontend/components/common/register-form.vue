@@ -181,7 +181,7 @@
                     class="absolute left-3 top-3 text-gray-400 w-5 h-5"
                   />
                   <input
-                    type="text"
+                    type="tel"
                     :placeholder="t('phone_number')"
                     v-model="form.phone"
                     class="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
@@ -559,7 +559,7 @@ function validateCurrentStep() {
     const phoneNumberValid = /^(?:\+?88)?01[3-9]\d{8}$/;
     error.value.phone = !form.value.phone
       ? t("phone_required")
-      : !phoneNumberValid.test(form.value.phone)
+      : !phoneNumberValid.test(form.value.phone.trim())
       ? t("invalid_phone")
       : "";
 
