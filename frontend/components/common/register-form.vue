@@ -4,14 +4,14 @@
       class="bg-white rounded-xl shadow-sm p-6 sm:p-8 border border-gray-100"
     >
       <transition name="fade" mode="out-in">
-        <form @submit.prevent="handleSubmit" class="space-y-8">          
-          <!-- Form Header -->          
-           <div class="text-center space-y-2">
+        <form @submit.prevent="handleSubmit" class="space-y-8">
+          <!-- Form Header -->
+          <div class="text-center space-y-2">
             <h2 class="text-2xl font-bold text-gray-800">
-              {{ t('create_account') }}
+              {{ t("create_account") }}
             </h2>
             <p class="text-gray-600">
-              {{ t('registration_subtitle') }}
+              {{ t("registration_subtitle") }}
             </p>
             <div class="mt-2 flex justify-center">
               <div class="flex items-center justify-center gap-2">
@@ -91,8 +91,10 @@
                   >
                     <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
                   </button>
-                </div>                
-                <span class="text-sm text-gray-600">{{ t('upload_profile_picture') }}</span>
+                </div>
+                <span class="text-sm text-gray-600">{{
+                  t("upload_profile_picture")
+                }}</span>
               </div>
 
               <div class="mt-6 flex justify-between">
@@ -102,7 +104,7 @@
                   @click="skipStep()"
                   class="text-sm"
                 >
-                  {{ t('skip_this_step') }}
+                  {{ t("skip_this_step") }}
                 </UButton>
                 <UButton
                   type="button"
@@ -110,18 +112,18 @@
                   @click="nextStep()"
                   class="text-sm"
                 >
-                  {{ t('continue') }}
+                  {{ t("continue") }}
                   <UIcon name="i-heroicons-arrow-right" class="w-4 h-4 ml-1" />
                 </UButton>
               </div>
             </div>
           </transition>
 
-          <div v-if="currentStep === 2" class="space-y-6">            
-            <!-- Personal Information Section -->            
-             <div class="space-y-4">
+          <div v-if="currentStep === 2" class="space-y-6">
+            <!-- Personal Information Section -->
+            <div class="space-y-4">
               <h3 class="text-md font-semibold text-gray-800 border-b pb-2">
-                {{ t('personal_information') }}
+                {{ t("personal_information") }}
               </h3>
 
               <div class="grid grid-cols-2 gap-4">
@@ -129,7 +131,7 @@
                   <UIcon
                     name="i-heroicons-user"
                     class="absolute left-3 top-3 text-gray-400 w-5 h-5"
-                  />                  
+                  />
                   <input
                     type="text"
                     :placeholder="t('first_name')"
@@ -144,7 +146,8 @@
                   <UIcon
                     name="i-heroicons-user"
                     class="absolute left-3 top-3 text-gray-400 w-5 h-5"
-                  />                  <input
+                  />
+                  <input
                     type="text"
                     :placeholder="t('last_name')"
                     v-model="form.last_name"
@@ -161,7 +164,8 @@
                   <UIcon
                     name="i-heroicons-envelope"
                     class="absolute left-3 top-3 text-gray-400 w-5 h-5"
-                  />                  <input
+                  />
+                  <input
                     type="email"
                     :placeholder="t('email_address')"
                     v-model="form.email"
@@ -175,7 +179,8 @@
                   <UIcon
                     name="i-heroicons-phone"
                     class="absolute left-3 top-3 text-gray-400 w-5 h-5"
-                  />                  <input
+                  />
+                  <input
                     type="text"
                     :placeholder="t('phone_number')"
                     v-model="form.phone"
@@ -193,7 +198,8 @@
                     <UIcon
                       name="i-heroicons-calendar"
                       class="absolute left-3 top-3 text-gray-400 w-5 h-5"
-                    />                    <input
+                    />
+                    <input
                       type="text"
                       size="md"
                       :placeholder="t('age')"
@@ -206,13 +212,13 @@
                   </p>
                 </UFormGroup>
                 <UFormGroup label="" class="space-y-1">
-                  <div class="relative">                    
+                  <div class="relative">
                     <USelectMenu
-                      v-model="form.gender"                      
+                      v-model="form.gender"
                       :options="[
                         { value: 'Male', label: t('gender_male') },
                         { value: 'Female', label: t('gender_female') },
-                        { value: 'Others', label: t('gender_others') }
+                        { value: 'Others', label: t('gender_others') },
                       ]"
                       :placeholder="t('select_gender')"
                       option-attribute="label"
@@ -243,7 +249,8 @@
                   <UIcon
                     name="i-heroicons-lock-closed"
                     class="absolute left-3 top-3 text-gray-400 w-5 h-5"
-                  />                  <input
+                  />
+                  <input
                     :type="isPassword ? 'password' : 'text'"
                     :placeholder="t('password')"
                     v-model="form.password"
@@ -269,7 +276,8 @@
                   <UIcon
                     name="i-heroicons-lock-closed"
                     class="absolute left-3 top-3 text-gray-400 w-5 h-5"
-                  />                  <input
+                  />
+                  <input
                     :type="isPassword ? 'password' : 'text'"
                     :placeholder="t('confirm_password')"
                     v-model="form.confirmPassword"
@@ -294,16 +302,16 @@
                   </p>
                 </div>
               </div>
-            </div>            
+            </div>
             <div class="flex justify-between">
               <UButton
                 type="button"
                 variant="ghost"
                 @click="prevStep()"
                 class="text-sm"
-              >                
-              <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 mr-1" />
-                {{ t('back') }}
+              >
+                <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 mr-1" />
+                {{ t("back") }}
               </UButton>
               <UButton
                 type="button"
@@ -311,23 +319,23 @@
                 @click="nextStep()"
                 class="text-sm"
               >
-                {{ t('continue') }}
+                {{ t("continue") }}
                 <UIcon name="i-heroicons-arrow-right" class="w-4 h-4 ml-1" />
               </UButton>
             </div>
           </div>
 
           <div v-if="currentStep === 3" class="space-y-6">
-            <!-- Address Information -->            
-             <div class="space-y-4">              
+            <!-- Address Information -->
+            <div class="space-y-4">
               <h3 class="text-md font-semibold text-gray-800 border-b pb-2">
-                {{ t('address_information') }}
+                {{ t("address_information") }}
               </h3>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="">
                   <UFormGroup label="" class="w-full">
-                    <div class="relative">                      
+                    <div class="relative">
                       <USelectMenu
                         v-model="form.state"
                         :options="regions"
@@ -352,7 +360,7 @@
                 </div>
                 <div class="">
                   <UFormGroup label="" class="w-full">
-                    <div class="relative">                      
+                    <div class="relative">
                       <USelectMenu
                         v-model="form.city"
                         :options="cities"
@@ -377,7 +385,7 @@
                 </div>
                 <div class="">
                   <UFormGroup label="" class="w-full">
-                    <div class="relative">                      
+                    <div class="relative">
                       <USelectMenu
                         v-model="form.upazila"
                         :options="upazilas"
@@ -407,7 +415,8 @@
                       <UIcon
                         name="i-heroicons-envelope"
                         class="absolute left-3 top-3 z-10 text-gray-400 w-5 h-5"
-                      />                      <input
+                      />
+                      <input
                         type="text"
                         size="md"
                         :placeholder="t('zip_postal_code')"
@@ -423,7 +432,8 @@
                       <UIcon
                         name="i-heroicons-home"
                         class="absolute left-3 top-3 z-10 text-gray-400 w-5 h-5"
-                      />                      <input
+                      />
+                      <input
                         type="text"
                         size="md"
                         :placeholder="t('full_address')"
@@ -439,7 +449,8 @@
                 <UIcon
                   name="i-heroicons-ticket"
                   class="absolute left-3 top-3 text-gray-400 w-5 h-5"
-                />                <input
+                />
+                <input
                   type="text"
                   :placeholder="t('referral_code_optional')"
                   v-model="form.refer"
@@ -456,15 +467,16 @@
               class="text-center p-3 bg-red-50 text-red-600 rounded-md border border-red-100 text-sm"
             >
               {{ submitError }}
-            </p>            <div class="flex justify-between">
+            </p>
+            <div class="flex justify-between">
               <UButton
                 type="button"
                 variant="ghost"
                 @click="prevStep()"
                 class="text-sm"
-              >                
-              <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 mr-1" />
-                {{ t('back') }}
+              >
+                <UIcon name="i-heroicons-arrow-left" class="w-4 h-4 mr-1" />
+                {{ t("back") }}
               </UButton>
               <UButton
                 :loading="isLoading"
@@ -474,17 +486,17 @@
                 :class="{ 'opacity-75 cursor-not-allowed': isLoading }"
               >
                 <UIcon name="i-heroicons-user-plus" class="w-5 h-5 mr-1" />
-                {{ t('complete_registration') }}
+                {{ t("complete_registration") }}
               </UButton>
             </div>
-          </div>          
+          </div>
           <div class="text-center mt-4">
             <NuxtLink
               to="/auth/login/"
               class="text-purple-600 hover:text-purple-500 text-sm font-medium flex items-center justify-center gap-1 hover:underline"
-            >              
-            <UIcon name="i-heroicons-arrow-left-circle" class="w-4 h-4" />
-              {{ t('already_have_account') }}
+            >
+              <UIcon name="i-heroicons-arrow-left-circle" class="w-4 h-4" />
+              {{ t("already_have_account") }}
             </NuxtLink>
           </div>
         </form>
@@ -503,9 +515,9 @@ const isLoading = ref(false);
 
 // Multi-step form implementation
 const steps = computed(() => [
-  t('registration_steps.profile_photo'), 
-  t('registration_steps.personal_info'), 
-  t('registration_steps.address_info')
+  t("registration_steps.profile_photo"),
+  t("registration_steps.personal_info"),
+  t("registration_steps.address_info"),
 ]);
 const currentStep = ref(1);
 
@@ -535,36 +547,37 @@ function validateCurrentStep() {
     return true;
   } else if (currentStep.value === 2) {
     // Validate personal info
-    let isValid = true;    error.value.first_name = !form.value.first_name
-      ? t('first_name_required')
+    let isValid = true;
+    error.value.first_name = !form.value.first_name
+      ? t("first_name_required")
       : "";
     error.value.last_name = !form.value.last_name
-      ? t('last_name_required')
+      ? t("last_name_required")
       : "";
-    error.value.email = !form.value.email ? t('email_required') : "";
+    error.value.email = !form.value.email ? t("email_required") : "";
 
     const phoneNumberValid = /^(?:\+?88)?01[3-9]\d{8}$/;
     error.value.phone = !form.value.phone
-      ? t('phone_required')
+      ? t("phone_required")
       : !phoneNumberValid.test(form.value.phone)
-      ? t('invalid_phone')
+      ? t("invalid_phone")
       : "";
 
-    error.value.password = !form.value.password ? t('password_required') : "";
+    error.value.password = !form.value.password ? t("password_required") : "";
     error.value.confirmPassword = !form.value.confirmPassword
-      ? t('confirm_password_required')
+      ? t("confirm_password_required")
       : form.value.password !== form.value.confirmPassword
-      ? t('passwords_not_match')
+      ? t("passwords_not_match")
       : "";
 
     const ageValid = /^\d+$/;
     error.value.age = !form.value.age
-      ? t('age_required')
+      ? t("age_required")
       : !ageValid.test(+form.value.age)
-      ? t('invalid_age')
+      ? t("invalid_age")
       : "";
 
-    error.value.gender = !form.value.gender ? t('gender_required') : "";
+    error.value.gender = !form.value.gender ? t("gender_required") : "";
 
     // Check if any validation errors
     isValid = !Object.values(error.value).some((err) => err);
@@ -685,22 +698,22 @@ async function handleSubmit() {
   };
 
   const phoneNumberValid = /^(?:\+?88)?01[3-9]\d{8}$/;
-  const ageValid = /^\d+$/;  // Validate fields
-  if (!form.value.first_name) error.value.first_name = t('first_name_required');
-  if (!form.value.last_name) error.value.last_name = t('last_name_required');
-  if (!form.value.email) error.value.email = t('email_required');
-  if (!form.value.phone) error.value.phone = t('phone_required');
-  if (!phoneNumberValid.test(form.value.phone))
-    error.value.phone = t('invalid_phone');
-  if (!form.value.password) error.value.password = t('password_required');
+  const ageValid = /^\d+$/; // Validate fields
+  if (!form.value.first_name) error.value.first_name = t("first_name_required");
+  if (!form.value.last_name) error.value.last_name = t("last_name_required");
+  if (!form.value.email) error.value.email = t("email_required");
+  if (!form.value.phone) error.value.phone = t("phone_required");
+  if (!phoneNumberValid.test(form.value.phone.trim()))
+    error.value.phone = t("invalid_phone");
+  if (!form.value.password) error.value.password = t("password_required");
   if (!form.value.confirmPassword)
-    error.value.confirmPassword = t('confirm_password_required');
+    error.value.confirmPassword = t("confirm_password_required");
   if (form.value.password !== form.value.confirmPassword) {
-    error.value.confirmPassword = t('passwords_not_match');
+    error.value.confirmPassword = t("passwords_not_match");
   }
-  if (!form.value.age) error.value.age = t('age_required');
-  if (!ageValid.test(+form.value.age)) error.value.age = t('invalid_age');
-  if (!form.value.gender) error.value.gender = t('gender_required');
+  if (!form.value.age) error.value.age = t("age_required");
+  if (!ageValid.test(+form.value.age)) error.value.age = t("invalid_age");
+  if (!form.value.gender) error.value.gender = t("gender_required");
 
   // If any error exists, stop submission
   if (Object.values(error.value).some((err) => err)) {
@@ -785,13 +798,18 @@ async function handleSubmit() {
 
       const res2 = await login(form.value.email, form.value.password);
       if (res2) {
-        const res = await post(`/send-sms/?phone=${form.value.phone}`);        // Enhanced registration success toast with onboarding elements
+        const res = await post(`/send-sms/?phone=${form.value.phone}`); // Enhanced registration success toast with onboarding elements
         const celebrationMessages = [
-          t('registration_success_messages.0') || "🌟 Your adventure begins now!",
-          t('registration_success_messages.1') || "🚀 Ready to explore amazing opportunities?",
-          t('registration_success_messages.2') || "✨ Welcome to a world of possibilities!",
-          t('registration_success_messages.3') || "🎯 Time to unlock your potential!",
-          t('registration_success_messages.4') || "🌈 Your journey to success starts here!"
+          t("registration_success_messages.0") ||
+            "🌟 Your adventure begins now!",
+          t("registration_success_messages.1") ||
+            "🚀 Ready to explore amazing opportunities?",
+          t("registration_success_messages.2") ||
+            "✨ Welcome to a world of possibilities!",
+          t("registration_success_messages.3") ||
+            "🎯 Time to unlock your potential!",
+          t("registration_success_messages.4") ||
+            "🌈 Your journey to success starts here!",
         ];
 
         const randomCelebration =
@@ -800,8 +818,8 @@ async function handleSubmit() {
           ];
 
         toast.add({
-          title: t('registration_success'),
-          description: `${t('welcome_to_adsy')} ${randomCelebration}`,
+          title: t("registration_success"),
+          description: `${t("welcome_to_adsy")} ${randomCelebration}`,
           color: "emerald",
           icon: "i-heroicons-trophy",
           timeout: 6000,
@@ -822,13 +840,14 @@ async function handleSubmit() {
     } else {
       submitError.value =
         res.error?.data?.error || "An error occurred during registration";
-    }  } catch (err) {
+    }
+  } catch (err) {
     if (err.response?.status === 444) {
-      error.value.refer = t('invalid_referral');
+      error.value.refer = t("invalid_referral");
       currentStep.value = 3; // Go to referral step
     } else {
       submitError.value =
-        err.response?.data?.message || t('registration_error');
+        err.response?.data?.message || t("registration_error");
       console.error("Error submitting the form:", err);
     }
   }
