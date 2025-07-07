@@ -39,22 +39,6 @@
         <div class="flex flex-col lg:flex-row gap-3">
           <!-- Search Section - Hidden on mobile, visible on desktop -->
           <div class="hidden lg:flex gap-3 items-center lg:flex-1">
-            <!-- Sidebar Toggle Button -->
-            <button
-              @click="toggleSidebar"
-              class="inline-flex items-center justify-center p-2 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-gray-50 dark:hover:bg-gray-700/70 transition-all duration-200 shadow-sm hover:shadow flex-shrink-0 group"
-              :class="{
-                'text-emerald-500 border-emerald-200 dark:border-emerald-800/50':
-                  isSidebarOpen,
-              }"
-            >
-              <span class="sr-only">Toggle categories</span>
-              <UIcon
-                name="i-heroicons-bars-3"
-                class="size-5 transition-transform group-hover:scale-110"
-              />
-            </button>
-
             <div class="relative flex-1">
               <input
                 v-model="searchQuery"
@@ -77,157 +61,96 @@
             </div>
           </div>
 
-          <!-- Price Range Section - Desktop: Right side of search, Mobile: Full width -->
+          <!-- Price Range & Categories Section - Desktop: Right side of search, Mobile: Full width -->
           <div
-            class="flex flex-col sm:flex-row lg:w-[55%] gap-3 sm:items-center"
+            class="flex flex-col sm:flex-row lg:w-[70%] gap-3 sm:items-center"
           >
-            <h3
-              class="text-base px-2 font-medium text-gray-800 dark:text-gray-400 flex items-center lg:whitespace-nowrap"
-            >
-              <UIcon
-                name="i-heroicons-banknotes"
-                class="mr-2 size-4.5 text-emerald-500"
-              />
-              Price Range
-            </h3>
-
-            <div class="flex items-center gap-3 flex-1">
-              <div class="relative flex-1">
-                <span
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 dark:text-gray-600 font-medium"
-                  >৳</span
-                >
-                <input
-                  v-model="minPrice"
-                  type="number"
-                  placeholder="Min"
-                  class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
-                  @change="applyPriceFilter"
-                />
-              </div>
-
-              <div class="flex-shrink-0 text-gray-600">—</div>
-
-              <div class="relative flex-1">
-                <span
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 dark:text-gray-600 font-medium"
-                  >৳</span
-                >
-                <input
-                  v-model="maxPrice"
-                  type="number"
-                  placeholder="Max"
-                  class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
-                  @change="applyPriceFilter"
-                />
-              </div>
-              <UButton
-                color="emerald"
-                variant="soft"
-                @click="applyPriceFilter"
-                class="whitespace-nowrap px-4 py-1.5 shadow-sm hover:shadow font-medium"
+            <!-- Categories Dropdown - Desktop only -->
+            <div class="hidden lg:flex flex-col gap-2 min-w-[200px]">
+              <USelectMenu
+                v-model="selectedCategory"
+                :options="categoryOptions"
+                placeholder="Select category"
+                value-attribute="id"
+                option-attribute="name"
+                searchable
+                class="w-full"
+                :ui="{
+                  wrapper: 'relative',
+                  base: 'relative block w-full',
+                  form: 'form-select',
+                  rounded: 'rounded-lg',
+                  placeholder: 'text-gray-500 dark:text-gray-400',
+                  size: {
+                    md: 'text-sm py-1.5 px-3'
+                  }
+                }"
+                @change="handleCategoryChange"
               >
-                Apply
-              </UButton>
+                <template #label>
+                  <span v-if="selectedCategory" class="block truncate">
+                    {{ getCategoryName(selectedCategory) }}
+                  </span>
+                  <span v-else class="text-gray-500 dark:text-gray-400">
+                    All Categories
+                  </span>
+                </template>
+              </USelectMenu>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Elegant Filter Container -->
-      <div
-        class="bg-white/70 dark:bg-gray-800/40 backdrop-blur-[2px] rounded-xl px-2 py-2 border border-gray-100 dark:border-gray-700/50 shadow-sm"
-      >
-        <div class="">
-          <!-- Categories Column -->
-          <div class="lg:col-span-3 max-sm:hidden">
-            <h3
-              class="text-base font-medium mb-3 text-gray-800 dark:text-gray-400 flex items-center"
-            >
-              <UIcon
-                name="i-heroicons-circle-stack"
-                class="mr-2 size-4 text-emerald-500"
-              />
-              Categories
-            </h3>
+            <!-- Price Range -->
+            <div class="flex flex-col sm:flex-row gap-3 sm:items-center flex-1">
+              <h3
+                class="text-base px-2 font-medium text-gray-800 dark:text-gray-400 flex items-center lg:whitespace-nowrap"
+              >
+                <UIcon
+                  name="i-heroicons-banknotes"
+                  class="mr-2 size-4.5 text-emerald-500"
+                />
+                Price Range
+              </h3>
 
-            <!-- Horizontal scrollable categories -->
-            <div
-              class="overflow-x-auto py-2 px-1 md:flex flex-nowrap gap-2 hide-scrollbar hidden"
-            >
-              <div class="flex gap-2">
-                <UBadge
-                  v-for="category in categories"
-                  :key="category.id"
-                  :color="selectedCategory === category.id ? 'emerald' : 'gray'"
+              <div class="flex items-center gap-3 flex-1">
+                <div class="relative flex-1">
+                  <span
+                    class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 dark:text-gray-600 font-medium"
+                    >৳</span
+                  >
+                  <input
+                    v-model="minPrice"
+                    type="number"
+                    placeholder="Min"
+                    class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
+                    @change="applyPriceFilter"
+                  />
+                </div>
+
+                <div class="flex-shrink-0 text-gray-600">—</div>
+
+                <div class="relative flex-1">
+                  <span
+                    class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-600 dark:text-gray-600 font-medium"
+                    >৳</span
+                  >
+                  <input
+                    v-model="maxPrice"
+                    type="number"
+                    placeholder="Max"
+                    class="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200/80 dark:border-gray-700/80 bg-white/70 dark:bg-gray-800/60 backdrop-blur-sm focus:ring-1 focus:ring-emerald-400 shadow-sm transition-all"
+                    @change="applyPriceFilter"
+                  />
+                </div>
+                <UButton
+                  color="emerald"
                   variant="soft"
-                  size="lg"
-                  class="cursor-pointer whitespace-nowrap transition-all duration-300 px-4 py-1.5 hover:shadow-sm"
-                  :class="
-                    selectedCategory === category.id
-                      ? 'ring-2 ring-emerald-200 dark:ring-emerald-800/30'
-                      : ''
-                  "
-                  @click="toggleCategory(category.id)"
+                  @click="applyPriceFilter"
+                  class="whitespace-nowrap px-4 py-1.5 shadow-sm hover:shadow font-medium"
                 >
-                  {{ category.name }}
-                </UBadge>
+                  Apply
+                </UButton>
               </div>
             </div>
           </div>
-
-          <!-- Price Filter Column -->
-        </div>
-
-        <!-- Active Filters with elegantly styled badges -->
-        <div
-          v-if="hasActiveFilters"
-          class="flex flex-wrap items-center gap-2 mt-6 pt-5 border-t border-gray-100 dark:border-gray-700/30"
-        >
-          <span class="text-sm text-gray-600 dark:text-gray-600 font-medium"
-            >Active filters:</span
-          >
-
-          <UBadge
-            v-if="selectedCategory"
-            color="emerald"
-            variant="soft"
-            class="pl-3 pr-2 py-1.5 group"
-            @click.stop="clearCategoryFilter"
-          >
-            {{ getCategoryName(selectedCategory) }}
-            <span
-              class="ml-1.5 bg-emerald-200/50 dark:bg-emerald-800/30 rounded-full p-0.5 group-hover:bg-emerald-300/50 dark:group-hover:bg-emerald-700/30 transition-colors"
-            >
-              <UIcon name="i-heroicons-x-mark" class="size-3" />
-            </span>
-          </UBadge>
-
-          <UBadge
-            v-if="minPrice || maxPrice"
-            color="emerald"
-            variant="soft"
-            class="pl-3 pr-2 py-1 group"
-            @click.stop="clearPriceFilter"
-          >
-            Price: {{ minPrice || "0" }} - {{ maxPrice || "∞" }}
-            <span
-              class="ml-1.5 bg-emerald-200/50 dark:bg-emerald-800/30 rounded-full p-0.5 group-hover:bg-emerald-300/50 dark:group-hover:bg-emerald-700/30 transition-colors"
-            >
-              <UIcon name="i-heroicons-x-mark" class="size-3" />
-            </span>
-          </UBadge>
-
-          <UButton
-            v-if="hasActiveFilters"
-            color="gray"
-            variant="ghost"
-            size="xs"
-            @click="clearAllFilters"
-            class="ml-2"
-          >
-            Clear all
-          </UButton>
         </div>
       </div>
 
@@ -427,6 +350,18 @@ const hasActiveFilters = computed(() => {
   );
 });
 
+// Computed property for category options in dropdown
+const categoryOptions = computed(() => {
+  return [
+    { id: null, name: "All Categories" },
+    ...categories.value.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      slug: cat.slug
+    }))
+  ];
+});
+
 // Debounce search
 let searchTimeout = null;
 function debouncedSearch() {
@@ -458,6 +393,26 @@ function toggleCategory(categoryId) {
       updateURL(category.slug);
     }
   }
+  currentPage.value = 1;
+  allProducts.value = [];
+  hasMoreProducts.value = true;
+  fetchProducts();
+}
+
+// Handle category change from dropdown
+function handleCategoryChange(categoryId) {
+  selectedCategory.value = categoryId;
+  
+  if (categoryId) {
+    // Find category slug to update URL
+    const category = categories.value.find((cat) => cat.id === categoryId);
+    if (category && category.slug) {
+      updateURL(category.slug);
+    }
+  } else {
+    updateURL(); // Clear category from URL
+  }
+  
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;
