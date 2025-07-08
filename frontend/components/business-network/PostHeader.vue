@@ -11,7 +11,10 @@
             class="absolute inset-0 rounded-full border-2 pro-border-ring z-10"
           ></div>
           <img
-            :src="post?.author_details?.image || '/static/frontend/images/placeholder.jpg'"
+            :src="
+              post?.author_details?.image ||
+              '/static/frontend/images/placeholder.jpg'
+            "
             :alt="post?.author_details?.name"
             class="size-14 rounded-full cursor-pointer object-cover border-2 border-white dark:border-slate-700 shadow-sm transition-all duration-300 group-hover:shadow-sm transform group-hover:scale-105"
           />
@@ -112,6 +115,15 @@
 
             <button
               class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              @click="editPost(post)"
+              v-if="post.author_details?.id === user?.user?.id"
+            >
+              <Edit2 class="h-4 w-4 mr-2.5 text-blue-600 dark:text-blue-400" />
+              <span>Edit post</span>
+            </button>
+
+            <button
+              class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
               @click="openPostDeleteModal(post)"
               v-if="post.author_details?.id === user?.user?.id"
             >
@@ -200,6 +212,12 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- Edit Post Modal -->
+    <BusinessNetworkCreatePost
+      :edit-post="selectedEditPost"
+      @post-updated="handlePostUpdate"
+    />
   </div>
 </template>
 
@@ -212,6 +230,7 @@ import {
   Link2,
   UserX,
   Flag,
+  Edit2,
 } from "lucide-vue-next";
 
 const { user } = useAuth();
@@ -242,7 +261,12 @@ defineProps({
   },
 });
 
-defineEmits(["toggle-dropdown", "toggle-save", "copy-link"]);
+const emit = defineEmits([
+  "toggle-dropdown",
+  "toggle-save",
+  "copy-link",
+  "post-updated",
+]);
 
 async function getSavedPosts() {
   const { data } = await get(`/bn/posts/save/`);
@@ -267,9 +291,36 @@ async function handlePostDelete(post) {
   }
 }
 
+function handlePostUpdate(updatedPost) {
+  // Clear the selected edit post
+  selectedEditPost.value = null;
+
+  // Emit the event to parent component
+  emit("post-updated", updatedPost);
+
+  // Show success toast
+  toast.add({
+    title: "Post updated",
+    description: "Post has been updated successfully.",
+  });
+}
+
 function editPost(post) {
-  // Pass the post to the component
-  selectedEditPost.value = post;
+  // Close the dropdown first
+  post.showDropdown = false;
+
+  // Format the post data for editing
+  const editPostData = {
+    id: post.id,
+    title: post.title,
+    content: post.content,
+    images: post.media || [],
+    tags: post.tags || [],
+  };
+
+  // Pass the post to the create-post component
+  selectedEditPost.value = editPostData;
+  isCreatePostOpen.value = true;
 }
 
 // Format time ago function

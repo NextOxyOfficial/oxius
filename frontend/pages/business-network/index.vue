@@ -40,6 +40,7 @@
       :posts="displayedPosts"
       :id="user?.user?.id"
       @gift-sent="handleGiftSent"
+      @post-updated="handlePostUpdate"
     />
 
     <!-- Load more indicator with skeletons for better UX -->
@@ -375,6 +376,29 @@ function handleGiftSent(giftData) {
     // Reset state and reload posts
     loadData();
   }, 20);
+}
+
+// Handle post update event from child components
+function handlePostUpdate(updatedPost) {
+  // Find and update the post in allPosts
+  const postIndex = allPosts.value.findIndex((p) => p.id === updatedPost.id);
+  if (postIndex !== -1) {
+    allPosts.value[postIndex] = {
+      ...allPosts.value[postIndex],
+      ...updatedPost,
+    };
+  }
+
+  // Also update in displayedPosts
+  const displayedIndex = displayedPosts.value.findIndex(
+    (p) => p.id === updatedPost.id
+  );
+  if (displayedIndex !== -1) {
+    displayedPosts.value[displayedIndex] = {
+      ...displayedPosts.value[displayedIndex],
+      ...updatedPost,
+    };
+  }
 }
 
 // Load data when component is created
