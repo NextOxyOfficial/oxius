@@ -608,16 +608,36 @@ watch(
   { immediate: true }
 );
 
+// Watch for modal closing in edit mode
+watch(
+  () => isCreatePostOpen.value,
+  (newValue, oldValue) => {
+    // If modal is closing (newValue is false) and we're in edit mode
+    if (!newValue && oldValue && isEditMode.value) {
+      // Emit modal-closed event for edit mode
+      emit("modal-closed");
+      // Reset form when closing edit modal
+      resetForm();
+    }
+  }
+);
+
 // Computed properties
 const canAddMoreMedia = computed(() => images.value.length < 12);
 
-const hasUnsavedChanges = computed(
-  () =>
+const hasUnsavedChanges = computed(() => {
+  // If in edit mode, don't show discard dialog - just close the modal
+  if (isEditMode.value) {
+    return false;
+  }
+
+  return (
     form.value.title.trim() ||
     form.value.content.trim() ||
     images.value.length > 0 ||
     createPostCategories.value.length > 0
-);
+  );
+});
 
 // Methods
 const openCreatePostModal = () => {
@@ -629,12 +649,16 @@ const openCreatePostModal = () => {
 };
 
 const closeModalWithConfirm = () => {
-  if (hasUnsavedChanges.value) {
+  if (hasUnsavedChanges.value && !isEditMode.value) {
     showConfirmClose.value = true; // Show confirmation dialog
   } else {
     isCreatePostOpen.value = false; // Close modal directly if no changes
     document.body.style.overflow = ""; // Restore scrolling
-    emit("modal-closed"); // Emit modal closed event
+
+    // Only emit modal-closed if NOT in edit mode (for edit mode, parent handles this)
+    if (!isEditMode.value) {
+      emit("modal-closed"); // Emit modal closed event
+    }
   }
 };
 
@@ -643,7 +667,11 @@ const discardChanges = () => {
   isCreatePostOpen.value = false; // Close the main modal
   resetForm();
   document.body.style.overflow = ""; // Restore scrolling
-  emit("modal-closed"); // Emit modal closed event
+
+  // Only emit modal-closed if NOT in edit mode
+  if (!isEditMode.value) {
+    emit("modal-closed"); // Emit modal closed event
+  }
 };
 
 const resetForm = () => {

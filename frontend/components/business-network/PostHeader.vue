@@ -309,6 +309,7 @@ function handlePostUpdate(updatedPost) {
 function handleModalClosed() {
   // Clear the selected edit post when modal is closed without saving
   selectedEditPost.value = null;
+  // Don't show any toast notification when just closing the modal
 }
 
 function editPost(post) {
