@@ -2,7 +2,7 @@
   <div class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
     <CommonGeoSelector />
     <UContainer class="py-3">
-      <div class="location-breadcrumb relative mb-3 overflow-hidden">
+      <div class="location-breadcrumb relative mb-3">
         <!-- Subtle background effect -->
         <div
           class="absolute inset-0 bg-gradient-to-r from-gray-50 to-primary-50 opacity-70 rounded-lg"
@@ -17,7 +17,7 @@
           class="relative z-10 flex items-center justify-between px-3 pl-12 rounded-lg border border-primary-100"
         >
           <!-- Location path with icons -->
-          <div class="location-breadcrumb relative my-3 overflow-hidden">
+          <div class="location-breadcrumb relative my-3">
             <!-- Subtle background effect -->
             <div
               class="relative z-10 flex items-center justify-between p-1 rounded-lg border border-primary-100"
@@ -112,7 +112,7 @@
               color="primary"
               variant="ghost"
               trailing-icon="i-heroicons-pencil-square"
-              class="edit-location-btn ml-2 relative overflow-hidden"
+              class="edit-location-btn ml-2 relative"
               @click="handleClearLocation"
             >
               <span class="sr-only">Edit Location</span>
@@ -135,7 +135,7 @@
                 @keydown.down="handleKeyDown"
                 @keydown.up="handleKeyUp"
                 @keydown.escape="showDropdown = false"
-                @focus="showDropdown = true"
+                @focus="handleFocus"
                 @blur="handleBlur"
                 class="w-full"
                 :ui="{
@@ -175,7 +175,7 @@
                     ]"
                   >
                     <div
-                      class="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-md overflow-hidden mr-3"
+                      class="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-md mr-3"
                     >
                       <img
                         v-if="result.main_image"
@@ -267,7 +267,7 @@
             @keydown.down="handleKeyDown"
             @keydown.up="handleKeyUp"
             @keydown.escape="showDropdown = false"
-            @focus="showDropdown = true"
+            @focus="handleFocus"
             @blur="handleBlur"
             class="w-full"
             :ui="{
@@ -301,7 +301,7 @@
                 class="flex items-center p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 search-result-item"
               >
                 <div
-                  class="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden mr-2"
+                  class="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md mr-2"
                 >
                   <img
                     v-if="result.main_image"
@@ -422,7 +422,10 @@ const handleSearch = () => {
   }
 
   showDropdown.value = false;
-  emit("search", searchTerm.value?.trim() || "");
+
+  // Always emit search event to update main post list
+  const searchQuery = searchTerm.value?.trim() || "";
+  emit("search", searchQuery);
 };
 
 const handleClearLocation = () => {
@@ -436,22 +439,39 @@ const handleSearchInput = () => {
     clearTimeout(searchTimeout.value);
   }
 
-  // If search term is empty, hide dropdown
+  // If search term is empty, hide dropdown and emit empty search
   if (!searchTerm.value?.trim()) {
     showDropdown.value = false;
     searchResults.value = [];
     selectedIndex.value = -1;
+    // Emit empty search to reset the main listing
+    emit("search", "");
     return;
   }
 
   // Set a timeout for debounced search
   searchTimeout.value = setTimeout(() => {
-    performSearch();
+    // Always emit search to update main post list
+    emit("search", searchTerm.value?.trim() || "");
+
+    // Only perform dropdown search if showSearchResults is true
+    if (props.showSearchResults) {
+      performSearch();
+    }
   }, 300); // 300ms delay
 };
 
+const handleFocus = () => {
+  // If there's already text in the input and showSearchResults is enabled, perform search
+  if (searchTerm.value?.trim() && props.showSearchResults) {
+    performSearch();
+  }
+};
+
 const performSearch = async () => {
-  if (!searchTerm.value?.trim()) return;
+  if (!searchTerm.value?.trim()) {
+    return;
+  }
 
   isLoadingResults.value = true;
 
@@ -460,7 +480,8 @@ const performSearch = async () => {
     params.append("q", searchTerm.value.trim());
     params.append("limit", "8"); // Limit results for dropdown
 
-    const response = await get(`/sale/posts/search/?${params.toString()}`);
+    const searchUrl = `/sale/posts/search/?${params.toString()}`;
+    const response = await get(searchUrl);
 
     if (response?.data?.results) {
       searchResults.value = response.data.results.map((item) => ({
@@ -474,15 +495,15 @@ const performSearch = async () => {
         user_name: item.user_name,
         created_at: item.created_at,
       }));
+      showDropdown.value = true;
+      selectedIndex.value = -1;
     } else {
       searchResults.value = [];
+      showDropdown.value = false;
     }
-
-    showDropdown.value = true;
-    selectedIndex.value = -1;
   } catch (error) {
-    console.error("Search error:", error);
     searchResults.value = [];
+    showDropdown.value = false;
   } finally {
     isLoadingResults.value = false;
   }
