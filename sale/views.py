@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 def base64ToFile(base64_data):
     """Convert base64 image data to Django ContentFile"""
     # Remove the prefix if it exists (e.g., "data:image/png;base64,")
-    if base64_data.startswith('data:image'):
-        base64_data = base64_data.split('base64,')[1]
+    if base64_data.startswith("data:image"):
+        base64_data = base64_data.split("base64,")[1]
 
     # Decode the Base64 string into bytes
     file_data = base64.b64decode(base64_data)
@@ -34,6 +34,7 @@ def base64ToFile(base64_data):
 
     # Create a filename with timestamp
     import uuid
+
     filename = f"sale_image_{uuid.uuid4().hex[:8]}.jpg"
 
     # Save the file to the appropriate storage
@@ -43,10 +44,11 @@ def base64ToFile(base64_data):
 
 class SaleCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for listing and retrieving sale categories"""
+
     queryset = SaleCategory.objects.all()
     serializer_class = SaleCategorySerializer
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=["get"])
     def child_categories(self, request, pk=None):
         """Get child categories for a parent category"""
         category = self.get_object()
@@ -57,12 +59,13 @@ class SaleCategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 class SaleChildCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for listing and retrieving child categories"""
+
     queryset = SaleChildCategory.objects.all()
     serializer_class = SaleChildCategorySerializer
 
     def get_queryset(self):
         queryset = SaleChildCategory.objects.all()
-        parent_id = self.request.query_params.get('parent_id')
+        parent_id = self.request.query_params.get("parent_id")
 
         if parent_id:
             queryset = queryset.filter(parent_id=parent_id)
@@ -72,77 +75,80 @@ class SaleChildCategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 class SaleBannerViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for listing and retrieving sale banners"""
-    queryset = SaleBanner.objects.all().order_by('order')
+
+    queryset = SaleBanner.objects.all().order_by("order")
     serializer_class = SaleBannerSerializer
 
 
 class SaleConditionViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for listing available conditions for sale items"""
-    queryset = SaleCondition.objects.filter(
-        is_active=True).order_by('order', 'name')
+
+    queryset = SaleCondition.objects.filter(is_active=True).order_by("order", "name")
     serializer_class = SaleConditionSerializer
 
 
 class SalePostViewSet(viewsets.ModelViewSet):
     """ViewSet for handling sale posts"""
+
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    lookup_field = 'slug'
-    lookup_value_converter = 'str'  # Ensure proper handling of Bangla characters in URL
+    lookup_field = "slug"
+    lookup_value_converter = "str"  # Ensure proper handling of Bangla characters in URL
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        if self.action in ['list', 'retrieve']:
+        if self.action in ["list", "retrieve"]:
             # For public viewing, show active posts only
-            queryset = SalePost.objects.filter(status='active')
+            queryset = SalePost.objects.filter(status="active")
         else:
             # For other actions, filter by user
             queryset = SalePost.objects.filter(user=self.request.user)
 
         # Apply filters if provided
-        seller = self.request.query_params.get('seller')
+        seller = self.request.query_params.get("seller")
         if seller:
             queryset = queryset.filter(user__id=seller)
 
-        category = self.request.query_params.get('category')
+        category = self.request.query_params.get("category")
         if category:
             queryset = queryset.filter(category=category)
 
-        child_category = self.request.query_params.get('child_category')
+        child_category = self.request.query_params.get("child_category")
         if child_category:
             queryset = queryset.filter(child_category=child_category)
 
-        division = self.request.query_params.get('division')
+        division = self.request.query_params.get("division")
         if division:
             queryset = queryset.filter(division=division)
 
-        district = self.request.query_params.get('district')
+        district = self.request.query_params.get("district")
         if district:
             queryset = queryset.filter(district=district)
 
-        area = self.request.query_params.get('area')
+        area = self.request.query_params.get("area")
         if area:
             queryset = queryset.filter(area=area)
 
-        condition = self.request.query_params.get('condition')
+        condition = self.request.query_params.get("condition")
         if condition:
             queryset = queryset.filter(condition=condition)
 
-        min_price = self.request.query_params.get('min_price')
+        min_price = self.request.query_params.get("min_price")
         if min_price:
             queryset = queryset.filter(price__gte=min_price)
 
-        max_price = self.request.query_params.get('max_price')
+        max_price = self.request.query_params.get("max_price")
         if max_price:
             queryset = queryset.filter(price__lte=max_price)
             # Title search
-        title = self.request.query_params.get('title')
+        title = self.request.query_params.get("title")
         if title:
             queryset = queryset.filter(title__icontains=title)
 
         # Comprehensive search in title and description
-        search = self.request.query_params.get('search')
+        search = self.request.query_params.get("search")
         if search:
             from django.db.models import Q
+
             queryset = queryset.filter(
                 Q(title__icontains=search) | Q(description__icontains=search)
             )
@@ -150,9 +156,13 @@ class SalePostViewSet(viewsets.ModelViewSet):
         return queryset
 
     def get_serializer_class(self):
-        if self.action == 'create' or self.action == 'update' or self.action == 'partial_update':
+        if (
+            self.action == "create"
+            or self.action == "update"
+            or self.action == "partial_update"
+        ):
             return SalePostCreateSerializer
-        elif self.action == 'list':
+        elif self.action == "list":
             return SalePostListSerializer
         return SalePostDetailSerializer
 
@@ -160,8 +170,7 @@ class SalePostViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
 
         # Increment view count atomically
-        SalePost.objects.filter(pk=instance.pk).update(
-            view_count=F('view_count') + 1)
+        SalePost.objects.filter(pk=instance.pk).update(view_count=F("view_count") + 1)
         # Refresh the instance to get updated view count
         instance.refresh_from_db()
 
@@ -169,12 +178,11 @@ class SalePostViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        logger.info(
-            f"Creating sale post with data keys: {list(request.data.keys())}")
+        logger.info(f"Creating sale post with data keys: {list(request.data.keys())}")
 
         try:
             # Extract images data before processing
-            images_data = request.data.pop('images', None)
+            images_data = request.data.pop("images", None)
 
             # Create the serializer with the remaining data
             serializer = self.get_serializer(data=request.data)
@@ -182,8 +190,7 @@ class SalePostViewSet(viewsets.ModelViewSet):
 
             # Create the sale post
             sale_post = serializer.save()
-            logger.info(
-                f"Sale post created successfully with ID: {sale_post.id}")
+            logger.info(f"Sale post created successfully with ID: {sale_post.id}")
 
             # Process images if provided
             if images_data:
@@ -200,80 +207,122 @@ class SalePostViewSet(viewsets.ModelViewSet):
                         if not image_data:
                             continue
 
-                        if isinstance(image_data, str) and image_data.startswith('data:image'):
+                        if isinstance(image_data, str) and image_data.startswith(
+                            "data:image"
+                        ):
                             # Process base64 image using the same pattern as business network
                             image_file = base64ToFile(image_data)
                             sale_image = SaleImage.objects.create(
                                 post=sale_post,
                                 image=image_file,
                                 is_main=(i == 0),  # First image is main
-                                order=i
+                                order=i,
                             )
                             successful_images += 1
                             logger.info(
-                                f"Successfully created image {i+1} with ID: {sale_image.id}")
+                                f"Successfully created image {i + 1} with ID: {sale_image.id}"
+                            )
                         else:
-                            logger.warning(
-                                f"Skipping non-base64 image at index {i}")
+                            logger.warning(f"Skipping non-base64 image at index {i}")
 
                     except Exception as e:
-                        logger.error(f"Error processing image {i+1}: {str(e)}")
+                        logger.error(f"Error processing image {i + 1}: {str(e)}")
                         failed_images += 1
                         # Continue processing other images even if one fails
 
                 logger.info(
-                    f"Image processing complete. Success: {successful_images}, Failed: {failed_images}")
+                    f"Image processing complete. Success: {successful_images}, Failed: {failed_images}"
+                )
 
             headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(
+                serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            )
 
         except Exception as e:
             logger.exception(f"Error in sale post creation: {str(e)}")
-            return Response({"detail": f"Error creating post: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": f"Error creating post: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=["get"])
     def my_posts(self, request):
         """Get all posts for the current user regardless of status."""
         if not request.user.is_authenticated:
-            return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"detail": "Authentication required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         queryset = SalePost.objects.filter(user=request.user)
 
         # Apply status filter if provided
-        status_param = request.query_params.get('status')
+        status_param = request.query_params.get("status")
         if status_param:
             queryset = queryset.filter(status=status_param)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = SalePostListSerializer(
-                page, many=True, context={'request': request})
+                page, many=True, context={"request": request}
+            )
             return self.get_paginated_response(serializer.data)
 
         serializer = SalePostListSerializer(
-            queryset, many=True, context={'request': request})
+            queryset, many=True, context={"request": request}
+        )
         return Response(serializer.data)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def mark_as_sold(self, request, slug=None):
         """Mark a sale post as sold."""
         post = self.get_object()
         if post.user != request.user:
             return Response(
                 {"detail": "You don't have permission to mark this post as sold."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
-        post.status = 'sold'
-        post.save(update_fields=['status'])
+        post.status = "sold"
+        post.save(update_fields=["status"])
 
-        serializer = SalePostDetailSerializer(
-            post, context={'request': request})
+        serializer = SalePostDetailSerializer(post, context={"request": request})
         return Response(serializer.data)
 
+    @action(detail=False, methods=["get"])
+    def search(self, request):
+        """Search endpoint for live search dropdown results"""
+        query = request.query_params.get("q", "").strip()
+
+        if not query:
+            return Response({"results": []})
+
+        # Limit results for dropdown (default 10)
+        limit = min(int(request.query_params.get("limit", 10)), 20)
+
+        # Search in title and description
+        from django.db.models import Q
+
+        queryset = (
+            SalePost.objects.filter(status="active")
+            .filter(Q(title__icontains=query) | Q(description__icontains=query))
+            .select_related("category", "user")
+            .prefetch_related("images")
+        )
+
+        # Order by created_at descending to show newest first
+        queryset = queryset.order_by("-created_at")[:limit]
+
+        # Use custom serializer for search results
+        serializer = SalePostSearchSerializer(
+            queryset, many=True, context={"request": request}
+        )
+
+        return Response({"results": serializer.data})
+
     def update(self, request, *args, **kwargs):
-        logger.info(
-            f"Updating sale post with data keys: {list(request.data.keys())}")
+        logger.info(f"Updating sale post with data keys: {list(request.data.keys())}")
 
         instance = self.get_object()
 
@@ -281,11 +330,11 @@ class SalePostViewSet(viewsets.ModelViewSet):
         if instance.user != request.user:
             return Response(
                 {"detail": "You don't have permission to edit this post."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
-        deleted_images = request.data.get('deleted_images', [])
-        images_data = request.data.get('images', [])
+        deleted_images = request.data.get("deleted_images", [])
+        images_data = request.data.get("images", [])
 
         # Delete images marked for deletion
         if deleted_images:
@@ -300,8 +349,8 @@ class SalePostViewSet(viewsets.ModelViewSet):
 
         # Remove images from data before serializer validation
         data = request.data.copy()
-        data.pop('images', None)
-        data.pop('deleted_images', None)
+        data.pop("images", None)
+        data.pop("deleted_images", None)
 
         serializer = self.get_serializer(instance, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -309,30 +358,35 @@ class SalePostViewSet(viewsets.ModelViewSet):
 
         # Handle new images (base64 strings only)
         successful_images = 0
-        failed_images = 0        # Get current max order for proper ordering
-        max_order = SaleImage.objects.filter(post=sale_post).aggregate(
-            max_order=Max('order')
-        )['max_order'] or -1
+        failed_images = 0  # Get current max order for proper ordering
+        max_order = (
+            SaleImage.objects.filter(post=sale_post).aggregate(max_order=Max("order"))[
+                "max_order"
+            ]
+            or -1
+        )
 
         for i, img_data in enumerate(images_data):
-            if isinstance(img_data, str) and img_data.startswith('data:image'):
+            if isinstance(img_data, str) and img_data.startswith("data:image"):
                 try:
                     image_file = base64ToFile(img_data)
                     sale_image = SaleImage.objects.create(
                         post=sale_post,
                         image=image_file,
                         is_main=False,  # Let user set main image manually
-                        order=max_order + i + 1
+                        order=max_order + i + 1,
                     )
                     successful_images += 1
                     logger.info(
-                        f"Successfully created new image {i+1} with ID: {sale_image.id}")
+                        f"Successfully created new image {i + 1} with ID: {sale_image.id}"
+                    )
                 except Exception as e:
-                    logger.error(f"Error processing new image {i+1}: {str(e)}")
+                    logger.error(f"Error processing new image {i + 1}: {str(e)}")
                     failed_images += 1
 
         logger.info(
-            f"Image update complete. Success: {successful_images}, Failed: {failed_images}")
+            f"Image update complete. Success: {successful_images}, Failed: {failed_images}"
+        )
 
         # Return updated post data
         serializer = self.get_serializer(sale_post)
@@ -341,11 +395,13 @@ class SalePostViewSet(viewsets.ModelViewSet):
 
 class SaleSponsoredHorizontalListView(generics.ListAPIView):
     """List view for sponsored horizontal posts"""
+
     queryset = SaleSponsoredHorizontal.objects.all()
     serializer_class = SaleSponsoredHorizontalSerializer
 
 
 class SaleSponsoredVerticalListView(generics.ListAPIView):
     """List view for sponsored vertical posts"""
+
     queryset = SaleSponsoredVertical.objects.all()
     serializer_class = SaleSponsoredVerticalSerializer

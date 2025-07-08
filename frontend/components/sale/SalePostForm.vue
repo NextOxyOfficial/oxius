@@ -328,11 +328,11 @@
       </div>
       <div class="mt-5">
         <h3
-        class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
-      >
-        <UIcon name="i-heroicons-map-pin" class="text-emerald-600" />
-        Product/Property/Service Address
-      </h3>
+          class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"
+        >
+          <UIcon name="i-heroicons-map-pin" class="text-emerald-600" />
+          Product/Property/Service Address
+        </h3>
       </div>
       <UFormGroup
         label="Detailed Address"
@@ -446,16 +446,16 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from "vue";
-import { useSalePost } from "~/composables/useSalePost";
 import Editor from "~/components/common/editor.vue";
 
 const emit = defineEmits(["post-created"]);
 
-const { get } = useApi();
+const { get, post } = useApi();
 const toast = useToast();
 
-// Composables
-const { createSalePost, loading: apiLoading, error: apiError } = useSalePost();
+// Loading and error states
+const apiLoading = ref(false);
+const apiError = ref(null);
 
 // Form data
 const formData = reactive({
@@ -947,6 +947,72 @@ const submitForm = async () => {
     } else {
       submissionData.price = parseFloat(formData.price);
     }
+
+    // Create a new sale post
+    const createSalePost = async (formData) => {
+      apiLoading.value = true;
+      apiError.value = null;
+
+      try {
+        console.log("Submitting sale post data...", formData);
+        console.log("API endpoint:", "/sale/posts/");
+        console.log(
+          "Request payload size:",
+          JSON.stringify(formData).length,
+          "bytes"
+        );
+
+        // Send to server
+        const response = await post("/sale/posts/", formData);
+
+        if (response.error) {
+          console.error("API Error:", response.error);
+          throw response.error;
+        }
+
+        console.log("Sale post created successfully:", response.data);
+        apiError.value = null; // Clear any previous errors on success
+
+        // Handle both detailed and simplified success responses
+        if (response.data && (response.data.id || response.data.message)) {
+          return response.data;
+        }
+
+        return response.data;
+      } catch (err) {
+        console.error("Error creating sale post:", err);
+        // Provide more detailed error information
+        if (err.response) {
+          console.error("Response status:", err.response.status);
+          console.error("Response data:", err.response.data);
+
+          // Check if it's actually a success with 400 status (our known issue)
+          if (
+            err.response.status === 400 &&
+            err.response.data &&
+            (err.response.data.id || err.response.data.message)
+          ) {
+            console.log(
+              "Detected success response with 400 status - treating as success"
+            );
+            apiError.value = null;
+            return err.response.data;
+          }
+
+          apiError.value =
+            err.response.data || "Server error: " + err.response.status;
+        } else if (err.request) {
+          console.error("No response received");
+          apiError.value =
+            "No response from server. Please check your connection.";
+        } else {
+          apiError.value = err.message || "Failed to create sale post";
+        }
+        throw apiError.value;
+      } finally {
+        apiLoading.value = false;
+      }
+    };
 
     const result = await createSalePost(submissionData);
 

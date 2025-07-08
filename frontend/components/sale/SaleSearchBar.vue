@@ -118,22 +118,121 @@
               <span class="sr-only">Edit Location</span>
             </UButton>
           </UTooltip>
-          <UButtonGroup size="md" class="flex-1 hidden md:flex md:w-2/4">
-            <UInput
-              icon="i-heroicons-magnifying-glass-20-solid"
-              size="md"
-              color="white"
-              :trailing="false"
-              placeholder="Search..."
-              v-model="searchTerm"
-              @keyup.enter="handleSearch"
-              class="w-full"
-              :ui="{
-                padding: {
-                  md: 'sm:py-2.5',
-                },
-              }"
-            />
+          <UButtonGroup
+            size="md"
+            class="flex-1 hidden md:flex md:w-2/4 relative"
+          >
+            <div class="relative flex-1">
+              <UInput
+                icon="i-heroicons-magnifying-glass-20-solid"
+                size="md"
+                color="white"
+                :trailing="false"
+                placeholder="Search..."
+                v-model="searchTerm"
+                @input="handleSearchInput"
+                @keyup.enter="handleSearch"
+                @keydown.down="handleKeyDown"
+                @keydown.up="handleKeyUp"
+                @keydown.escape="showDropdown = false"
+                @focus="showDropdown = true"
+                @blur="handleBlur"
+                class="w-full"
+                :ui="{
+                  padding: {
+                    md: 'sm:py-2.5',
+                  },
+                }"
+              />
+
+              <!-- Search Dropdown -->
+              <div
+                v-if="
+                  showDropdown && (searchResults.length > 0 || isLoadingResults)
+                "
+                class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-md shadow-lg z-50 max-h-80 overflow-y-auto search-dropdown"
+              >
+                <!-- Loading state -->
+                <div v-if="isLoadingResults" class="p-4 text-center">
+                  <UIcon
+                    name="i-heroicons-arrow-path"
+                    class="animate-spin h-5 w-5 mx-auto text-primary-500"
+                  />
+                  <p class="text-sm text-gray-600 mt-2">Searching...</p>
+                </div>
+
+                <!-- Search results -->
+                <div v-else-if="searchResults.length > 0">
+                  <div
+                    v-for="(result, index) in searchResults"
+                    :key="result.id"
+                    @mousedown="selectResult(result)"
+                    :class="[
+                      'flex items-center p-3 cursor-pointer border-b border-gray-100 last:border-b-0 search-result-item transition-colors',
+                      selectedIndex === index
+                        ? 'bg-primary-50 border-primary-200'
+                        : 'hover:bg-gray-50',
+                    ]"
+                  >
+                    <div
+                      class="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-md overflow-hidden mr-3"
+                    >
+                      <img
+                        v-if="result.main_image"
+                        :src="result.main_image"
+                        :alt="result.title"
+                        class="w-full h-full object-cover"
+                      />
+                      <div
+                        v-else
+                        class="w-full h-full flex items-center justify-center"
+                      >
+                        <UIcon
+                          name="i-heroicons-photo"
+                          class="h-5 w-5 text-gray-400"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-gray-900 truncate">
+                        {{ result.title }}
+                      </p>
+                      <p class="text-sm text-gray-500">
+                        <span
+                          v-if="result.price"
+                          class="text-green-600 font-medium"
+                          >৳{{ formatPrice(result.price) }}</span
+                        >
+                        <span v-else class="text-gray-600">Negotiable</span>
+                        <span class="mx-1">•</span>
+                        <span>{{ result.category_name || "General" }}</span>
+                      </p>
+                    </div>
+                    <div class="flex-shrink-0">
+                      <UIcon
+                        name="i-heroicons-arrow-top-right-on-square"
+                        class="h-4 w-4 text-gray-400"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- See all results option -->
+                  <div
+                    @mousedown="handleSearch"
+                    class="p-3 text-center bg-gray-50 hover:bg-gray-100 cursor-pointer border-t border-gray-200"
+                  >
+                    <p class="text-sm text-primary-600 font-medium">
+                      See all results for "{{ searchTerm }}"
+                    </p>
+                  </div>
+                </div>
+
+                <!-- No results -->
+                <div v-else class="p-4 text-center">
+                  <p class="text-sm text-gray-600">No results found</p>
+                </div>
+              </div>
+            </div>
 
             <UButton
               size="md"
@@ -141,7 +240,7 @@
               variant="solid"
               :label="t('search')"
               @click="handleSearch"
-              class="sm:h-10 max-sm:!text-base w-24 justify-center bg-primary-600 text-white hover:bg-primary-700 transition-colors duration-200"
+              class="sm:h-10 max-sm:!text-base w-24 justify-center bg-primary-600 text-white hover:bg-primary-700 transition-colors duration-200 rounded-l-none"
               :ui="{
                 padding: {
                   md: 'sm:py-2.5',
@@ -151,22 +250,106 @@
           </UButtonGroup>
         </div>
       </div>
-      <UButtonGroup size="md" class="flex-1 flex md:hidden md:w-2/4 px-2 pb-2">
-        <UInput
-          icon="i-heroicons-magnifying-glass-20-solid"
-          size="md"
-          color="white"
-          :trailing="false"
-          placeholder="Search..."
-          v-model="searchTerm"
-          @keyup.enter="handleSearch"
-          class="w-full"
-          :ui="{
-            padding: {
-              md: 'sm:py-2.5',
-            },
-          }"
-        />
+      <UButtonGroup
+        size="md"
+        class="flex-1 flex md:hidden md:w-2/4 px-2 pb-2 relative"
+      >
+        <div class="relative flex-1">
+          <UInput
+            icon="i-heroicons-magnifying-glass-20-solid"
+            size="md"
+            color="white"
+            :trailing="false"
+            placeholder="Search..."
+            v-model="searchTerm"
+            @input="handleSearchInput"
+            @keyup.enter="handleSearch"
+            @keydown.down="handleKeyDown"
+            @keydown.up="handleKeyUp"
+            @keydown.escape="showDropdown = false"
+            @focus="showDropdown = true"
+            @blur="handleBlur"
+            class="w-full"
+            :ui="{
+              padding: {
+                md: 'sm:py-2.5',
+              },
+            }"
+          />
+          <!-- Mobile Search Dropdown -->
+          <div
+            v-if="
+              showDropdown && (searchResults.length > 0 || isLoadingResults)
+            "
+            class="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-md shadow-lg z-50 max-h-60 overflow-y-auto search-dropdown"
+          >
+            <!-- Loading state -->
+            <div v-if="isLoadingResults" class="p-3 text-center">
+              <UIcon
+                name="i-heroicons-arrow-path"
+                class="animate-spin h-4 w-4 mx-auto text-primary-500"
+              />
+              <p class="text-xs text-gray-600 mt-1">Searching...</p>
+            </div>
+
+            <!-- Search results -->
+            <div v-else-if="searchResults.length > 0">
+              <div
+                v-for="result in searchResults.slice(0, 5)"
+                :key="result.id"
+                @mousedown="selectResult(result)"
+                class="flex items-center p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 search-result-item"
+              >
+                <div
+                  class="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-md overflow-hidden mr-2"
+                >
+                  <img
+                    v-if="result.main_image"
+                    :src="result.main_image"
+                    :alt="result.title"
+                    class="w-full h-full object-cover"
+                  />
+                  <div
+                    v-else
+                    class="w-full h-full flex items-center justify-center"
+                  >
+                    <UIcon
+                      name="i-heroicons-photo"
+                      class="h-4 w-4 text-gray-400"
+                    />
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-medium text-gray-900 truncate">
+                    {{ result.title }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    <span v-if="result.price" class="text-green-600 font-medium"
+                      >৳{{ formatPrice(result.price) }}</span
+                    >
+                    <span v-else class="text-gray-600">Negotiable</span>
+                  </p>
+                </div>
+                <div class="flex-shrink-0">
+                  <UIcon
+                    name="i-heroicons-arrow-top-right-on-square"
+                    class="h-3 w-3 text-gray-400"
+                  />
+                </div>
+              </div>
+
+              <!-- See all results option -->
+              <div
+                @mousedown="handleSearch"
+                class="p-2 text-center bg-gray-50 hover:bg-gray-100 cursor-pointer border-t border-gray-200"
+              >
+                <p class="text-xs text-primary-600 font-medium">
+                  See all results
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <UButton
           size="md"
@@ -175,7 +358,7 @@
           variant="solid"
           icon="i-heroicons-magnifying-glass-20-solid"
           @click="handleSearch"
-          class="sm:h-10 max-sm:!text-base w-12 justify-center"
+          class="sm:h-10 max-sm:!text-base w-12 justify-center rounded-l-none"
           :ui="{
             padding: {
               md: 'sm:py-2.5',
@@ -188,7 +371,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch, nextTick } from "vue";
 
 // Define props
 const props = defineProps({
@@ -200,17 +383,27 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showSearchResults: {
+    type: Boolean,
+    default: false, // Only true on sale index page
+  },
 });
 
 // Define emits
-const emit = defineEmits(["search", "clear-location"]);
+const emit = defineEmits(["search", "clear-location", "navigate-to-post"]);
 
 // Composables
 const { location, clearLocation } = useLocation();
 const { t } = useI18n();
+const { get } = useApi();
 
 // Reactive data
 const searchTerm = ref(props.initialSearchTerm);
+const showDropdown = ref(false);
+const searchResults = ref([]);
+const isLoadingResults = ref(false);
+const searchTimeout = ref(null);
+const selectedIndex = ref(-1);
 
 // Watch for prop changes
 watch(
@@ -222,6 +415,13 @@ watch(
 
 // Methods
 const handleSearch = () => {
+  // If an item is selected via keyboard, navigate to it
+  if (selectedIndex.value >= 0 && searchResults.value[selectedIndex.value]) {
+    selectResult(searchResults.value[selectedIndex.value]);
+    return;
+  }
+
+  showDropdown.value = false;
   emit("search", searchTerm.value?.trim() || "");
 };
 
@@ -229,6 +429,116 @@ const handleClearLocation = () => {
   clearLocation();
   emit("clear-location");
 };
+
+const handleSearchInput = () => {
+  // Clear previous timeout
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value);
+  }
+
+  // If search term is empty, hide dropdown
+  if (!searchTerm.value?.trim()) {
+    showDropdown.value = false;
+    searchResults.value = [];
+    selectedIndex.value = -1;
+    return;
+  }
+
+  // Set a timeout for debounced search
+  searchTimeout.value = setTimeout(() => {
+    performSearch();
+  }, 300); // 300ms delay
+};
+
+const performSearch = async () => {
+  if (!searchTerm.value?.trim()) return;
+
+  isLoadingResults.value = true;
+
+  try {
+    const params = new URLSearchParams();
+    params.append("q", searchTerm.value.trim());
+    params.append("limit", "8"); // Limit results for dropdown
+
+    const response = await get(`/sale/posts/search/?${params.toString()}`);
+
+    if (response?.data?.results) {
+      searchResults.value = response.data.results.map((item) => ({
+        id: item.id,
+        title: item.title,
+        slug: item.slug,
+        price: item.price,
+        negotiable: item.negotiable,
+        main_image: item.main_image,
+        category_name: item.category_name || "General",
+        user_name: item.user_name,
+        created_at: item.created_at,
+      }));
+    } else {
+      searchResults.value = [];
+    }
+
+    showDropdown.value = true;
+    selectedIndex.value = -1;
+  } catch (error) {
+    console.error("Search error:", error);
+    searchResults.value = [];
+  } finally {
+    isLoadingResults.value = false;
+  }
+};
+
+const selectResult = (result) => {
+  showDropdown.value = false;
+
+  // Always navigate to the individual post when clicking on a result
+  navigateTo(`/sale/${result.slug}`);
+};
+
+const handleBlur = () => {
+  // Use nextTick to allow click events to fire before hiding dropdown
+  nextTick(() => {
+    setTimeout(() => {
+      showDropdown.value = false;
+    }, 150);
+  });
+};
+
+const formatPrice = (price) => {
+  if (!price) return "";
+  return new Intl.NumberFormat("en-IN").format(price);
+};
+
+const handleKeyDown = (event) => {
+  if (!showDropdown.value || searchResults.value.length === 0) return;
+
+  event.preventDefault();
+  selectedIndex.value = Math.min(
+    selectedIndex.value + 1,
+    searchResults.value.length - 1
+  );
+};
+
+const handleKeyUp = (event) => {
+  if (!showDropdown.value || searchResults.value.length === 0) return;
+
+  event.preventDefault();
+  selectedIndex.value = Math.max(selectedIndex.value - 1, -1);
+};
+
+// Close dropdown when clicking outside
+const closeDropdown = () => {
+  showDropdown.value = false;
+  selectedIndex.value = -1;
+};
+
+// Watch for route changes to close dropdown
+watch(
+  () => useRoute().path,
+  () => {
+    showDropdown.value = false;
+  }
+);
 </script>
 
 <style scoped>
@@ -261,5 +571,20 @@ const handleClearLocation = () => {
 
 .animate-pulse-slow {
   animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Dropdown styling */
+.search-dropdown {
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.search-result-item {
+  transition: all 0.15s ease;
+}
+
+.search-result-item:hover {
+  transform: translateY(-1px);
 }
 </style>

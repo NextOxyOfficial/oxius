@@ -4,6 +4,7 @@
     <SaleSearchBar
       :initial-search-term="form.title"
       :is-searching="isLoading"
+      :show-search-results="true"
       @search="handleSearch"
       @clear-location="handleClearLocation"
     />
