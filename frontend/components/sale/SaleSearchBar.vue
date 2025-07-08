@@ -423,7 +423,7 @@ const handleSearch = () => {
 
   showDropdown.value = false;
 
-  // Always emit search event to update main post list
+  // Always emit search event when user explicitly searches (Enter key or search button)
   const searchQuery = searchTerm.value?.trim() || "";
   emit("search", searchQuery);
 };
@@ -439,31 +439,33 @@ const handleSearchInput = () => {
     clearTimeout(searchTimeout.value);
   }
 
-  // If search term is empty, hide dropdown and emit empty search
+  // If search term is empty, hide dropdown and emit empty search only if on sale index page
   if (!searchTerm.value?.trim()) {
     showDropdown.value = false;
     searchResults.value = [];
     selectedIndex.value = -1;
-    // Emit empty search to reset the main listing
-    emit("search", "");
+    // Only emit empty search to reset the main listing on sale index page
+    if (props.showSearchResults) {
+      emit("search", "");
+    }
     return;
   }
 
   // Set a timeout for debounced search
   searchTimeout.value = setTimeout(() => {
-    // Always emit search to update main post list
-    emit("search", searchTerm.value?.trim() || "");
-
-    // Only perform dropdown search if showSearchResults is true
+    // Only emit search to update main post list if on sale index page
     if (props.showSearchResults) {
-      performSearch();
+      emit("search", searchTerm.value?.trim() || "");
     }
+
+    // Always perform dropdown search for all pages
+    performSearch();
   }, 300); // 300ms delay
 };
 
 const handleFocus = () => {
-  // If there's already text in the input and showSearchResults is enabled, perform search
-  if (searchTerm.value?.trim() && props.showSearchResults) {
+  // If there's already text in the input, perform dropdown search
+  if (searchTerm.value?.trim()) {
     performSearch();
   }
 };
