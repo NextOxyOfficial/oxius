@@ -311,6 +311,19 @@ class SalePostViewSet(viewsets.ModelViewSet):
             .prefetch_related("images")
         )
 
+        # Apply location filtering if provided
+        division = request.query_params.get("division")
+        if division:
+            queryset = queryset.filter(division=division)
+
+        district = request.query_params.get("district")
+        if district:
+            queryset = queryset.filter(district=district)
+
+        area = request.query_params.get("area")
+        if area:
+            queryset = queryset.filter(area=area)
+
         # Order by created_at descending to show newest first
         queryset = queryset.order_by("-created_at")[:limit]
 

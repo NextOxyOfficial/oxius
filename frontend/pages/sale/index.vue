@@ -1177,11 +1177,39 @@ async function loadPosts(page = 1, isLoadMore = false) {
       params.append("max_price", priceRange.value.max.toString());
     if (selectedCondition.value)
       params.append("condition", selectedCondition.value);
-    if (selectedDivision.value)
-      params.append("division", selectedDivision.value);
-    if (selectedDistrict.value)
-      params.append("district", selectedDistrict.value);
-    if (selectedArea.value) params.append("area", selectedArea.value);
+
+    // Apply location filtering
+    // Priority: Manual sidebar filters > User saved location > No location filter
+
+    // Check if manual location filters are set (from sidebar filters)
+    const hasManualLocationFilters =
+      selectedDivision.value || selectedDistrict.value || selectedArea.value;
+
+    if (hasManualLocationFilters) {
+      // Use manual filters if they're set (user has specifically filtered on the page)
+      if (selectedDivision.value)
+        params.append("division", selectedDivision.value);
+      if (selectedDistrict.value)
+        params.append("district", selectedDistrict.value);
+      if (selectedArea.value) params.append("area", selectedArea.value);
+    } else {
+      // Use saved location from CommonGeoSelector if no manual filters are set
+      const userLocation = location.value;
+      if (userLocation && !userLocation.allOverBangladesh) {
+        // User has selected a specific location, filter posts accordingly
+        if (userLocation.state) {
+          params.append("division", userLocation.state);
+        }
+        if (userLocation.city) {
+          params.append("district", userLocation.city);
+        }
+        if (userLocation.upazila) {
+          params.append("area", userLocation.upazila);
+        }
+      }
+      // If user selected "All Over Bangladesh" or no location is set, don't add location filters
+      // This will show posts from all locations
+    }
 
     // Sort
     const sortMapping = {
@@ -1191,7 +1219,9 @@ async function loadPosts(page = 1, isLoadMore = false) {
       price_high: "-price",
       most_viewed: "-views",
     };
-    params.append("sort", sortMapping[sortOption.value] || "-created_at"); // Get data from API
+    params.append("sort", sortMapping[sortOption.value] || "-created_at");
+
+    // Get data from API
     const apiUrl = `${API_ENDPOINTS.LISTINGS}?${params.toString()}`;
 
     const response = await get(apiUrl);
@@ -1558,6 +1588,23 @@ watch(categories, () => {
     if (recentListings.value?.length === 0) loadRecentListings();
   }
 });
+
+// Watch for location changes from CommonGeoSelector to refresh posts
+watch(
+  () => location.value,
+  (newLocation, oldLocation) => {
+    // Only reload if location actually changed and we have categories loaded
+    if (
+      categories.value?.length > 0 &&
+      JSON.stringify(newLocation) !== JSON.stringify(oldLocation)
+    ) {
+      // Reset to first page and reload posts with new location filter
+      currentPage.value = 1;
+      loadPosts(1, false);
+    }
+  },
+  { deep: true }
+);
 
 // Watch for changes in form.state (division) to load corresponding districts/cities
 watch(

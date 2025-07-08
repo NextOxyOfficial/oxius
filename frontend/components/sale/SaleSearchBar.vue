@@ -482,6 +482,19 @@ const performSearch = async () => {
     params.append("q", searchTerm.value.trim());
     params.append("limit", "8"); // Limit results for dropdown
 
+    // Add location filtering parameters if available
+    if (location.value && !location.value.allOverBangladesh) {
+      if (location.value.state) {
+        params.append("division", location.value.state);
+      }
+      if (location.value.city) {
+        params.append("district", location.value.city);
+      }
+      if (location.value.upazila) {
+        params.append("area", location.value.upazila);
+      }
+    }
+
     const searchUrl = `/sale/posts/search/?${params.toString()}`;
     const response = await get(searchUrl);
 
