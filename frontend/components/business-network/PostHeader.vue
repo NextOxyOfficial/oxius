@@ -217,6 +217,7 @@
     <BusinessNetworkCreatePost
       :edit-post="selectedEditPost"
       @post-updated="handlePostUpdate"
+      @modal-closed="handleModalClosed"
     />
   </div>
 </template>
@@ -303,6 +304,11 @@ function handlePostUpdate(updatedPost) {
     title: "Post updated",
     description: "Post has been updated successfully.",
   });
+}
+
+function handleModalClosed() {
+  // Clear the selected edit post when modal is closed without saving
+  selectedEditPost.value = null;
 }
 
 function editPost(post) {
