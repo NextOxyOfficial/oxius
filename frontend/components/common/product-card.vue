@@ -153,6 +153,14 @@
         height: 'h-auto',
         container: 'flex flex-col h-auto mt-20 p-0 sm:p-0',
         padding: 'p-0',
+        transition: {
+          enter: 'duration-300 ease-out',
+          enterFrom: 'opacity-0 scale-95',
+          enterTo: 'opacity-100 scale-100',
+          leave: 'duration-200 ease-in',
+          leaveFrom: 'opacity-100 scale-100',
+          leaveTo: 'opacity-0 scale-95',
+        },
       }"
     >
       <div>
@@ -162,7 +170,7 @@
             :modal="true"
             :seeDetails="true"
             @close-modal="closeProductModal"
-            @update-product="updateModalProduct"
+            @close-and-reopen-modal="updateModalProduct"
           />
         </div>
       </div>
@@ -274,8 +282,15 @@ function closeProductModal() {
 }
 
 function updateModalProduct(newProduct) {
-  selectedProduct.value = newProduct;
-  quantity.value = 1;
+  // Close current modal first
+  isModalOpen.value = false;
+
+  // After modal close animation completes, open with new product
+  setTimeout(() => {
+    selectedProduct.value = newProduct;
+    quantity.value = 1;
+    isModalOpen.value = true;
+  }, 250); // Match the modal leave transition duration
 }
 
 async function increaseProductViews() {

@@ -1102,12 +1102,12 @@ const { currentProduct, modal, seeDetails } = defineProps({
 const emit = defineEmits([
   "close-modal",
   "open-message-modal",
-  "update-product",
+  "close-and-reopen-modal",
 ]);
 
 // Function to handle product updates from related products
 function handleModalProductChange(newProduct) {
-  emit("update-product", newProduct);
+  emit("close-and-reopen-modal", newProduct);
 }
 
 const selectedImageIndex = ref(0);
