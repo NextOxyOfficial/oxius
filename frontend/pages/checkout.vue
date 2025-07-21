@@ -135,7 +135,7 @@
                             </h3>
                             <div
                               v-html="product.description"
-                              class="text-gray-600 text-sm line-clamp-3"
+                              class="text-gray-600 text-sm line-clamp-1"
                             ></div>
                             <div class="flex items-center justify-between mt-2">
                               <div class="text-indigo-600 font-semibold">
@@ -798,14 +798,14 @@
 
 <script setup>
 import {
-  ShoppingBag,
   Check,
+  CreditCard,
+  MapPin,
+  Minus,
+  Plus,
+  ShoppingBag,
   Truck,
   Wallet,
-  MapPin,
-  CreditCard,
-  Plus,
-  Minus,
 } from "lucide-vue-next";
 const { user } = useAuth();
 const { post } = useApi();
