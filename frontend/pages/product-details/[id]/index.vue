@@ -17,6 +17,9 @@
 </template>
 
 <script setup>
+definePageMeta({
+  layout: "eshop",
+});
 const { get, patch } = useApi();
 const route = useRoute();
 
