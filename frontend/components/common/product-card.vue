@@ -146,6 +146,7 @@
     </div>
     <!-- Simplified Product Details Modal -->
     <UModal
+      v-if="!isInModal"
       v-model="isModalOpen"
       :ui="{
         width: 'w-full sm:max-w-4xl',
@@ -161,6 +162,7 @@
             :modal="true"
             :seeDetails="true"
             @close-modal="closeProductModal"
+            @update-product="updateModalProduct"
           />
         </div>
       </div>
@@ -170,7 +172,15 @@
 
 <script setup>
 const { patch } = useApi();
-const { product } = defineProps({ product: { type: Object, required: true } });
+const { product, isInModal, onModalProductChange } = defineProps({
+  product: { type: Object, required: true },
+  isInModal: { type: Boolean, default: false },
+  onModalProductChange: { type: Function, default: null },
+});
+
+// Define emits for parent communication
+const emit = defineEmits(["updateModalProduct"]);
+
 const isModalOpen = ref(false);
 const selectedProduct = ref(null);
 const quantity = ref(1);
@@ -241,6 +251,19 @@ function addToCart(item, qty = 1) {
 
 // Product modal functions
 function openProductModal(product) {
+  // If this product card is inside a modal, emit event to parent instead of opening new modal
+  if (isInModal && onModalProductChange) {
+    onModalProductChange(product);
+    return;
+  }
+
+  // If this product card is inside a modal but no handler provided, emit event
+  if (isInModal) {
+    emit("updateModalProduct", product);
+    return;
+  }
+
+  // Normal behavior for product cards not in modal
   selectedProduct.value = product;
   quantity.value = 1;
   isModalOpen.value = true;
@@ -248,6 +271,11 @@ function openProductModal(product) {
 
 function closeProductModal() {
   isModalOpen.value = false;
+}
+
+function updateModalProduct(newProduct) {
+  selectedProduct.value = newProduct;
+  quantity.value = 1;
 }
 
 async function increaseProductViews() {
