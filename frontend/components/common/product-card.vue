@@ -147,6 +147,7 @@
     <!-- Simplified Product Details Modal -->
     <UModal
       v-if="!isInModal"
+      ref="productModal"
       v-model="isModalOpen"
       :ui="{
         width: 'w-full sm:max-w-4xl',
@@ -192,6 +193,7 @@ const emit = defineEmits(["updateModalProduct"]);
 const isModalOpen = ref(false);
 const selectedProduct = ref(null);
 const quantity = ref(1);
+const productModal = ref(null);
 
 const loadingStates = ref({});
 const cart = useStoreCart();
@@ -275,6 +277,11 @@ function openProductModal(product) {
   selectedProduct.value = product;
   quantity.value = 1;
   isModalOpen.value = true;
+
+  // Reset scroll position to top when modal opens
+  nextTick(() => {
+    resetModalScroll();
+  });
 }
 
 function closeProductModal() {
@@ -290,7 +297,73 @@ function updateModalProduct(newProduct) {
     selectedProduct.value = newProduct;
     quantity.value = 1;
     isModalOpen.value = true;
+
+    // Reset scroll position to top when new modal opens
+    nextTick(() => {
+      resetModalScroll();
+    });
   }, 250); // Match the modal leave transition duration
+}
+
+// Function to reset modal scroll position to top
+function resetModalScroll() {
+  // Multiple attempts with increasing delays to ensure modal is rendered
+  const scrollResetAttempts = [100, 300, 500];
+
+  scrollResetAttempts.forEach((delay, index) => {
+    setTimeout(() => {
+      let modalContainer = null;
+
+      // First try to use the modal ref if available
+      if (productModal.value && productModal.value.$el) {
+        const modalElement = productModal.value.$el;
+        modalContainer =
+          modalElement.querySelector(".overflow-y-auto") || modalElement;
+      }
+
+      // Fallback to DOM query selectors
+      if (!modalContainer) {
+        const selectors = [
+          '[role="dialog"] .overflow-y-auto',
+          '[role="dialog"] .max-h-full',
+          ".fixed.inset-0.z-50 .overflow-y-auto",
+          '[data-headlessui-state="open"] .overflow-y-auto',
+          ".relative.transform.overflow-hidden.rounded-lg",
+          '[role="dialog"]',
+          ".overflow-y-auto",
+        ];
+
+        for (const selector of selectors) {
+          const elements = document.querySelectorAll(selector);
+          if (elements.length > 0) {
+            modalContainer = elements[elements.length - 1];
+            break;
+          }
+        }
+      }
+
+      if (modalContainer) {
+        // Simply scroll to the top (position 0)
+        modalContainer.scrollTo({
+          top: 0,
+          behavior: index === 0 ? "smooth" : "instant",
+        });
+      }
+
+      // Also try to scroll any parent containers that might be scrollable
+      const parentContainers = document.querySelectorAll(
+        '.fixed.inset-0, [role="dialog"]'
+      );
+      parentContainers.forEach((container) => {
+        if (container.scrollHeight > container.clientHeight) {
+          container.scrollTo({
+            top: 0,
+            behavior: index === 0 ? "smooth" : "instant",
+          });
+        }
+      });
+    }, delay);
+  });
 }
 
 async function increaseProductViews() {
@@ -302,6 +375,16 @@ async function increaseProductViews() {
     console.error(error);
   }
 }
+
+// Watch for modal open state changes to reset scroll position
+watch(isModalOpen, (newValue) => {
+  if (newValue) {
+    // Modal is opening, reset scroll position to top
+    nextTick(() => {
+      resetModalScroll();
+    });
+  }
+});
 
 onMounted(() => {
   const observer = new IntersectionObserver(
