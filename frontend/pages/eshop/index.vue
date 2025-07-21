@@ -3,7 +3,7 @@
     class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20 page-eshop"
   >
     <!-- Premium Banner Slider with Enhanced Visual Effects -->
-    <div class="pt-4 pb-2 mb-2">
+    <div v-if="!isSearchActive" class="pt-4 pb-2 mb-2">
       <UContainer>
         <CommonEshopBanner
           :customHeight="{
@@ -32,7 +32,7 @@
         @eshopManager="navigateToEshopManager"
       />
 
-      <CommonHotDealsSection />
+      <CommonHotDealsSection v-if="!isSearchActive" />
       <!-- Premium Search & Filters Section -->
       <div class="mb-5">
         <!-- Elegant Search Bar & Price Range - Responsive Layout -->
@@ -82,8 +82,8 @@
                   rounded: 'rounded-lg',
                   placeholder: 'text-gray-500 dark:text-gray-400',
                   size: {
-                    md: 'text-sm py-1.5 px-3'
-                  }
+                    md: 'text-sm py-1.5 px-3',
+                  },
                 }"
                 @change="handleCategoryChange"
               >
@@ -279,11 +279,11 @@ definePageMeta({
 });
 
 import {
-  CommonHotDealsSection,
   CommonEshopBanner,
   CommonEshopCategoriesSidebar,
+  CommonHotDealsSection,
 } from "#components";
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 const { get } = useApi();
 const route = useRoute();
 const router = useRouter();
@@ -350,15 +350,20 @@ const hasActiveFilters = computed(() => {
   );
 });
 
+// Computed property to check if search is active (for hiding banners and hot deals)
+const isSearchActive = computed(() => {
+  return searchQuery.value && searchQuery.value.trim().length > 0;
+});
+
 // Computed property for category options in dropdown
 const categoryOptions = computed(() => {
   return [
     { id: null, name: "All Categories" },
-    ...categories.value.map(cat => ({
+    ...categories.value.map((cat) => ({
       id: cat.id,
       name: cat.name,
-      slug: cat.slug
-    }))
+      slug: cat.slug,
+    })),
   ];
 });
 
@@ -402,7 +407,7 @@ function toggleCategory(categoryId) {
 // Handle category change from dropdown
 function handleCategoryChange(categoryId) {
   selectedCategory.value = categoryId;
-  
+
   if (categoryId) {
     // Find category slug to update URL
     const category = categories.value.find((cat) => cat.id === categoryId);
@@ -412,7 +417,7 @@ function handleCategoryChange(categoryId) {
   } else {
     updateURL(); // Clear category from URL
   }
-  
+
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;
