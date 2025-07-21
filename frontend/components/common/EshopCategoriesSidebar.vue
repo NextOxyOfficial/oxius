@@ -237,6 +237,8 @@
 </template>
 
 <script setup>
+import { ref, watch } from "vue";
+
 // Props
 const props = defineProps({
   isOpen: {
@@ -393,9 +395,34 @@ function getCategoryIcon(categoryName) {
 
 // Handle category selection
 function handleCategorySelect(categoryId) {
-  emit("categorySelect", categoryId);
-  // Remove the automatic close emit - let the parent handle closing
-  // emit('close')
+  const route = useRoute();
+  const router = useRouter();
+
+  // Check if we're on the main eshop page
+  if (route.path === "/eshop" || route.path === "/eshop/") {
+    // Normal behavior - emit to parent
+    emit("categorySelect", categoryId);
+  } else {
+    // We're on other eshop pages - navigate to main eshop page with category
+    if (categoryId) {
+      // Find the category to get its slug
+      const category = props.displayedCategories.find(
+        (cat) => cat.id === categoryId
+      );
+      if (category && category.slug) {
+        router.push(`/eshop?category=${category.slug}`);
+      } else {
+        // Fallback if no slug available
+        router.push(`/eshop?categoryId=${categoryId}`);
+      }
+    } else {
+      // Navigate to eshop without category filter
+      router.push("/eshop");
+    }
+
+    // Close the sidebar after navigation
+    emit("close");
+  }
 }
 </script>
 

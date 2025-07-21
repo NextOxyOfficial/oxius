@@ -53,25 +53,26 @@
                 rounded: 'rounded-full',
                 placeholder: 'placeholder-gray-400',
                 size: {
-                  lg: 'text-base py-2 px-4'
+                  lg: 'text-base py-2 px-4',
                 },
                 icon: {
                   base: 'flex-shrink-0 text-gray-400',
                   color: 'text-gray-400',
                   size: {
-                    lg: 'h-5 w-5'
-                  }
+                    lg: 'h-5 w-5',
+                  },
                 },
                 color: {
                   emerald: {
-                    outline: 'shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400'
-                  }
+                    outline:
+                      'shadow-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400',
+                  },
                 },
                 default: {
                   size: 'lg',
                   color: 'emerald',
-                  variant: 'outline'
-                }
+                  variant: 'outline',
+                },
               }"
               @input="handleSearchInput"
               @keydown.enter="handleSearchEnter"
@@ -84,7 +85,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 
 // Handle scroll events
 const isScrolled = ref(false);
@@ -126,10 +127,14 @@ const handleSearchSync = (event) => {
 
 // Sidebar state management using event emitter
 const isSidebarOpen = ref(false);
+const route = useRoute();
+const router = useRouter();
 
 // Create event bus for sidebar communication
 const toggleSidebar = () => {
+  // Always toggle the sidebar state regardless of which page we're on
   isSidebarOpen.value = !isSidebarOpen.value;
+
   // Emit event to communicate with page components
   if (process.client) {
     window.dispatchEvent(

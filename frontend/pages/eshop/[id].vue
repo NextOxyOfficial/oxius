@@ -1,5 +1,20 @@
 <template>
   <div class="bg-slate-100 mt-2 dark:bg-slate-900">
+    <!-- Categories Sidebar Component -->
+    <CommonEshopCategoriesSidebar
+      :isOpen="isSidebarOpen"
+      :displayedCategories="displayedCategories"
+      :selectedCategory="null"
+      :hasMoreCategoriesToLoad="hasMoreCategoriesToLoad"
+      :isLoadingMore="isLoadingMoreCategories"
+      @close="toggleSidebar"
+      @categorySelect="navigateToCategory"
+      @loadMore="loadMoreCategories"
+      @sellerRegistration="goToSellerRegistration"
+      @contactSupport="contactSupport"
+      @eshopManager="navigateToEshopManager"
+    />
+
     <UContainer>
       <!-- 1. Banner Section -->
       <div
@@ -665,28 +680,89 @@
 </template>
 
 <script setup>
+import { CommonEshopCategoriesSidebar } from "#components";
+import { Search, X } from "lucide-vue-next";
+import { onMounted, onUnmounted, ref } from "vue";
+
 definePageMeta({
   layout: "eshop",
 });
-import {
-  Search,
-  MapPin,
-  Clock,
-  Mail,
-  ChevronRight,
-  X,
-  Phone,
-  LocateIcon,
-} from "lucide-vue-next";
 
 const { get, patch } = useApi();
 const router = useRoute();
+const navigate = useRouter();
 const toast = useToast();
 const products = ref([]);
 const storeDetails = ref({});
 const { user, token } = useAuth();
 const isLoading = ref(false);
 const isSeeMore = ref(false);
+
+// Sidebar state
+const isSidebarOpen = ref(false);
+const displayedCategories = ref([]);
+const hasMoreCategoriesToLoad = ref(false);
+const isLoadingMoreCategories = ref(false);
+const categories = ref([]);
+
+// Data fetching
+async function fetchCategories() {
+  try {
+    const res = await get("/product-categories/");
+    categories.value = res.data;
+    displayedCategories.value = res.data.slice(0, 10);
+    hasMoreCategoriesToLoad.value = res.data.length > 10;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+}
+
+// Sidebar functions
+function toggleSidebar() {
+  isSidebarOpen.value = !isSidebarOpen.value;
+}
+
+function navigateToCategory(categoryId) {
+  // Find category to get its slug
+  const category = categories.value.find((cat) => cat.id === categoryId);
+  if (category && category.slug) {
+    navigate.push(`/eshop?category=${category.slug}`);
+  } else {
+    navigate.push("/eshop");
+  }
+  toggleSidebar();
+}
+
+function loadMoreCategories() {
+  if (isLoadingMoreCategories.value || !hasMoreCategoriesToLoad.value) return;
+
+  isLoadingMoreCategories.value = true;
+  const currentCount = displayedCategories.value.length;
+  const nextBatch = categories.value.slice(currentCount, currentCount + 10);
+  displayedCategories.value.push(...nextBatch);
+  hasMoreCategoriesToLoad.value =
+    displayedCategories.value.length < categories.value.length;
+  isLoadingMoreCategories.value = false;
+}
+
+function goToSellerRegistration() {
+  navigate.push("/shop-manager");
+  toggleSidebar();
+}
+
+function contactSupport() {
+  navigate.push("/contact-us");
+  toggleSidebar();
+}
+
+function navigateToEshopManager() {
+  navigate.push("/shop-manager");
+}
+
+// Listen for sidebar toggle from header
+const handleHeaderSidebarToggle = (event) => {
+  isSidebarOpen.value = event.detail.isOpen;
+};
 
 // Review functionality
 const reviewsCount = ref(0);
@@ -1065,9 +1141,26 @@ onMounted(async () => {
   if (categoriesRef.value) sectionObserver.observe(categoriesRef.value);
   if (detailsRef.value) sectionObserver.observe(detailsRef.value);
   if (ctaRef.value) sectionObserver.observe(ctaRef.value);
+
+  // Listen for sidebar toggle from header
+  if (process.client) {
+    window.addEventListener("eshop-sidebar-toggle", handleHeaderSidebarToggle);
+  }
+
+  // Fetch categories for sidebar
+  await fetchCategories();
+
   // Clean up observers
   onUnmounted(() => {
     sectionObserver.disconnect();
+
+    // Clean up event listeners
+    if (process.client) {
+      window.removeEventListener(
+        "eshop-sidebar-toggle",
+        handleHeaderSidebarToggle
+      );
+    }
   });
 });
 </script>
