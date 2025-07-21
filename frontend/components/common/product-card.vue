@@ -48,7 +48,7 @@
 
           <!-- Simplified Quick View Button -->
           <div
-            class="absolute inset-0 z-10 flex items-center justify-center opacity-0 bg-gray-100 hover:opacity-100 transition-opacity"
+            class="absolute inset-0 z-10 flex items-center justify-center opacity-0 bg-transparent hover:opacity-100 transition-opacity"
           >
             <button
               @click="openProductModal(product)"
