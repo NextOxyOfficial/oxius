@@ -3,6 +3,7 @@
     v-if="currentProduct"
     class="p-0 overflow-hidden border-none shadow-sm"
     :ui="{
+      divide: '',
       body: {
         padding: 'p-1',
       },
