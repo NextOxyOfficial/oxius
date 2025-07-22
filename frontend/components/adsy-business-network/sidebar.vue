@@ -174,22 +174,22 @@
               <span class="text-gold-gradient">My Gold Sponsorships</span>
             </h3>
             <!-- Stats cards with improved design -->
-            <div class="grid grid-cols-2 gap-2 mb-3">
+            <div class="grid grid-cols-3 gap-1.5 mb-3">
               <div
                 class="bg-white dark:bg-slate-700/80 rounded-lg p-2 text-center shadow-sm border border-amber-100 dark:border-amber-800/30"
               >
                 <div
                   v-if="isLoadingSponsors"
-                  class="animate-pulse h-6 bg-amber-100/50 dark:bg-amber-900/30 rounded w-10 mx-auto mb-1"
+                  class="animate-pulse h-5 bg-amber-100/50 dark:bg-amber-900/30 rounded w-8 mx-auto mb-1"
                 ></div>
                 <div
                   v-else
-                  class="text-lg font-semibold text-amber-600 dark:text-amber-400"
+                  class="text-base font-semibold text-amber-600 dark:text-amber-400"
                 >
                   {{ goldSponsorsCount }}
                 </div>
                 <div class="text-xs text-gray-600 dark:text-gray-400">
-                  Active Sponsorships
+                  Active
                 </div>
               </div>
               <div
@@ -198,22 +198,54 @@
               >
                 <div
                   v-if="isLoadingSponsors"
-                  class="animate-pulse h-6 bg-amber-100/50 dark:bg-amber-900/30 rounded w-16 mx-auto mb-1"
+                  class="animate-pulse h-5 bg-amber-100/50 dark:bg-amber-900/30 rounded w-10 mx-auto mb-1"
                 ></div>
                 <div
                   v-else
-                  class="text-lg font-semibold text-amber-600 dark:text-amber-400"
+                  class="text-base font-semibold text-amber-600 dark:text-amber-400"
                 >
-                  {{ sponsorViews.toLocaleString() }}
+                  {{
+                    sponsorViews >= 1000
+                      ? formatViews(sponsorViews)
+                      : sponsorViews
+                  }}
                 </div>
                 <div
                   class="text-xs text-gray-600 dark:text-gray-400 flex items-center justify-center"
                 >
-                  Total Views
+                  Views
                   <UIcon
                     name="i-heroicons-information-circle"
                     class="w-3 h-3 ml-0.5 text-gray-400"
                   />
+                </div>
+              </div>
+              <div
+                class="bg-white dark:bg-slate-700/80 rounded-lg p-2 text-center shadow-sm border border-amber-100 dark:border-amber-800/30"
+                :class="{
+                  'border-orange-200 dark:border-orange-800/30':
+                    expiringSoonCount > 0,
+                }"
+                title="Sponsorships expiring within 30 days"
+              >
+                <div
+                  v-if="isLoadingSponsors"
+                  class="animate-pulse h-5 bg-amber-100/50 dark:bg-amber-900/30 rounded w-8 mx-auto mb-1"
+                ></div>
+                <div
+                  v-else
+                  class="text-base font-semibold"
+                  :class="{
+                    'text-orange-600 dark:text-orange-400':
+                      expiringSoonCount > 0,
+                    'text-amber-600 dark:text-amber-400':
+                      expiringSoonCount === 0,
+                  }"
+                >
+                  {{ expiringSoonCount }}
+                </div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">
+                  Expiring
                 </div>
               </div>
             </div>
@@ -226,14 +258,22 @@
                 <li
                   v-for="i in 2"
                   :key="i"
-                  class="flex items-center animate-pulse"
+                  class="flex items-center animate-pulse bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2"
                 >
                   <div
-                    class="h-5 w-5 rounded-full overflow-hidden mr-2 bg-amber-100/50 dark:bg-amber-900/30 flex-shrink-0"
+                    class="h-6 w-6 rounded-full overflow-hidden mr-2 bg-amber-100/50 dark:bg-amber-900/30 flex-shrink-0"
                   ></div>
-                  <div
-                    class="h-3 bg-amber-100/50 dark:bg-amber-900/30 rounded w-20"
-                  ></div>
+                  <div class="flex-1 min-w-0">
+                    <div
+                      class="h-3 bg-amber-100/50 dark:bg-amber-900/30 rounded w-20 mb-1"
+                    ></div>
+                    <div
+                      class="h-2 bg-amber-100/50 dark:bg-amber-900/30 rounded w-16 mb-1"
+                    ></div>
+                    <div
+                      class="h-2 bg-amber-100/50 dark:bg-amber-900/30 rounded w-24"
+                    ></div>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -281,6 +321,62 @@
                           <span
                             >{{ formatViews(sponsor.views || 0) }} views</span
                           >
+                        </div>
+                        <!-- Expiry date display -->
+                        <div
+                          v-if="sponsor.expires_at"
+                          class="flex items-center text-xs mt-0.5 expiry-badge"
+                          :class="{
+                            'text-red-600 dark:text-red-400 expiry-warning':
+                              getExpiryStatus(sponsor.expires_at).status ===
+                              'expired',
+                            'text-orange-600 dark:text-orange-400 expiry-warning':
+                              getExpiryStatus(sponsor.expires_at).status ===
+                              'expiring-soon',
+                            'text-yellow-600 dark:text-yellow-400':
+                              getExpiryStatus(sponsor.expires_at).status ===
+                              'expiring-month',
+                            'text-gray-600 dark:text-gray-400':
+                              getExpiryStatus(sponsor.expires_at).status ===
+                              'active',
+                          }"
+                          :title="
+                            getExpiryStatus(sponsor.expires_at).isExpired
+                              ? `This sponsorship expired ${
+                                  getExpiryStatus(sponsor.expires_at).days
+                                } days ago`
+                              : `This sponsorship expires on ${formatExpiryDate(
+                                  sponsor.expires_at
+                                )}`
+                          "
+                        >
+                          <UIcon
+                            :name="
+                              getExpiryStatus(sponsor.expires_at).isExpired
+                                ? 'i-heroicons-exclamation-triangle'
+                                : 'i-heroicons-calendar-days'
+                            "
+                            class="w-3 h-3 mr-1"
+                          />
+                          <span
+                            v-if="getExpiryStatus(sponsor.expires_at).isExpired"
+                          >
+                            Expired
+                            {{ getExpiryStatus(sponsor.expires_at).days }} days
+                            ago
+                          </span>
+                          <span
+                            v-else-if="
+                              getExpiryStatus(sponsor.expires_at).status ===
+                              'expiring-soon'
+                            "
+                          >
+                            {{ getExpiryStatus(sponsor.expires_at).days }} days
+                            left
+                          </span>
+                          <span v-else>
+                            Expires {{ formatExpiryDate(sponsor.expires_at) }}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -362,13 +458,20 @@
             <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
               Become a Gold Sponsor and showcase your business to our entire
               network with premium visibility.
-            </p>            <div class="space-y-2">
+            </p>
+            <div class="space-y-2">
               <button
-                @click="handleButtonClick('become_gold_sponsor'); isGoldSponsorModalOpen = true"
+                @click="
+                  handleButtonClick('become_gold_sponsor');
+                  isGoldSponsorModalOpen = true;
+                "
                 class="w-full py-2 rounded-md bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white text-sm font-medium shadow-sm transition-all duration-200 flex items-center justify-center group"
               >
                 <span>Become Gold Sponsor</span>
-                <div v-if="loadingButtons.has('become_gold_sponsor')" class="dotted-spinner white ml-1"></div>
+                <div
+                  v-if="loadingButtons.has('become_gold_sponsor')"
+                  class="dotted-spinner white ml-1"
+                ></div>
                 <UIcon
                   v-else
                   name="i-heroicons-plus"
@@ -480,13 +583,13 @@
 <script setup>
 import { X } from "lucide-vue-next";
 import { useNotifications } from "~/composables/useNotifications";
+import GoldSponsorModal from "../business-network/GoldSponsorModal.vue";
+import SidebarContributors from "./SidebarContributors.vue";
+import SidebarFeaturedProduct from "./SidebarFeaturedProduct.vue";
+import SidebarHashtags from "./SidebarHashtags.vue";
 import SidebarMenu from "./SidebarMenu.vue";
 import SidebarNews from "./SidebarNews.vue";
-import SidebarHashtags from "./SidebarHashtags.vue";
-import SidebarFeaturedProduct from "./SidebarFeaturedProduct.vue";
-import SidebarContributors from "./SidebarContributors.vue";
 import SidebarUsefulLinks from "./SidebarUsefulLinks.vue";
-import GoldSponsorModal from "../business-network/GoldSponsorModal.vue";
 
 // State
 const isMobile = ref(false);
@@ -510,9 +613,12 @@ const handleButtonClick = (buttonId) => {
 };
 
 // Watch route changes to clear loading states
-watch(() => useRoute().fullPath, () => {
-  loadingButtons.value.clear();
-});
+watch(
+  () => useRoute().fullPath,
+  () => {
+    loadingButtons.value.clear();
+  }
+);
 
 // Gold Sponsor modal
 const isGoldSponsorModalOpen = ref(false);
@@ -520,6 +626,19 @@ const goldSponsorsCount = ref(0); // Start with zero until fetched from API
 const sponsorViews = ref(0); // Start with zero until fetched from API
 const featuredSponsors = ref([]); // Will hold a few featured sponsors
 const isLoadingSponsors = ref(false); // Loading state for gold sponsor data
+
+// Computed property for expiring sponsors count
+const expiringSoonCount = computed(() => {
+  if (!featuredSponsors.value) return 0;
+  return featuredSponsors.value.filter((sponsor) => {
+    if (!sponsor.expires_at) return false;
+    const expiryStatus = getExpiryStatus(sponsor.expires_at);
+    return (
+      expiryStatus.status === "expiring-soon" ||
+      expiryStatus.status === "expiring-month"
+    );
+  }).length;
+});
 
 // Edit/Delete functionality
 const editingSponsor = ref(null);
@@ -751,6 +870,9 @@ async function fetchGoldSponsorsData() {
             sponsor.image ||
             "/static/frontend/images/placeholder.jpg",
           views: sponsor.views || 0,
+          expires_at:
+            sponsor.expires_at || sponsor.expiry_date || sponsor.end_date,
+          created_at: sponsor.created_at || sponsor.start_date,
         }));
 
         featuredSponsors.value = processedSponsors;
@@ -793,6 +915,48 @@ const formatViews = (views) => {
     return (views / 1000).toFixed(1) + "K";
   }
   return views.toString();
+};
+
+// Format expiry date for display
+const formatExpiryDate = (expiryDate) => {
+  if (!expiryDate) return null;
+
+  try {
+    const date = new Date(expiryDate);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch (error) {
+    console.error("Error formatting expiry date:", error);
+    return null;
+  }
+};
+
+// Get expiry status and remaining days
+const getExpiryStatus = (expiryDate) => {
+  if (!expiryDate) return { status: "no-expiry", days: null, isExpired: false };
+
+  try {
+    const expiry = new Date(expiryDate);
+    const now = new Date();
+    const diffTime = expiry.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return { status: "expired", days: Math.abs(diffDays), isExpired: true };
+    } else if (diffDays <= 7) {
+      return { status: "expiring-soon", days: diffDays, isExpired: false };
+    } else if (diffDays <= 30) {
+      return { status: "expiring-month", days: diffDays, isExpired: false };
+    } else {
+      return { status: "active", days: diffDays, isExpired: false };
+    }
+  } catch (error) {
+    console.error("Error calculating expiry status:", error);
+    return { status: "error", days: null, isExpired: false };
+  }
 };
 
 // Edit/Delete Sponsor Methods
@@ -1211,5 +1375,47 @@ button:hover {
   border: 2px solid;
   border-image-slice: 1;
   border-image-source: linear-gradient(to right, #f59e0b, #fbbf24);
+}
+
+/* Expiry status animations */
+.expiry-warning {
+  animation: gentle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes gentle-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Expiry status badge styles */
+.expiry-badge {
+  transition: all 0.2s ease-in-out;
+}
+
+.expiry-badge:hover {
+  transform: scale(1.05);
+}
+
+/* Custom scrollbar for sponsor list */
+.sponsor-list::-webkit-scrollbar {
+  width: 2px;
+}
+
+.sponsor-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sponsor-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 1px;
+}
+
+.sponsor-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
 </style>
