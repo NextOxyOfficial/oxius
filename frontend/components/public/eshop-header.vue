@@ -133,7 +133,7 @@
     <UContainer class="pl-2 py-2.5">
       <div class="flex items-center justify-between gap-2">
         <!-- Left Section: Sidebar Toggle + Logo -->
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-8">
           <!-- Sidebar toggle button -->
           <button
             @click="toggleSidebar"
