@@ -2256,6 +2256,7 @@ class UserProductsListView(generics.ListAPIView):
                 Q(name__icontains=search)
                 | Q(short_description__icontains=search)
                 | Q(description__icontains=search)
+                | Q(keywords__icontains=search)
             )
         return queryset
 
