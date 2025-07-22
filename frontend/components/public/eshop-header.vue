@@ -256,10 +256,14 @@ const { get } = useApi();
 
 // Check if mobile search icon should be shown based on current route
 const showMobileSearchIcon = computed(() => {
+  // Only show on mobile screens (less than 768px)
+  if (windowWidth.value >= 768) {
+    return false;
+  }
+
   const currentPath = route.path;
   return (
-    currentPath.includes("/eshop/category/") ||
-    currentPath.match(/^\/eshop\/[^\/]+$/) ||
+    currentPath.startsWith("/eshop") || // Show on all eshop pages including main page
     currentPath.includes("/product-details/")
   );
 });
