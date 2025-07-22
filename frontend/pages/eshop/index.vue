@@ -37,8 +37,8 @@
       <div class="my-5">
         <!-- Elegant Search Bar & Price Range - Responsive Layout -->
         <div class="flex flex-col lg:flex-row gap-3">
-          <!-- Search Section - Hidden on mobile, visible on desktop -->
-          <div class="hidden lg:flex gap-3 items-center lg:flex-1">
+          <!-- Search Section - Visible on desktop, hidden on mobile -->
+          <div class="hidden md:flex gap-3 items-center lg:flex-1">
             <div class="relative flex-1">
               <input
                 v-model="searchQuery"

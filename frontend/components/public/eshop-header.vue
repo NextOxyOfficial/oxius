@@ -128,7 +128,7 @@
         : 'sticky top-0 shadow-sm',
     ]"
   >
-    <UContainer class="pl-2 py-1.5">
+    <UContainer class="pl-2 py-2.5">
       <div class="flex items-center justify-between gap-2">
         <!-- Left Section: Sidebar Toggle + Logo -->
         <div class="flex items-center gap-1">
@@ -206,7 +206,7 @@
             <div class="flex justify-end">
               <button
                 @click="openMobileSearch"
-                class="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                class="p-2 rounded-full flex hover:bg-gray-100 transition-colors"
               >
                 <UIcon
                   name="i-heroicons-magnifying-glass"
@@ -226,8 +226,16 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 
 // Handle scroll events
 const isScrolled = ref(false);
+const windowWidth = ref(0);
+
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 80;
+};
+
+const handleResize = () => {
+  if (process.client) {
+    windowWidth.value = window.innerWidth;
+  }
 };
 
 // Header search functionality
@@ -438,6 +446,12 @@ const handleSidebarStateChange = (event) => {
 
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
+  window.addEventListener("resize", handleResize);
+
+  // Initialize window width
+  if (process.client) {
+    windowWidth.value = window.innerWidth;
+  }
 
   // Listen for sidebar state updates
   if (process.client) {
@@ -453,6 +467,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("scroll", handleScroll);
+  window.removeEventListener("resize", handleResize);
 
   if (process.client) {
     window.removeEventListener(
