@@ -234,6 +234,7 @@
             class="text-3xl text-green-400"
           /> -->
           <img
+            v-else
             src="/static/frontend/favicon.png"
             class="size-[26px]"
             alt="AdsyClub Logo"
