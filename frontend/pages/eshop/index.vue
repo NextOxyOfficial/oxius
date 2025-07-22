@@ -34,7 +34,7 @@
 
       <CommonHotDealsSection v-if="!isSearchActive" />
       <!-- Premium Search & Filters Section -->
-      <div class="mb-5">
+      <div class="my-5">
         <!-- Elegant Search Bar & Price Range - Responsive Layout -->
         <div class="flex flex-col lg:flex-row gap-3">
           <!-- Search Section - Hidden on mobile, visible on desktop -->
@@ -44,7 +44,7 @@
                 v-model="searchQuery"
                 type="text"
                 placeholder="Search products, brands, categories..."
-                class="text-base w-full px-5 py-2 pl-12 pr-10 rounded-lg border border-gray-200/80 dark:border-gray-700/70 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-sm placeholder:text-gray-600 dark:placeholder:text-gray-600"
+                class="text-base w-full px-5 py-2 pl-12 pr-10 rounded-lg border border-gray-200/80 bg-white/90 transition-all duration-300 shadow-sm hover:shadow-sm placeholder:text-gray-600 dark:placeholder:text-gray-600"
                 @input="debouncedSearch"
               />
               <UIcon
@@ -54,7 +54,7 @@
               <button
                 v-if="searchQuery"
                 @click="clearSearch"
-                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 dark:hover:text-gray-300 transition-colors"
+                class="absolute right-4 flex top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 dark:hover:text-gray-300 transition-colors"
               >
                 <UIcon name="i-heroicons-x-mark" class="size-5" />
               </button>

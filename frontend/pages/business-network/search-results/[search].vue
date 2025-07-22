@@ -724,18 +724,15 @@ definePageMeta({
 });
 
 import {
-  Search,
-  X,
-  Clock,
-  ArrowRight,
   ArrowLeft,
-  Loader2,
   Check,
   ChevronUp,
   Home,
   Image,
-  UsersRound,
+  Loader2,
   MessageSquare,
+  Search,
+  UsersRound,
 } from "lucide-vue-next";
 const route = useRoute();
 

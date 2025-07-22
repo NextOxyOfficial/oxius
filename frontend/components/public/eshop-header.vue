@@ -121,7 +121,7 @@
   </div>
 
   <header
-    class="bg-white border-b border-gray-200 transition-all duration-300 z-[99999999] w-full"
+    class="bg-white border-b border-gray-200 transition-all duration-300 z-[99999999] w-full md:hidden"
     :class="[
       isScrolled
         ? 'fixed top-0 left-0 right-0 shadow-sm'
