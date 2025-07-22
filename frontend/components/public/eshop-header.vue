@@ -5,7 +5,7 @@
     class="fixed inset-0 bg-white z-[999999999] md:hidden flex flex-col"
   >
     <!-- Mobile Search Header -->
-    <div class="bg-white border-b border-gray-200 p-4 flex-shrink-0">
+    <div class="bg-white border-b border-gray-200 p-2 flex-shrink-0">
       <div class="flex items-center gap-1">
         <!-- Back Button -->
         <button
@@ -17,18 +17,32 @@
 
         <!-- Search Input -->
         <div class="flex-1">
-          <UInput
-            ref="mobileSearchInput"
-            v-model="mobileSearchQuery"
-            icon="i-heroicons-magnifying-glass-20-solid"
-            size="xl"
-            color="emerald"
-            variant="outline"
-            placeholder="Search products..."
-            class="w-full"
-            @input="handleMobileSearchInput"
-            @keydown.enter="handleMobileSearchEnter"
-          />
+          <div class="relative">
+            <input
+              ref="mobileSearchInput"
+              v-model="mobileSearchQuery"
+              type="text"
+              placeholder="Search products..."
+              class="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder-gray-500 bg-gray-50 border-0 rounded-full shadow-sm focus:bg-white outline-gray-200 transition-all duration-200"
+              @input="handleMobileSearchInput"
+              @keydown.enter="handleMobileSearchEnter"
+            />
+            <!-- Search Icon -->
+            <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+              <UIcon
+                name="i-heroicons-magnifying-glass"
+                class="w-5 h-5 text-gray-400"
+              />
+            </div>
+            <!-- Clear Button -->
+            <button
+              v-if="mobileSearchQuery"
+              @click="clearSearch"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <UIcon name="i-heroicons-x-mark" class="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -187,17 +201,19 @@
             />
           </div>
 
-          <!-- Mobile Search Icon (only on specific pages) -->
-          <div v-if="showMobileSearchIcon" class="md:hidden flex justify-end">
-            <button
-              @click="openMobileSearch"
-              class="p-2 rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <UIcon
-                name="i-heroicons-magnifying-glass"
-                class="w-5 h-5 text-gray-600"
-              />
-            </button>
+          <!-- Mobile Search Icon (only on mobile and specific pages) -->
+          <div v-if="showMobileSearchIcon" class="block md:hidden">
+            <div class="flex justify-end">
+              <button
+                @click="openMobileSearch"
+                class="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <UIcon
+                  name="i-heroicons-magnifying-glass"
+                  class="w-5 h-5 text-gray-600"
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -266,6 +282,20 @@ function closeMobileSearch() {
     document.body.style.overflow = "";
     document.documentElement.style.overflow = "";
   }
+}
+
+// Clear search function for the X button
+function clearSearch() {
+  mobileSearchQuery.value = "";
+  searchResults.value = [];
+  hasMoreResults.value = false;
+  currentPage.value = 1;
+  // Focus back to input
+  nextTick(() => {
+    if (mobileSearchInput.value) {
+      mobileSearchInput.value.focus();
+    }
+  });
 }
 
 // Search API integration
