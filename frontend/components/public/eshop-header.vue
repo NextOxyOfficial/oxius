@@ -348,11 +348,22 @@ async function performMobileSearch(loadMore = false) {
       searchResults.value = [];
     }
 
-    const { data } = await get(
-      `/products/?search=${encodeURIComponent(mobileSearchQuery.value)}&page=${
-        currentPage.value
-      }&page_size=20`
-    );
+    // Build query parameters for comprehensive search
+    let queryParams = `page=${currentPage.value}&page_size=20&ordering=-created_at`;
+
+    // Add search query that matches name, description, and keywords
+    const searchTerm = encodeURIComponent(mobileSearchQuery.value.trim());
+    queryParams += `&search=${searchTerm}`;
+
+    // Also add specific keyword search for better matching
+    queryParams += `&keywords=${searchTerm}`;
+
+    // Add name search for product name matching
+    queryParams += `&name=${searchTerm}`;
+
+    console.log(`Mobile search with URL: /all-products/?${queryParams}`);
+
+    const { data } = await get(`/all-products/?${queryParams}`);
 
     const newResults = data?.results || data || [];
 
@@ -362,10 +373,18 @@ async function performMobileSearch(loadMore = false) {
       searchResults.value = newResults;
     }
 
-    // Check if there are more results
+    // Check if there are more results based on returned data length
     hasMoreResults.value = newResults.length === 20;
+
+    console.log("Mobile search results:", {
+      searchQuery: mobileSearchQuery.value,
+      resultsFound: newResults.length,
+      totalResults: searchResults.value.length,
+      hasMore: hasMoreResults.value,
+      currentPage: currentPage.value,
+    });
   } catch (error) {
-    console.error("Search error:", error);
+    console.error("Mobile search error:", error);
     if (!loadMore) {
       searchResults.value = [];
     }

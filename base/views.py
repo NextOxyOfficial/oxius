@@ -2383,7 +2383,31 @@ class AllProductsListView(generics.ListAPIView):
             return self.get_random_products_from_categories(limit)
 
         # Default behavior - return products ordered by creation date
-        queryset = Product.objects.filter(is_active=True).order_by("-created_at")
+        queryset = Product.objects.filter(is_active=True)
+
+        # Handle ordering parameter
+        ordering = self.request.query_params.get("ordering", "-created_at")
+        if ordering:
+            # Validate ordering parameter to prevent injection
+            valid_orderings = [
+                "-created_at",
+                "created_at",
+                "name",
+                "-name",
+                "sale_price",
+                "-sale_price",
+                "random",
+            ]
+            if ordering in valid_orderings:
+                if ordering == "random":
+                    queryset = queryset.order_by("?")
+                else:
+                    queryset = queryset.order_by(ordering)
+            else:
+                # Default fallback
+                queryset = queryset.order_by("-created_at")
+        else:
+            queryset = queryset.order_by("-created_at")
 
         # Optional filtering by category (ManyToMany) - supports both UUID and slug
         category = self.request.query_params.get("category", None)
@@ -2401,11 +2425,57 @@ class AllProductsListView(generics.ListAPIView):
             # Filter by category slug
             queryset = queryset.filter(category__slug=category_slug)
 
-        # Optional search by name
+        # Comprehensive search functionality
+        from django.db.models import Q
+
+        # Collect all search parameters
+        search = self.request.query_params.get("search", None)
         name = self.request.query_params.get("name", None)
-        if name:
-            # Optional filtering by price range
-            queryset = queryset.filter(name__icontains=name)
+        description = self.request.query_params.get("description", None)
+        keywords = self.request.query_params.get("keywords", None)
+
+        # Build a single OR query across all search fields and parameters
+        search_conditions = Q()
+        search_applied = False
+
+        # If any search parameter is provided, build the OR query
+        search_terms = []
+        if search and search.strip():
+            search_terms.append(search.strip())
+        if name and name.strip():
+            search_terms.append(name.strip())
+        if description and description.strip():
+            search_terms.append(description.strip())
+        if keywords and keywords.strip():
+            search_terms.append(keywords.strip())
+
+        # Remove duplicates while preserving order
+        unique_search_terms = list(dict.fromkeys(search_terms))
+
+        if unique_search_terms:
+            for term in unique_search_terms:
+                # Search across name, description for each term
+                term_query = Q(name__icontains=term) | Q(description__icontains=term)
+
+                # Add keywords field if it exists
+                try:
+                    Product._meta.get_field("keywords")
+                    term_query |= Q(keywords__icontains=term)
+                except Exception:
+                    pass  # keywords field doesn't exist
+
+                # Combine with OR logic
+                if not search_applied:
+                    search_conditions = term_query
+                    search_applied = True
+                else:
+                    search_conditions |= term_query
+
+            # Apply the combined search query
+            if search_applied:
+                queryset = queryset.filter(search_conditions)
+
+        # Optional filtering by price range
         min_price = self.request.query_params.get("min_price", None)
         max_price = self.request.query_params.get("max_price", None)
 
