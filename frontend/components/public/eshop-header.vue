@@ -28,19 +28,21 @@
               @keydown.enter="handleMobileSearchEnter"
             />
             <!-- Search Icon -->
-            <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+            <div
+              class="absolute left-4 top-1/2 transform -translate-y-1/2 mt-1"
+            >
               <UIcon
                 name="i-heroicons-magnifying-glass"
-                class="w-5 h-5 text-gray-400"
+                class="size-5 text-gray-400"
               />
             </div>
             <!-- Clear Button -->
             <button
               v-if="mobileSearchQuery"
               @click="clearSearch"
-              class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 pr-1 rounded-full hover:bg-gray-100 transition-colors mt-1"
             >
-              <UIcon name="i-heroicons-x-mark" class="w-4 h-4 text-gray-400" />
+              <UIcon name="i-heroicons-x-mark" class="size-4 text-gray-400" />
             </button>
           </div>
         </div>
@@ -181,7 +183,7 @@
                   base: 'flex-shrink-0 text-gray-400',
                   color: 'text-gray-400',
                   size: {
-                    lg: 'h-5 w-5',
+                    lg: 'size-6',
                   },
                 },
                 color: {
@@ -210,7 +212,7 @@
               >
                 <UIcon
                   name="i-heroicons-magnifying-glass"
-                  class="w-5 h-5 text-gray-600"
+                  class="size-6 text-gray-600"
                 />
               </button>
             </div>
