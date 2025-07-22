@@ -107,14 +107,18 @@
                   Verified
                 </span>
               </div>
-              <p
-                class="text-slate-500 dark:text-slate-400 mb-3 max-w-xl mx-auto md:mx-0"
+              <div
+                class="text-slate-500 dark:text-slate-400 mb-3 md:mx-0 text-justify w-full"
               >
-                {{
-                  storeDetails?.store_description ||
-                  "Your premium destination for quality products and excellent service."
-                }}
-              </p>
+                <p>{{ displayedDescription }}</p>
+                <button
+                  v-if="shouldShowSeeMore"
+                  @click="toggleDescription"
+                  class="text-indigo-600 hover:text-indigo-800 text-sm font-medium mt-1 transition-colors duration-200"
+                >
+                  {{ isDescriptionExpanded ? "See less" : "See more" }}
+                </button>
+              </div>
               <div
                 class="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300"
               >
@@ -562,9 +566,16 @@
                   >
                     Description
                   </h4>
-                  <p class="text-sm text-gray-800 leading-relaxed">
-                    {{ storeDetails.store_description }}
-                  </p>
+                  <div class="text-sm text-gray-800 leading-relaxed">
+                    <p>{{ displayedDescription }}</p>
+                    <button
+                      v-if="shouldShowSeeMore"
+                      @click="toggleDescription"
+                      class="text-indigo-600 hover:text-indigo-800 text-xs font-medium mt-1 transition-colors duration-200"
+                    >
+                      {{ isDescriptionExpanded ? "See less" : "See more" }}
+                    </button>
+                  </div>
                 </div>
 
                 <div v-if="storeDetails.store_address" class="flex items-start">
@@ -697,6 +708,7 @@ const storeDetails = ref({});
 const { user, token } = useAuth();
 const isLoading = ref(false);
 const isSeeMore = ref(false);
+const isDescriptionExpanded = ref(false);
 
 // Sidebar state
 const isSidebarOpen = ref(false);
@@ -774,6 +786,33 @@ const isOwner = computed(() => {
     user.value?.user?.store_username === storeDetails.value?.store_username
   );
 });
+
+// Store description handling
+const maxDescriptionLength = 150; // Character limit for description
+
+const shouldShowSeeMore = computed(() => {
+  const description = storeDetails.value?.store_description;
+  return description && description.length > maxDescriptionLength;
+});
+
+const displayedDescription = computed(() => {
+  const description = storeDetails.value?.store_description;
+  if (!description)
+    return "Your premium destination for quality products and excellent service.";
+
+  if (
+    isDescriptionExpanded.value ||
+    description.length <= maxDescriptionLength
+  ) {
+    return description;
+  }
+
+  return description.substring(0, maxDescriptionLength) + "...";
+});
+
+const toggleDescription = () => {
+  isDescriptionExpanded.value = !isDescriptionExpanded.value;
+};
 
 // Helper to get initials from name
 const getInitials = (name) => {
