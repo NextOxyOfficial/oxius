@@ -342,7 +342,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 // Handle scroll events
 const isScrolled = ref(false);
@@ -416,10 +416,25 @@ async function navigateToEshop() {
   isNavigating.value = true;
   
   try {
-    // Add a small delay to show the spinner
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
+    // Navigate to eshop and wait for route change to complete
     await router.push('/eshop');
+    
+    // Wait for next tick to ensure component has fully navigated
+    await nextTick();
+    
+    // Wait for page to fully load by checking if we're actually on the eshop page
+    await new Promise((resolve) => {
+      const checkNavigation = () => {
+        if (route.path === '/eshop') {
+          // Additional delay to ensure page is fully rendered
+          setTimeout(resolve, 200);
+        } else {
+          // Keep checking until we're on the right page
+          setTimeout(checkNavigation, 50);
+        }
+      };
+      checkNavigation();
+    });
   } catch (error) {
     console.error('Navigation error:', error);
   } finally {
