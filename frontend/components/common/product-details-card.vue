@@ -574,14 +574,23 @@
                 />
               </div>
               
-              <!-- Loading indicator for infinite scroll -->
-              <div v-if="isLoadingMoreStoreProducts" class="flex-shrink-0 w-48 flex items-center justify-center">
-                <div class="flex flex-col items-center py-8">
-                  <div class="w-6 h-6 relative">
-                    <div class="w-full h-full rounded-full border-2 border-slate-300 dark:border-slate-600"></div>
-                    <div class="w-full h-full rounded-full border-2 border-t-primary-500 animate-spin absolute top-0 left-0"></div>
+              <!-- Enhanced Loading indicator for infinite scroll -->
+              <div v-if="isLoadingMoreStoreProducts" class="flex-shrink-0 w-48 sm:w-52 md:w-56 flex items-center justify-center">
+                <div class="flex flex-col items-center justify-center py-12 px-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 h-full">
+                  <div class="w-8 h-8 relative mb-3">
+                    <div class="w-full h-full rounded-full border-3 border-slate-200 dark:border-slate-600"></div>
+                    <div class="w-full h-full rounded-full border-3 border-t-blue-500 dark:border-t-blue-400 absolute top-0 left-0" style="animation: spinGlow 1.2s linear infinite;"></div>
                   </div>
-                  <span class="text-xs text-gray-600 dark:text-slate-400 mt-2 text-center">Loading more products...</span>
+                  <div class="text-center">
+                    <p class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Loading more</p>
+                    <p class="text-xs text-gray-500 dark:text-slate-400">store products...</p>
+                  </div>
+                  <!-- Animated dots with enhanced timing -->
+                  <div class="flex gap-1 mt-2">
+                    <div class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0s"></div>
+                    <div class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0.2s"></div>
+                    <div class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0.4s"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1008,20 +1017,25 @@
               </div>
             </div>
             
-            <!-- Loading indicator for infinite scroll -->
-            <div v-if="isLoadingMoreSimilarProducts" class="flex justify-center py-4">
-              <div class="flex items-center gap-2">
-                <div class="w-5 h-5 relative">
-                  <div
-                    class="w-full h-full rounded-full border-2 border-slate-300 dark:border-slate-600"
-                  ></div>
-                  <div
-                    class="w-full h-full rounded-full border-2 border-t-primary-500 animate-spin absolute top-0 left-0"
-                  ></div>
+            <!-- Enhanced Loading indicator for infinite scroll -->
+            <div v-if="isLoadingMoreSimilarProducts" class="flex justify-center py-6">
+              <div class="flex flex-col items-center gap-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 px-6 py-8">
+                <div class="w-8 h-8 relative">
+                  <div class="w-full h-full rounded-full border-3 border-slate-200 dark:border-slate-600"></div>
+                  <div class="w-full h-full rounded-full border-3 border-t-emerald-500 dark:border-t-emerald-400 absolute top-0 left-0" style="animation: spinGlow 1.2s linear infinite;"></div>
                 </div>
-                <span class="text-sm text-gray-600 dark:text-slate-400">
-                  {{ isLoadingSameCategory ? 'Loading more from same category...' : 'Loading more products...' }}
-                </span>
+                <div class="text-center">
+                  <p class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Loading more</p>
+                  <p class="text-xs text-gray-500 dark:text-slate-400">
+                    {{ isLoadingSameCategory ? 'from same category...' : 'similar products...' }}
+                  </p>
+                </div>
+                <!-- Animated dots with enhanced timing -->
+                <div class="flex gap-1">
+                  <div class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0s"></div>
+                  <div class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0.2s"></div>
+                  <div class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0.4s"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -1107,6 +1121,33 @@
 /* Savings badge animation */
 .savings-badge {
   animation: pulse 2s infinite;
+}
+
+/* Enhanced loading spinner animations */
+@keyframes spinGlow {
+  0% {
+    transform: rotate(0deg);
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: rotate(360deg);
+    filter: brightness(1);
+  }
+}
+
+/* Custom pulse animation for loading dots */
+@keyframes dotPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
 }
 
 @keyframes pulse {
