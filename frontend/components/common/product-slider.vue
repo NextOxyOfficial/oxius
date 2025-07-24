@@ -196,17 +196,32 @@
         <NuxtLink
           to="/eshop"
           class="sm:hidden group relative inline-flex items-center justify-center gap-2 px-4 py-2 font-semibold text-xs text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl transition-colors duration-200 overflow-hidden"
+          @click="handleButtonClick('all-product-mobile')"
         >
-          <span class="relative z-10">{{ $t("all_product") }}</span>
-          <UIcon name="i-heroicons-arrow-right" class="w-3 h-3 relative z-10" />
+          <div
+            v-if="loadingButtons.has('all-product-mobile')"
+            class="dotted-spinner white mr-2"
+          ></div>
+          <span v-else class="relative z-10">{{ $t("all_product") }}</span>
+          <UIcon 
+            v-if="!loadingButtons.has('all-product-mobile')"
+            name="i-heroicons-arrow-right" 
+            class="w-3 h-3 relative z-10" 
+          />
         </NuxtLink>
         <!-- Desktop: Enhanced button -->
         <NuxtLink
           to="/eshop"
           class="hidden sm:inline-flex group relative items-center justify-center gap-2 px-6 py-3 font-semibold text-sm text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl transition-colors duration-200 overflow-hidden"
+          @click="handleButtonClick('all-product-desktop')"
         >
-          <span class="relative z-10">{{ $t("all_product") }}</span>
+          <div
+            v-if="loadingButtons.has('all-product-desktop')"
+            class="dotted-spinner white mr-2"
+          ></div>
+          <span v-else class="relative z-10">{{ $t("all_product") }}</span>
           <UIcon
+            v-if="!loadingButtons.has('all-product-desktop')"
             name="i-heroicons-arrow-long-right"
             class="w-4 h-4 relative z-10"
           />
