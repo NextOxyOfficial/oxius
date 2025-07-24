@@ -526,8 +526,8 @@
           <div class="flex items-center justify-between mb-3">
             <h4 class="font-medium text-gray-800 dark:text-white flex items-center">
               <UIcon
-                name="i-heroicons-building-storefront"
-                class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400"
+                name="i-heroicons-shopping-bag"
+                class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400"
               />
               More from this store
             </h4>
@@ -608,8 +608,8 @@
             class="text-base font-Medium my-3 text-gray-800 dark:text-white flex items-center"
           >
             <UIcon
-              name="i-heroicons-document-text"
-              class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400"
+              name="i-heroicons-clipboard-document-list"
+              class="w-5 h-5 mr-2 text-emerald-600 dark:text-emerald-400"
             />
             Detailed Description
           </h3>
