@@ -576,10 +576,9 @@
               
               <!-- Enhanced Loading indicator for infinite scroll -->
               <div v-if="isLoadingMoreStoreProducts" class="flex-shrink-0 w-48 sm:w-52 md:w-56 flex items-center justify-center">
-                <div class="flex flex-col items-center justify-center py-12 px-4 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 h-full">
+                <div class="flex flex-col items-center justify-center py-12 px-4 h-full">
                   <div class="w-8 h-8 relative mb-3">
-                    <div class="w-full h-full rounded-full border-3 border-slate-200 dark:border-slate-600"></div>
-                    <div class="w-full h-full rounded-full border-3 border-t-blue-500 dark:border-t-blue-400 absolute top-0 left-0" style="animation: spinGlow 1.2s linear infinite;"></div>
+                    <div class="w-full h-full rounded-full border-3 border-t-blue-500 dark:border-t-blue-400 border-transparent" style="animation: spinGlow 1.2s linear infinite;"></div>
                   </div>
                   <div class="text-center">
                     <p class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Loading more</p>
@@ -1019,10 +1018,9 @@
             
             <!-- Enhanced Loading indicator for infinite scroll -->
             <div v-if="isLoadingMoreSimilarProducts" class="flex justify-center py-6">
-              <div class="flex flex-col items-center gap-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 px-6 py-8">
+              <div class="flex flex-col items-center gap-3 px-6 py-8">
                 <div class="w-8 h-8 relative">
-                  <div class="w-full h-full rounded-full border-3 border-slate-200 dark:border-slate-600"></div>
-                  <div class="w-full h-full rounded-full border-3 border-t-emerald-500 dark:border-t-emerald-400 absolute top-0 left-0" style="animation: spinGlow 1.2s linear infinite;"></div>
+                  <div class="w-full h-full rounded-full border-3 border-t-emerald-500 dark:border-t-emerald-400 border-transparent" style="animation: spinGlow 1.2s linear infinite;"></div>
                 </div>
                 <div class="text-center">
                   <p class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Loading more</p>
@@ -1527,13 +1525,13 @@ async function fetchStoreProducts(page = 1, append = false) {
     isLoadingMoreStoreProducts.value = true;
   }
 
-  const pageSize = page === 1 ? 5 : 10; // Initial load: 5 products, subsequent loads: 10 products
+  const pageSize = page === 1 ? 8 : 10; // Initial load: 8 products, subsequent loads: 10 products
 
   try {
     const { get } = useApi();
     
     // Calculate offset - handle different page sizes correctly
-    const offset = page === 1 ? 0 : 5 + ((page - 2) * 10); // First page: 0, Second page: 5, Third page: 15, etc.
+    const offset = page === 1 ? 0 : 8 + ((page - 2) * 10); // First page: 0, Second page: 8, Third page: 18, etc.
     
     let queryParams = `seller=${currentProduct.owner_details.id}&page_size=${pageSize}&offset=${offset}&ordering=-created_at`;
     
