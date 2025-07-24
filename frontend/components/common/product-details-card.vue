@@ -534,7 +534,7 @@
           </div>
 
           <!-- Loading state for store products -->
-          <div v-if="isLoadingStoreProducts && storeProducts.length === 0" class="flex justify-center py-4">
+          <div v-if="isLoadingStoreProducts" class="flex justify-center py-4">
             <div class="flex items-center gap-2">
               <div class="w-5 h-5 relative">
                 <div class="w-full h-full rounded-full border-2 border-slate-300 dark:border-slate-600"></div>
