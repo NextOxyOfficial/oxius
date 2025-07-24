@@ -18,7 +18,7 @@
           <div v-if="modal" class="flex items-start ml-2">
             <UBadge
               v-if="currentProduct.quantity > 0"
-              color="green"
+              color="blue"
               class="mr-2"
             >
               In Stock
@@ -144,7 +144,7 @@
               <!-- Free Delivery Badge -->
               <div
                 v-if="currentProduct.is_free_delivery"
-                class="absolute top-2 right-2 bg-green-500 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm"
+                class="absolute top-2 right-2 bg-purple-500 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm"
               >
                 Free Shipping
               </div>
@@ -206,7 +206,7 @@
                   currentProduct.regular_price &&
                   currentProduct.sale_price !== currentProduct.regular_price
                 "
-                class="savings-badge bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium px-2 py-1 rounded-md ml-auto animate-pulse"
+                class="savings-badge bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-medium px-2 py-1 rounded-md ml-auto animate-pulse"
               >
                 Save ৳{{
                   calculateSavings(
@@ -222,7 +222,7 @@
               <span
                 :class="
                   currentProduct.quantity > 10
-                    ? 'text-green-600 dark:text-green-400'
+                    ? 'text-blue-600 dark:text-blue-400'
                     : currentProduct.quantity > 0
                     ? 'text-amber-600 dark:text-amber-400'
                     : 'text-red-600 dark:text-red-400'
@@ -277,7 +277,7 @@
             <!-- Buy Now Button with Enhanced Design -->
             <button
               type="button"
-              class="flex-1 relative overflow-hidden group bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 rounded-lg py-3 px-6 text-white font-medium shadow-sm hover:shadow-sm transition-colors duration-200"
+              class="flex-1 relative overflow-hidden group bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 hover:from-slate-600 hover:via-slate-500 hover:to-slate-600 rounded-lg py-3 px-6 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
               @click="addToCart(currentProduct, quantity)"
               :disabled="currentProduct.quantity <= 0"
             >
@@ -311,7 +311,7 @@
               <li class="flex items-start gap-2 text-sm">
                 <UIcon
                   name="i-heroicons-check-circle"
-                  class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                  class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"
                 />
                 <span
                   >Inside Dhaka:
@@ -326,7 +326,7 @@
               <li class="flex items-start gap-2 text-sm">
                 <UIcon
                   name="i-heroicons-check-circle"
-                  class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                  class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"
                 />
                 <span
                   >Outside Dhaka:
@@ -341,7 +341,7 @@
               <li class="flex items-start gap-2 text-sm">
                 <UIcon
                   name="i-heroicons-check-circle"
-                  class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                  class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"
                 />
                 <span>Delivery within 3-5 business days</span>
               </li>
@@ -410,10 +410,10 @@
                       currentProduct.owner_details?.store_username ||
                       currentProduct.owner_details?.id
                     }`"
-                    class="hover:text-emerald-600 transition-colors"
+                    class="hover:text-blue-600 transition-colors"
                   >
                     <h4
-                      class="font-medium text-green-800 dark:text-white line-clamp-2 leading-tight"
+                      class="font-medium text-slate-800 dark:text-white line-clamp-2 leading-tight"
                     >
                       {{
                         currentProduct.owner_details?.store_name ||
@@ -730,10 +730,10 @@
             >
               <UIcon
                 name="i-heroicons-check-circle"
-                class="w-12 h-12 text-green-500 mx-auto mb-4"
+                class="w-12 h-12 text-blue-500 mx-auto mb-4"
               />
               <h4
-                class="text-lg font-medium mb-2 text-green-700 dark:text-green-400"
+                class="text-lg font-medium mb-2 text-blue-700 dark:text-blue-400"
               >
                 Thank You for Your Review!
               </h4>
@@ -1658,7 +1658,7 @@ async function submitReview() {
         title: "Review Submitted",
         description:
           "Thank you for your feedback! Your review has been submitted successfully.",
-        color: "green",
+        color: "blue",
         timeout: 5000,
       });
 
