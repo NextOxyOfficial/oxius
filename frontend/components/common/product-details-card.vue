@@ -873,7 +873,7 @@
             class="text-base font-medium py-3 px-2 text-gray-800 dark:text-white flex items-center"
           >
             <UIcon
-              name="i-heroicons-squares-2x2"
+              name="i-heroicons-heart"
               class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400"
             />
             {{ similarProductsTitle }}
@@ -889,7 +889,7 @@
                 ></div>
               </div>
               <p class="text-sm text-gray-600 dark:text-slate-400 mt-3">
-                Loading similar products...
+                {{ isLoadingSameCategory ? 'Loading same category products...' : 'Loading similar products...' }}
               </p>
             </div>
           </div>
@@ -942,7 +942,7 @@
                   ></div>
                 </div>
                 <span class="text-sm text-gray-600 dark:text-slate-400">
-                  Loading more products...
+                  {{ isLoadingSameCategory ? 'Loading more from same category...' : 'Loading more products...' }}
                 </span>
               </div>
             </div>
@@ -1010,6 +1010,12 @@ const similarProductsContainer = ref(null);
 const similarProductsPage = ref(1);
 const hasMoreSimilarProducts = ref(true);
 const allLoadedSimilarProducts = ref([]);
+
+// Category-specific tracking for infinite scroll
+const sameCategoryPage = ref(1);
+const hasMoreSameCategoryProducts = ref(true);
+const isLoadingSameCategory = ref(true); // Start with same category
+const allLoadedSameCategoryProducts = ref([]);
 
 // API composable
 const { get, post } = useApi();
@@ -1099,7 +1105,7 @@ function openMessageModal() {
   });
 }
 
-// Fetch similar products based on the current product's category
+// Fetch similar products with priority: same category first, then alternative categories
 async function fetchSimilarProducts(page = 1, append = false) {
   if (!currentProduct) return;
 
@@ -1108,6 +1114,12 @@ async function fetchSimilarProducts(page = 1, append = false) {
     similarProductsPage.value = 1;
     hasMoreSimilarProducts.value = true;
     allLoadedSimilarProducts.value = [];
+    
+    // Reset category-specific tracking
+    sameCategoryPage.value = 1;
+    hasMoreSameCategoryProducts.value = true;
+    isLoadingSameCategory.value = true;
+    allLoadedSameCategoryProducts.value = [];
   } else {
     isLoadingMoreSimilarProducts.value = true;
   }
@@ -1140,34 +1152,58 @@ async function fetchSimilarProducts(page = 1, append = false) {
       primaryCategoryId = currentProduct.category_details[0].id;
     }
 
-    // Calculate offset for pagination
-    const offset = (page - 1) * pageSize;
-
-    // First, try to get products from the same category
-    if (primaryCategoryId) {
+    // Phase 1: Load same category products first
+    if (isLoadingSameCategory.value && primaryCategoryId && hasMoreSameCategoryProducts.value) {
       try {
-        let queryParams = `category=${primaryCategoryId}&page_size=${pageSize * 2}&offset=${offset}&ordering=random`;
+        // Calculate offset for same category pagination
+        const sameCategoryOffset = (sameCategoryPage.value - 1) * pageSize;
+        
+        let queryParams = `category=${primaryCategoryId}&page_size=${pageSize}&offset=${sameCategoryOffset}&ordering=-created_at`;
         const sameCategory = await get(`/all-products/?${queryParams}`);
 
         if (sameCategory && sameCategory.data && sameCategory.data.results) {
-          // Filter out current product
+          // Filter out current product and already loaded products
           const sameCategoryProducts = sameCategory.data.results.filter(
             (product) => product.id !== currentProduct.id &&
-            !allLoadedSimilarProducts.value.some(existing => existing.id === product.id)
+            !allLoadedSameCategoryProducts.value.some(existing => existing.id === product.id)
           );
 
-          similarProductsList.push(...sameCategoryProducts.slice(0, pageSize));
+          if (sameCategoryProducts.length > 0) {
+            similarProductsList.push(...sameCategoryProducts);
+            allLoadedSameCategoryProducts.value.push(...sameCategoryProducts);
+            
+            // Check if we have more same category products
+            if (sameCategoryProducts.length < pageSize) {
+              hasMoreSameCategoryProducts.value = false;
+              isLoadingSameCategory.value = false;
+            } else {
+              sameCategoryPage.value++;
+            }
+          } else {
+            // No more same category products found
+            hasMoreSameCategoryProducts.value = false;
+            isLoadingSameCategory.value = false;
+          }
+        } else {
+          hasMoreSameCategoryProducts.value = false;
+          isLoadingSameCategory.value = false;
         }
       } catch (error) {
         console.error("Error fetching same category products:", error);
+        hasMoreSameCategoryProducts.value = false;
+        isLoadingSameCategory.value = false;
       }
     }
 
-    // If we don't have enough products from the same category, fetch from other categories
-    if (similarProductsList.length < pageSize) {
+    // Phase 2: Load alternative category products (only after same category is exhausted)
+    if (!isLoadingSameCategory.value && similarProductsList.length < pageSize) {
       try {
         const remainingCount = pageSize - similarProductsList.length;
-        let additionalQueryParams = `page_size=${remainingCount * 2}&offset=${offset}&ordering=random`;
+        
+        // Calculate offset for alternative products (excluding same category products already loaded)
+        const alternativeOffset = (page - sameCategoryPage.value + 1) * pageSize;
+        
+        let additionalQueryParams = `page_size=${remainingCount * 2}&offset=${alternativeOffset}&ordering=-created_at`;
 
         // Exclude current category if it exists
         if (primaryCategoryId) {
@@ -1186,20 +1222,35 @@ async function fetchSimilarProducts(page = 1, append = false) {
           const additionalProducts = additionalResponse.data.results.filter(
             (product) =>
               product.id !== currentProduct.id &&
-              !similarProductsList.some(existing => existing.id === product.id) &&
               !allLoadedSimilarProducts.value.some(existing => existing.id === product.id)
           );
 
-          similarProductsList.push(...additionalProducts.slice(0, remainingCount));
+          if (additionalProducts.length > 0) {
+            similarProductsList.push(...additionalProducts.slice(0, remainingCount));
+          }
+          
+          // Check if we have fewer alternative products than requested
+          if (additionalProducts.length < remainingCount) {
+            hasMoreSimilarProducts.value = false;
+          }
+        } else {
+          hasMoreSimilarProducts.value = false;
         }
       } catch (error) {
-        console.error("Error fetching additional category products:", error);
+        console.error("Error fetching alternative category products:", error);
+        hasMoreSimilarProducts.value = false;
       }
     }
 
     // Update state based on results
     if (similarProductsList.length === 0) {
-      hasMoreSimilarProducts.value = false;
+      // If we're still loading same category but got no results, switch to alternatives
+      if (isLoadingSameCategory.value) {
+        isLoadingSameCategory.value = false;
+        hasMoreSameCategoryProducts.value = false;
+      } else {
+        hasMoreSimilarProducts.value = false;
+      }
     } else {
       allLoadedSimilarProducts.value.push(...similarProductsList);
       
@@ -1210,7 +1261,7 @@ async function fetchSimilarProducts(page = 1, append = false) {
       }
       
       // Check if we have fewer products than requested (indicating no more products)
-      if (similarProductsList.length < pageSize) {
+      if (similarProductsList.length < pageSize && !isLoadingSameCategory.value) {
         hasMoreSimilarProducts.value = false;
       }
     }
@@ -1221,6 +1272,7 @@ async function fetchSimilarProducts(page = 1, append = false) {
       similarProducts.value = [];
     }
     hasMoreSimilarProducts.value = false;
+    isLoadingSameCategory.value = false;
   } finally {
     isSimilarProductsLoading.value = false;
     isLoadingMoreSimilarProducts.value = false;
@@ -1472,13 +1524,21 @@ const similarProductsTitle = computed(() => {
     primaryCategoryId = currentProduct.category_details[0].id;
   }
 
+  // Show category-specific title based on loading phase
+  if (isLoadingSameCategory.value || hasMoreSameCategoryProducts.value) {
+    // Still loading same category products or more same category products available
+    return `More from ${
+      currentProduct.category_details[0]?.name || "this category"
+    }`;
+  }
+
   // Check if we have products from the same category
   const sameCategoryProducts = similarProducts.value.filter(
     (product) => product.category === primaryCategoryId
   );
 
-  if (sameCategoryProducts.length === similarProducts.value.length) {
-    // All products are from the same category
+  if (sameCategoryProducts.length > 0 && sameCategoryProducts.length === similarProducts.value.length) {
+    // All currently loaded products are from the same category
     return `More from ${
       currentProduct.category_details[0]?.name || "this category"
     }`;
@@ -1486,7 +1546,7 @@ const similarProductsTitle = computed(() => {
     // Mixed products from same and different categories
     return "You may also like";
   } else {
-    // All products are from different categories
+    // All products are from different categories (alternative products phase)
     return "You may also like";
   }
 });
@@ -1719,6 +1779,12 @@ watch(
       similarProductsPage.value = 1;
       hasMoreSimilarProducts.value = true;
       allLoadedSimilarProducts.value = [];
+      
+      // Reset category-specific state
+      sameCategoryPage.value = 1;
+      hasMoreSameCategoryProducts.value = true;
+      isLoadingSameCategory.value = true;
+      allLoadedSameCategoryProducts.value = [];
     }
 
     // Fetch data for the new product
