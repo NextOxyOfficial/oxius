@@ -116,24 +116,24 @@
             <UIcon name="i-heroicons-clock" class="w-5 h-5 mr-2 text-gray-500" />
             Recent Searches
           </h3>
-          <div class="space-y-2">
+          <div class="flex flex-wrap gap-2">
             <div
               v-for="(search, index) in recentSearches"
               :key="index"
-              class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 hover:bg-gray-100 transition-colors"
+              class="inline-flex items-center bg-gray-100 hover:bg-gray-200 rounded-full px-3 py-1.5 text-sm text-gray-700 transition-colors group"
             >
               <button
                 @click="selectRecentSearch(search)"
-                class="flex-1 text-left text-sm text-gray-700 hover:text-gray-900"
+                class="flex items-center hover:text-gray-900 transition-colors"
               >
-                <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 inline mr-2 text-gray-400" />
-                {{ search }}
+                <UIcon name="i-heroicons-magnifying-glass" class="w-3 h-3 mr-1.5 text-gray-400" />
+                <span class="max-w-[120px] truncate">{{ search }}</span>
               </button>
               <button
                 @click="removeRecentSearch(index)"
-                class="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                class="ml-2 p-0.5 hover:bg-gray-300 rounded-full transition-colors"
               >
-                <UIcon name="i-heroicons-x-mark" class="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                <UIcon name="i-heroicons-x-mark" class="w-3 h-3 text-gray-500 hover:text-gray-700" />
               </button>
             </div>
           </div>
@@ -226,10 +226,34 @@
   >
     <UContainer class="pl-2 py-2.5">
       <div class="flex items-center justify-between gap-2">
-        <!-- Left Section: Sidebar Toggle + Logo -->
+        <!-- Left Section: Sidebar Toggle + Logo OR Back Button + Logo -->
         <div class="flex items-center gap-3">
-          <!-- Sidebar toggle button -->
+          <!-- Back Button for Product Details Page -->
           <button
+            v-if="isProductDetailsPage"
+            @click="navigateToEshop"
+            :disabled="isNavigating"
+            class="inline-flex items-center justify-center p-1.5 rounded-lg hover:bg-gray-50 transition-all duration-200 flex-shrink-0 group"
+            :class="{
+              'opacity-50 cursor-not-allowed': isNavigating,
+              'text-gray-700 hover:text-gray-900': !isNavigating,
+            }"
+          >
+            <span class="sr-only">Back to eshop</span>
+            <div
+              v-if="isNavigating"
+              class="dotted-spinner text-gray-600"
+            ></div>
+            <UIcon
+              v-else
+              name="i-heroicons-chevron-left"
+              class="size-6 transition-transform group-hover:scale-110"
+            />
+          </button>
+
+          <!-- Sidebar toggle button (shown when not on product details page) -->
+          <button
+            v-else
             @click="toggleSidebar"
             class="inline-flex items-center justify-center p-1.5 rounded-lg hover:bg-gray-50 transition-all duration-200 flex-shrink-0 group"
             :class="{
@@ -375,6 +399,32 @@ const showMobileSearchIcon = computed(() => {
     currentPath.includes("/product-details/")
   );
 });
+
+// Check if current route is product details page
+const isProductDetailsPage = computed(() => {
+  return route.path.includes("/product-details/");
+});
+
+// Navigation state
+const isNavigating = ref(false);
+
+// Navigate to eshop page function
+async function navigateToEshop() {
+  if (isNavigating.value) return;
+  
+  isNavigating.value = true;
+  
+  try {
+    // Add a small delay to show the spinner
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    await router.push('/eshop');
+  } catch (error) {
+    console.error('Navigation error:', error);
+  } finally {
+    isNavigating.value = false;
+  }
+}
 
 // Mobile search functions
 async function openMobileSearch() {
@@ -754,3 +804,23 @@ onBeforeUnmount(() => {
   clearTimeout(mobileSearchTimeout);
 });
 </script>
+
+<style scoped>
+/* Dotted Spinner Styles (same as hero-banner) */
+.dotted-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px dotted #4b5563;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
