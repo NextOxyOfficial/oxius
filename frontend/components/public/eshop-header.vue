@@ -108,16 +108,110 @@
         </p>
       </div>
 
-      <!-- Empty State -->
-      <div v-else class="text-center py-12">
-        <UIcon
-          name="i-heroicons-magnifying-glass"
-          class="w-12 h-12 text-gray-300 mx-auto mb-4"
-        />
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Search Products</h3>
-        <p class="text-gray-500">
-          Start typing to find products, brands, and categories
-        </p>
+      <!-- Default State - Recent Searches, Trending & Hot Products -->
+      <div v-else class="space-y-6">
+        <!-- Recent Searches Section -->
+        <div v-if="recentSearches.length > 0" class="space-y-3">
+          <h3 class="text-base font-semibold text-gray-900 flex items-center">
+            <UIcon name="i-heroicons-clock" class="w-5 h-5 mr-2 text-gray-500" />
+            Recent Searches
+          </h3>
+          <div class="space-y-2">
+            <div
+              v-for="(search, index) in recentSearches"
+              :key="index"
+              class="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2 hover:bg-gray-100 transition-colors"
+            >
+              <button
+                @click="selectRecentSearch(search)"
+                class="flex-1 text-left text-sm text-gray-700 hover:text-gray-900"
+              >
+                <UIcon name="i-heroicons-magnifying-glass" class="w-4 h-4 inline mr-2 text-gray-400" />
+                {{ search }}
+              </button>
+              <button
+                @click="removeRecentSearch(index)"
+                class="p-1 hover:bg-gray-200 rounded-full transition-colors"
+              >
+                <UIcon name="i-heroicons-x-mark" class="w-4 h-4 text-gray-400 hover:text-gray-600" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trending Searches Section -->
+        <div class="space-y-3">
+          <h3 class="text-base font-semibold text-gray-900 flex items-center">
+            <UIcon name="i-heroicons-fire" class="w-5 h-5 mr-2 text-orange-500" />
+            Trending Searches
+          </h3>
+          <div v-if="isLoadingTrending" class="flex justify-center py-4">
+            <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin text-emerald-500" />
+          </div>
+          <div v-else class="flex flex-wrap gap-2">
+            <button
+              v-for="trend in trendingSearches"
+              :key="trend"
+              @click="selectTrendingSearch(trend)"
+              class="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-sm hover:bg-emerald-100 transition-colors"
+            >
+              {{ trend }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Hot Products Section -->
+        <div class="space-y-3">
+          <h3 class="text-base font-semibold text-gray-900 flex items-center">
+            <UIcon name="i-heroicons-bolt" class="w-5 h-5 mr-2 text-red-500" />
+            Hot Products
+          </h3>
+          <div v-if="isLoadingHotProducts" class="flex justify-center py-4">
+            <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin text-emerald-500" />
+          </div>
+          <div v-else-if="hotProducts.length > 0" class="grid grid-cols-2 gap-2">
+            <div
+              v-for="product in hotProducts"
+              :key="product.id"
+              @click="handleProductCardClick(product, $event)"
+            >
+              <CommonProductCard :product="product" />
+            </div>
+          </div>
+          <div v-else class="text-center py-8">
+            <UIcon name="i-heroicons-shopping-bag" class="w-8 h-8 text-gray-300 mx-auto mb-2" />
+            <p class="text-sm text-gray-500">No hot products available</p>
+          </div>
+        </div>
+
+        <!-- Suggestions based on previous searches -->
+        <div v-if="suggestedProducts.length > 0" class="space-y-3">
+          <h3 class="text-base font-semibold text-gray-900 flex items-center">
+            <UIcon name="i-heroicons-lightbulb" class="w-5 h-5 mr-2 text-yellow-500" />
+            Suggested for You
+          </h3>
+          <div class="grid grid-cols-2 gap-2">
+            <div
+              v-for="product in suggestedProducts"
+              :key="product.id"
+              @click="handleProductCardClick(product, $event)"
+            >
+              <CommonProductCard :product="product" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State when no data -->
+        <div v-if="recentSearches.length === 0 && trendingSearches.length === 0 && hotProducts.length === 0" class="text-center py-12">
+          <UIcon
+            name="i-heroicons-magnifying-glass"
+            class="w-12 h-12 text-gray-300 mx-auto mb-4"
+          />
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Search Products</h3>
+          <p class="text-gray-500">
+            Start typing to find products, brands, and categories
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -256,6 +350,18 @@ const route = useRoute();
 const router = useRouter();
 const { get } = useApi();
 
+// Recent searches functionality
+const recentSearches = ref([]);
+const MAX_RECENT_SEARCHES = 10;
+const RECENT_SEARCHES_KEY = 'eshop_recent_searches';
+
+// Trending and hot products
+const trendingSearches = ref([]);
+const hotProducts = ref([]);
+const suggestedProducts = ref([]);
+const isLoadingTrending = ref(false);
+const isLoadingHotProducts = ref(false);
+
 // Check if mobile search icon should be shown based on current route
 const showMobileSearchIcon = computed(() => {
   // Only show on mobile screens (less than 768px)
@@ -278,6 +384,15 @@ async function openMobileSearch() {
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
   }
+  
+  // Load initial data
+  await Promise.all([
+    loadRecentSearches(),
+    loadTrendingSearches(),
+    loadHotProducts(),
+    loadSuggestedProducts()
+  ]);
+  
   await nextTick();
   if (mobileSearchInput.value) {
     mobileSearchInput.value.focus();
@@ -342,6 +457,9 @@ async function performMobileSearch(loadMore = false) {
     return;
   }
 
+  // Add to recent searches when user performs a search
+  addToRecentSearches(mobileSearchQuery.value.trim());
+
   try {
     if (loadMore) {
       isLoadingMore.value = true;
@@ -394,6 +512,130 @@ async function performMobileSearch(loadMore = false) {
   } finally {
     isSearching.value = false;
     isLoadingMore.value = false;
+  }
+}
+
+// Recent searches management
+function loadRecentSearches() {
+  if (process.client) {
+    try {
+      const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
+      if (stored) {
+        recentSearches.value = JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Error loading recent searches:', error);
+      recentSearches.value = [];
+    }
+  }
+}
+
+function addToRecentSearches(searchTerm) {
+  if (!searchTerm.trim()) return;
+  
+  // Remove if already exists to avoid duplicates
+  const filtered = recentSearches.value.filter(term => 
+    term.toLowerCase() !== searchTerm.toLowerCase()
+  );
+  
+  // Add to beginning
+  filtered.unshift(searchTerm);
+  
+  // Keep only the most recent searches
+  recentSearches.value = filtered.slice(0, MAX_RECENT_SEARCHES);
+  
+  // Save to localStorage
+  if (process.client) {
+    try {
+      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recentSearches.value));
+    } catch (error) {
+      console.error('Error saving recent searches:', error);
+    }
+  }
+}
+
+function removeRecentSearch(index) {
+  recentSearches.value.splice(index, 1);
+  
+  // Update localStorage
+  if (process.client) {
+    try {
+      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recentSearches.value));
+    } catch (error) {
+      console.error('Error updating recent searches:', error);
+    }
+  }
+}
+
+function selectRecentSearch(searchTerm) {
+  mobileSearchQuery.value = searchTerm;
+  currentPage.value = 1;
+  performMobileSearch();
+}
+
+// Trending searches
+async function loadTrendingSearches() {
+  isLoadingTrending.value = true;
+  try {
+    // You can replace this with actual API endpoint for trending searches
+    // For now, using mock data
+    trendingSearches.value = [
+      'Electronics', 'Fashion', 'Home Decor', 'Books', 'Sports', 
+      'Beauty', 'Mobile', 'Laptop', 'Shoes', 'Watches'
+    ];
+    
+    // If you have an API endpoint:
+    // const { data } = await get('/trending-searches/');
+    // trendingSearches.value = data?.searches || [];
+  } catch (error) {
+    console.error('Error loading trending searches:', error);
+    trendingSearches.value = [];
+  } finally {
+    isLoadingTrending.value = false;
+  }
+}
+
+function selectTrendingSearch(searchTerm) {
+  mobileSearchQuery.value = searchTerm;
+  currentPage.value = 1;
+  performMobileSearch();
+}
+
+// Hot products
+async function loadHotProducts() {
+  isLoadingHotProducts.value = true;
+  try {
+    // Load popular/featured products
+    const { data } = await get('/all-products/?ordering=-views,-created_at&page_size=10');
+    hotProducts.value = data?.results || data || [];
+  } catch (error) {
+    console.error('Error loading hot products:', error);
+    hotProducts.value = [];
+  } finally {
+    isLoadingHotProducts.value = false;
+  }
+}
+
+// Suggested products based on previous searches
+async function loadSuggestedProducts() {
+  try {
+    if (recentSearches.value.length === 0) {
+      suggestedProducts.value = [];
+      return;
+    }
+    
+    // Use the most recent search terms to find suggestions
+    const recentTerms = recentSearches.value.slice(0, 3);
+    const searchQuery = recentTerms.join(' ');
+    
+    if (searchQuery.trim()) {
+      const queryParams = `search=${encodeURIComponent(searchQuery)}&page_size=6&ordering=-created_at`;
+      const { data } = await get(`/all-products/?${queryParams}`);
+      suggestedProducts.value = data?.results || data || [];
+    }
+  } catch (error) {
+    console.error('Error loading suggested products:', error);
+    suggestedProducts.value = [];
   }
 }
 
