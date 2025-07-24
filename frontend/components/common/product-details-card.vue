@@ -125,7 +125,7 @@
                   currentProduct.image_details[selectedImageIndex || 0].image
                 "
                 :alt="currentProduct.name"
-                class="absolute inset-0 w-full h-full object-contain p-2"
+                class="absolute inset-0 w-full h-full object-contain px-2"
               />
               <div
                 v-else
@@ -878,7 +878,7 @@
             />
             {{ similarProductsTitle }}
           </h3>
-          <div v-if="isSimilarProductsLoading" class="flex justify-center py-6">
+          <div v-if="isSimilarProductsLoading && similarProducts.length === 0" class="flex justify-center py-6">
             <div class="flex flex-col items-center">
               <div class="w-10 h-10 relative">
                 <div
@@ -910,41 +910,40 @@
             </p>
           </div>
           <div v-else>
-            <!-- Mobile Similar Products - Horizontal scroll with multiple items -->
-            <div class="sm:hidden">
+            <!-- Infinite Scroll Similar Products Grid -->
+            <div 
+              ref="similarProductsContainer"
+              class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pb-4"
+            >
               <div
-                class="flex overflow-x-auto gap-1.5 py-2 px-2 hide-scrollbar"
-              >
-                <div
-                  v-for="(product, index) in similarProducts"
-                  :key="`mobile-${product.id}`"
-                  class="flex-shrink-0 w-[45%] similar-product-fade-in"
-                  style="animation-delay: calc(var(--i) * 0.1s)"
-                  :style="{ '--i': index }"
-                >
-                  <CommonProductCard
-                    :product="product"
-                    :isInModal="true"
-                    @updateModalProduct="handleModalProductChange"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Desktop Similar Products - 4 items in a single row -->
-            <div class="hidden sm:grid sm:grid-cols-4 gap-3 px-2 pb-4">
-              <div
-                v-for="(product, index) in similarProducts.slice(0, 4)"
-                :key="`desktop-${product.id}`"
+                v-for="(product, index) in similarProducts"
+                :key="`similar-${product.id}`"
                 class="similar-product-fade-in"
                 style="animation-delay: calc(var(--i) * 0.1s)"
-                :style="{ '--i': index }"
+                :style="{ '--i': index % 8 }"
               >
                 <CommonProductCard
                   :product="product"
                   :isInModal="true"
                   @updateModalProduct="handleModalProductChange"
                 />
+              </div>
+            </div>
+            
+            <!-- Loading indicator for infinite scroll -->
+            <div v-if="isLoadingMoreSimilarProducts" class="flex justify-center py-4">
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 relative">
+                  <div
+                    class="w-full h-full rounded-full border-2 border-slate-300 dark:border-slate-600"
+                  ></div>
+                  <div
+                    class="w-full h-full rounded-full border-2 border-t-primary-500 animate-spin absolute top-0 left-0"
+                  ></div>
+                </div>
+                <span class="text-sm text-gray-600 dark:text-slate-400">
+                  Loading more products...
+                </span>
               </div>
             </div>
           </div>
@@ -1006,6 +1005,11 @@ const selectedImageIndex = ref(0);
 const quantity = ref(1);
 const similarProducts = ref([]);
 const isSimilarProductsLoading = ref(false);
+const isLoadingMoreSimilarProducts = ref(false);
+const similarProductsContainer = ref(null);
+const similarProductsPage = ref(1);
+const hasMoreSimilarProducts = ref(true);
+const allLoadedSimilarProducts = ref([]);
 
 // API composable
 const { get, post } = useApi();
@@ -1096,11 +1100,19 @@ function openMessageModal() {
 }
 
 // Fetch similar products based on the current product's category
-async function fetchSimilarProducts() {
+async function fetchSimilarProducts(page = 1, append = false) {
   if (!currentProduct) return;
 
-  isSimilarProductsLoading.value = true;
-  const targetCount = 8; // Target number of similar products to show (more for mobile scroll)
+  if (page === 1) {
+    isSimilarProductsLoading.value = true;
+    similarProductsPage.value = 1;
+    hasMoreSimilarProducts.value = true;
+    allLoadedSimilarProducts.value = [];
+  } else {
+    isLoadingMoreSimilarProducts.value = true;
+  }
+
+  const pageSize = 8; // Products per page for infinite scroll
 
   try {
     const { get } = useApi();
@@ -1128,19 +1140,23 @@ async function fetchSimilarProducts() {
       primaryCategoryId = currentProduct.category_details[0].id;
     }
 
+    // Calculate offset for pagination
+    const offset = (page - 1) * pageSize;
+
     // First, try to get products from the same category
     if (primaryCategoryId) {
       try {
-        let queryParams = `category=${primaryCategoryId}&page_size=12&ordering=random`;
+        let queryParams = `category=${primaryCategoryId}&page_size=${pageSize * 2}&offset=${offset}&ordering=random`;
         const sameCategory = await get(`/all-products/?${queryParams}`);
 
         if (sameCategory && sameCategory.data && sameCategory.data.results) {
           // Filter out current product
           const sameCategoryProducts = sameCategory.data.results.filter(
-            (product) => product.id !== currentProduct.id
+            (product) => product.id !== currentProduct.id &&
+            !allLoadedSimilarProducts.value.some(existing => existing.id === product.id)
           );
 
-          similarProductsList.push(...sameCategoryProducts);
+          similarProductsList.push(...sameCategoryProducts.slice(0, pageSize));
         }
       } catch (error) {
         console.error("Error fetching same category products:", error);
@@ -1148,10 +1164,10 @@ async function fetchSimilarProducts() {
     }
 
     // If we don't have enough products from the same category, fetch from other categories
-    if (similarProductsList.length < targetCount) {
+    if (similarProductsList.length < pageSize) {
       try {
-        const remainingCount = targetCount - similarProductsList.length + 6; // Get a few extra for filtering
-        let additionalQueryParams = `page_size=${remainingCount}&ordering=random`;
+        const remainingCount = pageSize - similarProductsList.length;
+        let additionalQueryParams = `page_size=${remainingCount * 2}&offset=${offset}&ordering=random`;
 
         // Exclude current category if it exists
         if (primaryCategoryId) {
@@ -1170,56 +1186,90 @@ async function fetchSimilarProducts() {
           const additionalProducts = additionalResponse.data.results.filter(
             (product) =>
               product.id !== currentProduct.id &&
-              !similarProductsList.some(
-                (existing) => existing.id === product.id
-              )
+              !similarProductsList.some(existing => existing.id === product.id) &&
+              !allLoadedSimilarProducts.value.some(existing => existing.id === product.id)
           );
 
-          similarProductsList.push(...additionalProducts);
+          similarProductsList.push(...additionalProducts.slice(0, remainingCount));
         }
       } catch (error) {
         console.error("Error fetching additional category products:", error);
       }
     }
 
-    // If we still don't have enough, get any random products as fallback
-    if (similarProductsList.length < targetCount) {
-      try {
-        const fallbackCount = targetCount - similarProductsList.length + 4;
-        const fallbackResponse = await get(
-          `/all-products/?page_size=${fallbackCount}&ordering=random`
-        );
-
-        if (
-          fallbackResponse &&
-          fallbackResponse.data &&
-          fallbackResponse.data.results
-        ) {
-          const fallbackProducts = fallbackResponse.data.results.filter(
-            (product) =>
-              product.id !== currentProduct.id &&
-              !similarProductsList.some(
-                (existing) => existing.id === product.id
-              )
-          );
-
-          similarProductsList.push(...fallbackProducts);
-        }
-      } catch (error) {
-        console.error("Error fetching fallback products:", error);
+    // Update state based on results
+    if (similarProductsList.length === 0) {
+      hasMoreSimilarProducts.value = false;
+    } else {
+      allLoadedSimilarProducts.value.push(...similarProductsList);
+      
+      if (append) {
+        similarProducts.value.push(...similarProductsList);
+      } else {
+        similarProducts.value = [...similarProductsList];
+      }
+      
+      // Check if we have fewer products than requested (indicating no more products)
+      if (similarProductsList.length < pageSize) {
+        hasMoreSimilarProducts.value = false;
       }
     }
 
-    // Shuffle the final list and limit to target count
-    similarProducts.value = similarProductsList
-      .sort(() => Math.random() - 0.5)
-      .slice(0, targetCount);
   } catch (error) {
     console.error("Error fetching similar products:", error);
-    similarProducts.value = [];
+    if (!append) {
+      similarProducts.value = [];
+    }
+    hasMoreSimilarProducts.value = false;
   } finally {
     isSimilarProductsLoading.value = false;
+    isLoadingMoreSimilarProducts.value = false;
   }
+}
+
+// Handle infinite scroll for similar products
+let intersectionObserver = null;
+
+function setupInfiniteScroll() {
+  nextTick(() => {
+    const container = similarProductsContainer.value;
+    if (!container) return;
+
+    // Clean up existing observer
+    if (intersectionObserver) {
+      intersectionObserver.disconnect();
+    }
+
+    // Create a sentinel element at the bottom
+    const sentinel = document.createElement('div');
+    sentinel.style.height = '1px';
+    sentinel.style.visibility = 'hidden';
+    container.appendChild(sentinel);
+
+    // Set up intersection observer
+    intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && hasMoreSimilarProducts.value && !isLoadingMoreSimilarProducts.value) {
+            loadMoreSimilarProducts();
+          }
+        });
+      },
+      {
+        rootMargin: '100px', // Trigger 100px before reaching the sentinel
+      }
+    );
+
+    intersectionObserver.observe(sentinel);
+  });
+}
+
+// Load more similar products
+async function loadMoreSimilarProducts() {
+  if (!hasMoreSimilarProducts.value || isLoadingMoreSimilarProducts.value) return;
+  
+  similarProductsPage.value++;
+  await fetchSimilarProducts(similarProductsPage.value, true);
 }
 
 const cart = useStoreCart();
@@ -1657,14 +1707,32 @@ watch(
     selectedImageIndex.value = 0;
     quantity.value = 1;
 
-    // Fetch data for the new product
+    if (newId !== oldId) {
+      // Clean up intersection observer
+      if (intersectionObserver) {
+        intersectionObserver.disconnect();
+        intersectionObserver = null;
+      }
+      
+      // Reset similar products state
+      similarProducts.value = [];
+      similarProductsPage.value = 1;
+      hasMoreSimilarProducts.value = true;
+      allLoadedSimilarProducts.value = [];
+    }
 
-    fetchSimilarProducts(); // Fetch similar products when current product changes
+    // Fetch data for the new product
     await Promise.all([
       fetchProductReviews(1), // Start from page 1
       fetchProductRatingStats(),
       checkUserExistingReview(),
+      fetchSimilarProducts(1) // Fetch first page of similar products
     ]);
+    
+    // Setup infinite scroll after products are loaded
+    if (similarProducts.value.length > 0) {
+      setupInfiniteScroll();
+    }
   },
   { immediate: true } // Fetch immediately on component creation
 );
@@ -1686,6 +1754,14 @@ watch(isLoggedIn, async (newValue) => {
     await checkUserExistingReview();
   } else {
     userExistingReview.value = null;
+  }
+});
+
+// Cleanup intersection observer on component unmount
+onUnmounted(() => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect();
+    intersectionObserver = null;
   }
 });
 </script>
