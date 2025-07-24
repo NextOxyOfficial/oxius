@@ -533,7 +533,6 @@
             </h4>
             <span v-if="totalStoreProducts > 0" class="text-xs text-slate-500 dark:text-slate-400">
               {{ storeProducts.length }} of {{ totalStoreProducts }} products
-              <span v-if="hasMoreStoreProducts" class="text-primary-500">(scroll for more)</span>
             </span>
           </div>
 
@@ -1063,34 +1062,19 @@
 </template>
 
 <style scoped>
-/* Horizontal scroll container styling */
+/* Horizontal scroll container styling with hidden scrollbar */
 .horizontal-scroll-container {
   cursor: grab;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-}
-
-.horizontal-scroll-container::-webkit-scrollbar {
-  height: 6px;
-}
-
-.horizontal-scroll-container::-webkit-scrollbar-track {
-  background: rgba(156, 163, 175, 0.1);
-  border-radius: 3px;
-}
-
-.horizontal-scroll-container::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.5);
-  border-radius: 3px;
-}
-
-.horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.7);
-}
-
-/* Smooth scrolling behavior */
-.horizontal-scroll-container {
   scroll-behavior: smooth;
+  /* Hide scrollbar for Firefox */
+  scrollbar-width: none;
+  /* Hide scrollbar for IE and Edge */
+  -ms-overflow-style: none;
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+.horizontal-scroll-container::-webkit-scrollbar {
+  display: none;
 }
 
 /* Fade-in animations */
@@ -1118,32 +1102,6 @@
     opacity: 1;
     transform: translateX(0);
   }
-}
-
-/* Horizontal scroll container styling */
-.horizontal-scroll-container {
-  cursor: grab;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-  scroll-behavior: smooth;
-}
-
-.horizontal-scroll-container::-webkit-scrollbar {
-  height: 6px;
-}
-
-.horizontal-scroll-container::-webkit-scrollbar-track {
-  background: rgba(156, 163, 175, 0.1);
-  border-radius: 3px;
-}
-
-.horizontal-scroll-container::-webkit-scrollbar-thumb {
-  background: rgba(156, 163, 175, 0.5);
-  border-radius: 3px;
-}
-
-.horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(156, 163, 175, 0.7);
 }
 
 /* Savings badge animation */
