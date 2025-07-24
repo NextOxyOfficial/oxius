@@ -133,20 +133,20 @@
     <UContainer class="pl-2 py-2.5">
       <div class="flex items-center justify-between gap-2">
         <!-- Left Section: Sidebar Toggle + Logo -->
-        <div class="flex items-center gap-8">
+        <div class="flex items-center gap-3">
           <!-- Sidebar toggle button -->
           <button
             @click="toggleSidebar"
-            class="inline-flex items-center justify-center p-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md flex-shrink-0 group"
+            class="inline-flex items-center justify-center p-1.5 rounded-lg hover:bg-gray-50 transition-all duration-200 flex-shrink-0 group"
             :class="{
-              'text-emerald-600 border-emerald-300 bg-emerald-50 hover:bg-emerald-100':
+              'text-emerald-600 bg-emerald-50 hover:bg-emerald-100':
                 isSidebarOpen,
               'text-gray-700 hover:text-gray-900': !isSidebarOpen,
             }"
           >
             <span class="sr-only">Toggle categories</span>
             <UIcon
-              name="i-heroicons-bars-3"
+              name="i-heroicons-ellipsis-vertical"
               class="size-5 transition-transform group-hover:scale-110"
             />
           </button>
