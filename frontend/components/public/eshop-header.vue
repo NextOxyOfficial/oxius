@@ -450,11 +450,11 @@ async function navigateToEshop() {
     await new Promise((resolve) => {
       const checkNavigation = () => {
         if (route.path === '/eshop') {
-          // Additional delay to ensure page is fully rendered
-          setTimeout(resolve, 200);
+          // Reduced delay for faster navigation feedback
+          setTimeout(resolve, 100);
         } else {
           // Keep checking until we're on the right page
-          setTimeout(checkNavigation, 50);
+          setTimeout(checkNavigation, 25);
         }
       };
       checkNavigation();
