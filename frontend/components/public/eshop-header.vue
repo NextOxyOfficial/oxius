@@ -255,17 +255,17 @@
           <button
             v-else
             @click="toggleSidebar"
-            class="inline-flex items-center justify-center p-1.5 rounded-lg hover:bg-gray-50 transition-all duration-200 flex-shrink-0 group"
+            class="inline-flex items-center justify-center p-2.5 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-200 flex-shrink-0 group"
             :class="{
-              'text-emerald-600 bg-emerald-50 hover:bg-emerald-100':
+              'text-emerald-600 bg-emerald-100 hover:bg-emerald-200':
                 isSidebarOpen,
-              'text-gray-700 hover:text-gray-900': !isSidebarOpen,
+              'text-gray-700 hover:text-gray-800': !isSidebarOpen,
             }"
           >
             <span class="sr-only">Toggle categories</span>
             <UIcon
-              name="i-heroicons-ellipsis-vertical"
-              class="size-6 transition-transform group-hover:scale-110"
+              name="i-heroicons-ellipsis-horizontal"
+              class="size-5 transition-transform group-hover:scale-110"
             />
           </button>
 
@@ -321,16 +321,37 @@
             />
           </div>
 
-          <!-- Mobile Search Icon (only on mobile and specific pages) -->
+          <!-- Mobile Search Icon and Share Icon (only on mobile and specific pages) -->
           <div v-if="showMobileSearchIcon" class="block md:hidden">
-            <div class="flex justify-end">
+            <div class="flex justify-end gap-2">
+              <!-- Search Icon -->
               <button
                 @click="openMobileSearch"
-                class="p-2 rounded-full flex hover:bg-gray-100 transition-colors"
+                class="p-2.5 bg-gray-100 rounded-full flex hover:bg-gray-200 transition-colors"
               >
                 <UIcon
                   name="i-heroicons-magnifying-glass"
-                  class="size-6 text-gray-600"
+                  class="size-5 text-gray-700"
+                />
+              </button>
+              
+              <!-- Share Icon -->
+              <button
+                @click="shareCurrentPage"
+                :disabled="isSharing"
+                class="p-2.5 bg-gray-100 rounded-full flex hover:bg-gray-200 transition-colors"
+                :class="{
+                  'opacity-50 cursor-not-allowed': isSharing
+                }"
+              >
+                <div
+                  v-if="isSharing"
+                  class="dotted-spinner-small text-gray-600"
+                ></div>
+                <UIcon
+                  v-else
+                  name="i-heroicons-share"
+                  class="size-5 text-gray-700"
                 />
               </button>
             </div>
@@ -409,6 +430,9 @@ const isProductDetailsPage = computed(() => {
 // Navigation state
 const isNavigating = ref(false);
 
+// Share functionality state
+const isSharing = ref(false);
+
 // Navigate to eshop page function
 async function navigateToEshop() {
   if (isNavigating.value) return;
@@ -439,6 +463,64 @@ async function navigateToEshop() {
     console.error('Navigation error:', error);
   } finally {
     isNavigating.value = false;
+  }
+}
+
+// Share current page function
+async function shareCurrentPage() {
+  if (isSharing.value) return;
+  
+  isSharing.value = true;
+  
+  try {
+    const currentUrl = window.location.href;
+    const pageTitle = document.title || 'Check out this page';
+    
+    // Check if Web Share API is supported (modern mobile browsers)
+    if (navigator.share) {
+      await navigator.share({
+        title: pageTitle,
+        text: 'Check out this page on our e-commerce platform',
+        url: currentUrl,
+      });
+    } else {
+      // Fallback: Copy to clipboard
+      await navigator.clipboard.writeText(currentUrl);
+      
+      // Show a toast notification (you can customize this based on your notification system)
+      if (process.client) {
+        // Create a simple toast notification
+        const toast = document.createElement('div');
+        toast.textContent = 'Link copied to clipboard!';
+        toast.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-lg z-[999999999] text-sm';
+        document.body.appendChild(toast);
+        
+        // Remove toast after 3 seconds
+        setTimeout(() => {
+          if (document.body.contains(toast)) {
+            document.body.removeChild(toast);
+          }
+        }, 3000);
+      }
+    }
+  } catch (error) {
+    console.error('Error sharing:', error);
+    
+    // Show error toast
+    if (process.client) {
+      const errorToast = document.createElement('div');
+      errorToast.textContent = 'Unable to share. Please try again.';
+      errorToast.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-[999999999] text-sm';
+      document.body.appendChild(errorToast);
+      
+      setTimeout(() => {
+        if (document.body.contains(errorToast)) {
+          document.body.removeChild(errorToast);
+        }
+      }, 3000);
+    }
+  } finally {
+    isSharing.value = false;
   }
 }
 
@@ -826,6 +908,15 @@ onBeforeUnmount(() => {
 .dotted-spinner {
   width: 1.25rem;
   height: 1.25rem;
+  border: 2px dotted #4b5563;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Smaller dotted spinner for share button */
+.dotted-spinner-small {
+  width: 1rem;
+  height: 1rem;
   border: 2px dotted #4b5563;
   border-radius: 50%;
   animation: spin 1s linear infinite;

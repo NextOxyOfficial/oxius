@@ -1,7 +1,7 @@
 <template>
   <UCard
     v-if="currentProduct"
-    class="p-0 overflow-hidden border-none shadow-sm mt-1"
+    class="p-0 overflow-hidden border-none shadow-sm"
     :ui="{
       divide: '',
       body: {
