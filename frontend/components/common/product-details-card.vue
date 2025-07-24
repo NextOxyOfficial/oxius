@@ -531,9 +531,6 @@
               />
               More from this store
             </h4>
-            <span v-if="totalStoreProducts > 0" class="text-xs text-slate-500 dark:text-slate-400">
-              {{ storeProducts.length }} of {{ totalStoreProducts }} products
-            </span>
           </div>
 
           <!-- Loading state for store products -->
