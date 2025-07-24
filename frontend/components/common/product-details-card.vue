@@ -1,7 +1,7 @@
 <template>
   <UCard
     v-if="currentProduct"
-    class="p-0 overflow-hidden border-none shadow-sm mt-3"
+    class="p-0 overflow-hidden border-none shadow-sm mt-1"
     :ui="{
       divide: '',
       body: {
@@ -26,11 +26,71 @@
             <UBadge v-else color="red"> Out of Stock </UBadge>
           </div>
           <div class="flex gap-3 justify-between items-start">
-            <h3
-              class="text-lg ml-1 md:text-lg font-medium text-primary-700 dark:text-primary-300 text-left"
-            >
-              {{ capitalizedProductName }}
-            </h3>
+            <div class="flex-1">
+              <h3
+                class="text-lg ml-1 md:text-lg font-medium text-primary-700 dark:text-primary-300 text-left"
+              >
+                {{ capitalizedProductName }}
+              </h3>
+              
+              <!-- Category, Weight, and Rating under product name -->
+              <div class="flex items-center gap-3 mt-2 ml-1 flex-wrap">
+                <!-- Category Badge -->
+                <UBadge
+                  v-if="currentProduct?.category_details?.length > 0"
+                  color="gray"
+                  variant="subtle"
+                  class="uppercase text-xs tracking-wider"
+                >
+                  {{ currentProduct?.category_details[0]?.name || "Uncategorized" }}
+                </UBadge>
+                
+                <!-- Weight -->
+                <div
+                  v-if="currentProduct.weight && currentProduct.weight > 0"
+                  class="text-xs text-slate-500"
+                >
+                  Weight: {{ currentProduct.weight }}kg
+                </div>
+                
+                <!-- Ratings section with dynamic data -->
+                <div class="flex items-center gap-2">
+                  <div class="rating-stars relative inline-block">
+                    <!-- Background stars -->
+                    <div class="flex">
+                      <UIcon
+                        v-for="n in 5"
+                        :key="`bg-${n}`"
+                        name="i-heroicons-star"
+                        class="w-4 h-4 text-slate-200 dark:text-slate-700"
+                      />
+                    </div>
+
+                    <!-- Foreground stars with animation -->
+                    <div
+                      class="absolute top-0 left-0 flex overflow-hidden"
+                      :style="{
+                        width: `${(displayRating / 5) * 100}%`,
+                      }"
+                    >
+                      <UIcon
+                        v-for="n in 5"
+                        :key="`fg-${n}`"
+                        name="i-heroicons-star-solid"
+                        class="w-4 h-4 text-yellow-400"
+                      />
+                    </div>
+                  </div>
+
+                  <span
+                    class="text-xs font-medium text-slate-700 dark:text-slate-300"
+                  >
+                    {{ averageRating }} ({{ reviewCount }} reviews)
+                  </span>
+                </div>
+              </div>
+            </div>
+            
             <UButton
               v-if="seeDetails"
               icon="i-heroicons-x-mark"
@@ -48,7 +108,7 @@
 
     <div>
       <!-- Two-column layout remains the same -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 ">
         <!-- Left column with images remains the same -->
         <div>
           <!-- Main Image with Glass Effect Border -->
@@ -121,61 +181,6 @@
 
         <!-- Right column with product info -->
         <div>
-          <!-- Category Name -->
-          <div
-            class="flex items-center gap-2 mb-2"
-            v-if="currentProduct?.category_details?.length > 0"
-          >
-            <UBadge
-              color="gray"
-              variant="subtle"
-              class="uppercase text-xs tracking-wider"
-            >
-              {{ currentProduct?.category_details[0]?.name || "Uncategorized" }}
-            </UBadge>
-            <div
-              v-if="currentProduct.weight && currentProduct.weight > 0"
-              class="text-xs text-slate-500"
-            >
-              Weight: {{ currentProduct.weight }}kg
-            </div>
-          </div>
-          <!-- Ratings section with dynamic data -->
-          <div class="flex items-center gap-2 mb-4">
-            <div class="rating-stars relative inline-block">
-              <!-- Background stars -->
-              <div class="flex">
-                <UIcon
-                  v-for="n in 5"
-                  :key="`bg-${n}`"
-                  name="i-heroicons-star"
-                  class="w-5 h-5 text-slate-200 dark:text-slate-700"
-                />
-              </div>
-
-              <!-- Foreground stars with animation -->
-              <div
-                class="absolute top-0 left-0 flex overflow-hidden"
-                :style="{
-                  width: `${(displayRating / 5) * 100}%`,
-                }"
-              >
-                <UIcon
-                  v-for="n in 5"
-                  :key="`fg-${n}`"
-                  name="i-heroicons-star-solid"
-                  class="w-5 h-5 text-yellow-400"
-                />
-              </div>
-            </div>
-
-            <span
-              class="text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              {{ averageRating }} ({{ reviewCount }} reviews)
-            </span>
-          </div>
-
           <!-- Price section remains the same -->
           <div class="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl mb-4">
             <div class="flex items-end gap-3">
@@ -394,36 +399,57 @@
               </div>
             </div>
             <div class="ml-3 flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <NuxtLink
-                  v-if="
-                    currentProduct.owner_details?.store_username ||
-                    currentProduct.owner_details?.id
-                  "
-                  :to="`/eshop/${
-                    currentProduct.owner_details?.store_username ||
-                    currentProduct.owner_details?.id
-                  }`"
-                  class="hover:text-emerald-600 transition-colors"
-                >
+              <div class="flex items-start gap-3">
+                <div class="flex-1 min-w-0">
+                  <NuxtLink
+                    v-if="
+                      currentProduct.owner_details?.store_username ||
+                      currentProduct.owner_details?.id
+                    "
+                    :to="`/eshop/${
+                      currentProduct.owner_details?.store_username ||
+                      currentProduct.owner_details?.id
+                    }`"
+                    class="hover:text-emerald-600 transition-colors"
+                  >
+                    <h4
+                      class="font-medium text-green-800 dark:text-white line-clamp-2 leading-tight"
+                    >
+                      {{
+                        currentProduct.owner_details?.store_name ||
+                        "Anonymous Seller"
+                      }}
+                    </h4>
+                  </NuxtLink>
                   <h4
-                    class="font-medium text-green-800 dark:text-white truncate"
+                    v-else
+                    class="font-medium text-gray-800 dark:text-white line-clamp-2 leading-tight"
                   >
                     {{
                       currentProduct.owner_details?.store_name ||
                       "Anonymous Seller"
                     }}
                   </h4>
-                </NuxtLink>
-                <h4
-                  v-else
-                  class="font-medium text-gray-800 dark:text-white truncate"
+                </div>
+
+                <!-- Visit Store Button -->
+                <UButton
+                  v-if="
+                    currentProduct.owner_details?.store_username ||
+                    currentProduct.owner_details?.id
+                  "
+                  color="gray"
+                  variant="soft"
+                  size="xs"
+                  :to="`/eshop/${
+                    currentProduct.owner_details?.store_username ||
+                    currentProduct.owner_details?.id
+                  }`"
+                  icon="i-heroicons-building-storefront"
+                  class="flex-shrink-0"
                 >
-                  {{
-                    currentProduct.owner_details?.store_name ||
-                    "Anonymous Seller"
-                  }}
-                </h4>
+                  Visit Store
+                </UButton>
               </div>
 
               <!-- Pro and Verified Badges -->
@@ -487,65 +513,12 @@
               />
               <span class="text-gray-600 dark:text-slate-300">
                 Member since
-                {{ currentProduct.owner_details?.date_joined }}
+                {{ formatMemberSince(currentProduct.owner_details?.date_joined) }}
               </span>
             </div>
           </div>
 
           <!-- Contact Actions -->
-          <div
-            class="p-4 bg-slate-100 dark:bg-slate-800/80 flex flex-wrap gap-3"
-          >
-            <!-- Call Button -->
-            <UButton
-              v-if="currentProduct.seller?.phone"
-              color="primary"
-              variant="soft"
-              size="sm"
-              class="flex-1 min-w-0 sm:flex-initial"
-              :to="`tel:${currentProduct.seller?.phone}`"
-              icon="i-heroicons-phone"
-            >
-              Call Seller
-            </UButton>
-
-            <!-- WhatsApp Button -->
-            <UButton
-              v-if="
-                currentProduct.seller?.whatsapp || currentProduct.seller?.phone
-              "
-              color="green"
-              variant="soft"
-              size="sm"
-              class="flex-1 min-w-0 sm:flex-initial"
-              :to="`https://wa.me/${
-                currentProduct.seller?.whatsapp || currentProduct.seller?.phone
-              }`"
-              target="_blank"
-              icon="i-heroicons-chat-bubble-left-right"
-            >
-              WhatsApp
-            </UButton>
-
-            <!-- Store Button -->
-            <UButton
-              v-if="
-                currentProduct.owner_details?.store_username ||
-                currentProduct.owner_details?.id
-              "
-              color="gray"
-              variant="soft"
-              size="sm"
-              class="flex-1 min-w-0 sm:flex-initial"
-              :to="`/eshop/${
-                currentProduct.owner_details?.store_username ||
-                currentProduct.owner_details?.id
-              }`"
-              icon="i-heroicons-building-storefront"
-            >
-              Visit Store
-            </UButton>
-          </div>
         </div>
       </div>
 
@@ -583,64 +556,6 @@
             />
             Customer Reviews
           </h3>
-
-          <!-- Reviews Summary -->
-          <div class="bg-white dark:bg-slate-800/80 rounded-xl shadow-sm p-6">
-            <div class="flex flex-col md:flex-row gap-6 md:items-center">
-              <div
-                class="text-center md:border-r md:border-slate-200 dark:md:border-slate-700 md:pr-6"
-              >
-                <div
-                  class="text-2xl font-semibold text-gray-800 dark:text-white mb-2"
-                >
-                  {{ reviewsAverageRating }}
-                </div>
-                <div class="flex justify-center text-amber-400 my-1">
-                  <UIcon
-                    v-for="i in 5"
-                    :key="i"
-                    :name="
-                      i <= Math.round(parseFloat(reviewsAverageRating))
-                        ? 'i-heroicons-star-solid'
-                        : 'i-heroicons-star'
-                    "
-                    class="w-6 h-6"
-                    :class="
-                      i <= Math.round(parseFloat(reviewsAverageRating))
-                        ? 'text-amber-400'
-                        : 'text-gray-300 dark:text-gray-600'
-                    "
-                  />
-                </div>
-                <div class="text-sm text-slate-500 dark:text-slate-400">
-                  Based on {{ reviewsCount }} reviews
-                </div>
-              </div>
-
-              <div class="flex-1 space-y-2">
-                <div v-for="n in 5" :key="n" class="flex items-center">
-                  <div class="text-sm w-5 text-right mr-3">
-                    {{ 6 - n }}
-                  </div>
-                  <UIcon
-                    name="i-heroicons-star-solid"
-                    class="w-4 h-4 text-amber-400 mr-2"
-                  />
-                  <div
-                    class="flex-1 h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"
-                  >
-                    <div
-                      class="h-full bg-amber-400"
-                      :style="{ width: getRatingPercentage(6 - n) }"
-                    ></div>
-                  </div>
-                  <div class="text-sm w-10 text-left ml-3">
-                    {{ getRatingCount(6 - n) }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Featured Reviews with Pagination -->
           <div class="max-w-6xl mx-auto mb-10">
@@ -736,20 +651,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Empty state -->
-            <div v-else class="text-center">
-              <UIcon
-                name="i-heroicons-chat-bubble-bottom-center-text"
-                class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto my-2"
-              />
-              <p class="text-gray-500 dark:text-gray-400 text-lg">
-                No reviews yet
-              </p>
-              <p class="text-gray-400 dark:text-gray-500 text-sm">
-                Be the first to share your experience!
-              </p>
-            </div>
           </div>
 
           <!-- Pagination Controls -->
@@ -812,16 +713,6 @@
           <div
             class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 max-w-3xl mx-auto"
           >
-            <!-- Only show title if user can submit a review or needs to log in -->
-            <h3
-              v-if="
-                !isLoggedIn || (!userExistingReview && !isCheckingUserReview)
-              "
-              class="text-xl font-semibold mb-4 text-center"
-            >
-              Share Your Experience
-            </h3>
-
             <!-- Loading state for checking user review -->
             <div v-if="isCheckingUserReview" class="text-center p-6">
               <div
@@ -1351,6 +1242,21 @@ function calculateSavings(sale_price, regular_price) {
       : Number(regular_price);
 
   return (regular - current).toLocaleString();
+}
+
+function formatMemberSince(dateString) {
+  if (!dateString) return "Unknown";
+  
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long' 
+    });
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "Unknown";
+  }
 }
 
 // Dynamic rating computations
