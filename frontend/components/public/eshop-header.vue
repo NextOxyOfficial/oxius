@@ -397,7 +397,7 @@ const { get } = useApi();
 
 // Recent searches functionality
 const recentSearches = ref([]);
-const MAX_RECENT_SEARCHES = 10;
+const MAX_RECENT_SEARCHES = 12;
 const RECENT_SEARCHES_KEY = 'eshop_recent_searches';
 
 // Trending and hot products
