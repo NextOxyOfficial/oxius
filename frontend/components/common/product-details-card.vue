@@ -532,7 +532,8 @@
               More from this store
             </h4>
             <span v-if="totalStoreProducts > 0" class="text-xs text-slate-500 dark:text-slate-400">
-              {{ totalStoreProducts }} products
+              {{ storeProducts.length }} of {{ totalStoreProducts }} products
+              <span v-if="hasMoreStoreProducts" class="text-primary-500">(scroll for more)</span>
             </span>
           </div>
 
@@ -558,7 +559,7 @@
             @mousemove="handleMouseMove"
             @scroll="handleStoreProductsScroll"
           >
-            <div class="flex gap-4 w-max">
+            <div class="flex gap-2 w-max">
               <div
                 v-for="(product, index) in storeProducts"
                 :key="`store-${product.id}`"
@@ -575,13 +576,13 @@
               </div>
               
               <!-- Loading indicator for infinite scroll -->
-              <div v-if="isLoadingMoreStoreProducts" class="flex-shrink-0 w-40 flex items-center justify-center">
+              <div v-if="isLoadingMoreStoreProducts" class="flex-shrink-0 w-48 flex items-center justify-center">
                 <div class="flex flex-col items-center py-8">
                   <div class="w-6 h-6 relative">
                     <div class="w-full h-full rounded-full border-2 border-slate-300 dark:border-slate-600"></div>
                     <div class="w-full h-full rounded-full border-2 border-t-primary-500 animate-spin absolute top-0 left-0"></div>
                   </div>
-                  <span class="text-xs text-gray-600 dark:text-slate-400 mt-2 text-center">Loading...</span>
+                  <span class="text-xs text-gray-600 dark:text-slate-400 mt-2 text-center">Loading more products...</span>
                 </div>
               </div>
             </div>
@@ -1527,13 +1528,13 @@ async function fetchStoreProducts(page = 1, append = false) {
     isLoadingMoreStoreProducts.value = true;
   }
 
-  const pageSize = 6; // Products per page for horizontal scroll
+  const pageSize = page === 1 ? 5 : 10; // Initial load: 5 products, subsequent loads: 10 products
 
   try {
     const { get } = useApi();
     
-    // Calculate offset
-    const offset = (page - 1) * pageSize;
+    // Calculate offset - handle different page sizes correctly
+    const offset = page === 1 ? 0 : 5 + ((page - 2) * 10); // First page: 0, Second page: 5, Third page: 15, etc.
     
     let queryParams = `seller=${currentProduct.owner_details.id}&page_size=${pageSize}&offset=${offset}&ordering=-created_at`;
     
@@ -1545,17 +1546,32 @@ async function fetchStoreProducts(page = 1, append = false) {
         (product) => product.id !== currentProduct.id
       );
 
+      console.log(`Store products API response:`, {
+        page,
+        pageSize,
+        offset,
+        totalFromAPI: response.data.count,
+        receivedCount: response.data.results.length,
+        filteredCount: storeProductsList.length,
+        currentlyLoaded: storeProducts.value.length
+      });
+
       if (page === 1) {
         storeProducts.value = storeProductsList;
-        totalStoreProducts.value = response.data.count || 0;
+        totalStoreProducts.value = Math.max(0, (response.data.count || 0) - 1); // Subtract 1 for current product
       } else if (append) {
         storeProducts.value.push(...storeProductsList);
       }
 
-      // Check if we have more products
-      if (storeProductsList.length < pageSize || storeProducts.value.length >= (response.data.count - 1)) {
-        hasMoreStoreProducts.value = false;
-      }
+      // Check if we have more products - updated logic
+      const totalExpectedProducts = Math.max(0, (response.data.count || 0) - 1);
+      hasMoreStoreProducts.value = storeProducts.value.length < totalExpectedProducts && storeProductsList.length > 0;
+      
+      console.log(`Store products pagination status:`, {
+        hasMoreStoreProducts: hasMoreStoreProducts.value,
+        currentLoadedCount: storeProducts.value.length,
+        totalExpected: totalExpectedProducts
+      });
     } else {
       if (page === 1) {
         storeProducts.value = [];
@@ -1578,8 +1594,15 @@ async function fetchStoreProducts(page = 1, append = false) {
 
 // Load more store products
 async function loadMoreStoreProducts() {
-  if (!hasMoreStoreProducts.value || isLoadingMoreStoreProducts.value) return;
+  if (!hasMoreStoreProducts.value || isLoadingMoreStoreProducts.value) {
+    console.log('Cannot load more store products:', {
+      hasMore: hasMoreStoreProducts.value,
+      isLoading: isLoadingMoreStoreProducts.value
+    });
+    return;
+  }
   
+  console.log(`Loading page ${storeProductsPage.value + 1} of store products...`);
   storeProductsPage.value++;
   await fetchStoreProducts(storeProductsPage.value, true);
 }
@@ -1626,15 +1649,29 @@ function handleMouseMove(e) {
   container.scrollLeft = scrollLeft.value - walk;
 }
 
-// Handle horizontal scroll for infinite loading
+// Handle horizontal scroll for infinite loading with throttle
+let scrollTimeout = null;
 function handleStoreProductsScroll(e) {
-  const container = e.target;
-  const scrollPercentage = (container.scrollLeft + container.clientWidth) / container.scrollWidth;
-  
-  // Load more when 80% scrolled
-  if (scrollPercentage > 0.8 && hasMoreStoreProducts.value && !isLoadingMoreStoreProducts.value) {
-    loadMoreStoreProducts();
+  // Throttle scroll events to improve performance
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
   }
+  
+  scrollTimeout = setTimeout(() => {
+    const container = e.target;
+    const scrollLeft = container.scrollLeft;
+    const scrollWidth = container.scrollWidth;
+    const clientWidth = container.clientWidth;
+    
+    // Calculate how close we are to the end (within 100px of the end)
+    const isNearEnd = scrollLeft + clientWidth >= scrollWidth - 100;
+    
+    // Load more when near the end and we have more products to load
+    if (isNearEnd && hasMoreStoreProducts.value && !isLoadingMoreStoreProducts.value) {
+      console.log('Loading more store products...'); // Debug log
+      loadMoreStoreProducts();
+    }
+  }, 150); // Throttle to 150ms
 }
 
 const cart = useStoreCart();
@@ -2148,6 +2185,12 @@ onUnmounted(() => {
   if (intersectionObserver) {
     intersectionObserver.disconnect();
     intersectionObserver = null;
+  }
+  
+  // Clear scroll timeout
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = null;
   }
 });
 </script>
