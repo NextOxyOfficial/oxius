@@ -322,10 +322,16 @@
             v-if="loadingButtons.has('guest_home')"
             class="dotted-spinner green mb-1"
           ></div>
-          <UIcon
+          <!-- <UIcon
             v-else
             name="i-material-symbols:android-google-home"
             class="text-3xl text-green-400"
+          /> -->
+          <img
+            v-else
+            src="/static/frontend/favicon.png"
+            class="size-[26px]"
+            alt="AdsyClub Logo"
           />
         </NuxtLink>
 

@@ -131,7 +131,7 @@
               </button>
               <button
                 @click="removeRecentSearch(index)"
-                class="ml-2 p-0.5 hover:bg-gray-300 rounded-full transition-colors"
+                class="ml-2 flex p-0.5 hover:bg-gray-300 rounded-full transition-colors"
               >
                 <UIcon name="i-heroicons-x-mark" class="w-3 h-3 text-gray-500 hover:text-gray-700" />
               </button>
@@ -264,7 +264,7 @@
           >
             <span class="sr-only">Toggle categories</span>
             <UIcon
-              name="i-heroicons-ellipsis-horizontal"
+              name="streamline:interface-page-controller-loading-3-progress-loading-dot-load-wait-waiting"
               class="size-5 transition-transform group-hover:scale-110"
             />
           </button>
