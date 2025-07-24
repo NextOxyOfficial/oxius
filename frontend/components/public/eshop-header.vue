@@ -33,7 +33,7 @@
             >
               <UIcon
                 name="i-heroicons-magnifying-glass"
-                class="size-5 text-gray-400"
+                class="6 text-gray-400"
               />
             </div>
             <!-- Clear Button -->
@@ -241,7 +241,7 @@
             <span class="sr-only">Toggle categories</span>
             <UIcon
               name="i-heroicons-ellipsis-vertical"
-              class="size-5 transition-transform group-hover:scale-110"
+              class="size-6 transition-transform group-hover:scale-110"
             />
           </button>
 
