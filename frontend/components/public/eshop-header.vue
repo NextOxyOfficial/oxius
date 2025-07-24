@@ -330,8 +330,8 @@
                 class="p-2.5 bg-gray-100 rounded-full flex hover:bg-gray-200 transition-colors"
               >
                 <UIcon
-                  name="i-heroicons-magnifying-glass"
-                  class="size-5 text-gray-700"
+                  name="bx:search-alt"
+                  class="size-6 text-gray-700"
                 />
               </button>
               
