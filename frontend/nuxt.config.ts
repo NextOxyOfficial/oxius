@@ -49,7 +49,7 @@ export default defineNuxtConfig({
         },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         // PWA meta tags
-        { name: "theme-color", content: "#10b981" },
+        { name: "theme-color", content: "#ffffff" },
         { name: "apple-mobile-web-app-capable", content: "yes" },
         { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
         { name: "apple-mobile-web-app-title", content: "AdsyClub" },
