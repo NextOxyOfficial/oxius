@@ -18,8 +18,8 @@ const config: CapacitorConfig = {
       permissions: ['camera', 'photos']
     },
     StatusBar: {
-      style: 'light',
-      backgroundColor: '#10b981',
+      style: 'dark',
+      backgroundColor: '#ffffff',
       overlaysWebView: false
     }
   }
