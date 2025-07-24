@@ -228,7 +228,7 @@
       <div class="flex items-center justify-between gap-2">
         <!-- Left Section: Sidebar Toggle + Logo OR Back Button + Logo -->
         <div class="flex items-center gap-3">
-          <!-- Back Button for Product Details Page -->
+          <!-- Back Button for Product Details and Store Pages -->
           <button
             v-if="isProductDetailsPage"
             @click="navigateToEshop"
@@ -396,13 +396,14 @@ const showMobileSearchIcon = computed(() => {
   const currentPath = route.path;
   return (
     currentPath.startsWith("/eshop") || // Show on all eshop pages including main page
-    currentPath.includes("/product-details/")
+    currentPath.includes("/product-details/") ||
+    currentPath.includes("/store/")
   );
 });
 
-// Check if current route is product details page
+// Check if current route is product details page or store page
 const isProductDetailsPage = computed(() => {
-  return route.path.includes("/product-details/");
+  return route.path.includes("/product-details/") || route.path.includes("/eshop/") && route.path !== "/eshop";
 });
 
 // Navigation state
