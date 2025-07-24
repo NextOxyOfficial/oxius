@@ -520,6 +520,84 @@
 
           <!-- Contact Actions -->
         </div>
+
+        <!-- More from this store Section -->
+        <div v-if="storeProducts.length > 0 || isLoadingStoreProducts" class="mt-4 border-t border-slate-200 dark:border-slate-700/50 pt-4">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-medium text-gray-800 dark:text-white flex items-center">
+              <UIcon
+                name="i-heroicons-building-storefront"
+                class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400"
+              />
+              More from this store
+            </h4>
+            <span v-if="totalStoreProducts > 0" class="text-xs text-slate-500 dark:text-slate-400">
+              {{ totalStoreProducts }} products
+            </span>
+          </div>
+
+          <!-- Loading state for store products -->
+          <div v-if="isLoadingStoreProducts && storeProducts.length === 0" class="flex justify-center py-4">
+            <div class="flex items-center gap-2">
+              <div class="w-5 h-5 relative">
+                <div class="w-full h-full rounded-full border-2 border-slate-300 dark:border-slate-600"></div>
+                <div class="w-full h-full rounded-full border-2 border-t-primary-500 animate-spin absolute top-0 left-0"></div>
+              </div>
+              <span class="text-sm text-gray-600 dark:text-slate-400">Loading store products...</span>
+            </div>
+          </div>
+
+          <!-- Horizontal scrollable products container -->
+          <div 
+            v-else-if="storeProducts.length > 0"
+            ref="storeProductsContainer"
+            class="horizontal-scroll-container relative overflow-x-auto pb-2"
+            @mousedown="handleMouseDown"
+            @mouseleave="handleMouseLeave"
+            @mouseup="handleMouseUp"
+            @mousemove="handleMouseMove"
+            @scroll="handleStoreProductsScroll"
+          >
+            <div class="flex gap-4 w-max">
+              <div
+                v-for="(product, index) in storeProducts"
+                :key="`store-${product.id}`"
+                class="flex-shrink-0 w-48 sm:w-52 md:w-56 store-product-fade-in"
+                style="animation-delay: calc(var(--i) * 0.1s)"
+                :style="{ '--i': index % 6 }"
+              >
+                <CommonProductCard
+                  :product="product"
+                  :isInModal="true"
+                  @updateModalProduct="handleModalProductChange"
+                  class="h-full"
+                />
+              </div>
+              
+              <!-- Loading indicator for infinite scroll -->
+              <div v-if="isLoadingMoreStoreProducts" class="flex-shrink-0 w-40 flex items-center justify-center">
+                <div class="flex flex-col items-center py-8">
+                  <div class="w-6 h-6 relative">
+                    <div class="w-full h-full rounded-full border-2 border-slate-300 dark:border-slate-600"></div>
+                    <div class="w-full h-full rounded-full border-2 border-t-primary-500 animate-spin absolute top-0 left-0"></div>
+                  </div>
+                  <span class="text-xs text-gray-600 dark:text-slate-400 mt-2 text-center">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- No store products message -->
+          <div v-else class="text-center py-4">
+            <div class="bg-white dark:bg-slate-700/50 rounded-lg p-4 w-32 h-20 mx-auto flex items-center justify-center shadow-sm">
+              <UIcon
+                name="i-heroicons-building-storefront"
+                class="w-6 h-6 text-gray-400 dark:text-slate-500"
+              />
+            </div>
+            <p class="mt-2 text-sm text-gray-600 dark:text-slate-400">No other products from this store</p>
+          </div>
+        </div>
       </div>
 
       <!-- Product Full Description - Replaced tabs with direct content -->
@@ -983,6 +1061,105 @@
   </UCard>
 </template>
 
+<style scoped>
+/* Horizontal scroll container styling */
+.horizontal-scroll-container {
+  cursor: grab;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-track {
+  background: rgba(156, 163, 175, 0.1);
+  border-radius: 3px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
+}
+
+/* Smooth scrolling behavior */
+.horizontal-scroll-container {
+  scroll-behavior: smooth;
+}
+
+/* Fade-in animations */
+.similar-product-fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.store-product-fade-in {
+  opacity: 0;
+  transform: translateX(20px);
+  animation: fadeInLeft 0.6s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Horizontal scroll container styling */
+.horizontal-scroll-container {
+  cursor: grab;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+  scroll-behavior: smooth;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-track {
+  background: rgba(156, 163, 175, 0.1);
+  border-radius: 3px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
+}
+
+/* Savings badge animation */
+.savings-badge {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+</style>
+
 <script setup>
 const { currentProduct, modal, seeDetails } = defineProps({
   currentProduct: { type: Object, required: true },
@@ -1010,6 +1187,20 @@ const similarProductsContainer = ref(null);
 const similarProductsPage = ref(1);
 const hasMoreSimilarProducts = ref(true);
 const allLoadedSimilarProducts = ref([]);
+
+// Store products state
+const storeProducts = ref([]);
+const isLoadingStoreProducts = ref(false);
+const isLoadingMoreStoreProducts = ref(false);
+const storeProductsContainer = ref(null);
+const storeProductsPage = ref(1);
+const hasMoreStoreProducts = ref(true);
+const totalStoreProducts = ref(0);
+
+// Mouse drag state for horizontal scrolling
+const isDragging = ref(false);
+const startX = ref(0);
+const scrollLeft = ref(0);
 
 // Category-specific tracking for infinite scroll
 const sameCategoryPage = ref(1);
@@ -1322,6 +1513,128 @@ async function loadMoreSimilarProducts() {
   
   similarProductsPage.value++;
   await fetchSimilarProducts(similarProductsPage.value, true);
+}
+
+// Fetch store products from the same seller
+async function fetchStoreProducts(page = 1, append = false) {
+  if (!currentProduct?.owner_details?.id) return;
+
+  if (page === 1) {
+    isLoadingStoreProducts.value = true;
+    storeProductsPage.value = 1;
+    hasMoreStoreProducts.value = true;
+  } else {
+    isLoadingMoreStoreProducts.value = true;
+  }
+
+  const pageSize = 6; // Products per page for horizontal scroll
+
+  try {
+    const { get } = useApi();
+    
+    // Calculate offset
+    const offset = (page - 1) * pageSize;
+    
+    let queryParams = `seller=${currentProduct.owner_details.id}&page_size=${pageSize}&offset=${offset}&ordering=-created_at`;
+    
+    const response = await get(`/all-products/?${queryParams}`);
+
+    if (response && response.data && response.data.results) {
+      // Filter out current product
+      const storeProductsList = response.data.results.filter(
+        (product) => product.id !== currentProduct.id
+      );
+
+      if (page === 1) {
+        storeProducts.value = storeProductsList;
+        totalStoreProducts.value = response.data.count || 0;
+      } else if (append) {
+        storeProducts.value.push(...storeProductsList);
+      }
+
+      // Check if we have more products
+      if (storeProductsList.length < pageSize || storeProducts.value.length >= (response.data.count - 1)) {
+        hasMoreStoreProducts.value = false;
+      }
+    } else {
+      if (page === 1) {
+        storeProducts.value = [];
+        totalStoreProducts.value = 0;
+      }
+      hasMoreStoreProducts.value = false;
+    }
+  } catch (error) {
+    console.error("Error fetching store products:", error);
+    if (page === 1) {
+      storeProducts.value = [];
+      totalStoreProducts.value = 0;
+    }
+    hasMoreStoreProducts.value = false;
+  } finally {
+    isLoadingStoreProducts.value = false;
+    isLoadingMoreStoreProducts.value = false;
+  }
+}
+
+// Load more store products
+async function loadMoreStoreProducts() {
+  if (!hasMoreStoreProducts.value || isLoadingMoreStoreProducts.value) return;
+  
+  storeProductsPage.value++;
+  await fetchStoreProducts(storeProductsPage.value, true);
+}
+
+// Mouse drag handlers for horizontal scrolling
+function handleMouseDown(e) {
+  const container = storeProductsContainer.value;
+  if (!container) return;
+  
+  isDragging.value = true;
+  startX.value = e.pageX - container.offsetLeft;
+  scrollLeft.value = container.scrollLeft;
+  container.style.cursor = 'grabbing';
+  container.style.userSelect = 'none';
+}
+
+function handleMouseLeave() {
+  isDragging.value = false;
+  const container = storeProductsContainer.value;
+  if (container) {
+    container.style.cursor = 'grab';
+    container.style.userSelect = 'auto';
+  }
+}
+
+function handleMouseUp() {
+  isDragging.value = false;
+  const container = storeProductsContainer.value;
+  if (container) {
+    container.style.cursor = 'grab';
+    container.style.userSelect = 'auto';
+  }
+}
+
+function handleMouseMove(e) {
+  if (!isDragging.value) return;
+  
+  e.preventDefault();
+  const container = storeProductsContainer.value;
+  if (!container) return;
+  
+  const x = e.pageX - container.offsetLeft;
+  const walk = (x - startX.value) * 2; // Multiply by 2 for faster scrolling
+  container.scrollLeft = scrollLeft.value - walk;
+}
+
+// Handle horizontal scroll for infinite loading
+function handleStoreProductsScroll(e) {
+  const container = e.target;
+  const scrollPercentage = (container.scrollLeft + container.clientWidth) / container.scrollWidth;
+  
+  // Load more when 80% scrolled
+  if (scrollPercentage > 0.8 && hasMoreStoreProducts.value && !isLoadingMoreStoreProducts.value) {
+    loadMoreStoreProducts();
+  }
 }
 
 const cart = useStoreCart();
@@ -1780,6 +2093,12 @@ watch(
       hasMoreSimilarProducts.value = true;
       allLoadedSimilarProducts.value = [];
       
+      // Reset store products state
+      storeProducts.value = [];
+      storeProductsPage.value = 1;
+      hasMoreStoreProducts.value = true;
+      totalStoreProducts.value = 0;
+      
       // Reset category-specific state
       sameCategoryPage.value = 1;
       hasMoreSameCategoryProducts.value = true;
@@ -1792,7 +2111,8 @@ watch(
       fetchProductReviews(1), // Start from page 1
       fetchProductRatingStats(),
       checkUserExistingReview(),
-      fetchSimilarProducts(1) // Fetch first page of similar products
+      fetchSimilarProducts(1), // Fetch first page of similar products
+      fetchStoreProducts(1) // Fetch first page of store products
     ]);
     
     // Setup infinite scroll after products are loaded
