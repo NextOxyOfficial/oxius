@@ -10,7 +10,7 @@
         <!-- Back Button -->
         <button
           @click="closeMobileSearch"
-          class="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          class="p-2 flex rounded-full hover:bg-gray-100 transition-colors"
         >
           <UIcon name="i-heroicons-chevron-left" class="size-6 text-gray-600" />
         </button>
@@ -32,8 +32,8 @@
               class="absolute left-4 top-1/2 transform -translate-y-1/2 mt-1"
             >
               <UIcon
-                name="i-heroicons-magnifying-glass"
-                class="6 text-gray-400"
+                name="i-heroicons-magnifying-glass-20-solid"
+                class="size-6 text-gray-600 font-bold"
               />
             </div>
             <!-- Clear Button -->
