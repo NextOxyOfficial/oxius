@@ -66,13 +66,12 @@
         </p>
 
         <div class="grid grid-cols-2 gap-2">
-          <div
+          <CommonProductCard
             v-for="product in searchResults"
             :key="product.id"
-            @click="handleProductCardClick(product, $event)"
-          >
-            <CommonProductCard :product="product" />
-          </div>
+            :product="product"
+            :is-in-search-overlay="true"
+          />
         </div>
 
         <!-- Load More Button / Loading More -->
@@ -113,7 +112,10 @@
         <!-- Recent Searches Section -->
         <div v-if="recentSearches.length > 0" class="space-y-3">
           <h3 class="text-base font-semibold text-gray-900 flex items-center">
-            <UIcon name="i-heroicons-clock" class="w-5 h-5 mr-2 text-gray-500" />
+            <UIcon
+              name="i-heroicons-clock"
+              class="w-5 h-5 mr-2 text-gray-500"
+            />
             Recent Searches
           </h3>
           <div class="flex flex-wrap gap-2">
@@ -126,14 +128,20 @@
                 @click="selectRecentSearch(search)"
                 class="flex items-center hover:text-gray-900 transition-colors"
               >
-                <UIcon name="i-heroicons-magnifying-glass" class="w-3 h-3 mr-1.5 text-gray-400" />
+                <UIcon
+                  name="i-heroicons-magnifying-glass"
+                  class="w-3 h-3 mr-1.5 text-gray-400"
+                />
                 <span class="max-w-[120px] truncate">{{ search }}</span>
               </button>
               <button
                 @click="removeRecentSearch(index)"
                 class="ml-2 flex p-0.5 hover:bg-gray-300 rounded-full transition-colors"
               >
-                <UIcon name="i-heroicons-x-mark" class="w-3 h-3 text-gray-500 hover:text-gray-700" />
+                <UIcon
+                  name="i-heroicons-x-mark"
+                  class="w-3 h-3 text-gray-500 hover:text-gray-700"
+                />
               </button>
             </div>
           </div>
@@ -142,11 +150,17 @@
         <!-- Trending Searches Section -->
         <div class="space-y-3">
           <h3 class="text-base font-semibold text-gray-900 flex items-center">
-            <UIcon name="i-heroicons-fire" class="w-5 h-5 mr-2 text-orange-500" />
+            <UIcon
+              name="i-heroicons-fire"
+              class="w-5 h-5 mr-2 text-orange-500"
+            />
             Trending Searches
           </h3>
           <div v-if="isLoadingTrending" class="flex justify-center py-4">
-            <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin text-emerald-500" />
+            <UIcon
+              name="i-heroicons-arrow-path"
+              class="w-5 h-5 animate-spin text-emerald-500"
+            />
           </div>
           <div v-else class="flex flex-wrap gap-2">
             <button
@@ -167,19 +181,27 @@
             Hot Products
           </h3>
           <div v-if="isLoadingHotProducts" class="flex justify-center py-4">
-            <UIcon name="i-heroicons-arrow-path" class="w-5 h-5 animate-spin text-emerald-500" />
+            <UIcon
+              name="i-heroicons-arrow-path"
+              class="w-5 h-5 animate-spin text-emerald-500"
+            />
           </div>
-          <div v-else-if="hotProducts.length > 0" class="grid grid-cols-2 gap-2">
-            <div
+          <div
+            v-else-if="hotProducts.length > 0"
+            class="grid grid-cols-2 gap-2"
+          >
+            <CommonProductCard
               v-for="product in hotProducts"
               :key="product.id"
-              @click="handleProductCardClick(product, $event)"
-            >
-              <CommonProductCard :product="product" />
-            </div>
+              :product="product"
+              :is-in-search-overlay="true"
+            />
           </div>
           <div v-else class="text-center py-8">
-            <UIcon name="i-heroicons-shopping-bag" class="w-8 h-8 text-gray-300 mx-auto mb-2" />
+            <UIcon
+              name="i-heroicons-shopping-bag"
+              class="w-8 h-8 text-gray-300 mx-auto mb-2"
+            />
             <p class="text-sm text-gray-500">No hot products available</p>
           </div>
         </div>
@@ -187,27 +209,38 @@
         <!-- Suggestions based on previous searches -->
         <div v-if="suggestedProducts.length > 0" class="space-y-3">
           <h3 class="text-base font-semibold text-gray-900 flex items-center">
-            <UIcon name="i-heroicons-lightbulb" class="w-5 h-5 mr-2 text-yellow-500" />
+            <UIcon
+              name="i-heroicons-lightbulb"
+              class="w-5 h-5 mr-2 text-yellow-500"
+            />
             Suggested for You
           </h3>
           <div class="grid grid-cols-2 gap-2">
-            <div
+            <CommonProductCard
               v-for="product in suggestedProducts"
               :key="product.id"
-              @click="handleProductCardClick(product, $event)"
-            >
-              <CommonProductCard :product="product" />
-            </div>
+              :product="product"
+              :is-in-search-overlay="true"
+            />
           </div>
         </div>
 
         <!-- Empty State when no data -->
-        <div v-if="recentSearches.length === 0 && trendingSearches.length === 0 && hotProducts.length === 0" class="text-center py-12">
+        <div
+          v-if="
+            recentSearches.length === 0 &&
+            trendingSearches.length === 0 &&
+            hotProducts.length === 0
+          "
+          class="text-center py-12"
+        >
           <UIcon
             name="i-heroicons-magnifying-glass"
             class="w-12 h-12 text-gray-300 mx-auto mb-4"
           />
-          <h3 class="text-lg font-medium text-gray-900 mb-2">Search Products</h3>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">
+            Search Products
+          </h3>
           <p class="text-gray-500">
             Start typing to find products, brands, and categories
           </p>
@@ -240,10 +273,7 @@
             }"
           >
             <span class="sr-only">Back to eshop</span>
-            <div
-              v-if="isNavigating"
-              class="dotted-spinner text-gray-600"
-            ></div>
+            <div v-if="isNavigating" class="dotted-spinner text-gray-600"></div>
             <UIcon
               v-else
               name="i-heroicons-chevron-left"
@@ -329,19 +359,16 @@
                 @click="openMobileSearch"
                 class="p-2.5 bg-gray-100 rounded-full flex hover:bg-gray-200 transition-colors"
               >
-                <UIcon
-                  name="bx:search-alt"
-                  class="size-6 text-gray-700"
-                />
+                <UIcon name="bx:search-alt" class="size-6 text-gray-700" />
               </button>
-              
+
               <!-- Share Icon -->
               <button
                 @click="shareCurrentPage"
                 :disabled="isSharing"
                 class="p-2.5 bg-gray-100 rounded-full flex hover:bg-gray-200 transition-colors"
                 :class="{
-                  'opacity-50 cursor-not-allowed': isSharing
+                  'opacity-50 cursor-not-allowed': isSharing,
                 }"
               >
                 <div
@@ -363,7 +390,14 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+} from "vue";
 
 // Handle scroll events
 const isScrolled = ref(false);
@@ -398,7 +432,7 @@ const { get } = useApi();
 // Recent searches functionality
 const recentSearches = ref([]);
 const MAX_RECENT_SEARCHES = 12;
-const RECENT_SEARCHES_KEY = 'eshop_recent_searches';
+const RECENT_SEARCHES_KEY = "eshop_recent_searches";
 
 // Trending and hot products
 const trendingSearches = ref([]);
@@ -424,7 +458,10 @@ const showMobileSearchIcon = computed(() => {
 
 // Check if current route is product details page or store page
 const isProductDetailsPage = computed(() => {
-  return route.path.includes("/product-details/") || route.path.includes("/eshop/") && route.path !== "/eshop";
+  return (
+    route.path.includes("/product-details/") ||
+    (route.path.includes("/eshop/") && route.path !== "/eshop")
+  );
 });
 
 // Navigation state
@@ -436,20 +473,20 @@ const isSharing = ref(false);
 // Navigate to eshop page function
 async function navigateToEshop() {
   if (isNavigating.value) return;
-  
+
   isNavigating.value = true;
-  
+
   try {
     // Navigate to eshop and wait for route change to complete
-    await router.push('/eshop');
-    
+    await router.push("/eshop");
+
     // Wait for next tick to ensure component has fully navigated
     await nextTick();
-    
+
     // Wait for page to fully load by checking if we're actually on the eshop page
     await new Promise((resolve) => {
       const checkNavigation = () => {
-        if (route.path === '/eshop') {
+        if (route.path === "/eshop") {
           // Reduced delay for faster navigation feedback
           setTimeout(resolve, 100);
         } else {
@@ -460,7 +497,7 @@ async function navigateToEshop() {
       checkNavigation();
     });
   } catch (error) {
-    console.error('Navigation error:', error);
+    console.error("Navigation error:", error);
   } finally {
     isNavigating.value = false;
   }
@@ -469,32 +506,33 @@ async function navigateToEshop() {
 // Share current page function
 async function shareCurrentPage() {
   if (isSharing.value) return;
-  
+
   isSharing.value = true;
-  
+
   try {
     const currentUrl = window.location.href;
-    const pageTitle = document.title || 'Check out this page';
-    
+    const pageTitle = document.title || "Check out this page";
+
     // Check if Web Share API is supported (modern mobile browsers)
     if (navigator.share) {
       await navigator.share({
         title: pageTitle,
-        text: 'Check out this page on our e-commerce platform',
+        text: "Check out this page on our e-commerce platform",
         url: currentUrl,
       });
     } else {
       // Fallback: Copy to clipboard
       await navigator.clipboard.writeText(currentUrl);
-      
+
       // Show a toast notification (you can customize this based on your notification system)
       if (process.client) {
         // Create a simple toast notification
-        const toast = document.createElement('div');
-        toast.textContent = 'Link copied to clipboard!';
-        toast.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-lg z-[999999999] text-sm';
+        const toast = document.createElement("div");
+        toast.textContent = "Link copied to clipboard!";
+        toast.className =
+          "fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-lg z-[999999999] text-sm";
         document.body.appendChild(toast);
-        
+
         // Remove toast after 3 seconds
         setTimeout(() => {
           if (document.body.contains(toast)) {
@@ -504,15 +542,16 @@ async function shareCurrentPage() {
       }
     }
   } catch (error) {
-    console.error('Error sharing:', error);
-    
+    console.error("Error sharing:", error);
+
     // Show error toast
     if (process.client) {
-      const errorToast = document.createElement('div');
-      errorToast.textContent = 'Unable to share. Please try again.';
-      errorToast.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-[999999999] text-sm';
+      const errorToast = document.createElement("div");
+      errorToast.textContent = "Unable to share. Please try again.";
+      errorToast.className =
+        "fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-[999999999] text-sm";
       document.body.appendChild(errorToast);
-      
+
       setTimeout(() => {
         if (document.body.contains(errorToast)) {
           document.body.removeChild(errorToast);
@@ -532,15 +571,15 @@ async function openMobileSearch() {
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
   }
-  
+
   // Load initial data
   await Promise.all([
     loadRecentSearches(),
     loadTrendingSearches(),
     loadHotProducts(),
-    loadSuggestedProducts()
+    loadSuggestedProducts(),
   ]);
-  
+
   await nextTick();
   if (mobileSearchInput.value) {
     mobileSearchInput.value.focus();
@@ -672,7 +711,7 @@ function loadRecentSearches() {
         recentSearches.value = JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Error loading recent searches:', error);
+      console.error("Error loading recent searches:", error);
       recentSearches.value = [];
     }
   }
@@ -680,37 +719,43 @@ function loadRecentSearches() {
 
 function addToRecentSearches(searchTerm) {
   if (!searchTerm.trim()) return;
-  
+
   // Remove if already exists to avoid duplicates
-  const filtered = recentSearches.value.filter(term => 
-    term.toLowerCase() !== searchTerm.toLowerCase()
+  const filtered = recentSearches.value.filter(
+    (term) => term.toLowerCase() !== searchTerm.toLowerCase()
   );
-  
+
   // Add to beginning
   filtered.unshift(searchTerm);
-  
+
   // Keep only the most recent searches
   recentSearches.value = filtered.slice(0, MAX_RECENT_SEARCHES);
-  
+
   // Save to localStorage
   if (process.client) {
     try {
-      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recentSearches.value));
+      localStorage.setItem(
+        RECENT_SEARCHES_KEY,
+        JSON.stringify(recentSearches.value)
+      );
     } catch (error) {
-      console.error('Error saving recent searches:', error);
+      console.error("Error saving recent searches:", error);
     }
   }
 }
 
 function removeRecentSearch(index) {
   recentSearches.value.splice(index, 1);
-  
+
   // Update localStorage
   if (process.client) {
     try {
-      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recentSearches.value));
+      localStorage.setItem(
+        RECENT_SEARCHES_KEY,
+        JSON.stringify(recentSearches.value)
+      );
     } catch (error) {
-      console.error('Error updating recent searches:', error);
+      console.error("Error updating recent searches:", error);
     }
   }
 }
@@ -728,15 +773,23 @@ async function loadTrendingSearches() {
     // You can replace this with actual API endpoint for trending searches
     // For now, using mock data
     trendingSearches.value = [
-      'Electronics', 'Fashion', 'Home Decor', 'Books', 'Sports', 
-      'Beauty', 'Mobile', 'Laptop', 'Shoes', 'Watches'
+      "Electronics",
+      "Fashion",
+      "Home Decor",
+      "Books",
+      "Sports",
+      "Beauty",
+      "Mobile",
+      "Laptop",
+      "Shoes",
+      "Watches",
     ];
-    
+
     // If you have an API endpoint:
     // const { data } = await get('/trending-searches/');
     // trendingSearches.value = data?.searches || [];
   } catch (error) {
-    console.error('Error loading trending searches:', error);
+    console.error("Error loading trending searches:", error);
     trendingSearches.value = [];
   } finally {
     isLoadingTrending.value = false;
@@ -754,10 +807,12 @@ async function loadHotProducts() {
   isLoadingHotProducts.value = true;
   try {
     // Load popular/featured products
-    const { data } = await get('/all-products/?ordering=-views,-created_at&page_size=10');
+    const { data } = await get(
+      "/all-products/?ordering=-views,-created_at&page_size=10"
+    );
     hotProducts.value = data?.results || data || [];
   } catch (error) {
-    console.error('Error loading hot products:', error);
+    console.error("Error loading hot products:", error);
     hotProducts.value = [];
   } finally {
     isLoadingHotProducts.value = false;
@@ -771,18 +826,20 @@ async function loadSuggestedProducts() {
       suggestedProducts.value = [];
       return;
     }
-    
+
     // Use the most recent search terms to find suggestions
     const recentTerms = recentSearches.value.slice(0, 3);
-    const searchQuery = recentTerms.join(' ');
-    
+    const searchQuery = recentTerms.join(" ");
+
     if (searchQuery.trim()) {
-      const queryParams = `search=${encodeURIComponent(searchQuery)}&page_size=6&ordering=-created_at`;
+      const queryParams = `search=${encodeURIComponent(
+        searchQuery
+      )}&page_size=6&ordering=-created_at`;
       const { data } = await get(`/all-products/?${queryParams}`);
       suggestedProducts.value = data?.results || data || [];
     }
   } catch (error) {
-    console.error('Error loading suggested products:', error);
+    console.error("Error loading suggested products:", error);
     suggestedProducts.value = [];
   }
 }
@@ -793,19 +850,24 @@ async function loadMoreResults() {
   await performMobileSearch(true);
 }
 
-// Handle product click to close search overlay
-function handleProductCardClick(product, event) {
-  // Check if the click was on a NuxtLink (product title or image)
-  const target = event.target.closest('a[href*="product-details"]');
-  if (target) {
-    event.preventDefault();
-    closeMobileSearch();
-    // Navigate after a small delay to ensure search overlay is closed
-    setTimeout(() => {
-      router.push(target.getAttribute("href"));
-    }, 100);
-  }
+// Handle product navigation from product cards
+function handleProductNavigation(url) {
+  closeMobileSearch();
+  // Navigate after a small delay to ensure search overlay is closed
+  setTimeout(() => {
+    router.push(url);
+  }, 100);
 }
+
+// Watch for route changes to close mobile search
+watch(
+  () => route.path,
+  () => {
+    if (isMobileSearchActive.value) {
+      closeMobileSearch();
+    }
+  }
+);
 
 // Debounced search function
 let searchTimeout = null;

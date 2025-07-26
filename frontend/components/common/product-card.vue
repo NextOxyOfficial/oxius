@@ -149,20 +149,7 @@
       v-if="!isInModal"
       ref="productModal"
       v-model="isModalOpen"
-      :ui="{
-        width: 'w-full sm:max-w-4xl',
-        height: 'h-auto',
-        container: 'flex flex-col h-auto mt-20 p-0 sm:p-0',
-        padding: 'p-0',
-        transition: {
-          enter: 'duration-300 ease-out',
-          enterFrom: 'opacity-0 scale-95',
-          enterTo: 'opacity-100 scale-100',
-          leave: 'duration-200 ease-in',
-          leaveFrom: 'opacity-100 scale-100',
-          leaveTo: 'opacity-0 scale-95',
-        },
-      }"
+      :ui="modalUiConfig"
     >
       <div>
         <div class="bg-white dark:bg-slate-800 rounded-xl">
@@ -181,11 +168,13 @@
 
 <script setup>
 const { patch } = useApi();
-const { product, isInModal, onModalProductChange } = defineProps({
-  product: { type: Object, required: true },
-  isInModal: { type: Boolean, default: false },
-  onModalProductChange: { type: Function, default: null },
-});
+const { product, isInModal, onModalProductChange, isInSearchOverlay } =
+  defineProps({
+    product: { type: Object, required: true },
+    isInModal: { type: Boolean, default: false },
+    onModalProductChange: { type: Function, default: null },
+    isInSearchOverlay: { type: Boolean, default: false },
+  });
 
 // Define emits for parent communication
 const emit = defineEmits(["updateModalProduct"]);
@@ -198,6 +187,24 @@ const productModal = ref(null);
 const loadingStates = ref({});
 const cart = useStoreCart();
 const productCardRef = ref(null);
+
+// Computed property for modal UI configuration
+// When in search overlay (z-[999999999]), modal needs higher z-index to appear above it
+const modalUiConfig = computed(() => ({
+  wrapper: isInSearchOverlay ? "relative z-[99999999999]" : "relative z-50",
+  width: "w-full sm:max-w-4xl",
+  height: "h-auto",
+  container: "flex flex-col h-auto mt-20 p-0 sm:p-0",
+  padding: "p-0",
+  transition: {
+    enter: "duration-300 ease-out",
+    enterFrom: "opacity-0 scale-95",
+    enterTo: "opacity-100 scale-100",
+    leave: "duration-200 ease-in",
+    leaveFrom: "opacity-100 scale-100",
+    leaveTo: "opacity-0 scale-95",
+  },
+}));
 
 function getProductImage(item) {
   if (!item) return "/placeholder-image.jpg";
