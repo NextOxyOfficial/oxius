@@ -125,7 +125,7 @@
                       v-else
                       :src="`/static/frontend/images/globalconnection.png`"
                       alt="Business Network Icon"
-                      class="size-6"
+                      class="size-7"
                     />
                   </div>
                   <span>{{ $t("business_network") }}</span>
@@ -145,7 +145,7 @@
                       v-else
                       :src="`/static/frontend/images/news.png`"
                       alt="News Icon"
-                      class="size-6"
+                      class="size-7"
                     />
                   </div>
                   <span>{{ $t("adsy_news") }}</span>
@@ -165,7 +165,7 @@
                       v-else
                       :src="`/static/frontend/images/money.png`"
                       alt="Earn Money Icon"
-                      class="size-6"
+                      class="size-7"
                     />
                   </div>
                   <span>{{ $t("earn_money") }}</span>
@@ -185,7 +185,7 @@
                       v-else
                       :src="`/static/frontend/images/onlineshopping.png`"
                       alt="Eshop Icon"
-                      class="size-6"
+                      class="size-7"
                     />
                   </div>
                   <span>{{ $t("eshop") }}</span>
@@ -205,7 +205,7 @@
                       v-else
                       :src="`/static/frontend/images/sign.png`"
                       alt="Sale Listings Icon"
-                      class="size-6"
+                      class="size-7"
                     />
                   </div>
                   <span>{{ $t("sale_listing") }}</span>
@@ -226,7 +226,7 @@
                       v-else
                       :src="`/static/frontend/images/question.png`"
                       alt="MindForce Icon"
-                      class="size-6"
+                      class="size-7"
                     />
                   </div>
                   <span>{{ $t("mindforce") }}</span>
@@ -247,7 +247,7 @@
                       v-else
                       :src="`/static/frontend/images/onlinelearning.png`"
                       alt="E-learning Icon"
-                      class="size-6"
+                      class="size-7"
                     />
                   </div>
                   <span>{{ $t("elearning") }}</span>
@@ -260,7 +260,7 @@
                     <img
                       :src="`/static/frontend/images/medicalreport.png`"
                       alt="Health Service Icon"
-                      class="size-6 opacity-60"
+                      class="size-7 opacity-60"
                     />
                   </div>
                   <div class="h-12 flex items-center justify-center">
@@ -280,7 +280,7 @@
                     <img
                       :src="`/static/frontend/images/payment.png`"
                       alt="Bill Pay Icon"
-                      class="size-6 opacity-60"
+                      class="size-7 opacity-60"
                     />
                   </div>
                   <div class="h-12 flex items-center justify-center">
@@ -306,7 +306,7 @@
                       v-else
                       :src="`/static/frontend/images/mobileapp.png`"
                       alt="Mobile Recharge Icon"
-                      class="size-6"
+                      class="size-7"
                     />
                   </div>
                   <span>{{ $t("mobile_recharge") }}</span>
@@ -326,7 +326,7 @@
                       v-else
                       :src="`/static/frontend/images/transaction.png`"
                       alt="Transactions Icon"
-                      class="size-6"
+                      class="size-7"
                     />
                   </div>
                   <span>{{ $t("adsy_pay") }}</span>
@@ -347,7 +347,7 @@
                       v-else
                       :src="`/static/frontend/images/premium.png`"
                       alt="Membership Icon"
-                      class="size-6"
+                      class="size-7"
                     />
                   </div>
                   <span>{{ $t("packeges") }}</span>
@@ -380,7 +380,7 @@
               v-else
               :src="`/static/frontend/images/globalconnection.png`"
               alt="Business Network Icon"
-              class="w-6 h-6"
+              class="size-7"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -404,7 +404,7 @@
               v-else
               :src="`/static/frontend/images/news.png`"
               alt="News Icon"
-              class="w-6 h-6"
+              class="size-7"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -428,7 +428,7 @@
               v-else
               :src="`/static/frontend/images/money.png`"
               alt="Earn Money Icon"
-              class="w-6 h-6"
+              class="size-7"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -452,7 +452,7 @@
               v-else
               :src="`/static/frontend/images/onlineshopping.png`"
               alt="Eshop Icon"
-              class="w-6 h-6"
+              class="size-7"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -476,7 +476,7 @@
               v-else
               :src="`/static/frontend/images/sign.png`"
               alt="Sale Listings Icon"
-              class="w-6 h-6"
+              class="size-7"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -500,7 +500,7 @@
               v-else
               :src="`/static/frontend/images/question.png`"
               alt="MindForce Icon"
-              class="w-6 h-6"
+              class="size-7"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -525,7 +525,7 @@
               v-else
               :src="`/static/frontend/images/onlinelearning.png`"
               alt="E-learning Icon"
-              class="w-6 h-6"
+              class="size-7"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -542,7 +542,7 @@
             <img
               :src="`/static/frontend/images/medicalreport.png`"
               alt="Health Service Icon"
-              class="w-6 h-6 opacity-60"
+              class="size-7 opacity-60"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -564,7 +564,7 @@
             <img
               :src="`/static/frontend/images/payment.png`"
               alt="Bill Pay Icon"
-              class="w-6 h-6 opacity-60"
+              class="size-7 opacity-60"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -592,7 +592,7 @@
               v-else
               :src="`/static/frontend/images/mobileapp.png`"
               alt="Mobile Recharge Icon"
-              class="w-6 h-6"
+              class="size-7"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -616,7 +616,7 @@
               v-else
               :src="`/static/frontend/images/transaction.png`"
               alt="Transactions Icon"
-              class="w-6 h-6"
+              class="size-7"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
@@ -641,7 +641,7 @@
               v-else
               :src="`/static/frontend/images/premium.png`"
               alt="Membership Icon"
-              class="w-6 h-6"
+              class="size-7"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
