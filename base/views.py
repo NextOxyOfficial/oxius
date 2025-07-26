@@ -4167,3 +4167,20 @@ def markAdminNoticeAsRead(request, notice_id):
         return Response({"message": "Notice marked as read"}, status=status.HTTP_200_OK)
     except AdminNotice.DoesNotExist:
         return Response({"error": "Notice not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class CountryVersionListView(generics.ListAPIView):
+    """
+    View to retrieve country version information.
+    """
+
+    queryset = CountryVersion.objects.all()
+    serializer_class = CountryVersionSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        # Optionally filter by country code if provided
+        country_code = self.request.query_params.get("country_code", None)
+        if country_code:
+            return self.queryset.filter(country__code=country_code)
+        return self.queryset.all()

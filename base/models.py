@@ -1309,3 +1309,15 @@ class AndroidAppVersion(models.Model):
 class AILink(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     link = models.URLField()
+
+
+class CountryVersion(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=50, unique=True)
+    flag = models.CharField(max_length=50, blank=True, null=True)
+    currency = models.CharField(max_length=10, blank=True, null=True)
+    timezone = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
