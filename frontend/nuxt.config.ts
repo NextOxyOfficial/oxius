@@ -4,8 +4,9 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   colorMode: {
     preference: "light",
-  },  ssr: false,
-  
+  },
+  ssr: false,
+
   css: ["~/assets/css/main.css", "~/assets/css/toast.css"],
   modules: [
     "@nuxt/ui",
@@ -51,11 +52,15 @@ export default defineNuxtConfig({
         // PWA meta tags
         { name: "theme-color", content: "#ffffff" },
         { name: "apple-mobile-web-app-capable", content: "yes" },
-        { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+        {
+          name: "apple-mobile-web-app-status-bar-style",
+          content: "black-translucent",
+        },
         { name: "apple-mobile-web-app-title", content: "AdsyClub" },
         { name: "mobile-web-app-capable", content: "yes" },
         { name: "application-name", content: "AdsyClub" },
-      ],      link: [
+      ],
+      link: [
         {
           rel: "icon",
           type: "image/x-icon",
@@ -91,7 +96,8 @@ export default defineNuxtConfig({
         {
           rel: "apple-touch-startup-image",
           href: "/static/frontend/icons/splash-640x1136.png",
-          media: "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)",
+          media:
+            "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)",
         },
         // Swiper CSS
         {
@@ -106,46 +112,50 @@ export default defineNuxtConfig({
         },
       ],
     },
-  },  runtimeConfig: {
+  },
+  runtimeConfig: {
     public: {
       baseURL: "http://127.0.0.1:8000",
       domain: "http://localhost:3000",
-      cookieOptions: {        default: {
+      cookieOptions: {
+        default: {
           httpOnly: false,
           secure: false, // Set to true in production with HTTPS
-          sameSite: 'lax',
+          sameSite: "lax",
           maxAge: 60 * 60 * 24 * 365, // 1 year for long-term persistence (location, preferences)
-        }
-      }
+        },
+      },
     },
-  },  $production: {
+  },
+  $production: {
     runtimeConfig: {
       public: {
         baseURL: "https://adsyclub.com",
         domain: "https://adsyclub.com",
-        cookieOptions: {          default: {
+        cookieOptions: {
+          default: {
             httpOnly: false,
             secure: true, // Enable secure cookies in production with HTTPS
-            sameSite: 'lax',
+            sameSite: "lax",
             maxAge: 60 * 60 * 24 * 365, // 1 year for long-term persistence
-          }
-        }
+          },
+        },
       },
     },
-  },image: {
+  },
+  image: {
     dir: "/static/frontend/",
   },
   pages: true, // Enable file-based routing
-  
+
   // Configure static file serving for APK files
   nitro: {
     publicAssets: [
       {
-        baseURL: '/',
-        dir: 'public',
-        maxAge: 60 * 60 * 24 * 365 // Cache APK files for 1 year
-      }
-    ]
+        baseURL: "/",
+        dir: "public",
+        maxAge: 60 * 60 * 24 * 365, // Cache APK files for 1 year
+      },
+    ],
   },
-  
 });

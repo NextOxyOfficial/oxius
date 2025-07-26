@@ -123,7 +123,7 @@
                     ></div>
                     <img
                       v-else
-                      src="/hero-icons/global-connection.png"
+                      :src="`/static/frontend/images/globalconnection.png`"
                       alt="Business Network Icon"
                       class="size-6"
                     />
@@ -143,7 +143,7 @@
                     ></div>
                     <img
                       v-else
-                      src="/hero-icons/news.png"
+                      :src="`/static/frontend/images/news.png`"
                       alt="News Icon"
                       class="size-6"
                     />
@@ -163,7 +163,7 @@
                     ></div>
                     <img
                       v-else
-                      src="/hero-icons/money.png"
+                      :src="`/static/frontend/images/money.png`"
                       alt="Earn Money Icon"
                       class="size-6"
                     />
@@ -183,7 +183,7 @@
                     ></div>
                     <img
                       v-else
-                      src="/hero-icons/online-shopping.png"
+                      :src="`/static/frontend/images/onlineshopping.png`"
                       alt="Eshop Icon"
                       class="size-6"
                     />
@@ -203,7 +203,7 @@
                     ></div>
                     <img
                       v-else
-                      src="/hero-icons/sign.png"
+                      :src="`/static/frontend/images/sign.png`"
                       alt="Sale Listings Icon"
                       class="size-6"
                     />
@@ -224,7 +224,7 @@
                     ></div>
                     <img
                       v-else
-                      src="/hero-icons/question.png"
+                      :src="`/static/frontend/images/question.png`"
                       alt="MindForce Icon"
                       class="size-6"
                     />
@@ -245,7 +245,7 @@
                     ></div>
                     <img
                       v-else
-                      src="/hero-icons/online-learning.png"
+                      :src="`/static/frontend/images/onlinelearning.png`"
                       alt="E-learning Icon"
                       class="size-6"
                     />
@@ -258,7 +258,7 @@
                 >
                   <div class="icon-circle bg-gray-100">
                     <img
-                      src="/hero-icons/medical-report.png"
+                      :src="`/static/frontend/images/medicalreport.png`"
                       alt="Health Service Icon"
                       class="size-6 opacity-60"
                     />
@@ -278,7 +278,7 @@
                 >
                   <div class="icon-circle bg-gray-100">
                     <img
-                      src="/hero-icons/payment.png"
+                      :src="`/static/frontend/images/payment.png`"
                       alt="Bill Pay Icon"
                       class="size-6 opacity-60"
                     />
@@ -304,7 +304,7 @@
                     ></div>
                     <img
                       v-else
-                      src="/hero-icons/mobile-app.png"
+                      :src="`/static/frontend/images/mobileapp.png`"
                       alt="Mobile Recharge Icon"
                       class="size-6"
                     />
@@ -324,7 +324,7 @@
                     ></div>
                     <img
                       v-else
-                      src="/hero-icons/transaction.png"
+                      :src="`/static/frontend/images/transaction.png`"
                       alt="Transactions Icon"
                       class="size-6"
                     />
@@ -345,7 +345,7 @@
                     ></div>
                     <img
                       v-else
-                      src="/hero-icons/premium.png"
+                      :src="`/static/frontend/images/premium.png`"
                       alt="Membership Icon"
                       class="size-6"
                     />
@@ -378,7 +378,7 @@
             ></div>
             <img
               v-else
-              src="/hero-icons/global-connection.png"
+              :src="`/static/frontend/images/globalconnection.png`"
               alt="Business Network Icon"
               class="w-6 h-6"
             />
@@ -402,7 +402,7 @@
             ></div>
             <img
               v-else
-              src="/hero-icons/news.png"
+              :src="`/static/frontend/images/news.png`"
               alt="News Icon"
               class="w-6 h-6"
             />
@@ -426,7 +426,7 @@
             ></div>
             <img
               v-else
-              src="/hero-icons/money.png"
+              :src="`/static/frontend/images/money.png`"
               alt="Earn Money Icon"
               class="w-6 h-6"
             />
@@ -450,7 +450,7 @@
             ></div>
             <img
               v-else
-              src="/hero-icons/online-shopping.png"
+              :src="`/static/frontend/images/onlineshopping.png`"
               alt="Eshop Icon"
               class="w-6 h-6"
             />
@@ -474,7 +474,7 @@
             ></div>
             <img
               v-else
-              src="/hero-icons/sign.png"
+              :src="`/static/frontend/images/sign.png`"
               alt="Sale Listings Icon"
               class="w-6 h-6"
             />
@@ -498,7 +498,7 @@
             ></div>
             <img
               v-else
-              src="/hero-icons/question.png"
+              :src="`/static/frontend/images/question.png`"
               alt="MindForce Icon"
               class="w-6 h-6"
             />
@@ -523,7 +523,7 @@
             ></div>
             <img
               v-else
-              src="/hero-icons/online-learning.png"
+              :src="`/static/frontend/images/onlinelearning.png`"
               alt="E-learning Icon"
               class="w-6 h-6"
             />
@@ -540,7 +540,7 @@
         >
           <div class="mobile-icon-circle bg-gray-100">
             <img
-              src="/hero-icons/medical-report.png"
+              :src="`/static/frontend/images/medicalreport.png`"
               alt="Health Service Icon"
               class="w-6 h-6 opacity-60"
             />
@@ -562,7 +562,7 @@
         >
           <div class="mobile-icon-circle bg-gray-100">
             <img
-              src="/hero-icons/payment.png"
+              :src="`/static/frontend/images/payment.png`"
               alt="Bill Pay Icon"
               class="w-6 h-6 opacity-60"
             />
@@ -590,7 +590,7 @@
             ></div>
             <img
               v-else
-              src="/hero-icons/mobile-app.png"
+              :src="`/static/frontend/images/mobileapp.png`"
               alt="Mobile Recharge Icon"
               class="w-6 h-6"
             />
@@ -614,7 +614,7 @@
             ></div>
             <img
               v-else
-              src="/hero-icons/transaction.png"
+              :src="`/static/frontend/images/transaction.png`"
               alt="Transactions Icon"
               class="w-6 h-6"
             />
@@ -639,7 +639,7 @@
             ></div>
             <img
               v-else
-              src="/hero-icons/premium.png"
+              :src="`/static/frontend/images/premium.png`"
               alt="Membership Icon"
               class="w-6 h-6"
             />
