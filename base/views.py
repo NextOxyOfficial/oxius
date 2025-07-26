@@ -2484,6 +2484,17 @@ class AllProductsListView(generics.ListAPIView):
         if max_price:
             queryset = queryset.filter(sale_price__lte=max_price)
 
+        # Optional filtering by owner (product seller)
+        owner_id = self.request.query_params.get("owner", None)
+        if owner_id and owner_id.strip():
+            try:
+                # Validate that owner_id is a valid UUID before using it
+                uuid.UUID(str(owner_id))
+                queryset = queryset.filter(owner__id=owner_id)
+            except (ValueError, AttributeError):
+                # Invalid UUID format, ignore the filter
+                pass
+
         return queryset
 
     def get_random_products_from_categories(self, limit=None):
@@ -2667,6 +2678,7 @@ class StoreProductsListView(generics.ListAPIView):
 
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
+    pagination_class = ProductPagination
 
     def get_queryset(self):
         """Return products owned by the user with the specified store_username"""

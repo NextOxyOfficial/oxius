@@ -32,7 +32,7 @@
               >
                 {{ capitalizedProductName }}
               </h3>
-              
+
               <!-- Category, Weight, and Rating under product name -->
               <div class="flex items-center gap-3 mt-2 ml-1 flex-wrap">
                 <!-- Category Badge -->
@@ -42,9 +42,11 @@
                   variant="subtle"
                   class="uppercase text-xs tracking-wider"
                 >
-                  {{ currentProduct?.category_details[0]?.name || "Uncategorized" }}
+                  {{
+                    currentProduct?.category_details[0]?.name || "Uncategorized"
+                  }}
                 </UBadge>
-                
+
                 <!-- Weight -->
                 <div
                   v-if="currentProduct.weight && currentProduct.weight > 0"
@@ -52,7 +54,7 @@
                 >
                   Weight: {{ currentProduct.weight }}kg
                 </div>
-                
+
                 <!-- Ratings section with dynamic data -->
                 <div class="flex items-center gap-2">
                   <div class="rating-stars relative inline-block">
@@ -90,7 +92,7 @@
                 </div>
               </div>
             </div>
-            
+
             <UButton
               v-if="seeDetails"
               icon="i-heroicons-x-mark"
@@ -108,7 +110,7 @@
 
     <div>
       <!-- Two-column layout remains the same -->
-      <div class="grid grid-cols-1 md:grid-cols-2 ">
+      <div class="grid grid-cols-1 md:grid-cols-2">
         <!-- Left column with images remains the same -->
         <div>
           <!-- Main Image with Glass Effect Border -->
@@ -513,7 +515,9 @@
               />
               <span class="text-gray-600 dark:text-slate-300">
                 Member since
-                {{ formatMemberSince(currentProduct.owner_details?.date_joined) }}
+                {{
+                  formatMemberSince(currentProduct.owner_details?.date_joined)
+                }}
               </span>
             </div>
           </div>
@@ -522,14 +526,29 @@
         </div>
 
         <!-- More from this store Section -->
-        <div v-if="storeProducts.length > 0 || isLoadingStoreProducts" class="mt-4 border-t border-slate-200 dark:border-slate-700/50 pt-4">
+        <div
+          v-if="
+            storeProducts.length > 0 ||
+            isLoadingStoreProducts ||
+            totalStoreProducts > 0
+          "
+          class="mt-4 border-t border-slate-200 dark:border-slate-700/50 pt-4"
+        >
           <div class="flex items-center justify-between mb-3">
-            <h4 class="font-medium text-gray-800 dark:text-white flex items-center">
+            <h4
+              class="font-medium text-gray-800 dark:text-white flex items-center"
+            >
               <UIcon
                 name="i-heroicons-shopping-bag"
                 class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400"
               />
               More from this store
+              <span
+                v-if="totalStoreProducts > 0"
+                class="ml-2 text-xs text-gray-500"
+              >
+                ({{ totalStoreProducts }} products)
+              </span>
             </h4>
           </div>
 
@@ -537,15 +556,21 @@
           <div v-if="isLoadingStoreProducts" class="flex justify-center py-4">
             <div class="flex items-center gap-2">
               <div class="w-5 h-5 relative">
-                <div class="w-full h-full rounded-full border-2 border-slate-300 dark:border-slate-600"></div>
-                <div class="w-full h-full rounded-full border-2 border-t-primary-500 animate-spin absolute top-0 left-0"></div>
+                <div
+                  class="w-full h-full rounded-full border-2 border-slate-300 dark:border-slate-600"
+                ></div>
+                <div
+                  class="w-full h-full rounded-full border-2 border-t-primary-500 animate-spin absolute top-0 left-0"
+                ></div>
               </div>
-              <span class="text-sm text-gray-600 dark:text-slate-400">Loading store products...</span>
+              <span class="text-sm text-gray-600 dark:text-slate-400"
+                >Loading store products...</span
+              >
             </div>
           </div>
 
           <!-- Horizontal scrollable products container -->
-          <div 
+          <div
             v-else-if="storeProducts.length > 0"
             ref="storeProductsContainer"
             class="horizontal-scroll-container relative overflow-x-auto pb-2"
@@ -570,22 +595,54 @@
                   class="h-full"
                 />
               </div>
-              
+
               <!-- Enhanced Loading indicator for infinite scroll -->
-              <div v-if="isLoadingMoreStoreProducts" class="flex-shrink-0 w-48 sm:w-52 md:w-56 flex items-center justify-center">
-                <div class="flex flex-col items-center justify-center py-12 px-4 h-full">
+              <div
+                v-if="isLoadingMoreStoreProducts"
+                class="flex-shrink-0 w-48 sm:w-52 md:w-56 flex items-center justify-center"
+              >
+                <div
+                  class="flex flex-col items-center justify-center py-12 px-4 h-full"
+                >
                   <div class="w-8 h-8 relative mb-3">
-                    <div class="w-full h-full rounded-full border-3 border-t-blue-500 dark:border-t-blue-400 border-transparent" style="animation: spinGlow 1.2s linear infinite;"></div>
+                    <div
+                      class="w-full h-full rounded-full border-3 border-t-blue-500 dark:border-t-blue-400 border-transparent"
+                      style="animation: spinGlow 1.2s linear infinite"
+                    ></div>
                   </div>
                   <div class="text-center">
-                    <p class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Loading more</p>
-                    <p class="text-xs text-gray-500 dark:text-slate-400">store products...</p>
+                    <p
+                      class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1"
+                    >
+                      Loading more
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-slate-400">
+                      store products...
+                    </p>
                   </div>
                   <!-- Animated dots with enhanced timing -->
                   <div class="flex gap-1 mt-2">
-                    <div class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0s"></div>
-                    <div class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0.2s"></div>
-                    <div class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0.4s"></div>
+                    <div
+                      class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full"
+                      style="
+                        animation: dotPulse 1.4s infinite;
+                        animation-delay: 0s;
+                      "
+                    ></div>
+                    <div
+                      class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full"
+                      style="
+                        animation: dotPulse 1.4s infinite;
+                        animation-delay: 0.2s;
+                      "
+                    ></div>
+                    <div
+                      class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full"
+                      style="
+                        animation: dotPulse 1.4s infinite;
+                        animation-delay: 0.4s;
+                      "
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -594,13 +651,17 @@
 
           <!-- No store products message -->
           <div v-else class="text-center py-4">
-            <div class="bg-white dark:bg-slate-700/50 rounded-lg p-4 w-32 h-20 mx-auto flex items-center justify-center shadow-sm">
+            <div
+              class="bg-white dark:bg-slate-700/50 rounded-lg p-4 w-32 h-20 mx-auto flex items-center justify-center shadow-sm"
+            >
               <UIcon
                 name="i-heroicons-building-storefront"
                 class="w-6 h-6 text-gray-400 dark:text-slate-500"
               />
             </div>
-            <p class="mt-2 text-sm text-gray-600 dark:text-slate-400">No other products from this store</p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-slate-400">
+              No other products from this store
+            </p>
           </div>
         </div>
       </div>
@@ -961,7 +1022,10 @@
             />
             {{ similarProductsTitle }}
           </h3>
-          <div v-if="isSimilarProductsLoading && similarProducts.length === 0" class="flex justify-center py-6">
+          <div
+            v-if="isSimilarProductsLoading && similarProducts.length === 0"
+            class="flex justify-center py-6"
+          >
             <div class="flex flex-col items-center">
               <div class="w-10 h-10 relative">
                 <div
@@ -972,7 +1036,11 @@
                 ></div>
               </div>
               <p class="text-sm text-gray-600 dark:text-slate-400 mt-3">
-                {{ isLoadingSameCategory ? 'Loading same category products...' : 'Loading similar products...' }}
+                {{
+                  isLoadingSameCategory
+                    ? "Loading same category products..."
+                    : "Loading similar products..."
+                }}
               </p>
             </div>
           </div>
@@ -994,7 +1062,7 @@
           </div>
           <div v-else>
             <!-- Infinite Scroll Similar Products Grid -->
-            <div 
+            <div
               ref="similarProductsContainer"
               class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pb-4"
             >
@@ -1012,24 +1080,56 @@
                 />
               </div>
             </div>
-            
+
             <!-- Enhanced Loading indicator for infinite scroll -->
-            <div v-if="isLoadingMoreSimilarProducts" class="flex justify-center py-6">
+            <div
+              v-if="isLoadingMoreSimilarProducts"
+              class="flex justify-center py-6"
+            >
               <div class="flex flex-col items-center gap-3 px-6 py-8">
                 <div class="w-8 h-8 relative">
-                  <div class="w-full h-full rounded-full border-3 border-t-emerald-500 dark:border-t-emerald-400 border-transparent" style="animation: spinGlow 1.2s linear infinite;"></div>
+                  <div
+                    class="w-full h-full rounded-full border-3 border-t-emerald-500 dark:border-t-emerald-400 border-transparent"
+                    style="animation: spinGlow 1.2s linear infinite"
+                  ></div>
                 </div>
                 <div class="text-center">
-                  <p class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Loading more</p>
+                  <p
+                    class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1"
+                  >
+                    Loading more
+                  </p>
                   <p class="text-xs text-gray-500 dark:text-slate-400">
-                    {{ isLoadingSameCategory ? 'from same category...' : 'similar products...' }}
+                    {{
+                      isLoadingSameCategory
+                        ? "from same category..."
+                        : "similar products..."
+                    }}
                   </p>
                 </div>
                 <!-- Animated dots with enhanced timing -->
                 <div class="flex gap-1">
-                  <div class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0s"></div>
-                  <div class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0.2s"></div>
-                  <div class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full" style="animation: dotPulse 1.4s infinite; animation-delay: 0.4s"></div>
+                  <div
+                    class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full"
+                    style="
+                      animation: dotPulse 1.4s infinite;
+                      animation-delay: 0s;
+                    "
+                  ></div>
+                  <div
+                    class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full"
+                    style="
+                      animation: dotPulse 1.4s infinite;
+                      animation-delay: 0.2s;
+                    "
+                  ></div>
+                  <div
+                    class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full"
+                    style="
+                      animation: dotPulse 1.4s infinite;
+                      animation-delay: 0.4s;
+                    "
+                  ></div>
                 </div>
               </div>
             </div>
@@ -1135,7 +1235,8 @@
 
 /* Custom pulse animation for loading dots */
 @keyframes dotPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(0.8);
   }
@@ -1146,7 +1247,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -1300,7 +1402,7 @@ async function fetchSimilarProducts(page = 1, append = false) {
     similarProductsPage.value = 1;
     hasMoreSimilarProducts.value = true;
     allLoadedSimilarProducts.value = [];
-    
+
     // Reset category-specific tracking
     sameCategoryPage.value = 1;
     hasMoreSameCategoryProducts.value = true;
@@ -1339,25 +1441,32 @@ async function fetchSimilarProducts(page = 1, append = false) {
     }
 
     // Phase 1: Load same category products first
-    if (isLoadingSameCategory.value && primaryCategoryId && hasMoreSameCategoryProducts.value) {
+    if (
+      isLoadingSameCategory.value &&
+      primaryCategoryId &&
+      hasMoreSameCategoryProducts.value
+    ) {
       try {
         // Calculate offset for same category pagination
         const sameCategoryOffset = (sameCategoryPage.value - 1) * pageSize;
-        
+
         let queryParams = `category=${primaryCategoryId}&page_size=${pageSize}&offset=${sameCategoryOffset}&ordering=-created_at`;
         const sameCategory = await get(`/all-products/?${queryParams}`);
 
         if (sameCategory && sameCategory.data && sameCategory.data.results) {
           // Filter out current product and already loaded products
           const sameCategoryProducts = sameCategory.data.results.filter(
-            (product) => product.id !== currentProduct.id &&
-            !allLoadedSameCategoryProducts.value.some(existing => existing.id === product.id)
+            (product) =>
+              product.id !== currentProduct.id &&
+              !allLoadedSameCategoryProducts.value.some(
+                (existing) => existing.id === product.id
+              )
           );
 
           if (sameCategoryProducts.length > 0) {
             similarProductsList.push(...sameCategoryProducts);
             allLoadedSameCategoryProducts.value.push(...sameCategoryProducts);
-            
+
             // Check if we have more same category products
             if (sameCategoryProducts.length < pageSize) {
               hasMoreSameCategoryProducts.value = false;
@@ -1385,11 +1494,14 @@ async function fetchSimilarProducts(page = 1, append = false) {
     if (!isLoadingSameCategory.value && similarProductsList.length < pageSize) {
       try {
         const remainingCount = pageSize - similarProductsList.length;
-        
+
         // Calculate offset for alternative products (excluding same category products already loaded)
-        const alternativeOffset = (page - sameCategoryPage.value + 1) * pageSize;
-        
-        let additionalQueryParams = `page_size=${remainingCount * 2}&offset=${alternativeOffset}&ordering=-created_at`;
+        const alternativeOffset =
+          (page - sameCategoryPage.value + 1) * pageSize;
+
+        let additionalQueryParams = `page_size=${
+          remainingCount * 2
+        }&offset=${alternativeOffset}&ordering=-created_at`;
 
         // Exclude current category if it exists
         if (primaryCategoryId) {
@@ -1408,13 +1520,17 @@ async function fetchSimilarProducts(page = 1, append = false) {
           const additionalProducts = additionalResponse.data.results.filter(
             (product) =>
               product.id !== currentProduct.id &&
-              !allLoadedSimilarProducts.value.some(existing => existing.id === product.id)
+              !allLoadedSimilarProducts.value.some(
+                (existing) => existing.id === product.id
+              )
           );
 
           if (additionalProducts.length > 0) {
-            similarProductsList.push(...additionalProducts.slice(0, remainingCount));
+            similarProductsList.push(
+              ...additionalProducts.slice(0, remainingCount)
+            );
           }
-          
+
           // Check if we have fewer alternative products than requested
           if (additionalProducts.length < remainingCount) {
             hasMoreSimilarProducts.value = false;
@@ -1439,19 +1555,21 @@ async function fetchSimilarProducts(page = 1, append = false) {
       }
     } else {
       allLoadedSimilarProducts.value.push(...similarProductsList);
-      
+
       if (append) {
         similarProducts.value.push(...similarProductsList);
       } else {
         similarProducts.value = [...similarProductsList];
       }
-      
+
       // Check if we have fewer products than requested (indicating no more products)
-      if (similarProductsList.length < pageSize && !isLoadingSameCategory.value) {
+      if (
+        similarProductsList.length < pageSize &&
+        !isLoadingSameCategory.value
+      ) {
         hasMoreSimilarProducts.value = false;
       }
     }
-
   } catch (error) {
     console.error("Error fetching similar products:", error);
     if (!append) {
@@ -1479,22 +1597,26 @@ function setupInfiniteScroll() {
     }
 
     // Create a sentinel element at the bottom
-    const sentinel = document.createElement('div');
-    sentinel.style.height = '1px';
-    sentinel.style.visibility = 'hidden';
+    const sentinel = document.createElement("div");
+    sentinel.style.height = "1px";
+    sentinel.style.visibility = "hidden";
     container.appendChild(sentinel);
 
     // Set up intersection observer
     intersectionObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && hasMoreSimilarProducts.value && !isLoadingMoreSimilarProducts.value) {
+          if (
+            entry.isIntersecting &&
+            hasMoreSimilarProducts.value &&
+            !isLoadingMoreSimilarProducts.value
+          ) {
             loadMoreSimilarProducts();
           }
         });
       },
       {
-        rootMargin: '100px', // Trigger 100px before reaching the sentinel
+        rootMargin: "100px", // Trigger 100px before reaching the sentinel
       }
     );
 
@@ -1504,15 +1626,33 @@ function setupInfiniteScroll() {
 
 // Load more similar products
 async function loadMoreSimilarProducts() {
-  if (!hasMoreSimilarProducts.value || isLoadingMoreSimilarProducts.value) return;
-  
+  if (!hasMoreSimilarProducts.value || isLoadingMoreSimilarProducts.value)
+    return;
+
   similarProductsPage.value++;
   await fetchSimilarProducts(similarProductsPage.value, true);
 }
 
 // Fetch store products from the same seller
 async function fetchStoreProducts(page = 1, append = false) {
-  if (!currentProduct?.owner_details?.id) return;
+  console.log("fetchStoreProducts called with:", {
+    page,
+    append,
+    store_username: currentProduct?.owner_details?.store_username,
+    owner_id: currentProduct?.owner_details?.id,
+    currentProduct: currentProduct?.name,
+  });
+
+  // Check if we have store_username for the dedicated store endpoint
+  if (
+    !currentProduct?.owner_details?.store_username &&
+    !currentProduct?.owner_details?.id
+  ) {
+    console.warn(
+      "No store_username or owner_id found, cannot fetch store products"
+    );
+    return;
+  }
 
   if (page === 1) {
     isLoadingStoreProducts.value = true;
@@ -1526,13 +1666,29 @@ async function fetchStoreProducts(page = 1, append = false) {
 
   try {
     const { get } = useApi();
-    
-    // Calculate offset - handle different page sizes correctly
-    const offset = page === 1 ? 0 : 8 + ((page - 2) * 10); // First page: 0, Second page: 8, Third page: 18, etc.
-    
-    let queryParams = `seller=${currentProduct.owner_details.id}&page_size=${pageSize}&offset=${offset}&ordering=-created_at`;
-    
-    const response = await get(`/all-products/?${queryParams}`);
+
+    let response;
+
+    // Prefer store endpoint if store_username exists
+    if (currentProduct.owner_details.store_username) {
+      const storeUsername = currentProduct.owner_details.store_username;
+      let queryParams = `page=${page}&page_size=${pageSize}`;
+      const apiUrl = `/store/${storeUsername}/products/?${queryParams}`;
+      console.log("Fetching from store endpoint:", apiUrl);
+      response = await get(apiUrl);
+    } else {
+      // Fallback: Use owner filtering in AllProductsListView
+      const ownerId = currentProduct.owner_details.id;
+      let queryParams = `page=${page}&page_size=${pageSize}&owner=${ownerId}`;
+      const apiUrl = `/all-products/?${queryParams}`;
+      console.log(
+        "Fetching from all-products endpoint with owner filter:",
+        apiUrl
+      );
+      response = await get(apiUrl);
+    }
+
+    console.log("Store products API raw response:", response);
 
     if (response && response.data && response.data.results) {
       // Filter out current product
@@ -1543,11 +1699,10 @@ async function fetchStoreProducts(page = 1, append = false) {
       console.log(`Store products API response:`, {
         page,
         pageSize,
-        offset,
         totalFromAPI: response.data.count,
         receivedCount: response.data.results.length,
         filteredCount: storeProductsList.length,
-        currentlyLoaded: storeProducts.value.length
+        currentlyLoaded: storeProducts.value.length,
       });
 
       if (page === 1) {
@@ -1557,16 +1712,17 @@ async function fetchStoreProducts(page = 1, append = false) {
         storeProducts.value.push(...storeProductsList);
       }
 
-      // Check if we have more products - updated logic
-      const totalExpectedProducts = Math.max(0, (response.data.count || 0) - 1);
-      hasMoreStoreProducts.value = storeProducts.value.length < totalExpectedProducts && storeProductsList.length > 0;
-      
+      // Check if we have more products - use pagination info from API
+      hasMoreStoreProducts.value =
+        response.data.next !== null && storeProductsList.length > 0;
+
       console.log(`Store products pagination status:`, {
         hasMoreStoreProducts: hasMoreStoreProducts.value,
         currentLoadedCount: storeProducts.value.length,
-        totalExpected: totalExpectedProducts
+        hasNext: response.data.next !== null,
       });
     } else {
+      console.warn("No store products found in API response:", response);
       if (page === 1) {
         storeProducts.value = [];
         totalStoreProducts.value = 0;
@@ -1575,6 +1731,12 @@ async function fetchStoreProducts(page = 1, append = false) {
     }
   } catch (error) {
     console.error("Error fetching store products:", error);
+    console.error("Error details:", {
+      message: error.message,
+      status: error.status,
+      statusText: error.statusText,
+      response: error.response,
+    });
     if (page === 1) {
       storeProducts.value = [];
       totalStoreProducts.value = 0;
@@ -1583,20 +1745,29 @@ async function fetchStoreProducts(page = 1, append = false) {
   } finally {
     isLoadingStoreProducts.value = false;
     isLoadingMoreStoreProducts.value = false;
+
+    console.log("fetchStoreProducts completed:", {
+      storeProductsLength: storeProducts.value.length,
+      totalStoreProducts: totalStoreProducts.value,
+      isLoadingStoreProducts: isLoadingStoreProducts.value,
+      hasMoreStoreProducts: hasMoreStoreProducts.value,
+    });
   }
 }
 
 // Load more store products
 async function loadMoreStoreProducts() {
   if (!hasMoreStoreProducts.value || isLoadingMoreStoreProducts.value) {
-    console.log('Cannot load more store products:', {
+    console.log("Cannot load more store products:", {
       hasMore: hasMoreStoreProducts.value,
-      isLoading: isLoadingMoreStoreProducts.value
+      isLoading: isLoadingMoreStoreProducts.value,
     });
     return;
   }
-  
-  console.log(`Loading page ${storeProductsPage.value + 1} of store products...`);
+
+  console.log(
+    `Loading page ${storeProductsPage.value + 1} of store products...`
+  );
   storeProductsPage.value++;
   await fetchStoreProducts(storeProductsPage.value, true);
 }
@@ -1605,20 +1776,20 @@ async function loadMoreStoreProducts() {
 function handleMouseDown(e) {
   const container = storeProductsContainer.value;
   if (!container) return;
-  
+
   isDragging.value = true;
   startX.value = e.pageX - container.offsetLeft;
   scrollLeft.value = container.scrollLeft;
-  container.style.cursor = 'grabbing';
-  container.style.userSelect = 'none';
+  container.style.cursor = "grabbing";
+  container.style.userSelect = "none";
 }
 
 function handleMouseLeave() {
   isDragging.value = false;
   const container = storeProductsContainer.value;
   if (container) {
-    container.style.cursor = 'grab';
-    container.style.userSelect = 'auto';
+    container.style.cursor = "grab";
+    container.style.userSelect = "auto";
   }
 }
 
@@ -1626,18 +1797,18 @@ function handleMouseUp() {
   isDragging.value = false;
   const container = storeProductsContainer.value;
   if (container) {
-    container.style.cursor = 'grab';
-    container.style.userSelect = 'auto';
+    container.style.cursor = "grab";
+    container.style.userSelect = "auto";
   }
 }
 
 function handleMouseMove(e) {
   if (!isDragging.value) return;
-  
+
   e.preventDefault();
   const container = storeProductsContainer.value;
   if (!container) return;
-  
+
   const x = e.pageX - container.offsetLeft;
   const walk = (x - startX.value) * 2; // Multiply by 2 for faster scrolling
   container.scrollLeft = scrollLeft.value - walk;
@@ -1650,19 +1821,23 @@ function handleStoreProductsScroll(e) {
   if (scrollTimeout) {
     clearTimeout(scrollTimeout);
   }
-  
+
   scrollTimeout = setTimeout(() => {
     const container = e.target;
     const scrollLeft = container.scrollLeft;
     const scrollWidth = container.scrollWidth;
     const clientWidth = container.clientWidth;
-    
+
     // Calculate how close we are to the end (within 100px of the end)
     const isNearEnd = scrollLeft + clientWidth >= scrollWidth - 100;
-    
+
     // Load more when near the end and we have more products to load
-    if (isNearEnd && hasMoreStoreProducts.value && !isLoadingMoreStoreProducts.value) {
-      console.log('Loading more store products...'); // Debug log
+    if (
+      isNearEnd &&
+      hasMoreStoreProducts.value &&
+      !isLoadingMoreStoreProducts.value
+    ) {
+      console.log("Loading more store products..."); // Debug log
       loadMoreStoreProducts();
     }
   }, 150); // Throttle to 150ms
@@ -1692,12 +1867,12 @@ function calculateSavings(sale_price, regular_price) {
 
 function formatMemberSince(dateString) {
   if (!dateString) return "Unknown";
-  
+
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long' 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
     });
   } catch (error) {
     console.error("Error formatting date:", error);
@@ -1881,7 +2056,10 @@ const similarProductsTitle = computed(() => {
     (product) => product.category === primaryCategoryId
   );
 
-  if (sameCategoryProducts.length > 0 && sameCategoryProducts.length === similarProducts.value.length) {
+  if (
+    sameCategoryProducts.length > 0 &&
+    sameCategoryProducts.length === similarProducts.value.length
+  ) {
     // All currently loaded products are from the same category
     return `More from ${
       currentProduct.category_details[0]?.name || "this category"
@@ -2117,19 +2295,19 @@ watch(
         intersectionObserver.disconnect();
         intersectionObserver = null;
       }
-      
+
       // Reset similar products state
       similarProducts.value = [];
       similarProductsPage.value = 1;
       hasMoreSimilarProducts.value = true;
       allLoadedSimilarProducts.value = [];
-      
+
       // Reset store products state
       storeProducts.value = [];
       storeProductsPage.value = 1;
       hasMoreStoreProducts.value = true;
       totalStoreProducts.value = 0;
-      
+
       // Reset category-specific state
       sameCategoryPage.value = 1;
       hasMoreSameCategoryProducts.value = true;
@@ -2143,9 +2321,9 @@ watch(
       fetchProductRatingStats(),
       checkUserExistingReview(),
       fetchSimilarProducts(1), // Fetch first page of similar products
-      fetchStoreProducts(1) // Fetch first page of store products
+      fetchStoreProducts(1), // Fetch first page of store products
     ]);
-    
+
     // Setup infinite scroll after products are loaded
     if (similarProducts.value.length > 0) {
       setupInfiniteScroll();
@@ -2180,7 +2358,7 @@ onUnmounted(() => {
     intersectionObserver.disconnect();
     intersectionObserver = null;
   }
-  
+
   // Clear scroll timeout
   if (scrollTimeout) {
     clearTimeout(scrollTimeout);
