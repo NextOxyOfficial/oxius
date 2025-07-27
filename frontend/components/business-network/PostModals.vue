@@ -47,9 +47,12 @@
                 >
                   {{ activeLikesPost.title }}
                 </p>
-              </div>              <div class="space-y-2">
+              </div>
+              <div class="space-y-2">
                 <div
-                  v-for="user in (activeLikesPost.post_likes || []).filter(like => like && like.user)"
+                  v-for="user in (activeLikesPost.post_likes || []).filter(
+                    (like) => like && like.user
+                  )"
                   :key="user.id"
                   class="flex items-center justify-between p-4 sm:p-5 border-b border-gray-100 dark:border-slate-700/50"
                 >
@@ -95,17 +98,17 @@
                     v-if="currentUser && user.user !== currentUser.user.id"
                     :class="[
                       'text-sm h-8 rounded-full px-4 flex items-center gap-1.5 font-medium shadow-sm transition-all duration-200',
-                      user.isFollowing
+                      user.user_details.isFollowing
                         ? 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 border border-gray-200 hover:shadow-sm hover:border-gray-300 dark:from-slate-700 dark:to-slate-600 dark:text-slate-200 dark:border-slate-600'
                         : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-sm hover:shadow-blue-500/20',
                     ]"
                     @click.stop="$emit('toggle-user-follow', user)"
                   >
                     <component
-                      :is="user.isFollowing ? Check : UserPlus"
+                      :is="user.user_details.isFollowing ? Check : UserPlus"
                       class="h-3.5 w-3.5"
                     />
-                    {{ user.isFollowing ? "Following" : "Follow" }}
+                    {{ user.user_details.isFollowing ? "Following" : "Follow" }}
                   </button>
                 </div>
               </div>
@@ -601,8 +604,8 @@
 </template>
 
 <script setup>
-import { X, Check, UserPlus, Loader2, Send } from "lucide-vue-next";
-import { onMounted, ref, nextTick, computed } from "vue";
+import { Check, Loader2, UserPlus, X } from "lucide-vue-next";
+import { computed, onMounted, ref } from "vue";
 
 // Import the mentions composable
 const { processMentionsAsHTML, setupMentionClickHandlers } = useMentions();

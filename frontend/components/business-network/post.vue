@@ -1126,8 +1126,23 @@ const selectMention = (user, targetPost) => {
 };
 
 // Modal handling
-const openLikesModal = (postToView) => {
+const openLikesModal = async (postToView) => {
+  // Set the post first so modal opens immediately
   activeLikesPost.value = postToView;
+
+  try {
+    // Fetch fresh likes data with updated follow status
+    const response = await get(`/bn/posts/${postToView.id}/like/`);
+    if (response.data && response.data.results) {
+      // Update the post's likes with fresh data that includes current follow status
+      postToView.post_likes = response.data.results;
+      // Trigger reactivity update
+      activeLikesPost.value = { ...postToView };
+    }
+  } catch (error) {
+    console.error("Error fetching updated likes data:", error);
+    // Modal will still work with existing data if API call fails
+  }
 };
 
 const openCommentsModal = async (postToView) => {
@@ -1154,14 +1169,27 @@ const openCommentsModal = async (postToView) => {
 const toggleUserFollow = async (userToFollow) => {
   try {
     const userId = userToFollow.user;
+    const newFollowStatus = !userToFollow.user_details.isFollowing;
 
-    if (userToFollow.isFollowing) {
+    if (userToFollow.user_details.isFollowing) {
       await del(`/bn/users/${userId}/unfollow/`);
-      userToFollow.isFollowing = false;
     } else {
       await post(`/bn/users/${userId}/follow/`);
-      userToFollow.isFollowing = true;
     }
+
+    // Update the follow status in the current modal
+    userToFollow.user_details.isFollowing = newFollowStatus;
+
+    // Also update all posts' likes data to keep everything in sync
+    props.posts.forEach((post) => {
+      if (post.post_likes && Array.isArray(post.post_likes)) {
+        post.post_likes.forEach((like) => {
+          if (like.user === userId && like.user_details) {
+            like.user_details.isFollowing = newFollowStatus;
+          }
+        });
+      }
+    });
   } catch (error) {
     console.error("Error toggling user follow:", error);
   }

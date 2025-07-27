@@ -1519,6 +1519,12 @@ class BusinessNetworkPostLikeCreateView(generics.ListCreateAPIView):
             return BusinessNetworkPostLike.objects.filter(post_id=post_id)
         return BusinessNetworkPostLike.objects.none()
     
+    def get_serializer_context(self):
+        # Add request context for follow status in user details
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
     def create(self, request, *args, **kwargs):
         post_id = kwargs.get('post_id')
         post = get_object_or_404(BusinessNetworkPost, pk=post_id)
