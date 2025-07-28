@@ -97,7 +97,11 @@ urlpatterns = [
         getMicroGigPostTasks,
         name="user_micro-gigs",
     ),
-    path("micro-gigs/<slug:gid>/", gigDetails),
+    re_path(
+        r"^micro-gigs/(?P<gid>[\w\-\u0980-\u09FF]+)/$",
+        gigDetails,
+        name="gig-details",
+    ),
     path("user-pending-tasks/", getPendingTasks, name="user_pending-tasks"),
     path(
         "user-micro-gig-task-post/",
