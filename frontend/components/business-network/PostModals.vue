@@ -85,13 +85,6 @@
                       >
                         {{ user.user_details.name }}
                       </NuxtLink>
-                      <p class="text-sm text-gray-600 dark:text-slate-400">
-                        @{{
-                          user.user_details.name
-                            .toLowerCase()
-                            .replace(/\s+/g, "")
-                        }}
-                      </p>
                     </div>
                   </div>
                   <button
