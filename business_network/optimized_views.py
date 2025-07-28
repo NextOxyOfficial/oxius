@@ -1,16 +1,20 @@
+from datetime import timedelta
+
+from django.core.cache import cache
+from django.db.models import (Case, Count, IntegerField, Prefetch, Q, Value,
+                              When)
+from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.db.models import Count, Q, Prefetch, Case, When, IntegerField, Value, Subquery
-from django.db.models.functions import Coalesce
-from django.utils import timezone
-from datetime import timedelta
-from django.core.cache import cache
+
 from base.models import User
+
 from .models import *
-from .serializers import *
 from .pagination import *
+from .serializers import *
+
 
 class OptimizedBusinessNetworkPostSerializer(BusinessNetworkPostSerializer):
     """Optimized serializer for medium-level devices"""
@@ -208,4 +212,8 @@ class OptimizedUserSearchView(generics.ListAPIView):
             Q(username__icontains=query) |
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query)
-        ).only('id', 'username', 'first_name', 'last_name', 'image')[:20]
+        ).exclude(is_superuser=True).only('id', 'username', 'first_name', 'last_name', 'image')[:20]
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query)
+        ).exclude(is_superuser=True).only('id', 'username', 'first_name', 'last_name', 'image')[:20]
