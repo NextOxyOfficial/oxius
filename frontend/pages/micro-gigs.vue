@@ -159,7 +159,7 @@
                         class="ml-auto sm:hidden w-[70px] justify-center"
                         color="primary"
                         variant="outline"
-                        :to="`/order/${gig.id}/`"
+                        :to="`/order/${gig.slug}/`"
                       >
                         Earn
                       </UButton>
@@ -204,7 +204,7 @@
                     color="primary"
                     variant="outline"
                     class="w-[70px] justify-center"
-                    :to="`/order/${gig.id}/`"
+                    :to="`/order/${gig.slug}/`"
                   >
                     Earn
                   </UButton>
