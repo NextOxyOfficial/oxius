@@ -829,7 +829,27 @@ async function getMyProducts() {
   isLoading.value = true;
   try {
     const response = await get(`/store/${router.params.id}/products/`);
-    products.value = response.data;
+
+    // Handle different response structures
+    if (response.data && Array.isArray(response.data)) {
+      products.value = response.data;
+    } else if (
+      response.data &&
+      response.data.results &&
+      Array.isArray(response.data.results)
+    ) {
+      // Handle paginated response
+      products.value = response.data.results;
+    } else if (
+      response.data &&
+      response.data.products &&
+      Array.isArray(response.data.products)
+    ) {
+      // Handle nested products
+      products.value = response.data.products;
+    } else {
+      products.value = [];
+    }
   } catch (error) {
     console.error("Error fetching products:", error);
     toast.add({
@@ -970,7 +990,7 @@ const visibleSections = reactive({
 
 // Get unique categories from products
 const uniqueCategories = computed(() => {
-  if (!products.value || products.value.length === 0) return [];
+  if (!Array.isArray(products.value) || products.value.length === 0) return [];
 
   const categories = [];
   const map = new Map();
@@ -1000,13 +1020,15 @@ const uniqueCategories = computed(() => {
 
 // Get count of active products
 const activeProductsCount = computed(() => {
-  if (!products.value || products.value.length === 0) return 0;
+  if (!Array.isArray(products.value) || products.value.length === 0) {
+    return 0;
+  }
   return products.value.filter((product) => product.is_active).length;
 });
 
 // Get count of active products by category
 const getProductCountByCategory = (categoryId) => {
-  if (!products.value || products.value.length === 0) return 0;
+  if (!Array.isArray(products.value) || products.value.length === 0) return 0;
 
   return products.value.filter((product) => {
     // Only count active products
@@ -1045,6 +1067,11 @@ const getCategoryName = (categoryId) => {
 
 // Filter products by selected category
 const filteredProducts = computed(() => {
+  // Ensure products is an array before filtering
+  if (!Array.isArray(products.value)) {
+    return [];
+  }
+
   // Start with only active products
   let result = products.value.filter((product) => product.is_active);
 
@@ -1097,7 +1124,6 @@ const filteredProducts = computed(() => {
 // Add a function to handle search submission (for Enter key or button click)
 function handleSearch() {
   // Trigger filtering by setting the search value
-  console.log("Searching for:", searchValue.value);
   // The filteredProducts computed property will automatically update
 }
 
@@ -1111,7 +1137,6 @@ watch(searchValue, (newValue) => {
 
   // Set new timeout for debounced search
   searchTimeout = setTimeout(() => {
-    console.log("Live search for:", newValue);
     // The filteredProducts computed will automatically update
   }, 300); // 300ms delay
 });
