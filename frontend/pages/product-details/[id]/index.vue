@@ -20,14 +20,34 @@
         :currentProduct="currentProduct"
         v-if="currentProduct.is_advanced"
         :increaseProductViews="increaseProductViews"
+        @close-and-reopen-modal="handleModalProductChange"
       />
       <CommonProductDetailsCard
         :seeDetails="false"
         :currentProduct="currentProduct"
         :increaseProductViews="increaseProductViews"
+        @close-and-reopen-modal="handleModalProductChange"
         v-else
       />
     </UContainer>
+
+    <!-- Product Quick View Modal -->
+    <UModal
+      v-model="isQuickViewModalOpen"
+      :ui="{ width: 'w-full sm:max-w-4xl' }"
+    >
+      <div>
+        <div class="bg-white dark:bg-slate-800 rounded-xl">
+          <CommonProductDetailsCard
+            :current-product="selectedModalProduct"
+            :modal="true"
+            :seeDetails="true"
+            @close-modal="closeQuickViewModal"
+            @close-and-reopen-modal="handleNestedModalProductChange"
+          />
+        </div>
+      </div>
+    </UModal>
   </PublicSection>
 </template>
 
@@ -43,6 +63,10 @@ const route = useRoute();
 const router = useRouter();
 
 const currentProduct = ref({});
+
+// Quick view modal state
+const isQuickViewModalOpen = ref(false);
+const selectedModalProduct = ref({});
 
 // Sidebar state
 const isSidebarOpen = ref(false);
@@ -129,6 +153,24 @@ async function increaseProductViews() {
   } catch (error) {
     console.error(error);
   }
+}
+
+// Handle modal product change for quick view in "More from this store" section
+function handleModalProductChange(newProduct) {
+  // Open the quick view modal with the selected product
+  selectedModalProduct.value = newProduct;
+  isQuickViewModalOpen.value = true;
+}
+
+// Close the quick view modal
+function closeQuickViewModal() {
+  isQuickViewModalOpen.value = false;
+}
+
+// Handle nested modal product changes (when changing products within the modal)
+function handleNestedModalProductChange(newProduct) {
+  // Update the modal to show the new product
+  selectedModalProduct.value = newProduct;
 }
 
 onMounted(() => {
