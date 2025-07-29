@@ -620,7 +620,7 @@
                           color="emerald"
                           variant="solid"
                           class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-200"
-                          :to="`/order/${gig.id}/`"
+                          :to="`/order/${gig.slug}/`"
                         >
                           <UIcon
                             name="i-heroicons-currency-dollar"
