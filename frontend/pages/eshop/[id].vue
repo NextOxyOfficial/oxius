@@ -1,5 +1,20 @@
 <template>
   <div class="bg-slate-100 mt-2 dark:bg-slate-900">
+    <!-- Categories Sidebar Component -->
+    <CommonEshopCategoriesSidebar
+      :isOpen="isSidebarOpen"
+      :displayedCategories="displayedCategories"
+      :selectedCategory="null"
+      :hasMoreCategoriesToLoad="hasMoreCategoriesToLoad"
+      :isLoadingMore="isLoadingMoreCategories"
+      @close="toggleSidebar"
+      @categorySelect="navigateToCategory"
+      @loadMore="loadMoreCategories"
+      @sellerRegistration="goToSellerRegistration"
+      @contactSupport="contactSupport"
+      @eshopManager="navigateToEshopManager"
+    />
+
     <UContainer>
       <!-- 1. Banner Section -->
       <div
@@ -92,14 +107,18 @@
                   Verified
                 </span>
               </div>
-              <p
-                class="text-slate-500 dark:text-slate-400 mb-3 max-w-xl mx-auto md:mx-0"
+              <div
+                class="text-slate-500 dark:text-slate-400 mb-3 md:mx-0 text-justify w-full"
               >
-                {{
-                  storeDetails?.store_description ||
-                  "Your premium destination for quality products and excellent service."
-                }}
-              </p>
+                <p>{{ displayedDescription }}</p>
+                <button
+                  v-if="shouldShowSeeMore"
+                  @click="toggleDescription"
+                  class="text-indigo-600 hover:text-indigo-800 text-sm font-medium mt-1 transition-colors duration-200"
+                >
+                  {{ isDescriptionExpanded ? "See less" : "See more" }}
+                </button>
+              </div>
               <div
                 class="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300"
               >
@@ -547,9 +566,16 @@
                   >
                     Description
                   </h4>
-                  <p class="text-sm text-gray-800 leading-relaxed">
-                    {{ storeDetails.store_description }}
-                  </p>
+                  <div class="text-sm text-gray-800 leading-relaxed">
+                    <p>{{ displayedDescription }}</p>
+                    <button
+                      v-if="shouldShowSeeMore"
+                      @click="toggleDescription"
+                      class="text-indigo-600 hover:text-indigo-800 text-xs font-medium mt-1 transition-colors duration-200"
+                    >
+                      {{ isDescriptionExpanded ? "See less" : "See more" }}
+                    </button>
+                  </div>
                 </div>
 
                 <div v-if="storeDetails.store_address" class="flex items-start">
@@ -665,28 +691,90 @@
 </template>
 
 <script setup>
+import { CommonEshopCategoriesSidebar } from "#components";
+import { Search, X } from "lucide-vue-next";
+import { onMounted, onUnmounted, ref } from "vue";
+
 definePageMeta({
   layout: "eshop",
 });
-import {
-  Search,
-  MapPin,
-  Clock,
-  Mail,
-  ChevronRight,
-  X,
-  Phone,
-  LocateIcon,
-} from "lucide-vue-next";
 
 const { get, patch } = useApi();
 const router = useRoute();
+const navigate = useRouter();
 const toast = useToast();
 const products = ref([]);
 const storeDetails = ref({});
 const { user, token } = useAuth();
 const isLoading = ref(false);
 const isSeeMore = ref(false);
+const isDescriptionExpanded = ref(false);
+
+// Sidebar state
+const isSidebarOpen = ref(false);
+const displayedCategories = ref([]);
+const hasMoreCategoriesToLoad = ref(false);
+const isLoadingMoreCategories = ref(false);
+const categories = ref([]);
+
+// Data fetching
+async function fetchCategories() {
+  try {
+    const res = await get("/product-categories/");
+    categories.value = res.data;
+    displayedCategories.value = res.data.slice(0, 10);
+    hasMoreCategoriesToLoad.value = res.data.length > 10;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+}
+
+// Sidebar functions
+function toggleSidebar() {
+  isSidebarOpen.value = !isSidebarOpen.value;
+}
+
+function navigateToCategory(categoryId) {
+  // Find category to get its slug
+  const category = categories.value.find((cat) => cat.id === categoryId);
+  if (category && category.slug) {
+    navigate.push(`/eshop?category=${category.slug}`);
+  } else {
+    navigate.push("/eshop");
+  }
+  toggleSidebar();
+}
+
+function loadMoreCategories() {
+  if (isLoadingMoreCategories.value || !hasMoreCategoriesToLoad.value) return;
+
+  isLoadingMoreCategories.value = true;
+  const currentCount = displayedCategories.value.length;
+  const nextBatch = categories.value.slice(currentCount, currentCount + 10);
+  displayedCategories.value.push(...nextBatch);
+  hasMoreCategoriesToLoad.value =
+    displayedCategories.value.length < categories.value.length;
+  isLoadingMoreCategories.value = false;
+}
+
+function goToSellerRegistration() {
+  navigate.push("/shop-manager");
+  toggleSidebar();
+}
+
+function contactSupport() {
+  navigate.push("/contact-us");
+  toggleSidebar();
+}
+
+function navigateToEshopManager() {
+  navigate.push("/shop-manager");
+}
+
+// Listen for sidebar toggle from header
+const handleHeaderSidebarToggle = (event) => {
+  isSidebarOpen.value = event.detail.isOpen;
+};
 
 // Review functionality
 const reviewsCount = ref(0);
@@ -698,6 +786,33 @@ const isOwner = computed(() => {
     user.value?.user?.store_username === storeDetails.value?.store_username
   );
 });
+
+// Store description handling
+const maxDescriptionLength = 150; // Character limit for description
+
+const shouldShowSeeMore = computed(() => {
+  const description = storeDetails.value?.store_description;
+  return description && description.length > maxDescriptionLength;
+});
+
+const displayedDescription = computed(() => {
+  const description = storeDetails.value?.store_description;
+  if (!description)
+    return "Your premium destination for quality products and excellent service.";
+
+  if (
+    isDescriptionExpanded.value ||
+    description.length <= maxDescriptionLength
+  ) {
+    return description;
+  }
+
+  return description.substring(0, maxDescriptionLength) + "...";
+});
+
+const toggleDescription = () => {
+  isDescriptionExpanded.value = !isDescriptionExpanded.value;
+};
 
 // Helper to get initials from name
 const getInitials = (name) => {
@@ -1065,9 +1180,26 @@ onMounted(async () => {
   if (categoriesRef.value) sectionObserver.observe(categoriesRef.value);
   if (detailsRef.value) sectionObserver.observe(detailsRef.value);
   if (ctaRef.value) sectionObserver.observe(ctaRef.value);
+
+  // Listen for sidebar toggle from header
+  if (process.client) {
+    window.addEventListener("eshop-sidebar-toggle", handleHeaderSidebarToggle);
+  }
+
+  // Fetch categories for sidebar
+  await fetchCategories();
+
   // Clean up observers
   onUnmounted(() => {
     sectionObserver.disconnect();
+
+    // Clean up event listeners
+    if (process.client) {
+      window.removeEventListener(
+        "eshop-sidebar-toggle",
+        handleHeaderSidebarToggle
+      );
+    }
   });
 });
 </script>

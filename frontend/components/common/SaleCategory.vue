@@ -91,11 +91,13 @@
 
                 <!-- Title with enhanced styling -->
                 <div class="flex-1 min-w-0">
-                  <h2
-                    class="text-lg sm:text-xl font-medium text-slate-900 dark:text-white truncate"
-                  >
-                    {{ $t("sale_listing") }}
-                  </h2>
+                  <NuxtLink to="/sale">
+                    <h2
+                      class="text-lg sm:text-xl font-medium text-slate-900 dark:text-white truncate hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200 cursor-pointer"
+                    >
+                      {{ $t("sale_listing") }}
+                    </h2>
+                  </NuxtLink>
                   <p
                     class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium"
                   >

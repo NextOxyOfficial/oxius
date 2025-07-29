@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
+    "django_celery_beat",  # For Celery Beat database scheduler
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -245,6 +247,15 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB in bytes
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Celery Configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # You can change this to your Redis URL
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Dhaka'  # Set your timezone
+CELERY_ENABLE_UTC = True
+
 CELERY_BEAT_SCHEDULE = {
     "auto-approve-tasks": {
         "task": "base.tasks.check_and_auto_approve_tasks",
@@ -252,7 +263,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "deactivate-expired-subscriptions": {
         "task": "subscription.tasks.deactivate_expired_subscriptions",
-        "schedule": timedelta(days=1),  # Run once every day
+        "schedule": crontab(hour=8, minute=0),  # Run every day at 8:00 AM
     },
 }
 

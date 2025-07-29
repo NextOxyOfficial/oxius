@@ -7,7 +7,10 @@
         : 'sticky top-0 w-full shadow-sm',
       'sm:py-3 py-1.5', // Smaller padding on mobile
     ]"
-    style="padding-top: max(0.75rem, env(safe-area-inset-top)); padding-top: max(12px, env(safe-area-inset-top));"
+    style="
+      padding-top: max(0.75rem, env(safe-area-inset-top));
+      padding-top: max(12px, env(safe-area-inset-top));
+    "
   >
     <!-- Subscription Warnings Section -->
     <div class="relative px-4">
@@ -347,6 +350,69 @@
                 />
               </NuxtLink>
 
+              <!-- Business Network -->
+              <NuxtLink
+                to="/business-network"
+                class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click="isOpen = false"
+              >
+                <div
+                  class="flex items-center justify-center w-8 h-8 rounded-full bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400"
+                >
+                  <UIcon name="i-lucide-globe" class="w-5 h-5" />
+                </div>
+                <span
+                  class="flex-1 font-medium text-sm text-teal-700 dark:text-teal-300"
+                  >{{ $t("business_network") }}</span
+                >
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="w-4 h-4 text-teal-500 dark:text-teal-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100"
+                />
+              </NuxtLink>
+
+              <!-- News -->
+              <NuxtLink
+                to="/adsy-news"
+                class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click="isOpen = false"
+              >
+                <div
+                  class="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"
+                >
+                  <UIcon name="i-lucide-newspaper" class="w-5 h-5" />
+                </div>
+                <span
+                  class="flex-1 font-medium text-sm text-orange-700 dark:text-orange-300"
+                  >{{ $t("adsy_news") }}</span
+                >
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="w-4 h-4 text-orange-500 dark:text-orange-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100"
+                />
+              </NuxtLink>
+
+              <!-- Referral Program -->
+              <NuxtLink
+                to="/refer-a-friend"
+                class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click="isOpen = false"
+              >
+                <div
+                  class="flex items-center justify-center w-8 h-8 rounded-full bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400"
+                >
+                  <UIcon name="i-heroicons-user-plus" class="w-5 h-5" />
+                </div>
+                <span
+                  class="flex-1 font-medium text-sm text-pink-700 dark:text-pink-300"
+                  >{{ $t("refer_program") }}</span
+                >
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="w-4 h-4 text-pink-500 dark:text-pink-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100"
+                />
+              </NuxtLink>
+
               <!-- Mobile Recharge -->
               <NuxtLink
                 to="/mobile-recharge"
@@ -662,7 +728,7 @@
               <!-- Pro Badge with Tailwind -->
               <div
                 v-if="user?.user?.is_pro"
-                class="absolute -top-2.5 -right-3.5 px-2 flex items-center gap-0.5 py-0.5 px-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded-full text-[9px] font-medium shadow-sm"
+                class="absolute -top-2.5 -right-3.5 flex items-center gap-0.5 py-0.5 px-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded-full text-[9px] font-medium shadow-sm"
               >
                 <UIcon name="i-heroicons-shield-check" class="w-3 h-3" />
                 <span>Pro</span>

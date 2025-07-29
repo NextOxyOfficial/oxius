@@ -3,6 +3,7 @@
     v-if="currentProduct"
     class="p-0 overflow-hidden border-none shadow-sm"
     :ui="{
+      divide: '',
       body: {
         padding: 'p-1',
       },
@@ -17,7 +18,7 @@
           <div v-if="modal" class="flex items-start ml-2">
             <UBadge
               v-if="currentProduct.quantity > 0"
-              color="green"
+              color="blue"
               class="mr-2"
             >
               In Stock
@@ -25,11 +26,73 @@
             <UBadge v-else color="red"> Out of Stock </UBadge>
           </div>
           <div class="flex gap-3 justify-between items-start">
-            <h3
-              class="text-lg ml-1 md:text-lg font-medium text-primary-700 dark:text-primary-300 text-left"
-            >
-              {{ capitalizedProductName }}
-            </h3>
+            <div class="flex-1">
+              <h3
+                class="text-lg ml-1 md:text-lg font-medium text-primary-700 dark:text-primary-300 text-left"
+              >
+                {{ capitalizedProductName }}
+              </h3>
+
+              <!-- Category, Weight, and Rating under product name -->
+              <div class="flex items-center gap-3 mt-2 ml-1 flex-wrap">
+                <!-- Category Badge -->
+                <UBadge
+                  v-if="currentProduct?.category_details?.length > 0"
+                  color="gray"
+                  variant="subtle"
+                  class="uppercase text-xs tracking-wider"
+                >
+                  {{
+                    currentProduct?.category_details[0]?.name || "Uncategorized"
+                  }}
+                </UBadge>
+
+                <!-- Weight -->
+                <div
+                  v-if="currentProduct.weight && currentProduct.weight > 0"
+                  class="text-xs text-slate-500"
+                >
+                  Weight: {{ currentProduct.weight }}kg
+                </div>
+
+                <!-- Ratings section with dynamic data -->
+                <div class="flex items-center gap-2">
+                  <div class="rating-stars relative inline-block">
+                    <!-- Background stars -->
+                    <div class="flex">
+                      <UIcon
+                        v-for="n in 5"
+                        :key="`bg-${n}`"
+                        name="i-heroicons-star"
+                        class="w-4 h-4 text-slate-200 dark:text-slate-700"
+                      />
+                    </div>
+
+                    <!-- Foreground stars with animation -->
+                    <div
+                      class="absolute top-0 left-0 flex overflow-hidden"
+                      :style="{
+                        width: `${(displayRating / 5) * 100}%`,
+                      }"
+                    >
+                      <UIcon
+                        v-for="n in 5"
+                        :key="`fg-${n}`"
+                        name="i-heroicons-star-solid"
+                        class="w-4 h-4 text-yellow-400"
+                      />
+                    </div>
+                  </div>
+
+                  <span
+                    class="text-xs font-medium text-slate-700 dark:text-slate-300"
+                  >
+                    {{ averageRating }} ({{ reviewCount }} reviews)
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <UButton
               v-if="seeDetails"
               icon="i-heroicons-x-mark"
@@ -47,7 +110,7 @@
 
     <div>
       <!-- Two-column layout remains the same -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2">
         <!-- Left column with images remains the same -->
         <div>
           <!-- Main Image with Glass Effect Border -->
@@ -64,7 +127,7 @@
                   currentProduct.image_details[selectedImageIndex || 0].image
                 "
                 :alt="currentProduct.name"
-                class="absolute inset-0 w-full h-full object-contain p-2"
+                class="absolute inset-0 w-full h-full object-contain px-2"
               />
               <div
                 v-else
@@ -83,7 +146,7 @@
               <!-- Free Delivery Badge -->
               <div
                 v-if="currentProduct.is_free_delivery"
-                class="absolute top-2 right-2 bg-green-500 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm"
+                class="absolute top-2 right-2 bg-purple-500 text-white text-sm font-medium px-3 py-1 rounded-full shadow-sm"
               >
                 Free Shipping
               </div>
@@ -120,61 +183,6 @@
 
         <!-- Right column with product info -->
         <div>
-          <!-- Category Name -->
-          <div
-            class="flex items-center gap-2 mb-2"
-            v-if="currentProduct?.category_details?.length > 0"
-          >
-            <UBadge
-              color="gray"
-              variant="subtle"
-              class="uppercase text-xs tracking-wider"
-            >
-              {{ currentProduct?.category_details[0]?.name || "Uncategorized" }}
-            </UBadge>
-            <div
-              v-if="currentProduct.weight && currentProduct.weight > 0"
-              class="text-xs text-slate-500"
-            >
-              Weight: {{ currentProduct.weight }}kg
-            </div>
-          </div>
-          <!-- Ratings section with dynamic data -->
-          <div class="flex items-center gap-2 mb-4">
-            <div class="rating-stars relative inline-block">
-              <!-- Background stars -->
-              <div class="flex">
-                <UIcon
-                  v-for="n in 5"
-                  :key="`bg-${n}`"
-                  name="i-heroicons-star"
-                  class="w-5 h-5 text-slate-200 dark:text-slate-700"
-                />
-              </div>
-
-              <!-- Foreground stars with animation -->
-              <div
-                class="absolute top-0 left-0 flex overflow-hidden"
-                :style="{
-                  width: `${(displayRating / 5) * 100}%`,
-                }"
-              >
-                <UIcon
-                  v-for="n in 5"
-                  :key="`fg-${n}`"
-                  name="i-heroicons-star-solid"
-                  class="w-5 h-5 text-yellow-400"
-                />
-              </div>
-            </div>
-
-            <span
-              class="text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              {{ averageRating }} ({{ reviewCount }} reviews)
-            </span>
-          </div>
-
           <!-- Price section remains the same -->
           <div class="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl mb-4">
             <div class="flex items-end gap-3">
@@ -200,7 +208,7 @@
                   currentProduct.regular_price &&
                   currentProduct.sale_price !== currentProduct.regular_price
                 "
-                class="savings-badge bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium px-2 py-1 rounded-md ml-auto animate-pulse"
+                class="savings-badge bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-medium px-2 py-1 rounded-md ml-auto animate-pulse"
               >
                 Save ৳{{
                   calculateSavings(
@@ -216,7 +224,7 @@
               <span
                 :class="
                   currentProduct.quantity > 10
-                    ? 'text-green-600 dark:text-green-400'
+                    ? 'text-blue-600 dark:text-blue-400'
                     : currentProduct.quantity > 0
                     ? 'text-amber-600 dark:text-amber-400'
                     : 'text-red-600 dark:text-red-400'
@@ -271,7 +279,7 @@
             <!-- Buy Now Button with Enhanced Design -->
             <button
               type="button"
-              class="flex-1 relative overflow-hidden group bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 rounded-lg py-3 px-6 text-white font-medium shadow-sm hover:shadow-sm transition-colors duration-200"
+              class="flex-1 relative overflow-hidden group bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 hover:from-slate-600 hover:via-slate-500 hover:to-slate-600 rounded-lg py-3 px-6 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
               @click="addToCart(currentProduct, quantity)"
               :disabled="currentProduct.quantity <= 0"
             >
@@ -305,7 +313,7 @@
               <li class="flex items-start gap-2 text-sm">
                 <UIcon
                   name="i-heroicons-check-circle"
-                  class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                  class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"
                 />
                 <span
                   >Inside Dhaka:
@@ -320,7 +328,7 @@
               <li class="flex items-start gap-2 text-sm">
                 <UIcon
                   name="i-heroicons-check-circle"
-                  class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                  class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"
                 />
                 <span
                   >Outside Dhaka:
@@ -335,7 +343,7 @@
               <li class="flex items-start gap-2 text-sm">
                 <UIcon
                   name="i-heroicons-check-circle"
-                  class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"
+                  class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5"
                 />
                 <span>Delivery within 3-5 business days</span>
               </li>
@@ -393,36 +401,57 @@
               </div>
             </div>
             <div class="ml-3 flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <NuxtLink
-                  v-if="
-                    currentProduct.owner_details?.store_username ||
-                    currentProduct.owner_details?.id
-                  "
-                  :to="`/eshop/${
-                    currentProduct.owner_details?.store_username ||
-                    currentProduct.owner_details?.id
-                  }`"
-                  class="hover:text-emerald-600 transition-colors"
-                >
+              <div class="flex items-start gap-3">
+                <div class="flex-1 min-w-0">
+                  <NuxtLink
+                    v-if="
+                      currentProduct.owner_details?.store_username ||
+                      currentProduct.owner_details?.id
+                    "
+                    :to="`/eshop/${
+                      currentProduct.owner_details?.store_username ||
+                      currentProduct.owner_details?.id
+                    }`"
+                    class="hover:text-blue-600 transition-colors"
+                  >
+                    <h4
+                      class="font-medium text-slate-800 dark:text-white line-clamp-2 leading-tight"
+                    >
+                      {{
+                        currentProduct.owner_details?.store_name ||
+                        "Anonymous Seller"
+                      }}
+                    </h4>
+                  </NuxtLink>
                   <h4
-                    class="font-medium text-green-800 dark:text-white truncate"
+                    v-else
+                    class="font-medium text-gray-800 dark:text-white line-clamp-2 leading-tight"
                   >
                     {{
                       currentProduct.owner_details?.store_name ||
                       "Anonymous Seller"
                     }}
                   </h4>
-                </NuxtLink>
-                <h4
-                  v-else
-                  class="font-medium text-gray-800 dark:text-white truncate"
+                </div>
+
+                <!-- Visit Store Button -->
+                <UButton
+                  v-if="
+                    currentProduct.owner_details?.store_username ||
+                    currentProduct.owner_details?.id
+                  "
+                  color="gray"
+                  variant="soft"
+                  size="xs"
+                  :to="`/eshop/${
+                    currentProduct.owner_details?.store_username ||
+                    currentProduct.owner_details?.id
+                  }`"
+                  icon="i-heroicons-building-storefront"
+                  class="flex-shrink-0"
                 >
-                  {{
-                    currentProduct.owner_details?.store_name ||
-                    "Anonymous Seller"
-                  }}
-                </h4>
+                  Visit Store
+                </UButton>
               </div>
 
               <!-- Pro and Verified Badges -->
@@ -486,64 +515,153 @@
               />
               <span class="text-gray-600 dark:text-slate-300">
                 Member since
-                {{ currentProduct.owner_details?.date_joined }}
+                {{
+                  formatMemberSince(currentProduct.owner_details?.date_joined)
+                }}
               </span>
             </div>
           </div>
 
           <!-- Contact Actions -->
+        </div>
+
+        <!-- More from this store Section -->
+        <div
+          v-if="
+            storeProducts.length > 0 ||
+            isLoadingStoreProducts ||
+            totalStoreProducts > 0
+          "
+          class="mt-4 border-t border-slate-200 dark:border-slate-700/50 pt-4"
+        >
+          <div class="flex items-center justify-between mb-3">
+            <h4
+              class="font-medium text-gray-800 dark:text-white flex items-center"
+            >
+              <UIcon
+                name="i-heroicons-shopping-bag"
+                class="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400"
+              />
+              More from this store
+              <span
+                v-if="totalStoreProducts > 0"
+                class="ml-2 text-xs text-gray-500"
+              >
+                ({{ totalStoreProducts }} products)
+              </span>
+            </h4>
+          </div>
+
+          <!-- Loading state for store products -->
+          <div v-if="isLoadingStoreProducts" class="flex justify-center py-4">
+            <div class="flex items-center gap-2">
+              <div class="w-5 h-5 relative">
+                <div
+                  class="w-full h-full rounded-full border-2 border-slate-300 dark:border-slate-600"
+                ></div>
+                <div
+                  class="w-full h-full rounded-full border-2 border-t-primary-500 animate-spin absolute top-0 left-0"
+                ></div>
+              </div>
+              <span class="text-sm text-gray-600 dark:text-slate-400"
+                >Loading store products...</span
+              >
+            </div>
+          </div>
+
+          <!-- Horizontal scrollable products container -->
           <div
-            class="p-4 bg-slate-100 dark:bg-slate-800/80 flex flex-wrap gap-3"
+            v-else-if="storeProducts.length > 0"
+            ref="storeProductsContainer"
+            class="horizontal-scroll-container relative overflow-x-auto pb-2"
+            @mousedown="handleMouseDown"
+            @mouseleave="handleMouseLeave"
+            @mouseup="handleMouseUp"
+            @mousemove="handleMouseMove"
+            @scroll="handleStoreProductsScroll"
           >
-            <!-- Call Button -->
-            <UButton
-              v-if="currentProduct.seller?.phone"
-              color="primary"
-              variant="soft"
-              size="sm"
-              class="flex-1 min-w-0 sm:flex-initial"
-              :to="`tel:${currentProduct.seller?.phone}`"
-              icon="i-heroicons-phone"
-            >
-              Call Seller
-            </UButton>
+            <div class="flex gap-2 w-max">
+              <div
+                v-for="(product, index) in storeProducts"
+                :key="`store-${product.id}`"
+                class="flex-shrink-0 w-48 sm:w-52 md:w-56 store-product-fade-in"
+                style="animation-delay: calc(var(--i) * 0.1s)"
+                :style="{ '--i': index % 6 }"
+              >
+                <CommonProductCard
+                  :product="product"
+                  :isInModal="true"
+                  @updateModalProduct="handleModalProductChange"
+                  class="h-full"
+                />
+              </div>
 
-            <!-- WhatsApp Button -->
-            <UButton
-              v-if="
-                currentProduct.seller?.whatsapp || currentProduct.seller?.phone
-              "
-              color="green"
-              variant="soft"
-              size="sm"
-              class="flex-1 min-w-0 sm:flex-initial"
-              :to="`https://wa.me/${
-                currentProduct.seller?.whatsapp || currentProduct.seller?.phone
-              }`"
-              target="_blank"
-              icon="i-heroicons-chat-bubble-left-right"
-            >
-              WhatsApp
-            </UButton>
+              <!-- Enhanced Loading indicator for infinite scroll -->
+              <div
+                v-if="isLoadingMoreStoreProducts"
+                class="flex-shrink-0 w-48 sm:w-52 md:w-56 flex items-center justify-center"
+              >
+                <div
+                  class="flex flex-col items-center justify-center py-12 px-4 h-full"
+                >
+                  <div class="w-8 h-8 relative mb-3">
+                    <div
+                      class="w-full h-full rounded-full border-3 border-t-blue-500 dark:border-t-blue-400 border-transparent"
+                      style="animation: spinGlow 1.2s linear infinite"
+                    ></div>
+                  </div>
+                  <div class="text-center">
+                    <p
+                      class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1"
+                    >
+                      Loading more
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-slate-400">
+                      store products...
+                    </p>
+                  </div>
+                  <!-- Animated dots with enhanced timing -->
+                  <div class="flex gap-1 mt-2">
+                    <div
+                      class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full"
+                      style="
+                        animation: dotPulse 1.4s infinite;
+                        animation-delay: 0s;
+                      "
+                    ></div>
+                    <div
+                      class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full"
+                      style="
+                        animation: dotPulse 1.4s infinite;
+                        animation-delay: 0.2s;
+                      "
+                    ></div>
+                    <div
+                      class="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full"
+                      style="
+                        animation: dotPulse 1.4s infinite;
+                        animation-delay: 0.4s;
+                      "
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <!-- Store Button -->
-            <UButton
-              v-if="
-                currentProduct.owner_details?.store_username ||
-                currentProduct.owner_details?.id
-              "
-              color="gray"
-              variant="soft"
-              size="sm"
-              class="flex-1 min-w-0 sm:flex-initial"
-              :to="`/eshop/${
-                currentProduct.owner_details?.store_username ||
-                currentProduct.owner_details?.id
-              }`"
-              icon="i-heroicons-building-storefront"
+          <!-- No store products message -->
+          <div v-else class="text-center py-4">
+            <div
+              class="bg-white dark:bg-slate-700/50 rounded-lg p-4 w-32 h-20 mx-auto flex items-center justify-center shadow-sm"
             >
-              Visit Store
-            </UButton>
+              <UIcon
+                name="i-heroicons-building-storefront"
+                class="w-6 h-6 text-gray-400 dark:text-slate-500"
+              />
+            </div>
+            <p class="mt-2 text-sm text-gray-600 dark:text-slate-400">
+              No other products from this store
+            </p>
           </div>
         </div>
       </div>
@@ -556,8 +674,8 @@
             class="text-base font-Medium my-3 text-gray-800 dark:text-white flex items-center"
           >
             <UIcon
-              name="i-heroicons-document-text"
-              class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400"
+              name="i-heroicons-clipboard-document-list"
+              class="w-5 h-5 mr-2 text-emerald-600 dark:text-emerald-400"
             />
             Detailed Description
           </h3>
@@ -582,64 +700,6 @@
             />
             Customer Reviews
           </h3>
-
-          <!-- Reviews Summary -->
-          <div class="bg-white dark:bg-slate-800/80 rounded-xl shadow-sm p-6">
-            <div class="flex flex-col md:flex-row gap-6 md:items-center">
-              <div
-                class="text-center md:border-r md:border-slate-200 dark:md:border-slate-700 md:pr-6"
-              >
-                <div
-                  class="text-2xl font-semibold text-gray-800 dark:text-white mb-2"
-                >
-                  {{ reviewsAverageRating }}
-                </div>
-                <div class="flex justify-center text-amber-400 my-1">
-                  <UIcon
-                    v-for="i in 5"
-                    :key="i"
-                    :name="
-                      i <= Math.round(parseFloat(reviewsAverageRating))
-                        ? 'i-heroicons-star-solid'
-                        : 'i-heroicons-star'
-                    "
-                    class="w-6 h-6"
-                    :class="
-                      i <= Math.round(parseFloat(reviewsAverageRating))
-                        ? 'text-amber-400'
-                        : 'text-gray-300 dark:text-gray-600'
-                    "
-                  />
-                </div>
-                <div class="text-sm text-slate-500 dark:text-slate-400">
-                  Based on {{ reviewsCount }} reviews
-                </div>
-              </div>
-
-              <div class="flex-1 space-y-2">
-                <div v-for="n in 5" :key="n" class="flex items-center">
-                  <div class="text-sm w-5 text-right mr-3">
-                    {{ 6 - n }}
-                  </div>
-                  <UIcon
-                    name="i-heroicons-star-solid"
-                    class="w-4 h-4 text-amber-400 mr-2"
-                  />
-                  <div
-                    class="flex-1 h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"
-                  >
-                    <div
-                      class="h-full bg-amber-400"
-                      :style="{ width: getRatingPercentage(6 - n) }"
-                    ></div>
-                  </div>
-                  <div class="text-sm w-10 text-left ml-3">
-                    {{ getRatingCount(6 - n) }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Featured Reviews with Pagination -->
           <div class="max-w-6xl mx-auto mb-10">
@@ -735,20 +795,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Empty state -->
-            <div v-else class="text-center">
-              <UIcon
-                name="i-heroicons-chat-bubble-bottom-center-text"
-                class="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto my-2"
-              />
-              <p class="text-gray-500 dark:text-gray-400 text-lg">
-                No reviews yet
-              </p>
-              <p class="text-gray-400 dark:text-gray-500 text-sm">
-                Be the first to share your experience!
-              </p>
-            </div>
           </div>
 
           <!-- Pagination Controls -->
@@ -811,16 +857,6 @@
           <div
             class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 max-w-3xl mx-auto"
           >
-            <!-- Only show title if user can submit a review or needs to log in -->
-            <h3
-              v-if="
-                !isLoggedIn || (!userExistingReview && !isCheckingUserReview)
-              "
-              class="text-xl font-semibold mb-4 text-center"
-            >
-              Share Your Experience
-            </h3>
-
             <!-- Loading state for checking user review -->
             <div v-if="isCheckingUserReview" class="text-center p-6">
               <div
@@ -838,10 +874,10 @@
             >
               <UIcon
                 name="i-heroicons-check-circle"
-                class="w-12 h-12 text-green-500 mx-auto mb-4"
+                class="w-12 h-12 text-blue-500 mx-auto mb-4"
               />
               <h4
-                class="text-lg font-medium mb-2 text-green-700 dark:text-green-400"
+                class="text-lg font-medium mb-2 text-blue-700 dark:text-blue-400"
               >
                 Thank You for Your Review!
               </h4>
@@ -974,18 +1010,22 @@
               </div>
             </div>
           </div>
-        </div>        <!-- You may also like Section -->
+        </div>
+        <!-- You may also like Section -->
         <div class="bg-slate-50 dark:bg-slate-800/30 rounded-xl">
           <h3
             class="text-base font-medium py-3 px-2 text-gray-800 dark:text-white flex items-center"
           >
             <UIcon
-              name="i-heroicons-squares-2x2"
+              name="i-heroicons-heart"
               class="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400"
             />
             {{ similarProductsTitle }}
           </h3>
-          <div v-if="isSimilarProductsLoading" class="flex justify-center py-6">
+          <div
+            v-if="isSimilarProductsLoading && similarProducts.length === 0"
+            class="flex justify-center py-6"
+          >
             <div class="flex flex-col items-center">
               <div class="w-10 h-10 relative">
                 <div
@@ -996,7 +1036,11 @@
                 ></div>
               </div>
               <p class="text-sm text-gray-600 dark:text-slate-400 mt-3">
-                Loading similar products...
+                {{
+                  isLoadingSameCategory
+                    ? "Loading same category products..."
+                    : "Loading similar products..."
+                }}
               </p>
             </div>
           </div>
@@ -1015,34 +1059,78 @@
             <p class="mt-4 text-sm text-gray-600 dark:text-slate-400">
               No similar products found
             </p>
-          </div>          <div v-else>
-            <!-- Mobile Similar Products - Horizontal scroll with multiple items -->
-            <div class="sm:hidden">
-              <div class="flex overflow-x-auto gap-1.5 py-2 px-2 hide-scrollbar">
-                <div
-                  v-for="(product, index) in similarProducts"
-                  :key="`mobile-${product.id}`"
-                  class="flex-shrink-0 w-[45%] similar-product-fade-in"
-                  style="animation-delay: calc(var(--i) * 0.1s)"
-                  :style="{ '--i': index }"
-                >
-                  <CommonProductCard :product="product" />
-                </div>
-              </div>
-            </div>
-            
-            <!-- Desktop Similar Products - 4 items in a single row -->
+          </div>
+          <div v-else>
+            <!-- Infinite Scroll Similar Products Grid -->
             <div
-              class="hidden sm:grid sm:grid-cols-4 gap-3 px-2 pb-4"
+              ref="similarProductsContainer"
+              class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pb-4"
             >
               <div
-                v-for="(product, index) in similarProducts.slice(0, 4)"
-                :key="`desktop-${product.id}`"
+                v-for="(product, index) in similarProducts"
+                :key="`similar-${product.id}`"
                 class="similar-product-fade-in"
                 style="animation-delay: calc(var(--i) * 0.1s)"
-                :style="{ '--i': index }"
+                :style="{ '--i': index % 8 }"
               >
-                <CommonProductCard :product="product" />
+                <CommonProductCard
+                  :product="product"
+                  :isInModal="true"
+                  @updateModalProduct="handleModalProductChange"
+                />
+              </div>
+            </div>
+
+            <!-- Enhanced Loading indicator for infinite scroll -->
+            <div
+              v-if="isLoadingMoreSimilarProducts"
+              class="flex justify-center py-6"
+            >
+              <div class="flex flex-col items-center gap-3 px-6 py-8">
+                <div class="w-8 h-8 relative">
+                  <div
+                    class="w-full h-full rounded-full border-3 border-t-emerald-500 dark:border-t-emerald-400 border-transparent"
+                    style="animation: spinGlow 1.2s linear infinite"
+                  ></div>
+                </div>
+                <div class="text-center">
+                  <p
+                    class="text-sm font-medium text-gray-700 dark:text-slate-300 mb-1"
+                  >
+                    Loading more
+                  </p>
+                  <p class="text-xs text-gray-500 dark:text-slate-400">
+                    {{
+                      isLoadingSameCategory
+                        ? "from same category..."
+                        : "similar products..."
+                    }}
+                  </p>
+                </div>
+                <!-- Animated dots with enhanced timing -->
+                <div class="flex gap-1">
+                  <div
+                    class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full"
+                    style="
+                      animation: dotPulse 1.4s infinite;
+                      animation-delay: 0s;
+                    "
+                  ></div>
+                  <div
+                    class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full"
+                    style="
+                      animation: dotPulse 1.4s infinite;
+                      animation-delay: 0.2s;
+                    "
+                  ></div>
+                  <div
+                    class="w-1.5 h-1.5 bg-emerald-500 dark:bg-emerald-400 rounded-full"
+                    style="
+                      animation: dotPulse 1.4s infinite;
+                      animation-delay: 0.4s;
+                    "
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
@@ -1082,6 +1170,93 @@
   </UCard>
 </template>
 
+<style scoped>
+/* Horizontal scroll container styling with hidden scrollbar */
+.horizontal-scroll-container {
+  cursor: grab;
+  scroll-behavior: smooth;
+  /* Hide scrollbar for Firefox */
+  scrollbar-width: none;
+  /* Hide scrollbar for IE and Edge */
+  -ms-overflow-style: none;
+}
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari, Edge) */
+.horizontal-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fade-in animations */
+.similar-product-fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.store-product-fade-in {
+  opacity: 0;
+  transform: translateX(20px);
+  animation: fadeInLeft 0.6s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Savings badge animation */
+.savings-badge {
+  animation: pulse 2s infinite;
+}
+
+/* Enhanced loading spinner animations */
+@keyframes spinGlow {
+  0% {
+    transform: rotate(0deg);
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.2);
+  }
+  100% {
+    transform: rotate(360deg);
+    filter: brightness(1);
+  }
+}
+
+/* Custom pulse animation for loading dots */
+@keyframes dotPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+</style>
+
 <script setup>
 const { currentProduct, modal, seeDetails } = defineProps({
   currentProduct: { type: Object, required: true },
@@ -1089,11 +1264,46 @@ const { currentProduct, modal, seeDetails } = defineProps({
   seeDetails: { type: Boolean, required: false },
 });
 
-const emit = defineEmits(["close-modal", "open-message-modal"]);
+const emit = defineEmits([
+  "close-modal",
+  "open-message-modal",
+  "close-and-reopen-modal",
+]);
+
+// Function to handle product updates from related products
+function handleModalProductChange(newProduct) {
+  emit("close-and-reopen-modal", newProduct);
+}
+
 const selectedImageIndex = ref(0);
 const quantity = ref(1);
 const similarProducts = ref([]);
 const isSimilarProductsLoading = ref(false);
+const isLoadingMoreSimilarProducts = ref(false);
+const similarProductsContainer = ref(null);
+const similarProductsPage = ref(1);
+const hasMoreSimilarProducts = ref(true);
+const allLoadedSimilarProducts = ref([]);
+
+// Store products state
+const storeProducts = ref([]);
+const isLoadingStoreProducts = ref(false);
+const isLoadingMoreStoreProducts = ref(false);
+const storeProductsContainer = ref(null);
+const storeProductsPage = ref(1);
+const hasMoreStoreProducts = ref(true);
+const totalStoreProducts = ref(0);
+
+// Mouse drag state for horizontal scrolling
+const isDragging = ref(false);
+const startX = ref(0);
+const scrollLeft = ref(0);
+
+// Category-specific tracking for infinite scroll
+const sameCategoryPage = ref(1);
+const hasMoreSameCategoryProducts = ref(true);
+const isLoadingSameCategory = ref(true); // Start with same category
+const allLoadedSameCategoryProducts = ref([]);
 
 // API composable
 const { get, post } = useApi();
@@ -1183,12 +1393,26 @@ function openMessageModal() {
   });
 }
 
-// Fetch similar products based on the current product's category
-async function fetchSimilarProducts() {
+// Fetch similar products with priority: same category first, then alternative categories
+async function fetchSimilarProducts(page = 1, append = false) {
   if (!currentProduct) return;
 
-  isSimilarProductsLoading.value = true;
-  const targetCount = 8; // Target number of similar products to show (more for mobile scroll)
+  if (page === 1) {
+    isSimilarProductsLoading.value = true;
+    similarProductsPage.value = 1;
+    hasMoreSimilarProducts.value = true;
+    allLoadedSimilarProducts.value = [];
+
+    // Reset category-specific tracking
+    sameCategoryPage.value = 1;
+    hasMoreSameCategoryProducts.value = true;
+    isLoadingSameCategory.value = true;
+    allLoadedSameCategoryProducts.value = [];
+  } else {
+    isLoadingMoreSimilarProducts.value = true;
+  }
+
+  const pageSize = 8; // Products per page for infinite scroll
 
   try {
     const { get } = useApi();
@@ -1200,92 +1424,423 @@ async function fetchSimilarProducts() {
       // Handle if category is an array, comma-separated string, or single ID
       if (Array.isArray(currentProduct.category)) {
         primaryCategoryId = currentProduct.category[0];
-      } else if (typeof currentProduct.category === 'string' && currentProduct.category.includes(',')) {
-        primaryCategoryId = currentProduct.category.split(',')[0].trim();
+      } else if (
+        typeof currentProduct.category === "string" &&
+        currentProduct.category.includes(",")
+      ) {
+        primaryCategoryId = currentProduct.category.split(",")[0].trim();
       } else {
         primaryCategoryId = currentProduct.category;
       }
-    } else if (currentProduct.category_details && currentProduct.category_details.length > 0) {
+    } else if (
+      currentProduct.category_details &&
+      currentProduct.category_details.length > 0
+    ) {
       // Fallback to category_details if available
       primaryCategoryId = currentProduct.category_details[0].id;
     }
 
-    // First, try to get products from the same category
-    if (primaryCategoryId) {
+    // Phase 1: Load same category products first
+    if (
+      isLoadingSameCategory.value &&
+      primaryCategoryId &&
+      hasMoreSameCategoryProducts.value
+    ) {
       try {
-        let queryParams = `category=${primaryCategoryId}&page_size=12&ordering=random`;
+        // Calculate offset for same category pagination
+        const sameCategoryOffset = (sameCategoryPage.value - 1) * pageSize;
+
+        let queryParams = `category=${primaryCategoryId}&page_size=${pageSize}&offset=${sameCategoryOffset}&ordering=-created_at`;
         const sameCategory = await get(`/all-products/?${queryParams}`);
-        
+
         if (sameCategory && sameCategory.data && sameCategory.data.results) {
-          // Filter out current product
-          const sameCategoryProducts = sameCategory.data.results
-            .filter((product) => product.id !== currentProduct.id);
-          
-          similarProductsList.push(...sameCategoryProducts);
+          // Filter out current product and already loaded products
+          const sameCategoryProducts = sameCategory.data.results.filter(
+            (product) =>
+              product.id !== currentProduct.id &&
+              !allLoadedSameCategoryProducts.value.some(
+                (existing) => existing.id === product.id
+              )
+          );
+
+          if (sameCategoryProducts.length > 0) {
+            similarProductsList.push(...sameCategoryProducts);
+            allLoadedSameCategoryProducts.value.push(...sameCategoryProducts);
+
+            // Check if we have more same category products
+            if (sameCategoryProducts.length < pageSize) {
+              hasMoreSameCategoryProducts.value = false;
+              isLoadingSameCategory.value = false;
+            } else {
+              sameCategoryPage.value++;
+            }
+          } else {
+            // No more same category products found
+            hasMoreSameCategoryProducts.value = false;
+            isLoadingSameCategory.value = false;
+          }
+        } else {
+          hasMoreSameCategoryProducts.value = false;
+          isLoadingSameCategory.value = false;
         }
       } catch (error) {
         console.error("Error fetching same category products:", error);
+        hasMoreSameCategoryProducts.value = false;
+        isLoadingSameCategory.value = false;
       }
     }
 
-    // If we don't have enough products from the same category, fetch from other categories
-    if (similarProductsList.length < targetCount) {
+    // Phase 2: Load alternative category products (only after same category is exhausted)
+    if (!isLoadingSameCategory.value && similarProductsList.length < pageSize) {
       try {
-        const remainingCount = targetCount - similarProductsList.length + 6; // Get a few extra for filtering
-        let additionalQueryParams = `page_size=${remainingCount}&ordering=random`;
-        
+        const remainingCount = pageSize - similarProductsList.length;
+
+        // Calculate offset for alternative products (excluding same category products already loaded)
+        const alternativeOffset =
+          (page - sameCategoryPage.value + 1) * pageSize;
+
+        let additionalQueryParams = `page_size=${
+          remainingCount * 2
+        }&offset=${alternativeOffset}&ordering=-created_at`;
+
         // Exclude current category if it exists
         if (primaryCategoryId) {
           additionalQueryParams += `&exclude_category=${primaryCategoryId}`;
         }
 
-        const additionalResponse = await get(`/all-products/?${additionalQueryParams}`);
-        
-        if (additionalResponse && additionalResponse.data && additionalResponse.data.results) {
-          const additionalProducts = additionalResponse.data.results
-            .filter((product) => 
-              product.id !== currentProduct.id && 
-              !similarProductsList.some(existing => existing.id === product.id)
+        const additionalResponse = await get(
+          `/all-products/?${additionalQueryParams}`
+        );
+
+        if (
+          additionalResponse &&
+          additionalResponse.data &&
+          additionalResponse.data.results
+        ) {
+          const additionalProducts = additionalResponse.data.results.filter(
+            (product) =>
+              product.id !== currentProduct.id &&
+              !allLoadedSimilarProducts.value.some(
+                (existing) => existing.id === product.id
+              )
+          );
+
+          if (additionalProducts.length > 0) {
+            similarProductsList.push(
+              ...additionalProducts.slice(0, remainingCount)
             );
-          
-          similarProductsList.push(...additionalProducts);
+          }
+
+          // Check if we have fewer alternative products than requested
+          if (additionalProducts.length < remainingCount) {
+            hasMoreSimilarProducts.value = false;
+          }
+        } else {
+          hasMoreSimilarProducts.value = false;
         }
       } catch (error) {
-        console.error("Error fetching additional category products:", error);
+        console.error("Error fetching alternative category products:", error);
+        hasMoreSimilarProducts.value = false;
       }
     }
 
-    // If we still don't have enough, get any random products as fallback
-    if (similarProductsList.length < targetCount) {
-      try {
-        const fallbackCount = targetCount - similarProductsList.length + 4;
-        const fallbackResponse = await get(`/all-products/?page_size=${fallbackCount}&ordering=random`);
-        
-        if (fallbackResponse && fallbackResponse.data && fallbackResponse.data.results) {
-          const fallbackProducts = fallbackResponse.data.results
-            .filter((product) => 
-              product.id !== currentProduct.id && 
-              !similarProductsList.some(existing => existing.id === product.id)
-            );
-          
-          similarProductsList.push(...fallbackProducts);
-        }
-      } catch (error) {
-        console.error("Error fetching fallback products:", error);
+    // Update state based on results
+    if (similarProductsList.length === 0) {
+      // If we're still loading same category but got no results, switch to alternatives
+      if (isLoadingSameCategory.value) {
+        isLoadingSameCategory.value = false;
+        hasMoreSameCategoryProducts.value = false;
+      } else {
+        hasMoreSimilarProducts.value = false;
+      }
+    } else {
+      allLoadedSimilarProducts.value.push(...similarProductsList);
+
+      if (append) {
+        similarProducts.value.push(...similarProductsList);
+      } else {
+        similarProducts.value = [...similarProductsList];
+      }
+
+      // Check if we have fewer products than requested (indicating no more products)
+      if (
+        similarProductsList.length < pageSize &&
+        !isLoadingSameCategory.value
+      ) {
+        hasMoreSimilarProducts.value = false;
       }
     }
-
-    // Shuffle the final list and limit to target count
-    similarProducts.value = similarProductsList
-      .sort(() => Math.random() - 0.5)
-      .slice(0, targetCount);
-
   } catch (error) {
     console.error("Error fetching similar products:", error);
-    similarProducts.value = [];
+    if (!append) {
+      similarProducts.value = [];
+    }
+    hasMoreSimilarProducts.value = false;
+    isLoadingSameCategory.value = false;
   } finally {
     isSimilarProductsLoading.value = false;
+    isLoadingMoreSimilarProducts.value = false;
   }
+}
+
+// Handle infinite scroll for similar products
+let intersectionObserver = null;
+
+function setupInfiniteScroll() {
+  nextTick(() => {
+    const container = similarProductsContainer.value;
+    if (!container) return;
+
+    // Clean up existing observer
+    if (intersectionObserver) {
+      intersectionObserver.disconnect();
+    }
+
+    // Create a sentinel element at the bottom
+    const sentinel = document.createElement("div");
+    sentinel.style.height = "1px";
+    sentinel.style.visibility = "hidden";
+    container.appendChild(sentinel);
+
+    // Set up intersection observer
+    intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (
+            entry.isIntersecting &&
+            hasMoreSimilarProducts.value &&
+            !isLoadingMoreSimilarProducts.value
+          ) {
+            loadMoreSimilarProducts();
+          }
+        });
+      },
+      {
+        rootMargin: "100px", // Trigger 100px before reaching the sentinel
+      }
+    );
+
+    intersectionObserver.observe(sentinel);
+  });
+}
+
+// Load more similar products
+async function loadMoreSimilarProducts() {
+  if (!hasMoreSimilarProducts.value || isLoadingMoreSimilarProducts.value)
+    return;
+
+  similarProductsPage.value++;
+  await fetchSimilarProducts(similarProductsPage.value, true);
+}
+
+// Fetch store products from the same seller
+async function fetchStoreProducts(page = 1, append = false) {
+  console.log("fetchStoreProducts called with:", {
+    page,
+    append,
+    store_username: currentProduct?.owner_details?.store_username,
+    owner_id: currentProduct?.owner_details?.id,
+    currentProduct: currentProduct?.name,
+  });
+
+  // Check if we have store_username for the dedicated store endpoint
+  if (
+    !currentProduct?.owner_details?.store_username &&
+    !currentProduct?.owner_details?.id
+  ) {
+    console.warn(
+      "No store_username or owner_id found, cannot fetch store products"
+    );
+    return;
+  }
+
+  if (page === 1) {
+    isLoadingStoreProducts.value = true;
+    storeProductsPage.value = 1;
+    hasMoreStoreProducts.value = true;
+  } else {
+    isLoadingMoreStoreProducts.value = true;
+  }
+
+  const pageSize = page === 1 ? 8 : 10; // Initial load: 8 products, subsequent loads: 10 products
+
+  try {
+    const { get } = useApi();
+
+    let response;
+
+    // Prefer store endpoint if store_username exists
+    if (currentProduct.owner_details.store_username) {
+      const storeUsername = currentProduct.owner_details.store_username;
+      let queryParams = `page=${page}&page_size=${pageSize}`;
+      const apiUrl = `/store/${storeUsername}/products/?${queryParams}`;
+      console.log("Fetching from store endpoint:", apiUrl);
+      response = await get(apiUrl);
+    } else {
+      // Fallback: Use owner filtering in AllProductsListView
+      const ownerId = currentProduct.owner_details.id;
+      let queryParams = `page=${page}&page_size=${pageSize}&owner=${ownerId}`;
+      const apiUrl = `/all-products/?${queryParams}`;
+      console.log(
+        "Fetching from all-products endpoint with owner filter:",
+        apiUrl
+      );
+      response = await get(apiUrl);
+    }
+
+    console.log("Store products API raw response:", response);
+
+    if (response && response.data && response.data.results) {
+      // Filter out current product
+      const storeProductsList = response.data.results.filter(
+        (product) => product.id !== currentProduct.id
+      );
+
+      console.log(`Store products API response:`, {
+        page,
+        pageSize,
+        totalFromAPI: response.data.count,
+        receivedCount: response.data.results.length,
+        filteredCount: storeProductsList.length,
+        currentlyLoaded: storeProducts.value.length,
+      });
+
+      if (page === 1) {
+        storeProducts.value = storeProductsList;
+        totalStoreProducts.value = Math.max(0, (response.data.count || 0) - 1); // Subtract 1 for current product
+      } else if (append) {
+        storeProducts.value.push(...storeProductsList);
+      }
+
+      // Check if we have more products - use pagination info from API
+      hasMoreStoreProducts.value =
+        response.data.next !== null && storeProductsList.length > 0;
+
+      console.log(`Store products pagination status:`, {
+        hasMoreStoreProducts: hasMoreStoreProducts.value,
+        currentLoadedCount: storeProducts.value.length,
+        hasNext: response.data.next !== null,
+      });
+    } else {
+      console.warn("No store products found in API response:", response);
+      if (page === 1) {
+        storeProducts.value = [];
+        totalStoreProducts.value = 0;
+      }
+      hasMoreStoreProducts.value = false;
+    }
+  } catch (error) {
+    console.error("Error fetching store products:", error);
+    console.error("Error details:", {
+      message: error.message,
+      status: error.status,
+      statusText: error.statusText,
+      response: error.response,
+    });
+    if (page === 1) {
+      storeProducts.value = [];
+      totalStoreProducts.value = 0;
+    }
+    hasMoreStoreProducts.value = false;
+  } finally {
+    isLoadingStoreProducts.value = false;
+    isLoadingMoreStoreProducts.value = false;
+
+    console.log("fetchStoreProducts completed:", {
+      storeProductsLength: storeProducts.value.length,
+      totalStoreProducts: totalStoreProducts.value,
+      isLoadingStoreProducts: isLoadingStoreProducts.value,
+      hasMoreStoreProducts: hasMoreStoreProducts.value,
+    });
+  }
+}
+
+// Load more store products
+async function loadMoreStoreProducts() {
+  if (!hasMoreStoreProducts.value || isLoadingMoreStoreProducts.value) {
+    console.log("Cannot load more store products:", {
+      hasMore: hasMoreStoreProducts.value,
+      isLoading: isLoadingMoreStoreProducts.value,
+    });
+    return;
+  }
+
+  console.log(
+    `Loading page ${storeProductsPage.value + 1} of store products...`
+  );
+  storeProductsPage.value++;
+  await fetchStoreProducts(storeProductsPage.value, true);
+}
+
+// Mouse drag handlers for horizontal scrolling
+function handleMouseDown(e) {
+  const container = storeProductsContainer.value;
+  if (!container) return;
+
+  isDragging.value = true;
+  startX.value = e.pageX - container.offsetLeft;
+  scrollLeft.value = container.scrollLeft;
+  container.style.cursor = "grabbing";
+  container.style.userSelect = "none";
+}
+
+function handleMouseLeave() {
+  isDragging.value = false;
+  const container = storeProductsContainer.value;
+  if (container) {
+    container.style.cursor = "grab";
+    container.style.userSelect = "auto";
+  }
+}
+
+function handleMouseUp() {
+  isDragging.value = false;
+  const container = storeProductsContainer.value;
+  if (container) {
+    container.style.cursor = "grab";
+    container.style.userSelect = "auto";
+  }
+}
+
+function handleMouseMove(e) {
+  if (!isDragging.value) return;
+
+  e.preventDefault();
+  const container = storeProductsContainer.value;
+  if (!container) return;
+
+  const x = e.pageX - container.offsetLeft;
+  const walk = (x - startX.value) * 2; // Multiply by 2 for faster scrolling
+  container.scrollLeft = scrollLeft.value - walk;
+}
+
+// Handle horizontal scroll for infinite loading with throttle
+let scrollTimeout = null;
+function handleStoreProductsScroll(e) {
+  // Throttle scroll events to improve performance
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
+  }
+
+  scrollTimeout = setTimeout(() => {
+    const container = e.target;
+    const scrollLeft = container.scrollLeft;
+    const scrollWidth = container.scrollWidth;
+    const clientWidth = container.clientWidth;
+
+    // Calculate how close we are to the end (within 100px of the end)
+    const isNearEnd = scrollLeft + clientWidth >= scrollWidth - 100;
+
+    // Load more when near the end and we have more products to load
+    if (
+      isNearEnd &&
+      hasMoreStoreProducts.value &&
+      !isLoadingMoreStoreProducts.value
+    ) {
+      console.log("Loading more store products..."); // Debug log
+      loadMoreStoreProducts();
+    }
+  }, 150); // Throttle to 150ms
 }
 
 const cart = useStoreCart();
@@ -1308,6 +1863,21 @@ function calculateSavings(sale_price, regular_price) {
       : Number(regular_price);
 
   return (regular - current).toLocaleString();
+}
+
+function formatMemberSince(dateString) {
+  if (!dateString) return "Unknown";
+
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+    });
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "Unknown";
+  }
 }
 
 // Dynamic rating computations
@@ -1448,38 +2018,57 @@ const similarProductsTitle = computed(() => {
   if (similarProducts.value.length === 0) {
     return "You may also like";
   }
-  
+
   if (!currentProduct?.category_details?.length) {
     return "You may also like";
   }
-  
+
   // Get the primary category ID for comparison
   let primaryCategoryId = null;
   if (currentProduct.category) {
     if (Array.isArray(currentProduct.category)) {
       primaryCategoryId = currentProduct.category[0];
-    } else if (typeof currentProduct.category === 'string' && currentProduct.category.includes(',')) {
-      primaryCategoryId = currentProduct.category.split(',')[0].trim();
+    } else if (
+      typeof currentProduct.category === "string" &&
+      currentProduct.category.includes(",")
+    ) {
+      primaryCategoryId = currentProduct.category.split(",")[0].trim();
     } else {
       primaryCategoryId = currentProduct.category;
     }
-  } else if (currentProduct.category_details && currentProduct.category_details.length > 0) {
+  } else if (
+    currentProduct.category_details &&
+    currentProduct.category_details.length > 0
+  ) {
     primaryCategoryId = currentProduct.category_details[0].id;
   }
-  
+
+  // Show category-specific title based on loading phase
+  if (isLoadingSameCategory.value || hasMoreSameCategoryProducts.value) {
+    // Still loading same category products or more same category products available
+    return `More from ${
+      currentProduct.category_details[0]?.name || "this category"
+    }`;
+  }
+
   // Check if we have products from the same category
-  const sameCategoryProducts = similarProducts.value.filter(product => 
-    product.category === primaryCategoryId
+  const sameCategoryProducts = similarProducts.value.filter(
+    (product) => product.category === primaryCategoryId
   );
-  
-  if (sameCategoryProducts.length === similarProducts.value.length) {
-    // All products are from the same category
-    return `More from ${currentProduct.category_details[0]?.name || 'this category'}`;
+
+  if (
+    sameCategoryProducts.length > 0 &&
+    sameCategoryProducts.length === similarProducts.value.length
+  ) {
+    // All currently loaded products are from the same category
+    return `More from ${
+      currentProduct.category_details[0]?.name || "this category"
+    }`;
   } else if (sameCategoryProducts.length > 0) {
     // Mixed products from same and different categories
     return "You may also like";
   } else {
-    // All products are from different categories
+    // All products are from different categories (alternative products phase)
     return "You may also like";
   }
 });
@@ -1591,7 +2180,7 @@ async function submitReview() {
         title: "Review Submitted",
         description:
           "Thank you for your feedback! Your review has been submitted successfully.",
-        color: "green",
+        color: "blue",
         timeout: 5000,
       });
 
@@ -1700,14 +2289,45 @@ watch(
     selectedImageIndex.value = 0;
     quantity.value = 1;
 
-    // Fetch data for the new product
+    if (newId !== oldId) {
+      // Clean up intersection observer
+      if (intersectionObserver) {
+        intersectionObserver.disconnect();
+        intersectionObserver = null;
+      }
 
-    fetchSimilarProducts(); // Fetch similar products when current product changes
+      // Reset similar products state
+      similarProducts.value = [];
+      similarProductsPage.value = 1;
+      hasMoreSimilarProducts.value = true;
+      allLoadedSimilarProducts.value = [];
+
+      // Reset store products state
+      storeProducts.value = [];
+      storeProductsPage.value = 1;
+      hasMoreStoreProducts.value = true;
+      totalStoreProducts.value = 0;
+
+      // Reset category-specific state
+      sameCategoryPage.value = 1;
+      hasMoreSameCategoryProducts.value = true;
+      isLoadingSameCategory.value = true;
+      allLoadedSameCategoryProducts.value = [];
+    }
+
+    // Fetch data for the new product
     await Promise.all([
       fetchProductReviews(1), // Start from page 1
       fetchProductRatingStats(),
       checkUserExistingReview(),
+      fetchSimilarProducts(1), // Fetch first page of similar products
+      fetchStoreProducts(1), // Fetch first page of store products
     ]);
+
+    // Setup infinite scroll after products are loaded
+    if (similarProducts.value.length > 0) {
+      setupInfiniteScroll();
+    }
   },
   { immediate: true } // Fetch immediately on component creation
 );
@@ -1729,6 +2349,20 @@ watch(isLoggedIn, async (newValue) => {
     await checkUserExistingReview();
   } else {
     userExistingReview.value = null;
+  }
+});
+
+// Cleanup intersection observer on component unmount
+onUnmounted(() => {
+  if (intersectionObserver) {
+    intersectionObserver.disconnect();
+    intersectionObserver = null;
+  }
+
+  // Clear scroll timeout
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = null;
   }
 });
 </script>

@@ -209,58 +209,76 @@
           >
         </p>
       </UContainer>
-    </div>    <!-- Mobile Navigation Bar -->
+    </div>
+    <!-- Mobile Navigation Bar -->
     <div
       class="sm:hidden block fixed left-0 right-0 z-50 bottom-2 mx-6 dark:bg-slate-900/90 bg-white/90 backdrop-blur-sm rounded-xl border border-emerald-100 dark:border-slate-800 shadow-sm"
     >
       <!-- Logged in users navigation -->
-      <div v-if="user?.user?.id" class="flex items-center justify-evenly min-w-full py-1">
+      <div
+        v-if="user?.user?.id"
+        class="flex items-center justify-evenly min-w-full py-1"
+      >
         <NuxtLink
           to="/"
           class="flex flex-col items-center p-2"
           @click="handleButtonClick('mobile_home')"
         >
-          <div v-if="loadingButtons.has('mobile_home')" class="dotted-spinner green mb-1"></div>
-          <UIcon
+          <div
+            v-if="loadingButtons.has('mobile_home')"
+            class="dotted-spinner green mb-1"
+          ></div>
+          <!-- <UIcon
             v-else
             name="i-material-symbols:android-google-home"
             class="text-3xl text-green-400"
+          /> -->
+          <img
+            v-else
+            src="/static/frontend/favicon.png"
+            class="size-[26px]"
+            alt="AdsyClub Logo"
           />
         </NuxtLink>
-        
+
         <NuxtLink
           to="/deposit-withdraw"
           class="flex flex-col items-center p-2"
           @click="handleButtonClick('mobile_deposit')"
         >
-          <div v-if="loadingButtons.has('mobile_deposit')" class="dotted-spinner green mb-1"></div>
-          <UIcon
-            v-else
-            name="i-token:cusd"
-            class="text-3xl text-green-400"
-          />
+          <div
+            v-if="loadingButtons.has('mobile_deposit')"
+            class="dotted-spinner green mb-1"
+          ></div>
+          <UIcon v-else name="i-token:cusd" class="text-3xl text-green-400" />
         </NuxtLink>
-        
+
         <NuxtLink
           to="/mobile-recharge"
           class="flex flex-col items-center p-2"
           @click="handleButtonClick('mobile_recharge')"
         >
-          <div v-if="loadingButtons.has('mobile_recharge')" class="dotted-spinner green mb-1"></div>
+          <div
+            v-if="loadingButtons.has('mobile_recharge')"
+            class="dotted-spinner green mb-1"
+          ></div>
           <UIcon
             v-else
             name="i-uil-mobile-vibrate"
             class="text-3xl text-green-400"
           />
         </NuxtLink>
-        
+
         <NuxtLink
           to="/business-network"
           class="flex flex-col items-center p-2 relative"
           @click="handleButtonClick('mobile_business')"
         >
           <div class="relative">
-            <div v-if="loadingButtons.has('mobile_business')" class="dotted-spinner green mb-1"></div>
+            <div
+              v-if="loadingButtons.has('mobile_business')"
+              class="dotted-spinner green mb-1"
+            ></div>
             <UIcon
               v-else
               name="i-eos-icons:network"
@@ -275,13 +293,16 @@
             </div>
           </div>
         </NuxtLink>
-        
+
         <NuxtLink
           to="/adsy-news"
           class="flex flex-col items-center p-2"
           @click="handleButtonClick('mobile_news')"
         >
-          <div v-if="loadingButtons.has('mobile_news')" class="dotted-spinner green mb-1"></div>
+          <div
+            v-if="loadingButtons.has('mobile_news')"
+            class="dotted-spinner green mb-1"
+          ></div>
           <UIcon
             v-else
             name="i-mdi:newspaper-variant-multiple-outline"
@@ -289,7 +310,7 @@
           />
         </NuxtLink>
       </div>
-      
+
       <!-- Guest users navigation -->
       <div v-else class="flex items-center justify-evenly min-w-full py-1">
         <NuxtLink
@@ -297,59 +318,80 @@
           class="flex flex-col items-center p-2"
           @click="handleButtonClick('guest_home')"
         >
-          <div v-if="loadingButtons.has('guest_home')" class="dotted-spinner green mb-1"></div>
-          <UIcon
+          <div
+            v-if="loadingButtons.has('guest_home')"
+            class="dotted-spinner green mb-1"
+          ></div>
+          <!-- <UIcon
             v-else
             name="i-material-symbols:android-google-home"
             class="text-3xl text-green-400"
+          /> -->
+          <img
+            v-else
+            src="/static/frontend/favicon.png"
+            class="size-[26px]"
+            alt="AdsyClub Logo"
           />
         </NuxtLink>
-        
+
         <NuxtLink
           to="/#microgigs"
           class="flex flex-col items-center p-2"
           @click="handleButtonClick('guest_microgigs')"
         >
-          <div v-if="loadingButtons.has('guest_microgigs')" class="dotted-spinner green mb-1"></div>
+          <div
+            v-if="loadingButtons.has('guest_microgigs')"
+            class="dotted-spinner green mb-1"
+          ></div>
           <UIcon
             v-else
             name="i-streamline:money-cash-bag-dollar-bag-payment-cash-money-finance"
             class="text-3xl text-green-400"
           />
         </NuxtLink>
-        
+
         <NuxtLink
           to="/eshop"
           class="flex flex-col items-center p-2"
           @click="handleButtonClick('guest_eshop')"
         >
-          <div v-if="loadingButtons.has('guest_eshop')" class="dotted-spinner green mb-1"></div>
+          <div
+            v-if="loadingButtons.has('guest_eshop')"
+            class="dotted-spinner green mb-1"
+          ></div>
           <UIcon
             v-else
             name="i-heroicons-shopping-bag"
             class="text-3xl text-green-400"
           />
         </NuxtLink>
-        
+
         <NuxtLink
           to="/business-network"
           class="flex flex-col items-center p-2"
           @click="handleButtonClick('guest_business')"
         >
-          <div v-if="loadingButtons.has('guest_business')" class="dotted-spinner green mb-1"></div>
+          <div
+            v-if="loadingButtons.has('guest_business')"
+            class="dotted-spinner green mb-1"
+          ></div>
           <UIcon
             v-else
             name="i-eos-icons-network"
             class="text-3xl text-green-400"
           />
         </NuxtLink>
-        
+
         <NuxtLink
           to="/adsy-news"
           class="flex flex-col items-center p-2"
           @click="handleButtonClick('guest_news')"
         >
-          <div v-if="loadingButtons.has('guest_news')" class="dotted-spinner green mb-1"></div>
+          <div
+            v-if="loadingButtons.has('guest_news')"
+            class="dotted-spinner green mb-1"
+          ></div>
           <UIcon
             v-else
             name="i-mdi-newspaper-variant-multiple-outline"
@@ -377,9 +419,12 @@ const handleButtonClick = (buttonId) => {
 };
 
 // Watch route changes to clear loading states
-watch(() => useRoute().fullPath, () => {
-  loadingButtons.value.clear();
-});
+watch(
+  () => useRoute().fullPath,
+  () => {
+    loadingButtons.value.clear();
+  }
+);
 
 // Use the app download composable
 import { useAppDownload } from "~/composables/useAppDownload";

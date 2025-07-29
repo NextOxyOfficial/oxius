@@ -67,6 +67,114 @@
                 </template>
               </USelectMenu>
             </UFormGroup>
+
+            <UFormGroup label="Keywords (Optional)" class="mb-5">
+              <!-- Keywords Input Section -->
+              <div class="space-y-3">
+                <!-- Input Row -->
+                <div class="flex gap-3">
+                  <div class="flex-1">
+                    <UInput
+                      ref="keywordInput"
+                      type="text"
+                      size="md"
+                      color="white"
+                      v-model="currentKeyword"
+                      placeholder="Enter a keyword (e.g., electronics, mobile, smartphone)"
+                      class="w-full border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
+                      maxlength="50"
+                      @keydown.enter.prevent="addKeyword"
+                    >
+                      <template #leading>
+                        <UIcon name="i-heroicons-tag" />
+                      </template>
+                    </UInput>
+                  </div>
+                  <UButton
+                    type="button"
+                    @click="addKeyword"
+                    :disabled="
+                      !currentKeyword.trim() || keywordChips.length >= 20
+                    "
+                    color="emerald"
+                    variant="solid"
+                    size="md"
+                    class="px-6"
+                  >
+                    <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-2" />
+                    Add
+                  </UButton>
+                </div>
+
+                <!-- Keywords Chips Display -->
+                <div v-if="keywordChips.length > 0" class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <label class="text-sm font-medium text-gray-700"
+                      >Added Keywords:</label
+                    >
+                    <span class="text-xs text-gray-500"
+                      >{{ keywordChips.length }}/20</span
+                    >
+                  </div>
+
+                  <div
+                    class="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 min-h-[60px]"
+                  >
+                    <div
+                      v-for="(keyword, index) in keywordChips"
+                      :key="index"
+                      class="inline-flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded-full text-sm font-medium shadow-sm hover:bg-emerald-600 transition-all duration-200 group"
+                    >
+                      <UIcon name="i-heroicons-tag" class="w-3 h-3" />
+                      <span>{{ keyword }}</span>
+                      <button
+                        type="button"
+                        @click="removeKeyword(index)"
+                        class="ml-1 hover:bg-emerald-700 rounded-full p-1 transition-all duration-200 group-hover:bg-emerald-700"
+                        :aria-label="`Remove ${keyword} keyword`"
+                      >
+                        <UIcon name="i-heroicons-x-mark" class="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Empty State -->
+                <div
+                  v-else
+                  class="p-6 text-center border-2 border-dashed border-gray-300 rounded-lg bg-gray-50"
+                >
+                  <UIcon
+                    name="i-heroicons-tag"
+                    class="w-8 h-8 text-gray-400 mx-auto mb-2"
+                  />
+                  <p class="text-sm text-gray-500">No keywords added yet</p>
+                  <p class="text-xs text-gray-400 mt-1">
+                    Keywords help customers find your product when searching
+                  </p>
+                </div>
+              </div>
+
+              <!-- Help Text -->
+              <div class="mt-3 flex items-start justify-between">
+                <p class="text-sm text-gray-500 flex-1">
+                  Add relevant keywords to help customers find your product.
+                  Type a keyword and click "Add" to create tags.
+                </p>
+                <div
+                  class="flex items-center gap-2 ml-4"
+                  v-if="keywordChips.length >= 18"
+                >
+                  <UIcon
+                    name="i-heroicons-exclamation-triangle"
+                    class="w-4 h-4 text-amber-500"
+                  />
+                  <span class="text-xs text-amber-600 whitespace-nowrap">
+                    {{ 20 - keywordChips.length }} remaining
+                  </span>
+                </div>
+              </div>
+            </UFormGroup>
           </div>
 
           <!-- Product Details Section -->
@@ -429,6 +537,8 @@
 </template>
 
 <script setup>
+import { nextTick, onMounted } from "vue";
+
 const props = defineProps({
   product: Object,
 });
@@ -441,10 +551,15 @@ const router = useRouter();
 const toast = useToast();
 const currentStep = ref(0); // Track current step for highlighting
 const categories = ref([]);
+const currentKeyword = ref("");
+const keywordChips = ref([]);
+const keywordInput = ref(null);
+
 // Simplified form with only essential fields
 const form = ref(
   props.product || {
     name: "",
+    keywords: "",
     category: [],
     description: "",
     short_description: "",
@@ -634,6 +749,11 @@ async function getCategories() {
 
 await getCategories();
 
+// Initialize keywords from existing form data if editing a product
+onMounted(() => {
+  initializeKeywords();
+});
+
 // Add these improved functions to your script setup section
 
 // Enhanced file upload handling with better error handling and file input reset
@@ -809,6 +929,96 @@ function updateContent(p) {
   form.value.description = p;
 }
 
+// Keyword management functions
+function addKeyword() {
+  const keyword = currentKeyword.value.trim();
+
+  // Validation checks
+  if (!keyword) {
+    return;
+  }
+
+  if (keywordChips.value.length >= 20) {
+    toast.add({
+      title: "Keyword Limit Reached",
+      description: "You can add a maximum of 20 keywords",
+      color: "amber",
+      timeout: 3000,
+    });
+    return;
+  }
+
+  if (keyword.length < 2) {
+    toast.add({
+      title: "Keyword Too Short",
+      description: "Keywords must be at least 2 characters long",
+      color: "amber",
+      timeout: 2000,
+    });
+    return;
+  }
+
+  if (
+    keywordChips.value.some((k) => k.toLowerCase() === keyword.toLowerCase())
+  ) {
+    toast.add({
+      title: "Duplicate Keyword",
+      description: `"${keyword}" is already added`,
+      color: "amber",
+      timeout: 2000,
+    });
+    return;
+  }
+
+  // Add the keyword
+  keywordChips.value.push(keyword);
+  currentKeyword.value = "";
+  updateFormKeywords();
+
+  // Show success feedback
+  toast.add({
+    title: "Keyword Added",
+    description: `"${keyword}" added successfully`,
+    color: "green",
+    timeout: 2000,
+  });
+
+  // Focus back to input for better UX
+  nextTick(() => {
+    if (keywordInput.value) {
+      keywordInput.value.focus();
+    }
+  });
+}
+
+function removeKeyword(index) {
+  const removedKeyword = keywordChips.value[index];
+  keywordChips.value.splice(index, 1);
+  updateFormKeywords();
+
+  toast.add({
+    title: "Keyword Removed",
+    description: `"${removedKeyword}" removed successfully`,
+    color: "blue",
+    timeout: 2000,
+  });
+}
+
+function updateFormKeywords() {
+  // Update the form.keywords string with comma-separated values
+  form.value.keywords = keywordChips.value.join(", ");
+}
+
+function initializeKeywords() {
+  // Initialize chips from existing form data
+  if (form.value.keywords) {
+    keywordChips.value = form.value.keywords
+      .split(",")
+      .map((keyword) => keyword.trim())
+      .filter((keyword) => keyword.length > 0);
+  }
+}
+
 function resetForm(showConfirm = true) {
   const doReset = showConfirm
     ? confirm(
@@ -819,6 +1029,7 @@ function resetForm(showConfirm = true) {
   if (doReset) {
     form.value = {
       name: "",
+      keywords: "",
       category: "",
       description: "",
       short_description: "",
@@ -831,6 +1042,9 @@ function resetForm(showConfirm = true) {
       delivery_fee_inside_dhaka: 0,
       delivery_fee_outside_dhaka: 0,
     };
+    // Reset keyword chips
+    keywordChips.value = [];
+    currentKeyword.value = "";
     // Also reset editor data
     productEditorData.value = null;
   }
@@ -838,74 +1052,7 @@ function resetForm(showConfirm = true) {
 </script>
 
 <style scoped>
-/* Premium Glassmorphism Card */
-.glassmorphism-card {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(12px);
-}
-
-.dark .glassmorphism-card {
-  background: rgba(30, 41, 59, 0.9);
-}
-
-/* Section Styling */
-.form-section {
-  padding: 1.25rem 0.5rem;
-  border-radius: 0.75rem;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-@media (min-width: 640px) {
-  .form-section {
-    padding: 1.25rem 1.5rem;
-  }
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.section-icon-wrapper {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background: rgb(239 246 255);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgb(219 234 254);
-}
-
-.dark .section-icon-wrapper {
-  background: rgba(59, 130, 246, 0.3);
-  border-color: rgba(59, 130, 246, 0.5);
-}
-
-.section-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-  color: rgb(37, 99, 235);
-}
-
-.dark .section-icon {
-  color: rgb(96, 165, 250);
-}
-
-.section-title {
-  font-size: 1.125rem;
-  font-weight: 500;
-  color: rgb(31, 41, 55);
-}
-
-.dark .section-title {
-  color: white;
-}
-
-/* Premium Floating Form Controls */
+/* Premium Form Controls */
 .form-floating-group {
   position: relative;
 }
@@ -1140,166 +1287,12 @@ function resetForm(showConfirm = true) {
   transform: translateY(-0.125rem);
 }
 
-.premium-btn-outline {
-  border-radius: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  border: 1px solid rgb(226, 232, 240);
-  color: rgb(51, 65, 85);
-  transition: all 0.3s ease;
-  transform: translateY(0);
-}
-
-.premium-btn-outline:hover {
-  border-color: rgb(96, 165, 250);
-  background: rgb(239, 246, 255);
-  color: rgb(37, 99, 235);
-  transform: translateY(-0.125rem);
-}
-
-.dark .premium-btn-outline {
-  border-color: rgb(51, 65, 85);
-  color: rgb(203, 213, 225);
-}
-
-.dark .premium-btn-outline:hover {
-  border-color: rgb(59, 130, 246);
-  background: rgba(59, 130, 246, 0.1);
-  color: rgb(96, 165, 250);
-}
-
-.premium-btn-secondary {
-  border-radius: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  color: rgb(75, 85, 99);
-  transition: all 0.3s ease;
-}
-
-.premium-btn-secondary:hover {
-  background: rgb(241, 245, 249);
-  color: rgb(31, 41, 55);
-}
-
-.dark .premium-btn-secondary {
-  color: rgb(148, 163, 184);
-}
-
-.dark .premium-btn-secondary:hover {
-  background: rgba(51, 65, 85, 0.5);
-  color: white;
-}
-
-/* Additional Hover Effects */
+/* Form Transitions */
 .form-section:hover {
   background: rgba(248, 250, 252, 0.7);
 }
 
 .dark .form-section:hover {
   background: rgba(30, 41, 59, 0.6);
-}
-
-/* Premium Modal */
-.premium-modal {
-  backdrop-filter: blur(12px);
-}
-
-/* Animation keyframes */
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 0;
-  }
-}
-
-@keyframes success-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
-  }
-}
-
-@keyframes float-up {
-  0% {
-    transform: translateY(0) scale(0);
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-300px) scale(1);
-    opacity: 0;
-  }
-}
-
-@keyframes line-scroll {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes line-scroll-reverse {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-/* Animation classes */
-.pulse-animation {
-  border: 2px solid rgba(96, 165, 250, 0.5);
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.dark .pulse-animation {
-  border-color: rgba(59, 130, 246, 0.5);
-}
-
-.success-pulse-animation {
-  animation: success-pulse 1.5s ease-in-out infinite;
-}
-
-.success-particle {
-  position: absolute;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
-  animation: float-up 3s ease-in-out infinite;
-  top: 100%;
-}
-
-.animate-line-scroll {
-  animation: line-scroll 3s infinite linear;
-}
-
-.animate-line-scroll-reverse {
-  animation: line-scroll-reverse 3s infinite linear;
-}
-
-.premium-upload-container {
-  transition: all 0.3s ease;
-}
-
-.premium-editor-container {
-  transition: all 0.3s ease;
 }
 </style>

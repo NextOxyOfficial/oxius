@@ -1,5 +1,5 @@
 <template>
-  <NuxtLink to="/">
+  <NuxtLink to="/eshop">
     <NuxtImg
       v-if="logo?.image"
       :src="logo?.image"

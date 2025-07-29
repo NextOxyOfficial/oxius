@@ -253,15 +253,17 @@
       class="bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/90 py-4"
     >
       <UContainer>
-        <h2
-          class="text-xl md:text-2xl mb-4 md:mb-8 text-center font-semibold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent"
-          id="microgigs"
-        >
-          {{ $t("micro_gigs") }}
-          <span class="text-slate-700 dark:text-slate-300"
-            >({{ $t("quick_earn") }})</span
+        <NuxtLink to="/micro-gigs">
+          <h2
+            class="text-xl md:text-2xl mb-4 md:mb-8 text-center font-semibold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent"
+            id="microgigs"
           >
-        </h2>
+            {{ $t("micro_gigs") }}
+            <span class="text-slate-700 dark:text-slate-300"
+              >({{ $t("quick_earn") }})</span
+            >
+          </h2>
+        </NuxtLink>
 
         <AccountBalance v-if="user" :user="user" :isUser="true" class="mb-8" />
 
@@ -383,7 +385,8 @@
                   </p>
                 </div>
 
-                <div class="flex items-center gap-2">                  <!-- Post gig button with premium styling -->
+                <div class="flex items-center gap-2">
+                  <!-- Post gig button with premium styling -->
                   <UButton
                     to="/post-a-gig"
                     class="relative overflow-hidden bg-white hover:bg-slate-50 text-emerald-600 font-medium rounded-lg shadow-sm hover:shadow-sm transition-all duration-200 border border-emerald-200 hover:border-emerald-300"
@@ -413,13 +416,20 @@
                     <div
                       class="relative z-10 flex items-center justify-center space-x-2"
                     >
-                      <div v-if="loadingButtons.has('post-gigs')" class="dotted-spinner emerald"></div>
+                      <div
+                        v-if="loadingButtons.has('post-gigs')"
+                        class="dotted-spinner emerald"
+                      ></div>
                       <UIcon
                         v-else
                         name="i-heroicons-plus-circle"
                         class="text-emerald-500"
                       />
-                      <span v-if="!loadingButtons.has('post-gigs')" class="font-medium">{{ $t("post_gigs") }}</span>
+                      <span
+                        v-if="!loadingButtons.has('post-gigs')"
+                        class="font-medium"
+                        >{{ $t("post_gigs") }}</span
+                      >
                     </div>
                   </UButton>
 
@@ -567,7 +577,7 @@
                           color="emerald"
                           variant="solid"
                           class="w-24 justify-center shadow-sm hover:shadow-sm transition-all duration-200"
-                          :to="`/order/${gig.id}/`"
+                          :to="`/order/${gig.slug}`"
                         >
                           <UIcon
                             name="i-heroicons-currency-dollar"
@@ -739,9 +749,12 @@ const handleButtonClick = (buttonId) => {
 
 // Watch for route changes to clear loading states
 const route = useRoute();
-watch(() => route.path, () => {
-  loadingButtons.value.clear();
-});
+watch(
+  () => route.path,
+  () => {
+    loadingButtons.value.clear();
+  }
+);
 
 const services = ref({ results: [], next: null });
 const searchServices = ref({ results: [], next: null });

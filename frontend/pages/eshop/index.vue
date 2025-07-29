@@ -3,7 +3,7 @@
     class="bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-800/90 min-h-screen pb-20 page-eshop"
   >
     <!-- Premium Banner Slider with Enhanced Visual Effects -->
-    <div class="pt-4 pb-2 mb-2">
+    <div v-if="!isSearchActive" class="pt-2 sm:pt-4 pb-2 mb-2">
       <UContainer>
         <CommonEshopBanner
           :customHeight="{
@@ -32,19 +32,19 @@
         @eshopManager="navigateToEshopManager"
       />
 
-      <CommonHotDealsSection />
+      <CommonHotDealsSection v-if="!isSearchActive" />
       <!-- Premium Search & Filters Section -->
-      <div class="mb-5">
+      <div class="my-5">
         <!-- Elegant Search Bar & Price Range - Responsive Layout -->
         <div class="flex flex-col lg:flex-row gap-3">
-          <!-- Search Section - Hidden on mobile, visible on desktop -->
-          <div class="hidden lg:flex gap-3 items-center lg:flex-1">
+          <!-- Search Section - Visible on desktop, hidden on mobile -->
+          <div class="hidden md:flex gap-3 items-center lg:flex-1">
             <div class="relative flex-1">
               <input
                 v-model="searchQuery"
                 type="text"
                 placeholder="Search products, brands, categories..."
-                class="text-base w-full px-5 py-2 pl-12 pr-10 rounded-lg border border-gray-200/80 dark:border-gray-700/70 bg-white/90 dark:bg-gray-800/80 backdrop-blur-sm focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-400 transition-all duration-300 shadow-sm hover:shadow-sm placeholder:text-gray-600 dark:placeholder:text-gray-600"
+                class="text-base w-full px-5 py-2 pl-12 pr-10 rounded-lg border border-gray-200/80 bg-white/90 transition-all duration-300 shadow-sm hover:shadow-sm placeholder:text-gray-600 dark:placeholder:text-gray-600"
                 @input="debouncedSearch"
               />
               <UIcon
@@ -54,7 +54,7 @@
               <button
                 v-if="searchQuery"
                 @click="clearSearch"
-                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 dark:hover:text-gray-300 transition-colors"
+                class="absolute right-4 flex top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 dark:hover:text-gray-300 transition-colors"
               >
                 <UIcon name="i-heroicons-x-mark" class="size-5" />
               </button>
@@ -82,8 +82,8 @@
                   rounded: 'rounded-lg',
                   placeholder: 'text-gray-500 dark:text-gray-400',
                   size: {
-                    md: 'text-sm py-1.5 px-3'
-                  }
+                    md: 'text-sm py-1.5 px-3',
+                  },
                 }"
                 @change="handleCategoryChange"
               >
@@ -279,11 +279,11 @@ definePageMeta({
 });
 
 import {
-  CommonHotDealsSection,
   CommonEshopBanner,
   CommonEshopCategoriesSidebar,
+  CommonHotDealsSection,
 } from "#components";
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 const { get } = useApi();
 const route = useRoute();
 const router = useRouter();
@@ -350,15 +350,20 @@ const hasActiveFilters = computed(() => {
   );
 });
 
+// Computed property to check if search is active (for hiding banners and hot deals)
+const isSearchActive = computed(() => {
+  return searchQuery.value && searchQuery.value.trim().length > 0;
+});
+
 // Computed property for category options in dropdown
 const categoryOptions = computed(() => {
   return [
     { id: null, name: "All Categories" },
-    ...categories.value.map(cat => ({
+    ...categories.value.map((cat) => ({
       id: cat.id,
       name: cat.name,
-      slug: cat.slug
-    }))
+      slug: cat.slug,
+    })),
   ];
 });
 
@@ -402,7 +407,7 @@ function toggleCategory(categoryId) {
 // Handle category change from dropdown
 function handleCategoryChange(categoryId) {
   selectedCategory.value = categoryId;
-  
+
   if (categoryId) {
     // Find category slug to update URL
     const category = categories.value.find((cat) => cat.id === categoryId);
@@ -412,7 +417,7 @@ function handleCategoryChange(categoryId) {
   } else {
     updateURL(); // Clear category from URL
   }
-  
+
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;

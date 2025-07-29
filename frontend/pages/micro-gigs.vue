@@ -38,7 +38,8 @@
             class="w-full md:w-60 bg-slate-50/70 border-dashed border max-sm:rounded-lg max-sm:overflow-hidden"
           >
             <ul class="py-2 text-center">
-              <li>                <p
+              <li>
+                <p
                   class="px-2 font-semibold pb-2 text-left cursor-pointer"
                   @click.prevent="selectAllCategories"
                 >
@@ -80,7 +81,7 @@
                 value-attribute="value"
                 option-attribute="title"
               />
-            </div>            
+            </div>
             <UCard
               v-for="(gig, i) in paginatedGigs"
               :key="i"
@@ -226,15 +227,13 @@
                     class="w-[70px] justify-center"
                   >
                     Earn
-                  </UButton>                </div>
+                  </UButton>
+                </div>
               </div>
-            </UCard>              
+            </UCard>
             <!-- Simple Pagination Section -->
-            <div
-              v-if="microGigs?.length"
-              class="mt-6 mb-4"
-            >
-              <div class="flex items-center justify-center gap-2 text-sm">
+            <div v-if="microGigs?.length" class="mt-6 mb-4">
+              <div class="flex items-center justify-center gap-2 text-sm mt-3">
                 <span>Page {{ currentPage }} of {{ totalPages }}</span>
 
                 <!-- Previous button -->
@@ -271,10 +270,11 @@
                 </button>
               </div>
             </div>
-            
+
             <!-- Results Info -->
             <div class="text-center text-sm text-gray-600 mt-2">
-              Showing {{ startIndex + 1 }}-{{ endIndex }} of {{ totalGigs }} gigs
+              Showing {{ startIndex + 1 }}-{{ endIndex }} of
+              {{ totalGigs }} gigs
             </div>
           </div>
         </div>
@@ -305,7 +305,9 @@ const itemsPerPage = 10;
 const totalGigs = computed(() => microGigs.value.length);
 const totalPages = computed(() => Math.ceil(totalGigs.value / itemsPerPage));
 const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage);
-const endIndex = computed(() => Math.min(startIndex.value + itemsPerPage, totalGigs.value));
+const endIndex = computed(() =>
+  Math.min(startIndex.value + itemsPerPage, totalGigs.value)
+);
 
 const paginatedGigs = computed(() => {
   return microGigs.value.slice(startIndex.value, endIndex.value);
@@ -316,7 +318,7 @@ function goToPage(page) {
   if (page < 1 || page > totalPages.value || page === currentPage.value) return;
   currentPage.value = page;
   // Scroll to top of gigs section
-  document.getElementById('micro-gigs')?.scrollIntoView({ behavior: 'smooth' });
+  document.getElementById("micro-gigs")?.scrollIntoView({ behavior: "smooth" });
 }
 
 // Helper function to get visible page numbers

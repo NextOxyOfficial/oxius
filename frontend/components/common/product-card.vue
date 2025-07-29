@@ -48,7 +48,7 @@
 
           <!-- Simplified Quick View Button -->
           <div
-            class="absolute inset-0 z-10 flex items-center justify-center opacity-0 bg-gray-100 hover:opacity-100 transition-opacity"
+            class="absolute inset-0 z-10 flex items-center justify-center opacity-0 bg-transparent hover:opacity-100 transition-opacity"
           >
             <button
               @click="openProductModal(product)"
@@ -146,13 +146,10 @@
     </div>
     <!-- Simplified Product Details Modal -->
     <UModal
+      v-if="!isInModal"
+      ref="productModal"
       v-model="isModalOpen"
-      :ui="{
-        width: 'w-full sm:max-w-4xl',
-        height: 'h-auto',
-        container: 'flex flex-col h-auto mt-20 p-0 sm:p-0',
-        padding: 'p-0',
-      }"
+      :ui="modalUiConfig"
     >
       <div>
         <div class="bg-white dark:bg-slate-800 rounded-xl">
@@ -161,6 +158,7 @@
             :modal="true"
             :seeDetails="true"
             @close-modal="closeProductModal"
+            @close-and-reopen-modal="updateModalProduct"
           />
         </div>
       </div>
@@ -170,14 +168,43 @@
 
 <script setup>
 const { patch } = useApi();
-const { product } = defineProps({ product: { type: Object, required: true } });
+const { product, isInModal, onModalProductChange, isInSearchOverlay } =
+  defineProps({
+    product: { type: Object, required: true },
+    isInModal: { type: Boolean, default: false },
+    onModalProductChange: { type: Function, default: null },
+    isInSearchOverlay: { type: Boolean, default: false },
+  });
+
+// Define emits for parent communication
+const emit = defineEmits(["updateModalProduct"]);
+
 const isModalOpen = ref(false);
 const selectedProduct = ref(null);
 const quantity = ref(1);
+const productModal = ref(null);
 
 const loadingStates = ref({});
 const cart = useStoreCart();
 const productCardRef = ref(null);
+
+// Computed property for modal UI configuration
+// When in search overlay (z-[999999999]), modal needs higher z-index to appear above it
+const modalUiConfig = computed(() => ({
+  wrapper: isInSearchOverlay ? "relative z-[99999999999]" : "relative z-50",
+  width: "w-full sm:max-w-4xl",
+  height: "h-auto",
+  container: "flex flex-col h-auto mt-20 p-0 sm:p-0",
+  padding: "p-0",
+  transition: {
+    enter: "duration-300 ease-out",
+    enterFrom: "opacity-0 scale-95",
+    enterTo: "opacity-100 scale-100",
+    leave: "duration-200 ease-in",
+    leaveFrom: "opacity-100 scale-100",
+    leaveTo: "opacity-0 scale-95",
+  },
+}));
 
 function getProductImage(item) {
   if (!item) return "/placeholder-image.jpg";
@@ -241,13 +268,109 @@ function addToCart(item, qty = 1) {
 
 // Product modal functions
 function openProductModal(product) {
+  // If this product card is inside a modal, emit event to parent instead of opening new modal
+  if (isInModal && onModalProductChange) {
+    onModalProductChange(product);
+    return;
+  }
+
+  // If this product card is inside a modal but no handler provided, emit event
+  if (isInModal) {
+    emit("updateModalProduct", product);
+    return;
+  }
+
+  // Normal behavior for product cards not in modal
   selectedProduct.value = product;
   quantity.value = 1;
   isModalOpen.value = true;
+
+  // Reset scroll position to top when modal opens
+  nextTick(() => {
+    resetModalScroll();
+  });
 }
 
 function closeProductModal() {
   isModalOpen.value = false;
+}
+
+function updateModalProduct(newProduct) {
+  // Close current modal first
+  isModalOpen.value = false;
+
+  // After modal close animation completes, open with new product
+  setTimeout(() => {
+    selectedProduct.value = newProduct;
+    quantity.value = 1;
+    isModalOpen.value = true;
+
+    // Reset scroll position to top when new modal opens
+    nextTick(() => {
+      resetModalScroll();
+    });
+  }, 250); // Match the modal leave transition duration
+}
+
+// Function to reset modal scroll position to top
+function resetModalScroll() {
+  // Multiple attempts with increasing delays to ensure modal is rendered
+  const scrollResetAttempts = [100, 300, 500];
+
+  scrollResetAttempts.forEach((delay, index) => {
+    setTimeout(() => {
+      let modalContainer = null;
+
+      // First try to use the modal ref if available
+      if (productModal.value && productModal.value.$el) {
+        const modalElement = productModal.value.$el;
+        modalContainer =
+          modalElement.querySelector(".overflow-y-auto") || modalElement;
+      }
+
+      // Fallback to DOM query selectors
+      if (!modalContainer) {
+        const selectors = [
+          '[role="dialog"] .overflow-y-auto',
+          '[role="dialog"] .max-h-full',
+          ".fixed.inset-0.z-50 .overflow-y-auto",
+          '[data-headlessui-state="open"] .overflow-y-auto',
+          ".relative.transform.overflow-hidden.rounded-lg",
+          '[role="dialog"]',
+          ".overflow-y-auto",
+        ];
+
+        for (const selector of selectors) {
+          const elements = document.querySelectorAll(selector);
+          if (elements.length > 0) {
+            modalContainer = elements[elements.length - 1];
+            break;
+          }
+        }
+      }
+
+      if (modalContainer) {
+        // Simply scroll to the top (position 0)
+        modalContainer.scrollTo({
+          top: 0,
+          behavior: index === 0 ? "smooth" : "instant",
+        });
+      }
+
+      // Also try to scroll any parent containers that might be scrollable
+      const parentContainers = document.querySelectorAll(
+        '.fixed.inset-0, [role="dialog"]'
+      );
+      parentContainers.forEach((container) => {
+        if (container.scrollHeight > container.clientHeight) {
+          container.scrollTo({
+            top: 0,
+            behavior: index === 0 ? "smooth" : "instant",
+          });
+        }
+      });
+    }, delay);
+  });
 }
 
 async function increaseProductViews() {
@@ -259,6 +382,16 @@ async function increaseProductViews() {
     console.error(error);
   }
 }
+
+// Watch for modal open state changes to reset scroll position
+watch(isModalOpen, (newValue) => {
+  if (newValue) {
+    // Modal is opening, reset scroll position to top
+    nextTick(() => {
+      resetModalScroll();
+    });
+  }
+});
 
 onMounted(() => {
   const observer = new IntersectionObserver(

@@ -121,7 +121,12 @@
                       v-if="loadingButtons.has('desktop-business-network')"
                       class="dotted-spinner"
                     ></div>
-                    <Globe v-else class="icon text-blue-600" />
+                    <img
+                      v-else
+                      :src="`/static/frontend/images/globalconnection.png`"
+                      alt="Business Network Icon"
+                      class="size-7"
+                    />
                   </div>
                   <span>{{ $t("business_network") }}</span>
                 </NuxtLink>
@@ -136,7 +141,12 @@
                       v-if="loadingButtons.has('desktop-news')"
                       class="dotted-spinner amber"
                     ></div>
-                    <Newspaper v-else class="icon text-amber-600" />
+                    <img
+                      v-else
+                      :src="`/static/frontend/images/news.png`"
+                      alt="News Icon"
+                      class="size-7"
+                    />
                   </div>
                   <span>{{ $t("adsy_news") }}</span>
                 </NuxtLink>
@@ -151,7 +161,12 @@
                       v-if="loadingButtons.has('desktop-earn-money')"
                       class="dotted-spinner emerald"
                     ></div>
-                    <BadgeDollarSign v-else class="icon text-emerald-600" />
+                    <img
+                      v-else
+                      :src="`/static/frontend/images/money.png`"
+                      alt="Earn Money Icon"
+                      class="size-7"
+                    />
                   </div>
                   <span>{{ $t("earn_money") }}</span>
                 </NuxtLink>
@@ -166,7 +181,12 @@
                       v-if="loadingButtons.has('desktop-eshop')"
                       class="dotted-spinner purple"
                     ></div>
-                    <ShoppingCart v-else class="icon text-purple-600" />
+                    <img
+                      v-else
+                      :src="`/static/frontend/images/onlineshopping.png`"
+                      alt="Eshop Icon"
+                      class="size-7"
+                    />
                   </div>
                   <span>{{ $t("eshop") }}</span>
                 </NuxtLink>
@@ -181,7 +201,12 @@
                       v-if="loadingButtons.has('desktop-sale')"
                       class="dotted-spinner indigo"
                     ></div>
-                    <ListFilter v-else class="icon text-indigo-600" />
+                    <img
+                      v-else
+                      :src="`/static/frontend/images/sign.png`"
+                      alt="Sale Listings Icon"
+                      class="size-7"
+                    />
                   </div>
                   <span>{{ $t("sale_listing") }}</span>
                 </NuxtLink>
@@ -197,7 +222,12 @@
                       v-if="loadingButtons.has('desktop-mindforce')"
                       class="dotted-spinner cyan"
                     ></div>
-                    <Brain v-else class="icon text-cyan-600" />
+                    <img
+                      v-else
+                      :src="`/static/frontend/images/question.png`"
+                      alt="MindForce Icon"
+                      class="size-7"
+                    />
                   </div>
                   <span>{{ $t("mindforce") }}</span>
                 </NuxtLink>
@@ -213,10 +243,11 @@
                       v-if="loadingButtons.has('desktop-courses')"
                       class="dotted-spinner rose"
                     ></div>
-                    <UIcon
+                    <img
                       v-else
-                      name="i-heroicons-academic-cap"
-                      class="icon text-rose-600"
+                      :src="`/static/frontend/images/onlinelearning.png`"
+                      alt="E-learning Icon"
+                      class="size-7"
                     />
                   </div>
                   <span>{{ $t("elearning") }}</span>
@@ -226,7 +257,11 @@
                   class="service-btn bg-white/70 text-gray-600 relative opacity-80 cursor-not-allowed"
                 >
                   <div class="icon-circle bg-gray-100">
-                    <HeartPulse class="icon text-gray-600" />
+                    <img
+                      :src="`/static/frontend/images/medicalreport.png`"
+                      alt="Health Service Icon"
+                      class="size-7 opacity-60"
+                    />
                   </div>
                   <div class="h-12 flex items-center justify-center">
                     <span>{{ $t("shastho_sheba") }}</span>
@@ -242,7 +277,11 @@
                   class="service-btn bg-white/70 text-gray-600 relative opacity-80 cursor-not-allowed"
                 >
                   <div class="icon-circle bg-gray-100">
-                    <Receipt class="icon text-gray-600" />
+                    <img
+                      :src="`/static/frontend/images/payment.png`"
+                      alt="Bill Pay Icon"
+                      class="size-7 opacity-60"
+                    />
                   </div>
                   <div class="h-12 flex items-center justify-center">
                     <span>{{ $t("bill_pay") }}</span>
@@ -263,7 +302,12 @@
                       v-if="loadingButtons.has('desktop-mobile-recharge')"
                       class="dotted-spinner orange"
                     ></div>
-                    <Smartphone v-else class="icon text-orange-600" />
+                    <img
+                      v-else
+                      :src="`/static/frontend/images/mobileapp.png`"
+                      alt="Mobile Recharge Icon"
+                      class="size-7"
+                    />
                   </div>
                   <span>{{ $t("mobile_recharge") }}</span>
                 </NuxtLink>
@@ -278,7 +322,12 @@
                       v-if="loadingButtons.has('desktop-transactions')"
                       class="dotted-spinner lime"
                     ></div>
-                    <CreditCard v-else class="icon text-lime-600" />
+                    <img
+                      v-else
+                      :src="`/static/frontend/images/transaction.png`"
+                      alt="Transactions Icon"
+                      class="size-7"
+                    />
                   </div>
                   <span>{{ $t("adsy_pay") }}</span>
                 </NuxtLink>
@@ -294,7 +343,12 @@
                       v-if="loadingButtons.has('desktop-membership')"
                       class="dotted-spinner pink"
                     ></div>
-                    <User v-else class="icon text-pink-600" />
+                    <img
+                      v-else
+                      :src="`/static/frontend/images/premium.png`"
+                      alt="Membership Icon"
+                      class="size-7"
+                    />
                   </div>
                   <span>{{ $t("packeges") }}</span>
                 </NuxtLink>
@@ -322,7 +376,12 @@
               v-if="loadingButtons.has('mobile-business-network')"
               class="dotted-spinner mobile"
             ></div>
-            <Globe v-else class="mobile-icon text-blue-600" />
+            <img
+              v-else
+              :src="`/static/frontend/images/globalconnection.png`"
+              alt="Business Network Icon"
+              class="size-7"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-800">{{
@@ -341,7 +400,12 @@
               v-if="loadingButtons.has('mobile-news')"
               class="dotted-spinner mobile amber"
             ></div>
-            <Newspaper v-else class="mobile-icon text-amber-600" />
+            <img
+              v-else
+              :src="`/static/frontend/images/news.png`"
+              alt="News Icon"
+              class="size-7"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-800">{{
@@ -360,7 +424,12 @@
               v-if="loadingButtons.has('mobile-earn-money')"
               class="dotted-spinner mobile emerald"
             ></div>
-            <BadgeDollarSign v-else class="mobile-icon text-emerald-600" />
+            <img
+              v-else
+              :src="`/static/frontend/images/money.png`"
+              alt="Earn Money Icon"
+              class="size-7"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-800">{{
@@ -379,7 +448,12 @@
               v-if="loadingButtons.has('mobile-eshop')"
               class="dotted-spinner mobile purple"
             ></div>
-            <ShoppingCart v-else class="mobile-icon text-purple-600" />
+            <img
+              v-else
+              :src="`/static/frontend/images/onlineshopping.png`"
+              alt="Eshop Icon"
+              class="size-7"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-800">{{
@@ -398,7 +472,12 @@
               v-if="loadingButtons.has('mobile-sale')"
               class="dotted-spinner mobile indigo"
             ></div>
-            <ListFilter v-else class="mobile-icon text-indigo-600" />
+            <img
+              v-else
+              :src="`/static/frontend/images/sign.png`"
+              alt="Sale Listings Icon"
+              class="size-7"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-800">{{
@@ -417,7 +496,12 @@
               v-if="loadingButtons.has('mobile-mindforce')"
               class="dotted-spinner mobile cyan"
             ></div>
-            <Brain v-else class="mobile-icon text-cyan-600" />
+            <img
+              v-else
+              :src="`/static/frontend/images/question.png`"
+              alt="MindForce Icon"
+              class="size-7"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-800">{{
@@ -437,7 +521,12 @@
               v-if="loadingButtons.has('mobile-courses')"
               class="dotted-spinner mobile rose"
             ></div>
-            <GraduationCap v-else class="mobile-icon text-rose-600" />
+            <img
+              v-else
+              :src="`/static/frontend/images/onlinelearning.png`"
+              alt="E-learning Icon"
+              class="size-7"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-800">
@@ -450,7 +539,11 @@
           class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed"
         >
           <div class="mobile-icon-circle bg-gray-100">
-            <HeartPulse class="mobile-icon text-gray-600" />
+            <img
+              :src="`/static/frontend/images/medicalreport.png`"
+              alt="Health Service Icon"
+              class="size-7 opacity-60"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm leading-tight text-gray-600">{{
@@ -468,7 +561,11 @@
           class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed"
         >
           <div class="mobile-icon-circle bg-gray-100">
-            <Receipt class="mobile-icon text-gray-600" />
+            <img
+              :src="`/static/frontend/images/payment.png`"
+              alt="Bill Pay Icon"
+              class="size-7 opacity-60"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm leading-tight text-gray-600">{{
@@ -491,7 +588,12 @@
               v-if="loadingButtons.has('mobile-mobile-recharge')"
               class="dotted-spinner mobile orange"
             ></div>
-            <Smartphone v-else class="mobile-icon text-orange-600" />
+            <img
+              v-else
+              :src="`/static/frontend/images/mobileapp.png`"
+              alt="Mobile Recharge Icon"
+              class="size-7"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-800">{{
@@ -510,7 +612,12 @@
               v-if="loadingButtons.has('mobile-transactions')"
               class="dotted-spinner mobile lime"
             ></div>
-            <CreditCard v-else class="mobile-icon text-lime-600" />
+            <img
+              v-else
+              :src="`/static/frontend/images/transaction.png`"
+              alt="Transactions Icon"
+              class="size-7"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-800">{{
@@ -530,7 +637,12 @@
               v-if="loadingButtons.has('mobile-membership')"
               class="dotted-spinner mobile pink"
             ></div>
-            <User v-else class="mobile-icon text-pink-600" />
+            <img
+              v-else
+              :src="`/static/frontend/images/premium.png`"
+              alt="Membership Icon"
+              class="size-7"
+            />
           </div>
           <div class="h-10 flex items-center justify-center">
             <span class="text-sm font-medium leading-tight text-gray-800">{{
@@ -544,25 +656,7 @@
 </template>
 
 <script setup>
-import {
-  ChevronLeft,
-  ChevronRight,
-  DollarSign,
-  Globe,
-  Newspaper,
-  ShoppingBag,
-  BadgeDollarSign,
-  ShoppingCart,
-  ListFilter,
-  Brain,
-  HeartPulse,
-  Cog,
-  Receipt,
-  Smartphone,
-  CreditCard,
-  User,
-  GraduationCap,
-} from "lucide-vue-next";
+import { ChevronLeft, ChevronRight } from "lucide-vue-next";
 const { get } = useApi();
 
 // Loading state for buttons
