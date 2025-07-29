@@ -272,7 +272,10 @@
             </div>
 
             <!-- Results Info -->
-            <div class="text-center text-sm text-gray-600 mt-2">
+            <div
+              class="text-center text-sm text-gray-600 mt-2"
+              v-if="microGigs?.length"
+            >
               Showing {{ startIndex + 1 }}-{{ endIndex }} of
               {{ totalGigs }} gigs
             </div>
