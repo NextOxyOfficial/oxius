@@ -32,10 +32,7 @@
     </UContainer>
 
     <!-- Product Quick View Modal -->
-    <UModal
-      v-model="isQuickViewModalOpen"
-      :ui="{ width: 'w-full sm:max-w-4xl' }"
-    >
+    <UModal v-model="isQuickViewModalOpen" :ui="modalUiConfig">
       <div>
         <div class="bg-white dark:bg-slate-800 rounded-xl">
           <CommonProductDetailsCard
@@ -74,6 +71,21 @@ const displayedCategories = ref([]);
 const hasMoreCategoriesToLoad = ref(false);
 const isLoadingMoreCategories = ref(false);
 const categories = ref([]);
+
+const modalUiConfig = computed(() => ({
+  width: "w-full sm:max-w-4xl",
+  height: "h-auto",
+  container: "flex flex-col h-auto mt-20 p-0 sm:p-0",
+  padding: "p-0",
+  transition: {
+    enter: "duration-300 ease-out",
+    enterFrom: "opacity-0 scale-95",
+    enterTo: "opacity-100 scale-100",
+    leave: "duration-200 ease-in",
+    leaveFrom: "opacity-100 scale-100",
+    leaveTo: "opacity-0 scale-95",
+  },
+}));
 
 // Data fetching
 async function fetchCategories() {
