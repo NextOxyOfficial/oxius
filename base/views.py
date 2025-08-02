@@ -899,8 +899,20 @@ def delete_classified_post(request, pk):
 
 @api_view(["GET"])
 def gigDetails(request, gid):
-    serializer = MicroGigPostDetailsSerializer(MicroGigPost.objects.get(slug=gid))
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    try:
+        gig = MicroGigPost.objects.get(slug=gid)
+        serializer = MicroGigPostDetailsSerializer(gig)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except MicroGigPost.DoesNotExist:
+        return Response(
+            {"error": f"Gig with slug '{gid}' not found"}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        return Response(
+            {"error": f"Error retrieving gig: {str(e)}"}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 # All Micro Gig Post

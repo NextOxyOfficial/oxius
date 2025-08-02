@@ -6,6 +6,33 @@ export default defineNuxtConfig({
     preference: "light",
   },
   ssr: false,
+  
+  // Configure router for Capacitor compatibility
+  router: {
+    options: {
+      hashMode: false,
+      scrollBehaviorType: 'auto'
+    }
+  },
+
+  // Enable error handling
+  experimental: {
+    payloadExtraction: false
+  },
+
+  // Optimize for mobile/Capacitor
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: undefined
+        }
+      }
+    },
+    define: {
+      global: 'globalThis',
+    }
+  },
 
   css: ["~/assets/css/main.css", "~/assets/css/toast.css"],
   modules: [

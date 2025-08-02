@@ -1,6 +1,15 @@
 <template>
   <PublicSection>
     <UContainer>
+      <!-- Loading State -->
+      <div v-if="!gig" class="flex justify-center items-center py-20">
+        <div class="text-center">
+          <UIcon name="i-heroicons-arrow-path" class="animate-spin text-4xl mb-4" />
+          <p class="text-lg">Loading gig details...</p>
+        </div>
+      </div>
+
+      <!-- Main Content -->
       <UCard
         :ui="{
           ring: '',
@@ -306,11 +315,22 @@
 definePageMeta({
   layout: "dashboard",
 });
+
+// Route parameter validation
+const route = useRoute();
+
+// Validate route parameter
+if (!route.params.id) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Order ID is required'
+  });
+}
+
 const emit = defineEmits(["close"]);
 const props = defineProps(["gid"]);
 const { jwtLogin, user } = useAuth();
 const { get, post } = useApi();
-const route = useRoute();
 const medias = ref([]);
 const submit_details = ref("");
 const accepted_terms = ref(false);
@@ -319,7 +339,7 @@ const checkSubmit = ref(false);
 const accepted_condition = ref(false);
 const isLoading = ref(false);
 const isOpen = ref(false);
-
+const gig = ref(null);
 const errorIndex = ref([]);
 
 function handleImageError(index) {
@@ -328,13 +348,95 @@ function handleImageError(index) {
   }
 }
 
-onMounted(() => {
-  getGigData();
+onMounted(async () => {
+  try {
+    console.log('Component mounted, loading gig data...');
+    await getGigData();
+  } catch (error) {
+    console.error('Error loading gig data:', error);
+    
+    // In Capacitor, sometimes we need to retry the request
+    if (process.client && typeof window !== 'undefined') {
+      const isCapacitor = window.location.protocol === 'capacitor:' || 
+                         (window.location.protocol === 'https:' && window.location.hostname === 'localhost');
+      
+      if (isCapacitor) {
+        console.log('Retrying request in Capacitor environment...');
+        setTimeout(async () => {
+          try {
+            await getGigData();
+          } catch (retryError) {
+            console.error('Retry failed:', retryError);
+            // Show a more user-friendly error
+            throw createError({
+              statusCode: 404,
+              statusMessage: `Gig not found. Please check the link and try again.`
+            });
+          }
+        }, 1000);
+        return;
+      }
+    }
+    
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Gig not found'
+    });
+  }
 });
-const gig = ref();
+
 async function getGigData() {
-  const res = await get(`/micro-gigs/${route.params.id}/`);
-  gig.value = res.data;
+  try {
+    const gigId = route.params.id;
+    console.log('Fetching gig with ID:', gigId);
+    console.log('Full route:', route.fullPath);
+    console.log('Route params:', route.params);
+    
+    const res = await get(`/micro-gigs/${gigId}/`);
+    console.log('API Response:', res);
+    
+    if (res.error) {
+      console.error('API Error:', res.error);
+      
+      // Handle different types of errors
+      if (res.error.status === 404) {
+        toast.add({ 
+          title: 'Gig not found', 
+          description: `No gig found with ID: ${gigId}`,
+          color: 'red' 
+        });
+      } else {
+        toast.add({ 
+          title: 'Error loading gig', 
+          description: res.error.data?.error || 'Unknown error occurred',
+          color: 'red' 
+        });
+      }
+      
+      throw new Error('Failed to load gig data');
+    }
+    
+    if (!res.data) {
+      console.error('No data in response');
+      throw new Error('No gig data received');
+    }
+    
+    gig.value = res.data;
+    console.log('Gig data loaded successfully:', gig.value);
+  } catch (error) {
+    console.error('Error fetching gig data:', error);
+    
+    if (!toast) {
+      console.error('Toast is not available');
+    } else {
+      toast.add({ 
+        title: 'Error loading gig', 
+        description: 'Please check your connection and try again',
+        color: 'red' 
+      });
+    }
+    throw error;
+  }
 }
 
 async function submitGig() {

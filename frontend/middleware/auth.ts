@@ -13,6 +13,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     "/contact",
     "/privacy",
     "/terms",
+    "/order", // Add order routes as public
   ];
 
   // Check if the route is public
@@ -20,6 +21,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     if (route === to.path) return true;
     // Handle dynamic routes
     if (route.includes("*") || to.path.startsWith(route + "/")) return true;
+    // Special handling for order routes
+    if (route === "/order" && to.path.startsWith("/order/")) return true;
     return false;
   });
 
