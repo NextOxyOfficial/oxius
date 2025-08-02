@@ -15,7 +15,6 @@ from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
@@ -130,7 +129,6 @@ def getAdminNotice(request):
     return Response(serializer.data)
 
 
-@csrf_exempt
 @api_view(["POST"])
 def register(request):
     data = request.data
@@ -1220,7 +1218,6 @@ class GetTargetCountry(generics.ListAPIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-    @csrf_exempt
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
