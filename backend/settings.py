@@ -119,6 +119,11 @@ CSRF_COOKIE_SECURE = False  # Set to True only with HTTPS in production
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = False
 
+# CSRF settings for API compatibility
+CSRF_COOKIE_SECURE = False  # Set to True only with HTTPS in production
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -156,7 +161,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "backend.csrf_exempt_middleware.CSRFExemptMiddleware",
+    "backend.csrf_exempt_middleware_clean.CSRFExemptMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
