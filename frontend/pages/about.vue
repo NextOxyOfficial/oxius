@@ -11,7 +11,7 @@
         <div class="text-center">
           <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">About Adsy Club</h1>
           <p class="text-green-100 max-w-3xl mx-auto">
-            Bangladesh's 1st Social Business Network
+            Social Business Network
           </p>
         </div>
       </UContainer>

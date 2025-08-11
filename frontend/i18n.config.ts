@@ -150,7 +150,7 @@ export default defineI18nConfig(() => ({
       menu: "Menu",
       download_our_app: "Download Our App",
       follow_us: "Follow Us",
-      bangladesh_first_title: "Bangladesh's 1st Social Business Network",
+      bangladesh_first_title: "Social Business Network",
       bangladesh_first_text:
         "Connect, collaborate, and grow with our all-in-one platform that helps you earn money, sell products, and find services you need.",      sell_products: "Sell Products",
       recommended_products: "Recommended Products",
