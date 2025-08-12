@@ -28,7 +28,7 @@
           <div>
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Welcome to Adsy Club</h2>
             <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
-              Adsy Club is Bangladesh's first social business network dedicated to connecting individuals and businesses through an innovative platform. Our mission is to create a vibrant ecosystem where you can earn money, build meaningful connections, and find the services you need—all in one place.
+              Adsy Club is a social business network dedicated to connecting individuals and businesses through an innovative platform. Our mission is to create a vibrant ecosystem where you can earn money, build meaningful connections, and find the services you need—all in one place.
             </p>
           </div>
         </div>
