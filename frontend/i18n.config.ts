@@ -487,7 +487,7 @@ export default defineI18nConfig(() => ({
       menu: "মেনু",
       download_our_app: "অ্যাপ ডাউনলোড করুন",
       follow_us: "ফলো করুন",
-      bangladesh_first_title: "বাংলাদেশের প্রথম সোশাল বিজনেস নেটওয়ার্ক",
+      bangladesh_first_title: "বাংলাদেশের সোশাল বিজনেস নেটওয়ার্ক",
       bangladesh_first_text: "",
       sell_products: "ই-শপে সেল করি",
       recommended_products: "গুরুত্বপূর্ণ বই ও শিক্ষা সামগ্রী",
