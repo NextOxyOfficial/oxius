@@ -45,7 +45,7 @@ export default defineAppConfig({
           yellow: "text-yellow-500 dark:text-yellow-400",
           lime: "text-lime-500 dark:text-lime-400",
           green: "text-green-500 dark:text-green-400",
-          emerald: "text-emerald-500 dark:text-emerald-400",
+          emerald: "text-white dark:text-white",
           teal: "text-teal-500 dark:text-teal-400",
           cyan: "text-cyan-500 dark:text-cyan-400",
           sky: "text-sky-500 dark:text-sky-400",
@@ -79,7 +79,7 @@ export default defineAppConfig({
           animation: "celebration-bounce"
         },
         registration: {
-          color: "emerald", 
+          color: "white", 
           icon: "i-heroicons-trophy",
           timeout: 7000,
           class: "auth-registration-toast",

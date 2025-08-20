@@ -42,7 +42,7 @@
     },
     "StatusBar": {
       "style": "dark",
-      "backgroundColor": "#ffffff",
+  "backgroundColor": "#ffffff",
       "overlaysWebView": false
     },
     "Keyboard": {
