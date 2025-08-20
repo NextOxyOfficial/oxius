@@ -1,7 +1,7 @@
 {
   "name": "AdsyClub - Social Business Network",
   "short_name": "AdsyClub",
-  "description": "Earn Money, Connect with Society & Find the Services You Need!",
+  "description": "Connect with businesses, find services, and discover opportunities in Bangladesh. Join our social business network to earn money and grow your network.",
   "start_url": "/?source=pwa",
   "id": "/",
   "scope": "/",

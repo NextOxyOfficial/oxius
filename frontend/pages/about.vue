@@ -256,7 +256,7 @@
                 <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-100 dark:border-green-900/30">
                   <p class="text-gray-800 dark:text-white font-medium mb-2">Join Us on This Journey</p>
                   <p class="text-gray-600 dark:text-gray-300 text-sm">
-                    Adsy Club is more than just a platform; it's a growing community of entrepreneurs, businesses, and customers working together to create value. We invite you to be part of this journey as we build Bangladesh's premier social business network.
+                    Adsy Club is more than just a platform; it's a growing community of entrepreneurs, businesses, and customers working together to create value. We invite you to be part of this journey as we build a thriving social business network in Bangladesh.
                   </p>
                   <div class="mt-4">
                     <UButton color="green" variant="soft" size="sm">Sign Up Today</UButton>
