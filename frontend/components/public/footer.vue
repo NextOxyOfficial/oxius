@@ -212,7 +212,11 @@
     </div>
     <!-- Mobile Navigation Bar -->
     <div
-      class="sm:hidden block fixed left-0 right-0 z-50 bottom-2 mx-6 dark:bg-slate-900/90 bg-white/90 backdrop-blur-sm rounded-xl border border-emerald-100 dark:border-slate-800 shadow-sm"
+      class="sm:hidden block fixed left-0 right-0 z-50 bottom-2 mx-6 dark:bg-slate-900/90 bg-white/90 backdrop-blur-sm rounded-xl border border-emerald-100 dark:border-slate-800 shadow-sm transition-all duration-500"
+      :class="[
+        // Hide on mobile when scrolling down
+        isScrollingDown ? 'translate-y-20' : 'translate-y-0'
+      ]"
     >
       <!-- Logged in users navigation -->
       <div
@@ -404,7 +408,10 @@
 </template>
 
 <script setup>
+import { useScrollDirection } from "~/composables/useScrollDirection";
+
 const { t } = useI18n();
+const { isScrollingDown, isScrollingUp } = useScrollDirection();
 const toggleStatus = ref("");
 const { user } = useAuth();
 const { unreadCount, fetchUnreadCount } = useNotifications(); // Import useNotifications

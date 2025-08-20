@@ -1,6 +1,10 @@
 <template>
   <div
-    class="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-r from-white/95 via-slate-50/95 to-white/95 backdrop-blur-lg border-t border-slate-200/40 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2"
+    class="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-r from-white/95 via-slate-50/95 to-white/95 backdrop-blur-lg border-t border-slate-200/40 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2 transition-all duration-500"
+    :class="[
+      // Hide on mobile when scrolling down
+      isScrollingDown ? 'translate-y-full' : 'translate-y-0'
+    ]"
   >
     <div
       class="absolute inset-0 bg-grid opacity-[0.015] pointer-events-none"
@@ -288,6 +292,9 @@ import {
   User,
   Plus,
 } from "lucide-vue-next";
+import { useScrollDirection } from "~/composables/useScrollDirection";
+
+const { isScrollingDown, isScrollingUp } = useScrollDirection();
 
 const { user } = useAuth();
 const eventBus = useEventBus();

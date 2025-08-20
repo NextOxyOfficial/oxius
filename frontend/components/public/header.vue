@@ -1,11 +1,13 @@
 <template>
   <div
-    class="py-3 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg transition-all duration-300 z-[99999999] w-full"
+    class="py-3 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg transition-all duration-500 z-[99999999] w-full"
     :class="[
       isScrolled
         ? 'fixed top-0 left-0 right-0 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg border-gray-200/50 dark:border-gray-800/50'
         : 'sticky top-0 w-full shadow-sm',
       'sm:py-3 py-1.5', // Smaller padding on mobile
+      // Hide on mobile when scrolling down
+      isScrollingDown ? 'md:translate-y-0 -translate-y-full' : 'translate-y-0'
     ]"
     style="
       padding-top: max(0.75rem, env(safe-area-inset-top));
@@ -820,10 +822,13 @@
 
 <script setup>
 import UserDropdownMenu from "./user-dropdown-menu.vue";
+import { useScrollDirection } from "~/composables/useScrollDirection";
+
 const { t } = useI18n();
 const { user, logout } = useAuth();
 const { get } = useApi();
 const { unreadTicketCount, totalUnreadCount, fetchUnreadCount } = useTickets();
+const { isScrollingDown, isScrollingUp } = useScrollDirection();
 const toast = useToast();
 const badgeCount = ref(0);
 const openMenu = ref(false);

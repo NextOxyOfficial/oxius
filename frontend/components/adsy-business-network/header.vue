@@ -1,10 +1,12 @@
 <template>  <div
-    class="py-3 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg transition-all duration-300 z-[99999999] w-full"
+    class="py-3 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg transition-all duration-500 z-[99999999] w-full"
     :class="[
       isScrolled
         ? 'fixed top-0 left-0 right-0 backdrop-blur-sm max-sm:bg-slate-200/70 bg-white shadow-sm rounded-b-lg border-gray-200/50 dark:border-gray-800/50'
         : 'sticky w-full shadow-sm',
       'sm:py-3 py-1.5', // Smaller padding on mobile
+      // Hide on mobile when scrolling down
+      isScrollingDown ? 'md:translate-y-0 -translate-y-full' : 'translate-y-0'
     ]"
   >
     <div class="max-w-5xl mx-auto px-4">
@@ -260,6 +262,7 @@ import { useApi } from "~/composables/useApi";
 import { useAuth } from "~/composables/useAuth";
 import { useStoreCart } from "~/store/cart";
 import { useRouter } from "vue-router";
+import { useScrollDirection } from "~/composables/useScrollDirection";
 import BusinessNetworkDropdownMenu from './business-network-dropdown-menu.vue';
 import {
   SunIcon,
@@ -274,6 +277,7 @@ import {
 const { t } = useI18n();
 const { get } = useApi();
 const { user, logout } = useAuth();
+const { isScrollingDown, isScrollingUp } = useScrollDirection();
 const logo = ref([]);
 const cart = useStoreCart();
 const showQr = ref(false);
