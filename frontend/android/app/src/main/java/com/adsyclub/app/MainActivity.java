@@ -1,6 +1,8 @@
 package com.adsyclub.app;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Window;
 import android.view.WindowManager;
 import android.graphics.Color;
@@ -13,8 +15,16 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Configure status bar
+        // Configure status bar early
         configureStatusBar();
+
+        // Re-assert after WebView/Capacitor plugins finish initial paint
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                configureStatusBar();
+            }
+        }, 800); // slight delay to override any late plugin changes
     }
 
     @Override
@@ -34,17 +44,19 @@ public class MainActivity extends BridgeActivity {
             // Force white status bar
             window.setStatusBarColor(Color.WHITE);
             
-            // Use modern approach for light status bar
+            // We want DARK icons (i.e. light status bar flag must be ON) so first clear both possibilities then set
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                // Android 11+ modern approach
                 WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(window, window.getDecorView());
-                controller.setAppearanceLightStatusBars(true);
+                // Clear then set to ensure consistency
+                controller.setAppearanceLightStatusBars(false); // reset
+                controller.setAppearanceLightStatusBars(true);  // dark icons
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                // Android 6.0+ approach
-                window.getDecorView().setSystemUiVisibility(
-                    window.getDecorView().getSystemUiVisibility() | 
-                    android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                );
+                final int LIGHT_FLAG = android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                int vis = window.getDecorView().getSystemUiVisibility();
+                // remove then add to avoid duplication or stale state
+                vis &= ~LIGHT_FLAG;
+                vis |= LIGHT_FLAG;
+                window.getDecorView().setSystemUiVisibility(vis);
             }
         }
         
