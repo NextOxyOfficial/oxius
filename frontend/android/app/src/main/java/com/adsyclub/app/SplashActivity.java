@@ -9,6 +9,7 @@ import android.view.WindowManager;
 import android.graphics.Color;
 import android.os.Build;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 public class SplashActivity extends AppCompatActivity {
     private static final int SPLASH_DELAY = 2500; // 2.5 seconds
@@ -25,8 +26,14 @@ public class SplashActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Force white status bar
             window.setStatusBarColor(Color.WHITE);
-            // Make sure we have dark content (text/icons) on white background
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            
+            // Use modern approach for light status bar (Android 6.0+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // Android 11+ modern approach
+                WindowInsetsControllerCompat controller = new WindowInsetsControllerCompat(window, window.getDecorView());
+                controller.setAppearanceLightStatusBars(true);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // Android 6.0+ approach (still supported but will show as deprecated)
                 window.getDecorView().setSystemUiVisibility(
                     window.getDecorView().getSystemUiVisibility() | 
                     android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
