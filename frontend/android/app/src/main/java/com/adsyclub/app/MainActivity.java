@@ -18,7 +18,15 @@ public class MainActivity extends BridgeActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.setStatusBarColor(getResources().getColor(R.color.colorPrimary));
+            // Force white status bar
+            window.setStatusBarColor(Color.WHITE);
+            // Make sure we have dark content (text/icons) on white background
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                window.getDecorView().setSystemUiVisibility(
+                    window.getDecorView().getSystemUiVisibility() | 
+                    android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                );
+            }
         }
         
         // Ensure content doesn't go under status bar
