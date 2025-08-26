@@ -18,7 +18,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         
         // Ensure status bar is configured every time the activity resumes

@@ -6,7 +6,7 @@ export default defineNuxtPlugin(async () => {
   if (Capacitor.isNativePlatform()) {
     try {
       // Set the status bar style for dark content on white background
-      await StatusBar.setStyle({ style: Style.Light })
+      await StatusBar.setStyle({ style: Style.Dark })
       
       // Set the status bar background color
       await StatusBar.setBackgroundColor({ color: '#ffffff' })

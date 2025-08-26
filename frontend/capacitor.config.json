@@ -41,7 +41,7 @@
       "permissions": ["camera", "photos"]
     },
     "StatusBar": {
-      "style": "light",
+      "style": "dark",
       "backgroundColor": "#ffffff",
       "overlaysWebView": false
     },
