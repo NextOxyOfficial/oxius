@@ -13,10 +13,11 @@ const config: CapacitorConfig = {
     hostname: 'adsyclub.com'
   },  plugins: {
     SplashScreen: {
-      launchShowDuration: 0,
+      launchShowDuration: 2000,
       launchAutoHide: true,
       showSpinner: false,
       androidSplashResourceName: "splash",
+      iosLaunchImageName: "Splash",
       splashFullScreen: false,
       splashImmersive: false
     },
