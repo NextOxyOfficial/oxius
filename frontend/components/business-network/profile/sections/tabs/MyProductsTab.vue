@@ -19,18 +19,8 @@
       </div>
     </div>
 
-    <!-- User's Products Grid with count -->
+    <!-- User's Products Grid -->
     <div v-else-if="userProducts.length > 0">
-      <!-- Products count -->
-      <div class="flex justify-between items-center mb-4">
-        <p class="text-sm text-gray-600">
-          Showing {{ userProducts.length }} product{{ userProducts.length !== 1 ? 's' : '' }}
-        </p>
-        <div v-if="hasMoreProducts" class="text-xs text-gray-400">
-          Scroll down for more
-        </div>
-      </div>
-      
       <!-- Products Grid -->
       <div class="grid grid-cols-2 lg:grid-cols-3 gap-2">
       <div v-for="product in userProducts" :key="product.id" class="relative group">

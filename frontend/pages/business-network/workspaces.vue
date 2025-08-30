@@ -72,10 +72,10 @@
       </div>
 
       <!-- Content Area -->
-      <div class="px-6 py-6">
+      <div class="p-2">
         <div class="space-y-6 min-h-[400px]">
           <!-- Loading state -->
-          <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             <div
               v-for="i in 8"
               :key="i"
@@ -98,11 +98,11 @@
           </div>
 
           <!-- Gigs Grid -->
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             <div
               v-for="gig in filteredGigs"
               :key="gig.id"
-              class="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer group"
+              class="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-sm transition-all duration-200 cursor-pointer group"
               @click="openGigDetails(gig)"
             >
               <!-- Gig Image -->
