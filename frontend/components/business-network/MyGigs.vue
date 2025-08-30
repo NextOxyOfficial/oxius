@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="myGigs.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-if="myGigs.length > 0" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div 
         v-for="gig in myGigs" 
         :key="gig.id" 

@@ -308,7 +308,7 @@
                 </NuxtLink>
               </div>
               
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 <div 
                   v-for="relatedGig in relatedGigs" 
                   :key="relatedGig.id"

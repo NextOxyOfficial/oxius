@@ -43,7 +43,7 @@
       </div>
 
       <!-- Tab Content -->
-      <div class="sm:p-6 p-2">
+      <div class="sm:p-6 p-1">
         <!-- All Gigs Tab -->
         <div v-if="activeTab === 'all-gigs'">
           <!-- Filters and Search Bar -->
@@ -91,7 +91,7 @@
           </div>
 
           <!-- Gigs Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+          <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             <div
               v-for="gig in filteredGigs"
               :key="gig.id"
