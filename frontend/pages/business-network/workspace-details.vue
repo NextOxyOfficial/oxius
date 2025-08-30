@@ -2,22 +2,117 @@
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
     <!-- Loading State -->
     <div v-if="isLoading" class="animate-pulse">
-      <div class="mb-6">
-        <div class="h-6 w-32 bg-gray-200 rounded mb-2"></div>
-        <div class="h-8 w-3/4 bg-gray-200 rounded"></div>
+      <!-- Breadcrumb skeleton -->
+      <div class="flex items-center space-x-2 mb-6">
+        <div class="h-4 w-20 bg-gray-200 rounded"></div>
+        <div class="h-4 w-4 bg-gray-200 rounded"></div>
+        <div class="h-4 w-32 bg-gray-200 rounded"></div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div class="lg:col-span-2">
-            <div class="h-80 bg-gray-200 rounded-lg mb-6"></div>
-            <div class="space-y-4">
-              <div class="h-6 bg-gray-200 rounded w-1/2"></div>
-              <div class="h-4 bg-gray-200 rounded w-full"></div>
-              <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+
+      <!-- Main content skeleton -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 lg:p-8">
+          <!-- Hero Image skeleton -->
+          <div class="relative mb-8">
+            <div class="aspect-video rounded-lg bg-gray-200 mb-4"></div>
+            <!-- Gallery thumbnails skeleton -->
+            <div class="flex space-x-2">
+              <div v-for="i in 4" :key="i" class="w-16 h-16 rounded-md bg-gray-200"></div>
             </div>
           </div>
-          <div class="space-y-4">
-            <div class="h-64 bg-gray-200 rounded-lg"></div>
+
+          <!-- Title skeleton -->
+          <div class="mb-8">
+            <div class="h-8 w-3/4 bg-gray-200 rounded mb-4"></div>
+            
+            <!-- Seller info skeleton -->
+            <div class="flex items-center mb-6 p-4 bg-gray-50 rounded-lg">
+              <div class="h-12 w-12 rounded-full bg-gray-200 mr-4"></div>
+              <div class="flex-1">
+                <div class="h-5 w-32 bg-gray-200 rounded mb-2"></div>
+                <div class="h-4 w-24 bg-gray-200 rounded"></div>
+              </div>
+              <div class="h-10 w-24 bg-gray-200 rounded"></div>
+            </div>
+
+            <!-- Description skeleton -->
+            <div class="space-y-4 mb-8">
+              <div class="h-6 w-40 bg-gray-200 rounded"></div>
+              <div class="space-y-2">
+                <div class="h-4 w-full bg-gray-200 rounded"></div>
+                <div class="h-4 w-5/6 bg-gray-200 rounded"></div>
+                <div class="h-4 w-4/5 bg-gray-200 rounded"></div>
+              </div>
+              
+              <div class="h-5 w-32 bg-gray-200 rounded mt-6"></div>
+              <div class="space-y-2">
+                <div v-for="i in 5" :key="i" class="flex items-center">
+                  <div class="h-4 w-4 bg-gray-200 rounded mr-2"></div>
+                  <div class="h-4 w-48 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+
+              <div class="h-5 w-40 bg-gray-200 rounded mt-6"></div>
+              <div class="flex flex-wrap gap-2">
+                <div v-for="i in 5" :key="i" class="h-8 w-20 bg-gray-200 rounded-full"></div>
+              </div>
+            </div>
+
+            <!-- Pricing skeleton -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Price skeleton -->
+                <div class="text-center md:text-left">
+                  <div class="h-12 w-24 bg-gray-200 rounded mb-2"></div>
+                  <div class="h-4 w-20 bg-gray-200 rounded"></div>
+                </div>
+                <!-- Package details skeleton -->
+                <div class="space-y-3">
+                  <div v-for="i in 3" :key="i" class="flex justify-between items-center">
+                    <div class="h-4 w-20 bg-gray-200 rounded"></div>
+                    <div class="h-4 w-16 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Action buttons skeleton -->
+              <div class="flex flex-col sm:flex-row gap-3 mb-6">
+                <div class="flex-1 h-12 bg-gray-200 rounded-lg"></div>
+                <div class="flex-1 h-12 bg-gray-200 rounded-lg"></div>
+              </div>
+              
+              <!-- Trust indicators skeleton -->
+              <div class="pt-6 border-t border-gray-200">
+                <div class="flex items-center justify-center space-x-6">
+                  <div class="h-4 w-16 bg-gray-200 rounded"></div>
+                  <div class="h-4 w-20 bg-gray-200 rounded"></div>
+                  <div class="h-4 w-12 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reviews skeleton -->
+          <div class="border-t pt-8">
+            <div class="flex items-center justify-between mb-6">
+              <div class="h-6 w-32 bg-gray-200 rounded"></div>
+              <div class="h-6 w-24 bg-gray-200 rounded"></div>
+            </div>
+            
+            <!-- Sample review skeleton -->
+            <div class="p-4 bg-gray-50 rounded-lg">
+              <div class="flex items-start mb-3">
+                <div class="h-8 w-8 rounded-full bg-gray-200 mr-3"></div>
+                <div>
+                  <div class="h-4 w-24 bg-gray-200 rounded mb-1"></div>
+                  <div class="h-3 w-20 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <div class="h-3 w-full bg-gray-200 rounded"></div>
+                <div class="h-3 w-3/4 bg-gray-200 rounded"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -52,7 +147,7 @@
 
       <!-- Main Content -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="p-6 lg:p-8">
+        <div class="sm:p-5 p-2">
           <!-- Hero Image -->
             <div class="relative mb-8">
               <div class="aspect-video rounded-lg overflow-hidden bg-gray-100">
@@ -95,7 +190,13 @@
                     <div class="flex items-center">
                       <Star v-for="i in 5" :key="i" class="h-4 w-4 text-yellow-400 fill-current" />
                     </div>
-                    <span class="text-sm text-gray-600 ml-2">{{ gig.rating }} ({{ gig.reviews }} reviews)</span>
+                    <span class="text-sm text-gray-600 ml-2">
+                      {{ gig.rating }} 
+                      (<button 
+                        @click="scrollToReviews" 
+                        class="text-purple-600 hover:text-purple-700 hover:underline transition-colors cursor-pointer"
+                      >{{ gig.reviews }} reviews</button>)
+                    </span>
                   </div>
                 </div>
                 <button class="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
@@ -156,24 +257,24 @@
                   </div>
 
                   <!-- Action Buttons -->
-                  <div class="space-y-3 mb-6">
+                  <div class="flex flex-col sm:flex-row gap-3 mb-6">
                     <button
                       @click="handleOrder"
-                      class="w-full bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors"
+                      class="flex-1 bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors"
                     >
                       Order (${{ gig.price }})
                     </button>
                     <button
                       @click="handleContact"
-                      class="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                      class="flex-1 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                     >
                       Contact Seller
                     </button>
                   </div>
 
-                  <!-- Trust Indicators -->
+                  <!-- Trust Indicators and Share -->
                   <div class="pt-6 border-t border-gray-200">
-                    <div class="flex items-center justify-center space-x-4 text-sm text-gray-600 mb-4">
+                    <div class="flex items-center justify-center space-x-6 text-sm text-gray-600">
                       <div class="flex items-center">
                         <Eye class="h-4 w-4 mr-1" />
                         <span>{{ Math.floor(Math.random() * 500) + 100 }} views</span>
@@ -182,13 +283,9 @@
                         <Clock class="h-4 w-4 mr-1" />
                         <span>Active now</span>
                       </div>
-                    </div>
-                    
-                    <!-- Share Options -->
-                    <div class="text-center">
                       <button
                         @click="handleShare"
-                        class="flex items-center space-x-2 text-sm text-gray-600 hover:text-purple-600 transition-colors mx-auto"
+                        class="flex items-center space-x-2 text-sm text-gray-600 hover:text-purple-600 transition-colors"
                       >
                         <Share2 class="h-4 w-4" />
                         <span>Share</span>
@@ -200,7 +297,7 @@
             </div>
 
             <!-- Reviews Section -->
-            <div class="border-t pt-8">
+            <div id="reviews-section" class="border-t pt-8">
               <div class="flex items-center justify-between mb-6">
                 <h3 class="text-lg font-semibold text-gray-900">Reviews ({{ gig.reviews }})</h3>
                 <div class="flex items-center">
@@ -432,6 +529,16 @@ const getGigSkills = (gig) => {
 };
 
 // Methods
+const scrollToReviews = () => {
+  const reviewsSection = document.getElementById('reviews-section');
+  if (reviewsSection) {
+    reviewsSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+};
+
 const handleOrder = () => {
   if (!user.value) {
     toast.add({
