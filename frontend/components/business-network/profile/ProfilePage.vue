@@ -28,6 +28,8 @@
       :savedPosts="savedPosts"
       :isLoadingWorkspace="isLoadingWorkspace"
       :userGigs="userGigs"
+      :isLoadingProducts="isLoadingProducts"
+      :userProducts="userProducts"
       :profileUser="user"
       :currentUser="currentUser"
       @switch-tab="$emit('switch-tab', $event)"
@@ -36,6 +38,9 @@
       @toggle-gig-status="$emit('toggle-gig-status', $event)"
       @create-gig="$emit('create-gig')"
       @open-gig-details="$emit('open-gig-details', $event)"
+      @edit-product="$emit('edit-product', $event)"
+      @toggle-product-status="$emit('toggle-product-status', $event)"
+      @create-product="$emit('create-product')"
     />
   </div>
 </template>
@@ -109,6 +114,14 @@ const props = defineProps({
   userGigs: {
     type: Array,
     default: () => []
+  },
+  isLoadingProducts: {
+    type: Boolean,
+    default: false
+  },
+  userProducts: {
+    type: Array,
+    default: () => []
   }
 });
 
@@ -125,6 +138,9 @@ defineEmits([
   'edit-gig',
   'toggle-gig-status',
   'create-gig',
-  'open-gig-details'
+  'open-gig-details',
+  'edit-product',
+  'toggle-product-status',
+  'create-product'
 ]);
 </script>

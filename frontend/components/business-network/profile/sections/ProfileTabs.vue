@@ -78,6 +78,17 @@
             @open-gig-details="$emit('open-gig-details', $event)"
           />
         </div>
+
+        <!-- My Products Tab Content -->
+        <div v-else-if="activeTab === 'products'" class="tab-content">
+          <MyProductsTab
+            :isLoadingProducts="isLoadingProducts"
+            :userProducts="userProducts"
+            @edit-product="$emit('edit-product', $event)"
+            @toggle-product-status="$emit('toggle-product-status', $event)"
+            @create-product="$emit('create-product')"
+          />
+        </div>
       </transition>
     </div>
   </div>
@@ -88,6 +99,8 @@ import ProfilePostsTab from './tabs/ProfilePostsTab.vue';
 import ProfileMediaTab from './tabs/ProfileMediaTab.vue';
 import ProfileSavedTab from './tabs/ProfileSavedTab.vue';
 import WorkspaceTab from './tabs/WorkspaceTab.vue';
+import MyProductsTab from './tabs/MyProductsTab.vue';
+import MyProductsTab from './tabs/MyProductsTab.vue';
 
 const props = defineProps({
   tabs: {
@@ -114,6 +127,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  isLoadingProducts: {
+    type: Boolean,
+    default: false
+  },
   loadingMorePosts: {
     type: Boolean,
     default: false
@@ -134,6 +151,10 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
+  userProducts: {
+    type: Array,
+    default: () => []
+  },
   currentUser: {
     type: Object,
     default: null
@@ -151,7 +172,10 @@ defineEmits([
   'edit-gig',
   'toggle-gig-status', 
   'create-gig',
-  'open-gig-details'
+  'open-gig-details',
+  'edit-product',
+  'toggle-product-status',
+  'create-product'
 ]);
 </script>
 

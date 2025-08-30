@@ -98,6 +98,8 @@
         :savedPosts="savedPosts"
         :isLoadingWorkspace="isLoadingWorkspace"
         :userGigs="userGigs"
+        :userProducts="userProducts"
+        :isLoadingProducts="isLoadingProducts"
         @open-qr-modal="openQrCodeModal"
         @toggle-follow="toggleFollow"
         @open-profile-photo-modal="openProfilePhotoModal"
@@ -110,6 +112,9 @@
         @toggle-gig-status="toggleGigStatus"
         @create-gig="createGig"
         @open-gig-details="openGigDetails"
+        @edit-product="editProduct"
+        @toggle-product-status="toggleProductStatus"
+        @create-product="createProduct"
       />
     </div>
 
@@ -181,6 +186,8 @@ const isLoading = ref(true);
 const isLoadingPosts = ref(true);
 const isLoadingMedia = ref(true);
 const isLoadingSaved = ref(true);
+const isLoadingWorkspace = ref(true);
+const isLoadingProducts = ref(true);
 const loadingMorePosts = ref(false);
 const hasMorePosts = ref(true);
 const currentPage = ref(1);
@@ -193,6 +200,7 @@ const posts = ref({});
 const savedPosts = ref([]);
 const allMedia = ref([]);
 const userGigs = ref([]);
+const userProducts = ref([]);
 const followLoading = ref(false);
 const isFollowing = ref(false);
 const showDiamondModal = ref(false);
@@ -200,7 +208,6 @@ const showFollowersModal = ref(false);
 const activeFollowersTab = ref("followers");
 const showProfilePhotoMenu = ref(false);
 const showProfilePhotoModal = ref(false);
-const isLoadingWorkspace = ref(true);
 
 // Profile photo for MediaViewer
 const profilePhotoMedia = ref(null);
@@ -470,6 +477,7 @@ function loadAllData() {
     currentUser.value ? fetchSavedPosts() : Promise.resolve(),
     currentUser.value && route.params.id ? checkFollowing() : Promise.resolve(),
     fetchUserGigs(),
+    fetchUserProducts(),
   ]);
 
   // Simulate loading media items
@@ -498,11 +506,13 @@ const tabs = computed(() =>
         { label: "Media", value: "media" },
         { label: "Saved", value: "saved" },
         { label: "My Workspace", value: "workspace" },
+        { label: "My Products", value: "products" },
       ]
     : [
         { label: "Posts", value: "posts" },
         { label: "Media", value: "media" },
         { label: "My Workspace", value: "workspace" },
+        { label: "My Products", value: "products" },
       ]
 );
 
@@ -645,6 +655,39 @@ async function fetchUserGigs() {
   }
 }
 
+// Fetch user products
+async function fetchUserProducts() {
+  try {
+    isLoadingProducts.value = true;
+    
+    // Call the API to get user products
+    const res = await get(`/my-products/`, {}, {
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+    });
+
+    if (res && res.data) {
+      // Handle both paginated and non-paginated responses
+      if ("results" in res.data) {
+        userProducts.value = res.data.results;
+      } else if (Array.isArray(res.data)) {
+        userProducts.value = res.data;
+      } else {
+        console.warn("Unexpected products data structure:", res.data);
+        userProducts.value = [];
+      }
+    }
+    
+    isLoadingProducts.value = false;
+  } catch (error) {
+    console.error("Error fetching user products:", error);
+    userProducts.value = [];
+    isLoadingProducts.value = false;
+  }
+}
+
 const editGig = (gig) => {
   // TODO: Implement edit gig functionality
   toast.add({
@@ -682,6 +725,33 @@ const openGigDetails = (gig) => {
     description: `Viewing: ${gig.title}`,
     color: "blue",
   });
+};
+
+// Product-related functions
+const editProduct = (product) => {
+  // TODO: Navigate to edit product page or open modal
+  toast.add({
+    title: "Edit Product",
+    description: `Editing: ${product.name}`,
+    color: "blue",
+  });
+  
+  // Navigate to shop-manager with edit mode
+  navigateTo('/shop-manager?edit=' + product.slug);
+};
+
+const toggleProductStatus = (product) => {
+  // TODO: Update product status
+  toast.add({
+    title: "Product Status",
+    description: `${product.name} status toggled`,
+    color: "green",
+  });
+};
+
+const createProduct = () => {
+  // Navigate to shop-manager to add product
+  navigateTo('/shop-manager?tab=add-product');
 };
 
 async function fetchSavedPosts() {
