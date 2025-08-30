@@ -100,6 +100,8 @@
         :userGigs="userGigs"
         :userProducts="userProducts"
         :isLoadingProducts="isLoadingProducts"
+        :loadingMoreProducts="loadingMoreProducts"
+        :hasMoreProducts="hasMoreProducts"
         @open-qr-modal="openQrCodeModal"
         @toggle-follow="toggleFollow"
         @open-profile-photo-modal="openProfilePhotoModal"
@@ -115,6 +117,7 @@
         @edit-product="editProduct"
         @toggle-product-status="toggleProductStatus"
         @create-product="createProduct"
+        @load-more-products="loadMoreProducts"
       />
     </div>
 
@@ -201,6 +204,9 @@ const savedPosts = ref([]);
 const allMedia = ref([]);
 const userGigs = ref([]);
 const userProducts = ref([]);
+const loadingMoreProducts = ref(false);
+const hasMoreProducts = ref(true);
+const productsPage = ref(1);
 const followLoading = ref(false);
 const isFollowing = ref(false);
 const showDiamondModal = ref(false);
@@ -655,10 +661,17 @@ async function fetchUserGigs() {
   }
 }
 
-// Fetch user products
-async function fetchUserProducts() {
+// Fetch user products with pagination
+async function fetchUserProducts(loadMore = false) {
   try {
-    isLoadingProducts.value = true;
+    if (!loadMore) {
+      isLoadingProducts.value = true;
+      productsPage.value = 1;
+      userProducts.value = [];
+      hasMoreProducts.value = true;
+    } else {
+      loadingMoreProducts.value = true;
+    }
     
     // Get the profile user ID from route params
     const profileUserId = route.params.id;
@@ -667,10 +680,16 @@ async function fetchUserProducts() {
     const isOwnProfile = currentUser.value?.user?.id === profileUserId;
     
     let res;
+    const params = new URLSearchParams({
+      page: productsPage.value.toString(),
+      page_size: '12'
+    });
+    
+    console.log(`Fetching products - Page: ${productsPage.value}, LoadMore: ${loadMore}`); // Debug log
     
     if (isOwnProfile) {
       // If viewing own profile, use the my-products endpoint to get all products including private/draft ones
-      res = await get(`/my-products/`, {}, {
+      res = await get(`/my-products/?${params.toString()}`, {}, {
         headers: {
           "Cache-Control": "no-cache",
           Pragma: "no-cache",
@@ -678,7 +697,7 @@ async function fetchUserProducts() {
       });
     } else {
       // If viewing someone else's profile, use the store endpoint to get their public products
-      res = await get(`/store/${profileUserId}/products/`, {}, {
+      res = await get(`/store/${profileUserId}/products/?${params.toString()}`, {}, {
         headers: {
           "Cache-Control": "no-cache",
           Pragma: "no-cache",
@@ -687,24 +706,65 @@ async function fetchUserProducts() {
     }
 
     if (res && res.data) {
+      let newProducts = [];
+      let hasNext = false;
+      
       // Handle both paginated and non-paginated responses
       if ("results" in res.data) {
-        userProducts.value = res.data.results;
+        newProducts = res.data.results;
+        hasNext = !!res.data.next;
+        console.log(`API Response - Products: ${newProducts.length}, HasNext: ${hasNext}, Total: ${res.data.count || 'unknown'}`); // Debug log
       } else if (Array.isArray(res.data)) {
-        userProducts.value = res.data;
+        newProducts = res.data;
+        hasNext = false; // Non-paginated response
+        console.log(`API Response - Products: ${newProducts.length}, Non-paginated`); // Debug log
       } else {
         console.warn("Unexpected products data structure:", res.data);
-        userProducts.value = [];
+        newProducts = [];
+        hasNext = false;
       }
+      
+      if (loadMore) {
+        // Append new products to existing ones
+        userProducts.value = [...userProducts.value, ...newProducts];
+        // Increment page for next load more if we got products
+        if (newProducts.length > 0) {
+          productsPage.value++;
+        }
+        console.log(`Load More - Total products now: ${userProducts.value.length}, Next page: ${productsPage.value}`); // Debug log
+      } else {
+        // Replace all products and set page to 2 for next load more
+        userProducts.value = newProducts;
+        if (newProducts.length > 0) {
+          productsPage.value = 2; // Next page will be 2
+        }
+        console.log(`Initial Load - Products: ${userProducts.value.length}, Next page: ${productsPage.value}`); // Debug log
+      }
+      
+      hasMoreProducts.value = hasNext;
     }
     
     isLoadingProducts.value = false;
+    loadingMoreProducts.value = false;
   } catch (error) {
     console.error("Error fetching user products:", error);
-    userProducts.value = [];
+    if (!loadMore) {
+      userProducts.value = [];
+    }
+    hasMoreProducts.value = false;
     isLoadingProducts.value = false;
+    loadingMoreProducts.value = false;
   }
 }
+
+// Load more products function
+const loadMoreProducts = async () => {
+  if (!hasMoreProducts.value || loadingMoreProducts.value) {
+    return;
+  }
+  
+  await fetchUserProducts(true);
+};
 
 const editGig = (gig) => {
   // TODO: Implement edit gig functionality

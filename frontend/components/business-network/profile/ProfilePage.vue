@@ -30,6 +30,8 @@
       :userGigs="userGigs"
       :isLoadingProducts="isLoadingProducts"
       :userProducts="userProducts"
+      :loadingMoreProducts="loadingMoreProducts"
+      :hasMoreProducts="hasMoreProducts"
       :profileUser="user"
       :currentUser="currentUser"
       @switch-tab="$emit('switch-tab', $event)"
@@ -41,6 +43,7 @@
       @edit-product="$emit('edit-product', $event)"
       @toggle-product-status="$emit('toggle-product-status', $event)"
       @create-product="$emit('create-product')"
+      @load-more-products="$emit('load-more-products')"
     />
   </div>
 </template>
@@ -122,6 +125,14 @@ const props = defineProps({
   userProducts: {
     type: Array,
     default: () => []
+  },
+  loadingMoreProducts: {
+    type: Boolean,
+    default: false
+  },
+  hasMoreProducts: {
+    type: Boolean,
+    default: true
   }
 });
 
@@ -141,6 +152,7 @@ defineEmits([
   'open-gig-details',
   'edit-product',
   'toggle-product-status',
-  'create-product'
+  'create-product',
+  'load-more-products'
 ]);
 </script>

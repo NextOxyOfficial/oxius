@@ -19,8 +19,20 @@
       </div>
     </div>
 
-    <!-- User's Products Grid -->
-    <div v-else-if="userProducts.length > 0" class="grid grid-cols-2 lg:grid-cols-3 gap-2">
+    <!-- User's Products Grid with count -->
+    <div v-else-if="userProducts.length > 0">
+      <!-- Products count -->
+      <div class="flex justify-between items-center mb-4">
+        <p class="text-sm text-gray-600">
+          Showing {{ userProducts.length }} product{{ userProducts.length !== 1 ? 's' : '' }}
+        </p>
+        <div v-if="hasMoreProducts" class="text-xs text-gray-400">
+          Scroll down for more
+        </div>
+      </div>
+      
+      <!-- Products Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-2">
       <div v-for="product in userProducts" :key="product.id" class="relative group">
         <!-- Product Card -->
         <CommonProductCard :product="product" />
@@ -55,6 +67,24 @@
           </span>
         </div>
       </div>
+      </div>
+    </div>
+
+    <!-- Loading more indicator -->
+    <div v-if="loadingMoreProducts" class="flex justify-center py-8">
+      <div class="flex items-center space-x-2 text-gray-600">
+        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+        <span class="text-sm">Loading more products...</span>
+      </div>
+    </div>
+
+    <!-- End of products indicator -->
+    <div v-else-if="userProducts.length > 0 && !hasMoreProducts" class="text-center py-8">
+      <div class="flex items-center justify-center space-x-2 text-gray-500">
+        <div class="h-px bg-gray-300 flex-1"></div>
+        <span class="text-sm px-4">You've reached the end</span>
+        <div class="h-px bg-gray-300 flex-1"></div>
+      </div>
     </div>
 
     <!-- Empty state -->
@@ -77,7 +107,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { Pencil, Eye, EyeOff, ShoppingBag, Plus } from 'lucide-vue-next';
 import { useApi } from '~/composables/useApi';
 import CommonProductCard from '~/components/common/product-card.vue';
@@ -91,6 +121,14 @@ const props = defineProps({
   isLoadingProducts: {
     type: Boolean,
     default: false
+  },
+  loadingMoreProducts: {
+    type: Boolean,
+    default: false
+  },
+  hasMoreProducts: {
+    type: Boolean,
+    default: true
   },
   currentUser: {
     type: Object,
@@ -135,11 +173,50 @@ const showAddButton = computed(() => {
   return isOwnProfile.value;
 });
 
+// Scroll handling for infinite load with throttling
+let scrollTimeout = null;
+
+const handleScroll = () => {
+  // Throttle scroll events to prevent excessive calls
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
+  }
+  
+  scrollTimeout = setTimeout(() => {
+    // Check if we're near the bottom of the page
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    
+    // Load more when user scrolls to within 300px of the bottom
+    const threshold = 300;
+    const shouldLoadMore = scrollTop + windowHeight >= documentHeight - threshold;
+    
+    if (shouldLoadMore && props.hasMoreProducts && !props.loadingMoreProducts && !props.isLoadingProducts) {
+      console.log('Loading more products...'); // Debug log
+      emit('load-more-products');
+    }
+  }, 100); // Throttle to 100ms
+};
+
+// Setup scroll listener
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+  if (scrollTimeout) {
+    clearTimeout(scrollTimeout);
+  }
+});
+
 // Emits
 const emit = defineEmits([
   'edit-product',
   'toggle-product-status', 
-  'create-product'
+  'create-product',
+  'load-more-products'
 ]);
 
 const { patch } = useApi();

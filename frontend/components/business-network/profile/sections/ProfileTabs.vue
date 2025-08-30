@@ -84,11 +84,14 @@
           <MyProductsTab
             :isLoadingProducts="isLoadingProducts"
             :userProducts="userProducts"
+            :loadingMoreProducts="loadingMoreProducts"
+            :hasMoreProducts="hasMoreProducts"
             :currentUser="currentUser"
             :profileUser="profileUser"
             @edit-product="$emit('edit-product', $event)"
             @toggle-product-status="$emit('toggle-product-status', $event)"
             @create-product="$emit('create-product')"
+            @load-more-products="$emit('load-more-products')"
           />
         </div>
       </transition>
@@ -156,6 +159,14 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
+  loadingMoreProducts: {
+    type: Boolean,
+    default: false
+  },
+  hasMoreProducts: {
+    type: Boolean,
+    default: true
+  },
   currentUser: {
     type: Object,
     default: null
@@ -176,7 +187,8 @@ defineEmits([
   'open-gig-details',
   'edit-product',
   'toggle-product-status',
-  'create-product'
+  'create-product',
+  'load-more-products'
 ]);
 </script>
 
