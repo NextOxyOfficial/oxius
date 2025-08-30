@@ -43,7 +43,7 @@
       </div>
 
       <!-- Tab Content -->
-      <div class="p-6">
+      <div class="sm:p-6 p-2">
         <!-- All Gigs Tab -->
         <div v-if="activeTab === 'all-gigs'">
           <!-- Filters and Search Bar -->

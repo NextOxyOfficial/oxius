@@ -296,6 +296,66 @@
               </div>
             </div>
 
+            <!-- Related Gigs Section -->
+            <div class="border-t pt-8 mb-8">
+              <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-900">Similar gigs you may like</h3>
+                <NuxtLink 
+                  to="/business-network/workspaces"
+                  class="text-purple-600 hover:text-purple-700 text-sm font-medium transition-colors"
+                >
+                  View All
+                </NuxtLink>
+              </div>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div 
+                  v-for="relatedGig in relatedGigs" 
+                  :key="relatedGig.id"
+                  class="bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all hover:shadow-sm cursor-pointer"
+                  @click="navigateTo(`/business-network/workspace-details?id=${relatedGig.id}`)"
+                >
+                  <!-- Gig Image -->
+                  <div class="aspect-video rounded-t-lg overflow-hidden">
+                    <img
+                      :src="relatedGig.image"
+                      :alt="relatedGig.title"
+                      class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  
+                  <!-- Gig Content -->
+                  <div class="p-4">
+                    <h4 class="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-purple-600 transition-colors">
+                      {{ relatedGig.title }}
+                    </h4>
+                    
+                    <!-- Seller Info -->
+                    <div class="flex items-center mb-3">
+                      <img
+                        :src="relatedGig.user.avatar"
+                        :alt="relatedGig.user.name"
+                        class="h-6 w-6 rounded-full mr-2"
+                      />
+                      <span class="text-sm text-gray-600">{{ relatedGig.user.name }}</span>
+                    </div>
+                    
+                    <!-- Rating and Price -->
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center">
+                        <Star class="h-4 w-4 text-yellow-400 fill-current mr-1" />
+                        <span class="text-sm font-medium text-gray-900">{{ relatedGig.rating }}</span>
+                        <span class="text-sm text-gray-500 ml-1">({{ relatedGig.reviews }})</span>
+                      </div>
+                      <div class="text-lg font-bold text-gray-900">
+                        ${{ relatedGig.price }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Reviews Section -->
             <div id="reviews-section" class="border-t pt-8">
               <div class="flex items-center justify-between mb-6">
@@ -450,6 +510,21 @@ const dummyGigs = [
     rating: 4.8,
     reviews: 91,
     isFavorited: true,
+  },
+  {
+    id: 7,
+    title: "I will design eye-catching social media graphics and banners",
+    price: 35,
+    category: "design",
+    image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=600&fit=crop",
+    user: {
+      id: 7,
+      name: "Carlos Martinez",
+      avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face",
+    },
+    rating: 4.7,
+    reviews: 156,
+    isFavorited: false,
   }
 ];
 
@@ -527,6 +602,16 @@ const getGigSkills = (gig) => {
   };
   return skills[gig.category] || ["Professional Service"];
 };
+
+// Computed properties
+const relatedGigs = computed(() => {
+  if (!gig.value) return [];
+  
+  // Get gigs from the same category, excluding the current gig
+  return dummyGigs
+    .filter(g => g.category === gig.value.category && g.id !== gig.value.id)
+    .slice(0, 3); // Show 3 for desktop, responsive grid will handle mobile (2 items)
+});
 
 // Methods
 const scrollToReviews = () => {
@@ -644,6 +729,14 @@ watch(() => route.query.id, () => {
 .prose h3 {
   margin-top: 2rem;
   margin-bottom: 1rem;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .animate-fadeIn {
