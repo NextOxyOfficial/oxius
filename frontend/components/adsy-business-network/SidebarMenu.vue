@@ -185,6 +185,12 @@ const mainMenu = computed(() => [
     isNew: true,
   },
   {
+    label: "Workspaces",
+    path: `/business-network/workspaces`,
+    icon: Star,
+    active: false,
+  },
+  {
     label: "Notifications",
     path: "/business-network/notifications",
     icon: Bell,
@@ -261,6 +267,13 @@ const getMenuItemColor = (label, type) => {
       text: "text-emerald-700",
       badge: "bg-emerald-100 text-emerald-600",
       indicator: "bg-emerald-500",
+    },
+    Workspaces: {
+      bg: "bg-gradient-to-r from-purple-500 to-purple-600",
+      icon: "text-purple-500 group-hover:text-purple-600",
+      text: "text-purple-700",
+      badge: "bg-purple-100 text-purple-600",
+      indicator: "bg-purple-500",
     },
     Notifications: {
       bg: "bg-gradient-to-r from-amber-500 to-amber-600",
