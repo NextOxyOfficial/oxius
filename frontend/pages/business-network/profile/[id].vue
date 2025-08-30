@@ -660,13 +660,31 @@ async function fetchUserProducts() {
   try {
     isLoadingProducts.value = true;
     
-    // Call the API to get user products
-    const res = await get(`/my-products/`, {}, {
-      headers: {
-        "Cache-Control": "no-cache",
-        Pragma: "no-cache",
-      },
-    });
+    // Get the profile user ID from route params
+    const profileUserId = route.params.id;
+    
+    // Check if the current user is viewing their own profile
+    const isOwnProfile = currentUser.value?.user?.id === profileUserId;
+    
+    let res;
+    
+    if (isOwnProfile) {
+      // If viewing own profile, use the my-products endpoint to get all products including private/draft ones
+      res = await get(`/my-products/`, {}, {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
+    } else {
+      // If viewing someone else's profile, use the store endpoint to get their public products
+      res = await get(`/store/${profileUserId}/products/`, {}, {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
+    }
 
     if (res && res.data) {
       // Handle both paginated and non-paginated responses

@@ -100,7 +100,6 @@ import ProfileMediaTab from './tabs/ProfileMediaTab.vue';
 import ProfileSavedTab from './tabs/ProfileSavedTab.vue';
 import WorkspaceTab from './tabs/WorkspaceTab.vue';
 import MyProductsTab from './tabs/MyProductsTab.vue';
-import MyProductsTab from './tabs/MyProductsTab.vue';
 
 const props = defineProps({
   tabs: {
