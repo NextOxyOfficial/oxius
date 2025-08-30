@@ -107,6 +107,14 @@
             >
               New
             </span>
+
+            <!-- "Beta" badge for beta features -->
+            <span
+              v-if="item.isBeta"
+              class="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-orange-500 to-amber-500 text-white"
+            >
+              Beta
+            </span>
           </span>
 
           <!-- Badge with enhanced styling - only show if greater than 0 -->
@@ -189,6 +197,7 @@ const mainMenu = computed(() => [
     path: `/business-network/workspaces`,
     icon: Star,
     active: false,
+    isBeta: true,
   },
   {
     label: "Notifications",

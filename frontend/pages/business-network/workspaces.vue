@@ -11,16 +11,7 @@
               </div>
               Workspaces
             </h1>
-            <p class="mt-1 text-gray-600">Manage and organize your collaborative workspaces</p>
-          </div>
-          <div class="flex items-center space-x-3">
-            <button
-              v-if="user?.user"
-              class="inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 shadow-sm"
-            >
-              <Plus class="h-4 w-4 mr-2" />
-              Create Workspace
-            </button>
+            <p class="mt-1 text-gray-600">Browse gigs, manage orders, and offer your services</p>
           </div>
         </div>
       </div>
@@ -28,77 +19,79 @@
 
     <!-- Main Content -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-      <!-- Filters and Search Bar -->
-      <div class="border-b border-gray-100 px-6 py-4">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <!-- Search Bar -->
-          <div class="flex-1 max-w-md">
-            <div class="relative">
-              <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Search gigs..."
-                class="w-full pl-10 pr-4 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-              />
-            </div>
-          </div>
-          
-          <!-- Filter Buttons -->
-          <div class="flex items-center space-x-3">
-            <select 
-              v-model="selectedCategory"
-              class="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 bg-white min-w-[140px] transition-colors"
-            >
-              <option value="">All Categories</option>
-              <option value="design">Design & Creative</option>
-              <option value="development">Programming & Tech</option>
-              <option value="marketing">Digital Marketing</option>
-              <option value="writing">Writing & Translation</option>
-              <option value="business">Business</option>
-            </select>
-            
-            <select 
-              v-model="sortBy"
-              class="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 bg-white min-w-[120px] transition-colors"
-            >
-              <option value="newest">Newest</option>
-              <option value="popular">Most Popular</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-            </select>
-          </div>
-        </div>
+      <!-- Tab Navigation -->
+      <div class="border-b border-gray-100">
+        <nav class="flex space-x-8 px-6" aria-label="Tabs">
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
+            @click="activeTab = tab.id"
+            :class="[
+              'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+              activeTab === tab.id
+                ? 'border-purple-500 text-purple-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ]"
+          >
+            <component :is="tab.icon" class="h-4 w-4 mr-2 inline" />
+            {{ tab.name }}
+            <span v-if="tabCounts[tab.id] !== null && tabCounts[tab.id] !== undefined" class="ml-2 bg-gray-100 text-gray-600 py-1 px-2 rounded-full text-xs">
+              {{ tabCounts[tab.id] }}
+            </span>
+          </button>
+        </nav>
       </div>
 
-      <!-- Content Area -->
-      <div class="p-2">
-        <div class="space-y-6 min-h-[400px]">
-          <!-- Loading state -->
-          <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-            <div
-              v-for="i in 8"
-              :key="i"
-              class="bg-white border border-gray-100 rounded-lg overflow-hidden animate-pulse"
-            >
-              <div class="h-48 bg-gray-200"></div>
-              <div class="p-4">
-                <div class="flex items-center mb-3">
-                  <div class="h-8 w-8 rounded-full bg-gray-200"></div>
-                  <div class="ml-2 h-4 w-24 bg-gray-200 rounded"></div>
+      <!-- Tab Content -->
+      <div class="p-6">
+        <!-- All Gigs Tab -->
+        <div v-if="activeTab === 'all-gigs'">
+          <!-- Filters and Search Bar -->
+          <div class="mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <!-- Search Bar -->
+              <div class="flex-1 max-w-md">
+                <div class="relative">
+                  <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="Search gigs..."
+                    class="w-full pl-10 pr-4 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                  />
                 </div>
-                <div class="h-5 w-full bg-gray-200 rounded mb-2"></div>
-                <div class="h-4 w-3/4 bg-gray-200 rounded mb-3"></div>
-                <div class="flex justify-between items-center">
-                  <div class="h-4 w-20 bg-gray-200 rounded"></div>
-                  <div class="h-6 w-16 bg-gray-200 rounded"></div>
-                </div>
+              </div>
+              
+              <!-- Filter Buttons -->
+              <div class="flex items-center space-x-3">
+                <select 
+                  v-model="selectedCategory"
+                  class="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                >
+                  <option value="">All Categories</option>
+                  <option value="design">Design & Creative</option>
+                  <option value="development">Programming & Tech</option>
+                  <option value="writing">Writing & Translation</option>
+                  <option value="marketing">Digital Marketing</option>
+                  <option value="business">Business & Consulting</option>
+                </select>
+                
+                <select 
+                  v-model="sortBy"
+                  class="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="rating">Highest Rated</option>
+                </select>
               </div>
             </div>
           </div>
 
           <!-- Gigs Grid -->
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             <div
               v-for="gig in filteredGigs"
               :key="gig.id"
@@ -192,13 +185,31 @@
             </div>
           </div>
         </div>
+
+        <!-- My Gigs Tab -->
+        <div v-else-if="activeTab === 'my-gigs'">
+          <MyGigs :gigs="dummyGigs" @switchTab="activeTab = $event" />
+        </div>
+
+        <!-- My Orders Tab -->
+        <div v-else-if="activeTab === 'my-orders'">
+          <MyOrders @switchTab="activeTab = $event" />
+        </div>
+
+        <!-- Create Gig Tab -->
+        <div v-else-if="activeTab === 'create-gig'">
+          <CreateGig @gigCreated="handleGigCreated" @switchTab="activeTab = $event" />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { Star, Plus, Search, Heart, Briefcase } from "lucide-vue-next";
+import { Star, Plus, Search, Heart, Briefcase, ShoppingCart, User } from "lucide-vue-next";
+import MyOrders from "~/components/business-network/MyOrders.vue";
+import CreateGig from "~/components/business-network/CreateGig.vue";
+import MyGigs from "~/components/business-network/MyGigs.vue";
 
 // Page meta
 definePageMeta({
@@ -220,6 +231,37 @@ definePageMeta({
 const { user } = useAuth();
 const toast = useToast();
 
+// Tab State
+const activeTab = ref('all-gigs');
+
+// Tab Configuration
+const tabs = ref([
+  {
+    id: 'all-gigs',
+    name: 'All Gigs',
+    icon: Star,
+    count: null
+  },
+  {
+    id: 'my-gigs',
+    name: 'My Gigs',
+    icon: User,
+    count: null
+  },
+  {
+    id: 'my-orders',
+    name: 'My Orders',
+    icon: ShoppingCart,
+    count: 0
+  },
+  {
+    id: 'create-gig',
+    name: 'Post A Gig',
+    icon: Plus,
+    count: null
+  }
+]);
+
 // State
 const isLoading = ref(true);
 const searchQuery = ref("");
@@ -234,6 +276,7 @@ const dummyGigs = ref([
     price: 25,
     category: "design",
     image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop",
+    sellerId: 1, // This gig belongs to current user for demo
     user: {
       name: "Sarah Johnson",
       avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b789?w=100&h=100&fit=crop&crop=face",
@@ -241,6 +284,9 @@ const dummyGigs = ref([
     rating: 4.9,
     reviews: 127,
     isFavorited: false,
+    views: 1234,
+    orders: 15,
+    impressions: 2890,
   },
   {
     id: 2,
@@ -262,6 +308,7 @@ const dummyGigs = ref([
     price: 45,
     category: "writing",
     image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop",
+    sellerId: 1, // This gig also belongs to current user for demo
     user: {
       name: "Emma Davis",
       avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
@@ -269,6 +316,9 @@ const dummyGigs = ref([
     rating: 4.8,
     reviews: 203,
     isFavorited: false,
+    views: 987,
+    orders: 8,
+    impressions: 1456,
   },
   {
     id: 4,
@@ -380,6 +430,26 @@ const filteredGigs = computed(() => {
   return filtered;
 });
 
+// My gigs computed property - filter by current user
+const myGigs = computed(() => {
+  if (!user.value?.user) return [];
+  
+  // Filter gigs created by current user
+  return dummyGigs.value.filter(gig => 
+    gig.user.name === user.value.user.username || 
+    gig.user.name === user.value.user.first_name + ' ' + user.value.user.last_name ||
+    gig.sellerId === user.value.user.id
+  );
+});
+
+// Tab counts computed property
+const tabCounts = computed(() => ({
+  'all-gigs': filteredGigs.value.length,
+  'my-gigs': myGigs.value.length,
+  'my-orders': 0, // Would be dynamic from API
+  'create-gig': null
+}));
+
 // Methods
 const getCategoryLabel = (category) => {
   const labels = {
@@ -441,6 +511,28 @@ const clearFilters = () => {
   searchQuery.value = "";
   selectedCategory.value = "";
   sortBy.value = "newest";
+};
+
+// Gig Creation Handler
+const handleGigCreated = (gigData) => {
+  // Create the new gig object
+  const newGigData = {
+    id: dummyGigs.value.length + 1,
+    title: gigData.title,
+    price: gigData.price,
+    category: gigData.category,
+    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop",
+    user: gigData.user,
+    rating: 0,
+    reviews: 0,
+    isFavorited: false,
+  };
+
+  // Add to gigs list
+  dummyGigs.value.unshift(newGigData);
+  
+  // Switch to all gigs tab to show the new gig
+  activeTab.value = 'all-gigs';
 };
 
 // Simulate loading state
