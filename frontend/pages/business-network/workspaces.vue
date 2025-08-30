@@ -150,7 +150,10 @@
                 </div>
                 
                 <!-- Gig Title -->
-                <h3 class="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
+                <h3 
+                  class="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors cursor-pointer"
+                  @click.stop="openGigDetails(gig)"
+                >
                   {{ gig.title }}
                 </h3>
                 
@@ -422,13 +425,16 @@ const toggleFavorite = (gigId) => {
 };
 
 const openGigDetails = (gig) => {
-  // TODO: Implement gig details modal or navigation
   console.log('Opening gig details:', gig);
-  toast.add({
-    title: "Gig Details",
-    description: `Viewing details for: ${gig.title}`,
-    color: "blue",
-  });
+  
+  // Navigate to the workspace details page using query parameters
+  try {
+    navigateTo(`/business-network/workspace-details?id=${gig.id}`);
+  } catch (error) {
+    console.error('Navigation error:', error);
+    // Fallback navigation
+    window.location.href = `/business-network/workspace-details?id=${gig.id}`;
+  }
 };
 
 const clearFilters = () => {
