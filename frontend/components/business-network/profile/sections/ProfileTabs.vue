@@ -84,6 +84,8 @@
           <MyProductsTab
             :isLoadingProducts="isLoadingProducts"
             :userProducts="userProducts"
+            :currentUser="currentUser"
+            :profileUser="profileUser"
             @edit-product="$emit('edit-product', $event)"
             @toggle-product-status="$emit('toggle-product-status', $event)"
             @create-product="$emit('create-product')"

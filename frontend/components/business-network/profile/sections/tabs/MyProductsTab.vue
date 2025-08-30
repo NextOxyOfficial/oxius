@@ -62,9 +62,10 @@
       <div class="mx-auto h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
         <ShoppingBag class="h-12 w-12 text-gray-400" />
       </div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">No products yet</h3>
-      <p class="text-gray-600 mb-6">You haven't added any products to your shop.</p>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">{{ emptyStateTitle }}</h3>
+      <p class="text-gray-600 mb-6">{{ emptyStateMessage }}</p>
       <button
+        v-if="showAddButton"
         @click="createProduct"
         class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
       >
@@ -76,6 +77,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { Pencil, Eye, EyeOff, ShoppingBag, Plus } from 'lucide-vue-next';
 import { useApi } from '~/composables/useApi';
 import CommonProductCard from '~/components/common/product-card.vue';
@@ -89,7 +91,48 @@ const props = defineProps({
   isLoadingProducts: {
     type: Boolean,
     default: false
+  },
+  currentUser: {
+    type: Object,
+    default: null
+  },
+  profileUser: {
+    type: Object,
+    default: null
   }
+});
+
+// Computed properties
+const isOwnProfile = computed(() => {
+  return props.currentUser?.user?.id === props.profileUser?.id;
+});
+
+const profileDisplayName = computed(() => {
+  // Priority: first_name, then formatted username (replace underscores), then fallback
+  if (props.profileUser?.first_name) {
+    return props.profileUser.first_name;
+  } else if (props.profileUser?.username) {
+    // Replace underscores with spaces and capitalize each word
+    return props.profileUser.username
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, char => char.toUpperCase());
+  } else {
+    return 'This user';
+  }
+});
+
+const emptyStateTitle = computed(() => {
+  return isOwnProfile.value ? 'No products yet' : `No products yet`;
+});
+
+const emptyStateMessage = computed(() => {
+  return isOwnProfile.value 
+    ? "You haven't added any products to your shop."
+    : `${profileDisplayName.value} hasn't added any products to their shop yet.`;
+});
+
+const showAddButton = computed(() => {
+  return isOwnProfile.value;
 });
 
 // Emits
