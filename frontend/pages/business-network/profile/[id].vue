@@ -96,6 +96,8 @@
         :allMedia="allMedia"
         :isLoadingSaved="isLoadingSaved"
         :savedPosts="savedPosts"
+        :isLoadingWorkspace="isLoadingWorkspace"
+        :userGigs="userGigs"
         @open-qr-modal="openQrCodeModal"
         @toggle-follow="toggleFollow"
         @open-profile-photo-modal="openProfilePhotoModal"
@@ -104,6 +106,10 @@
         @show-diamond-modal="showDiamondModal = true"
         @switch-tab="switchTab"
         @scroll-to-top="scrollToTop"
+        @edit-gig="editGig"
+        @toggle-gig-status="toggleGigStatus"
+        @create-gig="createGig"
+        @open-gig-details="openGigDetails"
       />
     </div>
 
@@ -186,6 +192,7 @@ const user = ref({});
 const posts = ref({});
 const savedPosts = ref([]);
 const allMedia = ref([]);
+const userGigs = ref([]);
 const followLoading = ref(false);
 const isFollowing = ref(false);
 const showDiamondModal = ref(false);
@@ -193,6 +200,7 @@ const showFollowersModal = ref(false);
 const activeFollowersTab = ref("followers");
 const showProfilePhotoMenu = ref(false);
 const showProfilePhotoModal = ref(false);
+const isLoadingWorkspace = ref(true);
 
 // Profile photo for MediaViewer
 const profilePhotoMedia = ref(null);
@@ -459,8 +467,9 @@ function loadAllData() {
   Promise.all([
     fetchUser(),
     fetchUserPosts(),
-    currentUser.value ? fetchUserSavedPosts() : Promise.resolve(),
+    currentUser.value ? fetchSavedPosts() : Promise.resolve(),
     currentUser.value && route.params.id ? checkFollowing() : Promise.resolve(),
+    fetchUserGigs(),
   ]);
 
   // Simulate loading media items
@@ -486,12 +495,14 @@ const tabs = computed(() =>
   currentUser.value?.user?.id && currentUser.value?.user?.id === route.params.id
     ? [
         { label: "Posts", value: "posts" },
-        // { label: "Media", value: "media" },
+        { label: "Media", value: "media" },
         { label: "Saved", value: "saved" },
+        { label: "My Workspace", value: "workspace" },
       ]
     : [
         { label: "Posts", value: "posts" },
-        // { label: "Media", value: "media" },
+        { label: "Media", value: "media" },
+        { label: "My Workspace", value: "workspace" },
       ]
 );
 
@@ -572,6 +583,130 @@ const switchTab = (tabValue) => {
   // Apply animation class and change tab
   activeTab.value = tabValue;
 };
+
+// Workspace-related functions
+async function fetchUserGigs() {
+  try {
+    isLoadingWorkspace.value = true;
+    
+    // Create dummy user gigs for demonstration
+    // TODO: Replace with actual API call when backend is ready
+    setTimeout(() => {
+      const dummyUserGigs = [
+        {
+          id: 1,
+          title: "I will create a professional logo design for your business",
+          price: 50,
+          category: "design",
+          status: "active",
+          image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop",
+          views: 234,
+          rating: 4.8,
+          reviews: 12
+        },
+        {
+          id: 2,
+          title: "I will develop a custom web application with modern tech stack",
+          price: 500,
+          category: "development", 
+          status: "active",
+          image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=300&fit=crop",
+          views: 156,
+          rating: 5.0,
+          reviews: 8
+        },
+        {
+          id: 3,
+          title: "I will write compelling marketing content for your campaigns",
+          price: 75,
+          category: "writing",
+          status: "paused",
+          image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop",
+          views: 89,
+          rating: 4.6,
+          reviews: 15
+        }
+      ];
+
+      // Only show gigs for the current user's profile
+      if (currentUser.value?.user?.id === route.params.id) {
+        userGigs.value = dummyUserGigs;
+      } else {
+        // For other users, show a subset or different gigs
+        userGigs.value = dummyUserGigs.slice(0, 2);
+      }
+      
+      isLoadingWorkspace.value = false;
+    }, 1000);
+  } catch (error) {
+    console.error("Error fetching user gigs:", error);
+    userGigs.value = [];
+    isLoadingWorkspace.value = false;
+  }
+}
+
+const editGig = (gig) => {
+  // TODO: Implement edit gig functionality
+  toast.add({
+    title: "Edit Gig",
+    description: `Editing: ${gig.title}`,
+    color: "blue",
+  });
+};
+
+const toggleGigStatus = (gig) => {
+  // TODO: Implement toggle gig status functionality
+  const newStatus = gig.status === 'active' ? 'paused' : 'active';
+  gig.status = newStatus;
+  
+  toast.add({
+    title: "Gig Status Updated",
+    description: `Gig is now ${newStatus}`,
+    color: "green",
+  });
+};
+
+const createGig = () => {
+  // TODO: Navigate to create gig page or open modal
+  toast.add({
+    title: "Create Gig",
+    description: "Redirecting to gig creation...",
+    color: "blue",
+  });
+};
+
+const openGigDetails = (gig) => {
+  // TODO: Open gig details modal or navigate to gig page
+  toast.add({
+    title: "Gig Details",
+    description: `Viewing: ${gig.title}`,
+    color: "blue",
+  });
+};
+
+async function fetchSavedPosts() {
+  try {
+    isLoadingSaved.value = true;
+    const res = await get(`/bn/user/${route.params.id}/saved-posts/`);
+    savedPosts.value = res.data?.results || [];
+  } catch (error) {
+    console.error("Error fetching saved posts:", error);
+  } finally {
+    isLoadingSaved.value = false;
+  }
+}
+
+async function fetchMedia() {
+  try {
+    isLoadingMedia.value = true;
+    const res = await get(`/bn/user/${route.params.id}/media/`);
+    allMedia.value = res.data?.results || [];
+  } catch (error) {
+    console.error("Error fetching media:", error);
+  } finally {
+    isLoadingMedia.value = false;
+  }
+}
 
 // Format time ago function
 const formatTimeAgo = (dateString) => {

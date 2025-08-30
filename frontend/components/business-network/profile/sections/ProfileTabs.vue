@@ -64,6 +64,20 @@
             :currentUser="currentUser"
           />
         </div>
+
+        <!-- Workspace Tab Content -->
+        <div v-else-if="activeTab === 'workspace'" class="tab-content">
+          <WorkspaceTab
+            :isLoadingWorkspace="isLoadingWorkspace"
+            :userGigs="userGigs"
+            :currentUser="currentUser"
+            :profileUser="profileUser"
+            @edit-gig="$emit('edit-gig', $event)"
+            @toggle-gig-status="$emit('toggle-gig-status', $event)"
+            @create-gig="$emit('create-gig')"
+            @open-gig-details="$emit('open-gig-details', $event)"
+          />
+        </div>
       </transition>
     </div>
   </div>
@@ -73,6 +87,7 @@
 import ProfilePostsTab from './tabs/ProfilePostsTab.vue';
 import ProfileMediaTab from './tabs/ProfileMediaTab.vue';
 import ProfileSavedTab from './tabs/ProfileSavedTab.vue';
+import WorkspaceTab from './tabs/WorkspaceTab.vue';
 
 const props = defineProps({
   tabs: {
@@ -95,6 +110,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  isLoadingWorkspace: {
+    type: Boolean,
+    default: false
+  },
   loadingMorePosts: {
     type: Boolean,
     default: false
@@ -103,21 +122,37 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   },
+  allMedia: {
+    type: Array,
+    default: () => []
+  },
   savedPosts: {
     type: Array,
     default: () => []
   },
-  allMedia: {
+  userGigs: {
     type: Array,
     default: () => []
   },
   currentUser: {
     type: Object,
     default: null
+  },
+  profileUser: {
+    type: Object,
+    default: null
   }
 });
 
-const emit = defineEmits(['switch-tab', 'scroll-to-top']);
+// Define emits
+defineEmits([
+  'switch-tab',
+  'scroll-to-top',
+  'edit-gig',
+  'toggle-gig-status', 
+  'create-gig',
+  'open-gig-details'
+]);
 </script>
 
 <style scoped>

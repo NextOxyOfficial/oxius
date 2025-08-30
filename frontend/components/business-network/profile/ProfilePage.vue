@@ -26,9 +26,16 @@
       :allMedia="allMedia"
       :isLoadingSaved="isLoadingSaved"
       :savedPosts="savedPosts"
+      :isLoadingWorkspace="isLoadingWorkspace"
+      :userGigs="userGigs"
+      :profileUser="user"
       :currentUser="currentUser"
       @switch-tab="$emit('switch-tab', $event)"
       @scroll-to-top="$emit('scroll-to-top')"
+      @edit-gig="$emit('edit-gig', $event)"
+      @toggle-gig-status="$emit('toggle-gig-status', $event)"
+      @create-gig="$emit('create-gig')"
+      @open-gig-details="$emit('open-gig-details', $event)"
     />
   </div>
 </template>
@@ -94,6 +101,14 @@ const props = defineProps({
   savedPosts: {
     type: Array,
     default: () => []
+  },
+  isLoadingWorkspace: {
+    type: Boolean,
+    default: false
+  },
+  userGigs: {
+    type: Array,
+    default: () => []
   }
 });
 
@@ -106,6 +121,10 @@ defineEmits([
   'open-followers-modal',
   'show-diamond-modal',
   'switch-tab',
-  'scroll-to-top'
+  'scroll-to-top',
+  'edit-gig',
+  'toggle-gig-status',
+  'create-gig',
+  'open-gig-details'
 ]);
 </script>
