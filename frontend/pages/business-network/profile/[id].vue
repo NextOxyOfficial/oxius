@@ -515,7 +515,6 @@ const tabs = computed(() =>
       ]
     : [
         { label: "Posts", value: "posts" },
-        { label: "Media", value: "media" },
         { label: "My Workspace", value: "workspace" },
         { label: "My Products", value: "products" },
       ]
