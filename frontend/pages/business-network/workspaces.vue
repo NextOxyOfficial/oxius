@@ -21,25 +21,45 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
       <!-- Tab Navigation -->
       <div class="border-b border-gray-100">
-        <nav class="flex space-x-8 px-6" aria-label="Tabs">
+        <!-- Desktop View -->
+        <nav class="hidden sm:flex space-x-8 px-6" aria-label="Tabs">
           <button
             v-for="tab in tabs"
             :key="tab.id"
             @click="activeTab = tab.id"
             :class="[
-              'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+              'py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center',
               activeTab === tab.id
                 ? 'border-purple-500 text-purple-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             ]"
           >
-            <component :is="tab.icon" class="h-4 w-4 mr-2 inline" />
+            <component :is="tab.icon" class="h-4 w-4 mr-2" />
             {{ tab.name }}
-            <span v-if="tabCounts[tab.id] !== null && tabCounts[tab.id] !== undefined" class="ml-2 bg-gray-100 text-gray-600 py-1 px-2 rounded-full text-xs">
-              {{ tabCounts[tab.id] }}
-            </span>
           </button>
         </nav>
+
+        <!-- Mobile View - 2x2 Grid -->
+        <div class="sm:hidden px-4 py-3">
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              @click="activeTab = tab.id"
+              :class="[
+                'py-3 px-2 rounded-lg border-2 font-medium text-xs transition-colors',
+                activeTab === tab.id
+                  ? 'border-purple-500 text-purple-600 bg-purple-50'
+                  : 'border-gray-200 text-gray-600 hover:text-gray-800 hover:border-gray-300'
+              ]"
+            >
+              <div class="flex items-center justify-center space-x-1">
+                <component :is="tab.icon" class="h-4 w-4" />
+                <span class="leading-tight">{{ tab.name }}</span>
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Tab Content -->
