@@ -68,7 +68,8 @@
         <div v-if="activeTab === 'all-gigs'">
           <!-- Filters and Search Bar -->
           <div class="mb-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <!-- Desktop Layout -->
+            <div class="hidden sm:flex sm:items-center sm:justify-between gap-4">
               <!-- Search Bar -->
               <div class="flex-1 max-w-md">
                 <div class="relative">
@@ -106,6 +107,46 @@
                   <option value="price-high">Price: High to Low</option>
                   <option value="rating">Highest Rated</option>
                 </select>
+              </div>
+            </div>
+
+            <!-- Mobile Layout -->
+            <div class="sm:hidden space-y-3">
+              <!-- Filter Buttons First -->
+              <div class="flex items-center space-x-3">
+                <select 
+                  v-model="selectedCategory"
+                  class="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                >
+                  <option value="">All Categories</option>
+                  <option value="design">Design & Creative</option>
+                  <option value="development">Programming & Tech</option>
+                  <option value="writing">Writing & Translation</option>
+                  <option value="marketing">Digital Marketing</option>
+                  <option value="business">Business & Consulting</option>
+                </select>
+                
+                <select 
+                  v-model="sortBy"
+                  class="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="rating">Highest Rated</option>
+                </select>
+              </div>
+              
+              <!-- Search Bar Below -->
+              <div class="relative">
+                <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Search gigs..."
+                  class="w-full pl-10 pr-4 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                />
               </div>
             </div>
           </div>
