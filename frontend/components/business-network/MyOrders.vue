@@ -110,7 +110,10 @@
           <div v-if="order.status !== 'cancelled'" class="flex flex-row gap-2 pt-4 border-t border-gray-100">
             <button
               @click="openChat(order)"
-              class="relative flex-1 px-2 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+              :class="[
+                'relative px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs font-medium flex items-center justify-center gap-1',
+                order.status === 'pending' || order.status === 'in_progress' ? 'flex-1' : 'flex-none'
+              ]"
             >
               <MessageCircle class="h-3 w-3" />
               Chat

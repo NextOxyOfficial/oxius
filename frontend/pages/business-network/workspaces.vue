@@ -2,7 +2,7 @@
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
     <!-- Header Section -->
     <div class="mb-6">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-4">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-2 py-4">
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-2xl font-bold text-gray-900 flex items-center">
@@ -11,7 +11,7 @@
               </div>
               Workspaces
             </h1>
-            <p class="mt-1 text-gray-600">Browse gigs, manage orders, and offer your services</p>
+            <p class="mt-1 text-gray-600 text-sm sm:text-base">Browse gigs, manage orders, and offer your services</p>
           </div>
         </div>
       </div>
@@ -252,9 +252,14 @@
           <MyGigs :gigs="dummyGigs" @switchTab="activeTab = $event" />
         </div>
 
-        <!-- My Orders Tab -->
+        <!-- Order Received Tab -->
         <div v-else-if="activeTab === 'my-orders'">
           <MyOrders @switchTab="activeTab = $event" />
+        </div>
+
+        <!-- Gig Ordered Tab -->
+        <div v-else-if="activeTab === 'gig-ordered'">
+          <GigOrdered @switchTab="activeTab = $event" />
         </div>
 
         <!-- Create Gig Tab -->
@@ -267,10 +272,11 @@
 </template>
 
 <script setup>
-import { Star, Plus, Search, Heart, Briefcase, ShoppingCart, User } from "lucide-vue-next";
+import { Star, Plus, Search, Heart, Briefcase, ShoppingCart, User, Package } from "lucide-vue-next";
 import MyOrders from "~/components/business-network/MyOrders.vue";
 import CreateGig from "~/components/business-network/CreateGig.vue";
 import MyGigs from "~/components/business-network/MyGigs.vue";
+import GigOrdered from "~/components/business-network/GigOrdered.vue";
 
 // Page meta
 definePageMeta({
@@ -311,8 +317,14 @@ const tabs = ref([
   },
   {
     id: 'my-orders',
-    name: 'My Orders',
+    name: 'Order Received',
     icon: ShoppingCart,
+    count: 0
+  },
+  {
+    id: 'gig-ordered',
+    name: 'Gig Ordered',
+    icon: Package,
     count: 0
   },
   {
