@@ -108,18 +108,26 @@
           <!-- Action Buttons -->
           <div class="flex flex-row gap-2 pt-4 border-t border-gray-100">
             <button
+              @click="openChat(order)"
+              class="relative flex-1 px-2 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs font-medium flex items-center justify-center gap-1"
+            >
+              <MessageCircle class="h-3 w-3" />
+              Chat
+              <!-- Notification Badge -->
+              <span
+                v-if="order.unreadMessages && order.unreadMessages > 0"
+                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center min-w-[16px]"
+              >
+                {{ order.unreadMessages > 9 ? '9+' : order.unreadMessages }}
+              </span>
+            </button>
+            
+            <button
               v-if="order.status === 'pending'"
               @click="showCancelModal(order)"
               class="flex-1 px-2 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-xs font-medium"
             >
               Cancel Order
-            </button>
-            
-            <button
-              @click="contactSeller(order)"
-              class="flex-1 px-2 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs font-medium"
-            >
-              Contact Seller
             </button>
             
             <button
@@ -196,7 +204,7 @@
 </template>
 
 <script setup>
-import { ShoppingCart } from 'lucide-vue-next';
+import { ShoppingCart, MessageCircle } from 'lucide-vue-next';
 
 // Emit events to parent component
 const emit = defineEmits(['switchTab']);
@@ -224,6 +232,7 @@ const orders = ref([
     amount: 150,
     progress: 65,
     revisions: 2,
+    unreadMessages: 3,
     createdAt: new Date('2024-08-25'),
     deliveryDate: new Date('2024-09-05'),
     gig: {
@@ -243,6 +252,7 @@ const orders = ref([
     amount: 75,
     progress: 100,
     revisions: 'Unlimited',
+    unreadMessages: 0,
     createdAt: new Date('2024-08-20'),
     deliveryDate: new Date('2024-08-30'),
     gig: {
@@ -262,6 +272,7 @@ const orders = ref([
     amount: 25,
     progress: 0,
     revisions: 3,
+    unreadMessages: 12,
     createdAt: new Date('2024-08-29'),
     deliveryDate: new Date('2024-09-02'),
     gig: {
@@ -281,6 +292,7 @@ const orders = ref([
     amount: 200,
     progress: 100,
     revisions: 1,
+    unreadMessages: 1,
     createdAt: new Date('2024-08-15'),
     deliveryDate: new Date('2024-08-25'),
     gig: {
@@ -381,6 +393,16 @@ const confirmCancelOrder = () => {
   }
   
   closeCancelModal();
+};
+
+const openChat = (order) => {
+  toast.add({
+    title: 'Opening Chat',
+    description: `Starting conversation with ${order.seller.name} for order #${order.id}`,
+    color: 'blue'
+  });
+  // Here you would typically navigate to chat or open chat modal
+  // Example: navigateTo(`/chat/${order.seller.id}?order=${order.id}`)
 };
 
 const cancelOrder = (order) => {
