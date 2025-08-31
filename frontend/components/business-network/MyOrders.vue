@@ -3,7 +3,7 @@
     <!-- Filter Tabs - Professional Design -->
     <div class="border-b border-gray-200">
       <!-- Mobile: 2 rows layout -->
-      <div class="grid grid-cols-3 sm:hidden">
+      <div class="grid grid-cols-2 gap-1 sm:hidden">
         <button
           v-for="filter in orderFilters"
           :key="filter.value"
@@ -72,20 +72,21 @@
                 <h3 class="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
                   {{ order.gig.title }}
                 </h3>
-                <p class="text-sm text-gray-600 mb-2">
-                  by {{ order.seller.name }}
-                </p>
+                <div class="flex items-center justify-between mb-2">
+                  <p class="text-sm text-gray-600">
+                    from {{ order.buyer.name }}
+                  </p>
+                  <!-- Order Status Badge -->
+                  <div :class="getStatusClass(order.status)" class="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap">
+                    {{ getStatusLabel(order.status) }}
+                  </div>
+                </div>
                 <div class="flex items-center space-x-4 text-xs text-gray-500">
                   <span>Order #{{ order.id }}</span>
                   <span>•</span>
                   <span>{{ formatDate(order.createdAt) }}</span>
                 </div>
               </div>
-            </div>
-            
-            <!-- Order Status Badge -->
-            <div :class="getStatusClass(order.status)" class="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap">
-              {{ getStatusLabel(order.status) }}
             </div>
           </div>
 
@@ -106,7 +107,7 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex flex-row gap-2 pt-4 border-t border-gray-100">
+          <div v-if="order.status !== 'cancelled'" class="flex flex-row gap-2 pt-4 border-t border-gray-100">
             <button
               @click="openChat(order)"
               class="relative flex-1 px-2 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs font-medium flex items-center justify-center gap-1"
@@ -124,33 +125,26 @@
             
             <button
               v-if="order.status === 'pending'"
-              @click="showCancelModal(order)"
-              class="flex-1 px-2 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-xs font-medium"
-            >
-              Cancel Order
-            </button>
-            
-            <button
-              v-if="order.status === 'completed'"
-              @click="leaveReview(order)"
-              class="flex-1 px-2 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium"
-            >
-              Leave Review
-            </button>
-            
-            <button
-              v-if="order.status === 'delivered'"
-              @click="acceptDelivery(order)"
+              @click="acceptOrder(order)"
               class="flex-1 px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs font-medium"
             >
-              Accept Delivery
+              Accept Order
             </button>
             
             <button
-              @click="viewOrderDetails(order)"
-              class="flex-1 px-2 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-xs font-medium"
+              v-if="order.status === 'pending'"
+              @click="declineOrder(order)"
+              class="flex-1 px-2 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-xs font-medium"
             >
-              View Details
+              Decline
+            </button>
+            
+            <button
+              v-if="order.status === 'in_progress'"
+              @click="deliverOrder(order)"
+              class="flex-1 px-2 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium"
+            >
+              Deliver Order
             </button>
           </div>
         </div>
@@ -176,30 +170,6 @@
       </button>
     </div>
 
-    <!-- Cancel Order Confirmation Modal -->
-    <div v-if="showCancelConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg max-w-md w-full p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Cancel Order</h3>
-        <p class="text-gray-600 mb-6">
-          Are you sure you want to cancel order <strong>#{{ orderToCancel?.id }}</strong>? This action cannot be undone and you may not receive a full refund.
-        </p>
-        
-        <div class="flex space-x-3">
-          <button
-            @click="closeCancelModal"
-            class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-          >
-            Keep Order
-          </button>
-          <button
-            @click="confirmCancelOrder"
-            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-          >
-            Cancel Order
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -214,12 +184,11 @@ const toast = useToast();
 
 // Reactive data
 const activeFilter = ref('pending');
-const showCancelConfirm = ref(false);
-const orderToCancel = ref(null);
 
 // Order filters
 const orderFilters = [
   { label: 'Pending', value: 'pending' },
+  { label: 'In Progress', value: 'in_progress' },
   { label: 'Completed', value: 'completed' },
   { label: 'Cancelled', value: 'cancelled' }
 ];
@@ -240,7 +209,7 @@ const orders = ref([
       title: 'I will develop a responsive React web application for your startup',
       image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=300&fit=crop'
     },
-    seller: {
+    buyer: {
       id: 2,
       name: 'Mike Chen',
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
@@ -260,7 +229,7 @@ const orders = ref([
       title: 'I will write compelling copy for your marketing campaigns',
       image: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop'
     },
-    seller: {
+    buyer: {
       id: 3,
       name: 'Emma Davis',
       avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
@@ -280,7 +249,7 @@ const orders = ref([
       title: 'I will design a modern and professional logo for your business',
       image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop'
     },
-    seller: {
+    buyer: {
       id: 4,
       name: 'Sarah Johnson',
       avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b789?w=100&h=100&fit=crop&crop=face'
@@ -300,10 +269,110 @@ const orders = ref([
       title: 'I will create a comprehensive digital marketing strategy',
       image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop'
     },
-    seller: {
+    buyer: {
       id: 5,
       name: 'Alex Rivera',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
+    }
+  },
+  {
+    id: 'ORD-2024-005',
+    status: 'in_progress',
+    amount: 120,
+    progress: 45,
+    revisions: 2,
+    unreadMessages: 5,
+    createdAt: new Date('2024-08-28'),
+    deliveryDate: new Date('2024-09-08'),
+    gig: {
+      id: 6,
+      title: 'I will design a modern mobile app UI/UX with Figma',
+      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop'
+    },
+    buyer: {
+      id: 6,
+      name: 'Jessica Wong',
+      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face'
+    }
+  },
+  {
+    id: 'ORD-2024-006',
+    status: 'pending',
+    amount: 50,
+    progress: 0,
+    revisions: 3,
+    unreadMessages: 2,
+    createdAt: new Date('2024-08-30'),
+    deliveryDate: new Date('2024-09-10'),
+    gig: {
+      id: 7,
+      title: 'I will create engaging social media content for your brand',
+      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop'
+    },
+    buyer: {
+      id: 7,
+      name: 'David Kim',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
+    }
+  },
+  {
+    id: 'ORD-2024-007',
+    status: 'in_progress',
+    amount: 300,
+    progress: 80,
+    revisions: 1,
+    unreadMessages: 0,
+    createdAt: new Date('2024-08-22'),
+    deliveryDate: new Date('2024-09-03'),
+    gig: {
+      id: 8,
+      title: 'I will build a complete e-commerce website with admin panel',
+      image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop'
+    },
+    buyer: {
+      id: 8,
+      name: 'Maria Rodriguez',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
+    }
+  },
+  {
+    id: 'ORD-2024-008',
+    status: 'cancelled',
+    amount: 80,
+    progress: 0,
+    revisions: 0,
+    unreadMessages: 0,
+    createdAt: new Date('2024-08-26'),
+    deliveryDate: new Date('2024-09-06'),
+    gig: {
+      id: 9,
+      title: 'I will write professional blog posts for your website',
+      image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&h=300&fit=crop'
+    },
+    buyer: {
+      id: 9,
+      name: 'Thomas Brown',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
+    }
+  },
+  {
+    id: 'ORD-2024-009',
+    status: 'in_progress',
+    amount: 150,
+    progress: 25,
+    revisions: 5,
+    unreadMessages: 8,
+    createdAt: new Date('2024-08-27'),
+    deliveryDate: new Date('2024-09-07'),
+    gig: {
+      id: 10,
+      title: 'I will create a brand identity package with logo and guidelines',
+      image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop'
+    },
+    buyer: {
+      id: 10,
+      name: 'Lisa Chen',
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b789?w=100&h=100&fit=crop&crop=face'
     }
   }
 ]);
@@ -370,79 +439,40 @@ const formatDeliveryDate = (date) => {
 };
 
 // Action methods
-const showCancelModal = (order) => {
-  orderToCancel.value = order;
-  showCancelConfirm.value = true;
-};
-
-const closeCancelModal = () => {
-  showCancelConfirm.value = false;
-  orderToCancel.value = null;
-};
-
-const confirmCancelOrder = () => {
-  if (orderToCancel.value) {
-    // Update order status to cancelled
-    orderToCancel.value.status = 'cancelled';
-    
-    toast.add({
-      title: 'Order Cancelled',
-      description: `Order #${orderToCancel.value.id} has been cancelled successfully`,
-      color: 'green'
-    });
-  }
-  
-  closeCancelModal();
-};
-
 const openChat = (order) => {
   toast.add({
     title: 'Opening Chat',
-    description: `Starting conversation with ${order.seller.name} for order #${order.id}`,
+    description: `Starting conversation with ${order.buyer.name} for order #${order.id}`,
     color: 'blue'
   });
   // Here you would typically navigate to chat or open chat modal
-  // Example: navigateTo(`/chat/${order.seller.id}?order=${order.id}`)
+  // Example: navigateTo(`/chat/${order.buyer.id}?order=${order.id}`)
 };
 
-const cancelOrder = (order) => {
+const acceptOrder = (order) => {
+  order.status = 'in_progress';
   toast.add({
-    title: 'Cancel Order',
-    description: `Are you sure you want to cancel order #${order.id}?`,
+    title: 'Order Accepted',
+    description: `Order #${order.id} has been accepted and is now in progress`,
+    color: 'green'
+  });
+};
+
+const declineOrder = (order) => {
+  order.status = 'cancelled';
+  toast.add({
+    title: 'Order Declined',
+    description: `Order #${order.id} has been declined`,
     color: 'red'
   });
 };
 
-const contactSeller = (order) => {
+const deliverOrder = (order) => {
+  order.status = 'delivered';
   toast.add({
-    title: 'Contact Seller',
-    description: `Opening chat with ${order.seller.name}`,
-    color: 'blue'
-  });
-};
-
-const leaveReview = (order) => {
-  toast.add({
-    title: 'Leave Review',
-    description: `Opening review form for order #${order.id}`,
+    title: 'Order Delivered',
+    description: `Order #${order.id} has been marked as delivered`,
     color: 'green'
-  });
-};
-
-const acceptDelivery = (order) => {
-  order.status = 'completed';
-  toast.add({
-    title: 'Delivery Accepted',
-    description: `Order #${order.id} marked as completed`,
-    color: 'green'
-  });
-};
-
-const viewOrderDetails = (order) => {
-  toast.add({
-    title: 'Order Details',
-    description: `Viewing details for order #${order.id}`,
-    color: 'blue'
   });
 };
 </script>
