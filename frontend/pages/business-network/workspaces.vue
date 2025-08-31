@@ -348,6 +348,15 @@ const dummyGigs = ref([
     views: 1234,
     orders: 15,
     impressions: 2890,
+    features: [
+      "Custom logo design in multiple formats",
+      "3 initial concepts to choose from",
+      "Unlimited revisions until you're satisfied",
+      "High-resolution files (PNG, SVG, PDF)",
+      "Commercial usage rights included"
+    ],
+    deliveryTime: "3",
+    revisions: "unlimited"
   },
   {
     id: 2,
@@ -362,6 +371,15 @@ const dummyGigs = ref([
     rating: 5.0,
     reviews: 89,
     isFavorited: true,
+    features: [
+      "Fully responsive web application",
+      "Modern React with hooks and context",
+      "API integration and state management",
+      "Cross-browser compatibility testing",
+      "2 weeks of post-launch support"
+    ],
+    deliveryTime: "14",
+    revisions: "3"
   },
   {
     id: 3,

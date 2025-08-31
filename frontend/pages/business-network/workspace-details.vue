@@ -552,10 +552,16 @@ const getGigDescription = (gig) => {
 };
 
 const getGigFeatures = (gig) => {
+  // If the gig has its own features array (from CreateGig form), use that
+  if (gig.features && Array.isArray(gig.features) && gig.features.length > 0) {
+    return gig.features;
+  }
+  
+  // Otherwise, use default features based on category
   const features = {
     design: [
       "Custom design concepts",
-      "Unlimited revisions",
+      "Unlimited revisions", 
       "High-resolution files",
       "Commercial license included",
       "24/7 support"
@@ -569,7 +575,7 @@ const getGigFeatures = (gig) => {
     ],
     writing: [
       "Original content",
-      "SEO optimization",
+      "SEO optimization", 
       "Multiple revisions",
       "Plagiarism-free guarantee",
       "Fast turnaround"
@@ -584,7 +590,7 @@ const getGigFeatures = (gig) => {
     business: [
       "Market analysis",
       "Strategic planning",
-      "ROI projections",
+      "ROI projections", 
       "Implementation roadmap",
       "Follow-up consultation"
     ]
