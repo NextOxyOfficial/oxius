@@ -28,7 +28,7 @@
       <div
         v-for="gig in userGigs"
         :key="gig.id"
-        class="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer group"
+        class="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-sm transition-all duration-200 cursor-pointer group"
         @click="openGigDetails(gig)"
       >
         <!-- Gig Image -->
