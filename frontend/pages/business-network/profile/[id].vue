@@ -509,7 +509,6 @@ const tabs = computed(() =>
   currentUser.value?.user?.id && currentUser.value?.user?.id === route.params.id
     ? [
         { label: "Posts", value: "posts" },
-        { label: "Media", value: "media" },
         { label: "Saved", value: "saved" },
         { label: "My Workspace", value: "workspace" },
         { label: "My Products", value: "products" },
