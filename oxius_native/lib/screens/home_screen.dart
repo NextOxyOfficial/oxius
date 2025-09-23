@@ -16,7 +16,7 @@ class HomeScreen extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           const AppHeader(),
-          const HeroBanner(),
+          SliverToBoxAdapter(child: const HeroBanner()),
           const SearchWidget(),
           _buildQuickActions(context),
           _buildMobileServicesGrid(context),
