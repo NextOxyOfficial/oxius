@@ -300,34 +300,43 @@ class _SaleCategoryState extends State<SaleCategory> {
           
           const SizedBox(height: 16),
           
-          // Action buttons
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  _translationService.t('marketplace', fallback: 'Marketplace'),
-                  Icons.shopping_bag_outlined,
-                  false,
+          // Action buttons (weighted flex + fitted text to avoid truncation)
+          Builder(builder: (context) {
+            final marketplaceLabel = _translationService.t('marketplace', fallback: 'Marketplace');
+            final myPostsLabel = _translationService.t('my_posts', fallback: 'My Posts');
+            final postSaleLabel = _translationService.t('post_sale', fallback: 'Post Sale');
+
+            return Row(
+              children: [
+                Expanded(
+                  flex: 11, // widest for Marketplace
+                  child: _buildActionButton(
+                    marketplaceLabel,
+                    Icons.shopping_bag_outlined,
+                    false,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildActionButton(
-                  _translationService.t('my_posts', fallback: 'My Posts'),
-                  Icons.description_outlined,
-                  false,
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 9,
+                  child: _buildActionButton(
+                    myPostsLabel,
+                    Icons.description_outlined,
+                    false,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildActionButton(
-                  _translationService.t('post_sale', fallback: 'Post Sale'),
-                  Icons.add_circle_outline,
-                  true, // Highlighted
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 10,
+                  child: _buildActionButton(
+                    postSaleLabel,
+                    Icons.add_circle_outline,
+                    true, // Highlighted
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            );
+          }),
         ],
       ),
     );
