@@ -344,7 +344,7 @@ class _SaleCategoryState extends State<SaleCategory> {
 
   Widget _buildActionButton(String label, IconData icon, bool isHighlighted) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
       decoration: BoxDecoration(
         color: isHighlighted 
             ? const Color(0xFF10B981).withOpacity(0.1)
@@ -357,7 +357,7 @@ class _SaleCategoryState extends State<SaleCategory> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
         children: [
           Icon(
             icon,
@@ -367,19 +367,22 @@ class _SaleCategoryState extends State<SaleCategory> {
                 : Colors.grey.shade600,
           ),
           const SizedBox(width: 4),
-          Flexible(
-            child: Text(
-              label,
-              style: GoogleFonts.roboto(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: isHighlighted 
-                    ? const Color(0xFF10B981)
-                    : Colors.grey.shade600,
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                label,
+                style: GoogleFonts.roboto(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isHighlighted 
+                      ? const Color(0xFF10B981)
+                      : Colors.grey.shade600,
+                ),
               ),
-              overflow: TextOverflow.ellipsis,
             ),
-          ),
+          )
         ],
       ),
     );

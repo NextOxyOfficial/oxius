@@ -138,9 +138,12 @@ class _HeroBannerState extends State<HeroBanner> {
   @override
   void initState() {
     super.initState();
-    // Initialize translations and listen for language changes
-    _translationService.initialize();
+    // Listen for language changes BEFORE initialization to avoid missing early notifications
     _translationService.addListener(_onTranslationsChanged);
+    // Initialize translations and ensure we rebuild once initial load completes
+    _translationService.initialize().then((_) {
+      if (mounted) setState(() {});
+    });
     _loadBannerImages();
     _startHeroTimer();
   }
@@ -240,7 +243,7 @@ class _HeroBannerState extends State<HeroBanner> {
     final title = _translationService.t('social_business_network', fallback: 'Social Business Network');
     return Container(
       // Remove side margin on mobile to make the card flush with screen edges
-      margin: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 8),
+      margin: EdgeInsets.symmetric(horizontal: isMobile ? 2 : 8),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F8FA),
         borderRadius: BorderRadius.circular(14),
