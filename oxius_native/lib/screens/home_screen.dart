@@ -19,7 +19,6 @@ class HomeScreen extends StatelessWidget {
           const HeroBanner(),
           const SearchWidget(),
           _buildQuickActions(context),
-          _buildCategoryGrid(context),
           _buildMobileServicesGrid(context),
         ],
       ),
@@ -119,114 +118,6 @@ class HomeScreen extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ],
-      ),
-    );
-  }
-
-  // Browse Categories Section
-  Widget _buildCategoryGrid(BuildContext context) {
-    final categories = [
-      {'icon': Icons.trending_up, 'title': 'Trending', 'subtitle': 'Hot items'},
-      {'icon': Icons.local_offer, 'title': 'Deals', 'subtitle': 'Best offers'},
-      {'icon': Icons.star, 'title': 'Featured', 'subtitle': 'Top rated'},
-      {'icon': Icons.new_releases, 'title': 'New', 'subtitle': 'Latest items'},
-      {'icon': Icons.favorite, 'title': 'Popular', 'subtitle': 'Most liked'},
-      {'icon': Icons.local_fire_department, 'title': 'Hot Sales', 'subtitle': 'Limited time'},
-    ];
-
-    return SliverToBoxAdapter(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(
-                'Browse Categories',
-                style: GoogleFonts.roboto(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-            ),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.5,
-              ),
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                return _buildCategoryCard(
-                  context,
-                  category['icon'] as IconData,
-                  category['title'] as String,
-                  category['subtitle'] as String,
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryCard(BuildContext context, IconData icon, String title, String subtitle) {
-    return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$title category coming soon!'),
-            backgroundColor: const Color(0xFF10B981),
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: const Color(0xFF10B981),
-              size: 32,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: GoogleFonts.roboto(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
-              ),
-            ),
-            Text(
-              subtitle,
-              style: GoogleFonts.roboto(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
