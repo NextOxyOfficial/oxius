@@ -199,7 +199,7 @@ class _AppHeaderState extends State<AppHeader> {
         borderRadius: BorderRadius.circular(8),
         child: Image.network(
           logoData!['image'],
-          height: MediaQuery.of(context).size.width < 768 ? 26 : 30,
+          height: MediaQuery.of(context).size.width < 768 ? 24 : 28,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
             return _buildFallbackLogo();

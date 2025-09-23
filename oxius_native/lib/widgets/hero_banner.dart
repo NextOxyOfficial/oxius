@@ -18,6 +18,26 @@ class _HeroBannerState extends State<HeroBanner> {
   bool isLoading = true;
   final TranslationService _translationService = TranslationService();
 
+  // Build absolute URL for Django static assets used by Vue (e.g., /static/frontend/images/*.png)
+  String _absStatic(String path) {
+    if (path.isEmpty) return path;
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    // These images live in the frontend's public folder and are served by the Nuxt dev server
+    // Use port 3000 (frontend) instead of 8000 (Django) to avoid 404s for /static paths
+    const origin = 'http://localhost:3000';
+    final p = path.startsWith('/') ? path : '/$path';
+    return '$origin$p';
+  }
+
+  // Provide candidate URLs (Nuxt dev, then Django) and try them in order
+  List<String> _absStaticCandidates(String path) {
+    final p = path.startsWith('/') ? path : '/$path';
+    return [
+      'http://localhost:3000$p',
+      'http://localhost:8000$p',
+    ];
+  }
+
   // Default banner images as fallback
   final List<String> defaultImages = [
     'https://picsum.photos/800/360?random=1',
@@ -29,48 +49,56 @@ class _HeroBannerState extends State<HeroBanner> {
   List<Map<String, dynamic>> get mobileServices => [
     {
       'icon': Icons.group,
+      'image': '/static/frontend/images/globalconnection.png',
       'label': _translationService.t('business_network', fallback: 'Business Network'),
       'color': const Color(0xFF3B82F6), // Blue
       'bgColor': const Color(0xFFEFF6FF),
     },
     {
       'icon': Icons.newspaper,
+      'image': '/static/frontend/images/news.png',
       'label': _translationService.t('adsy_news', fallback: 'News'),
       'color': const Color(0xFFF59E0B), // Amber
       'bgColor': const Color(0xFFFFF7ED),
     },
     {
       'icon': Icons.monetization_on,
+      'image': '/static/frontend/images/money.png',
       'label': _translationService.t('earn_money', fallback: 'Earn Money'),
       'color': const Color(0xFF10B981), // Emerald
       'bgColor': const Color(0xFFECFDF5),
     },
     {
       'icon': Icons.shopping_cart,
+      'image': '/static/frontend/images/onlineshopping.png',
       'label': _translationService.t('eshop', fallback: 'eShop'),
       'color': const Color(0xFF8B5CF6), // Purple
       'bgColor': const Color(0xFFF5F3FF),
     },
     {
       'icon': Icons.sell,
+      'image': '/static/frontend/images/sign.png',
       'label': _translationService.t('sale_listing', fallback: 'Sale Listings'),
       'color': const Color(0xFF4F46E5), // Indigo
       'bgColor': const Color(0xFFF0F9FF),
     },
     {
       'icon': Icons.psychology,
+      'image': '/static/frontend/images/question.png',
       'label': _translationService.t('mindforce', fallback: 'MindForce'),
       'color': const Color(0xFF06B6D4), // Cyan
       'bgColor': const Color(0xFFE0F7FA),
     },
     {
       'icon': Icons.school,
+      'image': '/static/frontend/images/onlinelearning.png',
       'label': _translationService.t('elearning', fallback: 'eLearning'),
       'color': const Color(0xFFE11D48), // Rose
       'bgColor': const Color(0xFFFFF1F2),
     },
     {
       'icon': Icons.medical_services,
+      'image': '/static/frontend/images/medicalreport.png',
       'label': _translationService.t('shastho_sheba', fallback: 'Health Service'),
       'color': Colors.grey,
       'bgColor': const Color(0xFFF9FAFB),
@@ -78,6 +106,7 @@ class _HeroBannerState extends State<HeroBanner> {
     },
     {
       'icon': Icons.payment,
+      'image': '/static/frontend/images/payment.png',
       'label': _translationService.t('bill_pay', fallback: 'Bill Pay'),
       'color': Colors.grey,
       'bgColor': const Color(0xFFF9FAFB),
@@ -85,18 +114,21 @@ class _HeroBannerState extends State<HeroBanner> {
     },
     {
       'icon': Icons.phone_android,
+      'image': '/static/frontend/images/mobileapp.png',
       'label': _translationService.t('mobile_recharge', fallback: 'Mobile Recharge'),
       'color': const Color(0xFFEA580C), // Orange
       'bgColor': const Color(0xFFFFF7ED),
     },
     {
       'icon': Icons.account_balance_wallet,
+      'image': '/static/frontend/images/transaction.png',
       'label': _translationService.t('adsy_pay', fallback: 'AdsyPay'),
       'color': const Color(0xFF84CC16), // Lime
       'bgColor': const Color(0xFFF7FEE7),
     },
     {
       'icon': Icons.star,
+      'image': '/static/frontend/images/premium.png',
       'label': _translationService.t('packeges', fallback: 'Membership'),
       'color': const Color(0xFFDB2777), // Pink
       'bgColor': const Color(0xFFFDF2F8),
@@ -401,7 +433,9 @@ class _HeroBannerState extends State<HeroBanner> {
   Widget _buildMobileServiceButton(Map<String, dynamic> service) {
     final bool isComingSoon = service['isComingSoon'] ?? false;
     return _ServiceTile(
-      icon: service['icon'] as IconData,
+      icon: service['icon'] as IconData?,
+      imageUrl: service['image'] != null ? _absStatic(service['image'] as String) : null,
+      imageUrlFallbacks: service['image'] != null ? _absStaticCandidates(service['image'] as String) : const [],
       label: service['label'] as String,
       color: service['color'] as Color,
       bgColor: service['bgColor'] as Color,
@@ -419,7 +453,9 @@ class _HeroBannerState extends State<HeroBanner> {
 }
 
 class _ServiceTile extends StatefulWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? imageUrl;
+  final List<String> imageUrlFallbacks;
   final String label;
   final Color color;
   final Color bgColor;
@@ -428,7 +464,9 @@ class _ServiceTile extends StatefulWidget {
   final VoidCallback? onTap;
 
   const _ServiceTile({
-    required this.icon,
+    this.icon,
+    this.imageUrl,
+    this.imageUrlFallbacks = const [],
     required this.label,
     required this.color,
     required this.bgColor,
@@ -447,6 +485,7 @@ class _ServiceTileState extends State<_ServiceTile> with SingleTickerProviderSta
   late final Animation<double> _breath;
   late final Animation<double> _drift; // vertical bob
   late final Animation<double> _tilt;  // slight rotation
+  int _imageIndex = 0;
 
   @override
   void initState() {
@@ -511,7 +550,7 @@ class _ServiceTileState extends State<_ServiceTile> with SingleTickerProviderSta
                     ),
                   ),
                 ),
-                // Gradient border wrapper
+                // Icon container (borderless)
                 AnimatedBuilder(
                   animation: _breath,
                   builder: (context, child) {
@@ -529,35 +568,45 @@ class _ServiceTileState extends State<_ServiceTile> with SingleTickerProviderSta
                   child: Container(
                     width: 48,
                     height: 48,
-                    padding: const EdgeInsets.all(1.2),
                     decoration: BoxDecoration(
+                      color: widget.bgColor,
                       borderRadius: BorderRadius.circular(12),
-                      gradient: LinearGradient(
-                        colors: [
-                          widget.color.withOpacity(0.45),
-                          widget.color.withOpacity(0.20),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: widget.color.withOpacity(0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: widget.bgColor,
-                        borderRadius: BorderRadius.circular(11),
-                        boxShadow: [
-                          BoxShadow(
-                            color: widget.color.withOpacity(0.10),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        widget.icon,
-                        color: widget.color,
-                        size: 24,
-                      ),
+                    child: Center(
+                      child: widget.imageUrl != null
+                          ? Image.network(
+                              widget.imageUrlFallbacks.isNotEmpty
+                                  ? widget.imageUrlFallbacks[_imageIndex]
+                                  : widget.imageUrl!,
+                              width: 32,
+                              height: 32,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                if (_imageIndex + 1 < widget.imageUrlFallbacks.length) {
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (mounted) setState(() => _imageIndex++);
+                                  });
+                                  return const SizedBox(width: 32, height: 32);
+                                }
+                                return Icon(
+                                  widget.icon ?? Icons.widgets_outlined,
+                                  color: widget.color,
+                                  size: 32,
+                                );
+                              },
+                            )
+                          : Icon(
+                              widget.icon ?? Icons.widgets_outlined,
+                              color: widget.color,
+                              size: 32,
+                            ),
                     ),
                   ),
                 ),

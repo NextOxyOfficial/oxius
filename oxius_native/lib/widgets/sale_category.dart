@@ -225,47 +225,72 @@ class _SaleCategoryState extends State<SaleCategory> {
       ),
       child: Column(
         children: [
-          // Header row
+          // Header row: icon with dot + title on same line, subtitle below (left aligned)
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Icon and title
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withOpacity(0.25),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.local_offer_outlined,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.local_offer_outlined,
-                  color: Colors.white,
-                  size: 24,
-                ),
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       _translationService.t('sale_listing', fallback: 'Sale Listings'),
                       style: GoogleFonts.roboto(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade800,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey.shade900,
                       ),
-                      textAlign: TextAlign.center,
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       _translationService.t('buy_and_sell_products', fallback: 'Buy & sell amazing products'),
                       style: GoogleFonts.roboto(
                         fontSize: 12,
                         color: Colors.grey.shade600,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
