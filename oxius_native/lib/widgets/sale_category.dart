@@ -247,7 +247,8 @@ class _SaleCategoryState extends State<SaleCategory> {
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       _translationService.t('sale_listing', fallback: 'Sale Listings'),
@@ -256,6 +257,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                         fontWeight: FontWeight.bold,
                         color: Colors.grey.shade800,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     Text(
                       _translationService.t('buy_and_sell_products', fallback: 'Buy & sell amazing products'),
@@ -263,6 +265,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                         fontSize: 12,
                         color: Colors.grey.shade600,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),

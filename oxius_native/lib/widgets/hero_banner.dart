@@ -198,7 +198,8 @@ class _HeroBannerState extends State<HeroBanner> {
   Widget _buildServicesSection({required bool isMobile}) {
     final title = _translationService.t('social_business_network', fallback: 'Social Business Network');
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+      // Remove side margin on mobile to make the card flush with screen edges
+      margin: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 8),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F8FA),
         borderRadius: BorderRadius.circular(14),
@@ -216,10 +217,10 @@ class _HeroBannerState extends State<HeroBanner> {
         children: [
           // Header bar
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
             decoration: BoxDecoration(
               color: const Color(0xFFF2F4F7),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
               border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
             ),
             child: Text(
@@ -239,7 +240,9 @@ class _HeroBannerState extends State<HeroBanner> {
           // Grid area
           Padding(
             padding: const EdgeInsets.only(top: 10, bottom: 12),
-            child: _buildMobileServicesGrid(margin: const EdgeInsets.symmetric(horizontal: 12)),
+            child: _buildMobileServicesGrid(
+              margin: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 12),
+            ),
           ),
         ],
       ),
@@ -341,53 +344,8 @@ class _HeroBannerState extends State<HeroBanner> {
                       },
                     ),
                   ),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.3),
-                          Colors.black.withOpacity(0.1),
-                        ],
-                      ),
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Welcome to AdsyClub',
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              shadows: [
-                                Shadow(
-                                  offset: const Offset(1, 1),
-                                  blurRadius: 3,
-                                  color: Colors.black.withOpacity(0.7),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Your Business Network Platform',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.white.withOpacity(0.9),
-                              shadows: [
-                                Shadow(
-                                  offset: const Offset(1, 1),
-                                  blurRadius: 3,
-                                  color: Colors.black.withOpacity(0.7),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  // Remove overlay texts to keep images clean
+                  child: const SizedBox.expand(),
                 );
               },
             ),

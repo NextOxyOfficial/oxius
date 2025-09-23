@@ -87,6 +87,9 @@ class _AppHeaderState extends State<AppHeader> {
       expandedHeight: 0,
       floating: true,
       pinned: true,
+      // Reduce spacing between the leading (menu) and title (logo)
+      leadingWidth: isMobile ? 44 : 56,
+      titleSpacing: isMobile ? 4 : 8,
       backgroundColor: Colors.white.withOpacity(0.95),
       surfaceTintColor: Colors.transparent,
       flexibleSpace: ClipRRect(
@@ -158,8 +161,8 @@ class _AppHeaderState extends State<AppHeader> {
         constraints: BoxConstraints(
           minHeight: 32,
           maxHeight: MediaQuery.of(context).size.width < 768 ? 32 : 40,
-          minWidth: 100,
-          maxWidth: 180,
+          minWidth: 80,
+          maxWidth: 170,
         ),
         child: isLoading
             ? _buildLoadingSkeleton()
@@ -196,7 +199,7 @@ class _AppHeaderState extends State<AppHeader> {
         borderRadius: BorderRadius.circular(8),
         child: Image.network(
           logoData!['image'],
-          height: MediaQuery.of(context).size.width < 768 ? 28 : 32,
+          height: MediaQuery.of(context).size.width < 768 ? 26 : 30,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
             return _buildFallbackLogo();
@@ -217,14 +220,14 @@ class _AppHeaderState extends State<AppHeader> {
     final isMobile = MediaQuery.of(context).size.width < 768;
     
     return Container(
-      height: isMobile ? 32 : 36,
+      height: isMobile ? 30 : 34,
       padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8 : 10,
+        horizontal: isMobile ? 6 : 8,
         vertical: 2,
       ),
       child: Image.asset(
         'assets/images/logo.png',
-        height: isMobile ? 28 : 32,
+        height: isMobile ? 26 : 30,
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
           // Only show text as final fallback if image fails to load
