@@ -166,7 +166,7 @@ class _HeroBannerState extends State<HeroBanner> {
     if (isMobile) {
       bannerHeight = screenWidth * 0.35; // Reduced from 0.45 to make room for service buttons
     } else {
-      bannerHeight = screenWidth * 0.25; // Desktop banner height
+      bannerHeight = screenWidth * 0.28; // Desktop banner height
     }
 
     if (isMobile) {
