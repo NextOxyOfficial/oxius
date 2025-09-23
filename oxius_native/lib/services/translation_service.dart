@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class TranslationService {
+class TranslationService extends ChangeNotifier {
   static final TranslationService _instance = TranslationService._internal();
   factory TranslationService() => _instance;
   TranslationService._internal();
@@ -15,16 +16,21 @@ class TranslationService {
   Map<String, dynamic> _translations = {};
   List<Map<String, dynamic>> _availableLanguages = [];
   bool _isLoading = false;
+  bool _initialized = false;
 
   String get currentLanguage => _currentLanguage;
   List<Map<String, dynamic>> get availableLanguages => _availableLanguages;
   bool get isLoading => _isLoading;
+  bool get initialized => _initialized;
 
   /// Initialize the translation service
   Future<void> initialize() async {
+    if (_initialized) return;
     await _loadSavedLanguage();
     await loadAvailableLanguages();
     await loadTranslations(_currentLanguage);
+    _initialized = true;
+    notifyListeners();
   }
 
   /// Load saved language preference from SharedPreferences
@@ -89,6 +95,7 @@ class TranslationService {
         _translations = cachedTranslations;
         _currentLanguage = languageCode;
         _isLoading = false;
+        notifyListeners();
         return true;
       }
 
@@ -108,6 +115,7 @@ class TranslationService {
         await _saveLanguage(languageCode);
         
         _isLoading = false;
+        notifyListeners();
         return true;
       } else {
         print('Error loading translations: ${response.statusCode}');
@@ -175,7 +183,9 @@ class TranslationService {
   Future<bool> changeLanguage(String languageCode) async {
     if (_currentLanguage == languageCode) return true;
     
-    return await loadTranslations(languageCode);
+    final ok = await loadTranslations(languageCode);
+    if (ok) notifyListeners();
+    return ok;
   }
 
   /// Clear all cached translations

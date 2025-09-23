@@ -25,7 +25,15 @@ class _SaleCategoryState extends State<SaleCategory> {
   @override
   void initState() {
     super.initState();
+    // Initialize translations and listen for language changes so UI updates dynamically
+    _translationService.initialize();
+    _translationService.addListener(_onTranslationsChanged);
     _initData();
+  }
+
+  void _onTranslationsChanged() {
+    if (!mounted) return;
+    setState(() {});
   }
 
   Future<void> _initData() async {
@@ -80,6 +88,12 @@ class _SaleCategoryState extends State<SaleCategory> {
         products = [];
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _translationService.removeListener(_onTranslationsChanged);
+    super.dispose();
   }
 
   void selectCategory(Map<String, dynamic> category) {
@@ -244,7 +258,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                       ),
                     ),
                     Text(
-                      'Buy & sell amazing products',
+                      _translationService.t('buy_and_sell_products', fallback: 'Buy & sell amazing products'),
                       style: GoogleFonts.roboto(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -263,7 +277,7 @@ class _SaleCategoryState extends State<SaleCategory> {
             children: [
               Expanded(
                 child: _buildActionButton(
-                  'Marketplace',
+                  _translationService.t('marketplace', fallback: 'Marketplace'),
                   Icons.shopping_bag_outlined,
                   false,
                 ),
@@ -271,7 +285,7 @@ class _SaleCategoryState extends State<SaleCategory> {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildActionButton(
-                  'My Posts',
+                  _translationService.t('my_posts', fallback: 'My Posts'),
                   Icons.description_outlined,
                   false,
                 ),
@@ -279,7 +293,7 @@ class _SaleCategoryState extends State<SaleCategory> {
               const SizedBox(width: 8),
               Expanded(
                 child: _buildActionButton(
-                  'Post Sale',
+                  _translationService.t('post_sale', fallback: 'Post Sale'),
                   Icons.add_circle_outline,
                   true, // Highlighted
                 ),
@@ -510,16 +524,17 @@ class _SaleCategoryState extends State<SaleCategory> {
     return SizedBox(
       height: 200,
       child: ListView.builder(
+        padding: const EdgeInsets.only(left: 4, right: 4),
         scrollDirection: Axis.horizontal,
         itemCount: products.length,
         itemBuilder: (context, index) {
           final product = products[index] as Map<String, dynamic>;
           return Container(
             width: MediaQuery.of(context).size.width * 0.45,
-            margin: const EdgeInsets.only(right: 12),
+            margin: EdgeInsets.only(right: index == products.length - 1 ? 4 : 8),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(4),
               border: Border.all(color: Colors.grey.shade200),
             ),
             child: Column(
