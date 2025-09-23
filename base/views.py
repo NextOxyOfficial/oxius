@@ -4214,3 +4214,145 @@ class CountryVersionListView(generics.ListAPIView):
         if country_code:
             return self.queryset.filter(country__code=country_code)
         return self.queryset.all()
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_translations(request, language_code):
+    """
+    API endpoint to get translations for a specific language.
+    This reads from the frontend i18n config file and returns translations.
+    """
+    import os
+    
+    # Path to your i18n config file
+    i18n_file_path = os.path.join(settings.BASE_DIR, 'frontend', 'i18n.config.ts')
+    
+    try:
+        with open(i18n_file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+            
+        # Extract the translations object from TypeScript file
+        # This is a simple parser - you might want to use a more robust solution
+        start_marker = f'{language_code}: {{'
+        if start_marker not in content:
+            return Response({'error': f'Language {language_code} not found'}, status=404)
+            
+        start_index = content.find(start_marker)
+        if start_index == -1:
+            return Response({'error': f'Language {language_code} not found'}, status=404)
+            
+        # Find the matching closing brace
+        brace_count = 0
+        start_pos = content.find('{', start_index)
+        i = start_pos
+        
+        while i < len(content):
+            if content[i] == '{':
+                brace_count += 1
+            elif content[i] == '}':
+                brace_count -= 1
+                if brace_count == 0:
+                    break
+            i += 1
+        
+        # Extract the language block
+        lang_block = content[start_pos:i+1]
+        
+        # Parse the translations (simplified parser)
+        translations = {}
+        lines = lang_block.split('\n')
+        
+        for line in lines:
+            line = line.strip()
+            if ':' in line and not line.startswith('//'):
+                # Extract key-value pairs
+                if line.endswith(','):
+                    line = line[:-1]
+                
+                parts = line.split(':', 1)
+                if len(parts) == 2:
+                    key = parts[0].strip().strip('"\'')
+                    value = parts[1].strip().strip('",\'')
+                    
+                    # Handle multi-line values
+                    if value.startswith('"') and not value.endswith('"'):
+                        continue
+                    
+                    if key and value and not key.startswith('{') and not key.startswith('}'):
+                        translations[key] = value.strip('"\'')
+        
+        return Response({
+            'language': language_code,
+            'translations': translations
+        })
+        
+    except FileNotFoundError:
+        return Response({'error': 'Translation file not found'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_banners(request):
+    """
+    API endpoint to get banner images for the hero slider.
+    """
+    try:
+        # You can customize this to fetch from your database or use static images
+        banners = [
+            {
+                "id": 1,
+                "image_url": f"{request.build_absolute_uri('/static/')}images/banner1.jpg",
+                "title": "Welcome to AdsyClub",
+                "subtitle": "Your Social Business Network"
+            },
+            {
+                "id": 2,
+                "image_url": f"{request.build_absolute_uri('/static/')}images/banner2.jpg", 
+                "title": "Earn Money Online",
+                "subtitle": "Start your journey today"
+            },
+            {
+                "id": 3,
+                "image_url": f"{request.build_absolute_uri('/static/')}images/banner3.jpg",
+                "title": "E-Learning Platform", 
+                "subtitle": "Learn new skills"
+            }
+        ]
+        
+        return Response({
+            'banners': banners,
+            'count': len(banners)
+        })
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_available_languages(request):
+    """
+    API endpoint to get list of available languages.
+    """
+    languages = [
+        {
+            'code': 'en',
+            'name': 'English',
+            'native_name': 'English',
+            'flag': '🇺🇸'
+        },
+        {
+            'code': 'bn', 
+            'name': 'Bengali',
+            'native_name': 'বাংলা',
+            'flag': '🇧🇩'
+        }
+    ]
+    
+    return Response({
+        'languages': languages,
+        'default_language': 'en'
+    })

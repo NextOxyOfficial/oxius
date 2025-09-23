@@ -296,4 +296,9 @@ urlpatterns = [
     # AILink
     path("ai-link/", AILinkView.as_view(), name="ai_link"),
     path("country-version/", CountryVersionListView.as_view(), name="country_version"),
+    
+    # Translation and Banner APIs for Flutter app
+    path("translations/<str:language_code>/", get_translations, name="translations"),
+    path("banners/", get_banners, name="banners"),
+    path("languages/", get_available_languages, name="available_languages"),
 ]
