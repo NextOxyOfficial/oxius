@@ -67,10 +67,10 @@ class _SaleCategoryState extends State<SaleCategory> {
       products = [];
     });
     try {
-      final data = await SaleService.fetchPosts(categoryId: categoryId, page: 1);
-      final results = data['results'] ?? [];
+      final data = await SaleService.fetchPosts(categoryId: categoryId, page: 1, limit: 8);
+      final results = (data['results'] ?? []) as List<dynamic>;
       setState(() {
-        products = List<dynamic>.from(results);
+        products = results.take(8).toList();
         isLoading = false;
       });
     } catch (e) {
@@ -192,8 +192,8 @@ class _SaleCategoryState extends State<SaleCategory> {
 
   Widget _buildHeader(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -336,7 +336,7 @@ class _SaleCategoryState extends State<SaleCategory> {
 
   Widget _buildBannerSection() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         children: [
           Expanded(
@@ -392,7 +392,7 @@ class _SaleCategoryState extends State<SaleCategory> {
 
   Widget _buildCategoriesSection(bool isMobile) {
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -452,7 +452,7 @@ class _SaleCategoryState extends State<SaleCategory> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         children: [
           // Section header

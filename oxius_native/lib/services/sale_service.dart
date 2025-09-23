@@ -45,23 +45,41 @@ class SaleService {
         }));
   }
 
-  static Future<Map<String, dynamic>> fetchPosts({required int categoryId, int page = 1}) async {
-    final uri = Uri.parse('${ApiService.baseUrl}/sale/posts/?category=$categoryId&page=$page');
+  static Future<Map<String, dynamic>> fetchPosts({required int categoryId, int page = 1, int? limit}) async {
+    // Build query with optional limit (page_size). Server may ignore; we'll slice client-side too.
+    final uri = Uri.parse('${ApiService.baseUrl}/sale/posts/').replace(queryParameters: {
+      'category': '$categoryId',
+      'page': '$page',
+      if (limit != null) 'page_size': '$limit',
+    });
     final resp = await http.get(uri);
     if (resp.statusCode != 200) {
       throw Exception('Failed to load sale posts: ${resp.statusCode}');
     }
     final data = json.decode(resp.body);
-    // Ensure results list exists
+    // Ensure results list exists and respect limit if provided
     if (data is List) {
-      // Unpaginated safety
+      final list = limit != null ? List.of(data.take(limit)) : List.of(data);
       return {
-        'results': data,
+        'results': list,
         'next': null,
         'previous': null,
-        'count': data.length,
+        'count': list.length,
       };
     }
-    return data;
+    if (data is Map<String, dynamic>) {
+      final results = (data['results'] is List) ? List.of(data['results']) : <dynamic>[];
+      final limited = limit != null ? List.of(results.take(limit)) : results;
+      return {
+        ...data,
+        'results': limited,
+      };
+    }
+    return {
+      'results': <dynamic>[],
+      'next': null,
+      'previous': null,
+      'count': 0,
+    };
   }
 }

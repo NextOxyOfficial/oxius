@@ -18,6 +18,15 @@ class _AppHeaderState extends State<AppHeader> {
   ScrollController? scrollController;
   bool isScrolled = false;
 
+  String _abs(String? url) {
+    if (url == null || url.isEmpty) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    // Derive origin from the logo API endpoint
+    const origin = 'http://localhost:8000';
+    final u = url.startsWith('/') ? url : '/$url';
+    return '$origin$u';
+  }
+
   // Translation helper (matching Vue.js translations)
   String t(String key) {
     final translations = {
@@ -48,6 +57,10 @@ class _AppHeaderState extends State<AppHeader> {
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        // Normalize possible relative image URLs to absolute
+        if (data is Map && data['image'] != null) {
+          data['image'] = _abs(data['image']);
+        }
         setState(() {
           logoData = data;
           isLoading = false;
@@ -120,7 +133,7 @@ class _AppHeaderState extends State<AppHeader> {
       elevation: 0,
       shadowColor: Colors.transparent,
       // Responsive height matching Vue.js header
-      toolbarHeight: isMobile ? 56 : 64,
+  toolbarHeight: isMobile ? 56 : 64,
       systemOverlayStyle: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.dark,

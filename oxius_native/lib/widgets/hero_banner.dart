@@ -164,9 +164,9 @@ class _HeroBannerState extends State<HeroBanner> {
     // For mobile, make banner height smaller to accommodate service buttons below
     double bannerHeight;
     if (isMobile) {
-      bannerHeight = screenWidth * 0.35; // Reduced from 0.45 to make room for service buttons
+      bannerHeight = screenWidth * 0.40; // Reduced from 0.45 to make room for service buttons
     } else {
-      bannerHeight = screenWidth * 0.28; // Desktop banner height
+      bannerHeight = screenWidth * 0.25; // Desktop banner height
     }
 
     if (isMobile) {
@@ -327,7 +327,7 @@ class _HeroBannerState extends State<HeroBanner> {
 
   Widget _buildMobileServicesGrid() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
