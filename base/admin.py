@@ -414,7 +414,7 @@ admin.site.register(MicroGigPostTask, MicroGigPostTaskAdmin)
 class BalanceAdmin(admin.ModelAdmin):
     list_display = (
         "user",
-        "user__balance",
+        "get_user_balance",
         "bank_status",
         "payment_method",
         "card_number",
@@ -428,6 +428,10 @@ class BalanceAdmin(admin.ModelAdmin):
         "approved",
         "rejected",
     )
+
+    def get_user_balance(self, obj):
+        return obj.user.balance if obj.user else None
+    get_user_balance.short_description = 'User Balance'
 
     list_filter = (
         "user",
@@ -687,12 +691,16 @@ admin.site.register(ProductMedia)
 class ProductAdmin(admin.ModelAdmin):
     list_display = (
         "name",
-        "owner__store_name",
+        "get_owner_store_name",
         "sale_price",
         "regular_price",
         "created_at",
         "updated_at",
     )
+
+    def get_owner_store_name(self, obj):
+        return obj.owner.store_name if obj.owner else None
+    get_owner_store_name.short_description = 'Store Name'
     filter_horizontal = (
         "batches",
         "divisions",

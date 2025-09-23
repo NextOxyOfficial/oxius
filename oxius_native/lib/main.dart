@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -96,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
             flexibleSpace: FlexibleSpaceBar(
               title: _showAppBarTitle
                   ? Text(
-                      'Oxius',
+                      'AdsyClub',
                       style: GoogleFonts.roboto(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -186,6 +189,68 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 12),
                   CategoryGrid(),
                 ],
+              ),
+            ),
+          ),
+
+          // Mobile Service Buttons Section (similar to Vue's mobile section)
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFF0FDF4), // green-50
+                    Color(0xFFEFF6FF), // blue-50
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    // Header
+                    Text(
+                      'Quick Services',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Mobile Service Grid - 4 columns like Vue
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 4,
+                      childAspectRatio: 0.75,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      children: [
+                        _buildMobileServiceButton('Business\nNetwork', Icons.business_center, const Color(0xFF3B82F6), const Color(0xFFDBEAFE)),
+                        _buildMobileServiceButton('News', Icons.newspaper, const Color(0xFFD97706), const Color(0xFFFEF3C7)),
+                        _buildMobileServiceButton('Earn\nMoney', Icons.monetization_on, const Color(0xFF059669), const Color(0xFFD1FAE5)),
+                        _buildMobileServiceButton('Eshop', Icons.shopping_bag, const Color(0xFF7C3AED), const Color(0xFFF3E8FF)),
+                        _buildMobileServiceButton('Sale\nListings', Icons.sell, const Color(0xFF4F46E5), const Color(0xFFE0E7FF)),
+                        _buildMobileServiceButton('MindForce', Icons.psychology, const Color(0xFF0891B2), const Color(0xFFCFFAFE)),
+                        _buildMobileServiceButton('Courses', Icons.school, const Color(0xFFE11D48), const Color(0xFFFFE4E6)),
+                        _buildMobileServiceButton('Mobile\nRecharge', Icons.phone_android, const Color(0xFFEA580C), const Color(0xFFFED7AA)),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -293,114 +358,516 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  // Mobile service button widget  
+  Widget _buildMobileServiceButton(String title, IconData icon, Color iconColor, Color backgroundColor) {
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Opening $title...'),
+            backgroundColor: iconColor,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey[200]!),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Icon container
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: iconColor.withOpacity(0.15),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: iconColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            
+            // Title
+            Text(
+              title,
+              style: GoogleFonts.roboto(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[700],
+                height: 1.1,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-// Hero Banner Widget
-class HeroBanner extends StatelessWidget {
+// Hero Banner Widget - AdsyClub Style
+class HeroBanner extends StatefulWidget {
   const HeroBanner({super.key});
 
   @override
+  State<HeroBanner> createState() => _HeroBannerState();
+}
+
+class _HeroBannerState extends State<HeroBanner> {
+  int currentSlide = 0;
+  final PageController _pageController = PageController();
+  List<Map<String, dynamic>> sliderImages = [];
+  bool isLoading = true;
+
+  // API base URL - adjust this to match your Django backend
+  static const String apiBaseUrl = 'http://localhost:8000/api';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBannerImages();
+  }
+
+  Future<void> _loadBannerImages() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiBaseUrl/banner-images/'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final dynamic jsonData = json.decode(response.body);
+        final List<dynamic> bannerData = jsonData is Map ? jsonData['data'] ?? jsonData['results'] ?? [] : jsonData;
+        
+        setState(() {
+          sliderImages = bannerData.map<Map<String, dynamic>>((banner) => {
+            'id': banner['id']?.toString() ?? '',
+            'image': banner['image']?.toString() ?? '',
+            'title': banner['title']?.toString() ?? '',
+            'link': banner['link']?.toString() ?? '',
+          }).toList();
+          isLoading = false;
+        });
+
+        // Start auto-slide timer only after images are loaded
+        if (sliderImages.isNotEmpty) {
+          _startAutoSlide();
+        }
+      } else {
+        // Fallback to placeholder images on API error
+        _setFallbackImages();
+      }
+    } catch (e) {
+      print('Error loading banner images: $e');
+      // Fallback to placeholder images on network error
+      _setFallbackImages();
+    }
+  }
+
+  void _setFallbackImages() {
+    setState(() {
+      sliderImages = [
+        {
+          'id': '1',
+          'image': 'https://via.placeholder.com/800x400/667eea/ffffff?text=AdsyClub+Marketplace',
+          'title': 'AdsyClub Marketplace',
+          'link': '',
+        },
+        {
+          'id': '2',
+          'image': 'https://via.placeholder.com/800x400/10B981/ffffff?text=Business+Network',
+          'title': 'Business Network',
+          'link': '',
+        },
+        {
+          'id': '3',
+          'image': 'https://via.placeholder.com/800x400/3B82F6/ffffff?text=Online+Shopping',
+          'title': 'Online Shopping',
+          'link': '',
+        },
+      ];
+      isLoading = false;
+    });
+    _startAutoSlide();
+  }
+
+  void _startAutoSlide() {
+    Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (mounted && sliderImages.isNotEmpty) {
+        setState(() {
+          currentSlide = (currentSlide + 1) % sliderImages.length;
+        });
+        _pageController.animateToPage(
+          currentSlide,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Show loading indicator while fetching images
+    if (isLoading) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            height: (() {
+              final screenWidth = MediaQuery.of(context).size.width;
+              return screenWidth < 768 ? screenWidth * 0.45 : 280.0;
+            })(),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF667eea),
+                  Color(0xFF764ba2),
+                  Color(0xFF10B981),
+                ],
+              ),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Show empty state if no images are available
+    if (sliderImages.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            height: (() {
+              final screenWidth = MediaQuery.of(context).size.width;
+              return screenWidth < 768 ? screenWidth * 0.45 : 280.0;
+            })(),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF667eea),
+                  Color(0xFF764ba2),
+                  Color(0xFF10B981),
+                ],
+              ),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.image_not_supported_outlined,
+                    size: 60,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No banner images available',
+                    style: GoogleFonts.roboto(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Container(
-      height: 200,
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF10B981), // Emerald-500
-            Color(0xFF3B82F6), // Blue-500
-            Color(0xFF8B5CF6), // Purple-500
-          ],
-        ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF10B981).withOpacity(0.3),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          // Decorative circles
-          Positioned(
-            top: -30,
-            right: -30,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
-              ),
-            ),
-          ),
-          
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Welcome to Oxius',
-                  style: GoogleFonts.roboto(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          children: [
+            // Main Hero Section - Two Column Layout
+            Container(
+              // Match Vue mobile hero height (pb-[45%] => 45% of width) on small screens
+              height: (() {
+                final screenWidth = MediaQuery.of(context).size.width;
+                return screenWidth < 768 ? screenWidth * 0.45 : 280.0;
+              })(),
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF667eea),
+                      Color(0xFF764ba2),
+                      Color(0xFF10B981),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Your digital marketplace for everything',
-                  style: GoogleFonts.roboto(
-                    fontSize: 16,
-                    color: Colors.white.withOpacity(0.9),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
+                child: Stack(
                   children: [
-                    _buildStatItem('10K+', 'Products'),
-                    const SizedBox(width: 24),
-                    _buildStatItem('5K+', 'Businesses'),
-                    const SizedBox(width: 24),
-                    _buildStatItem('1K+', 'Courses'),
+                    // Image Slider (full width)
+                    PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        setState(() {
+                          currentSlide = index;
+                        });
+                      },
+                      itemCount: sliderImages.length,
+                      itemBuilder: (context, index) {
+                        final banner = sliderImages[index];
+                        return Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            // Network Image with fallback
+                            if (banner['image'] != null && banner['image']!.isNotEmpty)
+                              Image.network(
+                                banner['image']!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          Color(0xFF667eea),
+                                          Color(0xFF764ba2),
+                                          Color(0xFF10B981),
+                                        ],
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(
+                                            Icons.storefront_rounded,
+                                            size: 60,
+                                            color: Colors.white,
+                                          ),
+                                          const SizedBox(height: 16),
+                                          if (banner['title'] != null && banner['title']!.isNotEmpty)
+                                            Text(
+                                              banner['title']!,
+                                              style: GoogleFonts.roboto(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          Color(0xFF667eea),
+                                          Color(0xFF764ba2),
+                                          Color(0xFF10B981),
+                                        ],
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        value: loadingProgress.expectedTotalBytes != null
+                                            ? loadingProgress.cumulativeBytesLoaded /
+                                                loadingProgress.expectedTotalBytes!
+                                            : null,
+                                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              )
+                            else
+                              // Fallback gradient background
+                              Container(
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Color(0xFF667eea),
+                                      Color(0xFF764ba2),
+                                      Color(0xFF10B981),
+                                    ],
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Icons.storefront_rounded,
+                                        size: 60,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      if (banner['title'] != null && banner['title']!.isNotEmpty)
+                                        Text(
+                                          banner['title']!,
+                                          style: GoogleFonts.roboto(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            
+                            // Title overlay (if image loads successfully)
+                            if (banner['title'] != null && banner['title']!.isNotEmpty)
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.transparent,
+                                        Colors.black.withOpacity(0.6),
+                                      ],
+                                    ),
+                                  ),
+                                  padding: const EdgeInsets.all(16),
+                                  child: Text(
+                                    banner['title']!,
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+
+                    // Slide Indicators
+                    Positioned(
+                      bottom: 20,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: sliderImages.asMap().entries.map((entry) {
+                          return Container(
+                            width: currentSlide == entry.key ? 24 : 8,
+                            height: 8,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color: currentSlide == entry.key
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.4),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStatItem(String number, String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          number,
-          style: GoogleFonts.roboto(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.roboto(
-            fontSize: 12,
-            color: Colors.white.withOpacity(0.8),
-          ),
-        ),
-      ],
-    );
+  
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 }
 
@@ -414,10 +881,44 @@ class SearchWidget extends StatefulWidget {
 
 class _SearchWidgetState extends State<SearchWidget> {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  String _placeholder = "Search products, services, businesses...";
+  int _placeholderIndex = 0;
+  Timer? _placeholderTimer;
+  
+  final List<String> _placeholders = [
+    "Search products, services, businesses...",
+    "Find amazing courses and tutorials...",
+    "Discover local business network...",
+    "Explore job opportunities...",
+    "Search for anything in Bangladesh...",
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _startPlaceholderAnimation();
+    _focusNode.addListener(() {
+      setState(() {}); // Rebuild when focus changes
+    });
+  }
+
+  void _startPlaceholderAnimation() {
+    _placeholderTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (mounted && !_focusNode.hasFocus && _searchController.text.isEmpty) {
+        setState(() {
+          _placeholderIndex = (_placeholderIndex + 1) % _placeholders.length;
+          _placeholder = _placeholders[_placeholderIndex];
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _focusNode.dispose();
+    _placeholderTimer?.cancel();
     super.dispose();
   }
 
@@ -426,37 +927,55 @@ class _SearchWidgetState extends State<SearchWidget> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            Colors.grey[50]!,
+          ],
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: const Color(0xFF10B981).withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
         border: Border.all(
-          color: Colors.grey.withOpacity(0.2),
-          width: 1,
+          color: _focusNode.hasFocus 
+              ? const Color(0xFF10B981)
+              : Colors.grey.withOpacity(0.2),
+          width: _focusNode.hasFocus ? 2 : 1,
         ),
       ),
       child: Row(
         children: [
           // Search icon
           Padding(
-            padding: const EdgeInsets.only(left: 16, right: 8),
+            padding: const EdgeInsets.only(left: 16, right: 12),
             child: Icon(
-              Icons.search,
-              color: Colors.grey[600],
+              Icons.search_rounded,
+              color: _focusNode.hasFocus 
+                  ? const Color(0xFF10B981)
+                  : Colors.grey[600],
               size: 24,
             ),
           ),
           
-          // Search input
+          // Search input with animated placeholder
           Expanded(
             child: TextField(
               controller: _searchController,
+              focusNode: _focusNode,
               decoration: InputDecoration(
-                hintText: 'Search products, services, businesses...',
+                hintText: _placeholder,
                 hintStyle: GoogleFonts.roboto(
                   color: Colors.grey[500],
                   fontSize: 16,
@@ -469,30 +988,87 @@ class _SearchWidgetState extends State<SearchWidget> {
                 color: Colors.grey[800],
               ),
               onSubmitted: (value) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Searching for "$value"...')),
-                );
+                _performSearch(value);
+              },
+              onChanged: (value) {
+                setState(() {}); // Rebuild to show/hide clear button
               },
               textInputAction: TextInputAction.search,
             ),
           ),
           
-          // Voice search button
-          IconButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Voice search coming soon!')),
-              );
-            },
-            icon: Icon(
-              Icons.mic_outlined,
-              color: Colors.grey[600],
-              size: 24,
+          // Clear button (when text is present)
+          if (_searchController.text.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                _searchController.clear();
+                setState(() {});
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child: Icon(
+                  Icons.clear_rounded,
+                  color: Colors.grey[500],
+                  size: 20,
+                ),
+              ),
+            ),
+          
+          // Search button
+          Padding(
+            padding: const EdgeInsets.only(right: 8, left: 4),
+            child: GestureDetector(
+              onTap: () => _performSearch(_searchController.text),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF10B981),
+                      Color(0xFF059669),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF10B981).withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.search_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _performSearch(String query) {
+    if (query.trim().isEmpty) return;
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Searching for: $query'),
+        backgroundColor: const Color(0xFF10B981),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+    
+    // Here you would integrate with your Django backend search API
+    print('Searching for: $query');
   }
 }
 
