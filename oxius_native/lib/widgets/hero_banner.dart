@@ -138,8 +138,16 @@ class _HeroBannerState extends State<HeroBanner> {
   @override
   void initState() {
     super.initState();
+    // Initialize translations and listen for language changes
+    _translationService.initialize();
+    _translationService.addListener(_onTranslationsChanged);
     _loadBannerImages();
     _startHeroTimer();
+  }
+
+  void _onTranslationsChanged() {
+    if (!mounted) return;
+    setState(() {});
   }
 
   // Load banner images from API
@@ -185,6 +193,7 @@ class _HeroBannerState extends State<HeroBanner> {
   void dispose() {
     _heroTimer?.cancel();
     _heroController.dispose();
+    _translationService.removeListener(_onTranslationsChanged);
     super.dispose();
   }
 
@@ -247,26 +256,63 @@ class _HeroBannerState extends State<HeroBanner> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header bar
+          // Header bar - professional pill with icon and translated title
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF2F4F7),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-              border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF6F8FB), Color(0xFFF2F4F7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
             ),
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.grey.shade800,
-                  ) ??
-                  TextStyle(
-                    fontSize: isMobile ? 14 : 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.grey.shade800,
-                  ),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.shade200),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
+                        ),
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                      child: const Icon(Icons.apps, size: 12, color: Colors.white),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey.shade800,
+                          ) ??
+                          TextStyle(
+                            fontSize: isMobile ? 14 : 15,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey.shade800,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
           // Grid area
