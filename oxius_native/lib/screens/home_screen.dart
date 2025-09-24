@@ -3,6 +3,7 @@ import '../widgets/header.dart';
 import '../widgets/mobile_drawer.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/sale_category.dart';
+import '../widgets/classified_services_section.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -17,6 +18,7 @@ class HomeScreen extends StatelessWidget {
           const AppHeader(),
           SliverToBoxAdapter(child: const HeroBanner()),
           SliverToBoxAdapter(child: const SaleCategory()),
+          SliverToBoxAdapter(child: const ClassifiedServicesSection()),
         ],
       ),
     );
