@@ -4,6 +4,8 @@ import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../services/auth_service.dart';
+import 'user_dropdown_menu.dart';
 
 class AppHeader extends StatefulWidget {
   const AppHeader({super.key});
@@ -17,6 +19,7 @@ class _AppHeaderState extends State<AppHeader> {
   bool isLoading = true;
   ScrollController? scrollController;
   bool isScrolled = false;
+  bool _showUserDropdown = false;
 
   String _abs(String? url) {
     if (url == null || url.isEmpty) return '';
@@ -48,6 +51,13 @@ class _AppHeaderState extends State<AppHeader> {
   void initState() {
     super.initState();
     _loadLogo();
+  }
+
+  @override
+  void didUpdateWidget(AppHeader oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Refresh header when widget updates (e.g., after navigation)
+    setState(() {});
   }
 
   // Load logo dynamically from API (matching Vue.js PublicLogo component)
@@ -83,7 +93,15 @@ class _AppHeaderState extends State<AppHeader> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
-    return SliverAppBar(
+    return GestureDetector(
+      onTap: () {
+        if (_showUserDropdown) {
+          setState(() {
+            _showUserDropdown = false;
+          });
+        }
+      },
+      child: SliverAppBar(
       expandedHeight: 0,
       floating: true,
       pinned: true,
@@ -140,6 +158,7 @@ class _AppHeaderState extends State<AppHeader> {
       systemOverlayStyle: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.dark,
+      ),
       ),
     );
   }
@@ -419,33 +438,289 @@ class _AppHeaderState extends State<AppHeader> {
           },
           tooltip: t('qr_code_scanner'),
         ),
-        // Login/Profile button
-        IconButton(
-          icon: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              Icons.person,
-              color: Colors.grey.shade600,
-              size: 18,
-            ),
-          ),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${t('navigate_to')} ${t('login_profile')}'),
-                backgroundColor: const Color(0xFF10B981),
-              ),
-            );
-          },
-          tooltip: t('login_profile'),
-        ),
+        // User Profile/Login button
+        _buildUserProfileButton(context),
       ],
     );
+  }
+
+  // User profile button with dropdown (using separate component)
+  Widget _buildUserProfileButton(BuildContext context) {
+    final currentUser = AuthService.currentUser;
+    final isAuthenticated = AuthService.isAuthenticated;
+
+    if (isAuthenticated && currentUser != null) {
+      // Show user profile with custom dropdown
+      return Stack(
+        clipBehavior: Clip.none,
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _showUserDropdown = !_showUserDropdown;
+              });
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: currentUser.userType == 'pro' || currentUser.isSuperuser
+                        ? Colors.indigo.withOpacity(0.2)
+                        : Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // Main avatar
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.grey.shade100,
+                    backgroundImage: currentUser.profilePicture != null && currentUser.profilePicture!.isNotEmpty
+                        ? NetworkImage(currentUser.profilePicture!)
+                        : null,
+                    child: currentUser.profilePicture == null || currentUser.profilePicture!.isEmpty
+                        ? Icon(
+                            Icons.person,
+                            color: Colors.grey.shade600,
+                            size: 20,
+                          )
+                        : null,
+                  ),
+                  
+                  // PRO Badge (positioned like Vue mobile - top right)
+                  if (currentUser.userType == 'pro' || currentUser.isSuperuser)
+                    Positioned(
+                      top: -10,
+                      right: -14,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)], // indigo to violet
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.shield,
+                              color: Colors.white,
+                              size: 10,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              'Pro',
+                              style: GoogleFonts.roboto(
+                                fontSize: 8,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  
+                  // Verification badge (positioned like Vue mobile - bottom right)
+                  if (currentUser.isActive)
+                    Positioned(
+                      bottom: -4,
+                      right: -4,
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.verified,
+                            color: Colors.blue.shade600,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          // Custom Dropdown Menu
+          UserDropdownMenu(
+            user: currentUser,
+            isOpen: _showUserDropdown,
+            onClose: () {
+              setState(() {
+                _showUserDropdown = false;
+              });
+            },
+            onLogout: () => _handleLogout(context),
+            onUpgradeToPro: () => _handleUpgradeToPro(context),
+            onManageSubscription: () => _handleManageSubscription(context),
+            onNavigate: (route) => _handleNavigation(context, route),
+          ),
+        ],
+      );
+    } else {
+      // Show login button
+      return IconButton(
+        icon: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Icon(
+            Icons.person,
+            color: Colors.grey.shade600,
+            size: 18,
+          ),
+        ),
+        onPressed: () {
+          Navigator.of(context).pushNamed('/login');
+        },
+        tooltip: t('login_profile'),
+      );
+    }
+  }
+
+  // Handle navigation to different routes
+  void _handleNavigation(BuildContext context, String route) {
+    setState(() {
+      _showUserDropdown = false;
+    });
+    
+    switch (route) {
+      case '/business-network':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${t('business_network')} ${t('coming_soon')}')),
+        );
+        break;
+      case '/adsy-news':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${t('adsy_news')} ${t('coming_soon')}')),
+        );
+        break;
+      case '/my-classified-services':
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('My Services coming soon!')),
+        );
+        break;
+      case '/shop-manager':
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('eShop Manager coming soon!')),
+        );
+        break;
+      case '/deposit-withdraw':
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Adsy Pay coming soon!')),
+        );
+        break;
+      case '/mobile-recharge':
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Mobile Recharge coming soon!')),
+        );
+        break;
+      case '/settings':
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Settings coming soon!')),
+        );
+        break;
+      case '/upload-center':
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Verification center coming soon!')),
+        );
+        break;
+      default:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Navigation to $route ${t('coming_soon')}')),
+        );
+        break;
+    }
+  }
+
+  // Handle upgrade to pro
+  void _handleUpgradeToPro(BuildContext context) {
+    setState(() {
+      _showUserDropdown = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Upgrade to Pro coming soon!')),
+    );
+  }
+
+  // Handle manage subscription
+  void _handleManageSubscription(BuildContext context) {
+    setState(() {
+      _showUserDropdown = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Manage subscription coming soon!')),
+    );
+  }
+
+  // Handle logout
+  void _handleLogout(BuildContext context) async {
+    try {
+      await AuthService.logout();
+      
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                const Text(
+                  'Logged out successfully',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green.shade600,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        
+        // Refresh the header to show login button
+        setState(() {});
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Logout failed: $e'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+      }
+    }
   }
 }
