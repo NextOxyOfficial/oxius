@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/translation_service.dart';
 import '../services/sale_service.dart';
+import '../services/category_icon_mapping.dart';
 
 class SaleCategory extends StatefulWidget {
   const SaleCategory({super.key});
@@ -120,23 +122,63 @@ class _SaleCategoryState extends State<SaleCategory> {
 
   Widget _buildCategoryIcon(dynamic category) {
     final iconUrl = category['icon'] as String?;
+    final categoryName = category['name'] as String?;
+    final localAsset = CategoryIconMapping.getSaleIconAsset(categoryName);
+    
     if (iconUrl != null && iconUrl.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(999),
-        child: Image.network(
-          iconUrl,
+        child: CachedNetworkImage(
+          imageUrl: iconUrl,
+          cacheKey: 'sale_category_icon_${category['id']}',
           width: 20,
           height: 20,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => const Icon(
-            Icons.widgets_outlined,
-            size: 20,
-            color: Colors.grey,
+          placeholder: (context, url) => Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(999),
+            ),
           ),
+          errorWidget: (context, url, error) {
+            // Try local asset first, then fallback icon
+            if (localAsset != null) {
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: Image.asset(
+                  localAsset,
+                  width: 20,
+                  height: 20,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => 
+                    CategoryIconMapping.getDefaultIcon(isSale: true, size: 20),
+                ),
+              );
+            }
+            return CategoryIconMapping.getDefaultIcon(isSale: true, size: 20);
+          },
         ),
       );
     }
-    return const Icon(Icons.widgets_outlined, size: 20, color: Colors.grey);
+    
+    // No network URL - try local asset first
+    if (localAsset != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(999),
+        child: Image.asset(
+          localAsset,
+          width: 20,
+          height: 20,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => 
+            CategoryIconMapping.getDefaultIcon(isSale: true, size: 20),
+        ),
+      );
+    }
+    
+    return CategoryIconMapping.getDefaultIcon(isSale: true, size: 20);
   }
 
   String _formatPrice(dynamic price, bool negotiable) {
@@ -463,7 +505,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected 
-                      ? const Color(0xFF10B981).withOpacity(0.1)
+                      ? const Color(0xFF10B981).withValues(alpha: 0.1)
                       : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(20),
                   border: isSelected 
