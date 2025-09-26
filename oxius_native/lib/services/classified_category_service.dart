@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ClassifiedCategory {
-  final int id;
+  final String id; // Changed from int to String to support UUIDs
   final String title;
   final String? slug;
   final String? image; // fallback asset if null
@@ -15,7 +15,7 @@ class ClassifiedCategory {
   });
 
   factory ClassifiedCategory.fromJson(Map<String, dynamic> json) => ClassifiedCategory(
-        id: json['id'] is int ? json['id'] : int.tryParse('${json['id']}') ?? 0,
+        id: json['id']?.toString() ?? '', // Handle UUID strings
         title: (json['title'] ?? '').toString(),
         slug: json['slug']?.toString(),
         image: json['image']?.toString(),
@@ -23,6 +23,10 @@ class ClassifiedCategory {
 
   /// Get the local asset path for category icons, with fallback to server image
   String getIconAsset() {
+    if (image != null && image!.isNotEmpty) {
+      return image!;
+    }
+
     // Map category titles to local asset names
     final assetMap = <String, String>{
       'Services & Business': 'assets/images/icons/sign.png',
@@ -72,7 +76,7 @@ class ClassifiedCategory {
     }
 
     // Final fallback: use question icon or server image
-    return image ?? 'assets/images/icons/question.png';
+    return 'assets/images/icons/question.png';
   }
 }
 

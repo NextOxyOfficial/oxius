@@ -61,23 +61,43 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   Future<void> _bootstrap() async {
+    print('DEBUG: Bootstrap called, initialized: $_initialized');
     if (_initialized) return;
     _initialized = true;
+    print('DEBUG: Starting bootstrap process...');
     await _loadCategories();
     // Optionally load initial posts (could be trending/latest)
     await _loadPosts();
+    print('DEBUG: Bootstrap completed');
   }
 
   Future<void> _loadCategories() async {
+    print('DEBUG: Loading categories...');
     setState(() { _loadingCategories = true; });
-    final cats = await ApiService.fetchClassifiedCategories();
-    if (!mounted) return;
-    setState(() {
-      _categories
-        ..clear()
-        ..addAll(cats.map((catMap) => ClassifiedCategory.fromJson(catMap)).toList());
-      _loadingCategories = false;
-    });
+    try {
+      final cats = await ApiService.fetchClassifiedCategories();
+      print('DEBUG: API returned ${cats.length} categories');
+      if (!mounted) return;
+      final categoryObjects = cats.map((catMap) {
+        print('DEBUG: Processing category: ${catMap['title']}');
+        return ClassifiedCategory.fromJson(catMap);
+      }).toList();
+      print('DEBUG: Created ${categoryObjects.length} category objects');
+      setState(() {
+        _categories
+          ..clear()
+          ..addAll(categoryObjects);
+        _loadingCategories = false;
+      });
+      print('DEBUG: Categories state updated, total: ${_categories.length}');
+    } catch (e, stackTrace) {
+      print('DEBUG: Error loading categories: $e');
+      print('DEBUG: Stack trace: $stackTrace');
+      if (!mounted) return;
+      setState(() {
+        _loadingCategories = false;
+      });
+    }
   }
 
   Future<void> _loadPosts() async {
@@ -122,7 +142,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: isMobile ? 12 : 16,
+        horizontal: isMobile ? 6 : 16,
         vertical: 8,
       ),
       child: Column(
@@ -149,57 +169,55 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   Widget _buildHeader(bool isMobile) {
-    return Container(
+    return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 16 : 24,
-        vertical: 8,
+        horizontal: isMobile ? 8 : 24,
+        vertical: isMobile ? 12 : 16,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title section with gradient text and underline
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 12, top: 16, bottom: 8),
-                  child: ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Color(0xFF059669), Color(0xFF14B8A6)],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ).createShader(bounds),
-                    child: Text(
-                      _translationService.t('classified_service', fallback: 'Classified Service'),
-                      style: GoogleFonts.roboto(
-                        fontSize: isMobile ? 18 : 20,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [Color(0xFF0EA5E9), Color(0xFF34D399)],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ).createShader(bounds),
+                      child: Text(
+                        _translationService.t('classified_service', fallback: 'Classified Service'),
+                        style: GoogleFonts.poppins(
+                          fontSize: isMobile ? 20 : 24,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          letterSpacing: .2,
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                // Gradient underline
-                Container(
-                  margin: const EdgeInsets.only(left: 16),
-                  height: 4,
-                  width: 80,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(2),
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF34D399), Color(0xFF14B8A6)],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
+                    const SizedBox(height: 6),
+                    Container(
+                      height: 4,
+                      width: isMobile ? 60 : 96,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(999),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0EA5E9), Color(0xFF34D399)],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 16),
+              _buildActionButton(isMobile),
+            ],
           ),
-          
-          // Action button
-          _buildActionButton(isMobile),
         ],
       ),
     );
@@ -208,102 +226,59 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   Widget _buildActionButton(bool isMobile) {
     final isLoading = _loadingButtons.contains('post-free-ad');
     
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0EA5E9), Color(0xFF14B8A6)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0EA5E9).withOpacity(0.25),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Material(
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(999),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(999),
+          splashColor: Colors.white24,
           onTap: isLoading ? null : () => _handleButtonClick('post-free-ad'),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
+          child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 12 : 16,
-              vertical: isMobile ? 6 : 8,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: const Color(0xFF059669),
-                style: BorderStyle.solid,
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              horizontal: isMobile ? 16 : 22,
+              vertical: isMobile ? 8 : 10,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Icon or loading spinner
                 SizedBox(
-                  width: isMobile ? 16 : 18,
-                  height: isMobile ? 16 : 18,
+                  width: 20,
+                  height: 20,
                   child: isLoading
-                      ? CircularProgressIndicator(
+                      ? const CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            const Color(0xFF059669),
-                          ),
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         )
-                      : const Icon(
-                          Icons.add_circle_outline,
-                          color: Color(0xFF059669),
-                          size: 18,
-                        ),
+                      : const Icon(Icons.add, color: Colors.white, size: 18),
                 ),
-                
                 if (!isLoading) ...[
                   const SizedBox(width: 8),
                   Text(
                     _translationService.t('post_free_ad', fallback: 'Post Free Ad'),
-                    style: GoogleFonts.roboto(
-                      fontSize: isMobile ? 12 : 13,
+                    style: GoogleFonts.poppins(
+                      fontSize: isMobile ? 12 : 14,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF059669),
+                      color: Colors.white,
                     ),
                   ),
                 ],
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholderContent(bool isMobile) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(
-              Icons.grid_view_outlined,
-              size: 48,
-              color: Colors.grey.shade400,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              _translationService.t('classified_services_coming_soon', 
-                fallback: 'Classified services content coming soon'),
-              style: GoogleFonts.roboto(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
         ),
       ),
     );
@@ -323,7 +298,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     }
 
     if (_posts.isEmpty) {
-      return _buildPlaceholderContent(isMobile);
+      return const SizedBox.shrink();
     }
 
     // Simple list placeholder - can be upgraded later to card grid

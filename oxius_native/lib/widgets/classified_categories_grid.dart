@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/classified_category_service.dart';
 import '../services/translation_service.dart';
 
@@ -19,8 +20,8 @@ class ClassifiedCategoriesGrid extends StatefulWidget {
     this.onTap,
     this.isLoading = false,
     this.padding,
-    this.crossAxisCountMobile = 3,
-    this.crossAxisCountTablet = 5,
+    this.crossAxisCountMobile = 4,
+    this.crossAxisCountTablet = 4,
   });
 
   @override
@@ -33,12 +34,17 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final isTablet = width >= 640; // mimic sm: breakpoint
+    final isTablet = width >= 600;
     final crossAxisCount = isTablet ? widget.crossAxisCountTablet : widget.crossAxisCountMobile;
-    final itemHeight = isTablet ? 125.0 : 110.0;
+  final aspectRatio = _calculateAspectRatio(isTablet, crossAxisCount);
+  final legacyItemHeight = isTablet ? 150.0 : 120.0;
 
     if (widget.isLoading) {
-      return _SkeletonGrid(crossAxisCount: crossAxisCount, itemHeight: itemHeight);
+      return _SkeletonGrid(
+        crossAxisCount: crossAxisCount,
+        aspectRatio: aspectRatio,
+        itemHeight: legacyItemHeight,
+      );
     }
 
     if (widget.categories.isEmpty) {
@@ -48,22 +54,22 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
     }
 
     return Padding(
-      padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
-          childAspectRatio: (itemHeight / itemHeight),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
+          childAspectRatio: aspectRatio,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 8,
         ),
         itemCount: widget.categories.length,
         itemBuilder: (context, i) {
           final c = widget.categories[i];
           final isSelected = widget.selectedId == c.id;
           return _CategoryTile(
-            category: c, 
+            category: c,
             onTap: widget.onTap,
             isSelected: isSelected,
           );
@@ -71,57 +77,85 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
       ),
     );
   }
+
+  double _calculateAspectRatio(bool isTablet, int crossAxisCount) {
+    if (isTablet) {
+      return crossAxisCount >= 5 ? 0.9 : 0.84;
+    }
+    if (crossAxisCount >= 4) {
+      return 0.7;
+    }
+    return 0.8;
+  }
 }
 
 class _CategoryTile extends StatelessWidget {
   final ClassifiedCategory category;
   final void Function(ClassifiedCategory category)? onTap;
   final bool isSelected;
-  
+
   const _CategoryTile({
-    required this.category, 
-    this.onTap, 
+    required this.category,
+    this.onTap,
     this.isSelected = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final backgroundColor = isSelected 
-        ? Colors.green.shade100.withOpacity(.6)
-        : Colors.green.shade50.withOpacity(.35);
-    final borderColor = isSelected 
-        ? Colors.green.shade400
-        : Colors.green.shade100;
-        
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: onTap == null ? null : () => onTap!(category),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: borderColor, width: isSelected ? 2 : 1),
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: AspectRatio(
-                aspectRatio: 1,
+    final baseColor = Colors.grey.shade100;
+    const highlightColor = Color(0xFF10B981);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap == null ? null : () => onTap!(category),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? highlightColor.withOpacity(0.12) : baseColor,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? highlightColor : Colors.transparent,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(isSelected ? 0.1 : 0.04),
+                      blurRadius: isSelected ? 8 : 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(6),
                 child: _CategoryImage(url: category.getIconAsset()),
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              category.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
-            )
-          ],
+              const SizedBox(height: 6),
+              Text(
+                category.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.roboto(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? highlightColor : Colors.grey.shade700,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -137,26 +171,23 @@ class _CategoryImage extends StatelessWidget {
     if (url == null || url!.isEmpty) {
       return const _PlaceholderIcon();
     }
-    
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(50),
-      child: _isLocalAsset(url!) 
-        ? Image.asset(
-            url!,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            errorBuilder: (context, error, stackTrace) => const _PlaceholderIcon(),
-          )
-        : CachedNetworkImage(
-            imageUrl: url!,
-            fit: BoxFit.cover,
-            placeholder: (c, _) => const _ShimmerCircle(),
-            errorWidget: (c, _, __) => const _PlaceholderIcon(),
-          ),
+
+    if (_isLocalAsset(url!)) {
+      return Image.asset(
+        url!,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => const _PlaceholderIcon(),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: url!,
+      fit: BoxFit.contain,
+      placeholder: (c, _) => const _ShimmerCircle(),
+      errorWidget: (c, _, __) => const _PlaceholderIcon(),
     );
   }
-  
+
   bool _isLocalAsset(String url) {
     return url.startsWith('assets/');
   }
@@ -164,28 +195,26 @@ class _CategoryImage extends StatelessWidget {
 
 class _PlaceholderIcon extends StatelessWidget {
   const _PlaceholderIcon();
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white,
-        border: Border.all(color: Colors.green.shade200),
-      ),
-      alignment: Alignment.center,
-      child: const Icon(Icons.category, color: Colors.green, size: 30),
+    return const Icon(
+      Icons.widgets_outlined,
+      color: Color(0xFF6B7280),
+      size: 20,
     );
   }
 }
 
 class _ShimmerCircle extends StatelessWidget {
   const _ShimmerCircle();
+
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.green.shade100.withOpacity(.3),
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(8),
       ),
     );
   }
@@ -193,28 +222,36 @@ class _ShimmerCircle extends StatelessWidget {
 
 class _SkeletonGrid extends StatelessWidget {
   final int crossAxisCount;
+  final double? aspectRatio;
   final double itemHeight;
-  const _SkeletonGrid({required this.crossAxisCount, required this.itemHeight});
+
+  const _SkeletonGrid({
+    required this.crossAxisCount,
+    this.aspectRatio,
+    this.itemHeight = 120,
+  });
 
   @override
   Widget build(BuildContext context) {
     final total = crossAxisCount * 2; // two rows skeleton
+    final double effectiveAspectRatio = (aspectRatio != null && aspectRatio! > 0)
+        ? aspectRatio!
+        : (itemHeight > 0 ? 1 : 1);
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        childAspectRatio: (itemHeight / itemHeight),
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
+        childAspectRatio: effectiveAspectRatio,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 8,
       ),
       itemCount: total,
       itemBuilder: (context, i) => Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.green.shade50),
-          color: Colors.green.shade50.withOpacity(.3),
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.grey.shade200,
         ),
       ),
     );

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:developer';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'http://127.0.0.1:8000/api';
 
   // Load banner images from API
   static Future<List<dynamic>> loadBannerImages() async {
@@ -47,32 +47,47 @@ class ApiService {
   // Adjust the path strings to match the backend once confirmed.
 
   static Future<List<Map<String, dynamic>>> fetchClassifiedCategories() async {
+    print('DEBUG: fetchClassifiedCategories called, baseUrl: $baseUrl');
     // Primary DRF paginated endpoint
     final primary = Uri.parse('$baseUrl/classified-categories/');
     // Non-paginated ("all") fallback if needed
     final fallback = Uri.parse('$baseUrl/classified-categories-all/');
 
     Future<List<Map<String, dynamic>>> _hit(Uri uri) async {
+      print('DEBUG: Making request to: $uri');
       final resp = await http.get(uri);
+      print('DEBUG: Response status: ${resp.statusCode}');
       if (resp.statusCode != 200) {
+        print('DEBUG: Non-200 response from ${uri.path} -> ${resp.statusCode}');
         log('fetchClassifiedCategories ${uri.path} -> ${resp.statusCode}');
         return [];
       }
       final data = json.decode(resp.body);
+      print('DEBUG: Raw response data type: ${data.runtimeType}');
+      if (data is Map) {
+        print('DEBUG: Response is Map with keys: ${data.keys}');
+      }
       final raw = (data is List) ? data : (data['results'] ?? []);
-      return raw
+      print('DEBUG: Extracted ${raw.length} items from response');
+      final result = raw
           .whereType<Map>()
-          .map((e) => e.cast<String, dynamic>())
-          .toList();
+          .map<Map<String, dynamic>>((e) => Map<String, dynamic>.from(e))
+          .toList(growable: false);
+      print('DEBUG: Returning ${result.length} processed categories');
+      return result;
     }
 
     try {
+      print('DEBUG: Trying primary endpoint...');
       var cats = await _hit(primary);
       if (cats.isEmpty) {
+        print('DEBUG: Primary empty, trying fallback...');
         cats = await _hit(fallback);
       }
+      print('DEBUG: Final result: ${cats.length} categories');
       return cats;
     } catch (e, st) {
+      print('DEBUG: Exception in fetchClassifiedCategories: $e');
       log('fetchClassifiedCategories error: $e', stackTrace: st);
       return [];
     }
