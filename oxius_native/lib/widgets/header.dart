@@ -5,10 +5,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/auth_service.dart';
-import 'user_dropdown_menu.dart';
 
 class AppHeader extends StatefulWidget {
-  const AppHeader({super.key});
+  final String identifier;
+  
+  const AppHeader({
+    super.key, 
+    required this.identifier,
+  });
 
   @override
   State<AppHeader> createState() => _AppHeaderState();
@@ -93,72 +97,73 @@ class _AppHeaderState extends State<AppHeader> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
-    return GestureDetector(
-      onTap: () {
-        if (_showUserDropdown) {
-          setState(() {
-            _showUserDropdown = false;
-          });
-        }
-      },
-      child: SliverAppBar(
-      expandedHeight: 0,
-      floating: true,
-      pinned: true,
-      // Reduce spacing between the leading (menu) and title (logo)
-      leadingWidth: isMobile ? 44 : 56,
-      titleSpacing: isMobile ? 4 : 8,
-      backgroundColor: Colors.white.withOpacity(0.95),
-      surfaceTintColor: Colors.transparent,
-      flexibleSpace: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.8),
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey.shade200.withOpacity(0.5),
-                  width: 0.5,
-                ),
+    return SliverToBoxAdapter(
+      key: ValueKey('header_sliver_${widget.identifier}'),
+      child: GestureDetector(
+        key: ValueKey('header_gesture_${widget.identifier}'),
+        onTap: () {
+          if (_showUserDropdown) {
+            setState(() {
+              _showUserDropdown = false;
+            });
+          }
+        },
+        child: Container(
+          height: 64,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.95),
+            border: Border(
+              bottom: BorderSide(
+                color: Colors.grey.shade200.withOpacity(0.5),
+                width: 0.5,
+              ),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                offset: const Offset(0, 1),
+                blurRadius: 3,
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 8 : 16,
+              ),
+              child: Row(
+                children: [
+                  // Menu Button
+                  Builder(
+                    key: ValueKey('menu_builder_${widget.identifier}'),
+                    builder: (context) => IconButton(
+                      key: ValueKey('menu_button_${widget.identifier}'),
+                      icon: Icon(
+                        Icons.menu,
+                        color: Colors.grey.shade800,
+                        size: isMobile ? 24 : 28,
+                      ),
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                      tooltip: 'Open Menu',
+                    ),
+                  ),
+                  SizedBox(width: isMobile ? 4 : 8),
+                  // Logo
+                  _buildDynamicLogo(context),
+                  const Spacer(),
+                  // Desktop Navigation (matching Vue.js responsive behavior)
+                  if (!isMobile) ...[
+                    _buildDesktopNavigation(context),
+                  ],
+                  // Mobile profile/login section
+                  if (isMobile) ...[
+                    _buildMobileActions(context),
+                  ],
+                ],
               ),
             ),
           ),
         ),
-      ),
-      leading: Builder(
-        builder: (context) => IconButton(
-          icon: Icon(
-            Icons.menu,
-            color: Colors.grey.shade800,
-            size: isMobile ? 24 : 28,
-          ),
-          onPressed: () => Scaffold.of(context).openDrawer(),
-          tooltip: 'Open Menu',
-        ),
-      ),
-      title: Row(
-        children: [
-          _buildDynamicLogo(context),
-          const Spacer(),
-          // Desktop Navigation (matching Vue.js responsive behavior)
-          if (!isMobile) ...[
-            _buildDesktopNavigation(context),
-          ],
-          // Mobile profile/login section
-          if (isMobile) ...[
-            _buildMobileActions(context),
-          ],
-        ],
-      ),
-      elevation: 0,
-      shadowColor: Colors.transparent,
-      // Responsive height matching Vue.js header
-  toolbarHeight: isMobile ? 56 : 64,
-      systemOverlayStyle: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-      ),
       ),
     );
   }
@@ -334,70 +339,7 @@ class _AppHeaderState extends State<AppHeader> {
     );
   }
 
-  Widget _buildNavItem(
-    BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
-    String route,
-  ) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 2),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${t('navigate_to')} $title'),
-                backgroundColor: color,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      icon,
-                      size: 16,
-                      color: color,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      title,
-                      style: GoogleFonts.roboto(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: color,
-                      ),
-                    ),
-                  ],
-                ),
-                // Animated underline (matching Vue.js hover effect)
-                Container(
-                  margin: const EdgeInsets.only(top: 2),
-                  height: 2,
-                  width: 0, // Will animate on hover in actual implementation
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(1),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+
 
   // Mobile Actions (matching Vue.js mobile behavior)
   Widget _buildMobileActions(BuildContext context) {
@@ -406,6 +348,7 @@ class _AppHeaderState extends State<AppHeader> {
       children: [
         // Inbox/Messages (matching Vue.js: i-material-symbols:mark-email-unread-outline)
         IconButton(
+          key: ValueKey('messages_button_${widget.identifier}'),
           icon: Icon(
             Icons.mark_email_unread_outlined,
             color: const Color(0xFF3B82F6), // Blue color matching Vue.js
@@ -423,6 +366,7 @@ class _AppHeaderState extends State<AppHeader> {
         ),
         // QR Code Scanner (matching Vue.js: i-ic:twotone-qr-code-scanner)
         IconButton(
+          key: ValueKey('qr_button_${widget.identifier}'),
           icon: Icon(
             Icons.qr_code_scanner,
             color: const Color(0xFF10B981), // Green color matching Vue.js
@@ -452,9 +396,11 @@ class _AppHeaderState extends State<AppHeader> {
     if (isAuthenticated && currentUser != null) {
       // Show user profile with custom dropdown
       return Stack(
+        key: ValueKey('user_stack_${widget.identifier}'),
         clipBehavior: Clip.none,
         children: [
           GestureDetector(
+            key: ValueKey('user_gesture_${widget.identifier}'),
             onTap: () {
               setState(() {
                 _showUserDropdown = !_showUserDropdown;
@@ -463,53 +409,60 @@ class _AppHeaderState extends State<AppHeader> {
             child: Container(
               width: 40,
               height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: currentUser.userType == 'pro' || currentUser.isSuperuser
-                        ? Colors.indigo.withOpacity(0.2)
-                        : Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
               child: Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  // Main avatar
-                  CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Colors.grey.shade100,
-                    backgroundImage: currentUser.profilePicture != null && currentUser.profilePicture!.isNotEmpty
-                        ? NetworkImage(currentUser.profilePicture!)
-                        : null,
-                    child: currentUser.profilePicture == null || currentUser.profilePicture!.isEmpty
-                        ? Icon(
-                            Icons.person,
-                            color: Colors.grey.shade600,
-                            size: 20,
-                          )
-                        : null,
+                  // Main avatar container
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: currentUser.userType == 'pro' || currentUser.isSuperuser
+                              ? Colors.indigo.withOpacity(0.2)
+                              : Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: Colors.grey.shade100,
+                      backgroundImage: currentUser.profilePicture != null && currentUser.profilePicture!.isNotEmpty
+                          ? NetworkImage(currentUser.profilePicture!)
+                          : null,
+                      child: currentUser.profilePicture == null || currentUser.profilePicture!.isEmpty
+                          ? Icon(
+                              Icons.person,
+                              color: Colors.grey.shade600,
+                              size: 20,
+                            )
+                          : null,
+                    ),
                   ),
                   
-                  // PRO Badge (positioned like Vue mobile - top right)
+                  // PRO Badge (positioned like Vue - small overlap on top right)
                   if (currentUser.userType == 'pro' || currentUser.isSuperuser)
                     Positioned(
-                      top: -10,
-                      right: -14,
+                      top: -2,
+                      right: -8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        constraints: const BoxConstraints(maxWidth: 28),
+                        padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)], // indigo to violet
                           ),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.white, width: 1),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.1),
-                              blurRadius: 2,
+                              blurRadius: 1,
                               offset: const Offset(0, 1),
                             ),
                           ],
@@ -520,13 +473,13 @@ class _AppHeaderState extends State<AppHeader> {
                             const Icon(
                               Icons.shield,
                               color: Colors.white,
-                              size: 10,
+                              size: 6,
                             ),
-                            const SizedBox(width: 2),
+                            const SizedBox(width: 1),
                             Text(
-                              'Pro',
+                              'PRO',
                               style: GoogleFonts.roboto(
-                                fontSize: 8,
+                                fontSize: 6,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
@@ -536,22 +489,23 @@ class _AppHeaderState extends State<AppHeader> {
                       ),
                     ),
                   
-                  // Verification badge (positioned like Vue mobile - bottom right)
+                  // Verification badge (positioned like Vue - small overlap on bottom right)
                   if (currentUser.isActive)
                     Positioned(
-                      bottom: -4,
-                      right: -4,
+                      bottom: -2,
+                      right: -2,
                       child: Container(
-                        width: 16,
-                        height: 16,
+                        width: 12,
+                        height: 12,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.1),
-                              blurRadius: 2,
-                              offset: const Offset(0, 1),
+                              blurRadius: 1,
+                              offset: const Offset(0, 0.5),
                             ),
                           ],
                         ),
@@ -559,7 +513,7 @@ class _AppHeaderState extends State<AppHeader> {
                           child: Icon(
                             Icons.verified,
                             color: Colors.blue.shade600,
-                            size: 16,
+                            size: 10,
                           ),
                         ),
                       ),
@@ -569,25 +523,15 @@ class _AppHeaderState extends State<AppHeader> {
             ),
           ),
 
-          // Custom Dropdown Menu
-          UserDropdownMenu(
-            user: currentUser,
-            isOpen: _showUserDropdown,
-            onClose: () {
-              setState(() {
-                _showUserDropdown = false;
-              });
-            },
-            onLogout: () => _handleLogout(context),
-            onUpgradeToPro: () => _handleUpgradeToPro(context),
-            onManageSubscription: () => _handleManageSubscription(context),
-            onNavigate: (route) => _handleNavigation(context, route),
-          ),
+          // Custom Dropdown Menu - inline to avoid widget conflicts
+          // Temporarily disabled to isolate GlobalKey issue
+          // if (_showUserDropdown) _buildDropdownMenu(context, currentUser),
         ],
       );
     } else {
       // Show login button
       return IconButton(
+        key: ValueKey('login_button_${widget.identifier}'),
         icon: Container(
           width: 32,
           height: 32,
@@ -608,6 +552,411 @@ class _AppHeaderState extends State<AppHeader> {
         tooltip: t('login_profile'),
       );
     }
+  }
+
+  // Build inline dropdown menu to avoid widget conflicts
+  Widget _buildDropdownMenu(BuildContext context, User currentUser) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 640;
+    final dropdownWidth = (isSmallScreen ? 280 : 320).toDouble();
+    final isPro = currentUser.userType == 'pro' || currentUser.isSuperuser;
+
+    return Positioned(
+      key: ValueKey('dropdown_positioned_${widget.identifier}'),
+      top: 52,
+      right: 4,
+      child: Material(
+        key: ValueKey('dropdown_material_${widget.identifier}'),
+        color: Colors.transparent,
+        child: Container(
+          key: ValueKey('dropdown_container_${widget.identifier}'),
+          width: dropdownWidth,
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.grey.shade200,
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Animated gradient accent
+              Container(
+                height: 4,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color(0xFF818CF8), // primary-400
+                      Color(0xFF6366F1), // indigo-500
+                      Color(0xFF8B5CF6), // primary-600
+                    ],
+                  ),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                ),
+              ),
+              
+              // Membership Section
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isPro 
+                        ? const Color(0xFFC7D2FE) // indigo-200
+                        : Colors.grey.shade200,
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Current Plan Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isPro 
+                            ? const Color(0xFFEEF2FF) // indigo-50
+                            : const Color(0xFFF8FAFC), // slate-50
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                          border: Border(
+                            bottom: BorderSide(
+                              color: isPro 
+                                ? const Color(0xFFE0E7FF) // indigo-100
+                                : Colors.grey.shade200,
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  isPro ? Icons.star : Icons.person,
+                                  size: 16,
+                                  color: isPro 
+                                    ? const Color(0xFF4F46E5) // indigo-600
+                                    : Colors.grey.shade500,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isPro ? 'Premium Access' : 'Current Plan',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: isPro 
+                                      ? const Color(0xFF3730A3) // indigo-700
+                                      : Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                gradient: isPro 
+                                  ? const LinearGradient(
+                                      colors: [
+                                        Color(0xFF6366F1), // indigo-500
+                                        Color(0xFF2563EB), // blue-600
+                                      ],
+                                    )
+                                  : null,
+                                color: isPro ? null : Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                isPro ? 'PRO' : 'FREE',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w500,
+                                  color: isPro ? Colors.white : Colors.grey.shade700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Upgrade/Manage Section
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _showUserDropdown = false;
+                          });
+                          isPro ? _handleManageSubscription(context) : _handleUpgradeToPro(context);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: isPro 
+                                    ? const Color(0xFF6366F1).withOpacity(0.1)
+                                    : const Color(0xFFEEF2FF),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: isPro 
+                                      ? const Color(0xFF6366F1).withOpacity(0.3)
+                                      : const Color(0xFFC7D2FE).withOpacity(0.8),
+                                  ),
+                                ),
+                                child: Icon(
+                                  isPro ? Icons.shield_outlined : Icons.star,
+                                  size: 14,
+                                  color: isPro 
+                                    ? const Color(0xFF4F46E5)
+                                    : const Color(0xFF8B5CF6),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      isPro ? 'Pro Member' : 'Upgrade to Pro',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    Text(
+                                      isPro ? 'Premium active' : 'Unlock features',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                width: 36,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  gradient: isPro 
+                                    ? const LinearGradient(
+                                        colors: [Color(0xFF6366F1), Color(0xFF2563EB)],
+                                      )
+                                    : LinearGradient(
+                                        colors: [Colors.grey.shade200, Colors.grey.shade300],
+                                      ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2),
+                                  child: Align(
+                                    alignment: isPro ? Alignment.centerRight : Alignment.centerLeft,
+                                    child: Container(
+                                      width: 16,
+                                      height: 16,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Navigation Grid
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                child: GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 6,
+                  mainAxisSpacing: 6,
+                  childAspectRatio: 1.4,
+                  children: [
+                    _buildNavItem(context, 'Business Network', Icons.network_check, const Color(0xFFEA580C), '/business-network'),
+                    _buildNavItem(context, 'Adsy News', Icons.newspaper, const Color(0xFF9333EA), '/adsy-news'),
+                    _buildNavItem(context, 'Ad Services', Icons.campaign, const Color(0xFF059669), '/classified', badge: 'FREE'),
+                    _buildNavItem(context, 'eShop Manager', Icons.shopping_bag, const Color(0xFF2563EB), '/shop-manager', badge: 'PRO'),
+                    _buildNavItem(context, 'Adsy Pay', Icons.payments, const Color(0xFF059669), '/deposit-withdraw'),
+                    _buildNavItem(context, 'Mobile Recharge', Icons.phone_android, const Color(0xFFEA580C), '/mobile-recharge'),
+                  ],
+                ),
+              ),
+
+              // Settings & Logout
+              Container(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: Colors.grey.shade100, width: 1),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildActionButton(context, 'Settings', Icons.settings, '/settings'),
+                        _buildActionButton(context, 'Verification', Icons.upload_file, '/upload-center'),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _showUserDropdown = false;
+                        });
+                        _handleLogout(context);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.logout, size: 14, color: Colors.red.shade600),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Logout',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.red.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(BuildContext context, String label, IconData icon, Color color, String route, {String? badge}) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _showUserDropdown = false;
+        });
+        _handleNavigation(context, route);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withOpacity(0.2), width: 1),
+        ),
+        child: Stack(
+          children: [
+            if (badge != null)
+              Positioned(
+                top: -2,
+                right: -2,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: badge == 'PRO' ? const Color(0xFF6366F1) : Colors.grey.shade500,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    badge,
+                    style: const TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+              ),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                    child: Icon(icon, size: 12, color: Colors.white),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    label,
+                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton(BuildContext context, String label, IconData icon, String route) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _showUserDropdown = false;
+        });
+        _handleNavigation(context, route);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
+              child: Icon(icon, size: 12, color: Colors.grey.shade600),
+            ),
+            const SizedBox(width: 4),
+            Text(label, style: const TextStyle(fontSize: 10, color: Colors.black87)),
+          ],
+        ),
+      ),
+    );
   }
 
   // Handle navigation to different routes

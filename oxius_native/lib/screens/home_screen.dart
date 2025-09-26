@@ -15,7 +15,10 @@ class HomeScreen extends StatelessWidget {
       drawer: const MobileDrawer(),
       body: CustomScrollView(
         slivers: [
-          const AppHeader(),
+          const AppHeader(
+            key: ValueKey('home_header'),
+            identifier: 'home',
+          ),
           SliverToBoxAdapter(child: const HeroBanner()),
           SliverToBoxAdapter(child: const SaleCategory()),
           SliverToBoxAdapter(child: const ClassifiedServicesSection()),

@@ -105,7 +105,10 @@ class _LoginPageState extends State<LoginPage> {
       body: CustomScrollView(
         slivers: [
           // Add the header
-          const AppHeader(),
+          const AppHeader(
+            key: ValueKey('login_header'),
+            identifier: 'login',
+          ),
           SliverToBoxAdapter(
             child: LayoutBuilder(
               builder: (context, constraints) {
