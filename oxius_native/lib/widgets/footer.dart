@@ -528,7 +528,6 @@ class _AppFooterState extends State<AppFooter> {
                         color: Color(0xFFF79E1B),
                         shape: BoxShape.circle,
                       ),
-                      margin: const EdgeInsets.only(left: -4),
                     ),
                     const SizedBox(width: 4),
                     Text(
