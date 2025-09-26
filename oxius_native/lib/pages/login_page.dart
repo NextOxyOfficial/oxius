@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
+import '../services/scroll_direction_service.dart';
 import '../widgets/header.dart';
+import '../widgets/footer.dart';
+import '../widgets/mobile_navigation_bar.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -13,6 +16,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+  late ScrollController _scrollController;
+  final ScrollDirectionService _scrollService = ScrollDirectionService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final TranslationService _ts = TranslationService();
@@ -23,9 +28,18 @@ class _LoginPageState extends State<LoginPage> {
   String _errorMessage = '';
 
   @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _scrollService.initialize(_scrollController);
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _scrollController.dispose();
+    _scrollService.dispose();
     super.dispose();
   }
 
@@ -102,8 +116,11 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      body: CustomScrollView(
-        slivers: [
+      body: Stack(
+        children: [
+          CustomScrollView(
+            controller: _scrollController,
+            slivers: [
           // Add the header
           const AppHeader(
             key: ValueKey('login_header'),
@@ -160,7 +177,11 @@ class _LoginPageState extends State<LoginPage> {
               },
             ),
           ),
+          const SliverToBoxAdapter(child: AppFooter()),
         ],
+      ),
+      MobileNavigationBar(scrollService: _scrollService),
+    ],
       ),
     );
   }

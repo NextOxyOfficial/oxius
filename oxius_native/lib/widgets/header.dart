@@ -524,8 +524,7 @@ class _AppHeaderState extends State<AppHeader> {
           ),
 
           // Custom Dropdown Menu - inline to avoid widget conflicts
-          // Temporarily disabled to isolate GlobalKey issue
-          // if (_showUserDropdown) _buildDropdownMenu(context, currentUser),
+          if (_showUserDropdown) _buildDropdownMenu(context, currentUser),
         ],
       );
     } else {
