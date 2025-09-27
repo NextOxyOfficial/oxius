@@ -16,6 +16,8 @@ class EshopService {
   // Transform backend Product model to expected frontend format
   static Map<String, dynamic> _transformProduct(Map<String, dynamic> backendProduct) {
     try {
+      print('DEBUG _transformProduct: Input product keys: ${backendProduct.keys.toList()}');
+      
       // Extract image from image_details (ProductMediaSerializer)
       String? imageUrl;
       final imageDetails = backendProduct['image_details'];
@@ -28,21 +30,31 @@ class EshopService {
       
       // Extract store name from owner_details (UserSerializer)  
       final ownerDetails = backendProduct['owner_details'];
+      print('DEBUG _transformProduct: ownerDetails type: ${ownerDetails.runtimeType}');
+      print('DEBUG _transformProduct: ownerDetails value: $ownerDetails');
+      
       String storeName = 'Store'; // Default fallback
       if (ownerDetails is Map<String, dynamic>) {
-        storeName = ownerDetails['name']?.toString() ??
-                    ownerDetails['store_name']?.toString() ??
+        print('DEBUG _transformProduct: ownerDetails keys: ${ownerDetails.keys.toList()}');
+        // Prioritize store_name first, then other fields
+        storeName = ownerDetails['store_name']?.toString() ??
+                    ownerDetails['name']?.toString() ??
                     ownerDetails['username']?.toString() ??
                     ownerDetails['first_name']?.toString() ??
                     'Store';
         
-        // Add last name if available
-        if (storeName != 'Store' && ownerDetails['last_name'] != null && ownerDetails['last_name'].toString().isNotEmpty) {
+        print('DEBUG _transformProduct: Extracted storeName: "$storeName"');
+        
+        // Add last name if available and we're using first_name
+        if (ownerDetails['first_name'] != null && ownerDetails['last_name'] != null && 
+            storeName == ownerDetails['first_name']?.toString() &&
+            ownerDetails['last_name'].toString().isNotEmpty) {
           storeName += ' ${ownerDetails['last_name']}';
+          print('DEBUG _transformProduct: storeName with last name: "$storeName"');
         }
       }
       
-      return {
+      final transformed = {
         'id': backendProduct['id']?.toString() ?? '',
         'name': backendProduct['name']?.toString() ?? '',
         'title': backendProduct['name']?.toString() ?? '', // Alias for compatibility
@@ -68,7 +80,7 @@ class EshopService {
         'medias': backendProduct['image_details'] ?? [], // Alias for compatibility
         
         // Owner/Store information
-        'owner': backendProduct['owner']?.toString() ?? '',
+        'owner': storeName, // Use the extracted store name instead of raw owner ID
         'owner_details': {
           'store_name': storeName,
           'name': storeName,
@@ -94,6 +106,9 @@ class EshopService {
         'delivery_fee_inside_dhaka': backendProduct['delivery_fee_inside_dhaka'] ?? 0.0,
         'delivery_fee_outside_dhaka': backendProduct['delivery_fee_outside_dhaka'] ?? 0.0,
       };
+      
+      print('DEBUG _transformProduct: Final transformed owner_details: ${transformed['owner_details']}');
+      return transformed;
     } catch (e) {
       print('EshopService: Error transforming product: $e');
       // Return minimal safe product structure
@@ -107,6 +122,7 @@ class EshopService {
         'is_free_delivery': backendProduct['is_free_delivery'] ?? false,
         'image': '',
         'image_details': [],
+        'owner': 'Store',
         'owner_details': {
           'store_name': 'Store',
           'name': 'Store',

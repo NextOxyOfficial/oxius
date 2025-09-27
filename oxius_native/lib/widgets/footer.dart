@@ -289,23 +289,23 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
     ];
 
     if (isMobile) {
-      // Vertical navigation for mobile
-      return Column(
-        children: navLinks.map((link) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: InkWell(
-            onTap: () => _handleNavigation(context, link['title']!),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: Text(
-                link['title']!,
-                style: GoogleFonts.roboto(
-                  fontSize: 16,
-                  color: Colors.grey.shade700,
-                  fontWeight: FontWeight.normal,
-                ),
-                textAlign: TextAlign.center,
+      // Wrap navigation for mobile to show multiple items per line
+      return Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 16,
+        runSpacing: 8,
+        children: navLinks.map((link) => InkWell(
+          onTap: () => _handleNavigation(context, link['title']!),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: Text(
+              link['title']!,
+              style: GoogleFonts.roboto(
+                fontSize: 16,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.normal,
               ),
+              textAlign: TextAlign.center,
             ),
           ),
         )).toList(),

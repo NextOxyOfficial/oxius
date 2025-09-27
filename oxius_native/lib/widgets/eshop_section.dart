@@ -440,17 +440,26 @@ class _EshopProductCardState extends State<_EshopProductCard> {
 
   String _getStoreName(Map<String, dynamic> p) {
     try {
+      print('DEBUG _getStoreName: Product keys: ${p.keys.toList()}');
+      
       // Since the data is already transformed in the service, use the simplified structure
       final ownerDetails = p['owner_details'];
+      print('DEBUG _getStoreName: owner_details type: ${ownerDetails.runtimeType}');
+      print('DEBUG _getStoreName: owner_details value: $ownerDetails');
+      
       if (ownerDetails is Map<String, dynamic>) {
+        print('DEBUG _getStoreName: owner_details keys: ${ownerDetails.keys.toList()}');
         final storeName = ownerDetails['store_name']?.toString() ?? 
                          ownerDetails['name']?.toString() ?? 
                          'Store';
+        print('DEBUG _getStoreName: Final storeName: "$storeName"');
         return storeName.trim().isNotEmpty ? storeName.trim() : 'Store';
       }
+      
+      print('DEBUG _getStoreName: owner_details is not a Map, returning Store');
       return 'Store';
     } catch (e) {
-      print('Error getting store name: $e');
+      print('DEBUG _getStoreName: Error getting store name: $e');
       return 'Store';
     }
   }
