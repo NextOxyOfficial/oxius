@@ -5,10 +5,12 @@ import 'dart:convert';
 
 class AppFooter extends StatefulWidget {
   final bool showMobileNav;
+  final bool isScrollingDown;
   
   const AppFooter({
     super.key,
     this.showMobileNav = true,
+    this.isScrollingDown = false,
   });
 
   @override
@@ -19,13 +21,15 @@ class _AppFooterState extends State<AppFooter> {
   Map<String, dynamic>? logoData;
   bool isLoading = true;
   bool _disposed = false;
-  bool isScrollingDown = false;
   int unreadCount = 0;
+  final Set<String> _loadingButtons = <String>{};
+  
+  // Mock user data - replace with actual user state management
+  bool get isLoggedIn => DateTime.now().millisecondsSinceEpoch % 2 == 0;
 
   String _abs(String? url) {
     if (url == null || url.isEmpty) return '';
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    // Derive origin from the logo API endpoint
     const origin = 'http://localhost:8000';
     final u = url.startsWith('/') ? url : '/$url';
     return '$origin$u';
@@ -46,7 +50,6 @@ class _AppFooterState extends State<AppFooter> {
       'we_accept': 'We Accept',
       'terms_conditions': 'Terms & Conditions',
       'privacy_policy': 'Privacy Policy',
-      'coming_soon': 'Coming Soon',
     };
     return translations[key] ?? key;
   }
@@ -67,7 +70,6 @@ class _AppFooterState extends State<AppFooter> {
     super.dispose();
   }
 
-  // Load logo dynamically from API (matching Vue.js PublicLogo component)
   Future<void> _loadLogo() async {
     if (_disposed) return;
     
@@ -78,7 +80,6 @@ class _AppFooterState extends State<AppFooter> {
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        // Normalize possible relative image URLs to absolute
         if (data is Map && data['image'] != null) {
           data['image'] = _abs(data['image']);
         }
@@ -107,43 +108,39 @@ class _AppFooterState extends State<AppFooter> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768;
-
     return Stack(
       children: [
         // Main Footer
-        _buildMainFooter(context, isMobile),
+        _buildMainFooter(context),
         
-        // Mobile Navigation Bar
-        if (widget.showMobileNav && isMobile)
+        // Mobile Navigation Bar (matching Vue design exactly)
+        if (widget.showMobileNav)
           _buildMobileNavigationBar(context),
       ],
     );
   }
 
-  Widget _buildMainFooter(BuildContext context, bool isMobile) {
+  Widget _buildMainFooter(BuildContext context) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9).withOpacity(0.7), // slate-100/70
+        color: const Color(0xFFF1F5F9).withOpacity(0.7), // bg-slate-100/70
       ),
       child: Stack(
         children: [
-          // Background Pattern
+          // Modern Subtle Background Pattern
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/pattern.png'), // You'll need to add this
-                  repeat: ImageRepeat.repeat,
-                  opacity: 0.1,
-                ),
+                color: Colors.transparent,
+              ),
+              child: CustomPaint(
+                painter: PatternPainter(),
               ),
             ),
           ),
           
-          // Subtle gradient accents
+          // Subtle gradient accents (matching Vue)
           Positioned(
             top: -96,
             right: -96,
@@ -151,15 +148,21 @@ class _AppFooterState extends State<AppFooter> {
               width: 288,
               height: 288,
               decoration: BoxDecoration(
-                color: const Color(0xFF34D399).withOpacity(0.05), // emerald-400
+                color: const Color(0xFF34D399).withOpacity(0.05), // bg-emerald-400
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF34D399).withOpacity(0.05),
-                    blurRadius: 100,
-                    spreadRadius: 50,
-                  ),
-                ],
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF34D399).withOpacity(0.05),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF34D399).withOpacity(0.05),
+                      blurRadius: 100,
+                      spreadRadius: 50,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -171,83 +174,125 @@ class _AppFooterState extends State<AppFooter> {
               width: 288,
               height: 288,
               decoration: BoxDecoration(
-                color: const Color(0xFF60A5FA).withOpacity(0.05), // blue-400
+                color: const Color(0xFF60A5FA).withOpacity(0.05), // bg-blue-400
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF60A5FA).withOpacity(0.05),
-                    blurRadius: 100,
-                    spreadRadius: 50,
-                  ),
-                ],
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF60A5FA).withOpacity(0.05),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF60A5FA).withOpacity(0.05),
+                      blurRadius: 100,
+                      spreadRadius: 50,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
           
-          // Footer Content
+          // Content with relative positioning
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: SingleChildScrollView(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 1200),
-                margin: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 48),
-                child: Column(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                // Top divider (w-60 mx-auto)
+                Container(
+                  width: 240, // w-60 = 15rem = 240px
+                  height: 1,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.transparent,
+                        Colors.grey.shade300,
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                  margin: const EdgeInsets.only(bottom: 24),
+                ),
+                
+                // Logo section
+                Column(
                   children: [
-                    // Top divider
-                    Container(
-                      width: 240,
-                      height: 1,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            Colors.grey.shade300,
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                      margin: const EdgeInsets.only(bottom: 24),
-                    ),
-                    
-                    // Logo and description
-                    _buildLogoSection(context, isMobile),
-                    
-                    const SizedBox(height: 32),
-                    
-                    // Navigation links
-                    _buildNavigationSection(context, isMobile),
-                    
-                    const SizedBox(height: 32),
-                    
-                    // App download and payment section
-                    _buildAppPaymentSection(context, isMobile),
-                    
+                    _buildDynamicLogo(context),
                     const SizedBox(height: 24),
-                    
-                    // Terms and privacy
-                    _buildTermsSection(context),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Final divider
-                    Container(
-                      height: 1,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            Colors.grey.shade300.withOpacity(0.6),
-                            Colors.transparent,
-                          ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 28),
+                      child: Text(
+                        'AdsyClub – Social Business Network: Earn Money, Connect with Society & Find the Services You Need!',
+                        style: GoogleFonts.roboto(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade600,
+                          height: 1.5,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
-                    
-                    // Copyright
-                    _buildCopyrightSection(context, isMobile),
                   ],
                 ),
-              ),
+                
+                const SizedBox(height: 32),
+                
+                // Navigation links (vertical for mobile)
+                _buildVerticalNavigation(context),
+                
+                const SizedBox(height: 32),
+                
+                // App download and payment section
+                _buildAppPaymentSection(context),
+                
+                const SizedBox(height: 24),
+                
+                // Terms navigation
+                _buildTermsNavigation(context),
+                
+                const SizedBox(height: 16),
+                
+                // Final divider
+                Container(
+                  height: 1,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.transparent,
+                        Colors.grey.shade300.withOpacity(0.6),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // Copyright section
+                Container(
+                  padding: const EdgeInsets.only(top: 24, bottom: 80), // pb-20 for mobile nav space
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                      children: [
+                        const TextSpan(text: 'Developed With '),
+                        WidgetSpan(
+                          child: Icon(
+                            Icons.favorite,
+                            color: Colors.red.shade500,
+                            size: 16,
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' By Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -255,75 +300,85 @@ class _AppFooterState extends State<AppFooter> {
     );
   }
 
-  Widget _buildLogoSection(BuildContext context, bool isMobile) {
-    return Column(
-      children: [
-        // Dynamic Logo
-        _buildDynamicLogo(context, isMobile),
-        const SizedBox(height: 24),
-        
-        // Description
-        Container(
-          constraints: const BoxConstraints(maxWidth: 600),
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Text(
-            'AdsyClub – Social Business Network: Earn Money, Connect with Society & Find the Services You Need!',
-            style: GoogleFonts.roboto(
-              fontSize: isMobile ? 14 : 16,
-              color: Colors.grey.shade600,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
+  Widget _buildDynamicLogo(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _handleNavigation('Home'),
+      child: Container(
+        constraints: const BoxConstraints(
+          maxHeight: 48, // h-10 sm:h-12
+          maxWidth: 150,
         ),
-      ],
+        child: isLoading
+            ? Container(
+                height: 40,
+                width: 120,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : logoData != null && logoData!['image'] != null
+                ? Image.network(
+                    logoData!['image'],
+                    fit: BoxFit.contain,
+                    height: 40,
+                    errorBuilder: (context, error, stackTrace) {
+                      return _buildFallbackLogo();
+                    },
+                  )
+                : _buildFallbackLogo(),
+      ),
     );
   }
 
-  Widget _buildNavigationSection(BuildContext context, bool isMobile) {
+  Widget _buildFallbackLogo() {
+    return Image.asset(
+      'assets/images/logo.png',
+      height: 40,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Text(
+          logoData?['text'] ?? 'AdsyClub',
+          style: GoogleFonts.roboto(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey.shade800,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildVerticalNavigation(BuildContext context) {
     final navLinks = [
       {'title': t('classified_service'), 'route': '/'},
       {'title': t('earn_money'), 'route': '/'},
-      {'title': t('mobile_recharge'), 'route': '/mobile-recharge'},
       {'title': t('packeges'), 'route': '/upgrade-to-pro'},
       {'title': t('refer_program'), 'route': '/refer-a-friend'},
       {'title': t('about_us'), 'route': '/about'},
-      {'title': t('faq'), 'route': '/faq'},
       {'title': t('contact_us'), 'route': '/contact-us'},
     ];
 
-    if (isMobile) {
-      // Vertical navigation for mobile
-      return Column(
-        children: navLinks.map((link) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: InkWell(
-            onTap: () => _handleNavigation(context, link['title']!),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: Text(
-                link['title']!,
-                style: GoogleFonts.roboto(
-                  fontSize: 16,
-                  color: Colors.grey.shade700,
-                  fontWeight: FontWeight.normal,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        )).toList(),
-      );
-    } else {
-      // Horizontal navigation for desktop
-      return Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 32,
-        runSpacing: 16,
-        children: navLinks.map((link) => InkWell(
-          onTap: () => _handleNavigation(context, link['title']!),
+    return Column(
+      children: navLinks.map((link) => Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 4),
+        child: InkWell(
+          onTap: () => _handleNavigation(link['title']!),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
             child: Text(
               link['title']!,
               style: GoogleFonts.roboto(
@@ -331,176 +386,141 @@ class _AppFooterState extends State<AppFooter> {
                 color: Colors.grey.shade700,
                 fontWeight: FontWeight.normal,
               ),
+              textAlign: TextAlign.center,
             ),
           ),
-        )).toList(),
-      );
-    }
-  }
-
-  Widget _buildAppPaymentSection(BuildContext context, bool isMobile) {
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 1000),
-      child: isMobile
-          ? Column(
-              children: [
-                _buildAppDownloadSection(context, true),
-                const SizedBox(height: 32),
-                _buildPaymentSection(context, true),
-              ],
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(child: _buildAppDownloadSection(context, false)),
-                const SizedBox(width: 48),
-                Expanded(child: _buildPaymentSection(context, false)),
-              ],
-            ),
+        ),
+      )).toList(),
     );
   }
 
-  Widget _buildAppDownloadSection(BuildContext context, bool isMobile) {
+  Widget _buildAppPaymentSection(BuildContext context) {
     return Column(
       children: [
-        if (!isMobile)
-          Text(
-            t('download_app'),
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
-            ),
-          ),
-        if (!isMobile) const SizedBox(height: 16),
-        
-        Row(
-          mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
+        // App download section
+        Column(
           children: [
-            // App Store
-            GestureDetector(
-              onTap: () => _showComingSoon(context, 'App Store'),
-              child: Container(
-                width: 117,
-                height: 40,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    'assets/images/apple.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.black,
-                        child: const Center(
-                          child: Text(
-                            'App Store',
-                            style: TextStyle(color: Colors.white),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // App Store (w-[117px])
+                SizedBox(
+                  width: 117,
+                  child: GestureDetector(
+                    onTap: () => _showComingSoon('App Store'),
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
                           ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.asset(
+                          'assets/images/apple.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.black,
+                              child: const Center(
+                                child: Text(
+                                  'App Store',
+                                  style: TextStyle(color: Colors.white, fontSize: 12),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                
+                const SizedBox(width: 8),
+                
+                // Google Play (w-[119px])
+                SizedBox(
+                  width: 119,
+                  child: GestureDetector(
+                    onTap: _downloadAndroidApp,
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.asset(
+                          'assets/images/google.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.black,
+                              child: const Center(
+                                child: Text(
+                                  'Google Play',
+                                  style: TextStyle(color: Colors.white, fontSize: 12),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            
-            const SizedBox(width: 8),
-            
-            // Google Play
-            GestureDetector(
-              onTap: () => _downloadAndroidApp(context),
-              child: Container(
-                width: 119,
-                height: 40,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    'assets/images/google.png',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.black,
-                        child: const Center(
-                          child: Text(
-                            'Google Play',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+          ],
+        ),
+        
+        const SizedBox(height: 32),
+        
+        // Payment section
+        Column(
+          children: [
+            Container(
+              constraints: const BoxConstraints(maxWidth: 370),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(
+                  'assets/images/payment.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildPaymentBadge('VISA', const Color(0xFF1A1F71)),
+                          _buildPaymentBadge('MC', Colors.orange),
+                          _buildPaymentBadge('PayPal', const Color(0xFF0070BA)),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
           ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentSection(BuildContext context, bool isMobile) {
-    return Column(
-      children: [
-        if (!isMobile)
-          Text(
-            t('we_accept'),
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        if (!isMobile) const SizedBox(height: 16),
-        
-        Container(
-          constraints: const BoxConstraints(maxWidth: 370),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
-              'assets/images/payment.png',
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildPaymentBadge('VISA', const Color(0xFF1A1F71)),
-                      _buildPaymentBadge('MC', Colors.orange),
-                      _buildPaymentBadge('PayPal', const Color(0xFF0070BA)),
-                      _buildMobileBankingBadge(),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
         ),
       ],
     );
@@ -525,47 +545,21 @@ class _AppFooterState extends State<AppFooter> {
     );
   }
 
-  Widget _buildMobileBankingBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF10B981),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.phone_android,
-            size: 12,
-            color: Colors.white,
-          ),
-          const SizedBox(width: 2),
-          Text(
-            'Mobile',
-            style: GoogleFonts.roboto(
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTermsSection(BuildContext context) {
+  Widget _buildTermsNavigation(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         InkWell(
-          onTap: () => _handleNavigation(context, t('terms_conditions')),
-          child: Text(
-            t('terms_conditions'),
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-              fontWeight: FontWeight.normal,
+          onTap: () => _handleNavigation(t('terms_conditions')),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+            child: Text(
+              t('terms_conditions'),
+              style: GoogleFonts.roboto(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.normal,
+              ),
             ),
           ),
         ),
@@ -578,13 +572,16 @@ class _AppFooterState extends State<AppFooter> {
         ),
         
         InkWell(
-          onTap: () => _handleNavigation(context, t('privacy_policy')),
-          child: Text(
-            t('privacy_policy'),
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-              fontWeight: FontWeight.normal,
+          onTap: () => _handleNavigation(t('privacy_policy')),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+            child: Text(
+              t('privacy_policy'),
+              style: GoogleFonts.roboto(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.normal,
+              ),
             ),
           ),
         ),
@@ -592,106 +589,7 @@ class _AppFooterState extends State<AppFooter> {
     );
   }
 
-  Widget _buildDynamicLogo(BuildContext context, bool isMobile) {
-    return GestureDetector(
-      onTap: () => _handleNavigation(context, 'Home'),
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: isMobile ? 40 : 48,
-          maxWidth: isMobile ? 120 : 150,
-        ),
-        child: isLoading
-            ? Container(
-                height: isMobile ? 32 : 40,
-                width: isMobile ? 100 : 120,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.grey.shade600,
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            : logoData != null && logoData!['image'] != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      logoData!['image'],
-                      fit: BoxFit.contain,
-                      height: isMobile ? 32 : 40,
-                      errorBuilder: (context, error, stackTrace) {
-                        return _buildFallbackLogo(context, isMobile);
-                      },
-                    ),
-                  )
-                : _buildFallbackLogo(context, isMobile),
-      ),
-    );
-  }
-
-  Widget _buildFallbackLogo(BuildContext context, bool isMobile) {
-    return Image.asset(
-      'assets/images/logo.png',
-      height: isMobile ? 32 : 40,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) {
-        // Only show text as final fallback if logo image fails to load
-        return Text(
-          logoData?['text'] ?? 'AdsyClub',
-          style: GoogleFonts.roboto(
-            fontSize: isMobile ? 16 : 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey.shade800,
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCopyrightSection(BuildContext context, bool isMobile) {
-    return Container(
-      padding: EdgeInsets.only(
-        top: 24,
-        bottom: isMobile ? 80 : 24, // Extra bottom padding for mobile nav
-      ),
-      child: RichText(
-        textAlign: TextAlign.center,
-        text: TextSpan(
-          style: GoogleFonts.roboto(
-            fontSize: 14,
-            color: Colors.grey.shade600,
-          ),
-          children: [
-            const TextSpan(text: 'Developed With '),
-            WidgetSpan(
-              child: Icon(
-                Icons.favorite,
-                color: Colors.red.shade500,
-                size: 16,
-              ),
-            ),
-            TextSpan(
-              text: ' By Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildMobileNavigationBar(BuildContext context) {
-    // Mock user data - replace with actual user state management
-    final bool isLoggedIn = DateTime.now().millisecondsSinceEpoch % 2 == 0; // Dynamic condition
-    
     return Positioned(
       left: 24,
       right: 24,
@@ -700,7 +598,7 @@ class _AppFooterState extends State<AppFooter> {
         duration: const Duration(milliseconds: 500),
         transform: Matrix4.translationValues(
           0, 
-          isScrollingDown ? 80 : 0, 
+          widget.isScrollingDown ? 80 : 0, 
           0
         ),
         child: Container(
@@ -716,134 +614,176 @@ class _AppFooterState extends State<AppFooter> {
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
             child: isLoggedIn 
-                ? _buildLoggedInNavigation(context)
-                : _buildGuestNavigation(context),
+                ? _buildLoggedInNavigation()
+                : _buildGuestNavigation(),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildLoggedInNavigation(BuildContext context) {
+  Widget _buildLoggedInNavigation() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildNavItem(
-          icon: Icons.home,
-          onTap: () => _handleNavigation(context, 'Home'),
-          hasNotification: false,
+          child: Image.asset(
+            'assets/images/favicon.png',
+            width: 26,
+            height: 26,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(
+                Icons.home,
+                size: 26,
+                color: Color(0xFF34D399),
+              );
+            },
+          ),
+          onTap: () => _handleButtonClick('mobile_home', 'Home'),
+          buttonId: 'mobile_home',
         ),
         _buildNavItem(
-          icon: Icons.account_balance_wallet,
-          onTap: () => _handleNavigation(context, 'Deposit/Withdraw'),
-          hasNotification: false,
+          child: const Icon(Icons.account_balance_wallet, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('mobile_deposit', 'Deposit/Withdraw'),
+          buttonId: 'mobile_deposit',
         ),
         _buildNavItem(
-          icon: Icons.phone_android,
-          onTap: () => _handleNavigation(context, 'Mobile Recharge'),
-          hasNotification: false,
+          child: const Icon(Icons.phone_android, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('mobile_recharge', 'Mobile Recharge'),
+          buttonId: 'mobile_recharge',
         ),
         _buildNavItem(
-          icon: Icons.network_check,
-          onTap: () => _handleNavigation(context, 'Business Network'),
-          hasNotification: unreadCount > 0,
-          notificationCount: unreadCount,
+          child: Stack(
+            children: [
+              const Icon(Icons.network_check, size: 28, color: Color(0xFF34D399)),
+              if (unreadCount > 0)
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      unreadCount > 99 ? '99+' : unreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          onTap: () => _handleButtonClick('mobile_business', 'Business Network'),
+          buttonId: 'mobile_business',
         ),
         _buildNavItem(
-          icon: Icons.newspaper,
-          onTap: () => _handleNavigation(context, 'News'),
-          hasNotification: false,
+          child: const Icon(Icons.newspaper, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('mobile_news', 'News'),
+          buttonId: 'mobile_news',
         ),
       ],
     );
   }
 
-  Widget _buildGuestNavigation(BuildContext context) {
+  Widget _buildGuestNavigation() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildNavItem(
-          icon: Icons.home,
-          onTap: () => _handleNavigation(context, 'Home'),
-          hasNotification: false,
+          child: Image.asset(
+            'assets/images/favicon.png',
+            width: 26,
+            height: 26,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(
+                Icons.home,
+                size: 26,
+                color: Color(0xFF34D399),
+              );
+            },
+          ),
+          onTap: () => _handleButtonClick('guest_home', 'Home'),
+          buttonId: 'guest_home',
         ),
         _buildNavItem(
-          icon: Icons.work,
-          onTap: () => _handleNavigation(context, 'Microgigs'),
-          hasNotification: false,
+          child: const Icon(Icons.work, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('guest_microgigs', 'Microgigs'),
+          buttonId: 'guest_microgigs',
         ),
         _buildNavItem(
-          icon: Icons.shopping_bag,
-          onTap: () => _handleNavigation(context, 'eShop'),
-          hasNotification: false,
+          child: const Icon(Icons.shopping_bag, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('guest_eshop', 'eShop'),
+          buttonId: 'guest_eshop',
         ),
         _buildNavItem(
-          icon: Icons.network_check,
-          onTap: () => _handleNavigation(context, 'Business Network'),
-          hasNotification: false,
+          child: const Icon(Icons.network_check, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('guest_business', 'Business Network'),
+          buttonId: 'guest_business',
         ),
         _buildNavItem(
-          icon: Icons.newspaper,
-          onTap: () => _handleNavigation(context, 'News'),
-          hasNotification: false,
+          child: const Icon(Icons.newspaper, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('guest_news', 'News'),
+          buttonId: 'guest_news',
         ),
       ],
     );
   }
 
   Widget _buildNavItem({
-    required IconData icon,
+    required Widget child,
     required VoidCallback onTap,
-    required bool hasNotification,
-    int notificationCount = 0,
+    required String buttonId,
   }) {
+    final isLoading = _loadingButtons.contains(buttonId);
+    
     return InkWell(
-      onTap: onTap,
+      onTap: isLoading ? null : onTap,
       child: Container(
         padding: const EdgeInsets.all(8),
-        child: Stack(
-          children: [
-            Icon(
-              icon,
-              size: 28,
-              color: const Color(0xFF34D399),
-            ),
-            if (hasNotification && notificationCount > 0)
-              Positioned(
-                right: -2,
-                top: -2,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    notificationCount > 99 ? '99+' : notificationCount.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+        child: isLoading
+            ? const SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF34D399)),
                 ),
-              ),
-          ],
-        ),
+              )
+            : child,
       ),
     );
   }
 
-  // Helper methods
-  void _handleNavigation(BuildContext context, String destination) {
+  void _handleButtonClick(String buttonId, String destination) {
+    setState(() {
+      _loadingButtons.add(buttonId);
+    });
+    
+    // Simulate navigation delay
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        setState(() {
+          _loadingButtons.remove(buttonId);
+        });
+        _handleNavigation(destination);
+      }
+    });
+  }
+
+  void _handleNavigation(String destination) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Navigate to $destination'),
@@ -853,17 +793,17 @@ class _AppFooterState extends State<AppFooter> {
     );
   }
 
-  void _showComingSoon(BuildContext context, String feature) {
+  void _showComingSoon(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$feature - ${t('coming_soon')}'),
+        content: Text('$feature - Coming Soon'),
         backgroundColor: const Color(0xFF3B82F6),
         duration: const Duration(seconds: 2),
       ),
     );
   }
 
-  void _downloadAndroidApp(BuildContext context) {
+  void _downloadAndroidApp() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Download Started - AdsyClub Android app is downloading...'),
@@ -872,4 +812,32 @@ class _AppFooterState extends State<AppFooter> {
       ),
     );
   }
+}
+
+// Custom painter for the background pattern (matching Vue's diagonal pattern)
+class PatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black.withOpacity(0.05)
+      ..style = PaintingStyle.fill;
+
+    const patternSize = 60.0;
+    
+    for (double x = 0; x < size.width + patternSize; x += patternSize) {
+      for (double y = 0; y < size.height + patternSize; y += patternSize) {
+        // Draw diagonal pattern squares
+        final rect1 = Rect.fromLTWH(x, y, patternSize * 0.25, patternSize * 0.25);
+        final rect2 = Rect.fromLTWH(x + patternSize * 0.5, y + patternSize * 0.5, patternSize * 0.25, patternSize * 0.25);
+        final rect3 = Rect.fromLTWH(x + patternSize * 0.75, y + patternSize * 0.75, patternSize * 0.25, patternSize * 0.25);
+        
+        canvas.drawRect(rect1, paint);
+        canvas.drawRect(rect2, paint);
+        canvas.drawRect(rect3, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

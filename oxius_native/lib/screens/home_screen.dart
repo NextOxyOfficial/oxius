@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/footer.dart';
 import '../widgets/mobile_drawer.dart';
-import '../widgets/mobile_navigation_bar.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/sale_category.dart';
 import '../widgets/classified_services_section.dart';
@@ -86,14 +85,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SaleCategory(),
                   const ClassifiedServicesSection(),
                   
-                  // Footer - only show on desktop, mobile uses bottom nav
-                  if (!isMobile) ...[
-                    const SizedBox(height: 32),
-                    const AppFooter(showMobileNav: false),
-                  ] else ...[
-                    // Extra bottom padding for mobile nav bar
-                    const SizedBox(height: 100),
-                  ],
+                  // Footer - always show the main footer content
+                  const SizedBox(height: 32),
+                  AppFooter(
+                    showMobileNav: isMobile, // Show mobile nav only on mobile
+                    isScrollingDown: _scrollService.isScrollingDown,
+                  ),
                 ],
               ),
             ),
@@ -101,10 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       
-      // Mobile Navigation Bar - use Stack positioning instead of FloatingActionButton
-      bottomNavigationBar: isMobile 
-          ? const MobileNavigationBar() 
-          : null,
+      // No bottom navigation bar since AppFooter handles mobile navigation
     );
   }
 
