@@ -332,23 +332,30 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            isPro ? 'Pro Member' : 'Upgrade to Pro',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
+                          Flexible(
+                            child: Text(
+                              isPro ? 'Pro Member' : 'Upgrade to Pro',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            isPro 
-                              ? 'Premium features active'
-                              : 'Unlock premium features',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
+                          Flexible(
+                            child: Text(
+                              isPro 
+                                ? 'Premium features active'
+                                : 'Unlock premium features',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
@@ -356,41 +363,43 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                     ),
 
                     // Toggle Switch
-                    Container(
-                      width: 44,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        gradient: isPro 
-                          ? const LinearGradient(
-                              colors: [
-                                Color(0xFF6366F1), // indigo-400
-                                Color(0xFF2563EB), // blue-500
-                              ],
-                            )
-                          : LinearGradient(
-                              colors: [
-                                Colors.grey.shade200,
-                                Colors.grey.shade300,
-                              ],
-                            ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(2),
-                        child: Align(
-                          alignment: isPro ? Alignment.centerRight : Alignment.centerLeft,
-                          child: Container(
-                            width: 18,
-                            height: 18,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 2,
-                                ),
-                              ],
+                    Flexible(
+                      child: Container(
+                        width: 44,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          gradient: isPro 
+                            ? const LinearGradient(
+                                colors: [
+                                  Color(0xFF6366F1), // indigo-400
+                                  Color(0xFF2563EB), // blue-500
+                                ],
+                              )
+                            : LinearGradient(
+                                colors: [
+                                  Colors.grey.shade200,
+                                  Colors.grey.shade300,
+                                ],
+                              ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(2),
+                          child: Align(
+                            alignment: isPro ? Alignment.centerRight : Alignment.centerLeft,
+                            child: Container(
+                              width: 18,
+                              height: 18,
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),

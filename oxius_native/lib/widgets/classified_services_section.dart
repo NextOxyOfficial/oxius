@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../services/classified_category_service.dart';
 import 'classified_search_bar.dart';
 import 'classified_categories_grid.dart';
+import 'ads_scroll.dart'; // Import the new ads scroll widget
 
 class ClassifiedServicesSection extends StatefulWidget {
   const ClassifiedServicesSection({super.key});
@@ -162,6 +163,13 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
             isLoading: _loadingCategories,
           ),
           const SizedBox(height: 8),
+          // Always show ads scroll widget with fallback data
+          AdsScrollWidget(
+            ads: {
+              'results': _posts.isNotEmpty ? _posts : _getMockAds()
+            }, 
+            sectionTitle: _translationService.t('recent_ads', fallback: 'Recent Ads'),
+          ),
           _buildPostsArea(isMobile),
         ],
       ),
@@ -392,5 +400,71 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
         );
       },
     );
+  }
+
+  // Mock ads data for fallback when no posts are available
+  List<Map<String, dynamic>> _getMockAds() {
+    return [
+      {
+        'id': '1',
+        'title': 'iPhone 13 Pro Max 256GB - Excellent Condition',
+        'price': '95000',
+        'image': 'https://placehold.co/300x200?text=iPhone',
+        'upazila': 'Dhanmondi',
+        'city': 'Dhaka',
+        'created_at': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
+        'medias': [
+          {'image': 'https://placehold.co/300x200?text=iPhone'}
+        ],
+      },
+      {
+        'id': '2',
+        'title': 'Toyota Corolla 2020 - Low Mileage',
+        'price': '2500000',
+        'image': 'https://placehold.co/300x200?text=Toyota+Corolla',
+        'upazila': 'Gulshan',
+        'city': 'Dhaka',
+        'created_at': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
+        'medias': [
+          {'image': 'https://placehold.co/300x200?text=Toyota+Corolla'}
+        ],
+      },
+      {
+        'id': '3',
+        'title': '3 Bedroom Apartment for Rent',
+        'price': '25000',
+        'image': 'https://placehold.co/300x200?text=Apartment',
+        'upazila': 'Uttara',
+        'city': 'Dhaka',
+        'created_at': DateTime.now().subtract(const Duration(hours: 5)).toIso8601String(),
+        'medias': [
+          {'image': 'https://placehold.co/300x200?text=Apartment'}
+        ],
+      },
+      {
+        'id': '4',
+        'title': 'Gaming Laptop RTX 3060 - Like New',
+        'price': '85000',
+        'image': 'https://placehold.co/300x200?text=Gaming+Laptop',
+        'upazila': 'Mirpur',
+        'city': 'Dhaka',
+        'created_at': DateTime.now().subtract(const Duration(hours: 8)).toIso8601String(),
+        'medias': [
+          {'image': 'https://placehold.co/300x200?text=Gaming+Laptop'}
+        ],
+      },
+      {
+        'id': '5',
+        'title': 'Yamaha R15 V4 - 2023 Model',
+        'price': '380000',
+        'image': 'https://placehold.co/300x200?text=Yamaha+R15',
+        'upazila': 'Banani',
+        'city': 'Dhaka',
+        'created_at': DateTime.now().subtract(const Duration(hours: 12)).toIso8601String(),
+        'medias': [
+          {'image': 'https://placehold.co/300x200?text=Yamaha+R15'}
+        ],
+      },
+    ];
   }
 }

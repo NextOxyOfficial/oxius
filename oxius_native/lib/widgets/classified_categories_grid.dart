@@ -129,6 +129,7 @@ class _CategoryTileState extends State<_CategoryTile> {
         curve: Curves.easeOut,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min, // Prevent overflow
           children: [
             // Icon container with hero section styling - rounded square
             Container(
@@ -159,18 +160,20 @@ class _CategoryTileState extends State<_CategoryTile> {
             ),
             const SizedBox(height: 6),
             // Label with hero section typography
-            Text(
-              widget.category.title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.1,
-                color: labelColor,
-                height: 1.2,
+            Flexible( // Make text flexible to prevent overflow
+              child: Text(
+                widget.category.title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.1,
+                  color: labelColor,
+                  height: 1.1, // Slightly reduced line height
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -187,6 +190,7 @@ class _LoadingTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min, // Prevent overflow
       children: [
         Container(
           width: 48,

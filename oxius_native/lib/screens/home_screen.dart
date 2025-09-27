@@ -4,6 +4,7 @@ import '../widgets/mobile_drawer.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/sale_category.dart';
 import '../widgets/classified_services_section.dart';
+import '../widgets/eshop_section.dart'; // Add the eShop section import
 import '../services/scroll_direction_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -85,11 +86,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SaleCategory(),
                   const ClassifiedServicesSection(),
                   
+                  // Add eShop section below the classified services
+                  const EshopSection(),
+                  
                   // Footer - always show the main footer content
                   const SizedBox(height: 32),
                   AppFooter(
                     showMobileNav: isMobile, // Show mobile nav only on mobile
-                    isScrollingDown: _scrollService.isScrollingDown,
                   ),
                 ],
               ),
