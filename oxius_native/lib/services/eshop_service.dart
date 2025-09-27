@@ -1,8 +1,17 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'api_service.dart';
 
 class EshopService {
-  static const String baseUrl = 'http://localhost:8000/api';
+  static String get baseUrl => ApiService.baseUrl;
+  static String get _originBase => ApiService.baseUrl.replaceFirst('/api', '');
+
+  static String _abs(String? url) {
+    if (url == null || url.isEmpty) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    final u = url.startsWith('/') ? url : '/$url';
+    return '$_originBase$u';
+  }
   
   static Future<List<Map<String, dynamic>>> fetchEshopProducts({
     String? query,
@@ -24,7 +33,8 @@ class EshopService {
         queryParams['category'] = categoryId;
       }
 
-      final uri = Uri.parse('$baseUrl/eshop/products/').replace(queryParameters: queryParams);
+  // Correct backend path based on Django urls.py -> api/sale/posts/
+  final uri = Uri.parse('$baseUrl/sale/posts/').replace(queryParameters: queryParams);
       print('EshopService: Fetching products from: $uri');
       
       final response = await http.get(
@@ -39,13 +49,42 @@ class EshopService {
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
+        List<Map<String, dynamic>> _normalize(List list) {
+          return List<Map<String, dynamic>>.from(list.map((e) {
+            final m = Map<String, dynamic>.from(e);
+            // Top-level image fields
+            if (m['image'] is String) m['image'] = _abs(m['image']);
+            if (m['main_image'] is String) m['main_image'] = _abs(m['main_image']);
+            // medias array
+            if (m['medias'] is List) {
+              m['medias'] = (m['medias'] as List).map((it) {
+                if (it is Map && it['image'] is String) {
+                  return {...it, 'image': _abs(it['image'])};
+                }
+                return it;
+              }).toList();
+            }
+            // image_details array
+            if (m['image_details'] is List) {
+              m['image_details'] = (m['image_details'] as List).map((it) {
+                if (it is Map && it['image'] is String) {
+                  return {...it, 'image': _abs(it['image'])};
+                }
+                if (it is String) return _abs(it);
+                return it;
+              }).toList();
+            }
+            return m;
+          }));
+        }
+
         if (data is Map && data['results'] is List) {
-          final products = List<Map<String, dynamic>>.from(data['results']);
+          final products = _normalize(data['results']);
           print('EshopService: Successfully fetched ${products.length} products');
           return products;
         } else if (data is List) {
-          final products = List<Map<String, dynamic>>.from(data);
+          final products = _normalize(data);
           print('EshopService: Successfully fetched ${products.length} products (direct array)');
           return products;
         }

@@ -1,8 +1,8 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/translation_service.dart';
 import '../services/eshop_service.dart';
-import 'ads_scroll.dart';
 
 class EshopSection extends StatefulWidget {
   const EshopSection({super.key});
@@ -15,8 +15,25 @@ class _EshopSectionState extends State<EshopSection> {
   final TranslationService _translationService = TranslationService();
   final Set<String> _loadingButtons = <String>{};
   List<Map<String, dynamic>> _products = [];
+  List<Map<String, dynamic>> _displayProducts = [];
   bool _loadingProducts = false;
   bool _initialized = false;
+  final Set<String> _buyLoading = <String>{};
+
+  // Pick up to [maxItems] random unique items from the list
+  List<Map<String, dynamic>> _pickRandom(List<Map<String, dynamic>> list, int maxItems) {
+    if (list.isEmpty) return [];
+    final rng = Random();
+    final indices = List<int>.generate(list.length, (i) => i);
+    for (int i = indices.length - 1; i > 0; i--) {
+      final j = rng.nextInt(i + 1);
+      final tmp = indices[i];
+      indices[i] = indices[j];
+      indices[j] = tmp;
+    }
+    final take = min(maxItems, indices.length);
+    return List<Map<String, dynamic>>.generate(take, (i) => list[indices[i]]);
+  }
 
   @override
   void initState() {
@@ -81,6 +98,7 @@ class _EshopSectionState extends State<EshopSection> {
       if (!mounted) return;
       setState(() {
         _products = finalProducts;
+        _displayProducts = _pickRandom(finalProducts, 10);
         _loadingProducts = false;
       });
       print('DEBUG: eShop products state updated, total: ${_products.length}');
@@ -92,6 +110,7 @@ class _EshopSectionState extends State<EshopSection> {
       if (!mounted) return;
       setState(() {
         _products = EshopService.getMockProducts();
+        _displayProducts = _pickRandom(_products, 10);
         _loadingProducts = false;
       });
     }
@@ -270,162 +289,426 @@ class _EshopSectionState extends State<EshopSection> {
       );
     }
 
-    // Simple grid placeholder - show first 6 products
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: isMobile ? 2 : 4,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: isMobile ? 0.75 : 0.8,
-      ),
-      itemCount: _products.length.clamp(0, 6), // show up to 6 for initial view
-      itemBuilder: (context, idx) {
-        final product = _products[idx];
-        final title = (product['title'] ?? '---').toString();
-        final price = product['price']?.toString();
-        final imageUrl = _getImageSrc(product);
-        
-        return Material(
-          color: Colors.white,
-          elevation: 2,
-          borderRadius: BorderRadius.circular(12),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () {
-              // TODO: Navigate to product detail screen
-              print('Product tapped: ${product['id']}');
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Product image
-                  Expanded(
-                    flex: 3,
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                        child: Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade100,
-                              child: Icon(
-                                Icons.shopping_bag_outlined,
-                                size: 32,
-                                color: Colors.purple.shade300,
-                              ),
-                            );
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              color: Colors.grey.shade100,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.purple.shade400),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
+    // Show exactly 2 rows of 5 random items (up to 10 products), each row scrolls horizontally
+    final items = _displayProducts.isNotEmpty ? _displayProducts : _products.take(10).toList();
+    final row1 = items.take(5).toList();
+    final row2 = items.length > 5 ? items.sublist(5, items.length.clamp(5, 10)) : <Map<String, dynamic>>[];
+
+    const spacing = 16.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+  final availableWidth = constraints.maxWidth;
+  // Ideal width to fit 5 across if possible
+  final idealWidth = (availableWidth - spacing * 4) / 5;
+        // Keep sensible min/max widths so cards don't get too small
+        final cardWidth = idealWidth.clamp(180.0, 280.0);
+        // Allocate enough room for details + bottom breathing space below the button
+        const detailsMinHeight = 205.0;
+        final cardHeight = cardWidth + detailsMinHeight;        Widget buildRow(List<Map<String, dynamic>> data) {
+          return SizedBox(
+            height: cardHeight,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              itemCount: data.length,
+              separatorBuilder: (_, __) => const SizedBox(width: spacing),
+              itemBuilder: (context, idx) {
+                final product = data[idx];
+                final id = (product['id'] ?? idx).toString();
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 4),
+                  width: cardWidth,
+                  child: _EshopProductCard(
+                    product: product,
+                    isLoading: _buyLoading.contains(id),
+                    width: cardWidth,
+                    height: cardHeight,
+                    onBuyNow: () async {
+                      setState(() => _buyLoading.add(id));
+                      await Future.delayed(const Duration(milliseconds: 800));
+                      if (!mounted) return;
+                      setState(() => _buyLoading.remove(id));
+                    },
+                    onTap: () {
+                      debugPrint('Product tapped: ${product['id']}');
+                    },
                   ),
-                  
-                  // Product details
-                  Expanded(
-                    flex: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.roboto(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey.shade800,
-                              height: 1.3,
-                            ),
-                          ),
-                          const Spacer(),
-                          if (price != null) 
-                            Text(
-                              '৳$price',
-                              style: GoogleFonts.roboto(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.purple.shade600,
-                              ),
-                            ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.location_on, size: 12, color: Colors.grey.shade500),
-                              const SizedBox(width: 2),
-                              Flexible(
-                                child: Text(
-                                  (product['location'] ?? product['city'] ?? '').toString(),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 10,
-                                    color: Colors.grey.shade500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
-          ),
+          );
+        }
+
+        return Column(
+          children: [
+            if (row1.isNotEmpty) buildRow(row1),
+            const SizedBox(height: 16),
+            if (row2.isNotEmpty) buildRow(row2),
+          ],
         );
       },
     );
   }
 
-  String _getImageSrc(Map<String, dynamic> product) {
-    // Check for medias array first
-    if (product['medias'] != null && 
-        product['medias'] is List && 
-        (product['medias'] as List).isNotEmpty) {
-      final media = (product['medias'] as List).first;
-      if (media['image'] != null) {
-        return media['image'].toString();
-      }
+}
+
+// --- Product Card (Flutter implementation aligned with Vue product-card.vue) ---
+class _EshopProductCard extends StatefulWidget {
+  final Map<String, dynamic> product;
+  final bool isLoading;
+  final VoidCallback onBuyNow;
+  final VoidCallback? onTap;
+  final double width;
+  final double height;
+
+  const _EshopProductCard({
+    required this.product,
+    required this.isLoading,
+    required this.onBuyNow,
+    required this.width,
+    required this.height,
+    this.onTap,
+  });
+
+  @override
+  State<_EshopProductCard> createState() => _EshopProductCardState();
+}
+
+class _EshopProductCardState extends State<_EshopProductCard> {
+  bool _hovered = false;
+
+  String _getImage(Map<String, dynamic> p) {
+    // Vue: image_details (array/string) -> image
+    final imgDetails = p['image_details'];
+    if (imgDetails is List && imgDetails.isNotEmpty) {
+      final first = imgDetails.first;
+      final url = (first is Map && first['image'] != null) ? first['image'].toString() : first.toString();
+      if (url.isNotEmpty) return url;
+    } else if (imgDetails is String && imgDetails.isNotEmpty) {
+      return imgDetails;
     }
-    
-    // Check for direct image field
-    if (product['image'] != null) {
-      return product['image'].toString();
+    // Fallback to medias then image
+    if (p['medias'] is List && (p['medias'] as List).isNotEmpty) {
+      final first = (p['medias'] as List).first;
+      if (first is Map && first['image'] != null) return first['image'].toString();
     }
-    
-    return 'https://placehold.co/300x200?text=Product';
+    if (p['image'] != null && p['image'].toString().isNotEmpty) return p['image'].toString();
+    return 'https://placehold.co/300x300?text=Product';
+  }
+
+  num? _toNum(dynamic v) {
+    if (v == null) return null;
+    try {
+      if (v is num) return v;
+      return num.parse(v.toString());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  int _calcDiscount(dynamic sale, dynamic regular) {
+    final s = _toNum(sale);
+    final r = _toNum(regular);
+    if (s == null || r == null) return 0;
+    if (r <= 0 || s >= r) return 0;
+    return (((r - s) / r) * 100).round();
+  }
+
+  String _formatPrice(dynamic v) {
+    final n = _toNum(v);
+    if (n == null) return '';
+    final s = n
+        .toStringAsFixed(0)
+        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+    return s; // currency symbol added in Text
+  }
+
+  String _getStoreName(Map<String, dynamic> p) {
+    final ownerDetails = p['owner_details'] as Map<String, dynamic>?;
+    final owner = p['owner'] as Map<String, dynamic>?;
+    return (ownerDetails?['store_name'] ?? owner?['store_name'] ?? 'Store').toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = widget.product;
+    final sale = p['sale_price'];
+    final regular = p['regular_price'] ?? p['price'];
+    final discount = _calcDiscount(sale, regular);
+    final isFreeDelivery = p['is_free_delivery'] == true;
+    final title = (p['name'] ?? p['title'] ?? '---').toString();
+    final imageUrl = _getImage(p);
+
+    final imageHeight = widget.width; // square image
+
+    return SizedBox(
+      width: widget.width,
+      height: widget.height,
+      child: Material(
+        color: Colors.white,
+        elevation: 2,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: widget.onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image section (square like pt-[100%])
+              MouseRegion(
+                onEnter: (_) => setState(() => _hovered = true),
+                onExit: (_) => setState(() => _hovered = false),
+                child: Stack(
+                  children: [
+                    SizedBox(
+                      height: imageHeight,
+                      width: double.infinity,
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                        child: Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey.shade100,
+                            child: Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 32,
+                              color: Colors.purple.shade300,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Discount badge (top-left)
+                    if (regular != null && discount > 0)
+                      Positioned(
+                        top: 8,
+                        left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade500,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.flash_on, size: 12, color: Colors.white),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$discount% OFF',
+                                style: GoogleFonts.roboto(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                    // Free delivery badge (bottom-left)
+                    if (isFreeDelivery)
+                      Positioned(
+                        bottom: 8,
+                        left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade600.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.local_shipping, size: 12, color: Colors.white),
+                              const SizedBox(width: 4),
+                              Text(
+                                'FREE DELIVERY',
+                                style: GoogleFonts.roboto(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                    // Quick View overlay (hover)
+                    Positioned.fill(
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 150),
+                        opacity: _hovered ? 1 : 0,
+                        child: Container(
+                          color: Colors.black.withOpacity(0.0),
+                          child: Center(
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.black87,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                              ),
+                              onPressed: () {
+                                // TODO: Implement quick view modal
+                                debugPrint('Quick View: ${p['id']}');
+                              },
+                              icon: const Icon(Icons.remove_red_eye_outlined, size: 16),
+                              label: const Text('Quick View'),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Details
+              Expanded(
+                child: Padding(
+                  // Reduced padding with 4px bottom space
+                  padding: const EdgeInsets.fromLTRB(6, 6, 6, 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Price row at top
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            '৳${_formatPrice(sale ?? regular)}',
+                            style: GoogleFonts.roboto(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey.shade900,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          if (sale != null && _toNum(sale) != null && regular != null && _toNum(regular) != null && _toNum(sale)! < _toNum(regular)!)
+                            Text(
+                              '৳${_formatPrice(regular)}',
+                              style: GoogleFonts.roboto(
+                                fontSize: 11,
+                                color: Colors.grey.shade500,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                        ],
+                      ),
+
+                      // Title (2 lines)
+                      Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.roboto(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade800,
+                        ),
+                      ),
+
+
+                      // Store pill (fill width to reduce overflow)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 18,
+                              height: 18,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(Icons.storefront_outlined, size: 12, color: Colors.white),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                _getStoreName(p),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.roboto(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Removed Spacer; using spaceBetween to distribute space properly
+
+                      // Buy Now button (full width)
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: widget.isLoading ? null : widget.onBuyNow,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade800,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 9),
+                            minimumSize: const Size.fromHeight(36),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: widget.isLoading
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text('Processing...'),
+                                  ],
+                                )
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    Icon(Icons.shopping_cart_outlined, size: 16),
+                                    SizedBox(width: 8),
+                                    Text('Buy Now'),
+                                  ],
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        ),
+      ),
+    );
   }
 }
