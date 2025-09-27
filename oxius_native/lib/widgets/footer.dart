@@ -237,8 +237,8 @@ class _AppFooterState extends State<AppFooter> {
                 
                 const SizedBox(height: 32),
                 
-                // Navigation links (vertical for mobile)
-                _buildVerticalNavigation(context),
+                // Navigation links - responsive like Vue (horizontal for desktop, vertical for mobile)
+                _buildResponsiveNavigation(context),
                 
                 const SizedBox(height: 32),
                 
@@ -361,7 +361,7 @@ class _AppFooterState extends State<AppFooter> {
     );
   }
 
-  Widget _buildVerticalNavigation(BuildContext context) {
+  Widget _buildResponsiveNavigation(BuildContext context) {
     final navLinks = [
       {'title': t('classified_service'), 'route': '/'},
       {'title': t('earn_money'), 'route': '/'},
@@ -371,26 +371,56 @@ class _AppFooterState extends State<AppFooter> {
       {'title': t('contact_us'), 'route': '/contact-us'},
     ];
 
-    return Column(
-      children: navLinks.map((link) => Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 4),
-        child: InkWell(
-          onTap: () => _handleNavigation(link['title']!),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-            child: Text(
-              link['title']!,
-              style: GoogleFonts.roboto(
-                fontSize: 16,
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.normal,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 600) {
+          // Vertical navigation for mobile
+          return Column(
+            children: navLinks.map((link) => Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 4),
+              child: InkWell(
+                onTap: () => _handleNavigation(link['title']!),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  child: Text(
+                    link['title']!,
+                    style: GoogleFonts.roboto(
+                      fontSize: 16,
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.normal,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-      )).toList(),
+            )).toList(),
+          );
+        } else {
+          // Horizontal navigation for desktop
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: navLinks.map((link) => Container(
+              margin: const EdgeInsets.symmetric(horizontal: 8),
+              child: InkWell(
+                onTap: () => _handleNavigation(link['title']!),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  child: Text(
+                    link['title']!,
+                    style: GoogleFonts.roboto(
+                      fontSize: 16,
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.normal,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            )).toList(),
+          );
+        }
+      },
     );
   }
 
@@ -591,34 +621,43 @@ class _AppFooterState extends State<AppFooter> {
 
   Widget _buildMobileNavigationBar(BuildContext context) {
     return Positioned(
-      left: 24,
+      left: 24, // mx-6 = 24px
       right: 24,
-      bottom: 8,
+      bottom: 8, // bottom-2 = 8px
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 500),
         transform: Matrix4.translationValues(
           0, 
-          widget.isScrollingDown ? 80 : 0, 
+          widget.isScrollingDown ? 80 : 0, // translate-y-20 = 80px
           0
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF34D399).withOpacity(0.1)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+        child: Material(
+          elevation: 4,
+          borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: isLoggedIn 
-                ? _buildLoggedInNavigation()
-                : _buildGuestNavigation(),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9), // bg-white/90
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFF34D399).withOpacity(0.1), // border-emerald-100
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 4), // py-1
+                child: isLoggedIn 
+                    ? _buildLoggedInNavigation()
+                    : _buildGuestNavigation(),
+              ),
+            ),
           ),
         ),
       ),
