@@ -294,14 +294,14 @@ class _EshopSectionState extends State<EshopSection> {
     final row1 = items.take(5).toList();
     final row2 = items.length > 5 ? items.sublist(5, items.length.clamp(5, 10)) : <Map<String, dynamic>>[];
 
-    const spacing = 16.0;
+    const spacing = 4.0;
     return LayoutBuilder(
       builder: (context, constraints) {
   final availableWidth = constraints.maxWidth;
-  // Ideal width to fit 5 across if possible
-  final idealWidth = (availableWidth - spacing * 4) / 5;
-        // Keep sensible min/max widths so cards don't get too small
-        final cardWidth = idealWidth.clamp(180.0, 280.0);
+  // Ideal width to fit 2 cards across properly with some spacing
+  final idealWidth = (availableWidth - spacing * 3) / 2;
+        // Keep sensible min/max widths so cards don't get too small or too large
+        final cardWidth = idealWidth.clamp(160.0, 200.0);
         // Allocate enough room for details + bottom breathing space below the button
         const detailsMinHeight = 160.0;
         final cardHeight = cardWidth + detailsMinHeight;        
