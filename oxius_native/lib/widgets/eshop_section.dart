@@ -379,22 +379,36 @@ class _EshopProductCardState extends State<_EshopProductCard> {
   bool _hovered = false;
 
   String _getImage(Map<String, dynamic> p) {
-    // Vue: image_details (array/string) -> image
-    final imgDetails = p['image_details'];
-    if (imgDetails is List && imgDetails.isNotEmpty) {
-      final first = imgDetails.first;
-      final url = (first is Map && first['image'] != null) ? first['image'].toString() : first.toString();
-      if (url.isNotEmpty) return url;
-    } else if (imgDetails is String && imgDetails.isNotEmpty) {
-      return imgDetails;
+    try {
+      // Check image field first (transformed data)
+      if (p['image'] is String && p['image'].toString().isNotEmpty) {
+        return p['image'].toString();
+      }
+      
+      // Check image_details array
+      final imgDetails = p['image_details'];
+      if (imgDetails is List && imgDetails.isNotEmpty) {
+        final first = imgDetails.first;
+        if (first is Map && first['image'] != null) {
+          final url = first['image'].toString();
+          if (url.isNotEmpty) return url;
+        }
+      }
+      
+      // Check medias array (fallback)
+      if (p['medias'] is List && (p['medias'] as List).isNotEmpty) {
+        final first = (p['medias'] as List).first;
+        if (first is Map && first['image'] != null) {
+          final url = first['image'].toString();
+          if (url.isNotEmpty) return url;
+        }
+      }
+      
+      return 'https://placehold.co/300x300?text=Product';
+    } catch (e) {
+      print('Error getting image: $e');
+      return 'https://placehold.co/300x300?text=Product';
     }
-    // Fallback to medias then image
-    if (p['medias'] is List && (p['medias'] as List).isNotEmpty) {
-      final first = (p['medias'] as List).first;
-      if (first is Map && first['image'] != null) return first['image'].toString();
-    }
-    if (p['image'] != null && p['image'].toString().isNotEmpty) return p['image'].toString();
-    return 'https://placehold.co/300x300?text=Product';
   }
 
   num? _toNum(dynamic v) {
@@ -425,9 +439,20 @@ class _EshopProductCardState extends State<_EshopProductCard> {
   }
 
   String _getStoreName(Map<String, dynamic> p) {
-    final ownerDetails = p['owner_details'] as Map<String, dynamic>?;
-    final owner = p['owner'] as Map<String, dynamic>?;
-    return (ownerDetails?['store_name'] ?? owner?['store_name'] ?? 'Store').toString();
+    try {
+      // Since the data is already transformed in the service, use the simplified structure
+      final ownerDetails = p['owner_details'];
+      if (ownerDetails is Map<String, dynamic>) {
+        final storeName = ownerDetails['store_name']?.toString() ?? 
+                         ownerDetails['name']?.toString() ?? 
+                         'Store';
+        return storeName.trim().isNotEmpty ? storeName.trim() : 'Store';
+      }
+      return 'Store';
+    } catch (e) {
+      print('Error getting store name: $e');
+      return 'Store';
+    }
   }
 
   @override

@@ -13,6 +13,108 @@ class EshopService {
     return '$_originBase$u';
   }
   
+  // Transform backend Product model to expected frontend format
+  static Map<String, dynamic> _transformProduct(Map<String, dynamic> backendProduct) {
+    try {
+      // Extract image from image_details (ProductMediaSerializer)
+      String? imageUrl;
+      final imageDetails = backendProduct['image_details'];
+      if (imageDetails is List && imageDetails.isNotEmpty) {
+        final firstImage = imageDetails.first;
+        if (firstImage is Map<String, dynamic> && firstImage['image'] != null) {
+          imageUrl = _abs(firstImage['image'].toString());
+        }
+      }
+      
+      // Extract store name from owner_details (UserSerializer)  
+      final ownerDetails = backendProduct['owner_details'];
+      String storeName = 'Store'; // Default fallback
+      if (ownerDetails is Map<String, dynamic>) {
+        storeName = ownerDetails['name']?.toString() ??
+                    ownerDetails['store_name']?.toString() ??
+                    ownerDetails['username']?.toString() ??
+                    ownerDetails['first_name']?.toString() ??
+                    'Store';
+        
+        // Add last name if available
+        if (storeName != 'Store' && ownerDetails['last_name'] != null && ownerDetails['last_name'].toString().isNotEmpty) {
+          storeName += ' ${ownerDetails['last_name']}';
+        }
+      }
+      
+      return {
+        'id': backendProduct['id']?.toString() ?? '',
+        'name': backendProduct['name']?.toString() ?? '',
+        'title': backendProduct['name']?.toString() ?? '', // Alias for compatibility
+        'slug': backendProduct['slug']?.toString() ?? '',
+        'description': backendProduct['description']?.toString() ?? '',
+        'short_description': backendProduct['short_description']?.toString() ?? '',
+        'regular_price': backendProduct['regular_price'] ?? 0.0,
+        'sale_price': backendProduct['sale_price'],
+        'price': backendProduct['regular_price'] ?? 0.0, // Fallback alias
+        'quantity': backendProduct['quantity'] ?? 0,
+        'is_featured': backendProduct['is_featured'] ?? false,
+        'is_free_delivery': backendProduct['is_free_delivery'] ?? false,
+        'is_active': backendProduct['is_active'] ?? true,
+        'views': backendProduct['views'] ?? 0,
+        'created_at': backendProduct['created_at']?.toString() ?? '',
+        'updated_at': backendProduct['updated_at']?.toString() ?? '',
+        'weight': backendProduct['weight'] ?? 0.0,
+        'keywords': backendProduct['keywords']?.toString() ?? '',
+        
+        // Images
+        'image': imageUrl ?? '',
+        'image_details': backendProduct['image_details'] ?? [],
+        'medias': backendProduct['image_details'] ?? [], // Alias for compatibility
+        
+        // Owner/Store information
+        'owner': backendProduct['owner']?.toString() ?? '',
+        'owner_details': {
+          'store_name': storeName,
+          'name': storeName,
+          'username': ownerDetails is Map ? (ownerDetails['username']?.toString() ?? '') : '',
+          'email': ownerDetails is Map ? (ownerDetails['email']?.toString() ?? '') : '',
+          'image': ownerDetails is Map && ownerDetails['image'] != null ? _abs(ownerDetails['image'].toString()) : null,
+        },
+        
+        // Categories
+        'category': backendProduct['category'] ?? [],
+        'category_details': backendProduct['category_details'] ?? [],
+        
+        // Additional product details
+        'benefits': backendProduct['benefits'] ?? [],
+        'faqs': backendProduct['faqs'] ?? [],
+        'trust_badges': backendProduct['trust_badges'] ?? [],
+        'order_count': backendProduct['order_count'] ?? 0,
+        'total_items_ordered': backendProduct['total_items_ordered'] ?? 0,
+        
+        // Delivery information
+        'delivery_information': backendProduct['delivery_information']?.toString() ?? '',
+        'delivery_fee_free': backendProduct['delivery_fee_free'] ?? 0.0,
+        'delivery_fee_inside_dhaka': backendProduct['delivery_fee_inside_dhaka'] ?? 0.0,
+        'delivery_fee_outside_dhaka': backendProduct['delivery_fee_outside_dhaka'] ?? 0.0,
+      };
+    } catch (e) {
+      print('EshopService: Error transforming product: $e');
+      // Return minimal safe product structure
+      return {
+        'id': backendProduct['id']?.toString() ?? '',
+        'name': backendProduct['name']?.toString() ?? 'Product',
+        'title': backendProduct['name']?.toString() ?? 'Product',
+        'regular_price': backendProduct['regular_price'] ?? 0.0,
+        'sale_price': backendProduct['sale_price'],
+        'price': backendProduct['regular_price'] ?? 0.0,
+        'is_free_delivery': backendProduct['is_free_delivery'] ?? false,
+        'image': '',
+        'image_details': [],
+        'owner_details': {
+          'store_name': 'Store',
+          'name': 'Store',
+        },
+      };
+    }
+  }
+  
   static Future<List<Map<String, dynamic>>> fetchEshopProducts({
     String? query,
     String? categoryId,
@@ -33,8 +135,8 @@ class EshopService {
         queryParams['category'] = categoryId;
       }
 
-  // Correct backend path based on Django urls.py -> api/sale/posts/
-  final uri = Uri.parse('$baseUrl/sale/posts/').replace(queryParameters: queryParams);
+  // Correct backend path for products -> api/products/ (base.urls included at api/)
+  final uri = Uri.parse('$baseUrl/products/').replace(queryParameters: queryParams);
       print('EshopService: Fetching products from: $uri');
       
       final response = await http.get(
@@ -53,40 +155,25 @@ class EshopService {
         List<Map<String, dynamic>> _normalize(List list) {
           return List<Map<String, dynamic>>.from(list.map((e) {
             final m = Map<String, dynamic>.from(e);
-            // Top-level image fields
-            if (m['image'] is String) m['image'] = _abs(m['image']);
-            if (m['main_image'] is String) m['main_image'] = _abs(m['main_image']);
-            // medias array
-            if (m['medias'] is List) {
-              m['medias'] = (m['medias'] as List).map((it) {
-                if (it is Map && it['image'] is String) {
-                  return {...it, 'image': _abs(it['image'])};
-                }
-                return it;
-              }).toList();
-            }
-            // image_details array
-            if (m['image_details'] is List) {
-              m['image_details'] = (m['image_details'] as List).map((it) {
-                if (it is Map && it['image'] is String) {
-                  return {...it, 'image': _abs(it['image'])};
-                }
-                if (it is String) return _abs(it);
-                return it;
-              }).toList();
-            }
-            return m;
+            
+            // Transform backend Product model to expected format
+            return _transformProduct(m);
           }));
         }
 
         if (data is Map && data['results'] is List) {
           final products = _normalize(data['results']);
-          print('EshopService: Successfully fetched ${products.length} products');
+          print('EshopService: Successfully fetched ${products.length} products (paginated)');
           return products;
         } else if (data is List) {
           final products = _normalize(data);
           print('EshopService: Successfully fetched ${products.length} products (direct array)');
           return products;
+        } else if (data is Map<String, dynamic>) {
+          // Single product object
+          final product = _transformProduct(data);
+          print('EshopService: Successfully fetched 1 product (single object)');
+          return [product];
         }
       }
       
