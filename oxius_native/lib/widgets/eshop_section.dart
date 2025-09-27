@@ -303,20 +303,21 @@ class _EshopSectionState extends State<EshopSection> {
         // Keep sensible min/max widths so cards don't get too small
         final cardWidth = idealWidth.clamp(180.0, 280.0);
         // Allocate enough room for details + bottom breathing space below the button
-        const detailsMinHeight = 205.0;
-        final cardHeight = cardWidth + detailsMinHeight;        Widget buildRow(List<Map<String, dynamic>> data) {
+        const detailsMinHeight = 160.0;
+        final cardHeight = cardWidth + detailsMinHeight;        
+        Widget buildRow(List<Map<String, dynamic>> data) {
           return SizedBox(
             height: cardHeight,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               itemCount: data.length,
               separatorBuilder: (_, __) => const SizedBox(width: spacing),
               itemBuilder: (context, idx) {
                 final product = data[idx];
                 final id = (product['id'] ?? idx).toString();
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 4),
+                  margin: const EdgeInsets.only(bottom: 8),
                   width: cardWidth,
                   child: _EshopProductCard(
                     product: product,
@@ -574,84 +575,122 @@ class _EshopProductCardState extends State<_EshopProductCard> {
               ),
 
               // Details
-              Expanded(
-                child: Padding(
-                  // Reduced padding with 4px bottom space
-                  padding: const EdgeInsets.fromLTRB(6, 6, 6, 4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Price row at top
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            '৳${_formatPrice(sale ?? regular)}',
-                            style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.grey.shade900,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          if (sale != null && _toNum(sale) != null && regular != null && _toNum(regular) != null && _toNum(sale)! < _toNum(regular)!)
-                            Text(
-                              '৳${_formatPrice(regular)}',
-                              style: GoogleFonts.roboto(
-                                fontSize: 11,
-                                color: Colors.grey.shade500,
-                                decoration: TextDecoration.lineThrough,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                      // Price Section - Moved to top (Vue: mb-2)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: '৳',
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: _formatPrice(sale ?? regular),
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade800,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                        ],
-                      ),
-
-                      // Title (2 lines)
-                      Text(
-                        title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.roboto(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade800,
+                            const SizedBox(width: 8),
+                            if (sale != null && _toNum(sale) != null && regular != null && _toNum(regular) != null && _toNum(sale)! < _toNum(regular)!)
+                              Text.rich(
+                                TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: '৳',
+                                      style: GoogleFonts.roboto(
+                                        fontSize: 10,
+                                        color: Colors.grey.shade400,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: _formatPrice(regular),
+                                      style: GoogleFonts.roboto(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade400,
+                                        decoration: TextDecoration.lineThrough,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
                       ),
 
-
-                      // Store pill (fill width to reduce overflow)
+                      // Product Title - Moved above store name (Vue: mb-2)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.roboto(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                      ),
+
+                      // Store Link - Moved below product name (Vue: mb-3)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
                           children: [
                             Container(
-                              width: 18,
-                              height: 18,
+                              width: 20,
+                              height: 20,
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: LinearGradient(
                                   colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Color(0x1A000000),
+                                    blurRadius: 2,
+                                    offset: Offset(0, 1),
+                                  ),
+                                ],
                               ),
                               child: const Center(
                                 child: Icon(Icons.storefront_outlined, size: 12, color: Colors.white),
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 _getStoreName(p),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.roboto(
-                                  fontSize: 10.5,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  color: Colors.grey.shade700,
+                                  color: Colors.grey.shade600,
                                 ),
                               ),
                             ),
@@ -659,26 +698,25 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                         ),
                       ),
 
-                      // Removed Spacer; using spaceBetween to distribute space properly
-
-                      // Buy Now button (full width)
+                      // Full Width Buy Now Button (Vue styling)
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: widget.isLoading ? null : widget.onBuyNow,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey.shade800,
+                            backgroundColor: const Color(0xFF374151), // Vue: bg-gray-700
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 9),
-                            minimumSize: const Size.fromHeight(36),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            minimumSize: const Size.fromHeight(40),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                            elevation: 0,
                           ),
                           child: widget.isLoading
                               ? Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  children: const [
-                                    SizedBox(
+                                  children: [
+                                    const SizedBox(
                                       width: 16,
                                       height: 16,
                                       child: CircularProgressIndicator(
@@ -686,16 +724,28 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                       ),
                                     ),
-                                    SizedBox(width: 8),
-                                    Text('Processing...'),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Processing...',
+                                      style: GoogleFonts.roboto(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ],
                                 )
                               : Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  children: const [
-                                    Icon(Icons.shopping_cart_outlined, size: 16),
-                                    SizedBox(width: 8),
-                                    Text('Buy Now'),
+                                  children: [
+                                    const Icon(Icons.shopping_cart_outlined, size: 16),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Buy Now',
+                                      style: GoogleFonts.roboto(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ],
                                 ),
                         ),
@@ -703,7 +753,6 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                     ],
                   ),
                 ),
-              ),
             ],
           ),
         ),
