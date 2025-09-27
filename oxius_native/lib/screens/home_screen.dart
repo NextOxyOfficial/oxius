@@ -98,7 +98,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       
-      // No bottom navigation bar since AppFooter handles mobile navigation
+      // Fixed Mobile Navigation Bar (outside of scrollable content)
+      floatingActionButton: isMobile ? _buildStickyMobileNav(context) : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -359,5 +361,217 @@ class _HomeScreenState extends State<HomeScreen> {
         duration: const Duration(seconds: 1),
       ),
     );
+  }
+
+  Widget _buildStickyMobileNav(BuildContext context) {
+    // Mock user data - replace with actual user state management
+    final bool isLoggedIn = DateTime.now().millisecondsSinceEpoch % 2 == 0;
+    final Set<String> loadingButtons = <String>{};
+    int unreadCount = 0;
+
+    return Positioned(
+      left: 24, // mx-6 = 24px
+      right: 24,
+      bottom: 8, // bottom-2 = 8px
+      child: Container(
+        width: MediaQuery.of(context).size.width - 48, // Full width minus margins
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9), // bg-white/90
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color(0xFF34D399).withOpacity(0.1), // border-emerald-100
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          child: SafeArea(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8), // py-2 for better touch targets
+              child: isLoggedIn 
+                  ? _buildLoggedInNavigation(loadingButtons, unreadCount)
+                  : _buildGuestNavigation(loadingButtons),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoggedInNavigation(Set<String> loadingButtons, int unreadCount) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildMobileNavItem(
+          child: Image.asset(
+            'assets/images/favicon.png',
+            width: 26,
+            height: 26,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(
+                Icons.home,
+                size: 26,
+                color: Color(0xFF34D399),
+              );
+            },
+          ),
+          onTap: () => _handleButtonClick('mobile_home', 'Home', loadingButtons),
+          buttonId: 'mobile_home',
+          loadingButtons: loadingButtons,
+        ),
+        _buildMobileNavItem(
+          child: const Icon(Icons.account_balance_wallet, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('mobile_deposit', 'Deposit/Withdraw', loadingButtons),
+          buttonId: 'mobile_deposit',
+          loadingButtons: loadingButtons,
+        ),
+        _buildMobileNavItem(
+          child: const Icon(Icons.phone_android, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('mobile_recharge', 'Mobile Recharge', loadingButtons),
+          buttonId: 'mobile_recharge',
+          loadingButtons: loadingButtons,
+        ),
+        _buildMobileNavItem(
+          child: Stack(
+            children: [
+              const Icon(Icons.network_check, size: 28, color: Color(0xFF34D399)),
+              if (unreadCount > 0)
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      unreadCount > 99 ? '99+' : unreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          onTap: () => _handleButtonClick('mobile_business', 'Business Network', loadingButtons),
+          buttonId: 'mobile_business',
+          loadingButtons: loadingButtons,
+        ),
+        _buildMobileNavItem(
+          child: const Icon(Icons.newspaper, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('mobile_news', 'News', loadingButtons),
+          buttonId: 'mobile_news',
+          loadingButtons: loadingButtons,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGuestNavigation(Set<String> loadingButtons) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildMobileNavItem(
+          child: Image.asset(
+            'assets/images/favicon.png',
+            width: 26,
+            height: 26,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(
+                Icons.home,
+                size: 26,
+                color: Color(0xFF34D399),
+              );
+            },
+          ),
+          onTap: () => _handleButtonClick('guest_home', 'Home', loadingButtons),
+          buttonId: 'guest_home',
+          loadingButtons: loadingButtons,
+        ),
+        _buildMobileNavItem(
+          child: const Icon(Icons.work, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('guest_microgigs', 'Microgigs', loadingButtons),
+          buttonId: 'guest_microgigs',
+          loadingButtons: loadingButtons,
+        ),
+        _buildMobileNavItem(
+          child: const Icon(Icons.shopping_bag, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('guest_eshop', 'eShop', loadingButtons),
+          buttonId: 'guest_eshop',
+          loadingButtons: loadingButtons,
+        ),
+        _buildMobileNavItem(
+          child: const Icon(Icons.network_check, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('guest_business', 'Business Network', loadingButtons),
+          buttonId: 'guest_business',
+          loadingButtons: loadingButtons,
+        ),
+        _buildMobileNavItem(
+          child: const Icon(Icons.newspaper, size: 28, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick('guest_news', 'News', loadingButtons),
+          buttonId: 'guest_news',
+          loadingButtons: loadingButtons,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileNavItem({
+    required Widget child,
+    required VoidCallback onTap,
+    required String buttonId,
+    required Set<String> loadingButtons,
+  }) {
+    final isLoading = loadingButtons.contains(buttonId);
+    
+    return InkWell(
+      onTap: isLoading ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        child: isLoading
+            ? const SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF34D399)),
+                ),
+              )
+            : child,
+      ),
+    );
+  }
+
+  void _handleButtonClick(String buttonId, String destination, Set<String> loadingButtons) {
+    setState(() {
+      loadingButtons.add(buttonId);
+    });
+    
+    // Simulate navigation delay
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        setState(() {
+          loadingButtons.remove(buttonId);
+        });
+        _handleNavigation(context, destination);
+      }
+    });
   }
 }
