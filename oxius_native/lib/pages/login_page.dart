@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
-import '../services/scroll_direction_service.dart';
-import '../widgets/header.dart';
+import '../services/banner_service.dart';
 import '../widgets/footer.dart';
-import '../widgets/mobile_navigation_bar.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,21 +15,24 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   late ScrollController _scrollController;
-  final ScrollDirectionService _scrollService = ScrollDirectionService();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final TranslationService _ts = TranslationService();
+  final BannerService _bannerService = BannerService();
   
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _rememberMe = false;
   String _errorMessage = '';
+  bool _loadingLogo = true;
+  Map<String, dynamic>? _logoData;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _scrollService.initialize(_scrollController);
+    _loadLogo();
+    _bannerService.loadBanners();
   }
 
   @override
@@ -39,7 +40,6 @@ class _LoginPageState extends State<LoginPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _scrollController.dispose();
-    _scrollService.dispose();
     super.dispose();
   }
 
@@ -112,83 +112,107 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _loadLogo() async {
+    try {
+      // Simulate loading logo from API
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        setState(() {
+          _logoData = {
+            'image': '/static/frontend/images/logo.png',
+            'alt': 'App Logo',
+          };
+          _loadingLogo = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loadingLogo = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      body: Stack(
-        children: [
-          CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-          // Add the header
-          const AppHeader(
-            key: ValueKey('login_header'),
-            identifier: 'login',
-          ),
-          SliverToBoxAdapter(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isDesktop = constraints.maxWidth > 768;
-                
-                if (isDesktop) {
-                  // Desktop/Tablet layout - two columns
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
-                    child: Row(
-                      children: [
-                        // Left side - Image (3/5 width)
-                        Expanded(
-                          flex: 3,
-                          child: Container(
-                            height: 600,
-                            margin: const EdgeInsets.only(right: 32),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              image: const DecorationImage(
-                                image: NetworkImage('http://127.0.0.1:8000/static/frontend/images/register.webp'),
-                                fit: BoxFit.cover,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+              SliverToBoxAdapter(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isDesktop = constraints.maxWidth > 768;
+                    
+                    if (isDesktop) {
+                      // Desktop/Tablet layout - two columns
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                        child: Row(
+                          children: [
+                            // Left side - Image (3/5 width)
+                            Expanded(
+                              flex: 3,
+                              child: Container(
+                                height: 500,
+                                margin: const EdgeInsets.only(right: 32),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  image: const DecorationImage(
+                                    image: NetworkImage('http://127.0.0.1:8000/static/frontend/images/register.webp'),
+                                    fit: BoxFit.cover,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+                            // Right side - Form (2/5 width)
+                            Expanded(
+                              flex: 2,
+                              child: _buildLoginForm(),
+                            ),
+                          ],
                         ),
-                        // Right side - Form (2/5 width)
-                        Expanded(
-                          flex: 2,
-                          child: _buildLoginForm(),
-                        ),
-                      ],
-                    ),
-                  );
-                } else {
-                  // Mobile layout - single column
-                  return Padding(
-                    padding: const EdgeInsets.all(0), // Remove side margins
-                    child: _buildLoginForm(),
-                  );
-                }
-              },
-            ),
+                      );
+                    } else {
+                      // Mobile layout - single column
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _buildLoginForm(),
+                      );
+                    }
+                  },
+                ),
+              ),
+              
+              // Banner below login form
+              SliverToBoxAdapter(
+                child: _buildBannerSection(),
+              ),
+              
+              const SliverToBoxAdapter(child: AppFooter()),
+            ],
           ),
-          const SliverToBoxAdapter(child: AppFooter()),
         ],
-      ),
-      MobileNavigationBar(scrollService: _scrollService),
-    ],
+        ),
       ),
     );
   }
 
   Widget _buildLoginForm() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 20),
+      margin: const EdgeInsets.symmetric(vertical: 20),
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -210,6 +234,10 @@ class _LoginPageState extends State<LoginPage> {
             // Form Header
             Column(
               children: [
+                // Logo
+                _buildLogo(),
+                const SizedBox(height: 24),
+                
                 Text(
                   _ts.t('welcome_back', fallback: 'Welcome Back'),
                   style: GoogleFonts.roboto(
@@ -504,6 +532,229 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    if (_loadingLogo) {
+      return const SizedBox(
+        height: 48,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    } else if (_logoData != null) {
+      return Image.network(
+        'http://127.0.0.1:8000${_logoData!['image']}',
+        height: 48,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/logo.png',
+            height: 48,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                height: 48,
+                width: 150,
+                decoration: BoxDecoration(
+                  color: Colors.purple.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    'LOGO',
+                    style: GoogleFonts.roboto(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.purple.shade600,
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      );
+    } else {
+      return Container(
+        height: 48,
+        width: 150,
+        decoration: BoxDecoration(
+          color: Colors.purple.shade100,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Text(
+            'LOGO',
+            style: GoogleFonts.roboto(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.purple.shade600,
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildBannerSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      child: Column(
+        children: [
+          if (_bannerService.isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_bannerService.banners.isNotEmpty)
+            SizedBox(
+              height: 200,
+              child: PageView.builder(
+                itemCount: _bannerService.banners.length,
+                itemBuilder: (context, index) {
+                  final banner = _bannerService.banners[index];
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Stack(
+                        children: [
+                          // Banner Image
+                          banner['image'] != null
+                              ? Image.network(
+                                  banner['image'],
+                                  width: double.infinity,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: double.infinity,
+                                      height: 200,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.purple.shade400,
+                                            Colors.blue.shade400,
+                                          ],
+                                        ),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.image,
+                                          color: Colors.white,
+                                          size: 48,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  width: double.infinity,
+                                  height: 200,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.purple.shade400,
+                                        Colors.blue.shade400,
+                                      ],
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.image,
+                                      color: Colors.white,
+                                      size: 48,
+                                    ),
+                                  ),
+                                ),
+                          
+                          // Banner Text Overlay
+                          if (banner['title'] != null)
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.black.withOpacity(0.7),
+                                    ],
+                                  ),
+                                ),
+                                child: Text(
+                                  banner['title'],
+                                  style: GoogleFonts.roboto(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            )
+          else
+            // Default banner when no banners loaded
+            Container(
+              height: 200,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.purple.shade400,
+                    Colors.blue.shade400,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.campaign,
+                      color: Colors.white,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _ts.t('welcome_banner', fallback: 'Welcome to our platform!'),
+                      style: GoogleFonts.roboto(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _ts.t('banner_subtitle', fallback: 'Join us today and explore amazing features'),
+                      style: GoogleFonts.roboto(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
