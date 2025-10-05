@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/gigs_service.dart';
 import '../services/translation_service.dart';
+import 'home/account_balance_section.dart';
+import 'home/mobile_recharge_section.dart';
 
 class MicroGigsSection extends StatefulWidget {
   const MicroGigsSection({super.key});
@@ -216,12 +218,15 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
-          
-          // Mobile Recharge Link
-          if (_operators.isNotEmpty) _buildMobileRechargeLink(isMobile),
-          
           const SizedBox(height: 16),
+          
+          // Account Balance Section (shows if logged in)
+          const AccountBalanceSection(),
+          
+          // Mobile Recharge Section
+          const MobileRechargeSection(),
+          
+          const SizedBox(height: 8),
           
           // Main Card
           Container(

@@ -6,11 +6,12 @@ import '../widgets/sale_category.dart';
 import '../widgets/classified_services_section.dart';
 import '../widgets/eshop_section.dart';
 import '../widgets/micro_gigs_section.dart';
+import '../widgets/home/account_balance_section.dart';
+import '../widgets/home/mobile_recharge_section.dart';
 import '../services/scroll_direction_service.dart';
 import '../services/user_state_service.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
-import 'wallet/wallet_screen.dart';
 import 'wallet/wallet_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -119,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // 6. eShop Product Slider - Product carousel
                   const EshopSection(),
                   
-                  // 7. Micro Gigs Section - Gigs with categories and pagination
+                  // 7. Micro Gigs Section (with Account Balance & Mobile Recharge inside)
                   const MicroGigsSection(),
                   
                   // Footer - always show the main footer content

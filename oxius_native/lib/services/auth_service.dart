@@ -13,6 +13,9 @@ class User {
   final bool isSuperuser;
   final bool isActive;
   final String? profilePicture;
+  final String? referralCode;
+  final int? referCount;
+  final double? commissionEarned;
 
   User({
     required this.id,
@@ -24,6 +27,9 @@ class User {
     required this.isSuperuser,
     required this.isActive,
     this.profilePicture,
+    this.referralCode,
+    this.referCount,
+    this.commissionEarned,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -37,6 +43,11 @@ class User {
       isSuperuser: json['is_superuser'] ?? false,
       isActive: json['is_active'] ?? true,
       profilePicture: json['profile_picture'],
+      referralCode: json['referral_code'],
+      referCount: json['refer_count'],
+      commissionEarned: json['commission_earned'] is String 
+          ? double.tryParse(json['commission_earned']) 
+          : (json['commission_earned'] as num?)?.toDouble(),
     );
   }
 
@@ -51,6 +62,9 @@ class User {
       'is_superuser': isSuperuser,
       'is_active': isActive,
       'profile_picture': profilePicture,
+      'referral_code': referralCode,
+      'refer_count': referCount,
+      'commission_earned': commissionEarned,
     };
   }
 
