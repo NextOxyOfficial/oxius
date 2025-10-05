@@ -10,6 +10,8 @@ import '../services/scroll_direction_service.dart';
 import '../services/user_state_service.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
+import 'wallet/wallet_screen.dart';
+import 'wallet/wallet_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -693,13 +695,24 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _isDropdownOpen = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Navigate to $label'),
-            backgroundColor: color,
-            duration: const Duration(seconds: 1),
-          ),
-        );
+        
+        // Handle navigation based on label
+        if (label == t('deposit_withdraw')) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const WalletScreen(),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Navigate to $label'),
+              backgroundColor: color,
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        }
       },
       borderRadius: BorderRadius.circular(16),
       child: Stack(
@@ -794,7 +807,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                       Text(
                         badgeText,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
