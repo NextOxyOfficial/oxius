@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
+import '../services/user_state_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -41,23 +42,79 @@ class _LoginPageState extends State<LoginPage> {
         _passwordController.text,
       );
 
-      if (mounted) {
-        if (authResponse != null) {
+      if (mounted && authResponse != null) {
+        // Update user state service
+        final userState = UserStateService();
+        userState.updateUser(authResponse.user);
+
+        // Enhanced login success messages (similar to Vue)
+        final welcomeMessages = [
+          'Great to see you again!',
+          'Welcome back, champion!',
+          'You\'re back in action!',
+          'Ready to conquer today?',
+          'Welcome back to the community!',
+        ];
+        
+        final randomMessage = welcomeMessages[
+          DateTime.now().millisecond % welcomeMessages.length
+        ];
+
+        if (mounted) {
+          // Show enhanced success notification
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Welcome back, ${authResponse.user.displayName}!'),
-              backgroundColor: Colors.purple.shade600,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.celebration, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Login Successful!',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    randomMessage,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF10B981),
+              duration: const Duration(seconds: 4),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              action: SnackBarAction(
+                label: 'Explore',
+                textColor: Colors.white,
+                onPressed: () {
+                  Navigator.of(context).pushReplacementNamed('/');
+                },
+              ),
             ),
           );
+          
+          // Navigate to home after slight delay for better UX
+          await Future.delayed(const Duration(milliseconds: 500));
           
           if (mounted) {
             Navigator.of(context).pushReplacementNamed('/');
           }
-        } else {
-          setState(() {
-            _errorMessage = 'Login failed. Please try again.';
-          });
         }
+      } else if (mounted) {
+        setState(() {
+          _errorMessage = 'Login failed. Please try again.';
+        });
       }
     } catch (e) {
       if (mounted) {

@@ -222,28 +222,116 @@ class AuthService {
     }
   }
 
-  // Get valid token (refresh if needed)
+  // Get valid token (refresh if needed) - Enhanced with JWT expiry check
   static Future<String?> getValidToken() async {
-    if (_accessToken == null) {
-      return null;
+    if (_accessToken == null || _accessToken!.isEmpty) {
+      // Try to restore from storage before giving up
+      await _restoreAuthFromStorage();
+      if (_accessToken == null) {
+        return null;
+      }
     }
 
-    // Check if token is expired (basic check)
-    // In production, you should decode the JWT and check exp claim
+    // Check if token is expired by decoding JWT
     try {
-      // If we have both tokens, try to refresh proactively
-      if (_refreshToken != null) {
-        // You can add JWT expiry check here
-        // For now, we'll return the current token
-        return _accessToken;
+      final parts = _accessToken!.split('.');
+      if (parts.length == 3) {
+        // Decode payload (add padding if needed)
+        String payload = parts[1];
+        // Add padding if needed for base64 decoding
+        while (payload.length % 4 != 0) {
+          payload += '=';
+        }
+        
+        final normalizedPayload = base64.normalize(payload);
+        final decodedPayload = utf8.decode(base64.decode(normalizedPayload));
+        final Map<String, dynamic> payloadMap = jsonDecode(decodedPayload);
+        
+        final exp = payloadMap['exp'];
+        if (exp != null) {
+          final expiryTime = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
+          final now = DateTime.now();
+          
+          // If token expires in less than 5 minutes, refresh it
+          if (expiryTime.difference(now).inMinutes < 5) {
+            print('Token expires soon, refreshing...');
+            final refreshSuccess = await refreshTokens();
+            if (!refreshSuccess) {
+              return null;
+            }
+          }
+        }
       }
     } catch (e) {
-      // If refresh fails, clear auth data
-      await clearAuthData();
-      return null;
+      print('Could not decode JWT token: $e');
+      // If we can't decode it, try to refresh
+      if (_refreshToken != null) {
+        final refreshSuccess = await refreshTokens();
+        if (!refreshSuccess) {
+          return null;
+        }
+      }
     }
 
     return _accessToken;
+  }
+
+  // Validate token with server - Similar to Vue's jwtLogin
+  static Future<bool> validateToken() async {
+    if (_accessToken == null) {
+      await _restoreAuthFromStorage();
+      if (_accessToken == null) {
+        return false;
+      }
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiService.baseUrl}/auth/validate-token/'),
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        
+        // Update user data if provided
+        if (data['user'] != null) {
+          _currentUser = User.fromJson(data['user']);
+        }
+        
+        // Update tokens if provided
+        if (data['access'] != null) {
+          _accessToken = data['access'];
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_tokenKey, _accessToken!);
+        }
+        
+        if (data['refresh'] != null) {
+          _refreshToken = data['refresh'];
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_refreshTokenKey, _refreshToken!);
+        }
+        
+        return true;
+      } else {
+        // Token validation failed, try to refresh
+        print('Token validation failed, attempting refresh');
+        final refreshSuccess = await refreshTokens();
+        
+        if (refreshSuccess) {
+          // Retry validation with new token
+          return await validateToken();
+        }
+        
+        return false;
+      }
+    } catch (e) {
+      print('Token validation error: $e');
+      return false;
+    }
   }
 
   // Generate or get device ID
