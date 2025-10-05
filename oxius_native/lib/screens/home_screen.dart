@@ -313,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                   Flexible(
                     child: _buildActionButton(
                       context,
@@ -817,7 +817,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8), // Reduced horizontal padding
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8), // Minimal horizontal padding
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(8),
@@ -826,20 +826,20 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 28,
-              height: 28,
+              width: 24,
+              height: 24,
               decoration: const BoxDecoration(
                 color: Color(0xFFF1F5F9), // bg-slate-100
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 16, color: const Color(0xFF64748B)), // text-slate-500
+              child: Icon(icon, size: 14, color: const Color(0xFF64748B)), // text-slate-500
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
             Flexible(
               child: Text(
                 label,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF334155), // text-slate-700
                 ),
