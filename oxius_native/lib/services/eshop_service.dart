@@ -270,7 +270,7 @@ class EshopService {
       print('EshopService: Product categories response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);r
+        final data = json.decode(response.body);
         
         List<Map<String, dynamic>> categories = [];
         
