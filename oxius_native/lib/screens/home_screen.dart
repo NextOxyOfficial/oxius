@@ -4,7 +4,8 @@ import '../widgets/mobile_drawer.dart';
 import '../widgets/mobile_banner.dart';
 import '../widgets/sale_category.dart';
 import '../widgets/classified_services_section.dart';
-import '../widgets/eshop_section.dart'; // Add the eShop section import
+import '../widgets/eshop_section.dart';
+import '../widgets/micro_gigs_section.dart';
 import '../services/scroll_direction_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -104,8 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   // 6. eShop Product Slider - Product carousel
                   const EshopSection(),
                   
-                  // 7. Micro Gigs Section - TODO: Implement micro gigs section
-                  // Large section with categories sidebar and gigs list
+                  // 7. Micro Gigs Section - Gigs with categories and pagination
+                  const MicroGigsSection(),
                   
                   // Footer - always show the main footer content
                   const SizedBox(height: 32),
