@@ -14,76 +14,6 @@
           </p>
         </div>
 
-        <!-- Country Selection -->
-        <div class="bg-white rounded-xl shadow-sm mb-6 overflow-hidden">
-          <div class="p-6">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="bg-emerald-100 p-2 rounded-full text-emerald-600">
-                <UIcon name="i-heroicons-globe-americas" class="text-lg" />
-              </div>
-              <h2 class="text-lg font-semibold text-gray-800">
-                Location Settings
-              </h2>
-            </div>
-
-            <div class="max-w-md">
-              <label class="block text-sm font-medium text-gray-800 mb-2">
-                Select Country
-              </label>
-              <USelectMenu
-                v-model="selectedCountry"
-                :options="countries"
-                option-attribute="name"
-                value-attribute="code"
-                placeholder="Choose your country"
-                size="md"
-                color="white"
-                class="w-full"
-                :ui="{
-                  trigger:
-                    'border-gray-200 focus:border-emerald-500 focus:ring focus:ring-emerald-100',
-                  option: {
-                    base: 'cursor-default select-none relative py-2 px-4',
-                    active: 'text-white bg-emerald-600',
-                    inactive: 'text-gray-800',
-                    selected: 'font-medium bg-emerald-50 text-emerald-900',
-                    disabled: 'cursor-not-allowed opacity-50',
-                  },
-                }"
-              >
-                <template #leading>
-                  <UIcon
-                    name="i-heroicons-flag"
-                    class="w-4 h-4 text-gray-500"
-                  />
-                </template>
-
-                <template #option="{ option }">
-                  <div class="flex items-center gap-2">
-                    <UIcon :name="option.flag" class="w-5 h-5" />
-                    <span>{{ option.name }}</span>
-                    <span>({{ option.code }})</span>
-                  </div>
-                </template>
-
-                <template #option-empty="{ query }">
-                  <div class="text-center py-3 text-gray-500">
-                    <UIcon
-                      name="i-heroicons-magnifying-glass"
-                      class="w-5 h-5 mx-auto mb-1"
-                    />
-                    <p class="text-sm">No countries found for "{{ query }}"</p>
-                  </div>
-                </template>
-              </USelectMenu>
-
-              <p class="text-xs text-gray-600 mt-2">
-                This helps us provide region-specific features and content
-              </p>
-            </div>
-          </div>
-        </div>
-
         <!-- User Info Summary -->
         <div class="text-center flex gap-2 items-center justify-center mb-8">
           <div class="relative">
@@ -916,21 +846,6 @@ const isLoading = ref(false);
 const passwordLoading = ref(false);
 const old_password = ref("");
 const new_password = ref("");
-
-// Country selection
-const selectedCountry = ref("");
-const countries = ref([]);
-async function fetchCountries() {
-  try {
-    const response = await get("/country-version/");
-    countries.value = response.data;
-  } catch (error) {
-    console.error("Error fetching countries:", error);
-    showToast("Error", "Failed to load countries", "red");
-  }
-}
-
-await fetchCountries();
 
 // Add these new state variables
 const showStickyButton = ref(true);

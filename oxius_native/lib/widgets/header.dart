@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/auth_service.dart';
+import '../screens/settings_screen.dart';
 
 class AppHeader extends StatefulWidget {
   final String identifier;
@@ -996,8 +997,9 @@ class _AppHeaderState extends State<AppHeader> {
         );
         break;
       case '/settings':
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Settings coming soon!')),
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SettingsScreen()),
         );
         break;
       case '/upload-center':

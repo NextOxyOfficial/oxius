@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/translation_service.dart';
+import '../screens/settings_screen.dart';
 
 class MobileDrawer extends StatefulWidget {
   const MobileDrawer({super.key});
@@ -422,11 +423,9 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       iconColor: Colors.grey.shade600,
                       onTap: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${_translationService.t('settings', fallback: 'Settings')} ${_translationService.t('coming_soon', fallback: 'coming soon!')}'),
-                            backgroundColor: Colors.grey.shade600,
-                          ),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SettingsScreen()),
                         );
                       },
                     ),

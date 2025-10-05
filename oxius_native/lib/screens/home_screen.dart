@@ -13,6 +13,7 @@ import '../services/user_state_service.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
 import 'wallet/wallet_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -310,8 +311,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       const Color(0xFF64748B),
                       () {
                         setState(() => _isDropdownOpen = false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Navigate to Settings')),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SettingsScreen()),
                         );
                       },
                     ),
