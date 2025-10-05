@@ -104,13 +104,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _checkFormChanges() {
-    if (_originalProfile == null || _userProfile == null) return;
+    if (_originalProfile == null) return;
     
-    final currentJson = json.encode(_userProfile!.toJson());
-    final originalJson = json.encode(_originalProfile!.toJson());
+    // Compare controller values with original profile data
+    final hasChanges = 
+        _firstNameController.text != (_originalProfile!.firstName ?? '') ||
+        _lastNameController.text != (_originalProfile!.lastName ?? '') ||
+        _phoneController.text != (_originalProfile!.phone ?? '') ||
+        _addressController.text != (_originalProfile!.address ?? '') ||
+        _cityController.text != (_originalProfile!.city ?? '') ||
+        _stateController.text != (_originalProfile!.state ?? '') ||
+        _zipController.text != (_originalProfile!.zip ?? '') ||
+        _facebookController.text != (_originalProfile!.faceLink ?? '') ||
+        _instagramController.text != (_originalProfile!.instagramLink ?? '') ||
+        _whatsappController.text != (_originalProfile!.whatsappLink ?? '') ||
+        _professionController.text != (_originalProfile!.profession ?? '') ||
+        _companyController.text != (_originalProfile!.company ?? '') ||
+        _websiteController.text != (_originalProfile!.website ?? '') ||
+        _aboutController.text != (_originalProfile!.about ?? '') ||
+        (_userProfile?.image != _originalProfile!.image) ||
+        (_userProfile?.storeBanner != _originalProfile!.storeBanner);
     
     setState(() {
-      _formDirty = currentJson != originalJson;
+      _formDirty = hasChanges;
     });
   }
 
@@ -204,7 +220,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               maxWidth: screenWidth < 896 ? double.infinity : 896,
             ),
             margin: EdgeInsets.symmetric(
-              horizontal: isSmallMobile ? 8 : 16,
+              horizontal: isSmallMobile ? 4 : 8,
             ),
             padding: EdgeInsets.symmetric(
               vertical: isSmallMobile ? 16 : 24,
@@ -246,38 +262,68 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // (The file is too long, I'll create helper methods in separate sections)
   
   Widget _buildHeader(bool isSmallMobile) {
-    return Column(
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: isSmallMobile ? 12 : 16,
-            vertical: isSmallMobile ? 8 : 12,
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isSmallMobile ? 16 : 20,
+        vertical: isSmallMobile ? 20 : 24,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFE5E7EB).withOpacity(0.5),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF10B981), Color(0xFF059669)],
-            ),
-            borderRadius: BorderRadius.circular(12),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.settings,
+                  color: Color(0xFF10B981),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                t('settings'),
+                style: TextStyle(
+                  fontSize: isSmallMobile ? 22 : 26,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF111827),
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
           ),
-          child: Text(
-            t('settings'),
+          const SizedBox(height: 12),
+          Text(
+            'Manage your account settings and preferences',
             style: TextStyle(
-              fontSize: isSmallMobile ? 20 : 24,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+              fontSize: isSmallMobile ? 13 : 14,
+              color: const Color(0xFF6B7280),
+              fontWeight: FontWeight.w400,
+              height: 1.5,
             ),
+            textAlign: TextAlign.center,
           ),
-        ),
-        SizedBox(height: isSmallMobile ? 8 : 12),
-        Text(
-          'Manage your account settings and preferences',
-          style: TextStyle(
-            fontSize: isSmallMobile ? 13 : 14,
-            color: Colors.grey[600],
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -477,59 +523,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 12 : 16,
+          vertical: 16,
+        ),
         child: Form(
           key: _profileFormKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Section Header
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFECFDF5),
-                      borderRadius: BorderRadius.circular(100),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECFDF5),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.person_outline,
+                        color: Color(0xFF10B981),
+                        size: 22,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Color(0xFF10B981),
-                      size: 20,
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Profile Information',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Profile Information',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 24),
 
               // Profile Image Upload
               _buildImageUploadSection(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // Store Banner Upload
               _buildBannerUploadSection(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // Personal Information
               _buildPersonalInfoSection(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // Address Information
               _buildAddressSection(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // Social Media
               _buildSocialMediaSection(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // About Me
               _buildAboutSection(),
@@ -543,11 +595,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildImageUploadSection() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFF3F4F6)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -555,31 +614,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Text(
             'Profile Image',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF1F2937),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+              letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 20,
-            runSpacing: 20,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          const SizedBox(height: 14),
+          Row(
             children: [
               // Current image or placeholder
               if (_userProfile?.image != null && _userProfile!.image!.isNotEmpty)
                 Stack(
+                  clipBehavior: Clip.none,
                   children: [
                     Container(
-                      width: 96,
-                      height: 96,
+                      width: 88,
+                      height: 88,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
                         ],
@@ -590,11 +648,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
-                              color: const Color(0xFFECFDF5),
+                              color: const Color(0xFFF3F4F6),
                               child: const Icon(
-                                Icons.person,
-                                size: 48,
-                                color: Color(0xFF10B981),
+                                Icons.person_outline,
+                                size: 40,
+                                color: Color(0xFF9CA3AF),
                               ),
                             );
                           },
@@ -602,27 +660,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     Positioned(
-                      top: -8,
-                      right: -8,
-                      child: InkWell(
-                        onTap: () => _showDeleteImageDialog(),
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.delete,
-                            size: 16,
-                            color: Color(0xFFEF4444),
+                      top: 0,
+                      right: 0,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _showDeleteImageDialog(),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFFE5E7EB)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              size: 14,
+                              color: Color(0xFFEF4444),
+                            ),
                           ),
                         ),
                       ),
@@ -631,61 +694,84 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 )
               else
                 Container(
-                  width: 96,
-                  height: 96,
+                  width: 88,
+                  height: 88,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFECFDF5),
+                    color: const Color(0xFFF3F4F6),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
                   ),
                   child: const Icon(
-                    Icons.person,
-                    size: 48,
-                    color: Color(0xFF10B981),
+                    Icons.person_outline,
+                    size: 40,
+                    color: Color(0xFF9CA3AF),
                   ),
                 ),
+              const SizedBox(width: 16),
 
               // Upload button
-              InkWell(
-                onTap: _pickProfileImage,
-                child: Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFECFDF5),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF10B981).withOpacity(0.3),
-                      width: 2,
-                      style: BorderStyle.solid,
-                    ),
-                  ),
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.camera_alt,
-                        size: 24,
-                        color: Color(0xFF10B981),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Upload Profile Picture',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF374151),
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'Upload',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF10B981),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'JPG, PNG or GIF. Max size 5MB',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _pickProfileImage,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF10B981).withOpacity(0.2),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.upload_outlined,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Choose Image',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -697,11 +783,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildBannerUploadSection() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFF3F4F6)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -709,12 +802,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Text(
             'Store/For Sale Banner',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF1F2937),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+              letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // Current banner or placeholder
           if (_userProfile?.storeBanner != null && _userProfile!.storeBanner!.isNotEmpty)
@@ -722,30 +816,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Container(
                   width: double.infinity,
-                  height: 160,
+                  height: 140,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white, width: 2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                     child: Image.network(
                       _userProfile!.storeBanner!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          color: const Color(0xFFECFDF5),
-                          child: const Icon(
-                            Icons.photo,
-                            size: 48,
-                            color: Color(0xFF10B981),
+                          color: const Color(0xFFF3F4F6),
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_outlined,
+                              size: 48,
+                              color: Color(0xFF9CA3AF),
+                            ),
                           ),
                         );
                       },
@@ -753,27 +849,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 Positioned(
-                  top: 8,
-                  right: 8,
-                  child: InkWell(
-                    onTap: () => _showDeleteBannerDialog(),
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.delete,
-                        size: 16,
-                        color: Color(0xFFEF4444),
+                  top: 10,
+                  right: 10,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _showDeleteBannerDialog(),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          size: 16,
+                          color: Color(0xFFEF4444),
+                        ),
                       ),
                     ),
                   ),
@@ -783,67 +884,85 @@ class _SettingsScreenState extends State<SettingsScreen> {
           else
             Container(
               width: double.infinity,
-              height: 160,
+              height: 140,
               decoration: BoxDecoration(
-                color: const Color(0xFFECFDF5),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.photo,
-                size: 48,
-                color: Color(0xFF10B981),
-              ),
-            ),
-          const SizedBox(height: 16),
-
-          // Upload button
-          InkWell(
-            onTap: _pickBannerImage,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFECFDF5),
-                borderRadius: BorderRadius.circular(8),
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: const Color(0xFF10B981).withOpacity(0.3),
-                  width: 2,
+                  color: const Color(0xFFE5E7EB),
+                  width: 1.5,
                   style: BorderStyle.solid,
                 ),
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.photo,
-                    size: 20,
-                    color: Color(0xFF10B981),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Upload Banner Image',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF10B981),
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.image_outlined,
+                      size: 48,
+                      color: Color(0xFF9CA3AF),
                     ),
-                  ),
-                ],
+                    SizedBox(height: 8),
+                    Text(
+                      'No banner uploaded',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          const SizedBox(height: 14),
+
+          // Upload button and description
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _pickBannerImage,
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF10B981).withOpacity(0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.cloud_upload_outlined,
+                      size: 20,
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'Upload Banner Image',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           const Text(
-            'Recommended size: 1600×400 pixels. Max size: 10MB.',
+            'Recommended: 1600×400px • Max 10MB • JPG, PNG',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: Color(0xFF6B7280),
             ),
           ),
@@ -855,18 +974,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildPersonalInfoSection() {
     final bool isKycVerified = _userProfile?.kyc ?? false;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Personal Information',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1F2937),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-        ),
-        const SizedBox(height: 16),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Personal Information',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: 16),
         LayoutBuilder(
           builder: (context, constraints) {
             final isMobile = constraints.maxWidth < 768;
@@ -878,12 +1012,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     label: 'First Name',
                     controller: _firstNameController,
                     enabled: !isKycVerified,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     label: 'Last Name',
                     controller: _lastNameController,
                     enabled: !isKycVerified,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
@@ -896,6 +1032,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     label: 'Phone',
                     controller: _phoneController,
                     enabled: !isKycVerified,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ],
               );
@@ -910,6 +1047,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         label: 'First Name',
                         controller: _firstNameController,
                         enabled: !isKycVerified,
+                        onChanged: (_) => _checkFormChanges(),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -918,6 +1056,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         label: 'Last Name',
                         controller: _lastNameController,
                         enabled: !isKycVerified,
+                        onChanged: (_) => _checkFormChanges(),
                       ),
                     ),
                   ],
@@ -938,6 +1077,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         label: 'Phone',
                         controller: _phoneController,
                         enabled: !isKycVerified,
+                        onChanged: (_) => _checkFormChanges(),
                       ),
                     ),
                   ],
@@ -946,22 +1086,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
             );
           },
         ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildAddressSection() {
     final bool isKycVerified = _userProfile?.kyc ?? false;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Address Information',
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1F2937),
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF111827),
+            letterSpacing: -0.2,
           ),
         ),
         const SizedBox(height: 16),
@@ -969,6 +1125,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           label: 'Address',
           controller: _addressController,
           enabled: !isKycVerified,
+          onChanged: (_) => _checkFormChanges(),
         ),
         const SizedBox(height: 16),
         LayoutBuilder(
@@ -982,18 +1139,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     label: 'City',
                     controller: _cityController,
                     enabled: !isKycVerified,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     label: 'State',
                     controller: _stateController,
                     enabled: !isKycVerified,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     label: 'Zip',
                     controller: _zipController,
                     enabled: !isKycVerified,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ],
               );
@@ -1006,6 +1166,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     label: 'City',
                     controller: _cityController,
                     enabled: !isKycVerified,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1014,6 +1175,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     label: 'State',
                     controller: _stateController,
                     enabled: !isKycVerified,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1022,29 +1184,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     label: 'Zip',
                     controller: _zipController,
                     enabled: !isKycVerified,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ),
               ],
             );
           },
         ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildSocialMediaSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Social Media',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1F2937),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-        ),
-        const SizedBox(height: 16),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Social Media & Professional',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+              letterSpacing: -0.2,
+            ),
+          ),
+          const SizedBox(height: 16),
         LayoutBuilder(
           builder: (context, constraints) {
             final isMobile = constraints.maxWidth < 768;
@@ -1057,6 +1236,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     controller: _facebookController,
                     prefixIcon: Icons.facebook,
                     prefixIconColor: const Color(0xFF1877F2),
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
@@ -1064,6 +1244,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     controller: _instagramController,
                     prefixIcon: Icons.camera_alt,
                     prefixIconColor: const Color(0xFFE4405F),
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
@@ -1071,6 +1252,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     controller: _whatsappController,
                     prefixIcon: Icons.phone,
                     prefixIconColor: const Color(0xFF25D366),
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ],
               );
@@ -1084,6 +1266,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     controller: _facebookController,
                     prefixIcon: Icons.facebook,
                     prefixIconColor: const Color(0xFF1877F2),
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1093,6 +1276,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     controller: _instagramController,
                     prefixIcon: Icons.camera_alt,
                     prefixIconColor: const Color(0xFFE4405F),
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1102,6 +1286,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     controller: _whatsappController,
                     prefixIcon: Icons.phone,
                     prefixIconColor: const Color(0xFF25D366),
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ),
               ],
@@ -1119,16 +1304,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildTextField(
                     label: 'Profession',
                     controller: _professionController,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     label: 'Company Name',
                     controller: _companyController,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     label: 'Website',
                     controller: _websiteController,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ],
               );
@@ -1140,6 +1328,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: _buildTextField(
                     label: 'Profession',
                     controller: _professionController,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1147,6 +1336,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: _buildTextField(
                     label: 'Company Name',
                     controller: _companyController,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1154,53 +1344,80 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: _buildTextField(
                     label: 'Website',
                     controller: _websiteController,
+                    onChanged: (_) => _checkFormChanges(),
                   ),
                 ),
               ],
             );
           },
         ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildAboutSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'About Me',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1F2937),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _aboutController,
-          maxLines: 5,
-          decoration: InputDecoration(
-            hintText: 'Please provide information about your self, profession and services so that public can read about you and find interest',
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'About Me',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+              letterSpacing: -0.2,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
-            ),
-            contentPadding: const EdgeInsets.all(16),
           ),
-          onChanged: (_) => _checkFormChanges(),
-        ),
-      ],
+          const SizedBox(height: 12),
+          TextField(
+            controller: _aboutController,
+            maxLines: 5,
+            minLines: 5,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF111827),
+            ),
+            decoration: InputDecoration(
+              hintText: 'Tell us about yourself, your profession, and services...',
+              hintStyle: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF9CA3AF),
+              ),
+              filled: true,
+              fillColor: const Color(0xFFFAFAFA),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
+              ),
+              contentPadding: const EdgeInsets.all(14),
+            ),
+            onChanged: (_) => _checkFormChanges(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1210,6 +1427,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     bool enabled = true,
     IconData? prefixIcon,
     Color? prefixIconColor,
+    void Function(String)? onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1217,15 +1435,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Row(
           children: [
             if (prefixIcon != null) ...[
-              Icon(prefixIcon, size: 16, color: prefixIconColor),
-              const SizedBox(width: 4),
+              Icon(prefixIcon, size: 15, color: prefixIconColor),
+              const SizedBox(width: 6),
             ],
             Text(
               label,
               style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF1F2937),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF374151),
+                letterSpacing: -0.1,
               ),
             ),
           ],
@@ -1234,28 +1453,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
         TextField(
           controller: controller,
           enabled: enabled,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF111827),
+          ),
           decoration: InputDecoration(
             filled: true,
             fillColor: enabled ? Colors.white : const Color(0xFFF9FAFB),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
             ),
             disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           ),
-          onChanged: (_) => _checkFormChanges(),
+          onChanged: onChanged,
         ),
       ],
     );
