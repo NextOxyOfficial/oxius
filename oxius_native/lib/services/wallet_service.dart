@@ -47,12 +47,25 @@ class WalletService {
           // Get balance from user_details (returned by BalanceSerializer)
           final userDetails = data[0]['user_details'];
           if (userDetails != null) {
-            actualBalance = (userDetails['balance'] ?? 0).toDouble();
-            pendingBalance = (userDetails['pending_balance'] ?? 0).toDouble();
+            // Parse balance - backend returns as string "16569.00"
+            final balanceValue = userDetails['balance'];
+            final pendingValue = userDetails['pending_balance'];
+            
+            if (balanceValue != null) {
+              actualBalance = balanceValue is String 
+                ? double.parse(balanceValue) 
+                : (balanceValue as num).toDouble();
+            }
+            
+            if (pendingValue != null) {
+              pendingBalance = pendingValue is String 
+                ? double.parse(pendingValue) 
+                : (pendingValue as num).toDouble();
+            }
           }
         }
         
-        // Collect pending transactions
+        // Collect pending transactions for display (not for balance calculation)
         for (var item in data) {
           if (item['bank_status'] == 'pending' && 
               item['completed'] == false && 
@@ -61,9 +74,10 @@ class WalletService {
           }
         }
         
+        // Use pending_balance directly from backend user model (don't recalculate)
         return WalletBalance.fromJson({
           'balance': actualBalance,
-          'pending_balance': pendingBalance,
+          'pending_balance': pendingBalance, // This comes from user model, not calculated
           'pending_transactions': pendingTxns,
         });
       } else {

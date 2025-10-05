@@ -57,10 +57,19 @@ class Transaction {
       if (recipientName.isEmpty) recipientName = name.isNotEmpty ? name : null;
     }
     
+    // Parse amount - backend may return as string or number
+    double amount = 0.0;
+    final amountValue = json['amount'] ?? json['payable_amount'];
+    if (amountValue != null) {
+      amount = amountValue is String 
+        ? double.parse(amountValue) 
+        : (amountValue as num).toDouble();
+    }
+    
     return Transaction(
       id: json['id']?.toString() ?? '',
       transactionType: json['transaction_type'] ?? '',
-      amount: (json['amount'] ?? json['payable_amount'] ?? 0).toDouble(),
+      amount: amount,
       status: json['status'],
       bankStatus: json['bank_status'],
       completed: json['completed'],
@@ -157,7 +166,7 @@ class WalletBalance {
   });
 
   factory WalletBalance.fromJson(Map<String, dynamic> json) {
-    // Parse pending transactions
+    // Parse pending transactions for display purposes only
     List<Transaction> pendingTxns = [];
     
     if (json['pending_transactions'] != null) {
@@ -166,15 +175,29 @@ class WalletBalance {
           .toList();
     }
 
-    // Use pending_balance from backend, or calculate from transactions as fallback
-    double pending = (json['pending_balance'] ?? 0).toDouble();
-    if (pending == 0.0 && pendingTxns.isNotEmpty) {
-      pending = pendingTxns.fold(0.0, (sum, txn) => sum + txn.amount);
+    // ALWAYS use pending_balance from backend user model - do NOT recalculate
+    // The backend manages this value correctly
+    final pendingValue = json['pending_balance'];
+    double pending = 0.0;
+    
+    if (pendingValue != null) {
+      pending = pendingValue is String 
+        ? double.parse(pendingValue) 
+        : (pendingValue as num).toDouble();
+    }
+
+    final balanceValue = json['balance'];
+    double balance = 0.0;
+    
+    if (balanceValue != null) {
+      balance = balanceValue is String 
+        ? double.parse(balanceValue) 
+        : (balanceValue as num).toDouble();
     }
 
     return WalletBalance(
-      balance: (json['balance'] ?? 0).toDouble(),
-      pendingBalance: pending,
+      balance: balance,
+      pendingBalance: pending, // From backend user model, not calculated
       pendingTransactions: pendingTxns,
     );
   }
