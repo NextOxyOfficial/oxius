@@ -51,7 +51,7 @@ class _AccountBalanceSectionState extends State<AccountBalanceSection> {
 
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: isSmallMobile ? 8 : 16,
+        horizontal: isSmallMobile ? 4 : 8,
         vertical: isSmallMobile ? 8 : 12,
       ),
       constraints: BoxConstraints(
@@ -557,15 +557,12 @@ class _AccountBalanceSectionState extends State<AccountBalanceSection> {
                           ),
                         ),
                         const SizedBox(width: 2),
-                        Flexible(
-                          child: Text(
-                            amount.toStringAsFixed(2),
-                            style: TextStyle(
-                              fontSize: isSmallMobile ? 16 : 18,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFFB45309),
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        Text(
+                          amount.toStringAsFixed(2),
+                          style: TextStyle(
+                            fontSize: isSmallMobile ? 16 : 18,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFFB45309),
                           ),
                         ),
                       ],
@@ -573,44 +570,43 @@ class _AccountBalanceSectionState extends State<AccountBalanceSection> {
                   ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const PendingTasksScreen(),
-                ),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFBBF24).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.visibility_outlined,
-                    size: 14,
-                    color: Colors.amber[700],
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    t('view'),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.amber[700],
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PendingTasksScreen(),
                     ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFBBF24).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.visibility_outlined,
+                        size: 14,
+                        color: Colors.amber[700],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        t('view'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.amber[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),

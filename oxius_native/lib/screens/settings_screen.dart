@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/settings_service.dart';
 import '../services/translation_service.dart';
+import '../services/user_state_service.dart';
 import '../models/user_profile.dart';
+import '../widgets/footer.dart';
+import '../widgets/mobile_drawer.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -202,50 +205,94 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.grey[50]!,
-                Colors.grey[100]!,
+      drawer: const MobileDrawer(),
+      body: Column(
+        children: [
+          // Fixed Header at top
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.95),
+              border: Border(
+                bottom: BorderSide(
+                  color: Colors.grey.shade200.withOpacity(0.5),
+                  width: 0.5,
+                ),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  offset: const Offset(0, 1),
+                  blurRadius: 3,
+                ),
               ],
             ),
-          ),
-          child: Container(
-            constraints: BoxConstraints(
-              maxWidth: screenWidth < 896 ? double.infinity : 896,
-            ),
-            margin: EdgeInsets.symmetric(
-              horizontal: isSmallMobile ? 4 : 8,
-            ),
-            padding: EdgeInsets.symmetric(
-              vertical: isSmallMobile ? 16 : 24,
-            ),
-            child: Column(
-              children: [
-                // Header
-                _buildHeader(isSmallMobile),
-                
-                SizedBox(height: isSmallMobile ? 24 : 32),
-                
-                // User Info Summary
-                if (_userProfile != null) _buildUserInfoSummary(isSmallMobile),
-                
-                SizedBox(height: isSmallMobile ? 16 : 24),
-                
-                // Settings Navigation & Content
-                _buildSettingsContent(isSmallMobile, isMobile),
-                
-                // Spacer for sticky button
-                if (_activeTab == 'profile') SizedBox(height: isSmallMobile ? 96 : 64),
-              ],
+            child: SafeArea(
+              bottom: false,
+              child: _buildFixedHeader(context, isMobile),
             ),
           ),
-        ),
+          
+          // Scrollable content area
+          Expanded(
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.grey[50]!,
+                      Colors.grey[100]!,
+                    ],
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Settings Content
+                    Container(
+                      constraints: BoxConstraints(
+                        maxWidth: screenWidth < 896 ? double.infinity : 896,
+                      ),
+                      margin: EdgeInsets.symmetric(
+                        horizontal: isSmallMobile ? 4 : 8,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        vertical: isSmallMobile ? 16 : 24,
+                      ),
+                      child: Column(
+                        children: [
+                          // Header
+                          _buildHeader(isSmallMobile),
+                          
+                          SizedBox(height: isSmallMobile ? 24 : 32),
+                          
+                          // User Info Summary
+                          if (_userProfile != null) _buildUserInfoSummary(isSmallMobile),
+                          
+                          SizedBox(height: isSmallMobile ? 16 : 24),
+                          
+                          // Settings Navigation & Content
+                          _buildSettingsContent(isSmallMobile, isMobile),
+                          
+                          // Spacer for sticky button
+                          if (_activeTab == 'profile') SizedBox(height: isSmallMobile ? 96 : 64),
+                        ],
+                      ),
+                    ),
+                    
+                    // Footer
+                    const SizedBox(height: 32),
+                    AppFooter(
+                      showMobileNav: isMobile,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: _activeTab == 'profile' && _formDirty
           ? AnimatedSlide(
@@ -260,6 +307,120 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Continue with build methods in next part...
   // (The file is too long, I'll create helper methods in separate sections)
+  
+  Widget _buildFixedHeader(BuildContext context, bool isMobile) {
+    final userState = UserStateService();
+    
+    return Container(
+      height: 64,
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 8 : 16,
+      ),
+      child: ListenableBuilder(
+        listenable: userState,
+        builder: (context, _) {
+          final user = userState.currentUser;
+          return Row(
+            children: [
+              // Menu Button
+              Builder(
+                builder: (context) => IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: Colors.grey.shade800,
+                    size: isMobile ? 24 : 28,
+                  ),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                  tooltip: 'Open Menu',
+                ),
+              ),
+              SizedBox(width: isMobile ? 4 : 8),
+              
+              // Logo
+              GestureDetector(
+                onTap: () => Navigator.of(context).pushReplacementNamed('/'),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.settings_applications,
+                      color: const Color(0xFF10B981),
+                      size: isMobile ? 24 : 32,
+                    ),
+                    const SizedBox(width: 8),
+                    if (!isMobile)
+                      const Text(
+                        'OXIUS',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              
+              const Spacer(),
+              
+              // User Info
+              if (user != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: ClipOval(
+                          child: user.profilePicture != null && user.profilePicture!.isNotEmpty
+                              ? Image.network(
+                                  user.profilePicture!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.person,
+                                      color: Colors.grey.shade400,
+                                      size: 20,
+                                    );
+                                  },
+                                )
+                              : Icon(
+                                  Icons.person,
+                                  color: Colors.grey.shade400,
+                                  size: 20,
+                                ),
+                        ),
+                      ),
+                      if (!isMobile) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          user.displayName,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
   
   Widget _buildHeader(bool isSmallMobile) {
     return Container(
