@@ -38,17 +38,22 @@ class WalletService {
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         
-        // Calculate actual balance from user object
+        // Extract user's balance from user_details in the first transaction
         double actualBalance = 0.0;
+        double pendingBalance = 0.0;
         List<Map<String, dynamic>> pendingTxns = [];
         
-        for (var item in data) {
-          // Get user's current balance from the first item
-          if (item['user'] != null && actualBalance == 0.0) {
-            actualBalance = (item['user']['balance'] ?? 0).toDouble();
+        if (data.isNotEmpty) {
+          // Get balance from user_details (returned by BalanceSerializer)
+          final userDetails = data[0]['user_details'];
+          if (userDetails != null) {
+            actualBalance = (userDetails['balance'] ?? 0).toDouble();
+            pendingBalance = (userDetails['pending_balance'] ?? 0).toDouble();
           }
-          
-          // Collect pending transactions
+        }
+        
+        // Collect pending transactions
+        for (var item in data) {
           if (item['bank_status'] == 'pending' && 
               item['completed'] == false && 
               item['rejected'] == false) {
@@ -58,6 +63,7 @@ class WalletService {
         
         return WalletBalance.fromJson({
           'balance': actualBalance,
+          'pending_balance': pendingBalance,
           'pending_transactions': pendingTxns,
         });
       } else {
@@ -227,7 +233,11 @@ class WalletService {
             }
           }
           
-          transactions.add(Transaction.fromJson(item));
+          try {
+            transactions.add(Transaction.fromJson(item));
+          } catch (e) {
+            print('Error parsing transaction: $e');
+          }
         }
         
         return transactions;

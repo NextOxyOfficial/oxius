@@ -1,5 +1,5 @@
 class Transaction {
-  final int id;
+  final String id; // Changed from int to String to handle UUID
   final String transactionType;
   final double amount;
   final String? status;
@@ -34,8 +34,31 @@ class Transaction {
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
+    // Extract sender and recipient info from user_details (from BalanceSerializer)
+    final userDetails = json['user_details'];
+    final toUserDetails = json['to_user_details'];
+    
+    String? senderName;
+    String? recipientName;
+    
+    if (userDetails != null) {
+      final firstName = userDetails['first_name'] ?? '';
+      final lastName = userDetails['last_name'] ?? '';
+      final name = userDetails['name'] ?? '';
+      senderName = '$firstName $lastName'.trim();
+      if (senderName.isEmpty) senderName = name.isNotEmpty ? name : null;
+    }
+    
+    if (toUserDetails != null) {
+      final firstName = toUserDetails['first_name'] ?? '';
+      final lastName = toUserDetails['last_name'] ?? '';
+      final name = toUserDetails['name'] ?? '';
+      recipientName = '$firstName $lastName'.trim();
+      if (recipientName.isEmpty) recipientName = name.isNotEmpty ? name : null;
+    }
+    
     return Transaction(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '',
       transactionType: json['transaction_type'] ?? '',
       amount: (json['amount'] ?? json['payable_amount'] ?? 0).toDouble(),
       status: json['status'],
@@ -43,13 +66,13 @@ class Transaction {
       completed: json['completed'],
       rejected: json['rejected'],
       paymentMethod: json['payment_method'],
-      paymentNumber: json['payment_number'],
-      senderName: json['sender_name'],
-      senderPhone: json['sender_phone'],
-      recipientName: json['recipient_name'] ?? json['receiver_name'],
-      recipientPhone: json['recipient_phone'] ?? json['receiver_phone'],
+      paymentNumber: json['payment_number'] ?? json['card_number'],
+      senderName: senderName,
+      senderPhone: userDetails?['phone'],
+      recipientName: recipientName,
+      recipientPhone: toUserDetails?['phone'],
       createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-      note: json['note'],
+      note: json['note'] ?? json['description'],
     );
   }
 
@@ -134,14 +157,18 @@ class WalletBalance {
   });
 
   factory WalletBalance.fromJson(Map<String, dynamic> json) {
-    // Calculate pending balance from pending transactions
-    double pending = 0.0;
+    // Parse pending transactions
     List<Transaction> pendingTxns = [];
     
     if (json['pending_transactions'] != null) {
       pendingTxns = (json['pending_transactions'] as List)
           .map((txn) => Transaction.fromJson(txn))
           .toList();
+    }
+
+    // Use pending_balance from backend, or calculate from transactions as fallback
+    double pending = (json['pending_balance'] ?? 0).toDouble();
+    if (pending == 0.0 && pendingTxns.isNotEmpty) {
       pending = pendingTxns.fold(0.0, (sum, txn) => sum + txn.amount);
     }
 
