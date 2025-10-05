@@ -153,20 +153,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildUserDropdownMenu(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 640; // sm breakpoint
+    
     return Positioned(
       top: 68, // Below header
-      right: 16,
+      right: isMobile ? 8 : 0,
+      left: isMobile ? 8 : null,
       child: Material(
-        elevation: 8,
-        borderRadius: BorderRadius.circular(12),
+        elevation: 4,
+        borderRadius: BorderRadius.circular(16),
+        shadowColor: Colors.black.withOpacity(0.08),
         child: Container(
-          width: 320,
-          constraints: const BoxConstraints(maxHeight: 600),
+          width: isMobile ? 288 : 320, // w-72 (288px) mobile, sm:w-80 (320px) desktop
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height - 100),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            color: Colors.white.withOpacity(0.95),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.grey.shade200,
+              color: const Color(0xFFE2E8F0).withOpacity(0.5),
               width: 1,
             ),
           ),
@@ -181,94 +186,445 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDropdownContent(BuildContext context) {
     final userState = UserStateService();
     final user = userState.currentUser;
+    final isPro = user?.userType == 'pro' || user?.isSuperuser == true;
     
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Gradient accent at top
+        // Animated gradient accent at top
         Container(
-          height: 3,
+          height: 4,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFF6366F1)],
+              colors: [Color(0xFF818CF8), Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFF6366F1)],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
             ),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
           ),
         ),
         
-        // Navigation Grid
+        // Membership Section - px-2 pb-3 (8px horizontal, 12px bottom)
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
+          child: _buildMembershipCard(context, isPro, user),
+        ),
+        
+        // Main Navigation Grid - px-4 pt-2 pb-3
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 1.3,
+            crossAxisSpacing: 8, // gap-2
+            mainAxisSpacing: 8, // gap-2
+            childAspectRatio: 1.2,
             children: [
-              _buildQuickNavItem(context, 'Business', Icons.public, const Color(0xFFF97316)),
-              _buildQuickNavItem(context, 'News', Icons.newspaper, const Color(0xFF8B5CF6)),
-              _buildQuickNavItem(context, 'My Ads', Icons.campaign, const Color(0xFF10B981)),
-              _buildQuickNavItem(context, 'eShop', Icons.shopping_bag, const Color(0xFF3B82F6)),
-              _buildQuickNavItem(context, 'Wallet', Icons.account_balance_wallet, const Color(0xFF10B981)),
-              _buildQuickNavItem(context, 'Recharge', Icons.phone_android, const Color(0xFFF97316)),
+              _buildNavLink(context, 'Business', Icons.public_outlined, 
+                const Color(0xFFF97316), false, null),
+              _buildNavLink(context, 'News', Icons.newspaper_outlined, 
+                const Color(0xFF8B5CF6), false, null),
+              _buildNavLink(context, 'My Ads', Icons.campaign_outlined, 
+                const Color(0xFF10B981), true, 'FREE'),
+              _buildNavLink(context, 'eShop', Icons.shopping_bag_outlined, 
+                const Color(0xFF3B82F6), true, 'PRO'),
+              _buildNavLink(context, 'Wallet', Icons.account_balance_wallet_outlined, 
+                const Color(0xFF10B981), false, null),
+              _buildNavLink(context, 'Recharge', Icons.phone_android, 
+                const Color(0xFFF97316), false, null),
             ],
           ),
         ),
         
-        // Divider
-        Divider(color: Colors.grey.shade200, height: 1),
-        
-        // Logout
-        InkWell(
-          onTap: () async {
-            setState(() {
-              _isDropdownOpen = false;
-            });
-            await AuthService.logout();
-            await userState.clearUser();
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Logged out successfully'),
-                  backgroundColor: Color(0xFFEF4444),
-                ),
-              );
-            }
-          },
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFEE2E2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.logout, size: 18, color: Color(0xFFEF4444)),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Logout',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFFEF4444),
-                  ),
-                ),
-              ],
+        // Settings & Logout Section - px-4 py-3
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: const Color(0xFFF1F5F9).withOpacity(0.5)),
             ),
+          ),
+          child: Column(
+            children: [
+              // Settings & Verification Row
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildActionButton(
+                      context,
+                      'Settings',
+                      Icons.settings_outlined,
+                      const Color(0xFF64748B),
+                      () {
+                        setState(() => _isDropdownOpen = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Navigate to Settings')),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildActionButton(
+                      context,
+                      'Verification',
+                      Icons.verified_user_outlined,
+                      const Color(0xFF64748B),
+                      () {
+                        setState(() => _isDropdownOpen = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Navigate to Verification')),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              // Logout Button
+              _buildLogoutButton(context, userState),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildQuickNavItem(BuildContext context, String label, IconData icon, Color color) {
+  Widget _buildMembershipCard(BuildContext context, bool isPro, user) {
+    if (!isPro) {
+      // Free User Card
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          color: Colors.white,
+        ),
+        child: Column(
+          children: [
+            // Current Plan Header - px-3 py-2.5
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                border: Border(
+                  bottom: BorderSide(color: const Color(0xFFE2E8F0)),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.person_outline, size: 16, color: Colors.grey.shade600),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Current Plan',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'FREE',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Upgrade to Pro Action - p-3.5
+            InkWell(
+              onTap: () {
+                setState(() => _isDropdownOpen = false);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Upgrade to Pro'),
+                    backgroundColor: Color(0xFF6366F1),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(14), // p-3.5
+                child: Row(
+                  children: [
+                    // Pro Badge Icon
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFEDE9FE), Color(0xFFDDD6FE)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFFC4B5FD).withOpacity(0.8),
+                        ),
+                      ),
+                      child: const Center(
+                        child: Text('⭐', style: TextStyle(fontSize: 20)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Upgrade Text
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'Upgrade to Pro',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1E293B),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                width: 16,
+                                height: 16,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    '+',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Unlock premium features',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Toggle Switch
+                    Container(
+                      width: 44,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.grey.shade300, Colors.grey.shade400],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(2),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Pro User Card
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFC7D2FE)),
+          color: Colors.white,
+        ),
+        child: Column(
+          children: [
+            // Premium Access Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFEEF2FF), Color(0xFFDEF7FD)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                border: Border(
+                  bottom: BorderSide(color: const Color(0xFFE0E7FF).withOpacity(0.3)),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(Icons.stars, size: 16, color: Color(0xFF6366F1)),
+                      SizedBox(width: 6),
+                      Text(
+                        'Premium Access',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4F46E5),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6366F1), Color(0xFF2563EB)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.shield_outlined, size: 12, color: Colors.white),
+                        SizedBox(width: 4),
+                        Text(
+                          'PRO',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Pro Status - p-3.5
+            InkWell(
+              onTap: () {
+                setState(() => _isDropdownOpen = false);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Manage Subscription'),
+                    backgroundColor: Color(0xFF6366F1),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(14), // p-3.5
+                child: Row(
+                  children: [
+                    // Premium Badge
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF6366F1).withOpacity(0.1),
+                            const Color(0xFF2563EB).withOpacity(0.1),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFC7D2FE).withOpacity(0.5)),
+                      ),
+                      child: const Icon(
+                        Icons.shield_outlined,
+                        color: Color(0xFF6366F1),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Pro Status Text
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Pro Member',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Valid until Dec 31, 2025',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Active Toggle
+                    Container(
+                      width: 44,
+                      height: 24,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF818CF8), Color(0xFF2563EB)],
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      padding: const EdgeInsets.all(2),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Widget _buildNavLink(BuildContext context, String label, IconData icon, 
+      Color color, bool hasBadge, String? badgeText) {
     return InkWell(
       onTap: () {
         setState(() {
@@ -283,26 +639,193 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
       borderRadius: BorderRadius.circular(12),
+      child: Stack(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12), // py-3 px-2
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  color.withOpacity(0.15),
+                  color.withOpacity(0.08),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: color.withOpacity(0.25),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 36, // w-9
+                  height: 36, // h-9
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 20), // w-5 h-5
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF475569),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Badge (FREE or PRO)
+          if (hasBadge && badgeText != null)
+            Positioned(
+              top: -6,
+              right: -6,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    gradient: badgeText == 'PRO'
+                        ? const LinearGradient(
+                            colors: [Color(0xFF6366F1), Color(0xFF2563EB)],
+                          )
+                        : LinearGradient(
+                            colors: [Colors.grey.shade500, Colors.grey.shade600],
+                          ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (badgeText == 'PRO')
+                        const Icon(Icons.stars, size: 8, color: Color(0xFFFDE68A)),
+                      if (badgeText == 'PRO') const SizedBox(width: 2),
+                      Text(
+                        badgeText,
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton(BuildContext context, String label, IconData icon, 
+      Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
       child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // py-2 px-3
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFE2E8F0).withOpacity(0.5)),
         ),
-        child: Column(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade700,
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 16, color: color),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF475569),
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context, UserStateService userState) {
+    return Container(
+      margin: const EdgeInsets.only(top: 4), // mt-1
+      child: InkWell(
+        onTap: () async {
+          setState(() {
+            _isDropdownOpen = false;
+          });
+          await AuthService.logout();
+          await userState.clearUser();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Logged out successfully'),
+                backgroundColor: Color(0xFFEF4444),
+              ),
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // py-2 px-3
+          decoration: BoxDecoration(
+            color: const Color(0xFFFEF2F2),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFFECACA).withOpacity(0.5)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEE2E2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.logout_outlined,
+                  size: 16,
+                  color: Color(0xFFEF4444),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Logout',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFEF4444),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
