@@ -66,7 +66,7 @@ class PaymentMethodSelector extends StatelessWidget {
                           border: Border.all(color: Colors.grey[200]!),
                         ),
                         child: Image.asset(
-                          'assets/images/${method.icon}',
+                          'assets/${method.icon}',
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) {
                             return Icon(

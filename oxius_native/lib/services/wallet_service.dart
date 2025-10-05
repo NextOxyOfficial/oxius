@@ -194,14 +194,14 @@ class WalletService {
         throw Exception('No authentication token found');
       }
 
-      final queryParams = <String, String>{};
-      if (type != null) queryParams['type'] = type;
-      if (status != null) queryParams['status'] = status;
+      final user = AuthService.currentUser;
+      if (user == null) {
+        throw Exception('No user found');
+      }
 
-      final uri = Uri.parse('$baseUrl/statements/').replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
-
+      // Use the same endpoint as getBalance to get user's transactions
       final response = await http.get(
-        uri,
+        Uri.parse('$baseUrl/user-balance/${user.email}/'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -210,7 +210,27 @@ class WalletService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        return data.map((json) => Transaction.fromJson(json)).toList();
+        
+        // Filter transactions based on optional parameters
+        List<Transaction> transactions = [];
+        for (var item in data) {
+          // Skip if type filter doesn't match
+          if (type != null && item['transaction_type']?.toLowerCase() != type.toLowerCase()) {
+            continue;
+          }
+          
+          // Skip if status filter doesn't match
+          if (status != null) {
+            final itemStatus = item['bank_status'] ?? 'pending';
+            if (itemStatus.toLowerCase() != status.toLowerCase()) {
+              continue;
+            }
+          }
+          
+          transactions.add(Transaction.fromJson(item));
+        }
+        
+        return transactions;
       } else {
         throw Exception('Failed to load transactions: ${response.statusCode}');
       }
@@ -259,12 +279,12 @@ class WalletService {
       PaymentMethodOption(
         value: 'nagad',
         label: 'Nagad',
-        icon: 'nagad.png',
+        icon: 'images/nagad.png',
       ),
       PaymentMethodOption(
         value: 'bkash',
         label: 'bKash',
-        icon: 'bKash.png',
+        icon: 'images/bkash.png',
       ),
     ];
   }
