@@ -41,6 +41,12 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
     return DateFormat('MMM dd, yyyy HH:mm').format(date);
   }
 
+  String _stripHtmlTags(String htmlString) {
+    // Remove HTML tags using regex
+    final RegExp exp = RegExp(r'<[^>]*>', multiLine: true, caseSensitive: false);
+    return htmlString.replaceAll(exp, '').trim();
+  }
+
   void _showTaskDetails(MicroGigTask task) {
     setState(() {
       _selectedTask = task;
@@ -344,7 +350,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                                 border: Border.all(color: Colors.grey[300]!),
                               ),
                               child: Text(
-                                _selectedTask!.submitDetails!,
+                                _stripHtmlTags(_selectedTask!.submitDetails!),
                                 style: const TextStyle(fontSize: 14),
                               ),
                             ),
