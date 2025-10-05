@@ -3,6 +3,7 @@ import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
 import '../../services/user_state_service.dart';
 import '../../services/translation_service.dart';
+import '../microgig/pending_tasks_screen.dart';
 import 'deposit_tab.dart';
 import 'withdraw_tab.dart';
 import 'transfer_tab.dart';
@@ -217,17 +218,21 @@ class _WalletScreenState extends State<WalletScreen> {
                             ],
                           ),
                         ),
-                        if ((_balance?.pendingTransactions.isNotEmpty ?? false))
-                          TextButton.icon(
-                            onPressed: () {
-                              _showPendingTransactions();
-                            },
-                            icon: const Icon(Icons.visibility, size: 16),
-                            label: const Text('View'),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.orange,
-                            ),
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PendingTasksScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.visibility, size: 16),
+                          label: const Text('View'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.orange,
                           ),
+                        ),
                       ],
                     ),
                   ),
