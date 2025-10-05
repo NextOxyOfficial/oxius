@@ -340,7 +340,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -353,7 +353,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
         onTap: () => _showTaskDetails(task),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -374,7 +374,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -399,7 +399,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               
               // Price and Auto-approval countdown row
               Row(
@@ -437,64 +437,44 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                   
                   // Auto-approval countdown for pending tasks
                   if (!task.approved && !task.rejected) ...[
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
+                    const Spacer(),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          task.is48HoursPassed
+                              ? Icons.check_circle
+                              : Icons.timer,
+                          size: 14,
                           color: task.is48HoursPassed
-                              ? const Color(0xFF10B981).withOpacity(0.1)
-                              : const Color(0xFFF59E0B).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: task.is48HoursPassed
-                                ? const Color(0xFF10B981).withOpacity(0.3)
-                                : const Color(0xFFF59E0B).withOpacity(0.3),
-                            width: 1,
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFF59E0B),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Auto-Approval: ',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[600],
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              task.is48HoursPassed
-                                  ? Icons.check_circle
-                                  : Icons.timer,
-                              size: 14,
-                              color: task.is48HoursPassed
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFF59E0B),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Auto-Approval: ',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                            Text(
-                              task.is48HoursPassed
-                                  ? 'Done'
-                                  : _formatCountdown(task),
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: task.is48HoursPassed
-                                    ? const Color(0xFF10B981)
-                                    : const Color(0xFFF59E0B),
-                                fontFeatures: const [
-                                  FontFeature.tabularFigures(),
-                                ],
-                              ),
-                            ),
-                          ],
+                        Text(
+                          task.is48HoursPassed
+                              ? 'Done'
+                              : _formatCountdown(task),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: task.is48HoursPassed
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFF59E0B),
+                            fontFeatures: const [
+                              FontFeature.tabularFigures(),
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ],
