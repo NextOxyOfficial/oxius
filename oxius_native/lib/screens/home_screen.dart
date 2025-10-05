@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../widgets/footer.dart';
 import '../widgets/mobile_drawer.dart';
 import '../widgets/mobile_banner.dart';
-import '../widgets/hot_deals_section.dart';
-import '../widgets/hot_arrivals_section.dart';
 import '../widgets/sale_category.dart';
 import '../widgets/classified_services_section.dart';
 import '../widgets/eshop_section.dart'; // Add the eShop section import
@@ -84,27 +82,30 @@ class _HomeScreenState extends State<HomeScreen> {
               controller: _scrollController,
               child: Column(
                 children: [
-                  // 1. Mobile Banner (replaces HeroBanner)
+                  // 1. Hero Banner - Main banner slider at top
                   const SizedBox(height: 8),
                   const MobileBannerWidget(
                     autoplayInterval: 5000,
                     autoplayEnabled: true,
                   ),
                   
-                  // 2. Hot Deals Section
-                  const HotDealsSection(),
-                  
-                  // 3. Hot Arrivals Section
-                  const HotArrivalsSection(),
-                  
-                  // 4. Sale Category
+                  // 2. Sale Category - eShop product categories
                   const SaleCategory(),
                   
-                  // 5. Classified Services Section
+                  // 3. Search Form - TODO: Implement search functionality for classified ads
+                  // This is a placeholder for the search form section from Vue
+                  
+                  // 4. Classified Services - Service categories
                   const ClassifiedServicesSection(),
                   
-                  // 6. eShop section
+                  // 5. Recent Ads Scroll - TODO: Implement AdsScroll widget
+                  // This shows recent classified posts (classifiedLatestPosts)
+                  
+                  // 6. eShop Product Slider - Product carousel
                   const EshopSection(),
+                  
+                  // 7. Micro Gigs Section - TODO: Implement micro gigs section
+                  // Large section with categories sidebar and gigs list
                   
                   // Footer - always show the main footer content
                   const SizedBox(height: 32),

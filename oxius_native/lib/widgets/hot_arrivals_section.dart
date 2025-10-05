@@ -56,7 +56,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
   }
 
   Color _getBadgeColor(String? badgeColor) {
-    if (badgeColor == null) return Colors.emerald.shade600;
+    if (badgeColor == null) return Colors.green.shade600;
     
     // Parse Tailwind-like color classes
     if (badgeColor.contains('red')) return Colors.red.shade500;
@@ -65,7 +65,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
     if (badgeColor.contains('yellow')) return Colors.yellow.shade600;
     if (badgeColor.contains('lime')) return Colors.lime.shade600;
     if (badgeColor.contains('green')) return Colors.green.shade600;
-    if (badgeColor.contains('emerald')) return Colors.emerald.shade600;
+    if (badgeColor.contains('emerald')) return Colors.green.shade600;
     if (badgeColor.contains('teal')) return Colors.teal.shade600;
     if (badgeColor.contains('cyan')) return Colors.cyan.shade600;
     if (badgeColor.contains('sky')) return Colors.lightBlue.shade600;
@@ -77,7 +77,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
     if (badgeColor.contains('pink')) return Colors.pink.shade400;
     if (badgeColor.contains('rose')) return Colors.red.shade400;
     
-    return Colors.emerald.shade600;
+    return Colors.green.shade600;
   }
 
   void _handleViewAll() {
@@ -103,7 +103,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
         height: 150,
         child: const Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.emerald),
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
           ),
         ),
       );
@@ -132,8 +132,8 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.emerald.shade400,
-                        Colors.emerald.shade600,
+                        Colors.green.shade400,
+                        Colors.green.shade600,
                       ],
                     ),
                     borderRadius: BorderRadius.circular(2),
@@ -152,7 +152,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.emerald.shade50,
+                    color: Colors.green.shade50,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -160,7 +160,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                     style: GoogleFonts.roboto(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: Colors.emerald.shade600,
+                      color: Colors.green.shade600,
                     ),
                   ),
                 ),
@@ -177,7 +177,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.emerald.shade600),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade600),
                           ),
                         )
                       else
@@ -186,7 +186,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                           style: GoogleFonts.roboto(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Colors.emerald.shade600,
+                            color: Colors.green.shade600,
                           ),
                         ),
                       if (!_viewAllLoading) ...[
@@ -194,7 +194,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                         Icon(
                           Icons.chevron_right,
                           size: 16,
-                          color: Colors.emerald.shade600,
+                          color: Colors.green.shade600,
                         ),
                       ],
                     ],

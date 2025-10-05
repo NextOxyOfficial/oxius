@@ -62,7 +62,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
     if (badgeColor.contains('yellow')) return Colors.yellow.shade600;
     if (badgeColor.contains('lime')) return Colors.lime.shade600;
     if (badgeColor.contains('green')) return Colors.green.shade600;
-    if (badgeColor.contains('emerald')) return Colors.emerald.shade600;
+    if (badgeColor.contains('emerald')) return Colors.green.shade600;
     if (badgeColor.contains('teal')) return Colors.teal.shade600;
     if (badgeColor.contains('cyan')) return Colors.cyan.shade600;
     if (badgeColor.contains('sky')) return Colors.lightBlue.shade600;
@@ -85,7 +85,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
         height: 200,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.rose.shade500, Colors.orange.shade500],
+            colors: [Colors.pink.shade400, Colors.orange.shade500],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
@@ -107,7 +107,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.rose.shade500, Colors.orange.shade500],
+          colors: [Colors.pink.shade400, Colors.orange.shade500],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
