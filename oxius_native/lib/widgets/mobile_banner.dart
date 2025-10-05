@@ -6,12 +6,14 @@ class MobileBannerWidget extends StatefulWidget {
   final int autoplayInterval;
   final bool autoplayEnabled;
   final bool showSwipeHint;
+  final String endpoint;
   
   const MobileBannerWidget({
     super.key,
     this.autoplayInterval = 4000,
     this.autoplayEnabled = true,
     this.showSwipeHint = false,
+    this.endpoint = '/banners/', // Default to main banners
   });
 
   @override
@@ -52,7 +54,8 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
         _error = null;
       });
 
-      final response = await EshopService.fetchEshopBanners(endpoint: '/eshop-banner/mobile/');
+      // Use the endpoint from widget parameter
+      final response = await EshopService.fetchEshopBanners(endpoint: widget.endpoint);
       
       if (mounted) {
         setState(() {
@@ -72,7 +75,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
           _isLoading = false;
         });
       }
-      print('Error fetching mobile banners: $e');
+      print('Error fetching mobile banners from ${widget.endpoint}: $e');
     }
   }
 

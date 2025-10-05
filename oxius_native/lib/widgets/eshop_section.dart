@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/translation_service.dart';
 import '../services/eshop_service.dart';
+import 'hot_deals_section.dart';
+import 'hot_arrivals_section.dart';
+import 'mobile_banner.dart';
 
 class EshopSection extends StatefulWidget {
   const EshopSection({super.key});
@@ -123,10 +126,27 @@ class _EshopSectionState extends State<EshopSection> {
       ),
       child: Column(
         children: [
+          // eShop Header
           _buildHeader(isMobile),
           const SizedBox(height: 16),
           
-          const SizedBox(height: 8),
+          // 1. eShop Banner (using MobileBannerWidget with eshop-banner endpoint)
+          const MobileBannerWidget(
+            autoplayInterval: 5000,
+            autoplayEnabled: true,
+            endpoint: '/eshop-banner/',
+          ),
+          const SizedBox(height: 16),
+          
+          // 2. Hot Deals Section (Special Offers)
+          const HotDealsSection(),
+          const SizedBox(height: 16),
+          
+          // 3. Hot Arrivals Section (New & Hot)
+          const HotArrivalsSection(),
+          const SizedBox(height: 16),
+          
+          // 4. Product Grid
           _buildProductsGrid(isMobile),
         ],
       ),
