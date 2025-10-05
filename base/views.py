@@ -1014,11 +1014,34 @@ def postMicroGigPostTask(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def getPendingTasks(request):
-    serializer = GetMicroGigPostTaskSerializer(
-        MicroGigPostTask.objects.filter(user=request.user).order_by("-created_at"),
-        many=True,
-    )
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    from .pagination import StandardResultsSetPagination
+    
+    # Get filter parameter (pending, approved, all)
+    filter_type = request.query_params.get('filter', 'all')
+    
+    # Base queryset
+    queryset = MicroGigPostTask.objects.filter(user=request.user)
+    
+    # Apply filter
+    if filter_type == 'pending':
+        queryset = queryset.filter(approved=False, rejected=False)
+    elif filter_type == 'approved':
+        queryset = queryset.filter(approved=True)
+    elif filter_type == 'rejected':
+        queryset = queryset.filter(rejected=True)
+    # 'all' returns everything
+    
+    # Order by created_at descending
+    queryset = queryset.order_by("-created_at")
+    
+    # Apply pagination
+    paginator = StandardResultsSetPagination()
+    paginator.page_size = 15  # 15 items per page
+    paginated_queryset = paginator.paginate_queryset(queryset, request)
+    
+    serializer = GetMicroGigPostTaskSerializer(paginated_queryset, many=True)
+    
+    return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(["GET"])

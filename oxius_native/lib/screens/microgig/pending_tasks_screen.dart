@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/microgig_models.dart';
@@ -14,9 +15,17 @@ class PendingTasksScreen extends StatefulWidget {
 class _PendingTasksScreenState extends State<PendingTasksScreen> {
   List<MicroGigTask> _tasks = [];
   bool _isLoading = true;
+  bool _isLoadingMore = false;
   MicroGigTask? _selectedTask;
   bool _showDetails = false;
   final TranslationService _translationService = TranslationService();
+  Timer? _timer;
+  final ScrollController _scrollController = ScrollController();
+  
+  // Pagination and filtering
+  int _currentPage = 1;
+  bool _hasMore = true;
+  String _selectedFilter = 'all'; // all, pending, approved, rejected
 
   String t(String key) => _translationService.translate(key);
 
@@ -24,17 +33,84 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
   void initState() {
     super.initState();
     _loadPendingTasks();
+    _scrollController.addListener(_onScroll);
+    // Update every second for live countdown
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          // This will trigger rebuild to update countdown
+        });
+      }
+    });
   }
 
-  Future<void> _loadPendingTasks() async {
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        _hasMore) {
+      _loadMoreTasks();
+    }
+  }
+
+  Future<void> _loadPendingTasks({bool isRefresh = false}) async {
+    if (isRefresh) {
+      setState(() {
+        _currentPage = 1;
+        _tasks.clear();
+      });
+    }
+    
     setState(() => _isLoading = true);
-    final tasks = await MicrogigService.getPendingTasks();
+    
+    final response = await MicrogigService.getPendingTasks(
+      page: _currentPage,
+      filter: _selectedFilter,
+    );
+    
     if (mounted) {
       setState(() {
-        _tasks = tasks;
+        _tasks = response['tasks'] as List<MicroGigTask>;
+        _hasMore = response['hasMore'] as bool;
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _loadMoreTasks() async {
+    if (_isLoadingMore || !_hasMore) return;
+    
+    setState(() => _isLoadingMore = true);
+    
+    final response = await MicrogigService.getPendingTasks(
+      page: _currentPage + 1,
+      filter: _selectedFilter,
+    );
+    
+    if (mounted) {
+      setState(() {
+        _tasks.addAll(response['tasks'] as List<MicroGigTask>);
+        _hasMore = response['hasMore'] as bool;
+        _currentPage++;
+        _isLoadingMore = false;
+      });
+    }
+  }
+
+  void _onFilterChanged(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+      _currentPage = 1;
+      _tasks.clear();
+    });
+    _loadPendingTasks();
   }
 
   String _formatDate(DateTime date) {
@@ -47,6 +123,21 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
     return htmlString.replaceAll(exp, '').trim();
   }
 
+  String _formatCountdown(MicroGigTask task) {
+    final elapsed = DateTime.now().difference(task.createdAt);
+    final remaining = const Duration(hours: 48) - elapsed;
+    
+    if (remaining.isNegative) {
+      return 'Auto-approved';
+    }
+    
+    final hours = remaining.inHours;
+    final minutes = remaining.inMinutes.remainder(60);
+    final seconds = remaining.inSeconds.remainder(60);
+    
+    return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
   void _showTaskDetails(MicroGigTask task) {
     setState(() {
       _selectedTask = task;
@@ -54,12 +145,119 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
     });
   }
 
+  Widget _buildFilterTabs() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildFilterChip(
+              label: 'All',
+              value: 'all',
+              icon: Icons.list,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildFilterChip(
+              label: 'Pending',
+              value: 'pending',
+              icon: Icons.pending_outlined,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildFilterChip(
+              label: 'Approved',
+              value: 'approved',
+              icon: Icons.check_circle_outline,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildFilterChip(
+              label: 'Rejected',
+              value: 'rejected',
+              icon: Icons.cancel_outlined,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required String value,
+    required IconData icon,
+  }) {
+    final isSelected = _selectedFilter == value;
+    
+    Color getColor() {
+      if (!isSelected) return Colors.grey[300]!;
+      switch (value) {
+        case 'pending':
+          return Colors.orange;
+        case 'approved':
+          return Colors.green;
+        case 'rejected':
+          return Colors.red;
+        default:
+          return const Color(0xFF3B82F6);
+      }
+    }
+
+    return GestureDetector(
+      onTap: () => _onFilterChanged(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? getColor().withOpacity(0.1) : Colors.grey[100],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? getColor() : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: isSelected ? getColor() : Colors.grey[600],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: isSelected ? getColor() : Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Text(
-          'Pending Tasks List',
+          'Tasks List',
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -69,46 +267,65 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _tasks.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.task_alt,
-                        size: 80,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No pending tasks',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey[600],
+      body: Column(
+        children: [
+          // Filter Tabs
+          _buildFilterTabs(),
+          // Task List
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _tasks.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.task_alt,
+                              size: 80,
+                              color: Colors.grey[300],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No tasks found',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
                         ),
+                      )
+                    : Stack(
+                        children: [
+                          RefreshIndicator(
+                            onRefresh: () => _loadPendingTasks(isRefresh: true),
+                            child: ListView.builder(
+                              controller: _scrollController,
+                              padding: const EdgeInsets.all(16),
+                              itemCount: _tasks.length + (_hasMore ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index == _tasks.length) {
+                                  // Loading indicator at the bottom
+                                  return const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(16),
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                }
+                                final task = _tasks[index];
+                                return _buildTaskCard(task);
+                              },
+                            ),
+                          ),
+                          if (_showDetails && _selectedTask != null)
+                            _buildTaskDetailsOverlay(),
+                        ],
                       ),
-                    ],
-                  ),
-                )
-              : Stack(
-                  children: [
-                    RefreshIndicator(
-                      onRefresh: _loadPendingTasks,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _tasks.length,
-                        itemBuilder: (context, index) {
-                          final task = _tasks[index];
-                          return _buildTaskCard(task);
-                        },
-                      ),
-                    ),
-                    if (_showDetails && _selectedTask != null)
-                      _buildTaskDetailsOverlay(),
-                  ],
-                ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -122,11 +339,15 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
       statusColor = const Color(0xFFF59E0B);
     }
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey[200]!,
+          width: 1,
+        ),
       ),
       child: InkWell(
         onTap: () => _showTaskDetails(task),
@@ -136,35 +357,36 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Title and Status Row
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+                  Expanded(
                     child: Text(
-                      '#${task.id}',
+                      task.gigTitle ?? 'Untitled Gig',
                       style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        color: Color(0xFF1E293B),
+                        height: 1.3,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 10,
+                      vertical: 5,
                     ),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: statusColor.withOpacity(0.3),
+                        width: 1,
+                      ),
                     ),
                     child: Text(
                       task.status,
@@ -178,87 +400,105 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              Text(
-                task.gigTitle ?? 'Untitled Gig',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
+              
+              // Price and Auto-approval countdown row
               Row(
                 children: [
-                  const Icon(
-                    Icons.attach_money,
-                    size: 16,
-                    color: Color(0xFF10B981),
-                  ),
-                  Text(
-                    '৳${task.gigPrice.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF10B981),
+                  // Price
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.payments_outlined,
+                          size: 16,
+                          color: Color(0xFF10B981),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '৳${task.gigPrice.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF10B981),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const Spacer(),
-                  Icon(
-                    Icons.access_time,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    _formatDate(task.createdAt),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-              if (!task.approved && !task.rejected) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: task.is48HoursPassed
-                        ? Colors.red.withOpacity(0.1)
-                        : Colors.orange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        task.is48HoursPassed
-                            ? Icons.check_circle
-                            : Icons.schedule,
-                        size: 14,
-                        color: task.is48HoursPassed
-                            ? Colors.red
-                            : Colors.orange,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Auto Approval: ${task.remainingTime}',
-                        style: TextStyle(
-                          fontSize: 12,
+                  
+                  // Auto-approval countdown for pending tasks
+                  if (!task.approved && !task.rejected) ...[
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
                           color: task.is48HoursPassed
-                              ? Colors.red
-                              : Colors.orange,
+                              ? const Color(0xFF10B981).withOpacity(0.1)
+                              : const Color(0xFFF59E0B).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: task.is48HoursPassed
+                                ? const Color(0xFF10B981).withOpacity(0.3)
+                                : const Color(0xFFF59E0B).withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              task.is48HoursPassed
+                                  ? Icons.check_circle
+                                  : Icons.timer,
+                              size: 14,
+                              color: task.is48HoursPassed
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFF59E0B),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Auto-Approval: ',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                            Text(
+                              task.is48HoursPassed
+                                  ? 'Done'
+                                  : _formatCountdown(task),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: task.is48HoursPassed
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFFF59E0B),
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ],
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
         ),
