@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/footer.dart';
 import '../widgets/mobile_drawer.dart';
-import '../widgets/hero_banner.dart';
+import '../widgets/mobile_banner.dart';
+import '../widgets/hot_deals_section.dart';
+import '../widgets/hot_arrivals_section.dart';
 import '../widgets/sale_category.dart';
 import '../widgets/classified_services_section.dart';
 import '../widgets/eshop_section.dart'; // Add the eShop section import
@@ -82,11 +84,26 @@ class _HomeScreenState extends State<HomeScreen> {
               controller: _scrollController,
               child: Column(
                 children: [
-                  const HeroBanner(),
+                  // 1. Mobile Banner (replaces HeroBanner)
+                  const SizedBox(height: 8),
+                  const MobileBannerWidget(
+                    autoplayInterval: 5000,
+                    autoplayEnabled: true,
+                  ),
+                  
+                  // 2. Hot Deals Section
+                  const HotDealsSection(),
+                  
+                  // 3. Hot Arrivals Section
+                  const HotArrivalsSection(),
+                  
+                  // 4. Sale Category
                   const SaleCategory(),
+                  
+                  // 5. Classified Services Section
                   const ClassifiedServicesSection(),
                   
-                  // Add eShop section below the classified services
+                  // 6. eShop section
                   const EshopSection(),
                   
                   // Footer - always show the main footer content

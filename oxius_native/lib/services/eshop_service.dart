@@ -242,4 +242,111 @@ class EshopService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> fetchProductCategories({
+    bool? specialOffer,
+    bool? hotArrival,
+  }) async {
+    try {
+      final Map<String, String> queryParams = {};
+      
+      if (specialOffer != null) {
+        queryParams['special_offer'] = specialOffer.toString();
+      }
+      if (hotArrival != null) {
+        queryParams['hot_arrival'] = hotArrival.toString();
+      }
+
+      final uri = Uri.parse('$baseUrl/product-categories/').replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
+      print('EshopService: Fetching product categories from: $uri');
+      
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      print('EshopService: Product categories response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        List<Map<String, dynamic>> categories = [];
+        
+        if (data is Map && data['results'] is List) {
+          categories = List<Map<String, dynamic>>.from(data['results']);
+        } else if (data is List) {
+          categories = List<Map<String, dynamic>>.from(data);
+        }
+        
+        // Transform image URLs to absolute
+        for (var category in categories) {
+          if (category['image'] != null) {
+            category['image'] = _abs(category['image'].toString());
+          }
+        }
+        
+        print('EshopService: Successfully fetched ${categories.length} product categories');
+        return categories;
+      }
+      
+      print('EshopService: Failed to fetch product categories. Status: ${response.statusCode}');
+      return [];
+    } catch (e, stackTrace) {
+      print('EshopService: Error fetching product categories: $e');
+      print('EshopService: Stack trace: $stackTrace');
+      return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> fetchEshopBanners({String endpoint = '/eshop-banner/'}) async {
+    try {
+      final uri = Uri.parse('$baseUrl$endpoint');
+      print('EshopService: Fetching banners from: $uri');
+      
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      print('EshopService: Banners response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        List<Map<String, dynamic>> banners = [];
+        
+        if (data is Map && data['results'] is List) {
+          banners = List<Map<String, dynamic>>.from(data['results']);
+        } else if (data is List) {
+          banners = List<Map<String, dynamic>>.from(data);
+        }
+        
+        // Transform banner URLs to absolute
+        for (var banner in banners) {
+          if (banner['image'] != null) {
+            banner['image'] = _abs(banner['image'].toString());
+          }
+          if (banner['mobile_image'] != null) {
+            banner['mobile_image'] = _abs(banner['mobile_image'].toString());
+          }
+        }
+        
+        print('EshopService: Successfully fetched ${banners.length} banners');
+        return banners;
+      }
+      
+      print('EshopService: Failed to fetch banners. Status: ${response.statusCode}');
+      return [];
+    } catch (e, stackTrace) {
+      print('EshopService: Error fetching banners: $e');
+      print('EshopService: Stack trace: $stackTrace');
+      return [];
+    }
+  }
+
 }
