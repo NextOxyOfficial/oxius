@@ -157,24 +157,28 @@ class _HomeScreenState extends State<HomeScreen> {
     final isMobile = screenWidth < 640; // sm breakpoint
     
     return Positioned(
-      top: 68, // Below header
-      right: isMobile ? 8 : 0,
-      left: isMobile ? 8 : null,
-      child: Material(
-        elevation: 4,
-        borderRadius: BorderRadius.circular(16),
-        shadowColor: Colors.black.withOpacity(0.08),
-        child: Container(
-          width: isMobile ? 288 : 320, // w-72 (288px) mobile, sm:w-80 (320px) desktop
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height - 100),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.95),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFE2E8F0).withOpacity(0.5),
-              width: 1,
-            ),
+      top: 68, // Below header (top-12)
+      right: isMobile ? 8 : 16,
+      child: Container(
+        width: isMobile ? 288 : 320, // w-72 (288px) mobile, sm:w-80 (320px) desktop
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height - 100),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(12), // rounded-xl
+          border: Border.all(
+            color: const Color(0xFFCBD5E1).withOpacity(0.5), // border-slate-200/50
+            width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              offset: const Offset(0, 4),
+              blurRadius: 16,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
           child: SingleChildScrollView(
             child: _buildDropdownContent(context),
           ),
@@ -191,16 +195,19 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Animated gradient accent at top
+        // Animated gradient accent at top (h-1 = 4px)
         Container(
           height: 4,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF818CF8), Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFF6366F1)],
+              colors: [
+                Color(0xFF818CF8), // primary-400
+                Color(0xFF6366F1), // indigo-500
+                Color(0xFF6366F1), // primary-600
+              ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
           ),
         ),
         
@@ -213,44 +220,79 @@ class _HomeScreenState extends State<HomeScreen> {
         // Main Navigation Grid - px-4 pt-2 pb-3
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            crossAxisSpacing: 8, // gap-2
-            mainAxisSpacing: 8, // gap-2
-            childAspectRatio: 1.2,
-            children: [
-              _buildNavLink(context, 'Business', Icons.public_outlined, 
-                const Color(0xFFF97316), false, null),
-              _buildNavLink(context, 'News', Icons.newspaper_outlined, 
-                const Color(0xFF8B5CF6), false, null),
-              _buildNavLink(context, 'My Ads', Icons.campaign_outlined, 
-                const Color(0xFF10B981), true, 'FREE'),
-              _buildNavLink(context, 'eShop', Icons.shopping_bag_outlined, 
-                const Color(0xFF3B82F6), true, 'PRO'),
-              _buildNavLink(context, 'Wallet', Icons.account_balance_wallet_outlined, 
-                const Color(0xFF10B981), false, null),
-              _buildNavLink(context, 'Recharge', Icons.phone_android, 
-                const Color(0xFFF97316), false, null),
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final cardWidth = (constraints.maxWidth - 8) / 2; // Split width evenly minus gap
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: cardWidth,
+                        child: _buildNavLink(context, 'Business', Icons.public_outlined, 
+                          const Color(0xFFF97316), false, null),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: cardWidth,
+                        child: _buildNavLink(context, 'News', Icons.newspaper_outlined, 
+                          const Color(0xFF8B5CF6), false, null),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: cardWidth,
+                        child: _buildNavLink(context, 'My Ads', Icons.campaign_outlined, 
+                          const Color(0xFF10B981), true, 'FREE'),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: cardWidth,
+                        child: _buildNavLink(context, 'eShop', Icons.shopping_bag_outlined, 
+                          const Color(0xFF3B82F6), true, 'PRO'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: cardWidth,
+                        child: _buildNavLink(context, 'Wallet', Icons.account_balance_wallet_outlined, 
+                          const Color(0xFF10B981), false, null),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: cardWidth,
+                        child: _buildNavLink(context, 'Recharge', Icons.phone_android, 
+                          const Color(0xFFF97316), false, null),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
         ),
         
         // Settings & Logout Section - px-4 py-3
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             border: Border(
-              top: BorderSide(color: const Color(0xFFF1F5F9).withOpacity(0.5)),
+              top: BorderSide(color: Color(0xFFF1F5F9)), // border-slate-100
             ),
           ),
           child: Column(
             children: [
               // Settings & Verification Row
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
+                  Flexible(
                     child: _buildActionButton(
                       context,
                       'Settings',
@@ -265,11 +307,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Expanded(
+                  Flexible(
                     child: _buildActionButton(
                       context,
                       'Verification',
-                      Icons.verified_user_outlined,
+                      Icons.drive_folder_upload_outlined,
                       const Color(0xFF64748B),
                       () {
                         setState(() => _isDropdownOpen = false);
@@ -281,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               // Logout Button
               _buildLogoutButton(context, userState),
             ],
@@ -297,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: const Color(0xFFE2E8F0)), // border-slate-200
           color: Colors.white,
         ),
         child: Column(
@@ -306,10 +348,10 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
+                color: const Color(0xFFF8FAFC), // bg-slate-50
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                border: Border(
-                  bottom: BorderSide(color: const Color(0xFFE2E8F0)),
+                border: const Border(
+                  bottom: BorderSide(color: Color(0xFFE2E8F0)), // border-slate-200
                 ),
               ),
               child: Row(
@@ -364,21 +406,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // Pro Badge Icon
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFFEDE9FE), Color(0xFFDDD6FE)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: const Color(0xFFC4B5FD).withOpacity(0.8),
                         ),
                       ),
                       child: const Center(
-                        child: Text('⭐', style: TextStyle(fontSize: 20)),
+                        child: Text('⭐', style: TextStyle(fontSize: 22)),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -433,23 +475,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     // Toggle Switch
                     Container(
-                      width: 44,
-                      height: 24,
+                      width: 48,
+                      height: 26,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [Colors.grey.shade300, Colors.grey.shade400],
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(13),
                       ),
-                      padding: const EdgeInsets.all(2),
+                      padding: const EdgeInsets.all(2.5),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: const BoxDecoration(
+                          width: 21,
+                          height: 21,
+                          decoration: BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -592,23 +641,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     // Active Toggle
                     Container(
-                      width: 44,
-                      height: 24,
+                      width: 48,
+                      height: 26,
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
                           colors: [Color(0xFF818CF8), Color(0xFF2563EB)],
                         ),
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderRadius: BorderRadius.all(Radius.circular(13)),
                       ),
-                      padding: const EdgeInsets.all(2),
+                      padding: const EdgeInsets.all(2.5),
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: const BoxDecoration(
+                          width: 21,
+                          height: 21,
+                          decoration: BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -638,46 +694,55 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12), // py-3 px-2
+            width: double.infinity, // Fill the allocated width
+            height: 90, // Increased height to prevent overflow
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  color.withOpacity(0.15),
                   color.withOpacity(0.08),
+                  color.withOpacity(0.04),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: color.withOpacity(0.25),
+                color: color.withOpacity(0.15),
                 width: 1,
               ),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 36, // w-9
-                  height: 36, // h-9
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, color: color, size: 20), // w-5 h-5
+                  child: Icon(icon, color: color, size: 20),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF475569),
+                const SizedBox(height: 8),
+                Flexible(
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF334155),
+                      height: 1.2,
+                    ),
                   ),
                 ),
               ],
@@ -686,38 +751,47 @@ class _HomeScreenState extends State<HomeScreen> {
           // Badge (FREE or PRO)
           if (hasBadge && badgeText != null)
             Positioned(
-              top: -6,
-              right: -6,
+              top: -4,
+              right: -4,
               child: Container(
                 padding: const EdgeInsets.all(2),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(
                     gradient: badgeText == 'PRO'
                         ? const LinearGradient(
                             colors: [Color(0xFF6366F1), Color(0xFF2563EB)],
                           )
                         : LinearGradient(
-                            colors: [Colors.grey.shade500, Colors.grey.shade600],
+                            colors: [Colors.grey.shade400, Colors.grey.shade500],
                           ),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (badgeText == 'PRO')
-                        const Icon(Icons.stars, size: 8, color: Color(0xFFFDE68A)),
-                      if (badgeText == 'PRO') const SizedBox(width: 2),
+                      if (badgeText == 'PRO') ...[
+                        const Icon(Icons.stars, size: 9, color: Color(0xFFFDE68A)),
+                        const SizedBox(width: 2),
+                      ],
                       Text(
                         badgeText,
                         style: const TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
                           color: Colors.white,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ],
@@ -734,34 +808,33 @@ class _HomeScreenState extends State<HomeScreen> {
       Color color, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // py-2 px-3
         decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFE2E8F0).withOpacity(0.5)),
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 28,
               height: 28,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1F5F9), // bg-slate-100
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 16, color: color),
+              child: Icon(icon, size: 16, color: const Color(0xFF64748B)), // text-slate-500
             ),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF475569),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF334155), // text-slate-700
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -773,59 +846,55 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildLogoutButton(BuildContext context, UserStateService userState) {
-    return Container(
-      margin: const EdgeInsets.only(top: 4), // mt-1
-      child: InkWell(
-        onTap: () async {
-          setState(() {
-            _isDropdownOpen = false;
-          });
-          await AuthService.logout();
-          await userState.clearUser();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Logged out successfully'),
-                backgroundColor: Color(0xFFEF4444),
+    return InkWell(
+      onTap: () async {
+        setState(() {
+          _isDropdownOpen = false;
+        });
+        await AuthService.logout();
+        await userState.clearUser();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Logged out successfully'),
+              backgroundColor: Color(0xFFEF4444),
+            ),
+          );
+        }
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // py-2 px-3
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFEF2F2), // bg-red-50
+                shape: BoxShape.circle,
               ),
-            );
-          }
-        },
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // py-2 px-3
-          decoration: BoxDecoration(
-            color: const Color(0xFFFEF2F2),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFFECACA).withOpacity(0.5)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFEE2E2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.logout_outlined,
-                  size: 16,
-                  color: Color(0xFFEF4444),
-                ),
+              child: const Icon(
+                Icons.logout,
+                size: 16,
+                color: Color(0xFFEF4444), // text-red-500
               ),
-              const SizedBox(width: 8),
-              const Text(
-                'Logout',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFEF4444),
-                ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Logout',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFFDC2626), // text-red-600
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
