@@ -3,6 +3,8 @@ import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
 import '../../services/user_state_service.dart';
 import '../../services/translation_service.dart';
+import '../../widgets/home/account_balance_section.dart';
+import '../../widgets/home/mobile_recharge_section.dart';
 import '../microgig/pending_tasks_screen.dart';
 import 'deposit_tab.dart';
 import 'withdraw_tab.dart';
@@ -72,173 +74,11 @@ class _WalletScreenState extends State<WalletScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Balance Cards Section
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Available Balance Card
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF10B981), width: 1),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.account_balance_wallet,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                t('balance'),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              _isLoadingBalance
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : Row(
-                                      children: [
-                                        const Text(
-                                          '৳',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF10B981),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          (_balance?.balance ?? 0.0).toStringAsFixed(2),
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF10B981),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.refresh, color: Color(0xFF10B981)),
-                          onPressed: _loadBalance,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // Pending Balance Card
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange[300]!, width: 1),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: Colors.orange,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.pending_outlined,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Pending Balance',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              _isLoadingBalance
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : Row(
-                                      children: [
-                                        const Text(
-                                          '৳',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.orange,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          (_balance?.pendingBalance ?? 0.0).toStringAsFixed(2),
-                                          style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.orange,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                            ],
-                          ),
-                        ),
-                        TextButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const PendingTasksScreen(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.visibility, size: 16),
-                          label: const Text('View'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.orange,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Balance Cards Section - Using Homepage Component
+            const AccountBalanceSection(),
+
+            // Mobile Recharge Section
+            const MobileRechargeSection(),
 
             // Tab Buttons
             Container(

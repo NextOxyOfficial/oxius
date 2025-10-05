@@ -6,6 +6,7 @@ import '../services/user_state_service.dart';
 import '../models/user_profile.dart';
 import '../widgets/footer.dart';
 import '../widgets/mobile_drawer.dart';
+import '../widgets/header.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -208,28 +209,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       drawer: const MobileDrawer(),
       body: Column(
         children: [
-          // Fixed Header at top
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.95),
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey.shade200.withOpacity(0.5),
-                  width: 0.5,
-                ),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  offset: const Offset(0, 1),
-                  blurRadius: 3,
-                ),
+          // Fixed Header at top - Using CustomScrollView to support AppHeader (Sliver)
+          SizedBox(
+            height: 64,
+            child: CustomScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              slivers: [
+                const AppHeader(identifier: 'settings'),
               ],
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: _buildFixedHeader(context, isMobile),
             ),
           ),
           
@@ -263,11 +250,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       child: Column(
                         children: [
-                          // Header
-                          _buildHeader(isSmallMobile),
-                          
-                          SizedBox(height: isSmallMobile ? 24 : 32),
-                          
                           // User Info Summary
                           if (_userProfile != null) _buildUserInfoSummary(isSmallMobile),
                           
@@ -283,7 +265,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     
                     // Footer
-                    const SizedBox(height: 32),
                     AppFooter(
                       showMobileNav: isMobile,
                     ),
@@ -305,192 +286,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Continue with build methods in next part...
-  // (The file is too long, I'll create helper methods in separate sections)
+  // Build methods
   
-  Widget _buildFixedHeader(BuildContext context, bool isMobile) {
-    final userState = UserStateService();
-    
-    return Container(
-      height: 64,
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8 : 16,
-      ),
-      child: ListenableBuilder(
-        listenable: userState,
-        builder: (context, _) {
-          final user = userState.currentUser;
-          return Row(
-            children: [
-              // Menu Button
-              Builder(
-                builder: (context) => IconButton(
-                  icon: Icon(
-                    Icons.menu,
-                    color: Colors.grey.shade800,
-                    size: isMobile ? 24 : 28,
-                  ),
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                  tooltip: 'Open Menu',
-                ),
-              ),
-              SizedBox(width: isMobile ? 4 : 8),
-              
-              // Logo
-              GestureDetector(
-                onTap: () => Navigator.of(context).pushReplacementNamed('/'),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.settings_applications,
-                      color: const Color(0xFF10B981),
-                      size: isMobile ? 24 : 32,
-                    ),
-                    const SizedBox(width: 8),
-                    if (!isMobile)
-                      const Text(
-                        'OXIUS',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              
-              const Spacer(),
-              
-              // User Info
-              if (user != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(20),
-                    color: Colors.white,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: ClipOval(
-                          child: user.profilePicture != null && user.profilePicture!.isNotEmpty
-                              ? Image.network(
-                                  user.profilePicture!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Icon(
-                                      Icons.person,
-                                      color: Colors.grey.shade400,
-                                      size: 20,
-                                    );
-                                  },
-                                )
-                              : Icon(
-                                  Icons.person,
-                                  color: Colors.grey.shade400,
-                                  size: 20,
-                                ),
-                        ),
-                      ),
-                      if (!isMobile) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          user.displayName,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          );
-        },
-      ),
-    );
-  }
-  
-  Widget _buildHeader(bool isSmallMobile) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isSmallMobile ? 16 : 20,
-        vertical: isSmallMobile ? 20 : 24,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFE5E7EB).withOpacity(0.5),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.settings,
-                  color: Color(0xFF10B981),
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                t('settings'),
-                style: TextStyle(
-                  fontSize: isSmallMobile ? 22 : 26,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111827),
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Manage your account settings and preferences',
-            style: TextStyle(
-              fontSize: isSmallMobile ? 13 : 14,
-              color: const Color(0xFF6B7280),
-              fontWeight: FontWeight.w400,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Additional build methods will be in part 2
-  // This is getting very long, so I'll split it intelligently
-
   Widget _buildUserInfoSummary(bool isSmallMobile) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,

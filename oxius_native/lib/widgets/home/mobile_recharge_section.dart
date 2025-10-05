@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/translation_service.dart';
+import '../../screens/mobile_recharge/mobile_recharge_screen.dart';
 
 class MobileRechargeSection extends StatelessWidget {
   const MobileRechargeSection({super.key});
@@ -21,7 +22,12 @@ class MobileRechargeSection extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to mobile recharge screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MobileRechargeScreen(),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Container(
