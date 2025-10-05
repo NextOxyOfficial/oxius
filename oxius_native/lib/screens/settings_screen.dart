@@ -4,6 +4,9 @@ import '../services/settings_service.dart';
 import '../services/translation_service.dart';
 import '../models/user_profile.dart';
 import 'dart:convert';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,6 +18,8 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final TranslationService _translationService = TranslationService();
   final _formKey = GlobalKey<FormState>();
+  final _profileFormKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
   
   String _activeTab = 'profile';
   UserProfile? _userProfile;
@@ -62,6 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _scrollController.dispose();
     _oldPasswordController.dispose();
     _newPasswordController.dispose();
+    _emailController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
     _phoneController.dispose();
@@ -133,6 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _populateControllers() {
     if (_userProfile == null) return;
     
+    _emailController.text = _userProfile!.email ?? '';
     _firstNameController.text = _userProfile!.firstName ?? '';
     _lastNameController.text = _userProfile!.lastName ?? '';
     _phoneController.text = _userProfile!.phone ?? '';
@@ -464,7 +471,794 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildProfileTab(bool isSmallMobile, bool isMobile) {
-    return Text('Profile form will be implemented');
+    if (_userProfile == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Form(
+          key: _profileFormKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Section Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFECFDF5),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: const Icon(
+                      Icons.person,
+                      color: Color(0xFF10B981),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Profile Information',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Profile Image Upload
+              _buildImageUploadSection(),
+              const SizedBox(height: 24),
+
+              // Store Banner Upload
+              _buildBannerUploadSection(),
+              const SizedBox(height: 24),
+
+              // Personal Information
+              _buildPersonalInfoSection(),
+              const SizedBox(height: 24),
+
+              // Address Information
+              _buildAddressSection(),
+              const SizedBox(height: 24),
+
+              // Social Media
+              _buildSocialMediaSection(),
+              const SizedBox(height: 24),
+
+              // About Me
+              _buildAboutSection(),
+              const SizedBox(height: 100), // Space for sticky button
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageUploadSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFF3F4F6)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Profile Image',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 20,
+            runSpacing: 20,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              // Current image or placeholder
+              if (_userProfile?.image != null && _userProfile!.image!.isNotEmpty)
+                Stack(
+                  children: [
+                    Container(
+                      width: 96,
+                      height: 96,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: Image.network(
+                          _userProfile!.image!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: const Color(0xFFECFDF5),
+                              child: const Icon(
+                                Icons.person,
+                                size: 48,
+                                color: Color(0xFF10B981),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: -8,
+                      right: -8,
+                      child: InkWell(
+                        onTap: () => _showDeleteImageDialog(),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 4,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.delete,
+                            size: 16,
+                            color: Color(0xFFEF4444),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFECFDF5),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.person,
+                    size: 48,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
+
+              // Upload button
+              InkWell(
+                onTap: _pickProfileImage,
+                child: Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFECFDF5),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF10B981).withOpacity(0.3),
+                      width: 2,
+                      style: BorderStyle.solid,
+                    ),
+                  ),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.camera_alt,
+                        size: 24,
+                        color: Color(0xFF10B981),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Upload',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF10B981),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBannerUploadSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFF3F4F6)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Store/For Sale Banner',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Current banner or placeholder
+          if (_userProfile?.storeBanner != null && _userProfile!.storeBanner!.isNotEmpty)
+            Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 160,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      _userProfile!.storeBanner!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: const Color(0xFFECFDF5),
+                          child: const Icon(
+                            Icons.photo,
+                            size: 48,
+                            color: Color(0xFF10B981),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: InkWell(
+                    onTap: () => _showDeleteBannerDialog(),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.delete,
+                        size: 16,
+                        color: Color(0xFFEF4444),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else
+            Container(
+              width: double.infinity,
+              height: 160,
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.photo,
+                size: 48,
+                color: Color(0xFF10B981),
+              ),
+            ),
+          const SizedBox(height: 16),
+
+          // Upload button
+          InkWell(
+            onTap: _pickBannerImage,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withOpacity(0.3),
+                  width: 2,
+                  style: BorderStyle.solid,
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.photo,
+                    size: 20,
+                    color: Color(0xFF10B981),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Upload Banner Image',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF10B981),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Recommended size: 1600×400 pixels. Max size: 10MB.',
+            style: TextStyle(
+              fontSize: 12,
+              color: Color(0xFF6B7280),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPersonalInfoSection() {
+    final bool isKycVerified = _userProfile?.kyc ?? false;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Personal Information',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1F2937),
+          ),
+        ),
+        const SizedBox(height: 16),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 768;
+            
+            if (isMobile) {
+              return Column(
+                children: [
+                  _buildTextField(
+                    label: 'First Name',
+                    controller: _firstNameController,
+                    enabled: !isKycVerified,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    label: 'Last Name',
+                    controller: _lastNameController,
+                    enabled: !isKycVerified,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    label: 'Email',
+                    controller: _emailController,
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    label: 'Phone',
+                    controller: _phoneController,
+                    enabled: !isKycVerified,
+                  ),
+                ],
+              );
+            }
+            
+            return Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'First Name',
+                        controller: _firstNameController,
+                        enabled: !isKycVerified,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Last Name',
+                        controller: _lastNameController,
+                        enabled: !isKycVerified,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Email',
+                        controller: _emailController,
+                        enabled: false,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Phone',
+                        controller: _phoneController,
+                        enabled: !isKycVerified,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddressSection() {
+    final bool isKycVerified = _userProfile?.kyc ?? false;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Address Information',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1F2937),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          label: 'Address',
+          controller: _addressController,
+          enabled: !isKycVerified,
+        ),
+        const SizedBox(height: 16),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 768;
+            
+            if (isMobile) {
+              return Column(
+                children: [
+                  _buildTextField(
+                    label: 'City',
+                    controller: _cityController,
+                    enabled: !isKycVerified,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    label: 'State',
+                    controller: _stateController,
+                    enabled: !isKycVerified,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    label: 'Zip',
+                    controller: _zipController,
+                    enabled: !isKycVerified,
+                  ),
+                ],
+              );
+            }
+            
+            return Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    label: 'City',
+                    controller: _cityController,
+                    enabled: !isKycVerified,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildTextField(
+                    label: 'State',
+                    controller: _stateController,
+                    enabled: !isKycVerified,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildTextField(
+                    label: 'Zip',
+                    controller: _zipController,
+                    enabled: !isKycVerified,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialMediaSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Social Media',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1F2937),
+          ),
+        ),
+        const SizedBox(height: 16),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 768;
+            
+            if (isMobile) {
+              return Column(
+                children: [
+                  _buildTextField(
+                    label: 'Facebook URL',
+                    controller: _facebookController,
+                    prefixIcon: Icons.facebook,
+                    prefixIconColor: const Color(0xFF1877F2),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    label: 'Instagram URL',
+                    controller: _instagramController,
+                    prefixIcon: Icons.camera_alt,
+                    prefixIconColor: const Color(0xFFE4405F),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    label: 'WhatsApp #',
+                    controller: _whatsappController,
+                    prefixIcon: Icons.phone,
+                    prefixIconColor: const Color(0xFF25D366),
+                  ),
+                ],
+              );
+            }
+            
+            return Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    label: 'Facebook URL',
+                    controller: _facebookController,
+                    prefixIcon: Icons.facebook,
+                    prefixIconColor: const Color(0xFF1877F2),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildTextField(
+                    label: 'Instagram URL',
+                    controller: _instagramController,
+                    prefixIcon: Icons.camera_alt,
+                    prefixIconColor: const Color(0xFFE4405F),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildTextField(
+                    label: 'WhatsApp #',
+                    controller: _whatsappController,
+                    prefixIcon: Icons.phone,
+                    prefixIconColor: const Color(0xFF25D366),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 768;
+            
+            if (isMobile) {
+              return Column(
+                children: [
+                  _buildTextField(
+                    label: 'Profession',
+                    controller: _professionController,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    label: 'Company Name',
+                    controller: _companyController,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    label: 'Website',
+                    controller: _websiteController,
+                  ),
+                ],
+              );
+            }
+            
+            return Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    label: 'Profession',
+                    controller: _professionController,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildTextField(
+                    label: 'Company Name',
+                    controller: _companyController,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildTextField(
+                    label: 'Website',
+                    controller: _websiteController,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAboutSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'About Me',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF1F2937),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _aboutController,
+          maxLines: 5,
+          decoration: InputDecoration(
+            hintText: 'Please provide information about your self, profession and services so that public can read about you and find interest',
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
+            ),
+            contentPadding: const EdgeInsets.all(16),
+          ),
+          onChanged: (_) => _checkFormChanges(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    bool enabled = true,
+    IconData? prefixIcon,
+    Color? prefixIconColor,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            if (prefixIcon != null) ...[
+              Icon(prefixIcon, size: 16, color: prefixIconColor),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          enabled: enabled,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: enabled ? Colors.white : const Color(0xFFF9FAFB),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+          onChanged: (_) => _checkFormChanges(),
+        ),
+      ],
+    );
   }
 
   Widget _buildPasswordTab(bool isSmallMobile) {
@@ -734,7 +1528,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           ElevatedButton.icon(
-            onPressed: _isLoading ? null : () {}, // Will implement save
+            onPressed: (_isLoading || !_formDirty) ? null : _handleProfileSubmit,
             icon: _isLoading
                 ? const SizedBox(
                     width: 16,
@@ -761,5 +1555,254 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  // Image and banner upload methods
+  Future<void> _pickProfileImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image == null) return;
+
+    try {
+      final File imageFile = File(image.path);
+      final bytes = await imageFile.readAsBytes();
+      
+      // Decode the image
+      img.Image? originalImage = img.decodeImage(bytes);
+      if (originalImage == null) {
+        _showSnackBar('Failed to process image', isError: true);
+        return;
+      }
+
+      // Resize to max 1024x1024 while maintaining aspect ratio
+      img.Image resized = img.copyResize(
+        originalImage,
+        width: originalImage.width > originalImage.height ? 1024 : null,
+        height: originalImage.height >= originalImage.width ? 1024 : null,
+      );
+
+      // Encode as JPEG with 85% quality
+      final compressed = img.encodeJpg(resized, quality: 85);
+      
+      // Convert to base64
+      final base64Image = 'data:image/jpeg;base64,${base64Encode(compressed)}';
+      
+      setState(() {
+        _userProfile = _userProfile?.copyWith(image: base64Image);
+        _checkFormChanges();
+      });
+      
+      _showSnackBar('Profile image uploaded successfully');
+    } catch (e) {
+      _showSnackBar('Failed to upload image', isError: true);
+    }
+  }
+
+  Future<void> _pickBannerImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    
+    if (image == null) return;
+
+    try {
+      final File imageFile = File(image.path);
+      final bytes = await imageFile.readAsBytes();
+      
+      // Decode the image
+      img.Image? originalImage = img.decodeImage(bytes);
+      if (originalImage == null) {
+        _showSnackBar('Failed to process banner image', isError: true);
+        return;
+      }
+
+      // Resize to max 1920x600 while maintaining aspect ratio
+      img.Image resized;
+      if (originalImage.width > 1920) {
+        resized = img.copyResize(originalImage, width: 1920);
+      } else if (originalImage.height > 600) {
+        resized = img.copyResize(originalImage, height: 600);
+      } else {
+        resized = originalImage;
+      }
+
+      // Encode as JPEG with 90% quality
+      final compressed = img.encodeJpg(resized, quality: 90);
+      
+      // Convert to base64
+      final base64Image = 'data:image/jpeg;base64,${base64Encode(compressed)}';
+      
+      setState(() {
+        _userProfile = _userProfile?.copyWith(storeBanner: base64Image);
+        _checkFormChanges();
+      });
+      
+      _showSnackBar('Banner image uploaded successfully');
+    } catch (e) {
+      _showSnackBar('Failed to upload banner', isError: true);
+    }
+  }
+
+  void _showDeleteImageDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning, color: Color(0xFFEF4444)),
+            SizedBox(width: 8),
+            Text('Confirm Deletion'),
+          ],
+        ),
+        content: const Text('Are you sure you want to delete profile image?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteProfileImage();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteBannerDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning, color: Color(0xFFEF4444)),
+            SizedBox(width: 8),
+            Text('Confirm Deletion'),
+          ],
+        ),
+        content: const Text('Are you sure you want to delete the banner image?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteBannerImage();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteProfileImage() async {
+    setState(() => _isProcessing = true);
+    
+    try {
+      final user = AuthService.currentUser;
+      if (user == null) return;
+
+      final success = await SettingsService.deleteProfileImage(user.email);
+      
+      if (success) {
+        setState(() {
+          _userProfile = _userProfile?.copyWith(image: '');
+          _checkFormChanges();
+        });
+        _showSnackBar('Image removed successfully');
+      } else {
+        _showSnackBar('Failed to remove image', isError: true);
+      }
+    } catch (e) {
+      _showSnackBar('Error removing image', isError: true);
+    } finally {
+      setState(() => _isProcessing = false);
+    }
+  }
+
+  Future<void> _deleteBannerImage() async {
+    setState(() => _isProcessing = true);
+    
+    try {
+      setState(() {
+        _userProfile = _userProfile?.copyWith(storeBanner: '');
+        _checkFormChanges();
+      });
+      _showSnackBar('Banner removed successfully');
+    } catch (e) {
+      _showSnackBar('Error removing banner', isError: true);
+    } finally {
+      setState(() => _isProcessing = false);
+    }
+  }
+
+  Future<void> _handleProfileSubmit() async {
+    if (_userProfile == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Collect form data
+      final Map<String, dynamic> profileData = {
+        'first_name': _firstNameController.text.trim(),
+        'last_name': _lastNameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'address': _addressController.text.trim(),
+        'city': _cityController.text.trim(),
+        'state': _stateController.text.trim(),
+        'zip': _zipController.text.trim(),
+        'face_link': _facebookController.text.trim(),
+        'instagram_link': _instagramController.text.trim(),
+        'whatsapp_link': _whatsappController.text.trim(),
+        'profession': _professionController.text.trim(),
+        'company': _companyController.text.trim(),
+        'website': _websiteController.text.trim(),
+        'about': _aboutController.text.trim(),
+      };
+
+      // Handle images
+      if (_userProfile!.image != null && _userProfile!.image!.startsWith('data:image')) {
+        profileData['image'] = _userProfile!.image;
+      }
+      
+      if (_userProfile!.storeBanner != null && _userProfile!.storeBanner!.startsWith('data:image')) {
+        profileData['store_banner'] = _userProfile!.storeBanner;
+      }
+
+      final result = await SettingsService.updateProfile(
+        _emailController.text.trim(),
+        profileData,
+      );
+
+      if (result['success']) {
+        _showSnackBar('Profile updated successfully');
+        
+        // Reload profile to get updated data from server
+        await _loadUserProfile();
+        
+        setState(() {
+          _formDirty = false;
+        });
+      } else {
+        _showSnackBar(result['message'] ?? 'Failed to update profile', isError: true);
+      }
+    } catch (e) {
+      _showSnackBar('Failed to update profile', isError: true);
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 }
