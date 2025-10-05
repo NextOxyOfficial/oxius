@@ -38,13 +38,6 @@ class _HeroBannerState extends State<HeroBanner> {
     ];
   }
 
-  // Default banner images as fallback
-  final List<String> defaultImages = [
-    'https://picsum.photos/800/360?random=1',
-    'https://picsum.photos/800/360?random=2',
-    'https://picsum.photos/800/360?random=3',
-  ];
-
   // Mobile service buttons data matching Vue.js structure
   List<Map<String, dynamic>> get mobileServices => [
     {
@@ -162,9 +155,8 @@ class _HeroBannerState extends State<HeroBanner> {
         isLoading = false;
       });
     } catch (e) {
-      // Use default images on network error
+      // Leave bannerImages empty on network error
       setState(() {
-        bannerImages = defaultImages.map((url) => {'image': url}).toList();
         isLoading = false;
       });
       print('Error loading banner images: $e');
@@ -175,7 +167,7 @@ class _HeroBannerState extends State<HeroBanner> {
     _heroTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (!mounted) return;
       
-      final totalImages = bannerImages.isNotEmpty ? bannerImages.length : defaultImages.length;
+      final totalImages = bannerImages.length;
       if (totalImages > 1) {
         setState(() {
           _currentHeroIndex = (_currentHeroIndex + 1) % totalImages;
@@ -384,7 +376,7 @@ class _HeroBannerState extends State<HeroBanner> {
       );
     }
 
-    final imagesToShow = bannerImages.isNotEmpty ? bannerImages : defaultImages.map((url) => {'image': url}).toList();
+    final imagesToShow = bannerImages;
 
     return Container(
       height: height,
@@ -412,7 +404,7 @@ class _HeroBannerState extends State<HeroBanner> {
                 });
               },
               itemBuilder: (context, index) {
-                final imageUrl = imagesToShow[index]['image'] ?? defaultImages[0];
+                final imageUrl = imagesToShow[index]['image'] ?? '';
 
                 return Container(
                   width: double.infinity,

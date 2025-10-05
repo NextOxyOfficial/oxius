@@ -85,20 +85,18 @@ class _EshopSectionState extends State<EshopSection> {
     setState(() { _loadingProducts = true; });
     
     try {
-      // Try to fetch from backend first
+      // Fetch from backend
       final products = await EshopService.fetchEshopProducts(
         page: 1,
         pageSize: 10,
       );
       
-      // If backend fails, use mock data
-      final finalProducts = products.isEmpty ? EshopService.getMockProducts() : products;
-      print('DEBUG: eShop API returned ${finalProducts.length} products');
+      print('DEBUG: eShop API returned ${products.length} products');
       
       if (!mounted) return;
       setState(() {
-        _products = finalProducts;
-        _displayProducts = _pickRandom(finalProducts, 10);
+        _products = products;
+        _displayProducts = _pickRandom(products, 10);
         _loadingProducts = false;
       });
       print('DEBUG: eShop products state updated, total: ${_products.length}');
@@ -106,11 +104,9 @@ class _EshopSectionState extends State<EshopSection> {
       print('DEBUG: Error loading eShop products: $e');
       print('DEBUG: Stack trace: $stackTrace');
       
-      // Use mock data as fallback
+      // Leave products empty on error
       if (!mounted) return;
       setState(() {
-        _products = EshopService.getMockProducts();
-        _displayProducts = _pickRandom(_products, 10);
         _loadingProducts = false;
       });
     }
@@ -404,10 +400,10 @@ class _EshopProductCardState extends State<_EshopProductCard> {
         }
       }
       
-      return 'https://placehold.co/300x300?text=Product';
+      return '';
     } catch (e) {
       print('Error getting image: $e');
-      return 'https://placehold.co/300x300?text=Product';
+      return '';
     }
   }
 
