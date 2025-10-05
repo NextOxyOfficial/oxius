@@ -7,6 +7,8 @@ import '../widgets/classified_services_section.dart';
 import '../widgets/eshop_section.dart';
 import '../widgets/micro_gigs_section.dart';
 import '../services/scroll_direction_service.dart';
+import '../services/user_state_service.dart';
+import '../services/auth_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late ScrollController _scrollController;
   final ScrollDirectionService _scrollService = ScrollDirectionService();
   bool _disposed = false;
+  bool _isDropdownOpen = false; // Track dropdown menu state
 
   @override
   void initState() {
@@ -50,32 +53,34 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       drawer: const MobileDrawer(),
-      body: Column(
+      body: Stack(
         children: [
-          // Fixed Header at top
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.95),
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey.shade200.withOpacity(0.5),
-                  width: 0.5,
+          Column(
+            children: [
+              // Fixed Header at top
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.95),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.grey.shade200.withOpacity(0.5),
+                      width: 0.5,
+                    ),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      offset: const Offset(0, 1),
+                      blurRadius: 3,
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: _buildFixedHeader(context, isMobile),
                 ),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  offset: const Offset(0, 1),
-                  blurRadius: 3,
-                ),
-              ],
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: _buildFixedHeader(context, isMobile),
-            ),
-          ),
           
           // Scrollable content area
           Expanded(
@@ -117,6 +122,27 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+            ],
+          ),
+          
+          // User Dropdown Menu Overlay
+          if (_isDropdownOpen)
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isDropdownOpen = false;
+                  });
+                },
+                child: Container(
+                  color: Colors.black.withOpacity(0.1),
+                ),
+              ),
+            ),
+          
+          // User Dropdown Menu
+          if (_isDropdownOpen)
+            _buildUserDropdownMenu(context),
         ],
       ),
       
@@ -126,45 +152,370 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildUserDropdownMenu(BuildContext context) {
+    return Positioned(
+      top: 68, // Below header
+      right: 16,
+      child: Material(
+        elevation: 8,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 320,
+          constraints: const BoxConstraints(maxHeight: 600),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.grey.shade200,
+              width: 1,
+            ),
+          ),
+          child: SingleChildScrollView(
+            child: _buildDropdownContent(context),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownContent(BuildContext context) {
+    final userState = UserStateService();
+    final user = userState.currentUser;
+    
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Gradient accent at top
+        Container(
+          height: 3,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFF6366F1)],
+            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+          ),
+        ),
+        
+        // Navigation Grid
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 1.3,
+            children: [
+              _buildQuickNavItem(context, 'Business', Icons.public, const Color(0xFFF97316)),
+              _buildQuickNavItem(context, 'News', Icons.newspaper, const Color(0xFF8B5CF6)),
+              _buildQuickNavItem(context, 'My Ads', Icons.campaign, const Color(0xFF10B981)),
+              _buildQuickNavItem(context, 'eShop', Icons.shopping_bag, const Color(0xFF3B82F6)),
+              _buildQuickNavItem(context, 'Wallet', Icons.account_balance_wallet, const Color(0xFF10B981)),
+              _buildQuickNavItem(context, 'Recharge', Icons.phone_android, const Color(0xFFF97316)),
+            ],
+          ),
+        ),
+        
+        // Divider
+        Divider(color: Colors.grey.shade200, height: 1),
+        
+        // Logout
+        InkWell(
+          onTap: () async {
+            setState(() {
+              _isDropdownOpen = false;
+            });
+            await AuthService.logout();
+            await userState.clearUser();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Logged out successfully'),
+                  backgroundColor: Color(0xFFEF4444),
+                ),
+              );
+            }
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFEE2E2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.logout, size: 18, color: Color(0xFFEF4444)),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFFEF4444),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickNavItem(BuildContext context, String label, IconData icon, Color color) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _isDropdownOpen = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Navigate to $label'),
+            backgroundColor: color,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildFixedHeader(BuildContext context, bool isMobile) {
+    final userState = UserStateService();
+    
     return Container(
       height: 64,
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 8 : 16,
       ),
-      child: Row(
-        children: [
-          // Menu Button
-          Builder(
-            builder: (context) => IconButton(
-              icon: Icon(
-                Icons.menu,
-                color: Colors.grey.shade800,
-                size: isMobile ? 24 : 28,
+      child: ListenableBuilder(
+        listenable: userState,
+        builder: (context, _) {
+          return Row(
+            children: [
+              // Menu Button
+              Builder(
+                builder: (context) => IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: Colors.grey.shade800,
+                    size: isMobile ? 24 : 28,
+                  ),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                  tooltip: 'Open Menu',
+                ),
               ),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-              tooltip: 'Open Menu',
-            ),
-          ),
-          SizedBox(width: isMobile ? 4 : 8),
-          
-          // Logo (extracted from header widget)
-          _buildDynamicLogo(context),
-          
-          const Spacer(),
-          
-          // Desktop Navigation
-          if (!isMobile) ...[
-            _buildDesktopNavigation(context),
-          ],
-          
-          // Mobile actions
-          if (isMobile) ...[
-            _buildMobileActions(context),
-          ],
-        ],
+              SizedBox(width: isMobile ? 4 : 8),
+              
+              // Logo (extracted from header widget)
+              _buildDynamicLogo(context),
+              
+              const Spacer(),
+              
+              // Desktop Navigation
+              if (!isMobile) ...[
+                _buildDesktopNavigation(context),
+                const SizedBox(width: 16),
+                // Desktop User Actions
+                _buildDesktopUserActions(context, userState),
+              ],
+              
+              // Mobile actions
+              if (isMobile) ...[
+                _buildMobileActions(context),
+              ],
+            ],
+          );
+        },
       ),
     );
+  }
+
+  Widget _buildDesktopUserActions(BuildContext context, UserStateService userState) {
+    final isAuthenticated = userState.isAuthenticated;
+    final user = userState.currentUser;
+
+    if (isAuthenticated && user != null) {
+      // Logged in user actions
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Inbox Button
+          IconButton(
+            icon: const Icon(
+              Icons.mark_email_unread_outlined,
+              color: Color(0xFF3B82F6),
+              size: 24,
+            ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Messages/Inbox coming soon'),
+                  backgroundColor: Color(0xFF3B82F6),
+                ),
+              );
+            },
+            tooltip: 'Messages',
+          ),
+          // QR Code Button
+          IconButton(
+            icon: const Icon(
+              Icons.qr_code_scanner,
+              color: Color(0xFF10B981),
+              size: 24,
+            ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('QR Code Scanner coming soon'),
+                  backgroundColor: Color(0xFF10B981),
+                ),
+              );
+            },
+            tooltip: 'QR Scanner',
+          ),
+          const SizedBox(width: 8),
+          // User Profile Button (Desktop style)
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isDropdownOpen = !_isDropdownOpen;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.white,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Avatar
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: ClipOval(
+                      child: user.profilePicture != null && user.profilePicture!.isNotEmpty
+                          ? Image.network(
+                              user.profilePicture!,
+                              width: 32,
+                              height: 32,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: const Color(0xFF10B981),
+                                  child: Center(
+                                    child: Text(
+                                      user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              color: const Color(0xFF10B981),
+                              child: Center(
+                                child: Text(
+                                  user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // User Name (truncated)
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 100),
+                    child: Text(
+                      user.displayName,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade800,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    _isDropdownOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    size: 18,
+                    color: Colors.grey.shade600,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Guest user - show login button
+      return ElevatedButton(
+        onPressed: () {
+          Navigator.of(context).pushNamed('/login');
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.grey.shade200,
+          foregroundColor: Colors.grey.shade800,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: const Text(
+          'Login',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+    }
   }
 
   // Extract logo building logic from AppHeader
@@ -316,62 +667,172 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMobileActions(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: Icon(
-            Icons.mark_email_unread_outlined,
-            color: const Color(0xFF3B82F6),
-            size: 24,
-          ),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Messages/Inbox coming soon'),
-                backgroundColor: Color(0xFF3B82F6),
+    final userState = UserStateService();
+    
+    return ListenableBuilder(
+      listenable: userState,
+      builder: (context, _) {
+        final isAuthenticated = userState.isAuthenticated;
+        final user = userState.currentUser;
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Show user action buttons only if logged in
+            if (isAuthenticated && user != null) ...[
+              // Inbox Button with badge
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.mark_email_unread_outlined,
+                      color: Color(0xFF3B82F6),
+                      size: 24,
+                    ),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Messages/Inbox coming soon'),
+                          backgroundColor: Color(0xFF3B82F6),
+                        ),
+                      );
+                    },
+                    tooltip: 'Messages/Inbox',
+                  ),
+                  // Badge for unread messages (placeholder)
+                  // Positioned(
+                  //   right: 8,
+                  //   top: 8,
+                  //   child: Container(
+                  //     padding: const EdgeInsets.all(2),
+                  //     decoration: const BoxDecoration(
+                  //       color: Colors.red,
+                  //       shape: BoxShape.circle,
+                  //     ),
+                  //     constraints: const BoxConstraints(
+                  //       minWidth: 16,
+                  //       minHeight: 16,
+                  //     ),
+                  //     child: const Text(
+                  //       '5',
+                  //       style: TextStyle(
+                  //         color: Colors.white,
+                  //         fontSize: 10,
+                  //         fontWeight: FontWeight.bold,
+                  //       ),
+                  //       textAlign: TextAlign.center,
+                  //     ),
+                  //   ),
+                  // ),
+                ],
               ),
-            );
-          },
-          tooltip: 'Messages/Inbox',
-        ),
-        IconButton(
-          icon: Icon(
-            Icons.qr_code_scanner,
-            color: const Color(0xFF10B981),
-            size: 24,
-          ),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('QR Code Scanner coming soon'),
-                backgroundColor: Color(0xFF10B981),
+              // QR Code Scanner Button
+              IconButton(
+                icon: const Icon(
+                  Icons.qr_code_scanner,
+                  color: Color(0xFF10B981),
+                  size: 24,
+                ),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('QR Code Scanner coming soon'),
+                      backgroundColor: Color(0xFF10B981),
+                    ),
+                  );
+                },
+                tooltip: 'QR Code Scanner',
               ),
-            );
-          },
-          tooltip: 'QR Code Scanner',
-        ),
-        IconButton(
-          icon: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              Icons.person,
-              color: Colors.grey.shade600,
-              size: 18,
-            ),
-          ),
-          onPressed: () {
-            Navigator.of(context).pushNamed('/login');
-          },
-          tooltip: 'Login / Profile',
-        ),
-      ],
+              // User Profile Avatar
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isDropdownOpen = !_isDropdownOpen;
+                  });
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: user.profilePicture != null && user.profilePicture!.isNotEmpty
+                        ? Image.network(
+                            user.profilePicture!,
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: const Color(0xFF10B981),
+                                child: Center(
+                                  child: Text(
+                                    user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            color: const Color(0xFF10B981),
+                            child: Center(
+                              child: Text(
+                                user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ] else ...[
+              // Show login button for guests
+              IconButton(
+                icon: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.person,
+                    color: Colors.grey.shade600,
+                    size: 18,
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/login');
+                },
+                tooltip: 'Login / Profile',
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 
