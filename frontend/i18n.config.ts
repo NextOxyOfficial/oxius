@@ -471,7 +471,7 @@ export default defineI18nConfig(() => ({
       current_plan: "বর্তমান প্ল্যান",
       free: "ফ্রি",
       upgrade_pro: "প্রো প্যাকেজ নিই",
-      upgrade_pro_text: "প্রিমিয়াম ফিচার, অগ্রাধিকার সুবিধাসহ আরও ফিচার পান",
+      upgrade_pro_text: "প্রিমিয়াম ফিচার পান",
       pro_member: "প্রো মেম্বার",
       packeges: "মেম্বারশিপ",
       all_product: "সকল প্রডাক্ট",

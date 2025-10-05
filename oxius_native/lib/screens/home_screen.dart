@@ -9,6 +9,7 @@ import '../widgets/micro_gigs_section.dart';
 import '../services/scroll_direction_service.dart';
 import '../services/user_state_service.dart';
 import '../services/auth_service.dart';
+import '../services/translation_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,8 +21,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late ScrollController _scrollController;
   final ScrollDirectionService _scrollService = ScrollDirectionService();
+  final TranslationService _translationService = TranslationService();
   bool _disposed = false;
   bool _isDropdownOpen = false; // Track dropdown menu state
+
+  // Helper method to translate keys
+  String t(String key) {
+    return _translationService.translate(key);
+  }
 
   @override
   void initState() {
@@ -229,13 +236,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'Business', Icons.public_outlined, 
+                        child: _buildNavLink(context, t('business_network'), Icons.public_outlined, 
                           const Color(0xFFF97316), false, null),
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'News', Icons.newspaper_outlined, 
+                        child: _buildNavLink(context, t('adsy_news'), Icons.newspaper_outlined, 
                           const Color(0xFF8B5CF6), false, null),
                       ),
                     ],
@@ -245,14 +252,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'My Ads', Icons.campaign_outlined, 
-                          const Color(0xFF10B981), true, 'FREE'),
+                        child: _buildNavLink(context, t('ad'), Icons.campaign_outlined, 
+                          const Color(0xFF10B981), true, t('free')),
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'eShop', Icons.shopping_bag_outlined, 
-                          const Color(0xFF3B82F6), true, 'PRO'),
+                        child: _buildNavLink(context, t('eshop'), Icons.shopping_bag_outlined, 
+                          const Color(0xFF3B82F6), true, t('pro')),
                       ),
                     ],
                   ),
@@ -261,13 +268,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'Wallet', Icons.account_balance_wallet_outlined, 
+                        child: _buildNavLink(context, t('deposit_withdraw'), Icons.account_balance_wallet_outlined, 
                           const Color(0xFF10B981), false, null),
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'Recharge', Icons.phone_android, 
+                        child: _buildNavLink(context, t('mobile_recharge'), Icons.phone_android, 
                           const Color(0xFFF97316), false, null),
                       ),
                     ],
@@ -295,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Flexible(
                     child: _buildActionButton(
                       context,
-                      'Settings',
+                      t('settings'),
                       Icons.settings_outlined,
                       const Color(0xFF64748B),
                       () {
@@ -310,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Flexible(
                     child: _buildActionButton(
                       context,
-                      'Verification',
+                      t('verification'),
                       Icons.drive_folder_upload_outlined,
                       const Color(0xFF64748B),
                       () {
@@ -362,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icon(Icons.person_outline, size: 16, color: Colors.grey.shade600),
                       const SizedBox(width: 6),
                       Text(
-                        'Current Plan',
+                        t('current_plan'),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -378,7 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'FREE',
+                      t('free'),
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
@@ -394,9 +401,9 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () {
                 setState(() => _isDropdownOpen = false);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Upgrade to Pro'),
-                    backgroundColor: Color(0xFF6366F1),
+                  SnackBar(
+                    content: Text(t('upgrade_pro')),
+                    backgroundColor: const Color(0xFF6366F1),
                   ),
                 );
               },
@@ -431,9 +438,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Row(
                             children: [
-                              const Text(
-                                'Upgrade to Pro',
-                                style: TextStyle(
+                              Text(
+                                t('upgrade_pro'),
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: Color(0xFF1E293B),
@@ -464,7 +471,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Unlock premium features',
+                            t('upgrade_pro_text'),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey.shade600,
@@ -538,12 +545,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    children: const [
-                      Icon(Icons.stars, size: 16, color: Color(0xFF6366F1)),
-                      SizedBox(width: 6),
+                    children: [
+                      const Icon(Icons.stars, size: 16, color: Color(0xFF6366F1)),
+                      const SizedBox(width: 6),
                       Text(
-                        'Premium Access',
-                        style: TextStyle(
+                        t('premium_access'),
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF4F46E5),
@@ -560,12 +567,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
-                      children: const [
-                        Icon(Icons.shield_outlined, size: 12, color: Colors.white),
-                        SizedBox(width: 4),
+                      children: [
+                        const Icon(Icons.shield_outlined, size: 12, color: Colors.white),
+                        const SizedBox(width: 4),
                         Text(
-                          'PRO',
-                          style: TextStyle(
+                          t('pro'),
+                          style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -620,9 +627,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Pro Member',
-                            style: TextStyle(
+                          Text(
+                            t('pro_member'),
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF1E293B),
@@ -737,7 +744,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: Color(0xFF334155),
@@ -810,7 +817,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // py-2 px-3
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8), // Reduced horizontal padding
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(8),
@@ -827,11 +834,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Icon(icon, size: 16, color: const Color(0xFF64748B)), // text-slate-500
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Flexible(
               child: Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: Color(0xFF334155), // text-slate-700

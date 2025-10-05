@@ -2,15 +2,15 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_service.dart';
 
 class TranslationService extends ChangeNotifier {
   static final TranslationService _instance = TranslationService._internal();
   factory TranslationService() => _instance;
   TranslationService._internal();
 
-  // Use your live production URL or localhost for development
-  static const String baseUrl = 'http://localhost:8000/api';
-  // For production: static const String baseUrl = 'https://adsyclub.com/api';
+  // Use centralized API service base URL
+  static String get baseUrl => ApiService.baseUrl;
   
   String _currentLanguage = 'en';
   Map<String, dynamic> _translations = {};

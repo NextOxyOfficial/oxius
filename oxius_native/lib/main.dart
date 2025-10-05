@@ -4,9 +4,16 @@ import 'screens/home_screen.dart';
 import 'pages/login_page.dart';
 import 'services/auth_service.dart';
 import 'services/user_state_service.dart';
+import 'services/translation_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize translation service
+  print('Initializing translation service...');
+  final translationService = TranslationService();
+  await translationService.initialize();
+  print('Translation service initialized with locale: ${translationService.currentLanguage}');
   
   // Initialize user state service (this will initialize auth service internally)
   print('Initializing authentication session...');
