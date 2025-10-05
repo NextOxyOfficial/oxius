@@ -208,11 +208,11 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
           
           // Scrollable Cards
           SizedBox(
-            height: 120,
+            height: 135,
             child: ListView.separated(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               itemCount: _hotArrivals.length,
               separatorBuilder: (context, index) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
@@ -238,28 +238,32 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
           widget.onCategorySelected!(arrival['id'].toString());
         }
       },
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.26, // ~26% width
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.grey.shade100,
-            width: 1,
+      child: IntrinsicWidth(
+        child: Container(
+          constraints: const BoxConstraints(
+            minWidth: 90,
+            maxWidth: 140,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.grey.shade100,
+              width: 1,
             ),
-          ],
-        ),
-        child: Column(
-          children: [
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
             // Image with badge
             Container(
-              height: 70,
+              height: 80,
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 gradient: LinearGradient(
@@ -328,26 +332,23 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
               ),
             ),
             
-            // Name
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Center(
-                  child: Text(
-                    name,
-                    style: GoogleFonts.roboto(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade800,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+            // Name - Single line with ellipsis
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+              child: Text(
+                name,
+                style: GoogleFonts.roboto(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade800,
                 ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
+        ),
         ),
       ),
     );
