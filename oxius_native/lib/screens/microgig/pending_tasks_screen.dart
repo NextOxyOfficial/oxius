@@ -340,7 +340,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -353,7 +353,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
         onTap: () => _showTaskDetails(task),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -365,10 +365,10 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                     child: Text(
                       task.gigTitle ?? 'Untitled Gig',
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
                         color: Color(0xFF1E293B),
-                        height: 1.3,
+                        height: 1.4,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -399,7 +399,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               
               // Price and Auto-approval countdown row
               Row(
