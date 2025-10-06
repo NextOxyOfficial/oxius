@@ -1,9 +1,30 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:developer';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String baseUrl = 'http://127.0.0.1:8000/api';
+  static const String _tokenKey = 'adsyclub_token';
+
+  // Get headers with authentication token if available
+  static Future<Map<String, String>> getHeaders() async {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+    };
+    
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(_tokenKey);
+      if (token != null && token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+    } catch (e) {
+      print('Error getting auth token: $e');
+    }
+    
+    return headers;
+  }
 
   // Load banner images from API
   static Future<List<dynamic>> loadBannerImages() async {

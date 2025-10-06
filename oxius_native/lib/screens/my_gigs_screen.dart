@@ -33,9 +33,14 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     setState(() => _isLoadingGigs = true);
     
     final currentUser = _userService.currentUser;
+    print('DEBUG: Current user: ${currentUser?.id}');
+    print('DEBUG: Is authenticated: ${AuthService.isAuthenticated}');
+    
     if (currentUser?.id != null) {
       try {
-        final userGigs = await _gigsService.fetchUserGigs(currentUser!.id);
+        print('DEBUG: Fetching gigs for user: ${currentUser!.id}');
+        final userGigs = await _gigsService.fetchUserGigs(currentUser.id);
+        print('DEBUG: Received ${userGigs.length} gigs');
         if (mounted) {
           setState(() {
             _userGigs = userGigs;
@@ -43,14 +48,15 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
           });
         }
       } catch (e) {
+        print('DEBUG: Error loading gigs: $e');
         if (mounted) {
           setState(() {
             _isLoadingGigs = false;
           });
         }
-        print('Error loading user gigs: $e');
       }
     } else {
+      print('DEBUG: No user ID found');
       setState(() {
         _isLoadingGigs = false;
       });
@@ -72,32 +78,135 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
             Text('${action == "completed" ? "Stopping" : value ? "Activating" : "Pausing"} gig...'),
           ],
         ),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 30), // Longer duration for API call
       ),
     );
     
-    // TODO: Implement actual API call to update gig
-    // For now, just show success message
-    await Future.delayed(const Duration(seconds: 1));
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            action == "completed" 
-                ? "Gig stopped successfully" 
-                : value 
-                    ? "Gig activated successfully" 
-                    : "Gig paused successfully"
-          ),
-          backgroundColor: Colors.green,
-        ),
-      );
+    try {
+      final success = await _gigsService.updateGigStatus(gigId, action, value);
       
-      // Refresh gigs
-      _loadUserGigs();
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                action == "completed" 
+                    ? "Gig stopped successfully" 
+                    : value 
+                        ? "Gig activated successfully" 
+                        : "Gig paused successfully"
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          // Refresh gigs
+          _loadUserGigs();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to ${action == "completed" ? "stop" : value ? "activate" : "pause"} gig'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
+  }
+
+  Future<void> _handleEditGig(Map<String, dynamic> gig) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Edit gig "${gig['title']}" - Coming soon!'),
+        action: SnackBarAction(
+          label: 'Details',
+          onPressed: () => _handleGigDetails(gig),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleGigDetails(Map<String, dynamic> gig) async {
+    try {
+      final gigDetails = await _gigsService.getGigDetails(gig['id'].toString());
+      
+      if (mounted && gigDetails != null) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(gigDetails['title'] ?? 'Gig Details'),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildDetailRow('Status', _getStatusText(gigDetails['gig_status'], gigDetails['active_gig'])),
+                    _buildDetailRow('Price', '৳${gigDetails['price']}'),
+                    _buildDetailRow('Progress', '${gigDetails['filled_quantity']}/${gigDetails['required_quantity']}'),
+                    _buildDetailRow('Balance', '৳${gigDetails['balance']}'),
+                    _buildDetailRow('Total Cost', '৳${gigDetails['total_cost']}'),
+                    _buildDetailRow('Created', _formatDate(gigDetails['created_at'])),
+                    if (gigDetails['instructions'] != null && gigDetails['instructions'].toString().isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      const Text('Instructions:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      Text(gigDetails['instructions'].toString()),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load gig details: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          Expanded(child: Text(value)),
+        ],
+      ),
+    );
   }
   
   @override
@@ -360,25 +469,44 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   }
   
   Widget _buildGigInfo(Map<String, dynamic> gig) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
+        // Completion count
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.notifications, size: 16),
+            const Icon(Icons.notifications, size: 16, color: Colors.grey),
             const SizedBox(width: 4),
             Text(
-              '${gig['filled_quantity'] ?? 0} / ${gig['required_quantity'] ?? 0}',
-              style: const TextStyle(fontSize: 14),
+              '${gig['filled_quantity'] ?? 0}/${gig['required_quantity'] ?? 0}',
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          '৳${gig['balance'] ?? 0} / ৳${gig['total_cost'] ?? 0}',
-          style: const TextStyle(fontSize: 14),
+        const SizedBox(width: 16),
+        
+        // Amount
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('৳', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(
+              '${gig['balance'] ?? 0}',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF059669),
+              ),
+            ),
+            Text(
+              '/৳${gig['total_cost'] ?? 0}',
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
+        const Spacer(),
+        
+        // Date posted
         Text(
           _formatDate(gig['created_at']),
           style: const TextStyle(fontSize: 14, color: Colors.grey),
@@ -410,11 +538,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
           _buildActionButton(
             'Edit',
             Colors.blue,
-            () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Edit gig ${gig['id']} coming soon!')),
-              );
-            },
+            () => _handleEditGig(gig),
           ),
         if (!isCompleted)
           _buildActionButton(
@@ -425,11 +549,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         _buildActionButton(
           'Details',
           Colors.grey.shade700,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Gig details ${gig['id']} coming soon!')),
-            );
-          },
+          () => _handleGigDetails(gig),
         ),
       ],
     );
