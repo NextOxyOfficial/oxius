@@ -22,7 +22,9 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   final GigsService _gigsService = GigsService();
   
   List<Map<String, dynamic>> _userGigs = [];
+  List<Map<String, dynamic>> _filteredGigs = [];
   bool _isLoadingGigs = true;
+  String _selectedFilter = 'all';
   
   String t(String key) => _translationService.translate(key);
   
@@ -36,22 +38,18 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     setState(() => _isLoadingGigs = true);
     
     final currentUser = _userService.currentUser;
-    print('DEBUG: Current user: ${currentUser?.id}');
-    print('DEBUG: Is authenticated: ${AuthService.isAuthenticated}');
     
     if (currentUser?.id != null) {
       try {
-        print('DEBUG: Fetching gigs for user: ${currentUser!.id}');
-        final userGigs = await _gigsService.fetchUserGigs(currentUser.id);
-        print('DEBUG: Received ${userGigs.length} gigs');
+        final userGigs = await _gigsService.fetchUserGigs(currentUser!.id);
         if (mounted) {
           setState(() {
             _userGigs = userGigs;
+            _applyFilter();
             _isLoadingGigs = false;
           });
         }
       } catch (e) {
-        print('DEBUG: Error loading gigs: $e');
         if (mounted) {
           setState(() {
             _isLoadingGigs = false;
@@ -59,10 +57,35 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         }
       }
     } else {
-      print('DEBUG: No user ID found');
       setState(() {
         _isLoadingGigs = false;
       });
+    }
+  }
+  
+  void _applyFilter() {
+    if (_selectedFilter == 'all') {
+      _filteredGigs = List.from(_userGigs);
+    } else {
+      _filteredGigs = _userGigs.where((gig) {
+        final gigStatus = gig['gig_status'] ?? '';
+        final isActive = gig['active_gig'] ?? false;
+        
+        switch (_selectedFilter) {
+          case 'live':
+            return gigStatus == 'approved' && isActive;
+          case 'paused':
+            return gigStatus == 'approved' && !isActive;
+          case 'pending':
+            return gigStatus == 'pending';
+          case 'completed':
+            return gigStatus == 'completed';
+          case 'rejected':
+            return gigStatus == 'rejected';
+          default:
+            return true;
+        }
+      }).toList();
     }
   }
   
@@ -392,15 +415,41 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // Header with title and filter
           Padding(
             padding: const EdgeInsets.all(20),
-            child: Text(
-              'My Gigs',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'My Gigs',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                DropdownButton<String>(
+                  value: _selectedFilter,
+                  underline: Container(),
+                  icon: const Icon(Icons.filter_list, size: 20),
+                  items: const [
+                    DropdownMenuItem(value: 'all', child: Text('All')),
+                    DropdownMenuItem(value: 'live', child: Text('Live')),
+                    DropdownMenuItem(value: 'paused', child: Text('Paused')),
+                    DropdownMenuItem(value: 'pending', child: Text('Pending')),
+                    DropdownMenuItem(value: 'completed', child: Text('Completed')),
+                    DropdownMenuItem(value: 'rejected', child: Text('Rejected')),
+                  ],
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedFilter = newValue;
+                        _applyFilter();
+                      });
+                    }
+                  },
+                ),
+              ],
             ),
           ),
           
@@ -410,7 +459,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
               padding: EdgeInsets.all(40),
               child: Center(child: CircularProgressIndicator()),
             )
-          else if (_userGigs.isEmpty)
+          else if (_filteredGigs.isEmpty)
             Padding(
               padding: const EdgeInsets.all(40),
               child: Column(
@@ -418,17 +467,19 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                   Icon(Icons.work_off, size: 64, color: Colors.grey.shade400),
                   const SizedBox(height: 16),
                   Text(
-                    'No gigs found',
+                    _userGigs.isEmpty ? 'No gigs found' : 'No gigs match the selected filter',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey.shade600,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pushNamed(context, '/post-a-gig'),
-                    child: const Text('Create Your First Gig'),
-                  ),
+                  if (_userGigs.isEmpty) ...[
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pushNamed(context, '/post-a-gig'),
+                      child: const Text('Create Your First Gig'),
+                    ),
+                  ],
                 ],
               ),
             )
@@ -436,10 +487,10 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: _userGigs.length,
+              itemCount: _filteredGigs.length,
               separatorBuilder: (context, index) => const Divider(height: 1),
               itemBuilder: (context, index) {
-                final gig = _userGigs[index];
+                final gig = _filteredGigs[index];
                 return _buildGigCard(gig, isMobile);
               },
             ),
@@ -614,30 +665,32 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   
   Widget _buildGigActions(Map<String, dynamic> gig, bool isActive, bool isCompleted, bool isMobile) {
     final gigId = gig['id']?.toString() ?? '';
+    final gigStatus = gig['gig_status'] ?? '';
+    final isRejected = gigStatus == 'rejected';
     
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        if (!isCompleted && isActive)
+        if (!isCompleted && !isRejected && isActive)
           _buildActionButton(
             'Pause',
             Colors.orange,
             () => _handleGigAction(gigId, 'pause', false),
           ),
-        if (!isCompleted && !isActive)
+        if (!isCompleted && !isRejected && !isActive)
           _buildActionButton(
             'Activate',
             Colors.green,
             () => _handleGigAction(gigId, 'active', true),
           ),
-        if (!isCompleted)
+        if (!isCompleted && !isRejected)
           _buildActionButton(
             'Edit',
             Colors.blue,
             () => _handleEditGig(gig),
           ),
-        if (!isCompleted)
+        if (!isCompleted && !isRejected)
           _buildActionButton(
             'Stop',
             Colors.red,
