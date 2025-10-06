@@ -103,6 +103,30 @@ class GigsService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> fetchUserGigs(String userId) async {
+    try {
+      final url = '$baseUrl/user-micro-gigs/$userId/';
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final dynamic data = json.decode(response.body);
+        
+        if (data is List) {
+          return List<Map<String, dynamic>>.from(data);
+        } else if (data is Map && data['results'] != null) {
+          return List<Map<String, dynamic>>.from(data['results']);
+        }
+        
+        return [];
+      } else {
+        throw Exception('Failed to load user gigs: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching user gigs: $e');
+      return [];
+    }
+  }
+
   /// Transform relative URL to absolute URL
   String _abs(String url) {
     if (url.startsWith('http://') || url.startsWith('https://')) {
