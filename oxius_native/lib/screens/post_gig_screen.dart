@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import '../services/gigs_service.dart';
+import '../services/user_state_service.dart';
 
 class PostGigScreen extends StatefulWidget {
   const PostGigScreen({super.key});
@@ -13,6 +14,7 @@ class PostGigScreen extends StatefulWidget {
 
 class _PostGigScreenState extends State<PostGigScreen> {
   final GigsService _gigsService = GigsService();
+  final UserStateService _userService = UserStateService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
   
@@ -91,6 +93,11 @@ class _PostGigScreenState extends State<PostGigScreen> {
     final quantity = int.tryParse(_quantityController.text) ?? 0;
     final balance = price * quantity;
     return balance + (balance * 0.1); // 10% service fee
+  }
+
+  bool get hasInsufficientBalance {
+    final userBalance = _userService.userBalance;
+    return userBalance < totalCost;
   }
 
   Future<void> _handleImageUpload() async {
@@ -529,57 +536,68 @@ class _PostGigScreenState extends State<PostGigScreen> {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  // Low balance warning (if needed)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    margin: const EdgeInsets.only(bottom: 20),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF3C7),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFF59E0B)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.warning, color: Color(0xFFF59E0B)),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Insufficient Balance',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFFF59E0B),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              GestureDetector(
-                                onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
-                                child: const Text(
-                                  'Click here to make a deposit',
+                  // Low balance warning (only show if balance is insufficient)
+                  if (hasInsufficientBalance && totalCost > 0)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF3C7),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFF59E0B)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.warning, color: Color(0xFFF59E0B)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Insufficient Balance',
                                   style: TextStyle(
-                                    color: Color(0xFF059669),
-                                    decoration: TextDecoration.underline,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFF59E0B),
                                   ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Your balance: ৳${_userService.userBalance.toStringAsFixed(2)} | Required: ৳${totalCost.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF92400E),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                GestureDetector(
+                                  onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
+                                  child: const Text(
+                                    'Click here to make a deposit',
+                                    style: TextStyle(
+                                      color: Color(0xFF059669),
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
 
                   // Submit Button
                   SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _handleSubmit,
+                      onPressed: (_isLoading || hasInsufficientBalance) ? null : _handleSubmit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF059669),
                         foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        disabledForegroundColor: Colors.grey.shade600,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),

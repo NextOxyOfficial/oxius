@@ -16,6 +16,9 @@ class User {
   final String? referralCode;
   final int? referCount;
   final double? commissionEarned;
+  final double balance;
+  final double pendingBalance;
+  final int diamondBalance;
 
   User({
     required this.id,
@@ -30,6 +33,9 @@ class User {
     this.referralCode,
     this.referCount,
     this.commissionEarned,
+    this.balance = 0.0,
+    this.pendingBalance = 0.0,
+    this.diamondBalance = 0,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -48,6 +54,15 @@ class User {
       commissionEarned: json['commission_earned'] is String 
           ? double.tryParse(json['commission_earned']) 
           : (json['commission_earned'] as num?)?.toDouble(),
+      balance: json['balance'] is String 
+          ? double.tryParse(json['balance']) ?? 0.0
+          : (json['balance'] as num?)?.toDouble() ?? 0.0,
+      pendingBalance: json['pending_balance'] is String 
+          ? double.tryParse(json['pending_balance']) ?? 0.0
+          : (json['pending_balance'] as num?)?.toDouble() ?? 0.0,
+      diamondBalance: json['diamond_balance'] is int 
+          ? json['diamond_balance'] 
+          : int.tryParse(json['diamond_balance']?.toString() ?? '0') ?? 0,
     );
   }
 
@@ -65,6 +80,9 @@ class User {
       'referral_code': referralCode,
       'refer_count': referCount,
       'commission_earned': commissionEarned,
+      'balance': balance,
+      'pending_balance': pendingBalance,
+      'diamond_balance': diamondBalance,
     };
   }
 

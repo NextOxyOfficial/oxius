@@ -26,6 +26,11 @@ class UserStateService extends ChangeNotifier {
   String get userEmail => _currentUser?.email ?? '';
   String get userType => _currentUser?.userType ?? 'regular';
   bool get isSuperuser => _currentUser?.isSuperuser ?? false;
+  
+  // Balance getters
+  double get userBalance => _currentUser?.balance ?? 0.0;
+  double get userPendingBalance => _currentUser?.pendingBalance ?? 0.0;
+  int get userDiamondBalance => _currentUser?.diamondBalance ?? 0;
 
   /// Initialize user state from AuthService
   Future<void> initialize() async {
