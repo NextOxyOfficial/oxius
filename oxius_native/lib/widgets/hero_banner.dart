@@ -249,6 +249,7 @@ class _HeroBannerState extends State<HeroBanner> {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Header bar - professional pill with icon and translated title
@@ -454,8 +455,8 @@ class _HeroBannerState extends State<HeroBanner> {
   }
 
   Widget _buildMobileServicesGrid({EdgeInsets? margin}) {
-    return Container(
-      margin: margin ?? const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+    return Padding(
+      padding: margin ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -550,7 +551,7 @@ class _ServiceTileState extends State<_ServiceTile> with SingleTickerProviderSta
   @override
   Widget build(BuildContext context) {
     final disabled = widget.isComingSoon || widget.onTap == null;
-    final labelColor = disabled ? Colors.grey.shade500 : Colors.black87;
+    final labelColor = disabled ? Colors.grey.shade600 : Colors.grey.shade800;
 
     return GestureDetector(
       onTapDown: disabled
@@ -682,9 +683,9 @@ class _ServiceTileState extends State<_ServiceTile> with SingleTickerProviderSta
               widget.label,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.2,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.1,
                 color: labelColor,
                 height: 1.2,
               ),
