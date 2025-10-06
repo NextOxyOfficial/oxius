@@ -53,7 +53,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
       // Load gigs, categories, and operators in parallel
       final results = await Future.wait([
         _gigsService.fetchMicroGigs(showSubmitted: false),
-        _gigsService.fetchGigCategories(),
+        _gigsService.fetchMicroGigCategories(),
         _gigsService.fetchMobileRechargeOperators(),
       ]);
       

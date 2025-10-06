@@ -54,9 +54,9 @@ class GigsService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchGigCategories() async {
+  Future<List<Map<String, dynamic>>> fetchMicroGigCategories() async {
     try {
-      final url = '$baseUrl/gig-categories/';
+      final url = '$baseUrl/micro-gigs-categories/';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -71,6 +71,52 @@ class GigsService {
         return [];
       } else {
         throw Exception('Failed to load gig categories: ${response.statusCode}');
+      }
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchTargetDevices() async {
+    try {
+      final url = '$baseUrl/target-device/';
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final dynamic data = json.decode(response.body);
+        
+        if (data is List) {
+          return List<Map<String, dynamic>>.from(data);
+        } else if (data is Map && data['results'] != null) {
+          return List<Map<String, dynamic>>.from(data['results']);
+        }
+        
+        return [];
+      } else {
+        throw Exception('Failed to load target devices: ${response.statusCode}');
+      }
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchTargetNetworks() async {
+    try {
+      final url = '$baseUrl/target-network/';
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final dynamic data = json.decode(response.body);
+        
+        if (data is List) {
+          return List<Map<String, dynamic>>.from(data);
+        } else if (data is Map && data['results'] != null) {
+          return List<Map<String, dynamic>>.from(data['results']);
+        }
+        
+        return [];
+      } else {
+        throw Exception('Failed to load target networks: ${response.statusCode}');
       }
     } catch (e) {
       return [];
@@ -103,40 +149,27 @@ class GigsService {
   Future<List<Map<String, dynamic>>> fetchUserGigs(String userId) async {
     try {
       final url = '$baseUrl/user-micro-gigs/$userId/';
-      print('DEBUG API: Calling URL: $url');
-      
-      // Get auth headers from ApiService
       final headers = await ApiService.getHeaders();
-      print('DEBUG API: Headers: $headers');
       
       final response = await http.get(
         Uri.parse(url),
         headers: headers,
       );
-      
-      print('DEBUG API: Status code: ${response.statusCode}');
-      print('DEBUG API: Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
-        print('DEBUG API: Parsed data type: ${data.runtimeType}');
         
         if (data is List) {
-          print('DEBUG API: Got list with ${data.length} items');
           return List<Map<String, dynamic>>.from(data);
         } else if (data is Map && data['results'] != null) {
-          print('DEBUG API: Got paginated response with ${data['results'].length} items');
           return List<Map<String, dynamic>>.from(data['results']);
         }
         
-        print('DEBUG API: No gigs in response');
         return [];
       } else {
-        print('DEBUG API: Failed with status ${response.statusCode}');
         throw Exception('Failed to load user gigs: ${response.statusCode}');
       }
     } catch (e) {
-      print('DEBUG API: Exception: $e');
       return [];
     }
   }

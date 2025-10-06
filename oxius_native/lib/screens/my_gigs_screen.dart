@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../services/translation_service.dart';
 import '../services/user_state_service.dart';
 import '../services/gigs_service.dart';
 import '../services/auth_service.dart';
@@ -17,7 +16,6 @@ class MyGigsScreen extends StatefulWidget {
 }
 
 class _MyGigsScreenState extends State<MyGigsScreen> {
-  final TranslationService _translationService = TranslationService();
   final UserStateService _userService = UserStateService();
   final GigsService _gigsService = GigsService();
   
@@ -25,8 +23,6 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   List<Map<String, dynamic>> _filteredGigs = [];
   bool _isLoadingGigs = true;
   String _selectedFilter = 'all';
-  
-  String t(String key) => _translationService.translate(key);
   
   @override
   void initState() {
@@ -42,12 +38,6 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     if (currentUser?.id != null) {
       try {
         final userGigs = await _gigsService.fetchUserGigs(currentUser!.id);
-        print('Loaded ${userGigs.length} gigs from backend');
-        
-        // Print status of each gig for debugging
-        for (var gig in userGigs) {
-          print('Gig ${gig['id']}: status=${gig['gig_status']}, appeal_count=${gig['appeal_count']}');
-        }
         
         if (mounted) {
           setState(() {
@@ -55,10 +45,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
             _applyFilter();
             _isLoadingGigs = false;
           });
-          print('Applied filter: ${_selectedFilter}, showing ${_filteredGigs.length} gigs');
         }
       } catch (e) {
-        print('Error loading gigs: $e');
         if (mounted) {
           setState(() {
             _isLoadingGigs = false;
@@ -170,7 +158,11 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       context: context,
       builder: (BuildContext context) {
         int additionalQuantity = 0;
-        final price = (gig['price'] ?? 0).toDouble();
+        // Handle price as either String or number
+        final priceValue = gig['price'];
+        final price = priceValue is String 
+            ? double.tryParse(priceValue) ?? 0.0 
+            : (priceValue is num ? priceValue.toDouble() : 0.0);
         
         return AlertDialog(
           title: const Text('Increase Gig Quantity'),
@@ -255,7 +247,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         Uri.parse('http://localhost:8000/api/update-user-micro-gig/$gigId/'),
         headers: headers,
         body: json.encode({
-          'additional_quantity': additionalQuantity,
+          'required_quantity': additionalQuantity,
           'additional_cost': additionalCost,
           'balance': balance,
         }),
@@ -414,10 +406,6 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       );
       
       if (response.statusCode == 200) {
-        // Parse the response to verify the status was updated
-        final updatedGig = json.decode(response.body);
-        print('Gig updated successfully: ${updatedGig['gig_status']}');
-        
         // Small delay to ensure backend processes the update
         await Future.delayed(const Duration(milliseconds: 500));
         return true;
@@ -425,7 +413,6 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       
       return false;
     } catch (e) {
-      print('Error resubmitting gig: $e');
       return false;
     }
   }
@@ -448,6 +435,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (gigDetails['category_details'] != null && gigDetails['category_details']['title'] != null)
+                      _buildDetailRow('Category', gigDetails['category_details']['title']),
                     _buildDetailRow('Status', _getStatusText(gigDetails['gig_status'], gigDetails['active_gig'])),
                     _buildDetailRow('Price', '৳${gigDetails['price']}'),
                     _buildDetailRow('Progress', '${gigDetails['filled_quantity']}/${gigDetails['required_quantity']}'),
@@ -784,6 +773,19 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Category Name
+              if (categoryDetails?['title'] != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    categoryDetails!['title'],
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
               // Status and Title
               Row(
                 children: [

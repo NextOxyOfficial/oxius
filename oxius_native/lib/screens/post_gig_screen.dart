@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'dart:typed_data';
-import '../services/translation_service.dart';
+import '../services/gigs_service.dart';
 
 class PostGigScreen extends StatefulWidget {
   const PostGigScreen({super.key});
@@ -12,7 +12,7 @@ class PostGigScreen extends StatefulWidget {
 }
 
 class _PostGigScreenState extends State<PostGigScreen> {
-  final TranslationService _translationService = TranslationService();
+  final GigsService _gigsService = GigsService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
   
@@ -29,36 +29,52 @@ class _PostGigScreenState extends State<PostGigScreen> {
   List<String> _uploadedImages = [];
   
   bool _isLoading = false;
+  bool _isLoadingData = true;
   bool _isUploading = false;
   String? _uploadError;
   bool _checkSubmit = false;
 
-  // Mock data - replace with API calls
-  final List<Map<String, dynamic>> _categories = [
-    {'id': 1, 'title': 'Social Media'},
-    {'id': 2, 'title': 'Digital Marketing'},
-    {'id': 3, 'title': 'App Review'},
-    {'id': 4, 'title': 'Survey'},
-    {'id': 5, 'title': 'Data Entry'},
-  ];
+  // Dynamic data from backend
+  List<Map<String, dynamic>> _categories = [];
+  List<Map<String, dynamic>> _devices = [];
+  List<Map<String, dynamic>> _networks = [];
 
-  final List<String> _devices = [
-    'Android',
-    'iOS',
-    'Windows',
-    'Mac',
-    'Linux',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialData();
+  }
 
-  final List<String> _networks = [
-    'Grameenphone',
-    'Banglalink',
-    'Robi',
-    'Airtel',
-    'Teletalk',
-  ];
-
-  String t(String key) => _translationService.translate(key);
+  Future<void> _loadInitialData() async {
+    setState(() => _isLoadingData = true);
+    
+    try {
+      final results = await Future.wait([
+        _gigsService.fetchMicroGigCategories(),
+        _gigsService.fetchTargetDevices(),
+        _gigsService.fetchTargetNetworks(),
+      ]);
+      
+      if (mounted) {
+        setState(() {
+          _categories = results[0];
+          _devices = results[1];
+          _networks = results[2];
+          _isLoadingData = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingData = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load data: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -253,17 +269,24 @@ class _PostGigScreenState extends State<PostGigScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header Section
-            _buildHeader(isMobile),
+      body: _isLoadingData
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Header Section
+                  _buildHeader(isMobile),
 
-            // Form Section
-            _buildForm(isMobile),
-          ],
-        ),
-      ),
+                  // Form Section
+                  _buildForm(isMobile),
+                ],
+              ),
+            ),
     );
   }
 
@@ -291,7 +314,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                   colors: [Color(0xFF10B981), Color(0xFF059669)],
                 ).createShader(bounds),
                 child: Text(
-                  t('post_gigs'),
+                  'Post A Gig',
                   style: TextStyle(
                     fontSize: isMobile ? 20 : 24,
                     fontWeight: FontWeight.w600,
@@ -476,7 +499,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
               child: Column(
                 children: [
                   // Device Selection
-                  _buildMultiSelectField(
+                  _buildMultiSelectChips(
                     label: 'Target Devices',
                     options: _devices,
                     selectedValues: _selectedDevices,
@@ -484,7 +507,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                   ),
                   const SizedBox(height: 20),
                   // Network Selection
-                  _buildMultiSelectField(
+                  _buildMultiSelectChips(
                     label: 'Target Networks',
                     options: _networks,
                     selectedValues: _selectedNetworks,
@@ -752,9 +775,9 @@ class _PostGigScreenState extends State<PostGigScreen> {
     );
   }
 
-  Widget _buildMultiSelectField({
+  Widget _buildMultiSelectChips({
     required String label,
-    required List<String> options,
+    required List<Map<String, dynamic>> options,
     required List<String> selectedValues,
     required ValueChanged<List<String>> onChanged,
   }) {
@@ -774,16 +797,18 @@ class _PostGigScreenState extends State<PostGigScreen> {
           spacing: 8,
           runSpacing: 8,
           children: options.map((option) {
-            final isSelected = selectedValues.contains(option);
+            final optionId = option['id'].toString();
+            final optionTitle = option['title'];
+            final isSelected = selectedValues.contains(optionId);
             return FilterChip(
-              label: Text(option),
+              label: Text(optionTitle),
               selected: isSelected,
               onSelected: (selected) {
                 final newSelected = List<String>.from(selectedValues);
                 if (selected) {
-                  newSelected.add(option);
+                  newSelected.add(optionId);
                 } else {
-                  newSelected.remove(option);
+                  newSelected.remove(optionId);
                 }
                 onChanged(newSelected);
               },
