@@ -349,4 +349,61 @@ class EshopService {
     }
   }
 
+  // Search products by query
+  static Future<List<Map<String, dynamic>>> searchProducts(String query) async {
+    try {
+      final uri = Uri.parse('$baseUrl/eshop/products/').replace(queryParameters: {
+        'search': query,
+        'limit': '20',
+      });
+      
+      print('EshopService: Searching products with query: $query');
+      print('EshopService: Search URL: $uri');
+      
+      final response = await http.get(uri);
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        List<Map<String, dynamic>> products = [];
+        
+        if (data is Map && data.containsKey('results')) {
+          // Paginated response
+          final results = data['results'];
+          if (results is List) {
+            for (var item in results) {
+              if (item is Map<String, dynamic>) {
+                try {
+                  products.add(_transformProduct(item));
+                } catch (e) {
+                  print('EshopService: Error transforming search result: $e');
+                }
+              }
+            }
+          }
+        } else if (data is List) {
+          // Direct array response
+          for (var item in data) {
+            if (item is Map<String, dynamic>) {
+              try {
+                products.add(_transformProduct(item));
+              } catch (e) {
+                print('EshopService: Error transforming search result: $e');
+              }
+            }
+          }
+        }
+        
+        print('EshopService: Successfully searched ${products.length} products');
+        return products;
+      }
+      
+      print('EshopService: Search failed. Status: ${response.statusCode}');
+      return [];
+    } catch (e, stackTrace) {
+      print('EshopService: Error searching products: $e');
+      print('EshopService: Stack trace: $stackTrace');
+      return [];
+    }
+  }
+
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/translation_service.dart';
 import '../services/eshop_service.dart';
+import '../screens/eshop_screen.dart';
 import 'hot_deals_section.dart';
 import 'hot_arrivals_section.dart';
 import 'mobile_banner.dart';
@@ -61,11 +62,14 @@ class _EshopSectionState extends State<EshopSection> {
       _loadingButtons.add(buttonId);
     });
     
-    // Navigate to eShop page (placeholder)
-    // TODO: Implement navigation to /eshop
+    // Navigate to eShop page
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const EshopScreen()),
+    );
     
-    // Remove loading state after navigation simulation
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    // Remove loading state after navigation
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         setState(() {
           _loadingButtons.remove(buttonId);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../services/api_service.dart';
 import '../services/translation_service.dart';
+import '../screens/eshop_screen.dart';
 
 class HeroBanner extends StatefulWidget {
   const HeroBanner({super.key});
@@ -466,7 +467,16 @@ class _HeroBannerState extends State<HeroBanner> {
           ? null
           : () {
               debugPrint('Tapped on ${service['label']}');
-              // TODO: Navigate to respective service pages
+              if (service['label'] == _translationService.t('eshop', fallback: 'eShop') || 
+                  service['label'] == 'eShop' || 
+                  service['label'] == 'E-Shop') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const EshopScreen()),
+                );
+              } else {
+                // TODO: Navigate to respective service pages
+              }
             },
     );
   }

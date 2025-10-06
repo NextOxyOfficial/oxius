@@ -15,6 +15,7 @@ import '../services/translation_service.dart';
 import 'wallet/wallet_screen.dart';
 import 'settings_screen.dart';
 import 'inbox_screen.dart';
+import 'eshop_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -701,6 +702,13 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context) => const WalletScreen(),
             ),
           );
+        } else if (label == t('eshop')) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const EshopScreen(),
+            ),
+          );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -1196,13 +1204,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleNavigation(BuildContext context, String destination) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Navigate to $destination'),
-        backgroundColor: const Color(0xFF10B981),
-        duration: const Duration(seconds: 1),
-      ),
-    );
+    if (destination == 'eshop') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const EshopScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Navigate to $destination'),
+          backgroundColor: const Color(0xFF10B981),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    }
   }
 
   Widget _buildStickyMobileNav(BuildContext context) {

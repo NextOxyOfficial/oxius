@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../screens/eshop_screen.dart';
 
 class AppFooter extends StatefulWidget {
   final bool showMobileNav;
@@ -843,13 +844,20 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
 
   // Helper methods
   void _handleNavigation(BuildContext context, String destination) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Navigate to $destination'),
-        backgroundColor: const Color(0xFF10B981),
-        duration: const Duration(seconds: 1),
-      ),
-    );
+    if (destination == 'eShop') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const EshopScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Navigate to $destination'),
+          backgroundColor: const Color(0xFF10B981),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    }
   }
 
   void _showComingSoon(BuildContext context, String feature) {
