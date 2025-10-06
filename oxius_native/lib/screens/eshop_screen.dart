@@ -4,6 +4,7 @@ import '../services/translation_service.dart';
 import '../services/user_state_service.dart';
 import '../widgets/mobile_banner.dart';
 import '../widgets/hot_deals_section.dart';
+import '../widgets/product_card.dart';
 
 class EshopScreen extends StatefulWidget {
   const EshopScreen({super.key});
@@ -488,17 +489,53 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   }
 
   Widget _buildSearchResults() {
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.75,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-      ),
-      itemCount: _searchResults.length,
-      itemBuilder: (context, index) {
-        return _buildProductCard(_searchResults[index]);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = 12.0;
+        final availableWidth = constraints.maxWidth - 32; // Account for padding
+        final idealWidth = (availableWidth - spacing) / 2;
+        final cardWidth = idealWidth.clamp(160.0, 200.0);
+        const detailsMinHeight = 120.0; // Reduced from 160.0
+        final cardHeight = cardWidth + detailsMinHeight;
+        
+        return GridView.builder(
+          padding: const EdgeInsets.all(16),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: cardWidth / cardHeight,
+            crossAxisSpacing: spacing,
+            mainAxisSpacing: spacing,
+          ),
+          itemCount: _searchResults.length,
+          itemBuilder: (context, index) {
+            return SizedBox(
+              width: cardWidth,
+              height: cardHeight,
+              child: ProductCard(
+                product: _searchResults[index],
+                isLoading: false,
+                onBuyNow: () {
+                  // Handle buy now action
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Buy Now: ${_searchResults[index]['name'] ?? 'Product'}'),
+                      backgroundColor: const Color(0xFF10B981),
+                    ),
+                  );
+                },
+                onTap: () {
+                  // Navigate to product details
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('View Product: ${_searchResults[index]['name'] ?? 'Product'}'),
+                      backgroundColor: const Color(0xFF10B981),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        );
       },
     );
   }
@@ -555,142 +592,55 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'All Products',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          GridView.builder(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          const spacing = 12.0;
+          final availableWidth = constraints.maxWidth;
+          final idealWidth = (availableWidth - spacing) / 2;
+          final cardWidth = idealWidth.clamp(160.0, 200.0);
+          const detailsMinHeight = 120.0; // Reduced from 160.0
+          final cardHeight = cardWidth + detailsMinHeight;
+          
+          return GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+              childAspectRatio: cardWidth / cardHeight,
+              crossAxisSpacing: spacing,
+              mainAxisSpacing: spacing,
             ),
             itemCount: _products.length,
             itemBuilder: (context, index) {
-              return _buildProductCard(_products[index]);
+              return SizedBox(
+                width: cardWidth,
+                height: cardHeight,
+                child: ProductCard(
+                  product: _products[index],
+                  isLoading: false,
+                  onBuyNow: () {
+                    // Handle buy now action
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Buy Now: ${_products[index]['name'] ?? 'Product'}'),
+                        backgroundColor: const Color(0xFF10B981),
+                      ),
+                    );
+                  },
+                  onTap: () {
+                    // Navigate to product details
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('View Product: ${_products[index]['name'] ?? 'Product'}'),
+                        backgroundColor: const Color(0xFF10B981),
+                      ),
+                    );
+                  },
+                ),
+              );
             },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProductCard(Map<String, dynamic> product) {
-    return InkWell(
-      onTap: () {
-        // Navigate to product details
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Navigate to ${product['name'] ?? 'Product'}'),
-            backgroundColor: const Color(0xFF10B981),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product Image
-            Expanded(
-              flex: 3,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                ),
-                child: product['image'] != null
-                    ? ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                        child: Image.network(
-                          product['image'],
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.image_not_supported,
-                              size: 40,
-                              color: Colors.grey.shade400,
-                            );
-                          },
-                        ),
-                      )
-                    : Icon(
-                        Icons.image_not_supported,
-                        size: 40,
-                        color: Colors.grey.shade400,
-                      ),
-              ),
-            ),
-            
-            // Product Info
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      product['name'] ?? 'Product Name',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        Text(
-                          '৳${product['price'] ?? '0'}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF10B981),
-                          ),
-                        ),
-                        if (product['original_price'] != null) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            '৳${product['original_price']}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              decoration: TextDecoration.lineThrough,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
