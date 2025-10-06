@@ -195,47 +195,26 @@ class _HeroBannerState extends State<HeroBanner> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768;
     
-    // For mobile, make banner height smaller to accommodate service buttons below
-    double bannerHeight;
-    if (isMobile) {
-      bannerHeight = screenWidth * 0.40; // Reduced from 0.45 to make room for service buttons
-    } else {
-      bannerHeight = screenWidth * 0.25; // Desktop banner height
-    }
+    // Mobile-only banner height
+    double bannerHeight = screenWidth * 0.40; // Reduced from 0.45 to make room for service buttons
 
-    if (isMobile) {
-      // Mobile layout: slider, premium area, then service grid
-      return Column(
-        children: [
-          _buildHeroSlider(bannerHeight),
-          const SizedBox(height: 8),
-          _buildServicesSection(isMobile: true),
-        ],
-      );
-    } else {
-      // Desktop layout: slider (left) + premium area (right)
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(flex: 3, child: _buildHeroSlider(bannerHeight)),
-            const SizedBox(width: 12),
-            Expanded(flex: 2, child: _buildPremiumArea(height: bannerHeight, isMobile: false)),
-          ],
-        ),
-      );
-    }
+    // Mobile layout: slider, then service grid
+    return Column(
+      children: [
+        _buildHeroSlider(bannerHeight),
+        const SizedBox(height: 8),
+        _buildServicesSection(),
+      ],
+    );
   }
 
   // Professional card that wraps the services with a clean header
-  Widget _buildServicesSection({required bool isMobile}) {
+  Widget _buildServicesSection() {
     final title = _translationService.t('social_business_network', fallback: 'Social Business Network');
     return Container(
-      // Remove side margin on mobile to make the card flush with screen edges
-      margin: EdgeInsets.symmetric(horizontal: isMobile ? 2 : 8),
+      // Mobile-only margin
+      margin: EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F8FA),
         borderRadius: BorderRadius.circular(14),
@@ -301,7 +280,7 @@ class _HeroBannerState extends State<HeroBanner> {
                             color: Colors.grey.shade800,
                           ) ??
                           TextStyle(
-                            fontSize: isMobile ? 14 : 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: Colors.grey.shade800,
                           ),
@@ -315,7 +294,7 @@ class _HeroBannerState extends State<HeroBanner> {
           Padding(
             padding: const EdgeInsets.only(top: 10, bottom: 12),
             child: _buildMobileServicesGrid(
-              margin: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 12),
+              margin: EdgeInsets.symmetric(horizontal: 0),
             ),
           ),
         ],

@@ -9,11 +9,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:oxius_native/main.dart';
+import 'package:oxius_native/services/user_state_service.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Create a mock user state service for testing
+    final userState = UserStateService();
+    
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MyApp(userState: userState));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

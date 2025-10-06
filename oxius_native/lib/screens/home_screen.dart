@@ -14,6 +14,7 @@ import '../services/auth_service.dart';
 import '../services/translation_service.dart';
 import 'wallet/wallet_screen.dart';
 import 'settings_screen.dart';
+import 'inbox_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -57,10 +58,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final screenWidth = mediaQuery.size.width;
-    final isMobile = screenWidth < 768;
-    
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       drawer: const MobileDrawer(),
@@ -89,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: SafeArea(
                   bottom: false,
-                  child: _buildFixedHeader(context, isMobile),
+                  child: _buildFixedHeader(context),
                 ),
               ),
           
@@ -124,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Footer - always show the main footer content
                   const SizedBox(height: 32),
                   AppFooter(
-                    showMobileNav: isMobile, // Show mobile nav only on mobile
+                    showMobileNav: true, // Mobile-only app
                   ),
                 ],
               ),
@@ -155,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       
       // Fixed Mobile Navigation Bar (outside of scrollable content)
-      floatingActionButton: isMobile ? _buildStickyMobileNav(context) : null,
+      floatingActionButton: _buildStickyMobileNav(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -920,14 +917,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFixedHeader(BuildContext context, bool isMobile) {
+  Widget _buildFixedHeader(BuildContext context) {
     final userState = UserStateService();
     
     return Container(
       height: 64,
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8 : 16,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 8),
       child: ListenableBuilder(
         listenable: userState,
         builder: (context, _) {
@@ -939,31 +934,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(
                     Icons.menu,
                     color: Colors.grey.shade800,
-                    size: isMobile ? 24 : 28,
+                    size: 24,
                   ),
                   onPressed: () => Scaffold.of(context).openDrawer(),
                   tooltip: 'Open Menu',
                 ),
               ),
-              SizedBox(width: isMobile ? 4 : 8),
+              SizedBox(width: 4),
               
               // Logo (extracted from header widget)
               _buildDynamicLogo(context),
               
               const Spacer(),
               
-              // Desktop Navigation
-              if (!isMobile) ...[
-                _buildDesktopNavigation(context),
-                const SizedBox(width: 16),
-                // Desktop User Actions
-                _buildDesktopUserActions(context, userState),
-              ],
-              
               // Mobile actions
-              if (isMobile) ...[
-                _buildMobileActions(context),
-              ],
+              _buildMobileActions(context),
             ],
           );
         },
@@ -971,170 +956,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDesktopUserActions(BuildContext context, UserStateService userState) {
-    final isAuthenticated = userState.isAuthenticated;
-    final user = userState.currentUser;
-
-    if (isAuthenticated && user != null) {
-      // Logged in user actions
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Inbox Button
-          IconButton(
-            icon: const Icon(
-              Icons.mark_email_unread_outlined,
-              color: Color(0xFF3B82F6),
-              size: 24,
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Messages/Inbox coming soon'),
-                  backgroundColor: Color(0xFF3B82F6),
-                ),
-              );
-            },
-            tooltip: 'Messages',
-          ),
-          // QR Code Button
-          IconButton(
-            icon: const Icon(
-              Icons.qr_code_scanner,
-              color: Color(0xFF10B981),
-              size: 24,
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('QR Code Scanner coming soon'),
-                  backgroundColor: Color(0xFF10B981),
-                ),
-              );
-            },
-            tooltip: 'QR Scanner',
-          ),
-          const SizedBox(width: 8),
-          // User Profile Button (Desktop style)
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                _isDropdownOpen = !_isDropdownOpen;
-              });
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(20),
-                color: Colors.white,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Avatar
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: ClipOval(
-                      child: user.profilePicture != null && user.profilePicture!.isNotEmpty
-                          ? Image.network(
-                              user.profilePicture!,
-                              width: 32,
-                              height: 32,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: const Color(0xFF10B981),
-                                  child: Center(
-                                    child: Text(
-                                      user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            )
-                          : Container(
-                              color: const Color(0xFF10B981),
-                              child: Center(
-                                child: Text(
-                                  user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // User Name (truncated)
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 100),
-                    child: Text(
-                      user.displayName,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade800,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    _isDropdownOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                    size: 18,
-                    color: Colors.grey.shade600,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      );
-    } else {
-      // Guest user - show login button
-      return ElevatedButton(
-        onPressed: () {
-          Navigator.of(context).pushNamed('/login');
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.grey.shade200,
-          foregroundColor: Colors.grey.shade800,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        child: const Text(
-          'Login',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      );
-    }
-  }
-
   // Extract logo building logic from AppHeader
   Widget _buildDynamicLogo(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-    final isMobile = mediaQuery.size.width < 768;
-    
     return GestureDetector(
       onTap: () {
         if (!_disposed) {
@@ -1150,25 +973,25 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         constraints: BoxConstraints(
           minHeight: 32,
-          maxHeight: isMobile ? 32 : 40,
+          maxHeight: 32,
           minWidth: 80,
           maxWidth: 170,
         ),
         child: Container(
-          height: isMobile ? 30 : 34,
+          height: 30,
           padding: EdgeInsets.symmetric(
-            horizontal: isMobile ? 6 : 8,
+            horizontal: 6,
             vertical: 2,
           ),
           child: Image.asset(
             'assets/images/logo.png',
-            height: isMobile ? 26 : 30,
+            height: 26,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) {
               return Container(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 10 : 12,
-                  vertical: isMobile ? 5 : 6,
+                  horizontal: 10,
+                  vertical: 5,
                 ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
@@ -1188,7 +1011,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Text(
                   'AdsyClub',
                   style: TextStyle(
-                    fontSize: isMobile ? 14 : 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     letterSpacing: 0.5,
@@ -1196,82 +1019,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
             },
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDesktopNavigation(BuildContext context) {
-    final navItems = [
-      {
-        'title': 'Home',
-        'icon': Icons.home,
-        'color': const Color(0xFF3B82F6),
-        'route': '/',
-      },
-      {
-        'title': 'Business Network',
-        'icon': Icons.network_check,
-        'color': const Color(0xFF10B981),
-        'route': '/business-network',
-      },
-      {
-        'title': 'News',
-        'icon': Icons.newspaper,
-        'color': const Color(0xFFF59E0B),
-        'route': '/adsy-news',
-      },
-      {
-        'title': 'E-Learning',
-        'icon': Icons.school,
-        'color': const Color(0xFF8B5CF6),
-        'route': '/courses',
-      },
-      {
-        'title': 'Earn Money',
-        'icon': Icons.monetization_on,
-        'color': const Color(0xFFEF4444),
-        'route': '/#micro-gigs',
-      },
-    ];
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: navItems.map((item) {
-        return _buildNavItem(
-          context,
-          item['title'] as String,
-          item['icon'] as IconData,
-          item['color'] as Color,
-          item['route'] as String,
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildNavItem(BuildContext context, String title, IconData icon, Color color, String route) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      child: InkWell(
-        onTap: () => _handleNavigation(context, title),
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 18, color: color),
-              const SizedBox(width: 6),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade700,
-                ),
-              ),
-            ],
           ),
         ),
       ),
@@ -1303,10 +1050,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       size: 24,
                     ),
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Messages/Inbox coming soon'),
-                          backgroundColor: Color(0xFF3B82F6),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const InboxScreen(),
                         ),
                       );
                     },
