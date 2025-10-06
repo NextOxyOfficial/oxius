@@ -637,7 +637,7 @@ class _AccountBalanceSectionState extends State<AccountBalanceSection> {
         color: const Color(0xFF3B82F6),
         isSmallMobile: isSmallMobile,
         onTap: () {
-          // TODO: Navigate to inbox
+          Navigator.pushNamed(context, '/inbox');
         },
       ),
       _buildActionButton(
@@ -647,7 +647,7 @@ class _AccountBalanceSectionState extends State<AccountBalanceSection> {
         color: const Color(0xFF8B5CF6),
         isSmallMobile: isSmallMobile,
         onTap: () {
-          // TODO: Navigate to my gigs
+          Navigator.pushNamed(context, '/my-gigs');
         },
       ),
       _buildActionButton(
@@ -657,7 +657,7 @@ class _AccountBalanceSectionState extends State<AccountBalanceSection> {
         color: const Color(0xFF64748B),
         isSmallMobile: isSmallMobile,
         onTap: () {
-          // TODO: Navigate to post gig
+          Navigator.pushNamed(context, '/post-a-gig');
         },
       ),
     ];

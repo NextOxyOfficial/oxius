@@ -355,12 +355,7 @@ class _AppHeaderState extends State<AppHeader> {
             size: 24,
           ),
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${t('messages_inbox')} ${t('coming_soon')}'),
-                backgroundColor: const Color(0xFF3B82F6),
-              ),
-            );
+            Navigator.pushNamed(context, '/inbox');
           },
           tooltip: t('messages_inbox'),
         ),
@@ -830,6 +825,21 @@ class _AppHeaderState extends State<AppHeader> {
                       ],
                     ),
                     const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildActionButton(context, 'Inbox', Icons.mark_email_unread_outlined, '/inbox'),
+                        _buildActionButton(context, 'My Gigs', Icons.list_rounded, '/my-gigs'),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildActionButton(context, 'Post A Gig', Icons.add_circle_outline, '/post-a-gig'),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
                     GestureDetector(
                       onTap: () {
                         setState(() {
@@ -1002,6 +1012,15 @@ class _AppHeaderState extends State<AppHeader> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Verification center coming soon!')),
         );
+        break;
+      case '/inbox':
+        Navigator.pushNamed(context, '/inbox');
+        break;
+      case '/my-gigs':
+        Navigator.pushNamed(context, '/my-gigs');
+        break;
+      case '/post-a-gig':
+        Navigator.pushNamed(context, '/post-a-gig');
         break;
       default:
         ScaffoldMessenger.of(context).showSnackBar(

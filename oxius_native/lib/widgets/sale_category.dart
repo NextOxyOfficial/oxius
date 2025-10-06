@@ -63,12 +63,60 @@ class _SaleCategoryState extends State<SaleCategory> {
         await _loadPostsForCategory(selectedCategory!);
       }
     } catch (e) {
+      // If API fails, use mock data as fallback
       setState(() {
+        categories = _getMockCategories();
+        banners = _getMockBanners();
+        categoriesFetched = true;
+        bannersFetched = true;
         isLoadingCategories = false;
         isLoadingBanners = false;
       });
+      if (categories.isNotEmpty) {
+        selectedCategory = categories.first['id'];
+        // Don't try to load posts if API is down
+      }
       debugPrint('Error initializing sale data: $e');
+      debugPrint('Using mock data as fallback');
     }
+  }
+
+  List<dynamic> _getMockCategories() {
+    return [
+      {
+        'id': 1,
+        'title': 'Electronics',
+        'icon': '',
+        'description': 'Electronics and gadgets',
+      },
+      {
+        'id': 2,
+        'title': 'Fashion',
+        'icon': '',
+        'description': 'Clothing and accessories',
+      },
+      {
+        'id': 3,
+        'title': 'Home & Garden',
+        'icon': '',
+        'description': 'Home improvement and garden items',
+      },
+    ];
+  }
+
+  List<dynamic> _getMockBanners() {
+    return [
+      {
+        'id': 1,
+        'title': 'Welcome to Oxius Shop',
+        'image': '',
+        'category_details': {
+          'id': 1,
+          'title': 'Electronics',
+          'icon': '',
+        },
+      },
+    ];
   }
 
   Future<void> _loadPostsForCategory(int categoryId) async {

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
+import 'screens/inbox_screen.dart';
+import 'screens/my_gigs_screen.dart';
+import 'screens/post_gig_screen.dart';
 import 'pages/login_page.dart';
 import 'services/auth_service.dart';
 import 'services/user_state_service.dart';
@@ -72,6 +75,21 @@ class MyApp extends StatelessWidget {
           routes: {
             '/': (context) => const HomeScreen(),
             '/login': (context) => const LoginPage(),
+            '/inbox': (context) => const InboxScreen(),
+            '/my-gigs': (context) => const MyGigsScreen(),
+            '/post-a-gig': (context) => const PostGigScreen(),
+            '/deposit-withdraw': (context) => Scaffold(
+              appBar: AppBar(title: const Text('Deposit & Withdraw')),
+              body: const Center(child: Text('Coming Soon!')),
+            ),
+            '/pending-tasks': (context) => Scaffold(
+              appBar: AppBar(title: const Text('Pending Tasks')),
+              body: const Center(child: Text('Coming Soon!')),
+            ),
+            '/mobile-recharge': (context) => Scaffold(
+              appBar: AppBar(title: const Text('Mobile Recharge')),
+              body: const Center(child: Text('Coming Soon!')),
+            ),
           },
         );
       },
