@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/footer.dart';
 import '../widgets/mobile_drawer.dart';
-import '../widgets/mobile_banner.dart';
+import '../widgets/hero_banner.dart';
 import '../widgets/sale_category.dart';
 import '../widgets/classified_services_section.dart';
 import '../widgets/eshop_section.dart';
@@ -99,12 +99,9 @@ class _HomeScreenState extends State<HomeScreen> {
               controller: _scrollController,
               child: Column(
                 children: [
-                  // 1. Hero Banner - Main banner slider at top
+                  // 1. Hero Banner - Main banner slider + service menu grid
                   const SizedBox(height: 8),
-                  const MobileBannerWidget(
-                    autoplayInterval: 5000,
-                    autoplayEnabled: true,
-                  ),
+                  const HeroBanner(),
                   
                   // 2. Sale Category - eShop product categories
                   const SaleCategory(),

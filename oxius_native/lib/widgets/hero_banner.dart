@@ -550,7 +550,7 @@ class _ServiceTileState extends State<_ServiceTile> with SingleTickerProviderSta
   @override
   Widget build(BuildContext context) {
     final disabled = widget.isComingSoon || widget.onTap == null;
-    final labelColor = disabled ? Colors.grey.shade600 : Colors.grey.shade800;
+    final labelColor = disabled ? Colors.grey.shade500 : Colors.black87;
 
     return GestureDetector(
       onTapDown: disabled
@@ -682,9 +682,9 @@ class _ServiceTileState extends State<_ServiceTile> with SingleTickerProviderSta
               widget.label,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.1,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.2,
                 color: labelColor,
                 height: 1.2,
               ),
