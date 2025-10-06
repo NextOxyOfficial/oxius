@@ -42,14 +42,23 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     if (currentUser?.id != null) {
       try {
         final userGigs = await _gigsService.fetchUserGigs(currentUser!.id);
+        print('Loaded ${userGigs.length} gigs from backend');
+        
+        // Print status of each gig for debugging
+        for (var gig in userGigs) {
+          print('Gig ${gig['id']}: status=${gig['gig_status']}, appeal_count=${gig['appeal_count']}');
+        }
+        
         if (mounted) {
           setState(() {
             _userGigs = userGigs;
             _applyFilter();
             _isLoadingGigs = false;
           });
+          print('Applied filter: ${_selectedFilter}, showing ${_filteredGigs.length} gigs');
         }
       } catch (e) {
+        print('Error loading gigs: $e');
         if (mounted) {
           setState(() {
             _isLoadingGigs = false;
@@ -258,11 +267,177 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     }
   }
 
+  Future<void> _handleResubmitGig(Map<String, dynamic> gig) async {
+    final gigId = gig['id']?.toString() ?? '';
+    final rejectionReason = gig['rejection_reason'] ?? 'No reason provided';
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final titleController = TextEditingController(text: gig['title']);
+        final instructionsController = TextEditingController(text: gig['instructions']);
+        
+        return AlertDialog(
+          title: const Text('Edit & Resubmit Gig'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Rejection Reason:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        rejectionReason,
+                        style: TextStyle(color: Colors.red.shade800),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Title',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 1,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: instructionsController,
+                  decoration: const InputDecoration(
+                    labelText: 'Instructions',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 5,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Edit the content above to address the rejection reason, then resubmit for approval.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                
+                // Show loading indicator
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Row(
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        ),
+                        SizedBox(width: 12),
+                        Text('Resubmitting gig...'),
+                      ],
+                    ),
+                    duration: Duration(seconds: 30),
+                  ),
+                );
+                
+                final success = await _resubmitGig(
+                  gigId,
+                  titleController.text,
+                  instructionsController.text,
+                );
+                
+                if (mounted) {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success
+                            ? 'Gig resubmitted successfully! Waiting for approval.'
+                            : 'Failed to resubmit gig'
+                      ),
+                      backgroundColor: success ? Colors.green : Colors.red,
+                    ),
+                  );
+                  if (success) {
+                    // Reload the gigs to reflect the new status
+                    await _loadUserGigs();
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+              child: const Text('Resubmit for Approval', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool> _resubmitGig(String gigId, String title, String instructions) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      final response = await http.put(
+        Uri.parse('http://localhost:8000/api/update-user-micro-gig/$gigId/'),
+        headers: headers,
+        body: json.encode({
+          'title': title,
+          'instructions': instructions,
+          'gig_status': 'pending', // Change status back to pending
+          'rejection_reason': '', // Clear rejection reason
+        }),
+      );
+      
+      if (response.statusCode == 200) {
+        // Parse the response to verify the status was updated
+        final updatedGig = json.decode(response.body);
+        print('Gig updated successfully: ${updatedGig['gig_status']}');
+        
+        // Small delay to ensure backend processes the update
+        await Future.delayed(const Duration(milliseconds: 500));
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      print('Error resubmitting gig: $e');
+      return false;
+    }
+  }
+
   Future<void> _handleGigDetails(Map<String, dynamic> gig) async {
     try {
       final gigDetails = await _gigsService.getGigDetails(gig['id'].toString());
       
       if (mounted && gigDetails != null) {
+        final isRejected = gigDetails['gig_status'] == 'rejected';
+        final rejectionReason = gigDetails['rejection_reason'] ?? '';
+        
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -279,8 +454,36 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                     _buildDetailRow('Balance', '৳${gigDetails['balance']}'),
                     _buildDetailRow('Total Cost', '৳${gigDetails['total_cost']}'),
                     _buildDetailRow('Created', _formatDate(gigDetails['created_at'])),
+                    if (isRejected && rejectionReason.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red.shade200),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Rejection Reason:',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              rejectionReason,
+                              style: TextStyle(color: Colors.red.shade800),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     if (gigDetails['instructions'] != null && gigDetails['instructions'].toString().isNotEmpty) ...[
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 12),
                       const Text('Instructions:', style: TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
                       Text(gigDetails['instructions'].toString()),
@@ -289,6 +492,15 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                 ),
               ),
               actions: [
+                if (isRejected)
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      _handleResubmitGig(gigDetails);
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                    child: const Text('Edit & Resubmit', style: TextStyle(color: Colors.white)),
+                  ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text('Close'),
@@ -667,30 +879,39 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     final gigId = gig['id']?.toString() ?? '';
     final gigStatus = gig['gig_status'] ?? '';
     final isRejected = gigStatus == 'rejected';
+    final isPending = gigStatus == 'pending';
+    final isApproved = gigStatus == 'approved';
     
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        if (!isCompleted && !isRejected && isActive)
+        // Only show Pause/Activate for approved gigs
+        if (isApproved && !isCompleted && isActive)
           _buildActionButton(
             'Pause',
             Colors.orange,
             () => _handleGigAction(gigId, 'pause', false),
           ),
-        if (!isCompleted && !isRejected && !isActive)
+        if (isApproved && !isCompleted && !isActive)
           _buildActionButton(
             'Activate',
             Colors.green,
             () => _handleGigAction(gigId, 'active', true),
           ),
-        if (!isCompleted && !isRejected)
+        if (!isCompleted && !isRejected && !isPending)
           _buildActionButton(
             'Edit',
             Colors.blue,
             () => _handleEditGig(gig),
           ),
-        if (!isCompleted && !isRejected)
+        if (isRejected)
+          _buildActionButton(
+            'Appeal',
+            Colors.blue,
+            () => _handleResubmitGig(gig),
+          ),
+        if (!isCompleted && !isRejected && !isPending)
           _buildActionButton(
             'Stop',
             Colors.red,

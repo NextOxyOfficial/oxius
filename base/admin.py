@@ -369,6 +369,7 @@ class MicroGigPostAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
         "gig_status",
+        "appeal_count",
     )
 
     list_filter = (
@@ -378,7 +379,11 @@ class MicroGigPostAdmin(admin.ModelAdmin):
         "stop_gig",
         "created_at",
         "updated_at",
+        "gig_status",
+        "appeal_count",
     )
+    
+    readonly_fields = ("appeal_count",)
 
     @admin.display(ordering="-created_at")
     def created_at(self, obj):

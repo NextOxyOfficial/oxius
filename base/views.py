@@ -630,6 +630,10 @@ def update_micro_gig_post(request, pk):
                 request.data.get("required_quantity", 0)
             )
 
+            # Check if this is an appeal (rejected -> pending)
+            if micro_gig_post.gig_status == 'rejected' and request.data.get('gig_status') == 'pending':
+                micro_gig_post.appeal_count += 1
+
             # Update the MicroGigPost using serializer
             serializer = MicroGigPostSerializer(
                 micro_gig_post, data=request.data, partial=True

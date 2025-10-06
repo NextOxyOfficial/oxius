@@ -444,6 +444,8 @@ class MicroGigPost(models.Model):
         ("completed", "Completed"),
     ]
     gig_status = models.CharField(max_length=20, choices=GIG_STATUS, default="pending")
+    rejection_reason = models.TextField(blank=True, null=True, help_text="Reason for rejection")
+    appeal_count = models.IntegerField(default=0, help_text="Number of times this gig has been appealed")
 
     def save(self, *args, **kwargs):
         if not self.slug:
