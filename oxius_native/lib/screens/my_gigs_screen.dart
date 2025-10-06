@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../services/translation_service.dart';
 import '../services/user_state_service.dart';
 import '../services/gigs_service.dart';
 import '../services/auth_service.dart';
+import '../services/api_service.dart';
 import '../widgets/home/account_balance_section.dart';
 
 class MyGigsScreen extends StatefulWidget {
@@ -127,15 +130,109 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   }
 
   Future<void> _handleEditGig(Map<String, dynamic> gig) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Edit gig "${gig['title']}" - Coming soon!'),
-        action: SnackBarAction(
-          label: 'Details',
-          onPressed: () => _handleGigDetails(gig),
-        ),
-      ),
+    // Navigate to edit gig page (to be implemented)
+    // For now, show a dialog to increase quantity
+    final gigId = gig['id']?.toString() ?? '';
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        int additionalQuantity = 0;
+        final price = (gig['price'] ?? 0).toDouble();
+        
+        return AlertDialog(
+          title: const Text('Increase Gig Quantity'),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Current Quantity: ${gig['required_quantity']}'),
+                  const SizedBox(height: 8),
+                  Text('Price per action: ৳$price'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Additional Quantity',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      setState(() {
+                        additionalQuantity = int.tryParse(value) ?? 0;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  if (additionalQuantity > 0) ...[
+                    Text('Cost: ৳${(price * additionalQuantity).toStringAsFixed(2)}'),
+                    Text('Fee (10%): ৳${(price * additionalQuantity * 0.1).toStringAsFixed(2)}'),
+                    Text(
+                      'Total: ৳${(price * additionalQuantity * 1.1).toStringAsFixed(2)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (additionalQuantity > 0) {
+                  Navigator.of(context).pop();
+                  // Call update API
+                  final success = await _updateGigQuantity(gigId, additionalQuantity, price);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          success 
+                            ? 'Gig quantity increased successfully' 
+                            : 'Failed to increase quantity'
+                        ),
+                        backgroundColor: success ? Colors.green : Colors.red,
+                      ),
+                    );
+                    if (success) {
+                      _loadUserGigs();
+                    }
+                  }
+                }
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
     );
+  }
+  
+  Future<bool> _updateGigQuantity(String gigId, int additionalQuantity, double price) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final additionalCost = price * additionalQuantity * 1.1; // Include 10% fee
+      final balance = price * additionalQuantity;
+      
+      final response = await http.put(
+        Uri.parse('http://localhost:8000/api/update-user-micro-gig/$gigId/'),
+        headers: headers,
+        body: json.encode({
+          'additional_quantity': additionalQuantity,
+          'additional_cost': additionalCost,
+          'balance': balance,
+        }),
+      );
+      
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<void> _handleGigDetails(Map<String, dynamic> gig) async {

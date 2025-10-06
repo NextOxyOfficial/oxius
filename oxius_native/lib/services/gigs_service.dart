@@ -145,6 +145,7 @@ class GigsService {
   Future<bool> updateGigStatus(String gigId, String action, bool value) async {
     try {
       final url = '$baseUrl/update-user-micro-gig/$gigId/';
+      final headers = await ApiService.getHeaders();
       Map<String, dynamic> requestBody;
       
       if (action == "completed") {
@@ -162,9 +163,7 @@ class GigsService {
       
       final response = await http.put(
         Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
         body: json.encode(requestBody),
       );
 
@@ -182,14 +181,13 @@ class GigsService {
   Future<bool> deleteGig(String gigId) async {
     try {
       final url = '$baseUrl/delete-user-micro-gig/$gigId/';
+      final headers = await ApiService.getHeaders();
       final response = await http.delete(
         Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 204) {
         return true;
       } else {
         return false;
@@ -203,7 +201,11 @@ class GigsService {
   Future<Map<String, dynamic>?> getGigDetails(String gigId) async {
     try {
       final url = '$baseUrl/get-user-micro-gig/$gigId/';
-      final response = await http.get(Uri.parse(url));
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse(url),
+        headers: headers,
+      );
 
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
