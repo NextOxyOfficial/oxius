@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/translation_service.dart';
 import '../services/eshop_service.dart';
 import '../screens/eshop_screen.dart';
+import '../screens/product_details_screen.dart';
 import 'hot_deals_section.dart';
 import 'hot_arrivals_section.dart';
 import 'mobile_banner.dart';
@@ -350,9 +351,7 @@ class _EshopSectionState extends State<EshopSection> {
                       if (!mounted) return;
                       setState(() => _buyLoading.remove(id));
                     },
-                    onTap: () {
-                      debugPrint('Product tapped: ${product['id']}');
-                    },
+                    // onTap removed to use default navigation from _EshopProductCard
                   ),
                 );
               },
@@ -505,7 +504,14 @@ class _EshopProductCardState extends State<_EshopProductCard> {
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: widget.onTap,
+        onTap: widget.onTap ?? () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductDetailsScreen(product: widget.product),
+            ),
+          );
+        },
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),

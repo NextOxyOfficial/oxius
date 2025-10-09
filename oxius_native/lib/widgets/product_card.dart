@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/screens/product_details_screen.dart';
 
 class ProductCard extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -39,7 +40,14 @@ class _ProductCardState extends State<ProductCard> {
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: widget.onTap,
+        onTap: widget.onTap ?? () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductDetailsScreen(product: widget.product),
+            ),
+          );
+        },
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),

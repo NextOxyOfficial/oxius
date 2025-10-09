@@ -606,15 +606,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                     ),
                   );
                 },
-                onTap: () {
-                  // Navigate to product details
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('View Product: ${_searchResults[index]['name'] ?? 'Product'}'),
-                      backgroundColor: const Color(0xFF10B981),
-                    ),
-                  );
-                },
+                // onTap removed to use default navigation from ProductCard
               ),
             );
           },
@@ -710,15 +702,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                       ),
                     );
                   },
-                  onTap: () {
-                    // Navigate to product details
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('View Product: ${_products[index]['name'] ?? 'Product'}'),
-                        backgroundColor: const Color(0xFF10B981),
-                      ),
-                    );
-                  },
+                  // onTap removed to use default navigation from ProductCard
                 ),
               );
             },
