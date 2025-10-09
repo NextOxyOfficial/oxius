@@ -349,18 +349,27 @@ class EshopService {
     }
   }
 
-  // Search products by query
+  // Search products by query - Using the same endpoint as fetchEshopProducts
   static Future<List<Map<String, dynamic>>> searchProducts(String query) async {
     try {
-      final uri = Uri.parse('$baseUrl/eshop/products/').replace(queryParameters: {
+      // Use the correct products endpoint with search parameter
+      final uri = Uri.parse('$baseUrl/products/').replace(queryParameters: {
         'search': query,
-        'limit': '20',
+        'page_size': '20',
       });
       
       print('EshopService: Searching products with query: $query');
       print('EshopService: Search URL: $uri');
       
-      final response = await http.get(uri);
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+      
+      print('EshopService: Search response status: ${response.statusCode}');
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -393,11 +402,12 @@ class EshopService {
           }
         }
         
-        print('EshopService: Successfully searched ${products.length} products');
+        print('EshopService: Successfully searched ${products.length} products for query: "$query"');
         return products;
       }
       
       print('EshopService: Search failed. Status: ${response.statusCode}');
+      print('EshopService: Response body: ${response.body}');
       return [];
     } catch (e, stackTrace) {
       print('EshopService: Error searching products: $e');

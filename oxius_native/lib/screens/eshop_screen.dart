@@ -116,11 +116,11 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         _hasMoreResults = results.length >= 20;
       });
       
-      // Add to recent searches
+      // Add to recent searches (keep only last 10)
       if (!_recentSearches.contains(query)) {
         setState(() {
           _recentSearches.insert(0, query);
-          if (_recentSearches.length > 5) {
+          if (_recentSearches.length > 10) {
             _recentSearches.removeLast();
           }
         });
@@ -270,10 +270,11 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                       controller: _searchController,
                       autofocus: true,
                       onChanged: _performSearch,
+                      textAlignVertical: TextAlignVertical.center,
                       decoration: InputDecoration(
                         hintText: 'Search products...',
-                        hintStyle: TextStyle(color: Colors.grey.shade500),
-                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                        hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 15),
+                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade400, size: 22),
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
                                 onPressed: () {
@@ -284,8 +285,10 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                               )
                             : null,
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                        isDense: true,
                       ),
+                      style: const TextStyle(fontSize: 15),
                     ),
                   ),
                 ),

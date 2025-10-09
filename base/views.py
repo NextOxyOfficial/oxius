@@ -15,7 +15,7 @@ from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from rest_framework import generics, status
+from rest_framework import filters, generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.pagination import PageNumberPagination
@@ -1943,6 +1943,10 @@ class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.all().order_by("-created_at")
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'description', 'short_description', 'keywords', 'slug']
+    ordering_fields = ['created_at', 'updated_at', 'regular_price', 'views', 'order_count']
+    ordering = ['-created_at']
 
     def get_permissions(self):
         if self.request.method == "GET":
