@@ -495,7 +495,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         final availableWidth = constraints.maxWidth - 32; // Account for padding
         final idealWidth = (availableWidth - spacing) / 2;
         final cardWidth = idealWidth.clamp(160.0, 200.0);
-        const detailsMinHeight = 120.0; // Reduced from 160.0
+        const detailsMinHeight = 160.0; // Match homepage
         final cardHeight = cardWidth + detailsMinHeight;
         
         return GridView.builder(
@@ -598,7 +598,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           final availableWidth = constraints.maxWidth;
           final idealWidth = (availableWidth - spacing) / 2;
           final cardWidth = idealWidth.clamp(160.0, 200.0);
-          const detailsMinHeight = 120.0; // Reduced from 160.0
+          const detailsMinHeight = 160.0; // Match homepage
           final cardHeight = cardWidth + detailsMinHeight;
           
           return GridView.builder(
