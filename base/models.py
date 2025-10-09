@@ -1323,3 +1323,26 @@ class CountryVersion(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class SearchHistory(models.Model):
+    """Model to store user search history for products"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='search_history', null=True, blank=True)
+    query = models.CharField(max_length=255)
+    search_type = models.CharField(max_length=50, default='product')  # product, classified, gig, etc.
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Search History'
+        verbose_name_plural = 'Search Histories'
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['query']),
+        ]
+
+    def __str__(self):
+        user_info = self.user.username if self.user else 'Anonymous'
+        return f"{user_info} searched: {self.query}"

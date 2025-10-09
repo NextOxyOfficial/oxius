@@ -650,3 +650,10 @@ class CountryVersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = CountryVersion
         fields = "__all__"
+
+
+class SearchHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SearchHistory
+        fields = ['id', 'query', 'search_type', 'created_at']
+        read_only_fields = ['id', 'created_at']

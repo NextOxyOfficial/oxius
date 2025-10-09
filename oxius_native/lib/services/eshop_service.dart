@@ -403,6 +403,12 @@ class EshopService {
         }
         
         print('EshopService: Successfully searched ${products.length} products for query: "$query"');
+        
+        // Save search to history (fire and forget)
+        saveSearchHistory(query).catchError((e) {
+          print('EshopService: Failed to save search history: $e');
+        });
+        
         return products;
       }
       
@@ -413,6 +419,100 @@ class EshopService {
       print('EshopService: Error searching products: $e');
       print('EshopService: Stack trace: $stackTrace');
       return [];
+    }
+  }
+
+  // Get recent search history from backend
+  static Future<List<String>> getSearchHistory() async {
+    try {
+      final uri = Uri.parse('$baseUrl/search-history/');
+      print('EshopService: Fetching search history from: $uri');
+      
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      print('EshopService: Search history response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        List<String> searches = [];
+        
+        if (data is List) {
+          for (var item in data) {
+            if (item is Map<String, dynamic> && item['query'] != null) {
+              searches.add(item['query'].toString());
+            }
+          }
+        }
+        
+        print('EshopService: Successfully fetched ${searches.length} search history items');
+        return searches;
+      }
+      
+      print('EshopService: Failed to fetch search history. Status: ${response.statusCode}');
+      return [];
+    } catch (e, stackTrace) {
+      print('EshopService: Error fetching search history: $e');
+      print('EshopService: Stack trace: $stackTrace');
+      return [];
+    }
+  }
+
+  // Save search query to history
+  static Future<void> saveSearchHistory(String query) async {
+    try {
+      final uri = Uri.parse('$baseUrl/search-history/save/');
+      
+      final response = await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({
+          'query': query,
+          'search_type': 'product',
+        }),
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('EshopService: Search history saved for query: "$query"');
+      } else {
+        print('EshopService: Failed to save search history. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('EshopService: Error saving search history: $e');
+    }
+  }
+
+  // Clear all search history
+  static Future<bool> clearSearchHistory() async {
+    try {
+      final uri = Uri.parse('$baseUrl/search-history/clear/');
+      
+      final response = await http.delete(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        print('EshopService: Search history cleared');
+        return true;
+      }
+      
+      print('EshopService: Failed to clear search history. Status: ${response.statusCode}');
+      return false;
+    } catch (e) {
+      print('EshopService: Error clearing search history: $e');
+      return false;
     }
   }
 

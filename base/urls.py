@@ -301,4 +301,9 @@ urlpatterns = [
     path("translations/<str:language_code>/", get_translations, name="translations"),
     path("banners/", get_banners, name="banners"),
     path("languages/", get_available_languages, name="available_languages"),
+    
+    # Search History
+    path("search-history/", SearchHistoryListView.as_view(), name="search_history"),
+    path("search-history/save/", save_search_history, name="save_search_history"),
+    path("search-history/clear/", clear_search_history, name="clear_search_history"),
 ]

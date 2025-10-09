@@ -982,3 +982,17 @@ class AndroidAppVersionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CountryVersion)
+
+
+class SearchHistoryAdmin(admin.ModelAdmin):
+    list_display = ('query', 'user', 'search_type', 'created_at')
+    list_filter = ('search_type', 'created_at')
+    search_fields = ('query', 'user__username', 'user__email')
+    readonly_fields = ('created_at', 'updated_at')
+    ordering = ('-created_at',)
+    
+    def has_add_permission(self, request):
+        return False  # Prevent manual addition through admin
+
+
+admin.site.register(SearchHistory, SearchHistoryAdmin)

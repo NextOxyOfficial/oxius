@@ -45,6 +45,28 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       curve: Curves.easeInOut,
     );
     _loadInitialData();
+    _loadSearchHistory();
+  }
+
+  Future<void> _loadSearchHistory() async {
+    try {
+      print('EshopScreen: Loading search history...');
+      final history = await EshopService.getSearchHistory();
+      print('EshopScreen: Received ${history.length} search history items: $history');
+      
+      if (mounted) {
+        setState(() {
+          _recentSearches = history;
+          // For testing: If no history from backend, add some mock data
+          if (_recentSearches.isEmpty) {
+            print('EshopScreen: No search history from backend, using empty list');
+          }
+        });
+        print('EshopScreen: Updated state with ${_recentSearches.length} recent searches');
+      }
+    } catch (e) {
+      print('EshopScreen: Error loading search history: $e');
+    }
   }
 
   @override
@@ -76,11 +98,53 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     }
   }
 
-  void _activateSearch() {
+  void _activateSearch() async {
+    print('EshopScreen: Activating search. Recent searches count: ${_recentSearches.length}');
     setState(() {
       _isSearchActive = true;
+      _isSearching = true;
     });
     _searchAnimationController.forward();
+    
+    // Load products to display
+    try {
+      List<Map<String, dynamic>> productsToShow;
+      
+      if (_recentSearches.isNotEmpty) {
+        // If there's recent search history, load products based on most recent search
+        final recentKeyword = _recentSearches.first;
+        print('EshopScreen: Loading products based on recent search: "$recentKeyword"');
+        productsToShow = await EshopService.searchProducts(recentKeyword);
+        print('EshopScreen: Search returned ${productsToShow.length} products');
+      } else {
+        // No search history, load random products
+        print('EshopScreen: No search history, loading random products');
+        productsToShow = await EshopService.fetchEshopProducts(page: 1, pageSize: 10);
+        print('EshopScreen: Fetch returned ${productsToShow.length} products');
+      }
+      
+      if (mounted) {
+        final finalProducts = productsToShow.take(10).toList();
+        print('EshopScreen: Setting ${finalProducts.length} products to display');
+        setState(() {
+          _searchResults = finalProducts;
+          _isSearching = false;
+        });
+        print('EshopScreen: State updated. _searchResults.length = ${_searchResults.length}');
+      }
+    } catch (e, stackTrace) {
+      print('EshopScreen: Error loading products: $e');
+      print('EshopScreen: Stack trace: $stackTrace');
+      if (mounted) {
+        setState(() {
+          _isSearching = false;
+          // Try to load any available products as fallback
+          _searchResults = _products.take(10).toList();
+        });
+        print('EshopScreen: Fallback - using ${_searchResults.length} products from main list');
+      }
+    }
+    
     // Focus on search input after animation
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(FocusNode());
@@ -116,15 +180,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         _hasMoreResults = results.length >= 20;
       });
       
-      // Add to recent searches (keep only last 10)
-      if (!_recentSearches.contains(query)) {
-        setState(() {
-          _recentSearches.insert(0, query);
-          if (_recentSearches.length > 10) {
-            _recentSearches.removeLast();
-          }
-        });
-      }
+      // Reload search history from backend to get updated list
+      _loadSearchHistory();
     } catch (e) {
       setState(() => _isSearching = false);
       if (mounted) {
@@ -335,10 +392,10 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                     ),
                   )
                 : _searchController.text.isEmpty
-                    ? _buildSearchDefault()
+                    ? _buildSearchDefault() // Show recent searches and trending when search box is empty
                     : _searchResults.isEmpty
-                        ? _buildNoResults()
-                        : _buildSearchResults(),
+                        ? _buildNoResults() // Show no results when search returned nothing
+                        : _buildSearchResults(), // Show search results
           ),
         ],
       ),
@@ -346,113 +403,130 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   }
 
   Widget _buildSearchDefault() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Recent Searches
-          if (_recentSearches.isNotEmpty) ...[
-            Row(
-              children: [
-                Icon(Icons.access_time, color: Colors.grey.shade500, size: 20),
-                const SizedBox(width: 8),
-                const Text(
-                  'Recent Searches',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _recentSearches.map((search) {
-                return InkWell(
-                  onTap: () {
-                    _searchController.text = search;
-                    _performSearch(search);
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.search, size: 14, color: Colors.grey.shade400),
-                        const SizedBox(width: 4),
-                        Text(
-                          search,
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-          ],
-          
-          // Trending Searches
-          Row(
+    print('EshopScreen: Building search default. Recent searches: ${_recentSearches.length}, Display products: ${_searchResults.length}');
+    
+    return Column(
+      children: [
+        // Top section with searches
+        SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.trending_up, color: Colors.orange.shade500, size: 20),
-              const SizedBox(width: 8),
-              const Text(
-                'Trending Searches',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+              // Recent Searches
+              if (_recentSearches.isNotEmpty) ...[
+                Row(
+                  children: [
+                    Icon(Icons.access_time, color: Colors.grey.shade500, size: 20),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Recent Searches',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _recentSearches.take(5).map((search) {
+                    return InkWell(
+                      onTap: () {
+                        _searchController.text = search;
+                        _performSearch(search);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.search, size: 14, color: Colors.grey.shade400),
+                            const SizedBox(width: 4),
+                            Text(
+                              search,
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
+              ],
+              
+              // Trending Searches
+              Row(
+                children: [
+                  Icon(Icons.trending_up, color: Colors.orange.shade500, size: 20),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Trending Searches',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _trendingSearches.map((trend) {
+                  return InkWell(
+                    onTap: () {
+                      _searchController.text = trend;
+                      _performSearch(trend);
+                    },
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        trend,
+                        style: const TextStyle(
+                          color: Color(0xFF10B981),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _trendingSearches.map((trend) {
-              return InkWell(
-                onTap: () {
-                  _searchController.text = trend;
-                  _performSearch(trend);
-                },
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    trend,
-                    style: const TextStyle(
-                      color: Color(0xFF10B981),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
+        ),
+        
+        // Products section
+        if (_searchResults.isNotEmpty)
+          Expanded(child: _buildSearchResults())
+        else
+          const Expanded(
+            child: Center(
+              child: Text(
+                'No products to display',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
           ),
-          const SizedBox(height: 24),
-          
-          // Note: Hot products are now shown in the main content via HotArrivalsSection
-          // You can add other search-specific content here if needed
-        ],
-      ),
+      ],
     );
   }
 

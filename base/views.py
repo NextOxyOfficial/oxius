@@ -4387,3 +4387,66 @@ def get_available_languages(request):
         'languages': languages,
         'default_language': 'en'
     })
+
+
+# Search History Views
+class SearchHistoryListView(generics.ListAPIView):
+    """Get user's recent search history"""
+    serializer_class = SearchHistorySerializer
+    permission_classes = [AllowAny]
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            # Return last 10 searches for authenticated user
+            return SearchHistory.objects.filter(user=user, search_type='product')[:10]
+        else:
+            # For anonymous users, return all recent searches (last 10) 
+            # This allows the app to show popular/trending searches
+            return SearchHistory.objects.filter(search_type='product').order_by('-created_at')[:10]
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def save_search_history(request):
+    """Save a search query to history"""
+    query = request.data.get('query', '').strip()
+    search_type = request.data.get('search_type', 'product')
+    
+    if not query:
+        return Response({'error': 'Query is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user = request.user if request.user.is_authenticated else None
+    
+    # Check if this exact search already exists for this user
+    if user:
+        existing = SearchHistory.objects.filter(user=user, query=query, search_type=search_type).first()
+        if existing:
+            # Update the timestamp by re-saving
+            existing.save()
+            return Response(SearchHistorySerializer(existing).data)
+    
+    # Create new search history
+    search_history = SearchHistory.objects.create(
+        user=user,
+        query=query,
+        search_type=search_type
+    )
+    
+    # Keep only last 10 searches per user
+    if user:
+        old_searches = SearchHistory.objects.filter(user=user, search_type=search_type).order_by('-created_at')[10:]
+        SearchHistory.objects.filter(id__in=[s.id for s in old_searches]).delete()
+    
+    return Response(SearchHistorySerializer(search_history).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def clear_search_history(request):
+    """Clear all search history for the user"""
+    user = request.user
+    if user.is_authenticated:
+        SearchHistory.objects.filter(user=user, search_type='product').delete()
+        return Response({'message': 'Search history cleared'}, status=status.HTTP_200_OK)
+    return Response({'error': 'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
