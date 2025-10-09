@@ -403,7 +403,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   }
 
   Widget _buildSearchDefault() {
-    print('EshopScreen: Building search default. Recent searches: ${_recentSearches.length}, Display products: ${_searchResults.length}');
+    print('EshopScreen: Building search default. Recent searches: ${_recentSearches.length}, Display products: ${_searchResults.length}, isSearching: $_isSearching');
     
     return Column(
       children: [
@@ -515,7 +515,13 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         ),
         
         // Products section
-        if (_searchResults.isNotEmpty)
+        if (_isSearching)
+          const Expanded(
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          )
+        else if (_searchResults.isNotEmpty)
           Expanded(child: _buildSearchResults())
         else
           const Expanded(
