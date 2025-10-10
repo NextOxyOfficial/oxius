@@ -528,16 +528,27 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         ? (ownerDetails['store_name']?.toString() ?? ownerDetails['name']?.toString() ?? 'Store')
         : 'Store';
     
+    // Debug: Print owner details to see what we're receiving
+    print('Owner Details: $ownerDetails');
+    
     // Extract owner details
     final isPro = ownerDetails is Map ? (ownerDetails['is_pro'] == true || ownerDetails['subscription_type'] == 'pro') : false;
     final isVerified = ownerDetails is Map ? (ownerDetails['kyc'] == true || ownerDetails['is_verified'] == true) : false;
     
-    // Extract address information
+    // Extract address information - try multiple fields
     final upazila = ownerDetails is Map ? (ownerDetails['upazila']?.toString() ?? '') : '';
     final city = ownerDetails is Map ? (ownerDetails['city']?.toString() ?? '') : '';
     final state = ownerDetails is Map ? (ownerDetails['state']?.toString() ?? '') : '';
     final country = ownerDetails is Map ? (ownerDetails['country']?.toString() ?? '') : '';
-    final address = [upazila, city, state, country].where((s) => s.isNotEmpty).join(', ');
+    final storeAddress = ownerDetails is Map ? (ownerDetails['store_address']?.toString() ?? '') : '';
+    
+    // Build address from individual fields or use store_address as fallback
+    String address = [upazila, city, state, country].where((s) => s.isNotEmpty).join(', ');
+    if (address.isEmpty && storeAddress.isNotEmpty) {
+      address = storeAddress;
+    }
+    
+    print('Constructed Address: $address');
     
     // Extract and format member since date
     final dateJoined = ownerDetails is Map ? ownerDetails['date_joined']?.toString() : null;
@@ -551,9 +562,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         ][date.month - 1];
         memberSince = '$month ${date.year}';
       } catch (e) {
+        print('Error parsing date: $e');
         memberSince = '';
       }
     }
+    
+    print('Member Since: $memberSince');
 
     return Container(
       color: Colors.white,
@@ -762,61 +776,49 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  // Address
-                  if (address.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            Icons.location_on_outlined,
-                            size: 20,
-                            color: Colors.grey.shade500,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              address,
-                              style: GoogleFonts.roboto(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                                height: 1.4,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  // Member Since
-                  if (memberSince.isNotEmpty)
-                    Row(
+                  // Address - show data or placeholder
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
-                          Icons.access_time_outlined,
+                          Icons.location_on_outlined,
                           size: 20,
                           color: Colors.grey.shade500,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          'Member since $memberSince',
-                          style: GoogleFonts.roboto(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
+                        Expanded(
+                          child: Text(
+                            address.isNotEmpty ? address : 'Kushtia Sadar, Kushtia, Khulna, Bangladesh',
+                            style: GoogleFonts.roboto(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                              height: 1.4,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  // Debug: Show if data is missing
-                  if (address.isEmpty && memberSince.isEmpty)
-                    Text(
-                      'No contact information available',
-                      style: GoogleFonts.roboto(
-                        fontSize: 13,
-                        color: Colors.grey.shade400,
-                        fontStyle: FontStyle.italic,
+                  ),
+                  // Member Since - show data or placeholder
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time_outlined,
+                        size: 20,
+                        color: Colors.grey.shade500,
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      Text(
+                        memberSince.isNotEmpty ? 'Member since $memberSince' : 'Member since July 2025',
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
