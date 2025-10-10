@@ -868,101 +868,493 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                   ),
                 ),
                 // Delivery Information Tab
-                SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (isFreeDelivery)
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade50,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.green.shade200),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.local_shipping, color: Colors.green.shade700, size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'FREE DELIVERY',
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.green.shade700,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (!isFreeDelivery) ...[
-                        _buildDeliveryInfoItem(
-                          'Delivery Fee (Inside Dhaka)',
-                          feeInsideDhaka.isNotEmpty ? '৳$feeInsideDhaka' : 'Not specified',
-                          Icons.location_city,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildDeliveryInfoItem(
-                          'Delivery Fee (Outside Dhaka)',
-                          feeOutsideDhaka.isNotEmpty ? '৳$feeOutsideDhaka' : 'Not specified',
-                          Icons.location_on,
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      if (deliveryInfo.isNotEmpty) ...[
-                        const Divider(height: 24),
-                        Text(
-                          'Delivery Information',
-                          style: GoogleFonts.roboto(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade900,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          deliveryInfo,
-                          style: GoogleFonts.roboto(
-                            fontSize: 14,
-                            color: Colors.grey.shade700,
-                            height: 1.6,
-                          ),
-                        ),
-                      ],
-                      if (!isFreeDelivery && feeInsideDhaka.isEmpty && feeOutsideDhaka.isEmpty && deliveryInfo.isEmpty)
-                        Center(
-                          child: Text(
-                            'No delivery information available',
-                            style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
+                _buildDeliveryTab(product),
                 // Reviews Tab
-                SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Center(
+                _buildReviewsTab(product),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeliveryTab(Map<String, dynamic> product) {
+    final deliveryInfo = product['delivery_information']?.toString() ?? '';
+    final feeInsideDhaka = product['delivery_fee_inside_dhaka']?.toString() ?? '100';
+    final feeOutsideDhaka = product['delivery_fee_outside_dhaka']?.toString() ?? '150';
+    final isFreeDelivery = product['is_free_delivery'] == true;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Shipping Information Header
+          Row(
+            children: [
+              Icon(Icons.local_shipping, color: const Color(0xFF10B981), size: 16),
+              const SizedBox(width: 6),
+              Text(
+                'Shipping Information',
+                style: GoogleFonts.roboto(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade900,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          
+          // Delivery Options
+          _buildDeliveryOption(
+            'Inside Dhaka',
+            '৳$feeInsideDhaka',
+            Icons.location_city,
+            Colors.blue,
+          ),
+          const SizedBox(height: 8),
+          _buildDeliveryOption(
+            'Outside Dhaka',
+            '৳$feeOutsideDhaka',
+            Icons.location_on,
+            Colors.orange,
+          ),
+          const SizedBox(height: 8),
+          _buildDeliveryOption(
+            'Delivery Time',
+            '3-5 business days',
+            Icons.access_time,
+            Colors.purple,
+          ),
+          
+          // Free Delivery Badge
+          if (isFreeDelivery) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.red.shade50, Colors.red.shade100],
+                ),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.red.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.card_giftcard, color: Colors.red.shade700, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
                     child: Text(
-                      'No reviews yet',
+                      'Free Delivery on this product!',
                       style: GoogleFonts.roboto(
-                        fontSize: 14,
-                        color: Colors.grey.shade500,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.red.shade700,
                       ),
                     ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          
+          // Additional Delivery Information
+          if (deliveryInfo.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Divider(color: Colors.grey.shade300, height: 1),
+            const SizedBox(height: 12),
+            Text(
+              'Additional Information',
+              style: GoogleFonts.roboto(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade900,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Text(
+                deliveryInfo,
+                style: GoogleFonts.roboto(
+                  fontSize: 12,
+                  color: Colors.grey.shade700,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeliveryOption(String title, String value, IconData icon, MaterialColor color) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.shade50,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Icon(icon, color: color.shade700, size: 16),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.roboto(
+                    fontSize: 11,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: GoogleFonts.roboto(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade900,
                   ),
                 ),
               ],
             ),
           ),
+          Icon(Icons.check_circle, color: color.shade600, size: 16),
         ],
+      ),
+    );
+  }
+
+  Widget _buildReviewsTab(Map<String, dynamic> product) {
+    // TODO: Fetch reviews from API
+    final hasReviews = false; // Replace with actual data
+    
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Reviews Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Customer Reviews',
+                style: GoogleFonts.roboto(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade900,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  _showWriteReviewDialog(product);
+                },
+                icon: const Icon(Icons.rate_review, size: 14),
+                label: Text(
+                  'Write Review',
+                  style: GoogleFonts.roboto(fontSize: 12),
+                ),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF10B981),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          
+          // No Reviews State
+          if (!hasReviews)
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.star_border_rounded,
+                      size: 48,
+                      color: Colors.grey.shade300,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No reviews yet',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Be the first to review this product',
+                      style: GoogleFonts.roboto(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        _showWriteReviewDialog(product);
+                      },
+                      icon: const Icon(Icons.rate_review, size: 14),
+                      label: Text(
+                        'Write a Review',
+                        style: GoogleFonts.roboto(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          
+          // TODO: Add reviews list when available
+        ],
+      ),
+    );
+  }
+
+  void _showWriteReviewDialog(Map<String, dynamic> product) {
+    // Check if user is the owner of the product
+    final ownerDetails = product['owner_details'];
+    final ownerId = ownerDetails is Map ? ownerDetails['id']?.toString() : null;
+    // TODO: Get current user ID from auth service
+    final currentUserId = 'current_user_id'; // Replace with actual user ID
+    
+    // Check if this is the user's own product
+    if (ownerId != null && ownerId == currentUserId) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          title: Row(
+            children: [
+              Icon(Icons.info_outline, color: Colors.orange.shade700, size: 22),
+              const SizedBox(width: 8),
+              Text(
+                'Cannot Review',
+                style: GoogleFonts.roboto(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'You cannot write a review for your own product.',
+            style: GoogleFonts.roboto(
+              fontSize: 13,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'OK',
+                style: GoogleFonts.roboto(
+                  color: const Color(0xFF10B981),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    int rating = 0;
+    bool hasComment = false;
+    final titleController = TextEditingController();
+    final commentController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          contentPadding: const EdgeInsets.all(16),
+          title: Row(
+            children: [
+              const Icon(Icons.rate_review, color: Color(0xFF10B981), size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Write a Review',
+                  style: GoogleFonts.roboto(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your Rating',
+                    style: GoogleFonts.roboto(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      return IconButton(
+                        onPressed: () {
+                          setState(() {
+                            rating = index + 1;
+                          });
+                        },
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        iconSize: 28,
+                        icon: Icon(
+                          index < rating ? Icons.star : Icons.star_border,
+                          color: Colors.amber,
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: titleController,
+                    maxLength: 200,
+                    decoration: InputDecoration(
+                      labelText: 'Review Title (Optional)',
+                      labelStyle: GoogleFonts.roboto(fontSize: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      counterStyle: GoogleFonts.roboto(fontSize: 10),
+                      isDense: true,
+                    ),
+                    style: GoogleFonts.roboto(fontSize: 13),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: commentController,
+                    maxLength: 1000,
+                    onChanged: (value) {
+                      setState(() {
+                        hasComment = value.trim().isNotEmpty;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Your Review',
+                      labelStyle: GoogleFonts.roboto(fontSize: 12),
+                      hintText: 'Share your experience...',
+                      hintStyle: GoogleFonts.roboto(fontSize: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      contentPadding: const EdgeInsets.all(10),
+                      counterStyle: GoogleFonts.roboto(fontSize: 10),
+                      isDense: true,
+                    ),
+                    maxLines: 3,
+                    style: GoogleFonts.roboto(fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.roboto(
+                  color: Colors.grey.shade600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: rating > 0 && hasComment
+                  ? () {
+                      // TODO: Submit review to API
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Thank you for your review!',
+                            style: GoogleFonts.roboto(fontSize: 13),
+                          ),
+                          backgroundColor: const Color(0xFF10B981),
+                        ),
+                      );
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.grey.shade300,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              ),
+              child: Text(
+                'Submit',
+                style: GoogleFonts.roboto(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
