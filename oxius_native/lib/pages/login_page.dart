@@ -208,7 +208,7 @@ class _LoginPageState extends State<LoginPage> {
             // Error message
             if (_errorMessage.isNotEmpty) ...[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFEF2F2), // Light red background
                   borderRadius: BorderRadius.circular(6),

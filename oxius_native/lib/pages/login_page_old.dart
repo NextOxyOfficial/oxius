@@ -118,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                 
                 // Login Form
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: Colors.white,
