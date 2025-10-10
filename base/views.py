@@ -906,7 +906,19 @@ def gigDetails(request, gid):
     try:
         gig = MicroGigPost.objects.get(slug=gid)
         serializer = MicroGigPostDetailsSerializer(gig)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        data = serializer.data
+        
+        # Check if user has already submitted this gig
+        if request.user.is_authenticated:
+            has_submitted = MicroGigPostTask.objects.filter(
+                user=request.user, 
+                gig_id=gig.id
+            ).exists()
+            data['user_has_submitted'] = has_submitted
+        else:
+            data['user_has_submitted'] = False
+            
+        return Response(data, status=status.HTTP_200_OK)
     except MicroGigPost.DoesNotExist:
         return Response(
             {"error": f"Gig with slug '{gid}' not found"}, 

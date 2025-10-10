@@ -288,7 +288,8 @@ class GigsService {
   Future<Map<String, dynamic>> fetchGigDetails(String gigSlug) async {
     try {
       final url = '$baseUrl/micro-gigs/$gigSlug/';
-      final response = await http.get(Uri.parse(url));
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(Uri.parse(url), headers: headers);
 
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);

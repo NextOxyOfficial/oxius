@@ -30,6 +30,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
   bool _isLoading = true;
   bool _isSubmitting = false;
   String? _error;
+  bool _hasSubmitted = false;
   
   // Form fields
   final TextEditingController _submitDetailsController = TextEditingController();
@@ -63,6 +64,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
       if (mounted) {
         setState(() {
           _gig = gigData;
+          _hasSubmitted = gigData['user_has_submitted'] ?? false;
           _isLoading = false;
         });
       }
@@ -353,7 +355,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 90), // Space for AppBar
+          const SizedBox(height: 64), 
           _buildHeader(),
           const SizedBox(height: 12),
           _buildInstructions(),
@@ -440,46 +442,82 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.monetization_on,
+                        color: Colors.amber.shade600,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Earn: ',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      Text(
+                        '৳$price',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.green.shade700,
+                    ),
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.monetization_on,
-                    color: Colors.amber.shade600,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Earn: ',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
+            ),
+                const SizedBox(width: 8),
+                if (_hasSubmitted)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.orange.shade300,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          color: Colors.orange.shade700,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Submitted',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.orange.shade700,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    '৳$price',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.green.shade700,
-                    ),
-                  ),
-                ],
-              ),
+              ],
             ),
           ],
         ),
@@ -1248,21 +1286,22 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(14),
                     gradient: LinearGradient(
-                      colors: [
-                        Colors.green.shade600,
-                        Colors.green.shade700,
-                      ],
+                      colors: _hasSubmitted
+                          ? [Colors.grey.shade400, Colors.grey.shade500]
+                          : [Colors.green.shade600, Colors.green.shade700],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.green.withOpacity(0.4),
+                        color: _hasSubmitted 
+                            ? Colors.grey.withOpacity(0.4)
+                            : Colors.green.withOpacity(0.4),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: ElevatedButton(
-                    onPressed: _isSubmitting ? null : _submitGig,
+                    onPressed: (_isSubmitting || _hasSubmitted) ? null : _submitGig,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       foregroundColor: Colors.white,
@@ -1271,6 +1310,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
+                      disabledBackgroundColor: Colors.transparent,
+                      disabledForegroundColor: Colors.white,
                     ),
                     child: _isSubmitting
                         ? const SizedBox(
@@ -1290,11 +1331,14 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                   color: Colors.white.withOpacity(0.3),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
-                                child: const Icon(Icons.check_circle, size: 18),
+                                child: Icon(
+                                  _hasSubmitted ? Icons.check_circle : Icons.check_circle,
+                                  size: 18,
+                                ),
                               ),
                               const SizedBox(width: 10),
                               Text(
-                                'Submit Work',
+                                _hasSubmitted ? 'Already Submitted' : 'Submit Work',
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
