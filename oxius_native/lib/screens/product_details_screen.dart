@@ -558,238 +558,270 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Main Store Card with Icon, Name, Badges, and Visit Button
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Store Logo/Icon
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.storefront,
-                    size: 28,
-                    color: Colors.grey.shade700,
-                  ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Main Store Card with Icon, Name, Badges, and Visit Button
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade200),
                 ),
               ),
-              const SizedBox(width: 12),
-              // Store Info and Badges
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Store Name
-                    Text(
-                      storeName,
-                      style: GoogleFonts.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade900,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Store Logo/Icon
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(height: 6),
-                    // Badges Row - Pro/Free and Verified/Unverified
-                    Row(
+                    child: Center(
+                      child: Icon(
+                        Icons.storefront,
+                        size: 32,
+                        color: Colors.orange.shade400,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Store Info and Badges
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Pro/Free Badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isPro ? const Color(0xFFFFA000) : Colors.grey.shade600,
-                            borderRadius: BorderRadius.circular(4),
+                        // Store Name
+                        Text(
+                          storeName,
+                          style: GoogleFonts.roboto(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade900,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (isPro)
-                                const Icon(Icons.star, size: 12, color: Colors.white),
-                              if (isPro) const SizedBox(width: 4),
-                              Text(
-                                isPro ? 'Pro' : 'Free',
-                                style: GoogleFonts.roboto(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(width: 6),
-                        // Verified/Unverified Badge
-                        GestureDetector(
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                title: Row(
-                                  children: [
-                                    Icon(
-                                      isVerified ? Icons.verified : Icons.info_outline,
-                                      color: isVerified ? const Color(0xFF3B82F6) : const Color(0xFFFB923C),
-                                      size: 24,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      isVerified ? 'Verified Store' : 'Unverified Store',
-                                      style: GoogleFonts.roboto(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                content: Text(
-                                  isVerified
-                                      ? 'This store has been verified by our team. You can trust this seller for safe and reliable transactions.'
-                                      : 'This store has not completed the verification process yet. Please exercise caution when making purchases.',
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 14,
-                                    height: 1.5,
-                                    color: Colors.grey.shade700,
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: const Color(0xFF10B981),
-                                    ),
-                                    child: Text(
-                                      'Got it',
-                                      style: GoogleFonts.roboto(fontWeight: FontWeight.w600),
+                        const SizedBox(height: 6),
+                        // Badges Row - Pro/Free and Verified/Unverified
+                        Row(
+                          children: [
+                            // Pro/Free Badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isPro ? const Color(0xFFFFA000) : Colors.grey.shade600,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isPro)
+                                    const Icon(Icons.star, size: 12, color: Colors.white),
+                                  if (isPro) const SizedBox(width: 4),
+                                  Text(
+                                    isPro ? 'Pro' : 'Free',
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ],
                               ),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: isVerified ? const Color(0xFF3B82F6) : const Color(0xFFFB923C),
-                              borderRadius: BorderRadius.circular(4),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  isVerified ? Icons.verified : Icons.info_outline,
-                                  size: 12,
-                                  color: Colors.white,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  isVerified ? 'Verified' : 'Unverified',
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                            const SizedBox(width: 6),
+                            // Verified/Unverified Badge
+                            GestureDetector(
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        Icon(
+                                          isVerified ? Icons.verified : Icons.info_outline,
+                                          color: isVerified ? const Color(0xFF3B82F6) : const Color(0xFFFB923C),
+                                          size: 24,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            isVerified ? 'Verified Store' : 'Unverified Store',
+                                            style: GoogleFonts.roboto(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 18,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    content: Text(
+                                      isVerified
+                                          ? 'This store has been verified by our team. You can trust this seller for safe and reliable transactions.'
+                                          : 'This store has not completed the verification process yet. Please exercise caution when making purchases.',
+                                      style: GoogleFonts.roboto(
+                                        fontSize: 14,
+                                        height: 1.5,
+                                        color: Colors.grey.shade700,
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: const Color(0xFF10B981),
+                                        ),
+                                        child: Text(
+                                          'Got it',
+                                          style: GoogleFonts.roboto(fontWeight: FontWeight.w600),
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isVerified ? const Color(0xFF3B82F6) : const Color(0xFFFB923C),
+                                  borderRadius: BorderRadius.circular(4),
                                 ),
-                              ],
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      isVerified ? Icons.verified : Icons.info_outline,
+                                      size: 12,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      isVerified ? 'Verified' : 'Unverified',
+                                      style: GoogleFonts.roboto(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Visit Store Button
-              OutlinedButton.icon(
-                onPressed: () {
-                  // Navigate to store
-                },
-                icon: Icon(
-                  Icons.storefront_outlined,
-                  size: 16,
-                  color: Colors.grey.shade700,
-                ),
-                label: Text(
-                  'Visit Store',
-                  style: GoogleFonts.roboto(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.grey.shade300),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-              ),
-            ],
-          ),
-          
-          // Contact Information Section
-          if (address.isNotEmpty || memberSince.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            // Address
-            if (address.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.location_on_outlined,
-                      size: 18,
-                      color: Colors.grey.shade500,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        address,
-                        style: GoogleFonts.roboto(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            // Member Since
-            if (memberSince.isNotEmpty)
-              Row(
-                children: [
-                  Icon(
-                    Icons.access_time_outlined,
-                    size: 18,
-                    color: Colors.grey.shade500,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    'Member since $memberSince',
-                    style: GoogleFonts.roboto(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
+                  // Visit Store Button
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // Navigate to store
+                    },
+                    icon: Icon(
+                      Icons.storefront_outlined,
+                      size: 16,
+                      color: Colors.grey.shade700,
+                    ),
+                    label: Text(
+                      'Visit Store',
+                      style: GoogleFonts.roboto(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.grey.shade300),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      backgroundColor: Colors.white,
                     ),
                   ),
                 ],
               ),
+            ),
+            
+            // Contact Information Section - Always visible
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  // Address
+                  if (address.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 20,
+                            color: Colors.grey.shade500,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              address,
+                              style: GoogleFonts.roboto(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  // Member Since
+                  if (memberSince.isNotEmpty)
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time_outlined,
+                          size: 20,
+                          color: Colors.grey.shade500,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Member since $memberSince',
+                          style: GoogleFonts.roboto(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  // Debug: Show if data is missing
+                  if (address.isEmpty && memberSince.isEmpty)
+                    Text(
+                      'No contact information available',
+                      style: GoogleFonts.roboto(
+                        fontSize: 13,
+                        color: Colors.grey.shade400,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ],
-        ],
+        ),
       ),
     );
   }
