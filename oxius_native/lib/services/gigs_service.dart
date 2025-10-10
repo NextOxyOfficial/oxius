@@ -5,21 +5,37 @@ import 'api_service.dart';
 class GigsService {
   static const String baseUrl = 'http://localhost:8000/api';
 
-  Future<List<Map<String, dynamic>>> fetchMicroGigs({bool showSubmitted = false}) async {
+  Future<Map<String, dynamic>> fetchMicroGigs({
+    bool showSubmitted = false,
+    int page = 1,
+    int pageSize = 10,
+  }) async {
     try {
-      final url = '$baseUrl/micro-gigs/?show_submitted=$showSubmitted';
+      final url = '$baseUrl/micro-gigs/?show_submitted=$showSubmitted&page=$page&page_size=$pageSize';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
         
-        if (data is List) {
-          return List<Map<String, dynamic>>.from(data);
-        } else if (data is Map && data['results'] != null) {
-          return List<Map<String, dynamic>>.from(data['results']);
+        if (data is Map && data['results'] != null) {
+          // Backend returns paginated response
+          return {
+            'results': List<Map<String, dynamic>>.from(data['results']),
+            'count': data['count'] ?? 0,
+            'next': data['next'],
+            'previous': data['previous'],
+          };
+        } else if (data is List) {
+          // Fallback for non-paginated response
+          return {
+            'results': List<Map<String, dynamic>>.from(data),
+            'count': (data as List).length,
+            'next': null,
+            'previous': null,
+          };
         }
         
-        return [];
+        return {'results': [], 'count': 0, 'next': null, 'previous': null};
       } else {
         throw Exception('Failed to load micro gigs: ${response.statusCode}');
       }
@@ -28,24 +44,38 @@ class GigsService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchMicroGigsByCategory(
+  Future<Map<String, dynamic>> fetchMicroGigsByCategory(
     String categoryId, {
     bool showSubmitted = false,
+    int page = 1,
+    int pageSize = 10,
   }) async {
     try {
-      final url = '$baseUrl/micro-gigs/?category=$categoryId&show_submitted=$showSubmitted';
+      final url = '$baseUrl/micro-gigs/?category=$categoryId&show_submitted=$showSubmitted&page=$page&page_size=$pageSize';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
         
-        if (data is List) {
-          return List<Map<String, dynamic>>.from(data);
-        } else if (data is Map && data['results'] != null) {
-          return List<Map<String, dynamic>>.from(data['results']);
+        if (data is Map && data['results'] != null) {
+          // Backend returns paginated response
+          return {
+            'results': List<Map<String, dynamic>>.from(data['results']),
+            'count': data['count'] ?? 0,
+            'next': data['next'],
+            'previous': data['previous'],
+          };
+        } else if (data is List) {
+          // Fallback for non-paginated response
+          return {
+            'results': List<Map<String, dynamic>>.from(data),
+            'count': (data as List).length,
+            'next': null,
+            'previous': null,
+          };
         }
         
-        return [];
+        return {'results': [], 'count': 0, 'next': null, 'previous': null};
       } else {
         throw Exception('Failed to load gigs by category: ${response.statusCode}');
       }
@@ -230,7 +260,7 @@ class GigsService {
     }
   }
 
-  /// Get gig details by ID
+  /// Get gig details by ID (for user's own gigs)
   Future<Map<String, dynamic>?> getGigDetails(String gigId) async {
     try {
       final url = '$baseUrl/get-user-micro-gig/$gigId/';
@@ -248,6 +278,23 @@ class GigsService {
       }
     } catch (e) {
       return null;
+    }
+  }
+
+  /// Fetch public gig details by slug (for order page)
+  Future<Map<String, dynamic>> fetchGigDetails(String gigSlug) async {
+    try {
+      final url = '$baseUrl/micro-gigs/$gigSlug/';
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final dynamic data = json.decode(response.body);
+        return Map<String, dynamic>.from(data);
+      } else {
+        throw Exception('Failed to load gig details: ${response.statusCode}');
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 

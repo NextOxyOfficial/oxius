@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/gigs_service.dart';
 import '../services/translation_service.dart';
+import '../screens/gig_details_screen.dart';
 import 'home/account_balance_section.dart';
 import 'home/mobile_recharge_section.dart';
 
@@ -27,6 +28,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   // Pagination
   int _currentPage = 1;
   final int _itemsPerPage = 10;
+  int _totalCount = 0;
   
   @override
   void initState() {
@@ -50,17 +52,25 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     setState(() => _isLoading = true);
     
     try {
-      // Load gigs, categories, and operators in parallel
+      // Load gigs with pagination, categories, and operators in parallel
       final results = await Future.wait([
-        _gigsService.fetchMicroGigs(showSubmitted: false),
+        _gigsService.fetchMicroGigs(
+          showSubmitted: false,
+          page: _currentPage,
+          pageSize: _itemsPerPage,
+        ),
         _gigsService.fetchMicroGigCategories(),
         _gigsService.fetchMobileRechargeOperators(),
       ]);
       
       if (mounted) {
+        final gigsData = results[0] as Map<String, dynamic>;
+        final gigsList = gigsData['results'] as List<Map<String, dynamic>>;
+        
         setState(() {
-          _microGigs = results[0] as List<Map<String, dynamic>>;
-          _categories = _processCategories(results[0] as List<Map<String, dynamic>>);
+          _microGigs = gigsList;
+          _totalCount = gigsData['count'] as int;
+          _categories = _processCategories(gigsList);
           _operators = results[2] as List<Map<String, dynamic>>;
           _isLoading = false;
         });
@@ -119,7 +129,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     );
   }
 
-  int get _totalPages => (_microGigs.length / _itemsPerPage).ceil();
+  int get _totalPages => (_totalCount / _itemsPerPage).ceil();
 
   Future<void> _filterByCategory(String? categoryId) async {
     setState(() {
@@ -129,16 +139,23 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     });
     
     try {
-      final gigs = categoryId == null
-          ? await _gigsService.fetchMicroGigs(showSubmitted: _filterStatus == 'completed')
+      final gigsData = categoryId == null
+          ? await _gigsService.fetchMicroGigs(
+              showSubmitted: _filterStatus == 'completed',
+              page: _currentPage,
+              pageSize: _itemsPerPage,
+            )
           : await _gigsService.fetchMicroGigsByCategory(
               categoryId, 
               showSubmitted: _filterStatus == 'completed',
+              page: _currentPage,
+              pageSize: _itemsPerPage,
             );
       
       if (mounted) {
         setState(() {
-          _microGigs = gigs;
+          _microGigs = gigsData['results'] as List<Map<String, dynamic>>;
+          _totalCount = gigsData['count'] as int;
           _isLoading = false;
         });
       }
@@ -159,16 +176,23 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     
     try {
       final showSubmitted = status == 'completed';
-      final gigs = _selectedCategory == null
-          ? await _gigsService.fetchMicroGigs(showSubmitted: showSubmitted)
+      final gigsData = _selectedCategory == null
+          ? await _gigsService.fetchMicroGigs(
+              showSubmitted: showSubmitted,
+              page: _currentPage,
+              pageSize: _itemsPerPage,
+            )
           : await _gigsService.fetchMicroGigsByCategory(
               _selectedCategory!,
               showSubmitted: showSubmitted,
+              page: _currentPage,
+              pageSize: _itemsPerPage,
             );
       
       if (mounted) {
         setState(() {
-          _microGigs = gigs;
+          _microGigs = gigsData['results'] as List<Map<String, dynamic>>;
+          _totalCount = gigsData['count'] as int;
           _isLoading = false;
         });
       }
@@ -180,9 +204,41 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     }
   }
 
-  void _goToPage(int page) {
+  Future<void> _goToPage(int page) async {
     if (page < 1 || page > _totalPages || page == _currentPage) return;
-    setState(() => _currentPage = page);
+    
+    setState(() {
+      _currentPage = page;
+      _isLoading = true;
+    });
+    
+    try {
+      final gigsData = _selectedCategory == null
+          ? await _gigsService.fetchMicroGigs(
+              showSubmitted: _filterStatus == 'completed',
+              page: _currentPage,
+              pageSize: _itemsPerPage,
+            )
+          : await _gigsService.fetchMicroGigsByCategory(
+              _selectedCategory!,
+              showSubmitted: _filterStatus == 'completed',
+              page: _currentPage,
+              pageSize: _itemsPerPage,
+            );
+      
+      if (mounted) {
+        setState(() {
+          _microGigs = gigsData['results'] as List<Map<String, dynamic>>;
+          _totalCount = gigsData['count'] as int;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading page: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   List<int> _getVisiblePages() {
@@ -675,8 +731,14 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                     const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: () {
-                        // Navigate to order page
-                        print('Order gig: ${gig['slug']}');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => GigDetailsScreen(
+                              gigSlug: gig['slug'],
+                            ),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue.shade600,
@@ -707,7 +769,14 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    print('Order gig: ${gig['slug']}');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => GigDetailsScreen(
+                          gigSlug: gig['slug'],
+                        ),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade600,
@@ -726,66 +795,161 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
 
   Widget _buildPagination() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          // Page info text at top
+          Text(
+            'Page $_currentPage of $_totalPages',
+            style: GoogleFonts.roboto(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          
+          // Pagination buttons wrapped to prevent overflow
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
-              Text(
-                'Page $_currentPage of $_totalPages',
-                style: GoogleFonts.roboto(fontSize: 14),
-              ),
-              const SizedBox(width: 16),
-              
               // Previous Button
-              OutlinedButton(
+              _buildPaginationButton(
+                label: 'Previous',
+                icon: Icons.chevron_left,
+                isEnabled: _currentPage > 1,
                 onPressed: _currentPage > 1 ? () => _goToPage(_currentPage - 1) : null,
-                child: const Text('Previous'),
+                isIconLeft: true,
               ),
-              const SizedBox(width: 8),
               
               // Page Numbers
               ..._getVisiblePages().map((page) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: ElevatedButton(
-                    onPressed: () => _goToPage(page),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: page == _currentPage 
-                          ? Colors.blue.shade500 
-                          : Colors.white,
-                      foregroundColor: page == _currentPage 
-                          ? Colors.white 
-                          : Colors.grey.shade800,
-                      minimumSize: const Size(40, 36),
-                      padding: EdgeInsets.zero,
-                    ),
-                    child: Text('$page'),
-                  ),
-                );
+                return _buildPageNumberButton(page);
               }).toList(),
               
-              const SizedBox(width: 8),
-              
               // Next Button
-              OutlinedButton(
+              _buildPaginationButton(
+                label: 'Next',
+                icon: Icons.chevron_right,
+                isEnabled: _currentPage < _totalPages,
                 onPressed: _currentPage < _totalPages ? () => _goToPage(_currentPage + 1) : null,
-                child: const Text('Next'),
+                isIconLeft: false,
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          
+          const SizedBox(height: 12),
           
           // Results Info
           Text(
-            'Showing ${(_currentPage - 1) * _itemsPerPage + 1}-${(_currentPage * _itemsPerPage).clamp(0, _microGigs.length)} of ${_microGigs.length} gigs',
+            'Showing ${(_currentPage - 1) * _itemsPerPage + 1}-${(_currentPage * _itemsPerPage).clamp(0, _totalCount)} of $_totalCount gigs',
             style: GoogleFonts.roboto(
-              fontSize: 14,
+              fontSize: 12,
               color: Colors.grey.shade600,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPaginationButton({
+    required String label,
+    required IconData icon,
+    required bool isEnabled,
+    required VoidCallback? onPressed,
+    required bool isIconLeft,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isEnabled ? onPressed : null,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isEnabled ? const Color(0xFF10B981).withOpacity(0.1) : Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isEnabled ? const Color(0xFF10B981) : Colors.grey.shade300,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isIconLeft) Icon(
+                icon,
+                size: 16,
+                color: isEnabled ? const Color(0xFF10B981) : Colors.grey.shade400,
+              ),
+              if (isIconLeft) const SizedBox(width: 4),
+              Text(
+                label,
+                style: GoogleFonts.roboto(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: isEnabled ? const Color(0xFF10B981) : Colors.grey.shade400,
+                ),
+              ),
+              if (!isIconLeft) const SizedBox(width: 4),
+              if (!isIconLeft) Icon(
+                icon,
+                size: 16,
+                color: isEnabled ? const Color(0xFF10B981) : Colors.grey.shade400,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPageNumberButton(int page) {
+    final isActive = page == _currentPage;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _goToPage(page),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFF10B981) : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isActive ? const Color(0xFF10B981) : Colors.grey.shade300,
+              width: 1,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              '$page',
+              style: GoogleFonts.roboto(
+                fontSize: 13,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                color: isActive ? Colors.white : Colors.grey.shade700,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
