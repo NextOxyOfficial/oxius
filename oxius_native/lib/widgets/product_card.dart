@@ -55,6 +55,7 @@ class _ProductCardState extends State<ProductCard> {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Image Section - Square aspect ratio like eshop_section
               MouseRegion(
@@ -202,14 +203,16 @@ class _ProductCardState extends State<ProductCard> {
               ),
 
               // Details - Reduced padding for more compact layout
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                     // Price Section - Reduced bottom margin
                     Container(
-                      margin: const EdgeInsets.only(bottom: 4),
+                      margin: const EdgeInsets.only(bottom: 3),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -263,13 +266,13 @@ class _ProductCardState extends State<ProductCard> {
 
                     // Product Title - Moved above store name (Vue: mb-2) - EXACT MATCH
                     Container(
-                      margin: const EdgeInsets.only(bottom: 8),
+                      margin: const EdgeInsets.only(bottom: 4),
                       child: Text(
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.roboto(
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: Colors.grey.shade800,
                         ),
@@ -278,8 +281,8 @@ class _ProductCardState extends State<ProductCard> {
 
                     // Store Link - Moved below product name (Vue: mb-3) - EXACT MATCH
                     Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      margin: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
                         borderRadius: BorderRadius.circular(12),
@@ -287,8 +290,8 @@ class _ProductCardState extends State<ProductCard> {
                       child: Row(
                         children: [
                           Container(
-                            width: 20,
-                            height: 20,
+                            width: 18,
+                            height: 18,
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
@@ -305,17 +308,17 @@ class _ProductCardState extends State<ProductCard> {
                               ],
                             ),
                             child: const Center(
-                              child: Icon(Icons.storefront_outlined, size: 12, color: Colors.white),
+                              child: Icon(Icons.storefront_outlined, size: 11, color: Colors.white),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               _getStoreName(p),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.roboto(
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.grey.shade600,
                               ),
@@ -333,8 +336,8 @@ class _ProductCardState extends State<ProductCard> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF374151), // Vue: bg-gray-700
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          minimumSize: const Size.fromHeight(40),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          minimumSize: const Size.fromHeight(36),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                           elevation: 0,
@@ -364,12 +367,12 @@ class _ProductCardState extends State<ProductCard> {
                             : Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.shopping_cart_outlined, size: 16),
-                                  const SizedBox(width: 8),
+                                  const Icon(Icons.shopping_cart_outlined, size: 14),
+                                  const SizedBox(width: 6),
                                   Text(
                                     'Buy Now',
                                     style: GoogleFonts.roboto(
-                                      fontSize: 13,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -378,6 +381,7 @@ class _ProductCardState extends State<ProductCard> {
                       ),
                     ),
                   ],
+                  ),
                 ),
               ),
             ],

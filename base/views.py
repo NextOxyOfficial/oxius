@@ -1943,6 +1943,7 @@ class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.all().order_by("-created_at")
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description', 'short_description', 'keywords', 'slug']
     ordering_fields = ['created_at', 'updated_at', 'regular_price', 'views', 'order_count']

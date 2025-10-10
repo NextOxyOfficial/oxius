@@ -26,13 +26,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   List<Map<String, dynamic>> _similarProducts = [];
   List<Map<String, dynamic>> _storeProducts = [];
   
+  // Pagination for similar products
+  int _similarProductsPage = 1;
+  bool _hasMoreSimilarProducts = true;
+  bool _isLoadingMoreSimilarProducts = false;
+  
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _similarProductsScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
+    _similarProductsScrollController.addListener(_onSimilarProductsScroll);
     _loadProductDetails();
   }
 
@@ -40,7 +47,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   void dispose() {
     _tabController.dispose();
     _scrollController.dispose();
+    _similarProductsScrollController.removeListener(_onSimilarProductsScroll);
+    _similarProductsScrollController.dispose();
     super.dispose();
+  }
+
+  void _onSimilarProductsScroll() {
+    if (_isLoadingMoreSimilarProducts || !_hasMoreSimilarProducts) return;
+    
+    final maxScroll = _similarProductsScrollController.position.maxScrollExtent;
+    final currentScroll = _similarProductsScrollController.position.pixels;
+    
+    // Load more when 200 pixels from bottom
+    if (currentScroll >= maxScroll - 200) {
+      _loadMoreSimilarProducts();
+    }
   }
 
   Future<void> _loadProductDetails() async {
@@ -64,20 +85,48 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   }
 
   Future<void> _loadSimilarProducts() async {
-    setState(() => _isLoadingSimilarProducts = true);
+    setState(() {
+      _isLoadingSimilarProducts = true;
+      _similarProductsPage = 1;
+      _hasMoreSimilarProducts = true;
+    });
     
     try {
-      // Fetch products from the same category
-      final products = await EshopService.fetchEshopProducts(page: 1, pageSize: 10);
+      // Fetch products from the same category (12 per page for grid layout)
+      final products = await EshopService.fetchEshopProducts(page: 1, pageSize: 12);
       
       setState(() {
         // Filter out current product
-        _similarProducts = products.where((p) => p['id'] != widget.product['id']).take(6).toList();
+        _similarProducts = products.where((p) => p['id'] != widget.product['id']).toList();
+        _hasMoreSimilarProducts = products.length == 12;
       });
     } catch (e) {
       print('Error loading similar products: $e');
     } finally {
       setState(() => _isLoadingSimilarProducts = false);
+    }
+  }
+
+  Future<void> _loadMoreSimilarProducts() async {
+    if (_isLoadingMoreSimilarProducts || !_hasMoreSimilarProducts) return;
+    
+    setState(() => _isLoadingMoreSimilarProducts = true);
+    
+    try {
+      final nextPage = _similarProductsPage + 1;
+      final products = await EshopService.fetchEshopProducts(page: nextPage, pageSize: 12);
+      
+      setState(() {
+        // Filter out current product and add to list
+        final newProducts = products.where((p) => p['id'] != widget.product['id']).toList();
+        _similarProducts.addAll(newProducts);
+        _similarProductsPage = nextPage;
+        _hasMoreSimilarProducts = products.length == 12;
+      });
+    } catch (e) {
+      print('Error loading more similar products: $e');
+    } finally {
+      setState(() => _isLoadingMoreSimilarProducts = false);
     }
   }
 
@@ -338,23 +387,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
 
                 const SizedBox(height: 8),
 
-                // Similar Products
-                if (_similarProducts.isNotEmpty) _buildSimilarProducts(),
-
-                const SizedBox(height: 8),
-
                 // More from Store
                 if (_storeProducts.isNotEmpty) _buildStoreProducts(product),
 
-                const SizedBox(height: 80), // Space for bottom bar
+                const SizedBox(height: 8),
+
+                // Similar Products
+                if (_similarProducts.isNotEmpty) _buildSimilarProducts(),
+
+                const SizedBox(height: 16),
               ],
             ),
           ),
         ],
       ),
-
-      // Bottom Action Bar
-      bottomNavigationBar: _buildBottomBar(product),
     );
   }
 
@@ -514,6 +560,46 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                     color: Colors.grey.shade700,
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Proceeding to checkout with $_quantity item(s)',
+                        style: GoogleFonts.roboto(fontSize: 13),
+                      ),
+                      backgroundColor: const Color(0xFF10B981),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.flash_on, size: 18),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Buy Now',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -959,38 +1045,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               ),
             ),
           ],
-          
-          // Additional Delivery Information
-          if (deliveryInfo.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Divider(color: Colors.grey.shade300, height: 1),
-            const SizedBox(height: 12),
-            Text(
-              'Additional Information',
-              style: GoogleFonts.roboto(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade900,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Text(
-                deliveryInfo,
-                style: GoogleFonts.roboto(
-                  fontSize: 12,
-                  color: Colors.grey.shade700,
-                  height: 1.5,
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -1402,7 +1456,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   Widget _buildSimilarProducts() {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1414,38 +1468,95 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               color: Colors.grey.shade900,
             ),
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 280,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _similarProducts.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                return SizedBox(
-                  width: 160,
-                  child: ProductCard(
-                    product: _similarProducts[index],
-                    isLoading: false,
-                    onBuyNow: () {
-                      // Handle buy now
-                    },
-                    onTap: () {
-                      // Navigate to product details
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetailsScreen(
-                            product: _similarProducts[index],
-                          ),
-                        ),
-                      );
-                    },
+          const SizedBox(height: 12),
+          GridView.builder(
+            controller: _similarProductsScrollController,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.68,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: _similarProducts.length + (_isLoadingMoreSimilarProducts ? 2 : 0),
+            itemBuilder: (context, index) {
+              if (index >= _similarProducts.length) {
+                // Loading indicator
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                    ),
                   ),
                 );
-              },
-            ),
+              }
+              
+              return ProductCard(
+                product: _similarProducts[index],
+                isLoading: false,
+                onBuyNow: () {
+                  // Handle buy now
+                },
+                onTap: () {
+                  // Navigate to product details and reload
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductDetailsScreen(
+                        product: _similarProducts[index],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
           ),
+          if (_isLoadingMoreSimilarProducts)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Loading more...',
+                      style: GoogleFonts.roboto(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (!_hasMoreSimilarProducts && _similarProducts.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Center(
+                child: Text(
+                  'No more products',
+                  style: GoogleFonts.roboto(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -1458,18 +1569,63 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         : 'Store';
 
     return Container(
-      color: Colors.white,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFFEC4899).withOpacity(0.12),  // Pink
+            const Color(0xFFF43F5E).withOpacity(0.15),  // Rose/Red
+            const Color(0xFFEF4444).withOpacity(0.12),  // Red
+            const Color(0xFFEC4899).withOpacity(0.08),  // Pink again
+          ],
+        ),
+      ),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'More from $storeName',
-            style: GoogleFonts.roboto(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade900,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFFEC4899),  // Pink
+                      Color(0xFFF43F5E),  // Rose
+                      Color(0xFFEF4444),  // Red
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEC4899).withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.store,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'More from $storeName',
+                  style: GoogleFonts.roboto(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade900,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -1508,101 +1664,4 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     );
   }
 
-  Widget _buildBottomBar(Map<String, dynamic> product) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    // Add to cart
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('${product['name']} added to cart'),
-                        backgroundColor: const Color(0xFF10B981),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF10B981),
-                    side: const BorderSide(color: Color(0xFF10B981)),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.shopping_cart_outlined, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Add to Cart',
-                        style: GoogleFonts.roboto(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Buy now
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Proceeding to checkout for ${product['name']}'),
-                        backgroundColor: const Color(0xFF10B981),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.flash_on, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Buy Now',
-                        style: GoogleFonts.roboto(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
