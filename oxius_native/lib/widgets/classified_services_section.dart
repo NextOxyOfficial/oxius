@@ -24,6 +24,8 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   String? _selectedCategoryId;
   String _searchQuery = '';
   bool _initialized = false;
+  bool _isExpanded = false;
+  static const int _initialCategoryCount = 16;
 
   @override
   void initState() {
@@ -141,6 +143,15 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     
+    // Determine which categories to show
+    final categoriesToShow = _isExpanded 
+        ? _categories 
+        : _categories.take(_initialCategoryCount).toList();
+    
+    final hasMoreCategories = _categories.length > _initialCategoryCount;
+    
+    print('DEBUG BUILD: Total categories: ${_categories.length}, Showing: ${categoriesToShow.length}, Has more: $hasMoreCategories, Loading: $_loadingCategories, Expanded: $_isExpanded');
+    
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: isMobile ? 6 : 16,
@@ -155,13 +166,16 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
             onSearch: _onSearch,
             margin: EdgeInsets.only(left: isMobile ? 0 : 4, right: isMobile ? 0 : 4, bottom: 8),
           ),
-          // Categories horizontal chips
+          // Categories horizontal chips (limited or all based on expanded state)
           ClassifiedCategoriesGrid(
-            categories: _categories,
+            categories: categoriesToShow,
             selectedId: _selectedCategoryId,
             onTap: _onCategoryTap,
             isLoading: _loadingCategories,
           ),
+          // See More / See Less button
+          if (hasMoreCategories && !_loadingCategories)
+            _buildSeeMoreButton(isMobile),
           const SizedBox(height: 8),
           // Show ads scroll widget with real data from backend
           if (_posts.isNotEmpty)
@@ -228,6 +242,78 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSeeMoreButton(bool isMobile) {
+    final remainingCount = _categories.length - _initialCategoryCount;
+    
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 8 : 16,
+        vertical: 8,
+      ),
+      child: Center(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 16 : 20,
+                vertical: isMobile ? 8 : 10,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _isExpanded 
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    size: 18,
+                    color: const Color(0xFF0EA5E9),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _isExpanded
+                        ? _translationService.t('see_less', fallback: 'See Less')
+                        : '${_translationService.t('see_more', fallback: 'See More')} ($remainingCount)',
+                    style: GoogleFonts.poppins(
+                      fontSize: isMobile ? 12 : 13,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF0EA5E9),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    _isExpanded 
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    size: 18,
+                    color: const Color(0xFF0EA5E9),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -69,12 +69,10 @@ class ApiService {
 
   static Future<List<Map<String, dynamic>>> fetchClassifiedCategories() async {
     print('DEBUG: fetchClassifiedCategories called, baseUrl: $baseUrl');
-    // Primary DRF paginated endpoint
-    final primary = Uri.parse('$baseUrl/classified-categories/');
-    // Non-paginated ("all") fallback if needed
-    final fallback = Uri.parse('$baseUrl/classified-categories-all/');
+    // Use the non-paginated endpoint to get ALL categories
+    final uri = Uri.parse('$baseUrl/classified-categories-all/');
 
-    Future<List<Map<String, dynamic>>> _hit(Uri uri) async {
+    try {
       print('DEBUG: Making request to: $uri');
       final resp = await http.get(uri);
       print('DEBUG: Response status: ${resp.statusCode}');
@@ -96,17 +94,6 @@ class ApiService {
           .toList(growable: false);
       print('DEBUG: Returning ${result.length} processed categories');
       return result;
-    }
-
-    try {
-      print('DEBUG: Trying primary endpoint...');
-      var cats = await _hit(primary);
-      if (cats.isEmpty) {
-        print('DEBUG: Primary empty, trying fallback...');
-        cats = await _hit(fallback);
-      }
-      print('DEBUG: Final result: ${cats.length} categories');
-      return cats;
     } catch (e, st) {
       print('DEBUG: Exception in fetchClassifiedCategories: $e');
       log('fetchClassifiedCategories error: $e', stackTrace: st);
