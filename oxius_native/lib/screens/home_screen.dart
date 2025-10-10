@@ -8,6 +8,7 @@ import '../widgets/eshop_section.dart';
 import '../widgets/micro_gigs_section.dart';
 import '../widgets/home/account_balance_section.dart';
 import '../widgets/home/mobile_recharge_section.dart';
+import '../widgets/mobile_sticky_nav.dart';
 import '../services/scroll_direction_service.dart';
 import '../services/user_state_service.dart';
 import '../services/auth_service.dart';
@@ -121,8 +122,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   
                   // Footer - always show the main footer content
                   const SizedBox(height: 32),
-                  AppFooter(
-                    showMobileNav: true, // Mobile-only app
+                  const AppFooter(
+                    showMobileNav: false,
                   ),
                 ],
               ),
@@ -149,12 +150,19 @@ class _HomeScreenState extends State<HomeScreen> {
           // User Dropdown Menu
           if (_isDropdownOpen)
             _buildUserDropdownMenu(context),
+          
+          // Mobile Sticky Navigation
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: MobileStickyNav(
+              currentRoute: 'Home',
+              scrollController: _scrollController,
+            ),
+          ),
         ],
       ),
-      
-      // Fixed Mobile Navigation Bar (outside of scrollable content)
-      floatingActionButton: _buildStickyMobileNav(context),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
