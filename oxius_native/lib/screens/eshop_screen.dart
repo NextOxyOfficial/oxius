@@ -22,7 +22,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   bool _isLoading = true;
   bool _isSearching = false;
   bool _isLoadingMore = false;
-  bool _hasMoreResults = false;
+  bool _hasMoreResults = true;
   
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _searchResults = [];
@@ -44,8 +44,21 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       parent: _searchAnimationController,
       curve: Curves.easeInOut,
     );
+    _scrollController.addListener(_onScroll);
     _loadInitialData();
     _loadSearchHistory();
+  }
+
+  void _onScroll() {
+    if (_isLoadingMore || !_hasMoreResults || _isSearchActive) return;
+    
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    
+    // Load more when 200 pixels from bottom
+    if (currentScroll >= maxScroll - 200) {
+      _loadMoreProducts();
+    }
   }
 
   Future<void> _loadSearchHistory() async {
@@ -72,6 +85,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _searchAnimationController.dispose();
     super.dispose();
@@ -79,14 +93,18 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
   Future<void> _loadInitialData() async {
     try {
-      setState(() => _isLoading = true);
+      setState(() {
+        _isLoading = true;
+        _currentPage = 1;
+      });
       
-      // Load initial products to display
-      final products = await EshopService.fetchEshopProducts(page: 1, pageSize: 20);
+      // Load initial products to display (reduced from 20 to 12 for faster load)
+      final products = await EshopService.fetchEshopProducts(page: 1, pageSize: 12);
       
       setState(() {
         _products = products;
         _isLoading = false;
+        _hasMoreResults = products.length == 12;
       });
     } catch (e) {
       setState(() => _isLoading = false);
@@ -95,6 +113,27 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           SnackBar(content: Text('Error loading products: $e')),
         );
       }
+    }
+  }
+
+  Future<void> _loadMoreProducts() async {
+    if (_isLoadingMore || !_hasMoreResults) return;
+    
+    setState(() => _isLoadingMore = true);
+    
+    try {
+      final nextPage = _currentPage + 1;
+      final products = await EshopService.fetchEshopProducts(page: nextPage, pageSize: 12);
+      
+      setState(() {
+        _products.addAll(products);
+        _currentPage = nextPage;
+        _hasMoreResults = products.length == 12;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingMore = false);
+      print('Error loading more products: $e');
     }
   }
 
@@ -572,44 +611,29 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   }
 
   Widget _buildSearchResults() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const spacing = 12.0;
-        final availableWidth = constraints.maxWidth - 32; // Account for padding
-        final idealWidth = (availableWidth - spacing) / 2;
-        final cardWidth = idealWidth.clamp(160.0, 200.0);
-        const detailsMinHeight = 160.0; // Match homepage
-        final cardHeight = cardWidth + detailsMinHeight;
-        
-        return GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: cardWidth / cardHeight,
-            crossAxisSpacing: spacing,
-            mainAxisSpacing: spacing,
-          ),
-          itemCount: _searchResults.length,
-          itemBuilder: (context, index) {
-            return SizedBox(
-              width: cardWidth,
-              height: cardHeight,
-              child: ProductCard(
-                product: _searchResults[index],
-                isLoading: false,
-                onBuyNow: () {
-                  // Handle buy now action
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Buy Now: ${_searchResults[index]['name'] ?? 'Product'}'),
-                      backgroundColor: const Color(0xFF10B981),
-                    ),
-                  );
-                },
-                // onTap removed to use default navigation from ProductCard
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.62,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: _searchResults.length,
+      itemBuilder: (context, index) {
+        return ProductCard(
+          product: _searchResults[index],
+          isLoading: false,
+          onBuyNow: () {
+            // Handle buy now action
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Buy Now: ${_searchResults[index]['name'] ?? 'Product'}'),
+                backgroundColor: const Color(0xFF10B981),
               ),
             );
           },
+          // onTap removed to use default navigation from ProductCard
         );
       },
     );
@@ -665,50 +689,73 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          const spacing = 12.0;
-          final availableWidth = constraints.maxWidth;
-          final idealWidth = (availableWidth - spacing) / 2;
-          final cardWidth = idealWidth.clamp(160.0, 200.0);
-          const detailsMinHeight = 160.0; // Match homepage
-          final cardHeight = cardWidth + detailsMinHeight;
-          
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: cardWidth / cardHeight,
-              crossAxisSpacing: spacing,
-              mainAxisSpacing: spacing,
-            ),
-            itemCount: _products.length,
-            itemBuilder: (context, index) {
-              return SizedBox(
-                width: cardWidth,
-                height: cardHeight,
-                child: ProductCard(
-                  product: _products[index],
-                  isLoading: false,
-                  onBuyNow: () {
-                    // Handle buy now action
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Buy Now: ${_products[index]['name'] ?? 'Product'}'),
-                        backgroundColor: const Color(0xFF10B981),
-                      ),
-                    );
-                  },
-                  // onTap removed to use default navigation from ProductCard
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              const spacing = 12.0;
+              final availableWidth = constraints.maxWidth;
+              final idealWidth = (availableWidth - spacing) / 2;
+              
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.62,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
                 ),
+                itemCount: _products.length,
+                itemBuilder: (context, index) {
+                  return ProductCard(
+                    product: _products[index],
+                    isLoading: false,
+                    onBuyNow: () {
+                      // Handle buy now action
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Buy Now: ${_products[index]['name'] ?? 'Product'}'),
+                          backgroundColor: const Color(0xFF10B981),
+                        ),
+                      );
+                    },
+                    // onTap removed to use default navigation from ProductCard
+                  );
+                },
               );
             },
-          );
-        },
-      ),
+          ),
+        ),
+        
+        // Loading indicator for pagination
+        if (_isLoadingMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF10B981),
+              ),
+            ),
+          ),
+        
+        // End of results indicator
+        if (!_hasMoreResults && _products.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: Text(
+                'No more products',
+                style: TextStyle(
+                  color: Colors.grey.shade500,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
