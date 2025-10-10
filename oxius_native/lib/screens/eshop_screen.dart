@@ -5,6 +5,7 @@ import '../services/user_state_service.dart';
 import '../widgets/mobile_banner.dart';
 import '../widgets/hot_deals_section.dart';
 import '../widgets/product_card.dart';
+import '../widgets/mobile_sticky_nav.dart';
 
 class EshopScreen extends StatefulWidget {
   const EshopScreen({super.key});
@@ -254,6 +255,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           
           // Category Sidebar Overlay - Removed since category filtering is not needed
         ],
+      ),
+      bottomNavigationBar: const MobileStickyNav(
+        currentRoute: 'eShop',
       ),
     );
   }
