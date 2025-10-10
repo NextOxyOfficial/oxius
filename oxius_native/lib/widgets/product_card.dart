@@ -212,7 +212,7 @@ class _ProductCardState extends State<ProductCard> {
                     children: [
                     // Price Section - Reduced bottom margin
                     Container(
-                      margin: const EdgeInsets.only(bottom: 3),
+                      margin: const EdgeInsets.only(bottom: 2),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -222,14 +222,14 @@ class _ProductCardState extends State<ProductCard> {
                                 TextSpan(
                                   text: '৳',
                                   style: GoogleFonts.roboto(
-                                    fontSize: 12,
+                                    fontSize: 11,
                                     color: Colors.grey.shade500,
                                   ),
                                 ),
                                 TextSpan(
                                   text: _formatPrice(sale ?? regular),
                                   style: GoogleFonts.roboto(
-                                    fontSize: 16,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.grey.shade800,
                                   ),
@@ -266,13 +266,13 @@ class _ProductCardState extends State<ProductCard> {
 
                     // Product Title - Moved above store name (Vue: mb-2) - EXACT MATCH
                     Container(
-                      margin: const EdgeInsets.only(bottom: 4),
+                      margin: const EdgeInsets.only(bottom: 3),
                       child: Text(
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.roboto(
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w500,
                           color: Colors.grey.shade800,
                         ),
@@ -281,8 +281,8 @@ class _ProductCardState extends State<ProductCard> {
 
                     // Store Link - Moved below product name (Vue: mb-3) - EXACT MATCH
                     Container(
-                      margin: const EdgeInsets.only(bottom: 6),
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      margin: const EdgeInsets.only(bottom: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
                         borderRadius: BorderRadius.circular(12),
@@ -290,8 +290,8 @@ class _ProductCardState extends State<ProductCard> {
                       child: Row(
                         children: [
                           Container(
-                            width: 18,
-                            height: 18,
+                            width: 16,
+                            height: 16,
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
@@ -308,17 +308,17 @@ class _ProductCardState extends State<ProductCard> {
                               ],
                             ),
                             child: const Center(
-                              child: Icon(Icons.storefront_outlined, size: 11, color: Colors.white),
+                              child: Icon(Icons.storefront_outlined, size: 10, color: Colors.white),
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 5),
                           Expanded(
                             child: Text(
                               _getStoreName(p),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.roboto(
-                                fontSize: 11,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.grey.shade600,
                               ),
@@ -336,8 +336,8 @@ class _ProductCardState extends State<ProductCard> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF374151), // Vue: bg-gray-700
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          minimumSize: const Size.fromHeight(36),
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          minimumSize: const Size.fromHeight(32),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                           elevation: 0,
@@ -367,12 +367,12 @@ class _ProductCardState extends State<ProductCard> {
                             : Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.shopping_cart_outlined, size: 14),
-                                  const SizedBox(width: 6),
+                                  const Icon(Icons.shopping_cart_outlined, size: 13),
+                                  const SizedBox(width: 5),
                                   Text(
                                     'Buy Now',
                                     style: GoogleFonts.roboto(
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),

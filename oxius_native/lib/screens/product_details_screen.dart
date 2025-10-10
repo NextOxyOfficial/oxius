@@ -1475,7 +1475,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.68,
+              childAspectRatio: 0.62,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
@@ -1629,7 +1629,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 280,
+            height: 270,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: _storeProducts.length,
