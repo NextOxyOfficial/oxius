@@ -120,16 +120,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
-    return Stack(
-      children: [
-        // Main Footer
-        _buildMainFooter(context, isMobile),
-        
-        // Mobile Navigation Bar
-        if (widget.showMobileNav && isMobile)
-          _buildMobileNavigationBar(context),
-      ],
-    );
+    return _buildMainFooter(context, isMobile);
   }
 
   Widget _buildMainFooter(BuildContext context, bool isMobile) {

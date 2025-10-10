@@ -36,7 +36,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
     
     // Initialize animation controller with slower duration
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800), // Much slower animation
+      duration: const Duration(milliseconds: 600), // Much slower animation
       vsync: this,
     );
     
@@ -110,7 +110,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 600),
       transform: Matrix4.translationValues(
         0, 
         _isVisible ? 0 : 100, // Slide down by 100px when hidden
