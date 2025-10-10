@@ -149,7 +149,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               duration: Duration(seconds: 3),
             ),
           );
-          Navigator.pop(context);
+          // Return true to indicate successful submission
+          Navigator.pop(context, true);
         }
       } else {
         // Handle error response

@@ -204,6 +204,15 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     }
   }
 
+  Future<void> _refreshGigs() async {
+    // Refresh the current view (category + filter)
+    if (_selectedCategory != null) {
+      await _filterByCategory(_selectedCategory!);
+    } else {
+      await _filterByStatus(_filterStatus);
+    }
+  }
+
   Future<void> _goToPage(int page) async {
     if (page < 1 || page > _totalPages || page == _currentPage) return;
     
@@ -730,8 +739,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
+                      onPressed: () async {
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => GigDetailsScreen(
@@ -739,6 +748,11 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                             ),
                           ),
                         );
+                        
+                        // If submission was successful, refresh the gig list
+                        if (result == true && mounted) {
+                          _refreshGigs();
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue.shade600,
@@ -768,8 +782,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
+                  onPressed: () async {
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => GigDetailsScreen(
@@ -777,6 +791,11 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                         ),
                       ),
                     );
+                    
+                    // If submission was successful, refresh the gig list
+                    if (result == true && mounted) {
+                      _refreshGigs();
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade600,
