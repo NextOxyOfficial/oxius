@@ -11,8 +11,9 @@ class GigsService {
     int pageSize = 10,
   }) async {
     try {
+      final headers = await ApiService.getHeaders();
       final url = '$baseUrl/micro-gigs/?show_submitted=$showSubmitted&page=$page&page_size=$pageSize';
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse(url), headers: headers);
 
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
@@ -51,8 +52,9 @@ class GigsService {
     int pageSize = 10,
   }) async {
     try {
+      final headers = await ApiService.getHeaders();
       final url = '$baseUrl/micro-gigs/?category=$categoryId&show_submitted=$showSubmitted&page=$page&page_size=$pageSize';
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse(url), headers: headers);
 
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
@@ -86,8 +88,9 @@ class GigsService {
 
   Future<List<Map<String, dynamic>>> fetchMicroGigCategories() async {
     try {
+      final headers = await ApiService.getHeaders();
       final url = '$baseUrl/micro-gigs-categories/';
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse(url), headers: headers);
 
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
