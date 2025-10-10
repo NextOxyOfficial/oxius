@@ -174,59 +174,47 @@ class _SaleCategoryState extends State<SaleCategory> {
     final localAsset = CategoryIconMapping.getSaleIconAsset(categoryName);
     
     if (iconUrl != null && iconUrl.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(999),
-        child: CachedNetworkImage(
-          imageUrl: iconUrl,
-          cacheKey: 'sale_category_icon_${category['id']}',
-          width: 20,
-          height: 20,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(999),
-            ),
-          ),
-          errorWidget: (context, url, error) {
-            // Try local asset first, then fallback icon
-            if (localAsset != null) {
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(999),
-                child: Image.asset(
-                  localAsset,
-                  width: 20,
-                  height: 20,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => 
-                    CategoryIconMapping.getDefaultIcon(isSale: true, size: 20),
-                ),
-              );
-            }
-            return CategoryIconMapping.getDefaultIcon(isSale: true, size: 20);
-          },
+      return CachedNetworkImage(
+        imageUrl: iconUrl,
+        cacheKey: 'sale_category_icon_${category['id']}',
+        width: 28,
+        height: 28,
+        fit: BoxFit.contain,
+        placeholder: (context, url) => Container(
+          width: 28,
+          height: 28,
+          color: Colors.grey.shade200,
         ),
+        errorWidget: (context, url, error) {
+          // Try local asset first, then fallback icon
+          if (localAsset != null) {
+            return Image.asset(
+              localAsset,
+              width: 28,
+              height: 28,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => 
+                CategoryIconMapping.getDefaultIcon(isSale: true, size: 28),
+            );
+          }
+          return CategoryIconMapping.getDefaultIcon(isSale: true, size: 28);
+        },
       );
     }
     
     // No network URL - try local asset first
     if (localAsset != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(999),
-        child: Image.asset(
-          localAsset,
-          width: 20,
-          height: 20,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => 
-            CategoryIconMapping.getDefaultIcon(isSale: true, size: 20),
-        ),
+      return Image.asset(
+        localAsset,
+        width: 28,
+        height: 28,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => 
+          CategoryIconMapping.getDefaultIcon(isSale: true, size: 28),
       );
     }
     
-    return CategoryIconMapping.getDefaultIcon(isSale: true, size: 20);
+    return CategoryIconMapping.getDefaultIcon(isSale: true, size: 28);
   }
 
   String _formatPrice(dynamic price, bool negotiable) {
