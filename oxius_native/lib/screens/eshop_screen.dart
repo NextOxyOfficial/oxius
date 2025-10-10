@@ -254,10 +254,18 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           ),
           
           // Category Sidebar Overlay - Removed since category filtering is not needed
+          
+          // Mobile Sticky Navigation at bottom
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: MobileStickyNav(
+              currentRoute: 'eShop',
+              scrollController: _scrollController,
+            ),
+          ),
         ],
-      ),
-      bottomNavigationBar: const MobileStickyNav(
-        currentRoute: 'eShop',
       ),
     );
   }

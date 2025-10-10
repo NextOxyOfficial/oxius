@@ -1,33 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import '../services/user_state_service.dart';
 import '../screens/eshop_screen.dart';
+import '../screens/home_screen.dart';
 
 class MobileStickyNav extends StatefulWidget {
   final String? currentRoute;
+  final ScrollController? scrollController;
   
   const MobileStickyNav({
     super.key,
     this.currentRoute,
+    this.scrollController,
   });
 
   @override
   State<MobileStickyNav> createState() => _MobileStickyNavState();
 }
 
-class _MobileStickyNavState extends State<MobileStickyNav> {
+class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProviderStateMixin {
   final UserStateService _userStateService = UserStateService();
   int unreadCount = 0;
+  bool _isVisible = true;
+  late AnimationController _animationController;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _opacityAnimation;
+  ScrollController? _scrollController;
+  double _lastScrollPosition = 0;
 
   @override
   void initState() {
     super.initState();
     // Listen to user state changes
     _userStateService.addListener(_onUserStateChanged);
+    
+    // Initialize animation controller with slower duration
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800), // Much slower animation
+      vsync: this,
+    );
+    
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, 2), // Slide down by 2x height
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+    
+    // Add opacity animation to fade out completely when hidden
+    _opacityAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+    
+    // Attach scroll listener
+    _scrollController = widget.scrollController;
+    _scrollController?.addListener(_onScroll);
   }
 
   @override
   void dispose() {
     _userStateService.removeListener(_onUserStateChanged);
+    _scrollController?.removeListener(_onScroll);
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -37,31 +76,71 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
     }
   }
 
+  void _onScroll() {
+    if (_scrollController == null || !mounted) return;
+    
+    final currentScrollPosition = _scrollController!.position.pixels;
+    final scrollDelta = currentScrollPosition - _lastScrollPosition;
+    
+    // Only react to significant scroll movements
+    if (scrollDelta.abs() < 5) return;
+    
+    // Check if user is scrolling down or up
+    if (scrollDelta > 0 && currentScrollPosition > 50) {
+      // Scrolling down - hide navbar
+      if (_isVisible) {
+        setState(() {
+          _isVisible = false;
+        });
+        _animationController.forward();
+      }
+    } else if (scrollDelta < 0) {
+      // Scrolling up - show navbar
+      if (!_isVisible) {
+        setState(() {
+          _isVisible = true;
+        });
+        _animationController.reverse();
+      }
+    }
+    
+    _lastScrollPosition = currentScrollPosition;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF34D399).withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 800),
+      transform: Matrix4.translationValues(
+        0, 
+        _isVisible ? 0 : 100, // Slide down by 100px when hidden
+        0
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
+      curve: Curves.easeInOut,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+        decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.9),
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: SafeArea(
-            child: _userStateService.isAuthenticated
-                ? _buildLoggedInNavigation(context)
-                : _buildGuestNavigation(context),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF34D399).withOpacity(0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            color: Colors.white.withOpacity(0.9),
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: SafeArea(
+              child: _userStateService.isAuthenticated
+                  ? _buildLoggedInNavigation(context)
+                  : _buildGuestNavigation(context),
+            ),
           ),
         ),
       ),
@@ -225,27 +304,60 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
   void _handleNavigation(BuildContext context, String destination) {
     // Prevent navigation to current page
     if ((destination == 'eShop' && widget.currentRoute == 'eShop') ||
-        (destination == 'Home' && widget.currentRoute == 'Home')) {
+        (destination == 'Home' && widget.currentRoute == 'Home') ||
+        (destination == 'Deposit/Withdraw' && widget.currentRoute == 'Wallet') ||
+        (destination == 'Mobile Recharge' && widget.currentRoute == 'Recharge') ||
+        (destination == 'Business Network' && widget.currentRoute == 'Network') ||
+        (destination == 'News' && widget.currentRoute == 'News') ||
+        (destination == 'Microgigs' && widget.currentRoute == 'Gigs')) {
       return;
     }
 
-    if (destination == 'eShop') {
-      Navigator.pushReplacement(
+    if (destination == 'Home') {
+      // Navigate to public homepage (/) and clear all previous routes
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (route) => false,
+      );
+    } else if (destination == 'eShop') {
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const EshopScreen()),
       );
-    } else if (destination == 'Home') {
-      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
-    } else if (destination == 'Wallet') {
-      Navigator.pushNamed(context, '/wallet');
+    } else if (destination == 'Deposit/Withdraw') {
+      // Navigate to deposit/withdraw page using named route
+      Navigator.pushNamed(context, '/deposit-withdraw');
     } else if (destination == 'Mobile Recharge') {
+      // Navigate to mobile recharge route
       Navigator.pushNamed(context, '/mobile-recharge');
     } else if (destination == 'Business Network') {
-      Navigator.pushNamed(context, '/business-network');
+      // Show coming soon for now
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Business Network - Coming Soon!'),
+          backgroundColor: Color(0xFF10B981),
+          duration: Duration(seconds: 1),
+        ),
+      );
     } else if (destination == 'News') {
-      Navigator.pushNamed(context, '/news');
+      // Show coming soon for now
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('News - Coming Soon!'),
+          backgroundColor: Color(0xFF10B981),
+          duration: Duration(seconds: 1),
+        ),
+      );
     } else if (destination == 'Microgigs') {
-      Navigator.pushNamed(context, '/microgigs');
+      // Show coming soon for now
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Microgigs - Coming Soon!'),
+          backgroundColor: Color(0xFF10B981),
+          duration: Duration(seconds: 1),
+        ),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
