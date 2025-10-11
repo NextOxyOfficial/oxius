@@ -170,18 +170,19 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         title: Text(
           _categoryDetails?.title ?? 'Classified Ads',
           style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
           ),
         ),
         backgroundColor: const Color(0xFF10B981),
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: false,
       ),
       body: Column(
         children: [
@@ -191,12 +192,18 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
           // Search bar
           _buildSearchBar(),
           
+          // Results count
+          if (!_isLoading && _posts.isNotEmpty) _buildResultsCount(),
+          
           // Content
           Expanded(
             child: _isLoading && _posts.isEmpty
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                    ),
+                  )
                 : SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -207,18 +214,25 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                           // Pagination
                           if (_totalPages > 1) _buildPagination(),
                           
-                          const Divider(height: 32),
+                          const SizedBox(height: 16),
                           
-                          if (!_location!.allOverBangladesh) ...[
-                            const Text(
-                              'Nearby location\'s ads',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF065F46),
+                          if (!_location!.allOverBangladesh && _nearbyPosts.isNotEmpty) ...[
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+                              color: const Color(0xFFECFDF5),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8),
+                                child: Text(
+                                  'Nearby Location Ads',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF065F46),
+                                  ),
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 16),
                           ],
                         ],
                         
@@ -229,6 +243,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                         if (_nearbyPosts.isNotEmpty && !_location!.allOverBangladesh) ...[
                           _buildPostsList(_nearbyPosts, isNearby: true),
                         ],
+                        
+                        const SizedBox(height: 80),
                       ],
                     ),
                   ),
@@ -243,56 +259,89 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
           );
         },
         backgroundColor: const Color(0xFF10B981),
-        icon: const Icon(Icons.add, color: Colors.white),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
         label: const Text(
           'Post Ads',
           style: TextStyle(
-            color: Colors.white,
             fontWeight: FontWeight.w600,
+            fontSize: 15,
           ),
         ),
+        elevation: 4,
+      ),
+    );
+  }
+  
+  Widget _buildResultsCount() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      color: Colors.white,
+      child: Row(
+        children: [
+          Text(
+            '$_totalCount results',
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF6B7280),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildLocationBreadcrumb() {
     return Container(
-      margin: const EdgeInsets.all(12),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF10B981).withOpacity(0.1),
-            const Color(0xFF059669).withOpacity(0.05),
-          ],
+        color: const Color(0xFFECFDF5),
+        border: Border(
+          bottom: BorderSide(
+            color: const Color(0xFF10B981).withOpacity(0.2),
+            width: 1,
+          ),
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
       ),
       child: Row(
         children: [
           const Icon(
             Icons.location_on,
             color: Color(0xFF10B981),
-            size: 20,
+            size: 18,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Expanded(
             child: Text(
               _location!.displayLocation,
               style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
                 color: Color(0xFF065F46),
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.edit, size: 20),
-            color: const Color(0xFF10B981),
-            onPressed: _showLocationSelector,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+          InkWell(
+            onTap: _showLocationSelector,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.edit, size: 16, color: Color(0xFF10B981)),
+                  SizedBox(width: 4),
+                  Text(
+                    'Change',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF10B981),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -301,62 +350,83 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
 
   Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      color: Colors.grey[50],
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                prefixIcon: const Icon(Icons.search, size: 20),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 4,
-                  vertical: 12,
-                ),
+            child: Container(
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(8),
               ),
-              onChanged: (value) => _searchQuery = value,
-              onSubmitted: (_) => _filterSearch(),
+              child: TextField(
+                controller: _searchController,
+                decoration: const InputDecoration(
+                  hintText: 'Search ads...',
+                  hintStyle: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF9CA3AF),
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    size: 20,
+                    color: Color(0xFF6B7280),
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 12,
+                  ),
+                ),
+                style: const TextStyle(fontSize: 14),
+                onChanged: (value) => _searchQuery = value,
+                onSubmitted: (_) => _filterSearch(),
+              ),
             ),
           ),
           const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: _isLoading ? null : () => _filterSearch(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+          SizedBox(
+            height: 44,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : () => _filterSearch(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
+                disabledBackgroundColor: const Color(0xFF10B981).withOpacity(0.5),
               ),
-              elevation: 0,
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text(
+                      'Search',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
             ),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Text(
-                    'Search',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
           ),
         ],
       ),
@@ -367,8 +437,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       itemCount: posts.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      separatorBuilder: (context, index) => const Divider(height: 1, thickness: 1),
       itemBuilder: (context, index) {
         final post = posts[index];
         return _buildPostCard(post, isNearby: isNearby);
@@ -377,15 +448,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   }
 
   Widget _buildPostCard(ClassifiedPost post, {bool isNearby = false}) {
-    return Card(
-      elevation: isNearby ? 0 : 1,
-      color: isNearby ? Colors.grey[50] : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isNearby ? Colors.grey[200]! : Colors.grey[100]!,
-        ),
-      ),
+    return Material(
+      color: Colors.white,
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -398,8 +462,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
             ),
           );
         },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
+        child: Container(
           padding: const EdgeInsets.all(12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -408,19 +471,27 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  width: 100,
-                  height: 100,
-                  color: Colors.grey[200],
+                  width: 110,
+                  height: 110,
+                  color: const Color(0xFFF3F4F6),
                   child: post.medias != null && post.medias!.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: post.medias!.first.image ?? '',
                           fit: BoxFit.cover,
                           placeholder: (context, url) => const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                              ),
+                            ),
                           ),
                           errorWidget: (context, url, error) => Icon(
                             Icons.image_not_supported,
                             color: Colors.grey[400],
+                            size: 32,
                           ),
                         )
                       : post.categoryDetails?.image != null
@@ -430,6 +501,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                               errorWidget: (context, url, error) => Icon(
                                 Icons.category,
                                 color: Colors.grey[400],
+                                size: 32,
                               ),
                             )
                           : Icon(
@@ -446,14 +518,16 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     // Title
                     Text(
                       post.title,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1F2937),
+                        color: Color(0xFF111827),
+                        height: 1.3,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -468,28 +542,29 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF10B981),
+                        letterSpacing: -0.5,
                       ),
                     ),
                     
                     const SizedBox(height: 8),
                     
-                    // Location and time
+                    // Location
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.location_on,
-                          size: 14,
-                          color: Colors.grey[600],
+                          size: 13,
+                          color: Color(0xFF6B7280),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 3),
                         Expanded(
                           child: Text(
                             [post.city, post.state]
                                 .where((e) => e != null)
                                 .join(', '),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: Color(0xFF6B7280),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -500,11 +575,12 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                     
                     const SizedBox(height: 4),
                     
+                    // Time
                     Text(
                       post.getRelativeTime(),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF9CA3AF),
                       ),
                     ),
                   ],
@@ -519,16 +595,31 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
 
   Widget _buildPagination() {
     return Container(
-      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
+      color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Previous button
-          IconButton(
-            onPressed: _currentPage > 1 ? () => _filterSearch(page: _currentPage - 1) : null,
-            icon: const Icon(Icons.chevron_left),
-            color: const Color(0xFF10B981),
+          Container(
+            height: 36,
+            width: 36,
+            decoration: BoxDecoration(
+              color: _currentPage > 1 ? Colors.white : const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: _currentPage > 1 ? const Color(0xFF10B981) : const Color(0xFFE5E7EB),
+              ),
+            ),
+            child: IconButton(
+              onPressed: _currentPage > 1 ? () => _filterSearch(page: _currentPage - 1) : null,
+              icon: const Icon(Icons.chevron_left, size: 20),
+              color: _currentPage > 1 ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+              padding: EdgeInsets.zero,
+            ),
           ),
+          
+          const SizedBox(width: 8),
           
           // Page numbers
           ...List.generate(
@@ -542,31 +633,39 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 pageNum = start + index;
               }
               
-              return InkWell(
-                onTap: () => _filterSearch(page: pageNum),
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: _currentPage == pageNum
-                        ? const Color(0xFF10B981)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: InkWell(
+                  onTap: () => _filterSearch(page: pageNum),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    height: 36,
+                    constraints: const BoxConstraints(minWidth: 36),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
                       color: _currentPage == pageNum
                           ? const Color(0xFF10B981)
-                          : Colors.grey[300]!,
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: _currentPage == pageNum
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFE5E7EB),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    pageNum.toString(),
-                    style: TextStyle(
-                      color: _currentPage == pageNum
-                          ? Colors.white
-                          : const Color(0xFF6B7280),
-                      fontWeight: _currentPage == pageNum
-                          ? FontWeight.w600
-                          : FontWeight.normal,
+                    child: Center(
+                      child: Text(
+                        pageNum.toString(),
+                        style: TextStyle(
+                          color: _currentPage == pageNum
+                              ? Colors.white
+                              : const Color(0xFF374151),
+                          fontWeight: _currentPage == pageNum
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -574,13 +673,27 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
             },
           ),
           
+          const SizedBox(width: 8),
+          
           // Next button
-          IconButton(
-            onPressed: _currentPage < _totalPages
-                ? () => _filterSearch(page: _currentPage + 1)
-                : null,
-            icon: const Icon(Icons.chevron_right),
-            color: const Color(0xFF10B981),
+          Container(
+            height: 36,
+            width: 36,
+            decoration: BoxDecoration(
+              color: _currentPage < _totalPages ? Colors.white : const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: _currentPage < _totalPages ? const Color(0xFF10B981) : const Color(0xFFE5E7EB),
+              ),
+            ),
+            child: IconButton(
+              onPressed: _currentPage < _totalPages
+                  ? () => _filterSearch(page: _currentPage + 1)
+                  : null,
+              icon: const Icon(Icons.chevron_right, size: 20),
+              color: _currentPage < _totalPages ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+              padding: EdgeInsets.zero,
+            ),
           ),
         ],
       ),
@@ -588,53 +701,62 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   }
 
   Widget _buildEmptyState() {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          children: [
-            Icon(
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
               Icons.search_off,
-              size: 64,
+              size: 56,
               color: Colors.grey[400],
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'No ads found',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'No Ads Found',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF111827),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'We couldn\'t find any ads matching your search criteria in this location.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'We couldn\'t find any ads matching your search criteria in this location.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+              height: 1.5,
             ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _showLocationSelector,
-              icon: const Icon(Icons.location_on),
-              label: const Text('Change Location'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _showLocationSelector,
+            icon: const Icon(Icons.location_on, size: 18),
+            label: const Text('Change Location'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 14,
               ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
