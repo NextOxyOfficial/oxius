@@ -142,11 +142,13 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
       backgroundColor: Colors.white,
       elevation: 8,
       insetPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+      child: SizedBox(
+        width: double.maxFinite,
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
             // Header
             Container(
               padding: const EdgeInsets.all(24),
@@ -498,51 +500,91 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                       ),
                     ],
                     
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
                     
-                    // Submit Button
+                    // Action Buttons
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: SizedBox(
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: _isSubmitDisabled && !_isLoading
-                            ? null
-                            : _validateAndSubmit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          disabledBackgroundColor: const Color(0xFFE5E7EB),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 22,
-                                width: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.check_circle_outline, size: 20),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    _allOverBangladesh ? 'Continue' : 'Set My Location',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                      child: Row(
+                        children: [
+                          // Cancel Button
+                          Expanded(
+                            child: SizedBox(
+                              height: 44,
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF6B7280),
+                                  side: const BorderSide(
+                                    color: Color(0xFFE5E7EB),
+                                    width: 1.5,
                                   ),
-                                ],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                ),
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          // Submit Button
+                          Expanded(
+                            child: SizedBox(
+                              height: 44,
+                              child: ElevatedButton(
+                                onPressed: _isSubmitDisabled && !_isLoading
+                                    ? null
+                                    : _validateAndSubmit,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF10B981),
+                                  disabledBackgroundColor: const Color(0xFFE5E7EB),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.5,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ),
+                                      )
+                                    : Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.check_circle_outline, size: 18),
+                                          const SizedBox(width: 6),
+                                          Flexible(
+                                            child: Text(
+                                              _allOverBangladesh ? 'Continue' : 'Set Location',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
                     ),
                     
                     const SizedBox(height: 8),
@@ -551,6 +593,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
