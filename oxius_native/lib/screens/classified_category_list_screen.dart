@@ -200,11 +200,6 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Post a classified button
-                        _buildPostAdButton(),
-                        
-                        const SizedBox(height: 16),
-                        
                         // Search results
                         if (_posts.isNotEmpty) ...[
                           _buildPostsList(_posts),
@@ -263,7 +258,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   Widget _buildLocationBreadcrumb() {
     return Container(
       margin: const EdgeInsets.all(12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -306,7 +301,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
 
   Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       color: Colors.grey[50],
       child: Row(
         children: [
@@ -327,7 +322,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 filled: true,
                 fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
+                  horizontal: 4,
                   vertical: 12,
                 ),
               ),
@@ -340,7 +335,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
             onPressed: _isLoading ? null : () => _filterSearch(),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -364,26 +359,6 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                   ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPostAdButton() {
-    return OutlinedButton.icon(
-      onPressed: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Post Classified feature coming soon!')),
-        );
-      },
-      icon: const Icon(Icons.add),
-      label: const Text('Post Classified'),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF10B981),
-        side: const BorderSide(color: Color(0xFF10B981)),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
       ),
     );
   }

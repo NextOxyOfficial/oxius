@@ -320,7 +320,11 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Ad Details'),
+        title: Text(
+          _post!.title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
         backgroundColor: const Color(0xFF10B981),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -329,9 +333,6 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Breadcrumb
-            _buildBreadcrumb(),
-            
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -386,44 +387,6 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                   ),
                 ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBreadcrumb() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: Colors.white,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            const Text('Home', style: TextStyle(color: Colors.grey)),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Icon(Icons.chevron_right, size: 16, color: Colors.grey),
-            ),
-            const Text('Classified Categories', style: TextStyle(color: Colors.grey)),
-            if (_post!.categoryDetails != null) ...[
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: Icon(Icons.chevron_right, size: 16, color: Colors.grey),
-              ),
-              Text(
-                _post!.categoryDetails!.title,
-                style: const TextStyle(color: Colors.grey),
-              ),
-            ],
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Icon(Icons.chevron_right, size: 16, color: Colors.grey),
-            ),
-            Text(
-              _post!.title,
-              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -628,18 +591,6 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
-            Text(
-              _post!.title,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1F2937),
-              ),
-            ),
-            
-            const SizedBox(height: 12),
-            
             // Service ID and Views
             Row(
               children: [
