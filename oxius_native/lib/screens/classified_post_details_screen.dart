@@ -75,9 +75,10 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     }
     
     final positiveHash = hash.abs();
-    final numericId = positiveHash.toString().padLeft(6, '0').substring(0, 10);
+    final numericId = positiveHash.toString().padLeft(10, '0');
     
-    return numericId;
+    // Ensure we only return up to 10 digits
+    return numericId.length > 10 ? numericId.substring(0, 10) : numericId;
   }
 
   void _sharePost() {
@@ -322,75 +323,141 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
       appBar: AppBar(
         title: Text(
           _post!.title,
-          maxLines: 2,
+          maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         backgroundColor: const Color(0xFF10B981),
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: _showShareDialog,
+            tooltip: 'Share',
+          ),
+          IconButton(
+            icon: const Icon(Icons.flag_outlined),
+            onPressed: _showReportDialog,
+            tooltip: 'Report',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
+            // Image Gallery at Top (only if images uploaded)
+            if (_post!.medias != null && _post!.medias!.any((m) => m.image != null))
+              _buildImageGallery(),
+            
+            // Content Section
+            Container(
+              color: Colors.white,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Main content area
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Gallery (60%)
-                      Expanded(
-                        flex: 3,
-                        child: _buildImageGallery(),
-                      ),
-                      
-                      const SizedBox(width: 16),
-                      
-                      // Service info (40%)
-                      Expanded(
-                        flex: 2,
-                        child: _buildServiceInfo(),
-                      ),
-                    ],
-                  ),
+                  // Price and Quick Info Bar
+                  _buildPriceBar(),
                   
-                  const SizedBox(height: 16),
+                  const Divider(height: 1),
                   
-                  // Details section
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Service details (66%)
-                      Expanded(
-                        flex: 2,
-                        child: Column(
+                  // Title and Basic Info
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Location
+                        Row(
                           children: [
-                            _buildDetailsCard(),
-                            const SizedBox(height: 16),
-                            _buildSafetyTipsCard(),
+                            const Icon(Icons.location_on, size: 16, color: Color(0xFF6B7280)),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                [_post!.upazila, _post!.city, _post!.state]
+                                    .where((e) => e != null && e.isNotEmpty)
+                                    .join(', '),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
-                      ),
-                      
-                      const SizedBox(width: 16),
-                      
-                      // Provider info (33%)
-                      Expanded(
-                        flex: 1,
-                        child: _buildProviderCard(),
-                      ),
-                    ],
+                        
+                        const SizedBox(height: 8),
+                        
+                        // Views and ID
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.visibility, size: 14, color: Color(0xFF6B7280)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${_post!.viewsCount} views',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'ID: ${_getNumericServiceId()}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF6B7280),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
+            
+            const Divider(height: 1, thickness: 1),
+            
+            // Description Section
+            if (_post!.instructions != null) ...[
+              _buildDescriptionCard(),
+              const Divider(height: 1, thickness: 1),
+            ],
+            
+            // Provider Card
+            _buildProviderCard(),
+            
+            const Divider(height: 1, thickness: 1),
+            
+            // Safety Tips
+            _buildSafetyTipsCard(),
+            
+            const SizedBox(height: 80), // Bottom padding for contact bar
           ],
         ),
       ),
+      bottomNavigationBar: _buildContactBar(),
     );
   }
 
@@ -398,38 +465,34 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     final images = _post!.medias?.where((m) => m.image != null).toList() ?? [];
     final hasImages = images.isNotEmpty;
     
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      color: Colors.black,
       child: Column(
         children: [
           // Main image
           AspectRatio(
-            aspectRatio: 16 / 9,
+            aspectRatio: 4 / 3,
             child: Stack(
               children: [
                 if (!hasImages && _post!.categoryDetails?.image == null)
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.grey[100]!, Colors.grey[200]!],
-                      ),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(12),
-                        topRight: Radius.circular(12),
+                        colors: [Colors.grey[800]!, Colors.grey[900]!],
                       ),
                     ),
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.image, size: 64, color: Colors.grey[400]),
+                          Icon(Icons.image, size: 64, color: Colors.grey[600]),
                           const SizedBox(height: 8),
                           Text(
                             'No Photo Uploaded',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey[500],
+                              color: Colors.grey[400],
                             ),
                           ),
                         ],
@@ -448,21 +511,17 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                           ? images[index].image!
                           : _post!.categoryDetails!.image!;
                       
-                      return ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          topRight: Radius.circular(12),
+                      return CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) => Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[400]!),
+                          ),
                         ),
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                          errorWidget: (context, url, error) => Icon(
-                            Icons.error,
-                            color: Colors.grey[400],
-                          ),
+                        errorWidget: (context, url, error) => Icon(
+                          Icons.error,
+                          color: Colors.grey[400],
                         ),
                       );
                     },
@@ -471,63 +530,73 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                 // Navigation buttons
                 if (images.length > 1) ...[
                   Positioned(
-                    left: 12,
+                    left: 8,
                     top: 0,
                     bottom: 0,
                     child: Center(
-                      child: IconButton(
-                        onPressed: () {
-                          if (_currentImageIndex > 0) {
-                            _pageController.previousPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.chevron_left),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.9),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          onPressed: () {
+                            if (_currentImageIndex > 0) {
+                              _pageController.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.chevron_left, color: Colors.white),
                         ),
                       ),
                     ),
                   ),
                   Positioned(
-                    right: 12,
+                    right: 8,
                     top: 0,
                     bottom: 0,
                     child: Center(
-                      child: IconButton(
-                        onPressed: () {
-                          if (_currentImageIndex < images.length - 1) {
-                            _pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.chevron_right),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.9),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          onPressed: () {
+                            if (_currentImageIndex < images.length - 1) {
+                              _pageController.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.chevron_right, color: Colors.white),
                         ),
                       ),
                     ),
                   ),
                   
-                  // Page indicator
+                  // Page indicator (bottom center)
                   Positioned(
-                    bottom: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${_currentImageIndex + 1}/${images.length}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                    bottom: 16,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          '${_currentImageIndex + 1} / ${images.length}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -536,288 +605,230 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               ],
             ),
           ),
-          
-          // Thumbnail gallery
-          if (images.length > 1)
-            Container(
-              height: 80,
-              padding: const EdgeInsets.all(12),
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: images.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  return InkWell(
-                    onTap: () {
-                      _pageController.animateToPage(
-                        index,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    },
-                    child: Container(
-                      width: 64,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: _currentImageIndex == index
-                              ? const Color(0xFF10B981)
-                              : Colors.grey[300]!,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: CachedNetworkImage(
-                          imageUrl: images[index].image!,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
         ],
       ),
     );
   }
 
-  Widget _buildServiceInfo() {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Service ID and Views
-            Row(
-              children: [
-                Text(
-                  'Service ID: ${_getNumericServiceId()}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(Icons.visibility, size: 14, color: Color(0xFF6B7280)),
-                const SizedBox(width: 4),
-                Text(
-                  _post!.viewsCount.toString(),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Price
-            Text(
-              _post!.displayPrice,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF10B981),
-              ),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Location
-            _buildInfoRow(
-              Icons.location_on,
-              'Location',
-              [_post!.upazila, _post!.city, _post!.state]
-                  .where((e) => e != null && e.isNotEmpty)
-                  .join(', '),
-            ),
-            
-            const SizedBox(height: 12),
-            
-            // Category
-            if (_post!.categoryDetails != null)
-              _buildInfoRow(
-                Icons.category,
-                'Category',
-                _post!.categoryDetails!.title,
-              ),
-            
-            const SizedBox(height: 12),
-            
-            // Posted date
-            _buildInfoRow(
-              Icons.calendar_today,
-              'Posted',
-              _post!.getRelativeTime(),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _showReportDialog,
-                    icon: const Icon(Icons.flag, size: 18),
-                    label: const Text('Report'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _showShareDialog,
-                    icon: const Icon(Icons.share, size: 18),
-                    label: const Text('Share'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF10B981),
-                      side: const BorderSide(color: Color(0xFF10B981)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+  Widget _buildPriceBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF10B981).withOpacity(0.1),
+            const Color(0xFF059669).withOpacity(0.05),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 18, color: const Color(0xFF6B7280)),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Price',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _post!.displayPrice,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              if (_post!.negotiable == true)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: const Text(
+                    'Negotiable',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF10B981),
+                    ),
+                  ),
+                ),
+              if (_post!.negotiable == true) const SizedBox(height: 4),
               Text(
-                label,
+                _post!.getRelativeTime(),
                 style: const TextStyle(
                   fontSize: 12,
                   color: Color(0xFF6B7280),
                 ),
               ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF1F2937),
-                ),
-              ),
             ],
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDetailsCard() {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.description, color: Color(0xFF10B981)),
-                SizedBox(width: 8),
-                Text(
-                  'Service Details',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (_post!.instructions != null)
-              Html(
-                data: _post!.instructions!,
-                style: {
-                  "body": Style(
-                    margin: Margins.zero,
-                    padding: HtmlPaddings.zero,
-                  ),
-                },
-              )
-            else
-              const Text('No description provided.'),
-          ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildSafetyTipsCard() {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.security, color: Color(0xFF10B981)),
-                SizedBox(width: 8),
-                Text(
-                  'Safety Tips',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-              ],
+  Widget _buildDescriptionCard() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Description',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1F2937),
             ),
-            const SizedBox(height: 16),
-            _buildSafetyTip('Meet in a safe, public place'),
-            _buildSafetyTip('Check the item before purchase'),
-            _buildSafetyTip('Pay only after collecting the item'),
-            _buildSafetyTip('Don\'t share sensitive information'),
-            _buildSafetyTip('Report suspicious activity'),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          Html(
+            data: _post!.instructions!,
+            style: {
+              "body": Style(
+                margin: Margins.zero,
+                padding: HtmlPaddings.zero,
+                fontSize: FontSize(15),
+                lineHeight: const LineHeight(1.6),
+                color: const Color(0xFF374151),
+              ),
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: _contactProvider,
+              icon: const Icon(Icons.phone),
+              label: const Text('Call Now'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () {
+                if (_post!.user?.whatsappLink != null) {
+                  launchUrl(Uri.parse(_post!.user!.whatsappLink!));
+                } else if (_post!.user?.phone != null) {
+                  launchUrl(Uri.parse('https://wa.me/${_post!.user!.phone}'));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('WhatsApp not available')),
+                  );
+                }
+              },
+              icon: const Icon(Icons.message),
+              label: const Text('Chat'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF10B981),
+                side: const BorderSide(color: Color(0xFF10B981), width: 2),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildSafetyTipsCard() {
+    return Container(
+      color: const Color(0xFFFFF3CD),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Color(0xFFF59E0B)),
+              SizedBox(width: 8),
+              Text(
+                'Safety Tips',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF92400E),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildSafetyTip('Meet in a safe, public place'),
+          _buildSafetyTip('Check the item before purchase'),
+          _buildSafetyTip('Pay only after collecting the item'),
+        ],
       ),
     );
   }
 
   Widget _buildSafetyTip(String tip) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.check_circle,
-            size: 18,
-            color: Color(0xFF10B981),
+          const Text(
+            '• ',
+            style: TextStyle(
+              fontSize: 14,
+              color: Color(0xFF92400E),
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          const SizedBox(width: 12),
           Expanded(
             child: Text(
               tip,
               style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF6B7280),
+                fontSize: 13,
+                color: Color(0xFF92400E),
               ),
             ),
           ),
@@ -830,104 +841,115 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     final user = _post!.user;
     
     if (user == null) {
-      return Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: const Padding(
-          padding: EdgeInsets.all(20),
-          child: Text('Provider information not available'),
-        ),
+      return Container(
+        color: Colors.white,
+        padding: const EdgeInsets.all(16),
+        child: const Text('Provider information not available'),
       );
     }
     
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.person, color: Color(0xFF10B981)),
-                SizedBox(width: 8),
-                Text(
-                  'Service Provider',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-              ],
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Provider',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1F2937),
             ),
-            const SizedBox(height: 16),
-            
-            // Profile picture and name
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: const Color(0xFF10B981).withOpacity(0.1),
-                  backgroundImage: user.profilePicture != null
-                      ? CachedNetworkImageProvider(user.profilePicture!)
-                      : null,
-                  child: user.profilePicture == null
-                      ? Text(
-                          user.displayName[0].toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF10B981),
-                          ),
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user.displayName,
+          ),
+          const SizedBox(height: 16),
+          
+          // Profile row
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 32,
+                backgroundColor: const Color(0xFF10B981).withOpacity(0.1),
+                backgroundImage: user.profilePicture != null
+                    ? CachedNetworkImageProvider(user.profilePicture!)
+                    : null,
+                child: user.profilePicture == null
+                    ? Text(
+                        user.displayName[0].toUpperCase(),
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 24,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF1F2937),
+                          color: Color(0xFF10B981),
                         ),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.displayName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
                       ),
-                      if (user.username != null)
-                        Text(
-                          '@${user.username}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF6B7280),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 14, color: Color(0xFF6B7280)),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            [_post!.upazila, _post!.city, _post!.state]
+                                .where((e) => e != null && e.isNotEmpty)
+                                .join(', '),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF6B7280),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                    ],
-                  ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Posted ${_post!.getRelativeTime()}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF9CA3AF),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // About
-            if (user.about != null) ...[
-              Html(
-                data: user.about!,
-                style: {
-                  "body": Style(
-                    margin: Margins.zero,
-                    padding: HtmlPaddings.zero,
-                    fontSize: FontSize(14),
-                  ),
-                },
               ),
-              const SizedBox(height: 16),
             ],
-            
-            // Contact info
-            Container(
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // About
+          if (user.about != null) ...[
+            Html(
+              data: user.about!,
+              style: {
+                "body": Style(
+                  margin: Margins.zero,
+                  padding: HtmlPaddings.zero,
+                  fontSize: FontSize(14),
+                ),
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+          
+          // Contact info
+          Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.grey[50],
@@ -963,10 +985,10 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                     ),
                 ],
               ),
-            ),
-            
-            // Social links
-            if (user.faceLink != null || user.instagramLink != null || user.whatsappLink != null) ...[
+          ),
+          
+          // Social links
+          if (user.faceLink != null || user.instagramLink != null || user.whatsappLink != null) ...[
               const SizedBox(height: 16),
               Wrap(
                 spacing: 8,
@@ -993,27 +1015,26 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               ),
             ],
             
-            const SizedBox(height: 16),
-            
-            // Contact button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _contactProvider,
-                icon: const Icon(Icons.phone),
-                label: const Text('Contact Provider'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+          const SizedBox(height: 16),
+          
+          // Contact button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _contactProvider,
+              icon: const Icon(Icons.phone),
+              label: const Text('Contact Provider'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
