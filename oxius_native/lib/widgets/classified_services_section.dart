@@ -124,19 +124,15 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   void _onCategoryTap(ClassifiedCategory cat) {
-    final id = cat.id.toString();
-    setState(() {
-      if (_selectedCategoryId == id) {
-        _selectedCategoryId = null; // toggle off
-      } else {
-        _selectedCategoryId = id;
-      }
-    });
-    _loadPosts();
-    // TODO: Navigate to category detail screen (stub)
-    // For now we just log
-    // ignore: avoid_print
-    print('Category tapped: $id');
+    // Navigate to the category detail screen
+    Navigator.pushNamed(
+      context,
+      '/classified-category',
+      arguments: {
+        'categoryId': cat.id.toString(),
+        'categorySlug': cat.slug ?? cat.id.toString(),
+      },
+    );
   }
 
   @override
