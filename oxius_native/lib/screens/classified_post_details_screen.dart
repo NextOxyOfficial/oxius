@@ -321,10 +321,15 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text(
-          _post!.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        title: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Text(
+            _post!.title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
         backgroundColor: const Color(0xFF10B981),
         foregroundColor: Colors.white,
@@ -334,11 +339,6 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
             icon: const Icon(Icons.share),
             onPressed: _showShareDialog,
             tooltip: 'Share',
-          ),
-          IconButton(
-            icon: const Icon(Icons.flag_outlined),
-            onPressed: _showReportDialog,
-            tooltip: 'Report',
           ),
         ],
       ),
@@ -388,7 +388,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                         
                         const SizedBox(height: 8),
                         
-                        // Views and ID
+                        // Views, ID, and Report
                         Row(
                           children: [
                             Container(
@@ -425,6 +425,33 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                                   fontSize: 12,
                                   color: Color(0xFF6B7280),
                                   fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            const Spacer(),
+                            InkWell(
+                              onTap: _showReportDialog,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: Colors.red[300]!),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.flag_outlined, size: 14, color: Colors.red[700]),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Report',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.red[700],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -648,35 +675,12 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (_post!.negotiable == true)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF10B981)),
-                  ),
-                  child: const Text(
-                    'Negotiable',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF10B981),
-                    ),
-                  ),
-                ),
-              if (_post!.negotiable == true) const SizedBox(height: 4),
-              Text(
-                _post!.getRelativeTime(),
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF6B7280),
-                ),
-              ),
-            ],
+          Text(
+            _post!.getRelativeTime(),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF6B7280),
+            ),
           ),
         ],
       ),
