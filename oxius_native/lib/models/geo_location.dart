@@ -79,8 +79,8 @@ class Region {
     return Region(
       id: json['id']?.toString() ?? '',
       nameEng: json['name_eng']?.toString() ?? '',
-      nameBn: json['name_bn']?.toString(),
-      countryNameEng: json['country_name_eng']?.toString(),
+      nameBn: json['name_ban']?.toString() ?? json['name_bn']?.toString(),
+      countryNameEng: json['country']?.toString() ?? json['country_name_eng']?.toString(),
     );
   }
 
@@ -111,8 +111,8 @@ class City {
     return City(
       id: json['id']?.toString() ?? '',
       nameEng: json['name_eng']?.toString() ?? '',
-      nameBn: json['name_bn']?.toString(),
-      regionNameEng: json['region_name_eng']?.toString(),
+      nameBn: json['name_ban']?.toString() ?? json['name_bn']?.toString(),
+      regionNameEng: json['region']?.toString() ?? json['region_name_eng']?.toString(),
     );
   }
 
@@ -143,8 +143,8 @@ class Upazila {
     return Upazila(
       id: json['id']?.toString() ?? '',
       nameEng: json['name_eng']?.toString() ?? '',
-      nameBn: json['name_bn']?.toString(),
-      cityNameEng: json['city_name_eng']?.toString(),
+      nameBn: json['name_ban']?.toString() ?? json['name_bn']?.toString(),
+      cityNameEng: json['city']?.toString() ?? json['city_name_eng']?.toString(),
     );
   }
 

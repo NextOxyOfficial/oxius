@@ -138,51 +138,66 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: Colors.white,
+      elevation: 8,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 500),
+        constraints: const BoxConstraints(maxWidth: 480),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Header
             Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFF10B981),
+                    Color(0xFF059669),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                border: const Border(
-                  bottom: BorderSide(color: Color(0xFFE5E7EB)),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
                 ),
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.location_on,
-                    color: Color(0xFF10B981),
-                    size: 24,
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.location_on,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 16),
                   const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Select Location',
+                          'Select Your Location',
                           style: TextStyle(
                             fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF1F2937),
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Choose your location for relevant content',
+                          'Find ads relevant to your area',
                           style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF6B7280),
+                            fontSize: 13,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
@@ -195,23 +210,17 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
             // Content
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // All Bangladesh Checkbox
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: CheckboxListTile(
-                        value: _allOverBangladesh,
-                        onChanged: (value) {
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: InkWell(
+                        onTap: () {
                           setState(() {
-                            _allOverBangladesh = value ?? false;
+                            _allOverBangladesh = !_allOverBangladesh;
                             if (_allOverBangladesh) {
                               _selectedState = null;
                               _selectedCity = null;
@@ -220,141 +229,282 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                             }
                           });
                         },
-                        title: const Text(
-                          'Show content from all over Bangladesh',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: _allOverBangladesh 
+                              ? const Color(0xFF10B981).withOpacity(0.1)
+                              : const Color(0xFFF9FAFB),
+                          border: Border.all(
+                            color: _allOverBangladesh 
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFE5E7EB),
+                            width: 2,
                           ),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        activeColor: const Color(0xFF10B981),
-                        contentPadding: EdgeInsets.zero,
-                        controlAffinity: ListTileControlAffinity.leading,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: _allOverBangladesh 
+                                    ? const Color(0xFF10B981)
+                                    : Colors.white,
+                                border: Border.all(
+                                  color: _allOverBangladesh 
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFFD1D5DB),
+                                  width: 2,
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: _allOverBangladesh
+                                  ? const Icon(
+                                      Icons.check,
+                                      size: 16,
+                                      color: Colors.white,
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Text(
+                                'All over Bangladesh',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF111827),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                    ),
                     ),
                     
                     // Form Fields
                     if (!_allOverBangladesh) ...[
-                      // Division/State Dropdown
-                      _buildFormField(
-                        label: 'Division',
-                        child: DropdownButtonFormField<String>(
-                          value: _selectedState,
-                          decoration: InputDecoration(
-                            hintText: 'Select Division',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                      // Info text
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFCD34D)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.info_outline, size: 18, color: Color(0xFFB45309)),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Select your specific location to see relevant ads',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFFB45309),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            errorText: _showErrors && _selectedState == null
-                                ? 'Please select a division'
-                                : null,
-                          ),
-                          items: _regions.map((region) {
-                            return DropdownMenuItem(
-                              value: region.nameEng,
-                              child: Text(region.nameEng),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedState = value;
-                              _selectedCity = null;
-                              _selectedUpazila = null;
-                              _cities = [];
-                              _upazilas = [];
-                            });
-                            if (value != null) {
-                              _loadCities(value);
-                            }
-                          },
+                          ],
                         ),
                       ),
+                      ),
                       
-                      const SizedBox(height: 16),
+                      // Division/State Dropdown
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _buildFormField(
+                        label: 'Division',
+                        icon: Icons.map_outlined,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _showErrors && _selectedState == null
+                                  ? Colors.red
+                                  : const Color(0xFFE5E7EB),
+                              width: 2,
+                            ),
+                          ),
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedState,
+                            decoration: const InputDecoration(
+                              hintText: 'Choose your division',
+                              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                            ),
+                            isExpanded: true,
+                            icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF6B7280)),
+                            items: _regions.map((region) {
+                              return DropdownMenuItem(
+                                value: region.nameEng,
+                                child: Text(
+                                  region.nameEng,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Color(0xFF111827),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedState = value;
+                                _selectedCity = null;
+                                _selectedUpazila = null;
+                                _cities = [];
+                                _upazilas = [];
+                              });
+                              if (value != null) {
+                                _loadCities(value);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      ),
+                      
+                      const SizedBox(height: 20),
                       
                       // City Dropdown
-                      _buildFormField(
-                        label: 'City',
-                        child: DropdownButtonFormField<String>(
-                          value: _selectedCity,
-                          decoration: InputDecoration(
-                            hintText: 'Select City',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _buildFormField(
+                        label: 'City / District',
+                        icon: Icons.location_city_outlined,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: _selectedState == null 
+                                ? const Color(0xFFF9FAFB)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _showErrors && _selectedCity == null && _selectedState != null
+                                  ? Colors.red
+                                  : const Color(0xFFE5E7EB),
+                              width: 2,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            errorText: _showErrors && _selectedCity == null && _selectedState != null
-                                ? 'Please select a city'
-                                : null,
                           ),
-                          items: _cities.map((city) {
-                            return DropdownMenuItem(
-                              value: city.nameEng,
-                              child: Text(city.nameEng),
-                            );
-                          }).toList(),
-                          onChanged: _selectedState == null
-                              ? null
-                              : (value) {
-                                  setState(() {
-                                    _selectedCity = value;
-                                    _selectedUpazila = null;
-                                    _upazilas = [];
-                                  });
-                                  if (value != null) {
-                                    _loadUpazilas(value);
-                                  }
-                                },
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedCity,
+                            decoration: const InputDecoration(
+                              hintText: 'Choose your city',
+                              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                            ),
+                            isExpanded: true,
+                            icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF6B7280)),
+                            items: _cities.map((city) {
+                              return DropdownMenuItem(
+                                value: city.nameEng,
+                                child: Text(
+                                  city.nameEng,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Color(0xFF111827),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: _selectedState == null
+                                ? null
+                                : (value) {
+                                    setState(() {
+                                      _selectedCity = value;
+                                      _selectedUpazila = null;
+                                      _upazilas = [];
+                                    });
+                                    if (value != null) {
+                                      _loadUpazilas(value);
+                                    }
+                                  },
+                          ),
                         ),
                       ),
+                      ),
                       
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       
                       // Upazila/Area Dropdown
-                      _buildFormField(
-                        label: 'Area/Upazila',
-                        child: DropdownButtonFormField<String>(
-                          value: _selectedUpazila,
-                          decoration: InputDecoration(
-                            hintText: 'Select Area/Upazila',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _buildFormField(
+                        label: 'Area / Upazila',
+                        icon: Icons.pin_drop_outlined,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: _selectedCity == null 
+                                ? const Color(0xFFF9FAFB)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _showErrors && _selectedUpazila == null && _selectedCity != null
+                                  ? Colors.red
+                                  : const Color(0xFFE5E7EB),
+                              width: 2,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            errorText: _showErrors && _selectedUpazila == null && _selectedCity != null
-                                ? 'Please select an area'
-                                : null,
                           ),
-                          items: _upazilas.map((upazila) {
-                            return DropdownMenuItem(
-                              value: upazila.nameEng,
-                              child: Text(upazila.nameEng),
-                            );
-                          }).toList(),
-                          onChanged: _selectedCity == null
-                              ? null
-                              : (value) {
-                                  setState(() => _selectedUpazila = value);
-                                },
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedUpazila,
+                            decoration: const InputDecoration(
+                              hintText: 'Choose your area',
+                              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                            ),
+                            isExpanded: true,
+                            icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF6B7280)),
+                            items: _upazilas.map((upazila) {
+                              return DropdownMenuItem(
+                                value: upazila.nameEng,
+                                child: Text(
+                                  upazila.nameEng,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Color(0xFF111827),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: _selectedCity == null
+                                ? null
+                                : (value) {
+                                    setState(() => _selectedUpazila = value);
+                                  },
+                          ),
                         ),
+                      ),
                       ),
                     ],
                     
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     
                     // Submit Button
-                    SizedBox(
-                      height: 48,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: SizedBox(
+                      height: 52,
                       child: ElevatedButton(
                         onPressed: _isSubmitDisabled && !_isLoading
                             ? null
@@ -362,30 +512,40 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF10B981),
                           disabledBackgroundColor: const Color(0xFFE5E7EB),
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 0,
                         ),
                         child: _isLoading
                             ? const SizedBox(
-                                height: 20,
-                                width: 20,
+                                height: 22,
+                                width: 22,
                                 child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                                  strokeWidth: 2.5,
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               )
-                            : const Text(
-                                'Set Location',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.check_circle_outline, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _allOverBangladesh ? 'Continue' : 'Set My Location',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
                               ),
                       ),
                     ),
+                    ),
+                    
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
@@ -399,18 +559,27 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
   Widget _buildFormField({
     required String label,
     required Widget child,
+    IconData? icon,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 18,
+                color: const Color(0xFF10B981),
+              ),
+              const SizedBox(width: 6),
+            ],
             Text(
               label,
               style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF374151),
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
               ),
             ),
             const SizedBox(width: 4),
@@ -418,12 +587,13 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
               '*',
               style: TextStyle(
                 color: Colors.red,
-                fontSize: 14,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         child,
       ],
     );

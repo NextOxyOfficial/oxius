@@ -27,7 +27,8 @@ class GeoLocationService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final results = data['data'] as List? ?? data as List? ?? [];
+        // Backend returns array directly, not wrapped in 'data'
+        final results = data is List ? data : [];
         return results
             .map((item) => Region.fromJson(item as Map<String, dynamic>))
             .toList();
@@ -53,7 +54,8 @@ class GeoLocationService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final results = data['data'] as List? ?? data as List? ?? [];
+        // Backend returns array directly, not wrapped in 'data'
+        final results = data is List ? data : [];
         return results
             .map((item) => City.fromJson(item as Map<String, dynamic>))
             .toList();
@@ -79,7 +81,8 @@ class GeoLocationService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final results = data['data'] as List? ?? data as List? ?? [];
+        // Backend returns array directly, not wrapped in 'data'
+        final results = data is List ? data : [];
         return results
             .map((item) => Upazila.fromJson(item as Map<String, dynamic>))
             .toList();
