@@ -463,16 +463,16 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
           );
         },
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Image
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
                 child: Container(
-                  width: 110,
-                  height: 110,
+                  width: 85,
+                  height: 85,
                   color: const Color(0xFFF3F4F6),
                   child: post.medias != null && post.medias!.isNotEmpty
                       ? CachedNetworkImage(
@@ -480,51 +480,101 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                           fit: BoxFit.cover,
                           placeholder: (context, url) => const Center(
                             child: SizedBox(
-                              width: 24,
-                              height: 24,
+                              width: 20,
+                              height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
                               ),
                             ),
                           ),
-                          errorWidget: (context, url, error) => Icon(
-                            Icons.image_not_supported,
-                            color: Colors.grey[400],
-                            size: 32,
+                          errorWidget: (context, url, error) => Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.image_not_supported_outlined,
+                                  color: Colors.grey[400],
+                                  size: 24,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'No photo\nuploaded',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: Colors.grey[500],
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         )
                       : post.categoryDetails?.image != null
                           ? CachedNetworkImage(
                               imageUrl: post.categoryDetails!.image!,
                               fit: BoxFit.cover,
-                              errorWidget: (context, url, error) => Icon(
-                                Icons.category,
-                                color: Colors.grey[400],
-                                size: 32,
+                              errorWidget: (context, url, error) => Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.image_not_supported_outlined,
+                                      color: Colors.grey[400],
+                                      size: 24,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'No photo\nuploaded',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        color: Colors.grey[500],
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             )
-                          : Icon(
-                              Icons.image,
-                              color: Colors.grey[400],
-                              size: 40,
+                          : Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.image_not_supported_outlined,
+                                    color: Colors.grey[400],
+                                    size: 24,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'No photo\nuploaded',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      color: Colors.grey[500],
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                 ),
               ),
               
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               
               // Content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     // Title
                     Text(
                       post.title,
                       style: const TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF111827),
                         height: 1.3,
@@ -533,55 +583,67 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                       overflow: TextOverflow.ellipsis,
                     ),
                     
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 5),
                     
-                    // Price
-                    Text(
-                      post.displayPrice,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF10B981),
-                        letterSpacing: -0.5,
-                      ),
+                    // Price and Time Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Price
+                        Flexible(
+                          child: Text(
+                            post.displayPrice,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF10B981),
+                              letterSpacing: -0.3,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        
+                        const SizedBox(width: 8),
+                        
+                        // Time
+                        Text(
+                          post.getRelativeTime(),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF9CA3AF),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                     
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 5),
                     
                     // Location
                     Row(
                       children: [
                         const Icon(
-                          Icons.location_on,
+                          Icons.location_on_outlined,
                           size: 13,
                           color: Color(0xFF6B7280),
                         ),
                         const SizedBox(width: 3),
                         Expanded(
                           child: Text(
-                            [post.city, post.state]
-                                .where((e) => e != null)
+                            [post.upazila, post.city, post.state]
+                                .where((e) => e != null && e.isNotEmpty)
                                 .join(', '),
                             style: const TextStyle(
                               fontSize: 12,
                               color: Color(0xFF6B7280),
+                              fontWeight: FontWeight.w400,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
-                    ),
-                    
-                    const SizedBox(height: 4),
-                    
-                    // Time
-                    Text(
-                      post.getRelativeTime(),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF9CA3AF),
-                      ),
                     ),
                   ],
                 ),
