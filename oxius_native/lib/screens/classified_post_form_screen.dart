@@ -504,9 +504,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 ),
               );
             }).toList(),
-            onChanged: widget.categoryId == null
-                ? (value) => setState(() => _selectedCategoryId = value)
-                : null,
+            onChanged: (value) => setState(() => _selectedCategoryId = value),
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please select a category';

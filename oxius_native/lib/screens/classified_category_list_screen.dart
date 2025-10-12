@@ -305,21 +305,22 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
             context,
             '/classified-post-form',
             arguments: {
-              'categoryId': widget.categoryId,
+              'categoryId': _categoryDetails?.id ?? widget.categoryId,
             },
           );
         },
         backgroundColor: const Color(0xFF10B981),
         foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
+        icon: const Icon(Icons.add, size: 20),
         label: const Text(
           'Post Ads',
           style: TextStyle(
             fontWeight: FontWeight.w600,
-            fontSize: 15,
+            fontSize: 14,
           ),
         ),
-        elevation: 4,
+        elevation: 3,
+        extendedPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       ),
     );
   }
