@@ -71,13 +71,17 @@ class SalePost {
       district: json['district'] as String?,
       area: json['area'] as String?,
       categoryId: json['category']?.toString(),
-      categoryName: json['category_name'] as String?,
-      subcategoryId: json['subcategory']?.toString(),
-      subcategoryName: json['subcategory_name'] as String?,
+      categoryName: json['category_name'] as String? ?? 
+                    (json['category_details'] != null ? json['category_details']['name'] as String? : null),
+      subcategoryId: json['subcategory']?.toString() ?? json['child_category']?.toString(),
+      subcategoryName: json['subcategory_name'] as String? ?? 
+                       (json['child_category_details'] != null ? json['child_category_details']['name'] as String? : null),
       images: json['images'] != null
           ? (json['images'] as List).map((e) => SaleImage.fromJson(e)).toList()
           : null,
-      user: json['user'] != null ? SaleUser.fromJson(json['user']) : null,
+      user: json['user'] != null 
+          ? SaleUser.fromJson(json['user']) 
+          : (json['user_details'] != null ? SaleUser.fromJson(json['user_details']) : null),
       viewsCount: json['view_count'] as int? ?? json['views_count'] as int? ?? 0,
       status: json['status'] as String? ?? 'pending',
       createdAt: json['created_at'] != null

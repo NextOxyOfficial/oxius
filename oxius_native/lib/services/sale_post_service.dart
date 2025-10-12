@@ -33,8 +33,11 @@ class SalePostService {
 
     if (needsAuth) {
       final token = await _getAuthToken();
+      print('Auth token retrieved: ${token != null ? "Yes (${token.substring(0, 20)}...)" : "No"}');
       if (token != null) {
         headers['Authorization'] = 'Bearer $token';
+      } else {
+        print('WARNING: Auth required but no token found!');
       }
     }
 
@@ -249,19 +252,26 @@ class SalePostService {
   Future<SalePost?> markAsSold(String slug) async {
     try {
       final uri = Uri.parse('$baseUrl/sale/posts/$slug/mark_as_sold/');
+      print('Marking as sold URL: $uri');
+      
       final response = await client.post(
         uri,
         headers: await _getHeaders(needsAuth: true),
       );
 
+      print('Mark as sold response status: ${response.statusCode}');
+      print('Mark as sold response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         return SalePost.fromJson(data);
+      } else {
+        print('Failed to mark as sold. Status: ${response.statusCode}, Body: ${response.body}');
       }
       return null;
     } catch (e) {
       print('Error marking post as sold: $e');
-      return null;
+      rethrow; // Rethrow to show actual error in UI
     }
   }
 }

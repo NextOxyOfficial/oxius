@@ -593,19 +593,20 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 6),
-                      // Price
-                      Text(
-                        _formatPrice(post.price),
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF10B981),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      // Stats
+                      // Price, View Count, and Date in same row
                       Row(
                         children: [
+                          // Price on the left
+                          Text(
+                            _formatPrice(post.price),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF10B981),
+                            ),
+                          ),
+                          const Spacer(),
+                          // View Count and Date on the right
                           Icon(Icons.remove_red_eye_outlined, size: 11, color: Colors.grey.shade500),
                           const SizedBox(width: 3),
                           Text(
@@ -619,91 +620,32 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                           const SizedBox(width: 8),
                           Icon(Icons.access_time, size: 11, color: Colors.grey.shade500),
                           const SizedBox(width: 3),
-                          Flexible(
-                            child: Text(
-                              _formatDate(post.createdAt),
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                          Text(
+                            _formatDate(post.createdAt),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w600,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      // Action Row: Activate/Deactivate | Edit | Delete | Status
+                      // Action Row: Mark as Sold | Edit | Delete | Status
                       Row(
                         children: [
-                          // Activate/Deactivate/Mark as Sold Button with Menu
-                          if (post.status != 'expired') ...[
-                            PopupMenuButton<String>(
-                              onSelected: (value) {
-                                if (value == 'toggle') {
-                                  _togglePostStatus(post);
-                                } else if (value == 'mark_sold') {
-                                  _markAsSold(post);
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                if (post.status != 'sold') ...[
-                                  PopupMenuItem(
-                                    value: 'toggle',
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          post.isActive ? Icons.toggle_off : Icons.toggle_on,
-                                          size: 16,
-                                          color: post.isActive ? Colors.orange.shade700 : const Color(0xFF10B981),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          post.isActive ? 'Deactivate' : 'Activate',
-                                          style: TextStyle(fontSize: 12),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                                if (post.status == 'active') ...[
-                                  PopupMenuItem(
-                                    value: 'mark_sold',
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.shopping_bag,
-                                          size: 16,
-                                          color: Colors.blue.shade700,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'Mark as Sold',
-                                          style: TextStyle(fontSize: 12),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ],
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                          // Mark as Sold Button (only for active posts)
+                          if (post.status == 'active') ...[
+                            GestureDetector(
+                              onTap: () => _markAsSold(post),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                                 decoration: BoxDecoration(
-                                  color: post.status == 'sold'
-                                      ? Colors.blue.shade50
-                                      : post.isActive 
-                                          ? Colors.orange.shade50 
-                                          : const Color(0xFF10B981).withOpacity(0.1),
+                                  color: Colors.blue.shade50,
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                    color: post.status == 'sold'
-                                        ? Colors.blue.shade300
-                                        : post.isActive 
-                                            ? Colors.orange.shade300 
-                                            : const Color(0xFF10B981),
+                                    color: Colors.blue.shade300,
                                     width: 1,
                                   ),
                                 ),
@@ -711,35 +653,19 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      post.status == 'sold' 
-                                          ? Icons.shopping_bag
-                                          : post.isActive ? Icons.toggle_off : Icons.toggle_on,
+                                      Icons.shopping_bag,
+                                      color: Colors.blue.shade700,
                                       size: 12,
-                                      color: post.status == 'sold'
-                                          ? Colors.blue.shade700
-                                          : post.isActive ? Colors.orange.shade700 : const Color(0xFF10B981),
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      post.status == 'sold' 
-                                          ? 'Sold'
-                                          : post.isActive ? 'Stop' : 'Activate',
+                                      'Mark Sold',
                                       style: TextStyle(
                                         fontSize: 9,
-                                        color: post.status == 'sold'
-                                            ? Colors.blue.shade700
-                                            : post.isActive ? Colors.orange.shade700 : const Color(0xFF10B981),
+                                        color: Colors.blue.shade700,
                                         fontWeight: FontWeight.w700,
                                       ),
                                     ),
-                                    if (post.status != 'sold') ...[
-                                      const SizedBox(width: 2),
-                                      Icon(
-                                        Icons.arrow_drop_down,
-                                        size: 14,
-                                        color: post.isActive ? Colors.orange.shade700 : const Color(0xFF10B981),
-                                      ),
-                                    ],
                                   ],
                                 ),
                               ),
@@ -1173,6 +1099,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
   }
 
   void _markAsSold(SalePost post) async {
+    print('Attempting to mark post as sold. Slug: ${post.slug}, Status: ${post.status}');
+    
     // Show loading indicator
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -1196,6 +1124,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
 
     try {
       final updatedPost = await _postService.markAsSold(post.slug);
+      print('Mark as sold result: ${updatedPost != null ? "Success" : "Failed"}');
 
       if (updatedPost != null && mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
