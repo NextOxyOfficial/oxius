@@ -6,6 +6,8 @@ import 'screens/my_gigs_screen.dart';
 import 'screens/post_gig_screen.dart';
 import 'screens/classified_category_list_screen.dart';
 import 'screens/classified_post_details_screen.dart';
+import 'screens/classified_post_form_screen.dart';
+import 'screens/my_classified_posts_screen.dart';
 import 'pages/login_page.dart';
 import 'services/auth_service.dart';
 import 'services/user_state_service.dart';
@@ -109,6 +111,18 @@ class MyApp extends StatelessWidget {
                   postId: args?['postId'] ?? '',
                   postSlug: args?['postSlug'] ?? '',
                 ),
+              );
+            } else if (settings.name == '/classified-post-form') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => ClassifiedPostFormScreen(
+                  postId: args?['postId'],
+                  categoryId: args?['categoryId'],
+                ),
+              );
+            } else if (settings.name == '/my-classified-posts') {
+              return MaterialPageRoute(
+                builder: (context) => const MyClassifiedPostsScreen(),
               );
             }
             return null;

@@ -46,21 +46,8 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   void _handleButtonClick(String buttonId) {
-    setState(() {
-      _loadingButtons.add(buttonId);
-    });
-    
-    // Navigate to classified services page (placeholder)
-    // TODO: Implement navigation to /my-classified-services
-    
-    // Remove loading state after navigation simulation
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted) {
-        setState(() {
-          _loadingButtons.remove(buttonId);
-        });
-      }
-    });
+    // Navigate to post form screen
+    Navigator.pushNamed(context, '/classified-post-form');
   }
 
   Future<void> _bootstrap() async {

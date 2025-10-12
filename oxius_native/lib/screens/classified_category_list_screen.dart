@@ -253,9 +253,12 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // Navigate to post ad screen
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Post Ad feature coming soon!')),
+          Navigator.pushNamed(
+            context,
+            '/classified-post-form',
+            arguments: {
+              'categoryId': widget.categoryId,
+            },
           );
         },
         backgroundColor: const Color(0xFF10B981),

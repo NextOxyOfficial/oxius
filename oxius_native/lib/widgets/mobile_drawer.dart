@@ -306,17 +306,12 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     ),
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('classified_service', fallback: 'My Services'),
+                      title: _translationService.t('classified_service', fallback: 'My Posts'),
                       icon: Icons.list_alt,
                       iconColor: const Color(0xFF10B981),
                       onTap: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${_translationService.t('classified_service', fallback: 'My Services')} ${_translationService.t('coming_soon', fallback: 'coming soon!')}'),
-                            backgroundColor: const Color(0xFF10B981),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/my-classified-posts');
                       },
                     ),
                     _buildDrawerItem(
