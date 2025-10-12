@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import '../models/sale_post.dart';
+import '../models/geo_location.dart';
 import '../services/sale_post_service.dart';
+import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
 import '../services/translation_service.dart';
 import 'package:intl/intl.dart';
@@ -26,6 +28,7 @@ class SaleListScreen extends StatefulWidget {
 
 class _SaleListScreenState extends State<SaleListScreen> {
   late SalePostService _postService;
+  late GeoLocationService _geoService;
   final TranslationService _translationService = TranslationService();
   
   List<SalePost> _posts = [];
@@ -45,10 +48,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
   String? _selectedDistrict;
   String? _selectedArea;
   
-  // Location data
-  List<String> _divisions = [];
-  List<String> _districts = [];
-  List<String> _areas = [];
+  // Location data (using proper geo models)
+  List<Region> _regions = [];
+  List<City> _cities = [];
+  List<Upazila> _upazilas = [];
   
   // Price range
   double? _minPrice;
@@ -77,10 +80,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
   void initState() {
     super.initState();
     _postService = SalePostService(baseUrl: ApiService.baseUrl);
+    _geoService = GeoLocationService(baseUrl: ApiService.baseUrl);
     _selectedCategoryId = widget.categoryId;
     // Removed scroll listener - using "See More" button instead
     _fetchCategories();
-    _fetchDivisions();
+    _fetchRegions();
     _fetchPosts();
     _fetchRecentListings();
     _recentScrollController.addListener(_onRecentScroll);
@@ -121,61 +125,61 @@ class _SaleListScreenState extends State<SaleListScreen> {
     }
   }
 
-  Future<void> _fetchDivisions() async {
+  Future<void> _fetchRegions([StateSetter? setModalState]) async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiService.baseUrl}/geo/divisions/'),
-      );
-      if (response.statusCode == 200) {
-        final List data = json.decode(response.body);
-        if (mounted) {
-          setState(() {
-            _divisions = data.map((d) => d['name'].toString()).toList();
+      final regions = await _geoService.fetchRegions();
+      if (mounted) {
+        setState(() {
+          _regions = regions;
+        });
+        if (setModalState != null) {
+          setModalState(() {
+            _regions = regions;
           });
         }
       }
     } catch (e) {
-      print('Error fetching divisions: $e');
+      print('Error fetching regions: $e');
     }
   }
 
-  Future<void> _fetchDistricts(String division) async {
+  Future<void> _fetchCities(String regionName, [StateSetter? setModalState]) async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiService.baseUrl}/geo/districts/?division=$division'),
-      );
-      if (response.statusCode == 200) {
-        final List data = json.decode(response.body);
-        if (mounted) {
-          setState(() {
-            _districts = data.map((d) => d['name'].toString()).toList();
-            _selectedDistrict = null;
-            _selectedArea = null;
-            _areas = [];
+      final cities = await _geoService.fetchCities(regionName: regionName);
+      if (mounted) {
+        setState(() {
+          _cities = cities;
+          _selectedDistrict = null;
+          _selectedArea = null;
+          _upazilas = [];
+        });
+        if (setModalState != null) {
+          setModalState(() {
+            _cities = cities;
           });
         }
       }
     } catch (e) {
-      print('Error fetching districts: $e');
+      print('Error fetching cities: $e');
     }
   }
 
-  Future<void> _fetchAreas(String district) async {
+  Future<void> _fetchUpazilas(String cityName, [StateSetter? setModalState]) async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiService.baseUrl}/geo/areas/?district=$district'),
-      );
-      if (response.statusCode == 200) {
-        final List data = json.decode(response.body);
-        if (mounted) {
-          setState(() {
-            _areas = data.map((a) => a['name'].toString()).toList();
-            _selectedArea = null;
+      final upazilas = await _geoService.fetchUpazilas(cityName: cityName);
+      if (mounted) {
+        setState(() {
+          _upazilas = upazilas;
+          _selectedArea = null;
+        });
+        if (setModalState != null) {
+          setModalState(() {
+            _upazilas = upazilas;
           });
         }
       }
     } catch (e) {
-      print('Error fetching areas: $e');
+      print('Error fetching upazilas: $e');
     }
   }
 
@@ -353,6 +357,186 @@ class _SaleListScreenState extends State<SaleListScreen> {
     }
   }
 
+  bool _hasActiveFilters() {
+    return _selectedCategoryId != null ||
+        _selectedSubcategoryId != null ||
+        _selectedDivision != null ||
+        _selectedDistrict != null ||
+        _selectedArea != null ||
+        _minPrice != null ||
+        _maxPrice != null ||
+        _selectedCondition != null ||
+        _searchQuery != null;
+  }
+
+  Widget _buildAppliedFilters() {
+    return Container(
+      margin: const EdgeInsets.only(top: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Applied Filters',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+              ),
+              const Spacer(),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedCategoryId = widget.categoryId;
+                    _selectedSubcategoryId = null;
+                    _selectedCondition = null;
+                    _selectedDivision = null;
+                    _selectedDistrict = null;
+                    _selectedArea = null;
+                    _minPrice = null;
+                    _maxPrice = null;
+                    _searchQuery = null;
+                    _searchController.clear();
+                    _minPriceController.clear();
+                    _maxPriceController.clear();
+                    _cities = [];
+                    _upazilas = [];
+                  });
+                  _applyFilters();
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(50, 30),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text('Clear All', style: TextStyle(fontSize: 11, color: Color(0xFFEF4444))),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              if (_selectedCategoryId != null)
+                _buildFilterChip(
+                  _getCategoryName(_selectedCategoryId) ?? 'Category',
+                  Icons.category,
+                  () {
+                    setState(() {
+                      _selectedCategoryId = null;
+                      _selectedSubcategoryId = null;
+                    });
+                    _applyFilters();
+                  },
+                ),
+              if (_selectedDivision != null)
+                _buildFilterChip(
+                  _selectedDivision!,
+                  Icons.location_on,
+                  () {
+                    setState(() {
+                      _selectedDivision = null;
+                      _selectedDistrict = null;
+                      _selectedArea = null;
+                      _cities = [];
+                      _upazilas = [];
+                    });
+                    _applyFilters();
+                  },
+                ),
+              if (_selectedDistrict != null)
+                _buildFilterChip(
+                  _selectedDistrict!,
+                  Icons.location_city,
+                  () {
+                    setState(() {
+                      _selectedDistrict = null;
+                      _selectedArea = null;
+                      _upazilas = [];
+                    });
+                    _applyFilters();
+                  },
+                ),
+              if (_selectedArea != null)
+                _buildFilterChip(
+                  _selectedArea!,
+                  Icons.place,
+                  () {
+                    setState(() => _selectedArea = null);
+                    _applyFilters();
+                  },
+                ),
+              if (_minPrice != null || _maxPrice != null)
+                _buildFilterChip(
+                  '৳${_minPrice?.toInt() ?? 0} - ৳${_maxPrice?.toInt() ?? 'Any'}',
+                  Icons.attach_money,
+                  () {
+                    setState(() {
+                      _minPrice = null;
+                      _maxPrice = null;
+                      _minPriceController.clear();
+                      _maxPriceController.clear();
+                    });
+                    _applyFilters();
+                  },
+                ),
+              if (_selectedCondition != null)
+                _buildFilterChip(
+                  _selectedCondition!.replaceAll('_', ' ').toUpperCase(),
+                  Icons.stars,
+                  () {
+                    setState(() => _selectedCondition = null);
+                    _applyFilters();
+                  },
+                ),
+              if (_searchQuery != null)
+                _buildFilterChip(
+                  '"$_searchQuery"',
+                  Icons.search,
+                  () {
+                    setState(() {
+                      _searchQuery = null;
+                      _searchController.clear();
+                    });
+                    _applyFilters();
+                  },
+                  color: const Color(0xFF10B981),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, IconData icon, VoidCallback onRemove, {Color color = const Color(0xFF6B7280)}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(width: 4),
+          GestureDetector(
+            onTap: onRemove,
+            child: Icon(Icons.close, size: 14, color: color),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -382,11 +566,18 @@ class _SaleListScreenState extends State<SaleListScreen> {
       ),
       body: Column(
         children: [
+          // Location Header
+          if (_selectedDivision != null || _selectedDistrict != null || _selectedArea != null)
+            _buildLocationHeader(),
+          
           // Search Bar
           _buildSearchBar(),
           
           // Results Count & Sort
           _buildResultsBar(),
+          
+          // Applied Filters
+          if (_hasActiveFilters()) _buildAppliedFilters(),
           
           // Posts Grid with additional sections
           Expanded(
@@ -423,6 +614,73 @@ class _SaleListScreenState extends State<SaleListScreen> {
         elevation: 4,
         icon: const Icon(Icons.add, size: 22),
         label: const Text('Post Ad', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
+
+  Widget _buildLocationHeader() {
+    String locationText = '';
+    if (_selectedArea != null) {
+      locationText = '$_selectedArea, $_selectedDistrict, $_selectedDivision';
+    } else if (_selectedDistrict != null) {
+      locationText = '$_selectedDistrict, $_selectedDivision';
+    } else if (_selectedDivision != null) {
+      locationText = _selectedDivision!;
+    }
+
+    return Container(
+      color: const Color(0xFF10B981),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(Icons.location_on, color: Colors.white, size: 16),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Showing results for',
+                  style: TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  locationText,
+                  style: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w700),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: () {
+              setState(() {
+                _selectedDivision = null;
+                _selectedDistrict = null;
+                _selectedArea = null;
+                _cities = [];
+                _upazilas = [];
+              });
+              _applyFilters();
+            },
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 16),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -525,8 +783,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                   _selectedDivision = null;
                                   _selectedDistrict = null;
                                   _selectedArea = null;
-                                  _districts = [];
-                                  _areas = [];
+                                  _cities = [];
+                                  _upazilas = [];
                                 });
                                 _applyFilters();
                               },
@@ -1272,17 +1530,21 @@ class _SaleListScreenState extends State<SaleListScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: const EdgeInsets.all(20),
-          child: Column(
+      isDismissible: true,
+      enableDrag: true,
+      builder: (context) => StatefulBuilder(
+        builder: (BuildContext context, StateSetter setModalState) {
+          return DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (context, scrollController) => Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
@@ -1294,19 +1556,21 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      setState(() {
-                        _selectedCategoryId = widget.categoryId;
-                        _selectedSubcategoryId = null;
-                        _selectedCondition = null;
-                        _selectedDivision = null;
-                        _selectedDistrict = null;
-                        _selectedArea = null;
-                        _minPrice = null;
-                        _maxPrice = null;
-                        _minPriceController.clear();
-                        _maxPriceController.clear();
-                        _districts = [];
-                        _areas = [];
+                      setModalState(() {
+                        setState(() {
+                          _selectedCategoryId = widget.categoryId;
+                          _selectedSubcategoryId = null;
+                          _selectedCondition = null;
+                          _selectedDivision = null;
+                          _selectedDistrict = null;
+                          _selectedArea = null;
+                          _minPrice = null;
+                          _maxPrice = null;
+                          _minPriceController.clear();
+                          _maxPriceController.clear();
+                          _cities = [];
+                          _upazilas = [];
+                        });
                       });
                       _applyFilters();
                       Navigator.pop(context);
@@ -1320,6 +1584,105 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 child: ListView(
                   controller: scrollController,
                   children: [
+                    // Location Filters (Moved to Top)
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 18, color: Color(0xFF10B981)),
+                        const SizedBox(width: 8),
+                        const Text('Location', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    // Division Dropdown
+                    DropdownButtonFormField<String>(
+                      value: _regions.any((r) => r.nameEng == _selectedDivision) ? _selectedDivision : null,
+                      decoration: InputDecoration(
+                        labelText: 'Division',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      items: [
+                        const DropdownMenuItem<String>(value: null, child: Text('All Divisions')),
+                        ..._regions.map((region) => DropdownMenuItem(
+                          value: region.nameEng,
+                          child: Text(region.nameEng),
+                        )),
+                      ],
+                      onChanged: (value) {
+                        setModalState(() {
+                          setState(() {
+                            _selectedDivision = value;
+                            if (value != null) {
+                              _fetchCities(value, setModalState);
+                            } else {
+                              _cities = [];
+                              _upazilas = [];
+                              _selectedDistrict = null;
+                              _selectedArea = null;
+                            }
+                          });
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // District Dropdown
+                    DropdownButtonFormField<String>(
+                      value: _cities.any((c) => c.nameEng == _selectedDistrict) ? _selectedDistrict : null,
+                      decoration: InputDecoration(
+                        labelText: 'District',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      items: [
+                        const DropdownMenuItem<String>(value: null, child: Text('All Districts')),
+                        ..._cities.map((city) => DropdownMenuItem(
+                          value: city.nameEng,
+                          child: Text(city.nameEng),
+                        )),
+                      ],
+                      onChanged: _selectedDivision == null ? null : (value) {
+                        setModalState(() {
+                          setState(() {
+                            _selectedDistrict = value;
+                            if (value != null) {
+                              _fetchUpazilas(value, setModalState);
+                            } else {
+                              _upazilas = [];
+                              _selectedArea = null;
+                            }
+                          });
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Area Dropdown
+                    DropdownButtonFormField<String>(
+                      value: _upazilas.any((u) => u.nameEng == _selectedArea) ? _selectedArea : null,
+                      decoration: InputDecoration(
+                        labelText: 'Area',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      items: [
+                        const DropdownMenuItem<String>(value: null, child: Text('All Areas')),
+                        ..._upazilas.map((upazila) => DropdownMenuItem(
+                          value: upazila.nameEng,
+                          child: Text(upazila.nameEng),
+                        )),
+                      ],
+                      onChanged: _selectedDistrict == null ? null : (value) {
+                        setModalState(() {
+                          setState(() {
+                            _selectedArea = value;
+                          });
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    
                     // Category Filter with Subcategories
                     if (_categories.isNotEmpty) ...[
                       Row(
@@ -1348,9 +1711,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               selected: _selectedCategoryId == null,
                               selectedTileColor: const Color(0xFF10B981).withOpacity(0.1),
                               onTap: () {
-                                setState(() {
-                                  _selectedCategoryId = null;
-                                  _selectedSubcategoryId = null;
+                                setModalState(() {
+                                  setState(() {
+                                    _selectedCategoryId = null;
+                                    _selectedSubcategoryId = null;
+                                  });
                                 });
                               },
                             ),
@@ -1365,11 +1730,39 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 children: [
                                   ListTile(
                                     dense: true,
-                                    leading: Icon(
-                                      Icons.folder_outlined,
-                                      color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade600,
-                                      size: 20,
-                                    ),
+                                    leading: category.icon != null && category.icon!.isNotEmpty
+                                      ? Container(
+                                          width: 32,
+                                          height: 32,
+                                          decoration: BoxDecoration(
+                                            color: isSelected ? const Color(0xFF10B981).withOpacity(0.1) : Colors.grey.shade100,
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(6),
+                                            child: CachedNetworkImage(
+                                              imageUrl: category.icon!,
+                                              width: 32,
+                                              height: 32,
+                                              fit: BoxFit.cover,
+                                              placeholder: (context, url) => Icon(
+                                                Icons.folder_outlined,
+                                                color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade600,
+                                                size: 20,
+                                              ),
+                                              errorWidget: (context, url, error) => Icon(
+                                                Icons.folder_outlined,
+                                                color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade600,
+                                                size: 20,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : Icon(
+                                          Icons.folder_outlined,
+                                          color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade600,
+                                          size: 20,
+                                        ),
                                     title: Text(
                                       category.name,
                                       style: TextStyle(
@@ -1394,17 +1787,21 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                     selectedTileColor: const Color(0xFF10B981).withOpacity(0.1),
                                     onTap: () {
                                       if (hasSubcategories) {
-                                        setState(() {
-                                          if (isExpanded) {
-                                            _expandedCategories.remove(category.id);
-                                          } else {
-                                            _expandedCategories.add(category.id);
-                                          }
+                                        setModalState(() {
+                                          setState(() {
+                                            if (isExpanded) {
+                                              _expandedCategories.remove(category.id);
+                                            } else {
+                                              _expandedCategories.add(category.id);
+                                            }
+                                          });
                                         });
                                       } else {
-                                        setState(() {
-                                          _selectedCategoryId = category.id;
-                                          _selectedSubcategoryId = null;
+                                        setModalState(() {
+                                          setState(() {
+                                            _selectedCategoryId = category.id;
+                                            _selectedSubcategoryId = null;
+                                          });
                                         });
                                       }
                                     },
@@ -1433,9 +1830,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                             selected: isSubSelected,
                                             selectedTileColor: const Color(0xFF10B981).withOpacity(0.15),
                                             onTap: () {
-                                              setState(() {
-                                                _selectedCategoryId = category.id;
-                                                _selectedSubcategoryId = sub.id;
+                                              setModalState(() {
+                                                setState(() {
+                                                  _selectedCategoryId = category.id;
+                                                  _selectedSubcategoryId = sub.id;
+                                                });
                                               });
                                             },
                                           );
@@ -1463,101 +1862,16 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           label: Text(condition.replaceAll('_', ' ').toUpperCase()),
                           selected: isSelected,
                           onSelected: (selected) {
-                            setState(() {
-                              _selectedCondition = selected ? condition : null;
+                            setModalState(() {
+                              setState(() {
+                                _selectedCondition = selected ? condition : null;
+                              });
                             });
                           },
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 16),
-                    
-                    // Location Filters
-                    const Text('Location', style: TextStyle(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 8),
-                    
-                    // Division Dropdown
-                    DropdownButtonFormField<String>(
-                      value: _selectedDivision,
-                      decoration: InputDecoration(
-                        labelText: 'Division',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      items: [
-                        const DropdownMenuItem<String>(value: null, child: Text('All Divisions')),
-                        ..._divisions.map((division) => DropdownMenuItem(
-                          value: division,
-                          child: Text(division),
-                        )),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedDivision = value;
-                          if (value != null) {
-                            _fetchDistricts(value);
-                          } else {
-                            _districts = [];
-                            _areas = [];
-                            _selectedDistrict = null;
-                            _selectedArea = null;
-                          }
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    // District Dropdown
-                    DropdownButtonFormField<String>(
-                      value: _selectedDistrict,
-                      decoration: InputDecoration(
-                        labelText: 'District',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      items: [
-                        const DropdownMenuItem<String>(value: null, child: Text('All Districts')),
-                        ..._districts.map((district) => DropdownMenuItem(
-                          value: district,
-                          child: Text(district),
-                        )),
-                      ],
-                      onChanged: _selectedDivision == null ? null : (value) {
-                        setState(() {
-                          _selectedDistrict = value;
-                          if (value != null) {
-                            _fetchAreas(value);
-                          } else {
-                            _areas = [];
-                            _selectedArea = null;
-                          }
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    // Area Dropdown
-                    DropdownButtonFormField<String>(
-                      value: _selectedArea,
-                      decoration: InputDecoration(
-                        labelText: 'Area',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      items: [
-                        const DropdownMenuItem<String>(value: null, child: Text('All Areas')),
-                        ..._areas.map((area) => DropdownMenuItem(
-                          value: area,
-                          child: Text(area),
-                        )),
-                      ],
-                      onChanged: _selectedDistrict == null ? null : (value) {
-                        setState(() {
-                          _selectedArea = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     
                     // Price Range Filter
                     const Text('Price Range', style: TextStyle(fontWeight: FontWeight.w600)),
@@ -1575,8 +1889,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             ),
                             onChanged: (value) {
-                              setState(() {
-                                _minPrice = double.tryParse(value);
+                              setModalState(() {
+                                setState(() {
+                                  _minPrice = double.tryParse(value);
+                                });
                               });
                             },
                           ),
@@ -1593,8 +1909,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             ),
                             onChanged: (value) {
-                              setState(() {
-                                _maxPrice = double.tryParse(value);
+                              setModalState(() {
+                                setState(() {
+                                  _maxPrice = double.tryParse(value);
+                                });
                               });
                             },
                           ),
@@ -1625,6 +1943,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
             ],
           ),
         ),
+      );
+        },
       ),
     );
   }
