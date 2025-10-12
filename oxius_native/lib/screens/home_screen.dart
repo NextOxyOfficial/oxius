@@ -9,10 +9,14 @@ import '../widgets/micro_gigs_section.dart';
 import '../widgets/home/account_balance_section.dart';
 import '../widgets/home/mobile_recharge_section.dart';
 import '../widgets/mobile_sticky_nav.dart';
+import '../widgets/ads_scroll_widget.dart';
 import '../services/scroll_direction_service.dart';
 import '../services/user_state_service.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
+import '../services/classified_post_service.dart';
+import '../services/api_service.dart';
+import '../models/classified_post.dart';
 import 'wallet/wallet_screen.dart';
 import 'settings_screen.dart';
 import 'inbox_screen.dart';
@@ -27,10 +31,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late ScrollController _scrollController;
+  late ClassifiedPostService _postService;
   final ScrollDirectionService _scrollService = ScrollDirectionService();
   final TranslationService _translationService = TranslationService();
   bool _disposed = false;
   bool _isDropdownOpen = false; // Track dropdown menu state
+  List<ClassifiedPost>? _recentPosts;
+  bool _isLoadingPosts = false;
 
   // Helper method to translate keys
   String t(String key) {
@@ -41,12 +48,43 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _postService = ClassifiedPostService(baseUrl: ApiService.baseUrl);
     // Don't initialize the scroll service immediately - wait for the widget to be built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !_disposed) {
         _scrollService.initialize(_scrollController);
       }
     });
+    _fetchRecentPosts();
+  }
+
+  Future<void> _fetchRecentPosts() async {
+    if (_isLoadingPosts) return;
+    
+    print('🔍 HomeScreen: Fetching recent posts...');
+    setState(() => _isLoadingPosts = true);
+    
+    try {
+      final posts = await _postService.fetchRecentPosts(limit: 10);
+      
+      print('✅ HomeScreen: Fetched ${posts.length} recent posts');
+      
+      if (mounted && !_disposed) {
+        setState(() {
+          _recentPosts = posts;
+          _isLoadingPosts = false;
+          print('📊 HomeScreen: _recentPosts now has ${_recentPosts?.length ?? 0} items');
+        });
+      }
+    } catch (e) {
+      print('❌ Error fetching recent posts: $e');
+      if (mounted && !_disposed) {
+        setState(() {
+          _recentPosts = [];
+          _isLoadingPosts = false;
+        });
+      }
+    }
   }
 
   @override
@@ -111,8 +149,54 @@ class _HomeScreenState extends State<HomeScreen> {
                   // 4. Classified Services - Service categories
                   const ClassifiedServicesSection(),
                   
-                  // 5. Recent Ads Scroll - TODO: Implement AdsScroll widget
-                  // This shows recent classified posts (classifiedLatestPosts)
+                  // 5. Recent Ads Scroll - Horizontal scrolling carousel of recent posts
+                  if (_isLoadingPosts)
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xFF10B981),
+                          ),
+                        ),
+                      ),
+                    )
+                  else if (_recentPosts != null && _recentPosts!.isNotEmpty)
+                    AdsScrollWidget(
+                      ads: _recentPosts,
+                      sectionTitle: t('recent_post'),
+                    )
+                  else
+                    // Debug: Show message if no posts
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            const Icon(Icons.info_outline, size: 40, color: Colors.grey),
+                            const SizedBox(height: 8),
+                            Text(
+                              'No recent posts available',
+                              style: TextStyle(color: Colors.grey.shade600),
+                            ),
+                            Text(
+                              'Posts loaded: ${_recentPosts?.length ?? 0}',
+                              style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   
                   // 6. eShop Product Slider - Product carousel
                   const EshopSection(),

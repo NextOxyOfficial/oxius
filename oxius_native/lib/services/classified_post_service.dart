@@ -57,6 +57,59 @@ class ClassifiedPostService {
     }
   }
 
+  /// Fetch recent classified posts (for home page carousel)
+  /// Uses the same endpoint as Vue: /classified-posts/?limit=X
+  Future<List<ClassifiedPost>> fetchRecentPosts({int limit = 10}) async {
+    try {
+      final uri = Uri.parse('$baseUrl/classified-posts/').replace(
+        queryParameters: {'limit': limit.toString()},
+      );
+
+      print('🌐 Fetching recent posts from: $uri');
+
+      final response = await client.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('📡 Response status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('📦 Response data type: ${data.runtimeType}');
+        
+        List<dynamic> postsData;
+        
+        // Handle both paginated and direct array responses
+        if (data is Map && data.containsKey('results')) {
+          postsData = data['results'] as List;
+          print('✅ Found ${postsData.length} posts in paginated response');
+        } else if (data is List) {
+          postsData = data;
+          print('✅ Found ${postsData.length} posts in direct array response');
+        } else {
+          print('⚠️ Unexpected response format');
+          return [];
+        }
+
+        final posts = postsData
+            .map((item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
+            .toList();
+        
+        print('🎯 Successfully parsed ${posts.length} posts');
+        return posts;
+      } else {
+        print('❌ Failed to fetch posts: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return [];
+      }
+    } catch (e, stackTrace) {
+      print('❌ Error fetching recent posts: $e');
+      print('Stack trace: $stackTrace');
+      return [];
+    }
+  }
+
   /// Fetch classified posts with filters
   Future<ClassifiedPostsResponse> fetchPosts({
     String? categoryId,
