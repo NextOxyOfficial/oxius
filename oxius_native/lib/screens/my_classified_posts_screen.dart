@@ -195,8 +195,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
+          TextButton.icon(
             onPressed: () async {
               final result = await Navigator.push(
                 context,
@@ -208,7 +207,20 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                 _loadPosts();
               }
             },
+            icon: const Icon(Icons.add, color: Colors.white, size: 20),
+            label: const Text(
+              'Create Post',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: _isLoading
