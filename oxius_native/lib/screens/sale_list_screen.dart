@@ -357,6 +357,21 @@ class _SaleListScreenState extends State<SaleListScreen> {
     }
   }
 
+  String _getSortLabel(String sortBy) {
+    switch (sortBy) {
+      case 'newest':
+        return 'Newest';
+      case 'price_low':
+        return 'Price: Low';
+      case 'price_high':
+        return 'Price: High';
+      case 'most_viewed':
+        return 'Most Viewed';
+      default:
+        return 'Sort';
+    }
+  }
+
   bool _hasActiveFilters() {
     return _selectedCategoryId != null ||
         _selectedSubcategoryId != null ||
@@ -816,7 +831,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     Icon(Icons.sort_rounded, size: 16, color: Colors.grey.shade700),
                     const SizedBox(width: 6),
                     Text(
-                      'Sort',
+                      _getSortLabel(_sortBy),
                       style: TextStyle(fontSize: 13, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(width: 4),
@@ -869,7 +884,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 4),
             child: Text(
               _selectedCategoryId != null 
                   ? '${_getCategoryName(_selectedCategoryId)} Listings'
@@ -1033,75 +1048,82 @@ class _SaleListScreenState extends State<SaleListScreen> {
             ),
             
             // Content
-            Padding(
-              padding: const EdgeInsets.all(4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Title
-                  Text(
-                    post.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937),
-                      height: 1.2,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title - Fixed 2 lines
+                    Text(
+                      post.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
+                        height: 1.2,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  
-                  // Price and Date Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _formatPrice(post.price),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF10B981),
-                            height: 1,
+                    const SizedBox(height: 6),
+                    
+                    // Price and Date Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _formatPrice(post.price),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF10B981),
+                              height: 1,
+                            ),
                           ),
                         ),
+                        if (post.createdAt != null)
+                          Text(
+                            _formatDate(post.createdAt),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                      ],
+                    ),
+                    
+                    const Spacer(),
+                    
+                    // Location - Fixed 2 lines at bottom
+                    SizedBox(
+                      height: 32,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.location_on_outlined, size: 12, color: Colors.grey.shade500),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              _formatLocation(post),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w500,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      if (post.createdAt != null)
-                        Text(
-                          _formatDate(post.createdAt),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  
-                  // Location - Always show
-                  Row(
-                    children: [
-                      Icon(Icons.location_on_outlined, size: 11, color: Colors.grey.shade500),
-                      const SizedBox(width: 2),
-                      Expanded(
-                        child: Text(
-                          _formatLocation(post),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
