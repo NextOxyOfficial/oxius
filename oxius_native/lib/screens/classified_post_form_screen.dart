@@ -46,6 +46,8 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
   GeoLocation? _location;
   List<dynamic> _selectedImages = []; // Mix of URLs, File objects, and XFile objects
   
+  String? _actualPostId; // Store the actual UUID for updates (different from slug)
+  
   bool get _isEditMode => widget.postId != null;
 
   @override
@@ -80,9 +82,25 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
 
   Future<void> _loadPostData() async {
     try {
+      print('Loading post data for ID: ${widget.postId}');
       final postData = await _postService.fetchPostForEdit(widget.postId!);
-      if (postData != null && mounted) {
+      
+      if (postData == null) {
+        print('ERROR: Post data is null!');
+        _showError('Failed to load post data');
+        return;
+      }
+      
+      print('Post data loaded: ${postData.title}');
+      print('Post ID (UUID): ${postData.id}');
+      print('Category ID: ${postData.categoryId}');
+      print('Images count: ${postData.medias.length}');
+      
+      if (mounted) {
         setState(() {
+          // Store the actual UUID for updates (important!)
+          _actualPostId = postData.id;
+          
           _titleController.text = postData.title;
           _instructionsController.text = postData.instructions;
           _priceController.text = postData.price > 0 ? postData.price.toString() : '';
@@ -277,7 +295,8 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       }
       
       final form = ClassifiedPostForm(
-        id: widget.postId,
+        // Use actual UUID for updates, widget.postId might be a slug
+        id: _isEditMode ? (_actualPostId ?? widget.postId) : null,
         categoryId: _selectedCategoryId,
         title: _titleController.text.trim(),
         instructions: _instructionsController.text.trim(),
@@ -296,7 +315,10 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       Map<String, dynamic>? response;
       
       if (_isEditMode) {
-        response = await _postService.updatePost(widget.postId!, form);
+        // Use actual UUID for update API call
+        final postIdForUpdate = _actualPostId ?? widget.postId!;
+        print('Updating post with UUID: $postIdForUpdate');
+        response = await _postService.updatePost(postIdForUpdate, form);
       } else {
         response = await _postService.createPost(form);
       }

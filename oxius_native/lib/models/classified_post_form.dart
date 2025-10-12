@@ -35,12 +35,34 @@ class ClassifiedPostForm {
 
   // Create form from existing post for editing
   factory ClassifiedPostForm.fromPost(Map<String, dynamic> json) {
+    // Handle category field - it might be an object or a string/id
+    String? categoryId;
+    if (json['category'] != null) {
+      if (json['category'] is Map) {
+        categoryId = json['category']['id']?.toString();
+      } else {
+        categoryId = json['category']?.toString();
+      }
+    }
+    
+    // Handle price - it might be a string, int, or double
+    double price = 0.0;
+    if (json['price'] != null) {
+      if (json['price'] is String) {
+        price = double.tryParse(json['price']) ?? 0.0;
+      } else if (json['price'] is int) {
+        price = (json['price'] as int).toDouble();
+      } else if (json['price'] is double) {
+        price = json['price'];
+      }
+    }
+    
     return ClassifiedPostForm(
       id: json['id']?.toString(),
-      categoryId: json['category']?.toString(),
+      categoryId: categoryId,
       title: json['title'] ?? '',
       instructions: json['instructions'] ?? '',
-      price: (json['price'] ?? 0).toDouble(),
+      price: price,
       negotiable: json['negotiable'] ?? false,
       country: json['country'] ?? 'Bangladesh',
       state: json['state'],

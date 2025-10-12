@@ -104,11 +104,16 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
           );
           break;
         case 'edit':
+          // For editing, we need to pass both: use slug for fetching (GET), but keep ID for updating (PUT)
+          // The form screen needs the slug to fetch data, but will use the ID from the fetched data for updates
+          final postIdentifier = post.slug ?? post.id;
+          print('Editing post: ID=${post.id}, Slug=${post.slug}, Using slug for fetch=$postIdentifier');
+          
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ClassifiedPostFormScreen(
-                postId: post.id,
+                postId: postIdentifier,
                 categoryId: post.categoryDetails?.id,
               ),
             ),
@@ -376,11 +381,6 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Status Badge
-                        _buildStatusBadge(post),
-                        
-                        const SizedBox(height: 6),
-                        
                         // Title
                         Text(
                           post.title,
@@ -396,14 +396,24 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                         
                         const SizedBox(height: 6),
                         
-                        // Price
-                        Text(
-                          post.displayPrice,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF10B981),
-                          ),
+                        // Price and Status Badge Row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Price
+                            Text(
+                              post.displayPrice,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF10B981),
+                              ),
+                            ),
+                            
+                            // Status Badge
+                            _buildStatusBadge(post),
+                          ],
                         ),
                         
                         const SizedBox(height: 6),

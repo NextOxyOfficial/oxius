@@ -339,7 +339,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                             ),
                           ),
                           child: DropdownButtonFormField<String>(
-                            value: _selectedState,
+                            value: _regions.any((r) => r.nameEng == _selectedState) ? _selectedState : null,
                             decoration: const InputDecoration(
                               hintText: 'Choose your division',
                               hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
@@ -402,7 +402,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                             ),
                           ),
                           child: DropdownButtonFormField<String>(
-                            value: _selectedCity,
+                            value: _cities.any((c) => c.nameEng == _selectedCity) ? _selectedCity : null,
                             decoration: const InputDecoration(
                               hintText: 'Choose your city',
                               hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
@@ -465,7 +465,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
                             ),
                           ),
                           child: DropdownButtonFormField<String>(
-                            value: _selectedUpazila,
+                            value: _upazilas.any((u) => u.nameEng == _selectedUpazila) ? _selectedUpazila : null,
                             decoration: const InputDecoration(
                               hintText: 'Choose your area',
                               hintStyle: TextStyle(color: Color(0xFF9CA3AF)),

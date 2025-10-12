@@ -717,6 +717,9 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context) => const EshopScreen(),
             ),
           );
+        } else if (label == t('ad')) {
+          // Navigate to My Classified Posts
+          Navigator.pushNamed(context, '/my-classified-posts');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

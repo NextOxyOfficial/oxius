@@ -352,21 +352,38 @@ class ClassifiedPostService {
   /// Fetch post for editing
   Future<ClassifiedPostForm?> fetchPostForEdit(String idOrSlug) async {
     try {
+      print('Fetching post for edit: $idOrSlug');
       final headers = await _getAuthHeaders();
       final uri = Uri.parse('$baseUrl/classified-categories/post/$idOrSlug/');
       
+      print('Request URL: $uri');
       final response = await client.get(
         uri,
         headers: headers,
       );
 
+      print('Response status: ${response.statusCode}');
+      
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('✅ Post data received successfully!');
+        print('Title: ${data['title']}');
+        print('Category: ${data['category']}');
+        print('Medias count: ${data['medias']?.length ?? 0}');
+        print('Price: ${data['price']}');
+        print('Instructions length: ${data['instructions']?.length ?? 0}');
         return ClassifiedPostForm.fromPost(data as Map<String, dynamic>);
+      } else if (response.statusCode == 404) {
+        print('❌ Post not found (404)');
+        print('Response: ${response.body}');
+      } else {
+        print('❌ Failed to fetch post: ${response.statusCode}');
+        print('Response body: ${response.body}');
       }
       return null;
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('Error fetching post for edit: $e');
+      print('Stack trace: $stackTrace');
       return null;
     }
   }
