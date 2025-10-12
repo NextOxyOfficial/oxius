@@ -404,7 +404,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     final post = _post!;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -413,38 +413,64 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
-          Text(
-            post.title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
-            ),
-          ),
-          const SizedBox(height: 12),
-          
-          // Price
+          // Title with Share button
           Row(
             children: [
-              const Text(
-                'Price',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  _capitalizeTitle(post.title),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.share, size: 20, color: Color(0xFF9CA3AF)),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () => setState(() => _showShareDialog = true),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 8),
+          
+          // Ad ID and Date
+          Row(
+            children: [
+              Text(
+                'Ad ID: ${post.id}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                   color: Color(0xFF6B7280),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
+              Icon(Icons.calendar_today, size: 12, color: Colors.grey.shade600),
+              const SizedBox(width: 4),
               Text(
-                _formatPrice(post.price),
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF10B981),
+                _formatDate(post.createdAt),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
                 ),
               ),
             ],
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Price
+          Text(
+            post.price > 0 ? _formatPrice(post.price) : 'Contact for Price',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF10B981),
+            ),
           ),
           
           const SizedBox(height: 16),
@@ -454,13 +480,13 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             crossAxisCount: 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 2.5, // Increased from 3 to allow more height for 2-line text
+            childAspectRatio: 2.5,
             crossAxisSpacing: 8,
             mainAxisSpacing: 12,
             children: [
               _buildInfoGridItem(Icons.tag, 'Category', post.categoryName ?? 'N/A'),
               _buildInfoGridItem(Icons.layers, 'Sub-Category', post.subcategoryName ?? 'N/A'),
-              _buildInfoGridItem(Icons.verified_user, 'Condition', _capitalizeCondition(post.condition)),
+              _buildInfoGridItem(Icons.shield_outlined, 'Condition', _capitalizeCondition(post.condition)),
               _buildInfoGridItem(Icons.location_on, 'Location', 
                 post.division != null && post.district != null && post.area != null
                   ? '${post.division}, ${post.district}, ${post.area}'
@@ -469,11 +495,61 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           ),
           
           // Financing Banner
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           _buildFinancingBanner(post.price),
+          
+          // Report and Share buttons
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => setState(() => _showReportDialog = true),
+                  icon: const Icon(Icons.flag_outlined, size: 12, color: Color(0xFF6B7280)),
+                  label: const Text(
+                    'Report Ad',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    side: BorderSide(color: Colors.grey.shade200),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => setState(() => _showShareDialog = true),
+                  icon: const Icon(Icons.share, size: 12, color: Color(0xFF6B7280)),
+                  label: const Text(
+                    'Share',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    side: BorderSide(color: Colors.grey.shade200),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
+  }
+  
+  String _capitalizeTitle(String text) {
+    if (text.isEmpty) return text;
+    return text.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
   }
 
   Widget _buildInfoGridItem(IconData icon, String label, String value) {
@@ -526,61 +602,119 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
 
   Widget _buildFinancingBanner(double price) {
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF059669), Color(0xFF047857)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFFD1FAE5)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Need financing?',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF059669), Color(0xFF047857)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
             ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Get Free consultation from our experts',
-            style: TextStyle(
-              color: Color(0xFFD1FAE5),
-              fontSize: 11,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              ...List.generate(
-                3,
-                (index) => Container(
-                  margin: const EdgeInsets.only(right: 4),
-                  height: 20,
-                  width: 20,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Center(
-                    child: Text(
-                      index == 0 ? '\$' : index == 1 ? '%' : '₹',
-                      style: const TextStyle(
-                        color: Color(0xFF059669),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Need financing?',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Get Free consultation from our experts',
+                            style: TextStyle(
+                              color: Color(0xFFD1FAE5),
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              ...List.generate(
+                                3,
+                                (index) => Container(
+                                  margin: const EdgeInsets.only(right: 4),
+                                  height: 24,
+                                  width: 24,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      index == 0 ? '\$' : index == 1 ? '%' : '✓',
+                                      style: const TextStyle(
+                                        color: Color(0xFF059669),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Competitive rates available',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        // TODO: Navigate to contact page
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Contact feature coming soon!')),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF059669),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Text(
+                        'Apply Now',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+          Container(
+            height: 4,
+            decoration: const BoxDecoration(
+              color: Color(0xFF059669),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(8)),
+            ),
           ),
         ],
       ),
@@ -594,31 +728,76 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Description',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+          Row(
+            children: [
+              Icon(Icons.list_alt, color: const Color(0xFF10B981), size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Details',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              post.description!,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+                height: 1.6,
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            post.description!,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade700,
-              height: 1.5,
+          
+          // Address Section
+          if (post.detailedAddress != null && post.detailedAddress!.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            Divider(color: Colors.grey.shade100, thickness: 1),
+            const SizedBox(height: 24),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.location_on, color: const Color(0xFF10B981), size: 16),
+                const SizedBox(width: 8),
+                const Text(
+                  'Item/Property Address',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+              ],
             ),
-          ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                post.detailedAddress!,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade800,
+                  height: 1.6,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -627,7 +806,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
   Widget _buildSafetyTips() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -643,14 +822,14 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               const Text(
                 'Safety Tips',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1F2937),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           _buildSafetyTip('Meet in a safe, public place'),
           _buildSafetyTip('Don\'t pay or transfer money in advance'),
           _buildSafetyTip('Inspect the item before purchasing'),
@@ -670,7 +849,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: const Color(0xFF10B981).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+              shape: BoxShape.circle,
             ),
             child: const Icon(Icons.warning_amber_rounded, size: 12, color: Color(0xFF10B981)),
           ),
@@ -732,11 +911,10 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                 height: 64,
                 width: 64,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(32),
+                  shape: BoxShape.circle,
                   border: Border.all(color: Colors.grey.shade200),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(32),
+                child: ClipOval(
                   child: user.profilePicture != null
                       ? CachedNetworkImage(
                           imageUrl: user.profilePicture!,
@@ -773,7 +951,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                         ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               
               // Name and Badges
               Expanded(
@@ -783,18 +961,27 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     Row(
                       children: [
                         Flexible(
-                          child: Text(
-                            user.displayName,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF1F2937),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/seller-profile',
+                                arguments: {'userId': user.id},
+                              );
+                            },
+                            child: Text(
+                              user.displayName,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1F2937),
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (user.kyc == true) ...[
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 4),
                           const Icon(
                             Icons.verified,
                             size: 16,
@@ -802,7 +989,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                           ),
                         ],
                         if (user.isPro == true) ...[
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 4),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
@@ -830,16 +1017,14 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                         ],
                       ],
                     ),
-                    if (user.dateJoined != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        'Member since ${_formatMemberSince(user.dateJoined!)}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade600,
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Member since ${_formatDate(user.dateJoined)}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
                       ),
-                    ],
+                    ),
                   ],
                 ),
               ),
@@ -934,38 +1119,6 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           
           const SizedBox(height: 12),
           
-          // View Seller Profile Button
-          OutlinedButton(
-            onPressed: () {
-              Navigator.pushNamed(
-                context,
-                '/seller-profile',
-                arguments: {'userId': user.id},
-              );
-            },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF1F2937),
-              side: BorderSide(color: Colors.grey.shade200),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.person, size: 16, color: const Color(0xFF10B981)),
-                const SizedBox(width: 8),
-                const Text(
-                  'View Seller Profile',
-                  style: TextStyle(fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-          
-          const SizedBox(height: 12),
-          
           // View More Listings Link (text link, not button)
           InkWell(
             onTap: () {
@@ -1028,32 +1181,33 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Similar Listings',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937),
-                  ),
+                Row(
+                  children: [
+                    Icon(Icons.grid_view, color: const Color(0xFF10B981), size: 20),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Similar Listings You May Like',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () {
-                    if (_post?.categoryId != null) {
-                      Navigator.pushNamed(
-                        context,
-                        '/sale-category',
-                        arguments: {'categoryId': _post!.categoryId},
-                      );
-                    }
+                InkWell(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/sale');
                   },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: const Text(
-                    'View all',
-                    style: TextStyle(fontSize: 13, color: Color(0xFF10B981)),
+                  child: Row(
+                    children: const [
+                      Text(
+                        'View all',
+                        style: TextStyle(fontSize: 13, color: Color(0xFF10B981)),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.chevron_right, size: 12, color: Color(0xFF10B981)),
+                    ],
                   ),
                 ),
               ],
@@ -1133,62 +1287,69 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                         ),
                       ),
                       // Info
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                post.title,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1F2937),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _capitalizeTitle(post.title),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1F2937),
                               ),
-                              const SizedBox(height: 4),
-                              if (post.division != null && post.district != null && post.area != null)
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Icon(Icons.location_on, size: 12, color: Colors.grey.shade600),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        '${post.division}, ${post.district}, ${post.area}',
-                                        style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              else
-                                Row(
-                                  children: [
-                                    Icon(Icons.location_on, size: 12, color: Colors.grey.shade600),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'All Over Bangladesh',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            if (post.division != null && post.district != null && post.area != null)
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(Icons.location_on, size: 12, color: Colors.grey.shade600),
+                                  const SizedBox(width: 2),
+                                  Expanded(
+                                    child: Text(
+                                      '${post.division}, ${post.district}, ${post.area}',
                                       style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                  ],
-                                ),
-                              const Spacer(),
-                              Text(
-                                _formatPrice(post.price),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF10B981),
-                                ),
+                                  ),
+                                ],
+                              )
+                            else
+                              Row(
+                                children: [
+                                  Icon(Icons.location_on, size: 12, color: Colors.grey.shade600),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    'All Over Bangladesh',
+                                    style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  post.price > 0 ? _formatPrice(post.price) : 'Contact for Price',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF10B981),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.open_in_new,
+                                  size: 16,
+                                  color: Colors.grey.shade400,
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ],

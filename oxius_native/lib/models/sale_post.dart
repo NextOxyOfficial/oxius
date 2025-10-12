@@ -13,6 +13,7 @@ class SalePost {
   final String? division;
   final String? district;
   final String? area;
+  final String? detailedAddress;
   final String? categoryId;
   final String? categoryName;
   final String? subcategoryId;
@@ -39,6 +40,7 @@ class SalePost {
     this.division,
     this.district,
     this.area,
+    this.detailedAddress,
     this.categoryId,
     this.categoryName,
     this.subcategoryId,
@@ -70,6 +72,7 @@ class SalePost {
       division: json['division'] as String?,
       district: json['district'] as String?,
       area: json['area'] as String?,
+      detailedAddress: json['detailed_address'] as String?,
       categoryId: json['category']?.toString(),
       categoryName: json['category_name'] as String? ?? 
                     (json['category_details'] != null ? json['category_details']['name'] as String? : null),
