@@ -59,6 +59,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
   // Recent listings
   List<SalePost> _recentListings = [];
   bool _isLoadingRecentListings = false;
+  int _recentListingsPage = 1;
+  int _recentListingsTotalCount = 0;
+  bool _isLoadingMoreRecent = false;
+  final ScrollController _recentScrollController = ScrollController();
   
   // Expanded categories in sidebar
   final Set<String> _expandedCategories = <String>{};
@@ -80,12 +84,14 @@ class _SaleListScreenState extends State<SaleListScreen> {
     _fetchDivisions();
     _fetchPosts();
     _fetchRecentListings();
+    _recentScrollController.addListener(_onRecentScroll);
   }
 
   @override
   void dispose() {
     _debounceTimer?.cancel();
     _scrollController.dispose();
+    _recentScrollController.dispose();
     _searchController.dispose();
     _minPriceController.dispose();
     _maxPriceController.dispose();
@@ -174,17 +180,33 @@ class _SaleListScreenState extends State<SaleListScreen> {
     }
   }
 
-  Future<void> _fetchRecentListings() async {
+  void _onRecentScroll() {
+    if (_recentScrollController.position.pixels >= _recentScrollController.position.maxScrollExtent - 50) {
+      if (!_isLoadingMoreRecent && _recentListings.length < _recentListingsTotalCount) {
+        _loadMoreRecentListings();
+      }
+    }
+  }
+
+  Future<void> _fetchRecentListings({bool refresh = false}) async {
+    if (refresh) {
+      setState(() {
+        _recentListingsPage = 1;
+        _recentListings = [];
+      });
+    }
+    
     setState(() => _isLoadingRecentListings = true);
     try {
       final response = await _postService.fetchPosts(
         sortBy: 'newest',
-        page: 1,
+        page: _recentListingsPage,
         pageSize: 5,
       );
       if (mounted) {
         setState(() {
           _recentListings = response.results;
+          _recentListingsTotalCount = response.count;
           _isLoadingRecentListings = false;
         });
       }
@@ -192,6 +214,32 @@ class _SaleListScreenState extends State<SaleListScreen> {
       print('Error fetching recent listings: $e');
       if (mounted) {
         setState(() => _isLoadingRecentListings = false);
+      }
+    }
+  }
+
+  Future<void> _loadMoreRecentListings() async {
+    if (_isLoadingMoreRecent) return;
+    
+    setState(() => _isLoadingMoreRecent = true);
+    try {
+      final nextPage = _recentListingsPage + 1;
+      final response = await _postService.fetchPosts(
+        sortBy: 'newest',
+        page: nextPage,
+        pageSize: 5,
+      );
+      if (mounted) {
+        setState(() {
+          _recentListingsPage = nextPage;
+          _recentListings.addAll(response.results);
+          _isLoadingMoreRecent = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading more recent listings: $e');
+      if (mounted) {
+        setState(() => _isLoadingMoreRecent = false);
       }
     }
   }
@@ -220,7 +268,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
         minPrice: _minPrice,
         maxPrice: _maxPrice,
         page: _currentPage,
-        pageSize: 20,
+        pageSize: 10,
       );
 
       if (mounted) {
@@ -513,7 +561,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 onTap: () {},
                 borderRadius: BorderRadius.circular(6),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(6),
@@ -570,7 +618,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
   Widget _buildPostsGridSection() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.blue.shade50.withOpacity(0.5),
@@ -616,7 +664,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   onPressed: _loadMore,
                   icon: const Icon(Icons.expand_more, size: 20),
                   label: Text(
-                    'See More (${_totalCount - _posts.length} remaining)',
+                    'Load More',
                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                   style: TextButton.styleFrom(
@@ -746,7 +794,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
             
             // Content
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -757,13 +805,13 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF1F2937),
-                      height: 1.3,
+                      height: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   
                   // Price and Date Row
                   Row(
@@ -774,7 +822,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         child: Text(
                           _formatPrice(post.price),
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF10B981),
                             height: 1,
@@ -785,27 +833,27 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         Text(
                           _formatDate(post.createdAt),
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 10,
                             color: Colors.grey.shade600,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   
                   // Location - Always show
                   Row(
                     children: [
-                      Icon(Icons.location_on_outlined, size: 12, color: Colors.grey.shade500),
-                      const SizedBox(width: 3),
+                      Icon(Icons.location_on_outlined, size: 11, color: Colors.grey.shade500),
+                      const SizedBox(width: 2),
                       Expanded(
                         child: Text(
                           _formatLocation(post),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 10,
                             color: Colors.grey.shade600,
                             fontWeight: FontWeight.w500,
                           ),
@@ -1070,7 +1118,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
   Widget _buildActiveFilters() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1234,7 +1282,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
   Widget _buildRecentListings() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 16, 12, 8),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.amber.shade50.withOpacity(0.4),
@@ -1256,11 +1304,21 @@ class _SaleListScreenState extends State<SaleListScreen> {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 200,
+            height: 210,
             child: ListView.builder(
+              controller: _recentScrollController,
               scrollDirection: Axis.horizontal,
-              itemCount: _recentListings.length,
+              itemCount: _recentListings.length + (_isLoadingMoreRecent ? 1 : 0),
               itemBuilder: (context, index) {
+                // Show loading indicator at the end
+                if (index == _recentListings.length) {
+                  return Container(
+                    width: 80,
+                    alignment: Alignment.center,
+                    child: const CircularProgressIndicator(),
+                  );
+                }
+                
                 final listing = _recentListings[index];
                 final imageUrl = listing.images != null && listing.images!.isNotEmpty
                     ? listing.images![0].image
@@ -1275,7 +1333,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     );
                   },
                   child: Container(
-                    width: 256,
+                    width: 240,
                     margin: const EdgeInsets.only(right: 12),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -1291,6 +1349,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         ClipRRect(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
@@ -1298,7 +1357,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                             children: [
                               CachedNetworkImage(
                                 imageUrl: imageUrl,
-                                height: 120,
+                                height: 110,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
                               ),
@@ -1326,43 +1385,48 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(8),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 listing.title,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1F2937)),
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1F2937), height: 1.2),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 3),
                               Row(
                                 children: [
-                                  Icon(Icons.location_on_outlined, size: 12, color: Colors.grey.shade600),
-                                  const SizedBox(width: 4),
+                                  Icon(Icons.location_on_outlined, size: 10, color: Colors.grey.shade600),
+                                  const SizedBox(width: 3),
                                   Expanded(
                                     child: Text(
                                       _formatLocation(listing),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                                      style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    _formatPrice(listing.price),
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.amber.shade700),
+                                  Flexible(
+                                    child: Text(
+                                      _formatPrice(listing.price),
+                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.amber.shade700),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
+                                  const SizedBox(width: 4),
                                   if (listing.createdAt != null)
                                     Text(
                                       _formatDate(listing.createdAt),
-                                      style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                                      style: TextStyle(fontSize: 9, color: Colors.grey.shade600),
                                     ),
                                 ],
                               ),
@@ -1383,7 +1447,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
   Widget _buildTipsAndSafety() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
         children: [
           // Smart Buying Tips
