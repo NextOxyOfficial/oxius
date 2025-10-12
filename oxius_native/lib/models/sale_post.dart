@@ -152,6 +152,10 @@ class SaleUser {
   final String? lastName;
   final String? profilePicture;
   final String? phone;
+  final bool? kyc;
+  final bool? isPro;
+  final int? salePostCount;
+  final DateTime? dateJoined;
 
   SaleUser({
     required this.id,
@@ -160,6 +164,10 @@ class SaleUser {
     this.lastName,
     this.profilePicture,
     this.phone,
+    this.kyc,
+    this.isPro,
+    this.salePostCount,
+    this.dateJoined,
   });
 
   String get displayName {
@@ -177,6 +185,14 @@ class SaleUser {
       lastName: json['last_name'] as String?,
       profilePicture: json['profile_picture'] as String?,
       phone: json['phone'] as String?,
+      kyc: json['kyc'] == true || json['kyc'] == 'true',
+      isPro: json['is_pro'] == true || json['is_pro'] == 'true',
+      salePostCount: json['sale_post_count'] != null 
+        ? int.tryParse(json['sale_post_count'].toString())
+        : null,
+      dateJoined: json['date_joined'] != null 
+        ? DateTime.tryParse(json['date_joined'].toString())
+        : null,
     );
   }
 }

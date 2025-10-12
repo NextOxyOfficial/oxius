@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
@@ -6,7 +7,7 @@ import '../models/sale_post.dart';
 import '../services/sale_post_service.dart';
 import '../services/api_service.dart';
 
-/// Sale Post Detail Screen - View full post details with image gallery
+/// Sale Post Detail Screen - View full post details with image gallery and all features
 class SaleDetailScreen extends StatefulWidget {
   final String? slug;
   final String? id;
@@ -24,9 +25,19 @@ class SaleDetailScreen extends StatefulWidget {
 class _SaleDetailScreenState extends State<SaleDetailScreen> {
   late SalePostService _postService;
   SalePost? _post;
+  List<SalePost> _similarPosts = [];
   bool _isLoading = true;
+  bool _isLoadingSimilar = false;
   int _currentImageIndex = 0;
   final PageController _pageController = PageController();
+  
+  // Dialog states
+  bool _showShareDialog = false;
+  bool _showReportDialog = false;
+  String _reportReason = '';
+  String _reportDetails = '';
+  bool _copied = false;
+  bool _showPhone = false;
 
   @override
   void initState() {
@@ -54,11 +65,40 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           _post = post;
           _isLoading = false;
         });
+        // Fetch similar posts after getting the main post
+        if (post != null && post.categoryId != null) {
+          _fetchSimilarPosts(post.categoryId!);
+        }
       }
     } catch (e) {
       print('Error fetching post details: $e');
       if (mounted) {
         setState(() => _isLoading = false);
+      }
+    }
+  }
+  
+  Future<void> _fetchSimilarPosts(String categoryId) async {
+    setState(() => _isLoadingSimilar = true);
+    try {
+      print('Fetching similar posts for category: $categoryId');
+      final response = await _postService.fetchPosts(
+        categoryId: categoryId,
+        pageSize: 8, // Fetch more to ensure we have 4 after filtering current post
+      );
+      print('Fetched ${response.results.length} posts');
+      if (mounted) {
+        final filtered = response.results.where((p) => p.id != _post?.id).take(4).toList();
+        print('After filtering current post: ${filtered.length} similar posts');
+        setState(() {
+          _similarPosts = filtered;
+          _isLoadingSimilar = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching similar posts: $e');
+      if (mounted) {
+        setState(() => _isLoadingSimilar = false);
       }
     }
   }
@@ -85,29 +125,66 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        title: const Text('Product Details'),
+        title: const Text('Product Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
         backgroundColor: const Color(0xFF10B981),
         foregroundColor: Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: _sharePost,
+            icon: const Icon(Icons.share, size: 20),
+            onPressed: () => setState(() => _showShareDialog = true),
           ),
           IconButton(
-            icon: const Icon(Icons.more_vert),
+            icon: const Icon(Icons.more_vert, size: 20),
             onPressed: () {
-              // Report or other actions
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.flag_outlined, color: Color(0xFF10B981)),
+                        title: const Text('Report Ad'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          setState(() => _showReportDialog = true);
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.share, color: Color(0xFF10B981)),
+                        title: const Text('Share'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          setState(() => _showShareDialog = true);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
             },
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _post == null
-              ? _buildErrorState()
-              : _buildContent(),
+      body: Stack(
+        children: [
+          _isLoading
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)))
+              : _post == null
+                  ? _buildErrorState()
+                  : _buildContent(),
+          
+          // Share Dialog
+          if (_showShareDialog) _buildShareDialog(),
+          
+          // Report Dialog  
+          if (_showReportDialog) _buildReportDialog(),
+        ],
+      ),
       bottomNavigationBar: _post != null ? _buildBottomBar() : null,
     );
   }
@@ -142,88 +219,33 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Breadcrumb
-          _buildBreadcrumb(),
-          
-          // Action Buttons
-          _buildActionButtons(),
-
           // Image Gallery
-          if (hasImages) _buildImageGallery(images),
+          if (hasImages) _buildImageGallery(images) else _buildNoImagePlaceholder(),
 
-          // Product Info Card
+          // Product Info Card with Financing Banner
           _buildProductInfoCard(),
+
+          const SizedBox(height: 8),
 
           // Description
           _buildDescriptionSection(),
 
+          const SizedBox(height: 8),
+
           // Seller Info
           _buildSellerInfoCard(),
 
+          const SizedBox(height: 8),
+
+          // Safety Tips
+          _buildSafetyTips(),
+
+          const SizedBox(height: 8),
+
+          // Similar Listings
+          _buildSimilarListings(),
+
           const SizedBox(height: 80), // Space for bottom bar
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBreadcrumb() {
-    final post = _post!;
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        children: [
-          Text('Home', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-          Icon(Icons.chevron_right, size: 16, color: Colors.grey.shade400),
-          Text('Marketplace', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-          Icon(Icons.chevron_right, size: 16, color: Colors.grey.shade400),
-          Text(
-            post.categoryName ?? 'Category',
-            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-          ),
-          Icon(Icons.chevron_right, size: 16, color: Colors.grey.shade400),
-          Expanded(
-            child: Text(
-              post.title,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          OutlinedButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, '/my-sale-posts');
-            },
-            icon: const Icon(Icons.list, size: 16),
-            label: const Text('My Posts'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF10B981),
-              side: const BorderSide(color: Color(0xFF10B981)),
-            ),
-          ),
-          const SizedBox(width: 8),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, '/my-sale-posts', arguments: {'tab': 'post-sale'});
-            },
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text('Post Ad'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-            ),
-          ),
         ],
       ),
     );
@@ -381,86 +403,118 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
   Widget _buildProductInfoCard() {
     final post = _post!;
     return Container(
-      margin: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Title
+          Text(
+            post.title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F2937),
+            ),
+          ),
+          const SizedBox(height: 12),
+          
+          // Price
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  post.title,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+              const Text(
+                'Price',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF6B7280),
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.share_outlined),
-                onPressed: _sharePost,
-                color: const Color(0xFF10B981),
+              const SizedBox(width: 8),
+              Text(
+                _formatPrice(post.price),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF10B981),
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            _formatPrice(post.price),
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF10B981),
-            ),
-          ),
+          
           const SizedBox(height: 16),
-          _buildInfoRow(Icons.tag, 'Ad ID', '#${post.id}'),
-          _buildInfoRow(Icons.calendar_today, 'Posted', _formatDate(post.createdAt)),
-          if (post.location != null && post.location!.isNotEmpty)
-            _buildInfoRow(Icons.location_on, 'Location', post.location!),
-          if (post.condition != null)
-            _buildInfoRow(Icons.stars, 'Condition', _capitalizeCondition(post.condition!)),
-          _buildInfoRow(Icons.visibility, 'Views', '${post.viewsCount}'),
+          
+          // 2-column Grid Info
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 2.5, // Increased from 3 to allow more height for 2-line text
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 12,
+            children: [
+              _buildInfoGridItem(Icons.tag, 'Category', post.categoryName ?? 'N/A'),
+              _buildInfoGridItem(Icons.layers, 'Sub-Category', post.subcategoryName ?? 'N/A'),
+              _buildInfoGridItem(Icons.verified_user, 'Condition', _capitalizeCondition(post.condition)),
+              _buildInfoGridItem(Icons.location_on, 'Location', 
+                post.division != null && post.district != null && post.area != null
+                  ? '${post.division}, ${post.district}, ${post.area}'
+                  : 'All Over Bangladesh'),
+            ],
+          ),
+          
+          // Financing Banner
+          const SizedBox(height: 16),
+          _buildFinancingBanner(post.price),
         ],
       ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: Colors.grey.shade600),
-          const SizedBox(width: 8),
-          Text(
-            '$label: ',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-            ),
+  Widget _buildInfoGridItem(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Container(
+          height: 32,
+          width: 32,
+          decoration: BoxDecoration(
+            color: const Color(0xFF10B981).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
           ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
+          child: Icon(icon, size: 16, color: const Color(0xFF10B981)),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF1F2937),
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -470,6 +524,69 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     }).join(' ');
   }
 
+  Widget _buildFinancingBanner(double price) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF059669), Color(0xFF047857)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Need financing?',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Get Free consultation from our experts',
+            style: TextStyle(
+              color: Color(0xFFD1FAE5),
+              fontSize: 11,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              ...List.generate(
+                3,
+                (index) => Container(
+                  margin: const EdgeInsets.only(right: 4),
+                  height: 20,
+                  width: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Text(
+                      index == 0 ? '\$' : index == 1 ? '%' : '₹',
+                      style: const TextStyle(
+                        color: Color(0xFF059669),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDescriptionSection() {
     final post = _post!;
     if (post.description == null || post.description!.isEmpty) {
@@ -477,11 +594,11 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -489,17 +606,83 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           const Text(
             'Description',
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             post.description!,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               color: Colors.grey.shade700,
               height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSafetyTips() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.verified_user, color: const Color(0xFF10B981), size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Safety Tips',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildSafetyTip('Meet in a safe, public place'),
+          _buildSafetyTip('Don\'t pay or transfer money in advance'),
+          _buildSafetyTip('Inspect the item before purchasing'),
+          _buildSafetyTip('Be wary of unrealistic offers or prices'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSafetyTip(String tip) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.warning_amber_rounded, size: 12, color: Color(0xFF10B981)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              tip,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+                height: 1.4,
+              ),
             ),
           ),
         ],
@@ -514,68 +697,147 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     final user = post.user!;
     
     return Container(
-      margin: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Seller Information',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
+          // Header
           Row(
             children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: const Color(0xFF10B981),
-                backgroundImage: user.profilePicture != null
-                    ? CachedNetworkImageProvider(user.profilePicture!)
-                    : null,
-                child: user.profilePicture == null
-                    ? Text(
-                        user.displayName[0].toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 24,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : null,
+              Icon(Icons.person, color: const Color(0xFF10B981), size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Seller Information',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1F2937),
+                ),
               ),
-              const SizedBox(width: 16),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // Profile Section
+          Row(
+            children: [
+              // Avatar
+              Container(
+                height: 64,
+                width: 64,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(32),
+                  child: user.profilePicture != null
+                      ? CachedNetworkImage(
+                          imageUrl: user.profilePicture!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey.shade200,
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey.shade200,
+                            child: Center(
+                              child: Text(
+                                user.displayName[0].toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  color: Color(0xFF6B7280),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          color: Colors.grey.shade200,
+                          child: Center(
+                            child: Text(
+                              user.displayName[0].toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 24,
+                                color: Color(0xFF6B7280),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              
+              // Name and Badges
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      user.displayName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (user.phone != null) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.phone, size: 14, color: Colors.grey.shade600),
-                          const SizedBox(width: 4),
-                          Text(
-                            user.phone!,
-                            style: TextStyle(
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            user.displayName,
+                            style: const TextStyle(
                               fontSize: 14,
-                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1F2937),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (user.kyc == true) ...[
+                          const SizedBox(width: 6),
+                          const Icon(
+                            Icons.verified,
+                            size: 16,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ],
+                        if (user.isPro == true) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF4F46E5), Color(0xFF2563EB)],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.shield, size: 10, color: Colors.white),
+                                SizedBox(width: 2),
+                                Text(
+                                  'Pro',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
+                      ],
+                    ),
+                    if (user.dateJoined != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Member since ${_formatMemberSince(user.dateJoined!)}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ],
@@ -583,7 +845,369 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               ),
             ],
           ),
+          
+          const SizedBox(height: 16),
+          
+          // Stats Section
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Column(
+              children: [
+                // Total Listings
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total Listings',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    Text(
+                      '${user.salePostCount ?? 0}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                
+                // Phone Number
+                if (user.phone != null)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Phone',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _showPhone ? user.phone! : _maskPhoneNumber(user.phone!),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1F2937),
+                                ),
+                                textAlign: TextAlign.right,
+                                maxLines: 1,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _showPhone = !_showPhone;
+                                });
+                              },
+                              child: Icon(
+                                _showPhone ? Icons.visibility_off : Icons.visibility,
+                                size: 16,
+                                color: const Color(0xFF10B981),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // View Seller Profile Button
+          OutlinedButton(
+            onPressed: () {
+              Navigator.pushNamed(
+                context,
+                '/seller-profile',
+                arguments: {'userId': user.id},
+              );
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF1F2937),
+              side: BorderSide(color: Colors.grey.shade200),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.person, size: 16, color: const Color(0xFF10B981)),
+                const SizedBox(width: 8),
+                const Text(
+                  'View Seller Profile',
+                  style: TextStyle(fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // View More Listings Link (text link, not button)
+          InkWell(
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/seller-profile',
+                arguments: {'userId': user.id},
+              );
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Text(
+                  'View more listings from this seller',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF10B981),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(width: 4),
+                Icon(
+                  Icons.chevron_right,
+                  size: 14,
+                  color: Color(0xFF10B981),
+                ),
+              ],
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  String _maskPhoneNumber(String phone) {
+    if (phone.length <= 4) return phone;
+    return phone.substring(0, 3) + '****' + phone.substring(phone.length - 2);
+  }
+
+  String _formatMemberSince(DateTime date) {
+    return '${_monthName(date.month)} ${date.year}';
+  }
+
+  String _monthName(int month) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return months[month - 1];
+  }
+
+  Widget _buildSimilarListings() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Similar Listings',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    if (_post?.categoryId != null) {
+                      Navigator.pushNamed(
+                        context,
+                        '/sale-category',
+                        arguments: {'categoryId': _post!.categoryId},
+                      );
+                    }
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text(
+                    'View all',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF10B981)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          _isLoadingSimilar
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: CircularProgressIndicator(color: Color(0xFF10B981)),
+                  ),
+                )
+              : _similarPosts.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Text(
+                          'No similar listings found',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ),
+                    )
+                  : GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.8,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: _similarPosts.length > 4 ? 4 : _similarPosts.length,
+            itemBuilder: (context, index) {
+              final post = _similarPosts[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.pushReplacementNamed(
+                    context,
+                    '/sale-detail',
+                    arguments: {'slug': post.slug},
+                  );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Image - aspect-video (16:9)
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: post.images != null && post.images!.isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: post.images![0].image,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: Colors.grey.shade100,
+                                  ),
+                                  errorWidget: (context, url, error) => Container(
+                                    color: Colors.grey.shade100,
+                                    child: Icon(Icons.image, size: 40, color: Colors.grey.shade400),
+                                  ),
+                                )
+                              : Container(
+                                  color: Colors.grey.shade100,
+                                  child: Icon(Icons.image, size: 40, color: Colors.grey.shade400),
+                                ),
+                        ),
+                      ),
+                      // Info
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                post.title,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1F2937),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              if (post.division != null && post.district != null && post.area != null)
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(Icons.location_on, size: 12, color: Colors.grey.shade600),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        '${post.division}, ${post.district}, ${post.area}',
+                                        style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else
+                                Row(
+                                  children: [
+                                    Icon(Icons.location_on, size: 12, color: Colors.grey.shade600),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'All Over Bangladesh',
+                                      style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                                    ),
+                                  ],
+                                ),
+                              const Spacer(),
+                              Text(
+                                _formatPrice(post.price),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF10B981),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoImagePlaceholder() {
+    return Container(
+      height: 300,
+      color: Colors.grey.shade200,
+      child: const Center(
+        child: Icon(Icons.image, size: 80, color: Colors.grey),
       ),
     );
   }
@@ -643,6 +1267,269 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildShareDialog() {
+    final post = _post!;
+    final shareUrl = 'https://oxius.com/sale/${post.slug}';
+    
+    return GestureDetector(
+      onTap: () => setState(() => _showShareDialog = false),
+      child: Container(
+        color: Colors.black54,
+        child: Center(
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              margin: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Share this listing',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => setState(() => _showShareDialog = false),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Copy Link
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.link, color: Color(0xFF10B981)),
+                    ),
+                    title: const Text('Copy Link', style: TextStyle(fontSize: 14)),
+                    trailing: _copied 
+                        ? const Icon(Icons.check, color: Color(0xFF10B981))
+                        : null,
+                    onTap: () async {
+                      await Clipboard.setData(ClipboardData(text: shareUrl));
+                      setState(() => _copied = true);
+                      Future.delayed(const Duration(seconds: 2), () {
+                        if (mounted) setState(() => _copied = false);
+                      });
+                    },
+                  ),
+                  
+                  const Divider(height: 1),
+                  
+                  // Social Media Options
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1877F2).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.facebook, color: Color(0xFF1877F2)),
+                    ),
+                    title: const Text('Share on Facebook', style: TextStyle(fontSize: 14)),
+                    onTap: () {
+                      // TODO: Implement Facebook share
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Facebook share coming soon!')),
+                      );
+                    },
+                  ),
+                  
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF25D366).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.chat, color: Color(0xFF25D366)),
+                    ),
+                    title: const Text('Share on WhatsApp', style: TextStyle(fontSize: 14)),
+                    onTap: () {
+                      // TODO: Implement WhatsApp share
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('WhatsApp share coming soon!')),
+                      );
+                    },
+                  ),
+                  
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1DA1F2).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.share, color: Color(0xFF1DA1F2)),
+                    ),
+                    title: const Text('Share on Twitter', style: TextStyle(fontSize: 14)),
+                    onTap: () {
+                      // TODO: Implement Twitter share
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Twitter share coming soon!')),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReportDialog() {
+    return GestureDetector(
+      onTap: () => setState(() {
+        _showReportDialog = false;
+        _reportReason = '';
+        _reportDetails = '';
+      }),
+      child: Container(
+        color: Colors.black54,
+        child: Center(
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              margin: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Report this listing',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => setState(() {
+                          _showReportDialog = false;
+                          _reportReason = '';
+                          _reportDetails = '';
+                        }),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  const Text(
+                    'Select a reason:',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildReportOption('Spam or misleading', 'spam'),
+                  _buildReportOption('Inappropriate content', 'inappropriate'),
+                  _buildReportOption('Duplicate listing', 'duplicate'),
+                  _buildReportOption('Fraudulent', 'fraud'),
+                  _buildReportOption('Other', 'other'),
+                  
+                  if (_reportReason == 'other') ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Please provide details...',
+                        hintStyle: const TextStyle(fontSize: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                      maxLines: 3,
+                      style: const TextStyle(fontSize: 12),
+                      onChanged: (value) => _reportDetails = value,
+                    ),
+                  ],
+                  
+                  const SizedBox(height: 20),
+                  
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => setState(() {
+                            _showReportDialog = false;
+                            _reportReason = '';
+                            _reportDetails = '';
+                          }),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: const Text('Cancel', style: TextStyle(fontSize: 13)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _reportReason.isEmpty ? null : () {
+                            // TODO: Implement report submission
+                            setState(() {
+                              _showReportDialog = false;
+                              _reportReason = '';
+                              _reportDetails = '';
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Thank you for reporting. We will review this listing.'),
+                                backgroundColor: Color(0xFF10B981),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFEF4444),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: const Text('Submit', style: TextStyle(fontSize: 13)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReportOption(String label, String value) {
+    return RadioListTile<String>(
+      title: Text(label, style: const TextStyle(fontSize: 13)),
+      value: value,
+      groupValue: _reportReason,
+      onChanged: (val) => setState(() => _reportReason = val ?? ''),
+      activeColor: const Color(0xFF10B981),
+      contentPadding: EdgeInsets.zero,
+      dense: true,
     );
   }
 }
