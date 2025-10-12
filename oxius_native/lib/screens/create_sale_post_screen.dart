@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import '../services/sale_post_service.dart';
 import '../services/api_service.dart';
-import 'dart:convert';
+import '../utils/image_compressor.dart';
 
 class CreateSalePostScreen extends StatefulWidget {
   const CreateSalePostScreen({Key? key}) : super(key: key);
@@ -176,8 +175,12 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         setState(() => _isUploadingImage = true);
         
         print('Starting image compression...');
-        // Compress image aggressively to match Vue (target 80KB)
-        final String? compressedBase64 = await _compressImage(image);
+        // Compress image using the utility class (target 80KB to match backend requirements)
+        final String? compressedBase64 = await ImageCompressor.compressToBase64(
+          image,
+          targetSize: 80 * 1024, // 80KB target
+          verbose: true, // Enable logging
+        );
         
         print('Compression result: ${compressedBase64 != null ? "Success (${compressedBase64.length} chars)" : "Failed"}');
         
@@ -187,17 +190,20 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           
           if (emptyIndex != -1) {
             try {
-              // Split base64 data safely
-              final base64Parts = compressedBase64.split(',');
-              final base64Data = base64Parts.length > 1 ? base64Parts[1] : compressedBase64;
-              final bytes = base64Decode(base64Data);
+              // Convert base64 to bytes for display
+              final bytes = ImageCompressor.base64ToBytes(compressedBase64);
               
-              setState(() {
-                _imageBase64List[emptyIndex] = compressedBase64;
-                _imageBytesList[emptyIndex] = bytes;
-              });
-              print('Image added successfully at index $emptyIndex');
-              _showSuccessSnackBar('Image uploaded successfully!');
+              if (bytes != null) {
+                setState(() {
+                  _imageBase64List[emptyIndex] = compressedBase64;
+                  _imageBytesList[emptyIndex] = bytes;
+                });
+                print('Image added successfully at index $emptyIndex');
+                _showSuccessSnackBar('Image uploaded successfully!');
+              } else {
+                print('Failed to decode base64 bytes');
+                _showErrorSnackBar('Failed to process image');
+              }
             } catch (decodeError) {
               print('Error decoding base64: $decodeError');
               _showErrorSnackBar('Failed to process image');
@@ -220,84 +226,6 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       setState(() => _isUploadingImage = false);
       _showErrorSnackBar('Failed to upload image: ${e.toString()}');
     }
-  }
-  
-  Future<String?> _compressImage(XFile file) async {
-    try {
-      final bytes = await file.readAsBytes();
-      final int originalSize = bytes.length;
-      
-      print('Original image size: ${_formatFileSize(originalSize)}');
-      
-      // Aggressive compression settings matching Vue
-      final targetSize = 80 * 1024; // 80KB target
-      int quality = 78;
-      int maxDimension = 1200;
-      
-      // Adjust settings for large files
-      if (originalSize > 5 * 1024 * 1024) {
-        quality = 75;
-        maxDimension = 1000;
-      }
-      
-      Uint8List? compressedBytes;
-      
-      // Use compressWithList for both web and mobile
-      // This works on all platforms
-      print('Compressing image with quality: $quality, maxDimension: $maxDimension');
-      compressedBytes = await FlutterImageCompress.compressWithList(
-        bytes,
-        minWidth: maxDimension,
-        minHeight: maxDimension,
-        quality: quality,
-        format: CompressFormat.jpeg,
-      );
-      
-      // Progressive compression until target size is reached
-      while (compressedBytes != null && compressedBytes.length > targetSize && quality > 45) {
-        quality -= 5;
-        print('Recompressing with quality: $quality');
-        compressedBytes = await FlutterImageCompress.compressWithList(
-          bytes,
-          minWidth: maxDimension,
-          minHeight: maxDimension,
-          quality: quality,
-          format: CompressFormat.jpeg,
-        );
-      }
-      
-      // If still too large, reduce dimensions
-      if (compressedBytes != null && compressedBytes.length > targetSize) {
-        maxDimension = 800;
-        quality = 60;
-        print('Reducing dimensions to $maxDimension with quality: $quality');
-        compressedBytes = await FlutterImageCompress.compressWithList(
-          bytes,
-          minWidth: maxDimension,
-          minHeight: maxDimension,
-          quality: quality,
-          format: CompressFormat.jpeg,
-        );
-      }
-      
-      if (compressedBytes != null) {
-        final String base64Image = 'data:image/jpeg;base64,${base64Encode(compressedBytes)}';
-        print('Image compressed: ${_formatFileSize(originalSize)} → ${_formatFileSize(compressedBytes.length)}');
-        return base64Image;
-      }
-      
-      return null;
-    } catch (e) {
-      print('Error compressing image: $e');
-      print('Stack trace: ${StackTrace.current}');
-      return null;
-    }
-  }
-  
-  String _formatFileSize(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
   
   void _removeImage(int index) {
