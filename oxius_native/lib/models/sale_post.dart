@@ -20,7 +20,7 @@ class SalePost {
   final List<SaleImage>? images;
   final SaleUser? user;
   final int viewsCount;
-  final bool isActive;
+  final String status; // pending, active, sold, expired
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -46,10 +46,13 @@ class SalePost {
     this.images,
     this.user,
     this.viewsCount = 0,
-    this.isActive = true,
+    this.status = 'pending',
     this.createdAt,
     this.updatedAt,
   });
+
+  // Helper getter for backward compatibility
+  bool get isActive => status == 'active';
 
   factory SalePost.fromJson(Map<String, dynamic> json) {
     return SalePost(
@@ -75,8 +78,8 @@ class SalePost {
           ? (json['images'] as List).map((e) => SaleImage.fromJson(e)).toList()
           : null,
       user: json['user'] != null ? SaleUser.fromJson(json['user']) : null,
-      viewsCount: json['views_count'] as int? ?? 0,
-      isActive: json['is_active'] as bool? ?? true,
+      viewsCount: json['view_count'] as int? ?? json['views_count'] as int? ?? 0,
+      status: json['status'] as String? ?? 'pending',
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'])
           : null,
@@ -104,7 +107,8 @@ class SalePost {
       'area': area,
       'category': categoryId,
       'subcategory': subcategoryId,
-      'is_active': isActive,
+      'status': status,
+      'view_count': viewsCount,
     };
   }
 }

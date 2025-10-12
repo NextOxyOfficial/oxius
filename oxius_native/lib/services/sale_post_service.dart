@@ -207,9 +207,10 @@ class SalePostService {
   }
 
   /// Update sale post
-  Future<SalePost?> updatePost(String id, Map<String, dynamic> postData) async {
+  /// [slug] - The slug of the post to update (backend uses slug as lookup field)
+  Future<SalePost?> updatePost(String slug, Map<String, dynamic> postData) async {
     try {
-      final uri = Uri.parse('$baseUrl/sale/posts/$id/');
+      final uri = Uri.parse('$baseUrl/sale/posts/$slug/');
       final response = await client.patch(
         uri,
         headers: await _getHeaders(needsAuth: true),
@@ -228,9 +229,10 @@ class SalePostService {
   }
 
   /// Delete sale post
-  Future<bool> deletePost(String id) async {
+  /// [slug] - The slug of the post to delete (backend uses slug as lookup field)
+  Future<bool> deletePost(String slug) async {
     try {
-      final uri = Uri.parse('$baseUrl/sale/posts/$id/');
+      final uri = Uri.parse('$baseUrl/sale/posts/$slug/');
       final response = await client.delete(
         uri,
         headers: await _getHeaders(needsAuth: true),
@@ -240,6 +242,26 @@ class SalePostService {
     } catch (e) {
       print('Error deleting sale post: $e');
       return false;
+    }
+  }
+
+  /// Mark post as sold
+  Future<SalePost?> markAsSold(String slug) async {
+    try {
+      final uri = Uri.parse('$baseUrl/sale/posts/$slug/mark_as_sold/');
+      final response = await client.post(
+        uri,
+        headers: await _getHeaders(needsAuth: true),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return SalePost.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      print('Error marking post as sold: $e');
+      return null;
     }
   }
 }

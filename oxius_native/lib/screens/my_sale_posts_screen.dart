@@ -141,9 +141,54 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
 
   void _calculateStats() {
     _stats['total'] = _totalCount; // Use total count from backend
-    _stats['active'] = _myPosts.where((p) => p.isActive).length;
-    _stats['sold'] = 0; // TODO: Add sold status to model
-    _stats['pending'] = _myPosts.where((p) => !p.isActive).length;
+    _stats['active'] = _myPosts.where((p) => p.status == 'active').length;
+    _stats['sold'] = _myPosts.where((p) => p.status == 'sold').length;
+    _stats['pending'] = _myPosts.where((p) => p.status == 'pending').length;
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'active':
+        return const Color(0xFF10B981); // Green
+      case 'pending':
+        return Colors.orange; // Orange
+      case 'sold':
+        return Colors.blue; // Blue
+      case 'expired':
+        return Colors.red; // Red
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'active':
+        return Icons.check_circle;
+      case 'pending':
+        return Icons.schedule;
+      case 'sold':
+        return Icons.shopping_bag;
+      case 'expired':
+        return Icons.cancel;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'active':
+        return 'Active';
+      case 'pending':
+        return 'Pending';
+      case 'sold':
+        return 'Sold';
+      case 'expired':
+        return 'Expired';
+      default:
+        return status;
+    }
   }
 
   String _formatPrice(double price) {
@@ -591,45 +636,116 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                       // Action Row: Activate/Deactivate | Edit | Delete | Status
                       Row(
                         children: [
-                          // Activate/Deactivate Button
-                          GestureDetector(
-                            onTap: () => _togglePostStatus(post),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: post.isActive 
-                                    ? Colors.orange.shade50 
-                                    : const Color(0xFF10B981).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: post.isActive 
-                                      ? Colors.orange.shade300 
-                                      : const Color(0xFF10B981),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    post.isActive ? Icons.toggle_off : Icons.toggle_on,
-                                    size: 12,
-                                    color: post.isActive ? Colors.orange.shade700 : const Color(0xFF10B981),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    post.isActive ? 'Stop' : 'Activate',
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      color: post.isActive ? Colors.orange.shade700 : const Color(0xFF10B981),
-                                      fontWeight: FontWeight.w700,
+                          // Activate/Deactivate/Mark as Sold Button with Menu
+                          if (post.status != 'expired') ...[
+                            PopupMenuButton<String>(
+                              onSelected: (value) {
+                                if (value == 'toggle') {
+                                  _togglePostStatus(post);
+                                } else if (value == 'mark_sold') {
+                                  _markAsSold(post);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                if (post.status != 'sold') ...[
+                                  PopupMenuItem(
+                                    value: 'toggle',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          post.isActive ? Icons.toggle_off : Icons.toggle_on,
+                                          size: 16,
+                                          color: post.isActive ? Colors.orange.shade700 : const Color(0xFF10B981),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          post.isActive ? 'Deactivate' : 'Activate',
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
+                                if (post.status == 'active') ...[
+                                  PopupMenuItem(
+                                    value: 'mark_sold',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.shopping_bag,
+                                          size: 16,
+                                          color: Colors.blue.shade700,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Mark as Sold',
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: post.status == 'sold'
+                                      ? Colors.blue.shade50
+                                      : post.isActive 
+                                          ? Colors.orange.shade50 
+                                          : const Color(0xFF10B981).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: post.status == 'sold'
+                                        ? Colors.blue.shade300
+                                        : post.isActive 
+                                            ? Colors.orange.shade300 
+                                            : const Color(0xFF10B981),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      post.status == 'sold' 
+                                          ? Icons.shopping_bag
+                                          : post.isActive ? Icons.toggle_off : Icons.toggle_on,
+                                      size: 12,
+                                      color: post.status == 'sold'
+                                          ? Colors.blue.shade700
+                                          : post.isActive ? Colors.orange.shade700 : const Color(0xFF10B981),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      post.status == 'sold' 
+                                          ? 'Sold'
+                                          : post.isActive ? 'Stop' : 'Activate',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        color: post.status == 'sold'
+                                            ? Colors.blue.shade700
+                                            : post.isActive ? Colors.orange.shade700 : const Color(0xFF10B981),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    if (post.status != 'sold') ...[
+                                      const SizedBox(width: 2),
+                                      Icon(
+                                        Icons.arrow_drop_down,
+                                        size: 14,
+                                        color: post.isActive ? Colors.orange.shade700 : const Color(0xFF10B981),
+                                      ),
+                                    ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 6),
+                            const SizedBox(width: 6),
+                          ],
                           // Edit Button
                           GestureDetector(
                             onTap: () => _editPost(post),
@@ -704,14 +820,10 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                             decoration: BoxDecoration(
-                              color: post.isActive 
-                                  ? const Color(0xFF10B981).withOpacity(0.1)
-                                  : Colors.grey.shade100,
+                              color: _getStatusColor(post.status).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(5),
                               border: Border.all(
-                                color: post.isActive 
-                                    ? const Color(0xFF10B981)
-                                    : Colors.grey.shade400,
+                                color: _getStatusColor(post.status),
                                 width: 1,
                               ),
                             ),
@@ -719,16 +831,16 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  post.isActive ? Icons.check_circle : Icons.schedule,
+                                  _getStatusIcon(post.status),
                                   size: 10,
-                                  color: post.isActive ? const Color(0xFF10B981) : Colors.grey.shade600,
+                                  color: _getStatusColor(post.status),
                                 ),
                                 const SizedBox(width: 3),
                                 Text(
-                                  post.isActive ? 'Active' : 'Pending',
+                                  _getStatusText(post.status),
                                   style: TextStyle(
                                     fontSize: 9,
-                                    color: post.isActive ? const Color(0xFF10B981) : Colors.grey.shade600,
+                                    color: _getStatusColor(post.status),
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
@@ -952,7 +1064,11 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
   }
 
   void _togglePostStatus(SalePost post) async {
-    final newStatus = !post.isActive;
+    // Toggle between 'active' and 'pending' status
+    // If post is 'active', set to 'pending' (deactivate)
+    // If post is 'pending', set to 'active' (activate)
+    final newStatus = post.status == 'active' ? 'pending' : 'active';
+    final isActivating = newStatus == 'active';
     
     // Show loading indicator
     ScaffoldMessenger.of(context).showSnackBar(
@@ -968,7 +1084,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
               ),
             ),
             const SizedBox(width: 12),
-            Text(newStatus ? 'Activating...' : 'Deactivating...'),
+            Text(isActivating ? 'Activating...' : 'Deactivating...'),
           ],
         ),
         duration: const Duration(seconds: 30),
@@ -977,8 +1093,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
 
     try {
       final updatedPost = await _postService.updatePost(
-        post.id,
-        {'is_active': newStatus},
+        post.slug,
+        {'status': newStatus},
       );
 
       if (updatedPost != null && mounted) {
@@ -990,7 +1106,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                 Icon(Icons.check_circle, color: Colors.white, size: 18),
                 const SizedBox(width: 12),
                 Text(
-                  newStatus ? 'Post activated successfully' : 'Post deactivated successfully',
+                  isActivating ? 'Post activated successfully' : 'Post deactivated successfully',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
@@ -1016,6 +1132,106 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                 SizedBox(width: 12),
                 Text(
                   'Failed to update post status',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.error_outline, color: Colors.white, size: 18),
+                const SizedBox(width: 12),
+                Text(
+                  'Error: ${e.toString()}',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  void _markAsSold(SalePost post) async {
+    // Show loading indicator
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            SizedBox(width: 12),
+            Text('Marking as sold...'),
+          ],
+        ),
+        duration: Duration(seconds: 30),
+      ),
+    );
+
+    try {
+      final updatedPost = await _postService.markAsSold(post.slug);
+
+      if (updatedPost != null && mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: const [
+                Icon(Icons.check_circle, color: Colors.white, size: 18),
+                SizedBox(width: 12),
+                Text(
+                  'Post marked as sold successfully',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        
+        // Refresh the list
+        _fetchMyPosts(refresh: true);
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: const [
+                Icon(Icons.error_outline, color: Colors.white, size: 18),
+                SizedBox(width: 12),
+                Text(
+                  'Failed to mark post as sold',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
@@ -1132,7 +1348,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
     );
 
     if (confirm == true) {
-      final success = await _postService.deletePost(post.id);
+      final success = await _postService.deletePost(post.slug);
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
