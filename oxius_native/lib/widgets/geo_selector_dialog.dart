@@ -126,7 +126,7 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
       );
       
       widget.onLocationSelected(location);
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(location);
     }
   }
 

@@ -259,14 +259,14 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Category Selector
                     _buildCategorySelector(),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     
                     // Title Field
                     _buildTextField(
@@ -277,43 +277,43 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                       maxLength: 100,
                     ),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     
                     // Description Field
                     _buildTextField(
                       controller: _instructionsController,
                       label: 'Description',
-                      hint: 'Provide detailed information about your item/service',
-                      maxLines: 6,
+                      hint: 'Provide detailed information',
+                      maxLines: 5,
                       maxLength: 5000,
                     ),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     
                     // Price Section
                     _buildPriceSection(),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     
                     // Location Selector
                     _buildLocationSelector(),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     
                     // Image Upload Section
                     _buildImageUploadSection(),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     
                     // Privacy Checkbox
                     _buildPrivacyCheckbox(),
                     
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
                     
                     // Submit Button
                     _buildSubmitButton(),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -325,29 +325,42 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Category',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
-          ),
+        Row(
+          children: [
+            const Text(
+              'Category',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF374151),
+              ),
+            ),
+            const Text(
+              ' *',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFFF9FAFB),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFD1D5DB)),
           ),
           child: DropdownButtonFormField<String>(
             value: _selectedCategoryId,
             decoration: const InputDecoration(
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               border: InputBorder.none,
               hintText: 'Select a category',
+              hintStyle: TextStyle(fontSize: 13, color: Color(0xFF9CA3AF)),
             ),
-            icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF6B7280)),
+            icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF6B7280), size: 20),
             dropdownColor: Colors.white,
             items: _categories.map((category) {
               return DropdownMenuItem<String>(
@@ -393,9 +406,9 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             Text(
               label,
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF111827),
+                color: Color(0xFF374151),
               ),
             ),
             if (required)
@@ -403,43 +416,45 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 ' *',
                 style: TextStyle(
                   color: Colors.red,
-                  fontSize: 15,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
               ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           maxLines: maxLines,
           maxLength: maxLength,
           keyboardType: keyboardType,
+          style: const TextStyle(fontSize: 13),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(
               color: Color(0xFF9CA3AF),
-              fontSize: 14,
+              fontSize: 13,
             ),
             filled: true,
-            fillColor: const Color(0xFFF9FAFB),
+            fillColor: Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Colors.red),
             ),
-            contentPadding: const EdgeInsets.all(16),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            counterStyle: const TextStyle(fontSize: 11),
           ),
           validator: required
               ? (value) {
@@ -461,47 +476,49 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         const Text(
           'Price',
           style: TextStyle(
-            fontSize: 15,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
+            color: Color(0xFF374151),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         
         // Negotiable Checkbox
         InkWell(
           onTap: () => setState(() => _negotiable = !_negotiable),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              color: _negotiable ? const Color(0xFF10B981).withOpacity(0.05) : Colors.white,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: _negotiable ? const Color(0xFF10B981) : const Color(0xFFD1D5DB),
+              ),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 20,
-                  height: 20,
+                  width: 18,
+                  height: 18,
                   decoration: BoxDecoration(
                     color: _negotiable ? const Color(0xFF10B981) : Colors.white,
                     border: Border.all(
                       color: _negotiable ? const Color(0xFF10B981) : const Color(0xFFD1D5DB),
                       width: 2,
                     ),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(3),
                   ),
                   child: _negotiable
-                      ? const Icon(Icons.check, color: Colors.white, size: 14)
+                      ? const Icon(Icons.check, color: Colors.white, size: 12)
                       : null,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 const Text(
                   'Price is negotiable',
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF111827),
+                    fontSize: 13,
+                    color: Color(0xFF374151),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -511,40 +528,41 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         ),
         
         if (!_negotiable) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           TextFormField(
             controller: _priceController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
             ],
+            style: const TextStyle(fontSize: 13),
             decoration: InputDecoration(
               hintText: 'Enter price',
               prefixText: '৳ ',
               prefixStyle: const TextStyle(
                 color: Color(0xFF111827),
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
               hintStyle: const TextStyle(
                 color: Color(0xFF9CA3AF),
-                fontSize: 14,
+                fontSize: 13,
               ),
               filled: true,
-              fillColor: const Color(0xFFF9FAFB),
+              fillColor: Colors.white,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.5),
               ),
-              contentPadding: const EdgeInsets.all(16),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
             validator: (value) {
               if (!_negotiable && (value == null || value.trim().isEmpty)) {
@@ -567,40 +585,40 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             const Text(
               'Location',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF111827),
+                color: Color(0xFF374151),
               ),
             ),
             const Text(
               ' *',
               style: TextStyle(
                 color: Colors.red,
-                fontSize: 15,
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         InkWell(
           onTap: _showLocationSelector,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(8),
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFD1D5DB)),
             ),
             child: Row(
               children: [
                 const Icon(
-                  Icons.location_on,
+                  Icons.location_on_outlined,
                   color: Color(0xFF10B981),
-                  size: 20,
+                  size: 18,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     _location == null
@@ -611,16 +629,16 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                                 .where((e) => e != null && e.isNotEmpty)
                                 .join(', '),
                     style: TextStyle(
-                      fontSize: 14,
-                      color: _location == null ? const Color(0xFF9CA3AF) : const Color(0xFF111827),
+                      fontSize: 13,
+                      color: _location == null ? const Color(0xFF9CA3AF) : const Color(0xFF374151),
                       fontWeight: _location == null ? FontWeight.w400 : FontWeight.w500,
                     ),
                   ),
                 ),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  color: Color(0xFF6B7280),
-                  size: 16,
+                Icon(
+                  Icons.chevron_right,
+                  color: Colors.grey[400],
+                  size: 20,
                 ),
               ],
             ),
@@ -634,29 +652,34 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Photos',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Photos',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF374151),
+              ),
+            ),
+            Text(
+              '${_selectedImages.length}/5',
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey[500],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          'Add up to 5 photos',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         
         // Image Grid
         if (_selectedImages.isNotEmpty)
           Wrap(
-            spacing: 10,
-            runSpacing: 10,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               ..._selectedImages.asMap().entries.map((entry) {
                 final index = entry.key;
@@ -676,10 +699,10 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     return Stack(
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
           child: Container(
-            width: 100,
-            height: 100,
+            width: 80,
+            height: 80,
             color: const Color(0xFFF3F4F6),
             child: image is File
                 ? Image.file(image, fit: BoxFit.cover)
@@ -687,20 +710,20 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           ),
         ),
         Positioned(
-          top: 4,
-          right: 4,
+          top: 2,
+          right: 2,
           child: GestureDetector(
             onTap: () => _removeImage(index),
             child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
-                color: Colors.red,
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.9),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.close,
                 color: Colors.white,
-                size: 16,
+                size: 14,
               ),
             ),
           ),
@@ -712,16 +735,16 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
   Widget _buildAddImageButton() {
     return InkWell(
       onTap: _pickImages,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(6),
       child: Container(
-        width: 100,
-        height: 100,
+        width: 80,
+        height: 80,
         decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: const Color(0xFFE5E7EB),
-            style: BorderStyle.solid,
+            color: const Color(0xFFD1D5DB),
+            width: 1.5,
           ),
         ),
         child: Column(
@@ -729,15 +752,16 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           children: [
             Icon(
               Icons.add_photo_alternate_outlined,
-              color: Colors.grey[600],
-              size: 32,
+              color: Colors.grey[400],
+              size: 28,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
-              'Add Photo',
+              'Add',
               style: TextStyle(
-                fontSize: 11,
-                color: Colors.grey[600],
+                fontSize: 10,
+                color: Colors.grey[500],
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -753,29 +777,29 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 20,
-            height: 20,
-            margin: const EdgeInsets.only(top: 2),
+            width: 18,
+            height: 18,
+            margin: const EdgeInsets.only(top: 1),
             decoration: BoxDecoration(
               color: _acceptedPrivacy ? const Color(0xFF10B981) : Colors.white,
               border: Border.all(
                 color: _acceptedPrivacy ? const Color(0xFF10B981) : const Color(0xFFD1D5DB),
                 width: 2,
               ),
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(3),
             ),
             child: _acceptedPrivacy
-                ? const Icon(Icons.check, color: Colors.white, size: 14)
+                ? const Icon(Icons.check, color: Colors.white, size: 12)
                 : null,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Expanded(
             child: RichText(
               text: const TextSpan(
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   color: Color(0xFF6B7280),
-                  height: 1.4,
+                  height: 1.3,
                 ),
                 children: [
                   TextSpan(text: 'I accept the '),
@@ -809,16 +833,16 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF10B981),
         disabledBackgroundColor: const Color(0xFFE5E7EB),
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(8),
         ),
         elevation: 0,
       ),
       child: _isSubmitting
           ? const SizedBox(
-              height: 20,
-              width: 20,
+              height: 18,
+              width: 18,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -827,7 +851,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           : Text(
               _isEditMode ? 'Update Post' : 'Create Post',
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
               ),
