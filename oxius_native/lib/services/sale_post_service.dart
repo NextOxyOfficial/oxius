@@ -160,15 +160,19 @@ class SalePostService {
   Future<SalePostsResponse> fetchMyPosts({
     int page = 1,
     int pageSize = 20,
+    String? status,
   }) async {
     try {
       final queryParams = {
         'page': page.toString(),
         'page_size': pageSize.toString(),
-        'my_posts': 'true',
       };
 
-      final uri = Uri.parse('$baseUrl/sale/posts/')
+      if (status != null && status.isNotEmpty) {
+        queryParams['status'] = status;
+      }
+
+      final uri = Uri.parse('$baseUrl/sale/posts/my_posts/')
           .replace(queryParameters: queryParams);
 
       final response = await client.get(

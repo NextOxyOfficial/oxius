@@ -32,6 +32,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
   int _currentPage = 1;
   int _totalCount = 0;
   bool _hasMore = true;
+  String? _currentStatusFilter;
   Map<String, int> _stats = {
     'total': 0,
     'active': 0,
@@ -45,18 +46,22 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
     _postService = SalePostService(baseUrl: ApiService.baseUrl);
     _scrollController = ScrollController();
     
-    // Initialize tab controller with 2 tabs
-    _tabController = TabController(length: 2, vsync: this);
+    // Initialize tab controller with 4 filter tabs
+    _tabController = TabController(length: 4, vsync: this);
     
-    // Set initial tab based on parameter
-    if (widget.initialTab == 'post-sale') {
-      _tabController.index = 1;
-    }
+    // Listen to tab changes
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        _onTabChanged(_tabController.index);
+      }
+    });
     
     // Add scroll listener for pagination
     _scrollController?.addListener(_onScroll);
     
+    // Fetch initial data and stats
     _fetchMyPosts();
+    _fetchAllStats();
   }
 
   @override
@@ -64,6 +69,35 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
     _tabController.dispose();
     _scrollController?.dispose();
     super.dispose();
+  }
+
+  void _onTabChanged(int index) {
+    print('Tab changed to index: $index');
+    // Set the status filter based on tab index
+    String? newFilter;
+    switch (index) {
+      case 0:
+        newFilter = null; // All
+        break;
+      case 1:
+        newFilter = 'active';
+        break;
+      case 2:
+        newFilter = 'sold';
+        break;
+      case 3:
+        newFilter = 'pending';
+        break;
+    }
+    
+    // Only fetch if filter actually changed
+    if (newFilter != _currentStatusFilter) {
+      setState(() {
+        _currentStatusFilter = newFilter;
+      });
+      print('Fetching posts with filter: $_currentStatusFilter');
+      _fetchMyPosts(refresh: true);
+    }
   }
 
   void _onScroll() {
@@ -90,6 +124,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
       final response = await _postService.fetchMyPosts(
         page: _currentPage,
         pageSize: 20,
+        status: _currentStatusFilter,
       );
       
       if (mounted) {
@@ -100,6 +135,10 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
           _calculateStats();
           _isLoading = false;
         });
+        // Refresh stats when fetching posts
+        if (refresh) {
+          _fetchAllStats();
+        }
       }
     } catch (e) {
       print('Error fetching my posts: $e');
@@ -119,6 +158,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
       final response = await _postService.fetchMyPosts(
         page: nextPage,
         pageSize: 20,
+        status: _currentStatusFilter,
       );
 
       if (mounted) {
@@ -140,10 +180,50 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
   }
 
   void _calculateStats() {
-    _stats['total'] = _totalCount; // Use total count from backend
-    _stats['active'] = _myPosts.where((p) => p.status == 'active').length;
-    _stats['sold'] = _myPosts.where((p) => p.status == 'sold').length;
-    _stats['pending'] = _myPosts.where((p) => p.status == 'pending').length;
+    // When viewing filtered results, we need to fetch counts for all statuses
+    // For now, calculate from current page - ideally should call API for accurate counts
+    if (_currentStatusFilter == null) {
+      // On "All" tab, we have all posts
+      _stats['total'] = _totalCount;
+      _stats['active'] = _myPosts.where((p) => p.status == 'active').length;
+      _stats['sold'] = _myPosts.where((p) => p.status == 'sold').length;
+      _stats['pending'] = _myPosts.where((p) => p.status == 'pending').length;
+    } else {
+      // On filtered tabs, totalCount represents filtered count
+      // Keep previous stats but update the current filter's count
+      switch (_currentStatusFilter) {
+        case 'active':
+          _stats['active'] = _totalCount;
+          break;
+        case 'sold':
+          _stats['sold'] = _totalCount;
+          break;
+        case 'pending':
+          _stats['pending'] = _totalCount;
+          break;
+      }
+    }
+  }
+  
+  Future<void> _fetchAllStats() async {
+    // Fetch counts for each status to display in tabs
+    try {
+      final allResponse = await _postService.fetchMyPosts(page: 1, pageSize: 1, status: null);
+      final activeResponse = await _postService.fetchMyPosts(page: 1, pageSize: 1, status: 'active');
+      final soldResponse = await _postService.fetchMyPosts(page: 1, pageSize: 1, status: 'sold');
+      final pendingResponse = await _postService.fetchMyPosts(page: 1, pageSize: 1, status: 'pending');
+      
+      if (mounted) {
+        setState(() {
+          _stats['total'] = allResponse.count;
+          _stats['active'] = activeResponse.count;
+          _stats['sold'] = soldResponse.count;
+          _stats['pending'] = pendingResponse.count;
+        });
+      }
+    } catch (e) {
+      print('Error fetching stats: $e');
+    }
   }
 
   Color _getStatusColor(String status) {
@@ -242,13 +322,9 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
       ),
       body: Column(
         children: [
-          // Stats Section
-          _buildStatsSection(),
-          
           // Tabs
           Container(
             color: Colors.white,
-            margin: const EdgeInsets.only(top: 6),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             child: Container(
               decoration: BoxDecoration(
@@ -282,13 +358,23 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                 ),
                 tabs: [
                   Tab(
-                    icon: const Icon(Icons.inventory_2_outlined, size: 16),
-                    text: 'My Posts (${_myPosts.length})',
+                    icon: const Icon(Icons.all_inclusive, size: 16),
+                    text: 'All (${_stats['total']})',
                     height: 48,
                   ),
-                  const Tab(
-                    icon: Icon(Icons.add_circle_outline, size: 16),
-                    text: 'Create Post',
+                  Tab(
+                    icon: const Icon(Icons.check_circle_outline, size: 16),
+                    text: 'Active (${_stats['active']})',
+                    height: 48,
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.shopping_bag_outlined, size: 16),
+                    text: 'Sold (${_stats['sold']})',
+                    height: 48,
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.schedule, size: 16),
+                    text: 'Pending (${_stats['pending']})',
                     height: 48,
                   ),
                 ],
@@ -300,103 +386,35 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
           Expanded(
             child: TabBarView(
               controller: _tabController,
+              physics: const AlwaysScrollableScrollPhysics(),
               children: [
-                _buildMyPostsTab(),
-                _buildPostSaleTab(),
+                _buildMyPostsTab(), // All
+                _buildMyPostsTab(), // Active
+                _buildMyPostsTab(), // Sold
+                _buildMyPostsTab(), // Pending
               ],
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatsSection() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(4, 10, 4, 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildStatCard(
-              'Total',
-              _stats['total'].toString(),
-              Icons.grid_view_rounded,
-              const Color(0xFF3B82F6),
-            ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => _buildPostSaleModal(),
+          );
+        },
+        backgroundColor: const Color(0xFF10B981),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          'Create Post',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildStatCard(
-              'Active',
-              _stats['active'].toString(),
-              Icons.trending_up,
-              const Color(0xFF10B981),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildStatCard(
-              'Sold',
-              _stats['sold'].toString(),
-              Icons.sell_outlined,
-              const Color(0xFF8B5CF6),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildStatCard(
-              'Pending',
-              _stats['pending'].toString(),
-              Icons.hourglass_empty,
-              const Color(0xFFF59E0B),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: color,
-              height: 1.1,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -450,7 +468,12 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () {
-                  _tabController.animateTo(1);
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => _buildPostSaleModal(),
+                  );
                 },
                 icon: const Icon(Icons.add_circle_outline, size: 18),
                 label: const Text(
@@ -979,6 +1002,20 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPostSaleModal() {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: _buildPostSaleTab(),
     );
   }
 
