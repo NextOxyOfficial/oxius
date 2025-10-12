@@ -68,6 +68,9 @@ class SalePostService {
     String? state,
     String? city,
     String? upazila,
+    String? division,
+    String? district,
+    String? area,
     String? condition,
     double? minPrice,
     double? maxPrice,
@@ -87,6 +90,9 @@ class SalePostService {
       if (state != null) queryParams['state'] = state;
       if (city != null) queryParams['city'] = city;
       if (upazila != null) queryParams['upazila'] = upazila;
+      if (division != null) queryParams['division'] = division;
+      if (district != null) queryParams['district'] = district;
+      if (area != null) queryParams['area'] = area;
       if (condition != null) queryParams['condition'] = condition;
       if (minPrice != null) queryParams['min_price'] = minPrice.toString();
       if (maxPrice != null) queryParams['max_price'] = maxPrice.toString();

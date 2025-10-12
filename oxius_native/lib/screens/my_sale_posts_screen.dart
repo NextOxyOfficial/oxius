@@ -183,19 +183,31 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
           // Tabs
           Container(
             color: Colors.white,
+            margin: const EdgeInsets.only(top: 4),
             child: TabBar(
               controller: _tabController,
               labelColor: const Color(0xFF10B981),
-              unselectedLabelColor: Colors.grey,
+              unselectedLabelColor: Colors.grey.shade600,
               indicatorColor: const Color(0xFF10B981),
+              indicatorWeight: 3,
+              labelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
               tabs: [
                 Tab(
-                  icon: const Icon(Icons.list),
+                  icon: const Icon(Icons.grid_view_rounded, size: 20),
                   text: 'My Posts (${_myPosts.length})',
+                  height: 60,
                 ),
                 const Tab(
-                  icon: Icon(Icons.add_circle_outline),
-                  text: 'Post a Sale',
+                  icon: Icon(Icons.add_box_outlined, size: 20),
+                  text: 'Create New',
+                  height: 60,
                 ),
               ],
             ),
@@ -219,78 +231,79 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
   Widget _buildStatsSection() {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
           Expanded(
             child: _buildStatCard(
-              'Total Posts',
+              'Total',
               _stats['total'].toString(),
-              Icons.document_scanner,
-              Colors.blue,
+              Icons.inventory_2_outlined,
+              const Color(0xFF3B82F6),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: _buildStatCard(
               'Active',
               _stats['active'].toString(),
-              Icons.visibility,
-              Colors.green,
+              Icons.check_circle_outline,
+              const Color(0xFF10B981),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: _buildStatCard(
               'Sold',
               _stats['sold'].toString(),
-              Icons.check_circle,
-              const Color(0xFF10B981),
+              Icons.shopping_bag_outlined,
+              const Color(0xFF8B5CF6),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: _buildStatCard(
               'Pending',
               _stats['pending'].toString(),
-              Icons.schedule,
-              Colors.amber,
+              Icons.schedule_outlined,
+              const Color(0xFFF59E0B),
             ),
           ),
         ],
       ),
     );
   }
-
   Widget _buildStatCard(String label, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withOpacity(0.1), color.withOpacity(0.2)],
-        ),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 20, color: color),
-          const SizedBox(height: 4),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: color,
+              height: 1.2,
             ),
           ),
+          const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              fontSize: 10,
-              color: color.withOpacity(0.8),
+              fontSize: 11,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -307,21 +320,41 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inventory_2_outlined, size: 80, color: Colors.grey.shade300),
-            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.inventory_2_outlined, size: 60, color: const Color(0xFF10B981).withOpacity(0.6)),
+            ),
+            const SizedBox(height: 20),
             Text(
               'No posts yet',
-              style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade800,
+              ),
             ),
             const SizedBox(height: 8),
+            Text(
+              'Start by creating your first sale post',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
                 _tabController.animateTo(1);
               },
-              icon: const Icon(Icons.add),
-              label: const Text('Create Your First Post'),
+              icon: const Icon(Icons.add, size: 20),
+              label: const Text('Create Post', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ],
@@ -355,141 +388,305 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
         ? post.images![0].image
         : 'https://via.placeholder.com/300x200?text=No+Image';
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () {
-          Navigator.pushNamed(
-            context,
-            '/sale/detail',
-            arguments: {'slug': post.slug, 'id': post.id},
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              // Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey.shade200,
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.image_not_supported),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              
-              // Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            Colors.grey.shade50,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(
+          color: Colors.grey.shade100,
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.pushNamed(
+              context,
+              '/sale/detail',
+              arguments: {'slug': post.slug, 'id': post.id},
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          splashColor: const Color(0xFF10B981).withOpacity(0.1),
+          highlightColor: const Color(0xFF10B981).withOpacity(0.05),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                // Image with gradient overlay
+                Stack(
                   children: [
-                    Text(
-                      post.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text(
-                          _formatPrice(post.price),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF10B981),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: post.isActive ? Colors.green.shade50 : Colors.red.shade50,
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: post.isActive ? Colors.green : Colors.red,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey.shade100,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: const Color(0xFF10B981),
+                              ),
                             ),
                           ),
-                          child: Text(
-                            post.isActive ? 'Active' : 'Inactive',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: post.isActive ? Colors.green : Colors.red,
-                              fontWeight: FontWeight.w600,
+                          errorWidget: (context, url, error) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [Colors.grey.shade100, Colors.grey.shade200],
+                              ),
                             ),
+                            child: Icon(Icons.image_not_supported, color: Colors.grey.shade400, size: 32),
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.visibility, size: 14, color: Colors.grey.shade600),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${post.viewsCount} views',
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    // Shine effect overlay
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.white.withOpacity(0.2),
+                              Colors.transparent,
+                            ],
+                          ),
                         ),
-                        const SizedBox(width: 12),
-                        Icon(Icons.calendar_today, size: 14, color: Colors.grey.shade600),
-                        const SizedBox(width: 4),
-                        Text(
-                          _formatDate(post.createdAt),
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(width: 14),
               
-              // Actions
-              PopupMenuButton(
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit, size: 18),
-                        SizedBox(width: 8),
-                        Text('Edit'),
-                      ],
-                    ),
+                // Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        post.title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF111827),
+                          height: 1.3,
+                          letterSpacing: -0.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF10B981), Color(0xFF059669)],
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              _formatPrice(post.price),
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              gradient: post.isActive 
+                                  ? LinearGradient(
+                                      colors: [
+                                        const Color(0xFF10B981).withOpacity(0.15),
+                                        const Color(0xFF10B981).withOpacity(0.08),
+                                      ],
+                                    )
+                                  : LinearGradient(
+                                      colors: [
+                                        Colors.red.shade100,
+                                        Colors.red.shade50,
+                                      ],
+                                    ),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: post.isActive 
+                                    ? const Color(0xFF10B981).withOpacity(0.3)
+                                    : Colors.red.shade300,
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  post.isActive ? Icons.check_circle : Icons.cancel,
+                                  size: 12,
+                                  color: post.isActive ? const Color(0xFF10B981) : Colors.red.shade700,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  post.isActive ? 'Active' : 'Inactive',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: post.isActive ? const Color(0xFF10B981) : Colors.red.shade700,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.visibility_outlined, size: 14, color: Colors.grey.shade600),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${post.viewsCount}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey.shade600),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatDate(post.createdAt),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete, size: 18, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Delete', style: TextStyle(color: Colors.red)),
-                      ],
-                    ),
+                ),
+                
+                // Actions with cool icon
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ],
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    _editPost(post);
-                  } else if (value == 'delete') {
-                    _deletePost(post);
-                  }
-                },
-              ),
-            ],
+                  child: PopupMenuButton(
+                    icon: Icon(Icons.more_horiz_rounded, color: Colors.grey.shade700, size: 24),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    offset: const Offset(0, 45),
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(Icons.edit_outlined, size: 16, color: Colors.blue.shade700),
+                              ),
+                              const SizedBox(width: 12),
+                              const Text('Edit Post', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
+                              ),
+                              const SizedBox(width: 12),
+                              const Text('Delete Post', style: TextStyle(color: Colors.red, fontSize: 14, fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        _editPost(post);
+                      } else if (value == 'delete') {
+                        _deletePost(post);
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -498,36 +695,63 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
 
   Widget _buildPostSaleTab() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_shopping_cart, size: 80, color: Colors.grey.shade300),
-            const SizedBox(height: 16),
-            const Text(
-              'Sale Post Form',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Create a new sale post form will be implemented here',
-              style: TextStyle(color: Colors.grey.shade600),
-              textAlign: TextAlign.center,
+            Container(
+              padding: const EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.add_photo_alternate_outlined, size: 70, color: const Color(0xFF10B981)),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                // TODO: Show post form
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Post form coming soon!')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            const Text(
+              'Create New Sale Post',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2937),
               ),
-              child: const Text('Coming Soon'),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30),
+              child: Text(
+                'Post form with image upload, product details, and pricing will be available here soon',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.info_outline, size: 20, color: Colors.blue.shade700),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Feature Coming Soon',
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

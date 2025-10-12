@@ -10,6 +10,9 @@ class SalePost {
   final String? city;
   final String? upazila;
   final String? location;
+  final String? division;
+  final String? district;
+  final String? area;
   final String? categoryId;
   final String? categoryName;
   final String? subcategoryId;
@@ -33,6 +36,9 @@ class SalePost {
     this.city,
     this.upazila,
     this.location,
+    this.division,
+    this.district,
+    this.area,
     this.categoryId,
     this.categoryName,
     this.subcategoryId,
@@ -58,6 +64,9 @@ class SalePost {
       city: json['city'] as String?,
       upazila: json['upazila'] as String?,
       location: json['location'] as String?,
+      division: json['division'] as String?,
+      district: json['district'] as String?,
+      area: json['area'] as String?,
       categoryId: json['category']?.toString(),
       categoryName: json['category_name'] as String?,
       subcategoryId: json['subcategory']?.toString(),
@@ -90,6 +99,9 @@ class SalePost {
       'city': city,
       'upazila': upazila,
       'location': location,
+      'division': division,
+      'district': district,
+      'area': area,
       'category': categoryId,
       'subcategory': subcategoryId,
       'is_active': isActive,
