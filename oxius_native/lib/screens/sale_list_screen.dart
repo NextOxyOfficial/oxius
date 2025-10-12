@@ -579,46 +579,39 @@ class _SaleListScreenState extends State<SaleListScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Location Header
-          if (_selectedDivision != null || _selectedDistrict != null || _selectedArea != null)
-            _buildLocationHeader(),
-          
-          // Search Bar
-          _buildSearchBar(),
-          
-          // Results Count & Sort
-          _buildResultsBar(),
-          
-          // Applied Filters
-          if (_hasActiveFilters()) _buildAppliedFilters(),
-          
-          // Posts Grid with additional sections
-          Expanded(
-            child: _isLoading && _posts.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : ListView(
-                    controller: _scrollController,
-                    children: [
-                      // Posts Grid
-                      if (_posts.isEmpty)
-                        _buildEmptyState()
-                      else
-                        _buildPostsGridSection(),
-                      
-                      // Recent Listings
-                      if (_recentListings.isNotEmpty) _buildRecentListings(),
-                      
-                      // Tips and Safety
-                      _buildTipsAndSafety(),
-                      
-                      const SizedBox(height: 80),
-                    ],
-                  ),
-          ),
-        ],
-      ),
+      body: _isLoading && _posts.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              controller: _scrollController,
+              children: [
+                // Location Header
+                if (_selectedDivision != null || _selectedDistrict != null || _selectedArea != null)
+                  _buildLocationHeader(),
+                
+                // Search Bar
+                _buildSearchBar(),
+                
+                // Results Count & Sort
+                _buildResultsBar(),
+                
+                // Applied Filters
+                if (_hasActiveFilters()) _buildAppliedFilters(),
+                
+                // Posts Grid
+                if (_posts.isEmpty)
+                  _buildEmptyState()
+                else
+                  _buildPostsGridSection(),
+                
+                // Recent Listings
+                if (_recentListings.isNotEmpty) _buildRecentListings(),
+                
+                // Tips and Safety
+                _buildTipsAndSafety(),
+                
+                const SizedBox(height: 80),
+              ],
+            ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           // Navigate to create post
@@ -1028,7 +1021,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     top: 8,
                     right: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.6),
                         borderRadius: BorderRadius.circular(6),
@@ -1050,7 +1043,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
             // Content
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(2),
+                padding: const EdgeInsets.all(4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
