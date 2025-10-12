@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:convert';
 import '../models/classified_post.dart';
 import '../models/classified_post_form.dart';
 import '../models/geo_location.dart';
@@ -42,7 +44,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
   String? _selectedCategoryId;
   
   GeoLocation? _location;
-  List<dynamic> _selectedImages = []; // Mix of URLs and File objects
+  List<dynamic> _selectedImages = []; // Mix of URLs, File objects, and XFile objects
   
   bool get _isEditMode => widget.postId != null;
 
@@ -114,7 +116,8 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         setState(() {
           for (var image in images) {
             if (_selectedImages.length < 5) {
-              _selectedImages.add(File(image.path));
+              // Store XFile directly for cross-platform compatibility
+              _selectedImages.add(image);
             }
           }
         });
@@ -124,10 +127,90 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     }
   }
 
+  Widget _buildImageWidget(dynamic image) {
+    // Handle URL strings (from existing posts)
+    if (image is String) {
+      return Image.network(image, fit: BoxFit.cover);
+    }
+    
+    // Handle XFile (from image picker)
+    if (image is XFile) {
+      if (kIsWeb) {
+        // On web, use Image.network with the file path
+        return Image.network(image.path, fit: BoxFit.cover);
+      } else {
+        // On mobile, convert XFile to File
+        return Image.file(File(image.path), fit: BoxFit.cover);
+      }
+    }
+    
+    // Handle File objects (shouldn't happen on web, but kept for backwards compatibility)
+    if (image is File) {
+      return Image.file(image, fit: BoxFit.cover);
+    }
+    
+    // Fallback
+    return const Icon(Icons.image, size: 40, color: Colors.grey);
+  }
+
   void _removeImage(int index) {
     setState(() {
       _selectedImages.removeAt(index);
     });
+  }
+
+  /// Convert images to base64 strings for API submission
+  Future<List<String>> _convertImagesToBase64() async {
+    List<String> base64Images = [];
+    
+    for (var image in _selectedImages) {
+      try {
+        // If it's already a URL string (existing image), skip conversion
+        if (image is String) {
+          // Keep existing URLs as-is (backend will handle them)
+          continue;
+        }
+        
+        // Convert XFile to base64
+        if (image is XFile) {
+          final bytes = await image.readAsBytes();
+          final base64String = base64Encode(bytes);
+          
+          // Get file extension
+          final extension = image.path.split('.').last.toLowerCase();
+          String mimeType = 'image/jpeg';
+          if (extension == 'png') mimeType = 'image/png';
+          else if (extension == 'jpg' || extension == 'jpeg') mimeType = 'image/jpeg';
+          else if (extension == 'gif') mimeType = 'image/gif';
+          else if (extension == 'webp') mimeType = 'image/webp';
+          
+          // Format as data URL
+          final dataUrl = 'data:$mimeType;base64,$base64String';
+          base64Images.add(dataUrl);
+        }
+        // Convert File to base64 (mobile platforms)
+        else if (image is File) {
+          final bytes = await image.readAsBytes();
+          final base64String = base64Encode(bytes);
+          
+          // Get file extension
+          final extension = image.path.split('.').last.toLowerCase();
+          String mimeType = 'image/jpeg';
+          if (extension == 'png') mimeType = 'image/png';
+          else if (extension == 'jpg' || extension == 'jpeg') mimeType = 'image/jpeg';
+          else if (extension == 'gif') mimeType = 'image/gif';
+          else if (extension == 'webp') mimeType = 'image/webp';
+          
+          // Format as data URL
+          final dataUrl = 'data:$mimeType;base64,$base64String';
+          base64Images.add(dataUrl);
+        }
+      } catch (e) {
+        print('Error converting image to base64: $e');
+      }
+    }
+    
+    return base64Images;
   }
 
   Future<void> _showLocationSelector() async {
@@ -170,6 +253,29 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     setState(() => _isSubmitting = true);
 
     try {
+      // Convert images to base64 before submission
+      print('Converting ${_selectedImages.length} images to base64...');
+      final base64Images = await _convertImagesToBase64();
+      print('Converted ${base64Images.length} images successfully');
+      
+      // Build location string from geo data
+      String locationString = '';
+      if (_location!.allOverBangladesh) {
+        locationString = 'All Over Bangladesh';
+      } else {
+        final locationParts = <String>[];
+        if (_location!.upazila != null && _location!.upazila!.isNotEmpty) {
+          locationParts.add(_location!.upazila!);
+        }
+        if (_location!.city != null && _location!.city!.isNotEmpty) {
+          locationParts.add(_location!.city!);
+        }
+        if (_location!.state != null && _location!.state!.isNotEmpty) {
+          locationParts.add(_location!.state!);
+        }
+        locationString = locationParts.join(', ');
+      }
+      
       final form = ClassifiedPostForm(
         id: widget.postId,
         categoryId: _selectedCategoryId,
@@ -181,10 +287,12 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         state: _location!.state,
         city: _location!.city,
         upazila: _location!.upazila,
-        medias: _selectedImages,
+        location: locationString,
+        medias: base64Images,
         acceptedPrivacy: _acceptedPrivacy,
       );
 
+      print('Form created, submitting to API...');
       Map<String, dynamic>? response;
       
       if (_isEditMode) {
@@ -704,9 +812,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             width: 80,
             height: 80,
             color: const Color(0xFFF3F4F6),
-            child: image is File
-                ? Image.file(image, fit: BoxFit.cover)
-                : Image.network(image.toString(), fit: BoxFit.cover),
+            child: _buildImageWidget(image),
           ),
         ),
         Positioned(

@@ -8,6 +8,8 @@ import '../models/classified_post_form.dart';
 class ClassifiedPostService {
   final String baseUrl;
   final http.Client client;
+  
+  static const String _tokenKey = 'adsyclub_token';
 
   ClassifiedPostService({
     required this.baseUrl,
@@ -18,7 +20,7 @@ class ClassifiedPostService {
   Future<String?> _getAuthToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getString('auth_token');
+      return prefs.getString(_tokenKey);
     } catch (e) {
       print('Error getting auth token: $e');
       return null;
@@ -28,6 +30,7 @@ class ClassifiedPostService {
   /// Get authenticated headers
   Future<Map<String, String>> _getAuthHeaders() async {
     final token = await _getAuthToken();
+    print('Auth token retrieved: ${token != null ? "Yes (${token.substring(0, 10)}...)" : "No"}');
     return {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
@@ -237,10 +240,18 @@ class ClassifiedPostService {
       final headers = await _getAuthHeaders();
       final uri = Uri.parse('$baseUrl/classified-categories-post/');
       
+      print('Preparing to create post...');
+      final jsonData = form.toJson();
+      print('Form data prepared: ${jsonData.keys}');
+      print('Medias count: ${jsonData['medias']?.length ?? 0}');
+      
+      final jsonString = json.encode(jsonData);
+      print('JSON encoded successfully, length: ${jsonString.length}');
+      
       final response = await client.post(
         uri,
         headers: headers,
-        body: json.encode(form.toJson()),
+        body: jsonString,
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -249,8 +260,9 @@ class ClassifiedPostService {
         print('Create post failed: ${response.statusCode} - ${response.body}');
       }
       return null;
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('Error creating post: $e');
+      print('Stack trace: $stackTrace');
       return null;
     }
   }

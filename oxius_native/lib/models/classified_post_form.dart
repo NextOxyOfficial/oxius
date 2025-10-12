@@ -88,9 +88,13 @@ class ClassifiedPostForm {
       data['upazila'] = upazila;
     }
 
-    // Add medias
+    // Add medias - ensure all are strings
     if (medias.isNotEmpty) {
-      data['medias'] = medias;
+      // Filter to only include strings (base64 encoded images or URLs)
+      final stringMedias = medias.whereType<String>().toList();
+      if (stringMedias.isNotEmpty) {
+        data['medias'] = stringMedias;
+      }
     }
 
     return data;
