@@ -8,6 +8,9 @@ import 'screens/classified_category_list_screen.dart';
 import 'screens/classified_post_details_screen.dart';
 import 'screens/classified_post_form_screen.dart';
 import 'screens/my_classified_posts_screen.dart';
+import 'screens/sale_list_screen.dart';
+import 'screens/sale_detail_screen.dart';
+import 'screens/my_sale_posts_screen.dart';
 import 'pages/login_page.dart';
 import 'services/auth_service.dart';
 import 'services/user_state_service.dart';
@@ -94,6 +97,8 @@ class MyApp extends StatelessWidget {
               appBar: AppBar(title: const Text('Mobile Recharge')),
               body: const Center(child: Text('Coming Soon!')),
             ),
+
+
           },
           onGenerateRoute: (settings) {
             if (settings.name == '/classified-category') {
@@ -123,6 +128,29 @@ class MyApp extends StatelessWidget {
             } else if (settings.name == '/my-classified-posts') {
               return MaterialPageRoute(
                 builder: (context) => const MyClassifiedPostsScreen(),
+              );
+            } else if (settings.name == '/sale') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => SaleListScreen(
+                  categoryId: args?['categoryId'],
+                  categoryName: args?['categoryName'],
+                ),
+              );
+            } else if (settings.name == '/sale/detail') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => SaleDetailScreen(
+                  slug: args?['slug'],
+                  id: args?['id'],
+                ),
+              );
+            } else if (settings.name == '/my-sale-posts') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => MySalePostsScreen(
+                  initialTab: args?['tab'],
+                ),
               );
             }
             return null;

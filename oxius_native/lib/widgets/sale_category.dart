@@ -388,28 +388,46 @@ class _SaleCategoryState extends State<SaleCategory> {
               children: [
                 Expanded(
                   flex: 11, // widest for Marketplace
-                  child: _buildActionButton(
-                    marketplaceLabel,
-                    Icons.shopping_bag_outlined,
-                    false,
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to sale marketplace (all products)
+                      Navigator.pushNamed(context, '/sale');
+                    },
+                    child: _buildActionButton(
+                      marketplaceLabel,
+                      Icons.shopping_bag_outlined,
+                      false,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   flex: 9,
-                  child: _buildActionButton(
-                    myPostsLabel,
-                    Icons.description_outlined,
-                    false,
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to my sale posts
+                      Navigator.pushNamed(context, '/my-sale-posts');
+                    },
+                    child: _buildActionButton(
+                      myPostsLabel,
+                      Icons.description_outlined,
+                      false,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   flex: 10,
-                  child: _buildActionButton(
-                    postSaleLabel,
-                    Icons.add_circle_outline,
-                    true, // Highlighted
+                  child: GestureDetector(
+                    onTap: () {
+                      // Navigate to post sale form
+                      Navigator.pushNamed(context, '/sale/create');
+                    },
+                    child: _buildActionButton(
+                      postSaleLabel,
+                      Icons.add_circle_outline,
+                      true, // Highlighted
+                    ),
                   ),
                 ),
               ],
@@ -601,7 +619,14 @@ class _SaleCategoryState extends State<SaleCategory> {
               ),
               TextButton(
                 onPressed: () {
-                  debugPrint('View all ${getSelectedCategoryName()} items');
+                  Navigator.pushNamed(
+                    context,
+                    '/sale',
+                    arguments: {
+                      'categoryId': selectedCategory.toString(),
+                      'categoryName': getSelectedCategoryName(),
+                    },
+                  );
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
