@@ -398,13 +398,12 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (context) => _buildPostSaleModal(),
-          );
+        onPressed: () async {
+          final result = await Navigator.pushNamed(context, '/create-sale-post');
+          if (result == true) {
+            // Refresh the list after creating a post
+            _fetchMyPosts(refresh: true);
+          }
         },
         backgroundColor: const Color(0xFF10B981),
         icon: const Icon(Icons.add, color: Colors.white),

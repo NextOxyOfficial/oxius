@@ -278,4 +278,140 @@ class SalePostService {
       rethrow; // Rethrow to show actual error in UI
     }
   }
+
+  /// Fetch categories for post creation (raw JSON)
+  Future<List<Map<String, dynamic>>> fetchCategoriesForForm() async {
+    try {
+      final uri = Uri.parse('$baseUrl/sale/categories/');
+      final response = await client.get(uri);
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          return data.cast<Map<String, dynamic>>();
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching categories for form: $e');
+      return [];
+    }
+  }
+
+  /// Fetch child categories
+  Future<List<Map<String, dynamic>>> fetchChildCategories(int parentId) async {
+    try {
+      final uri = Uri.parse('$baseUrl/sale/child-categories/?parent_id=$parentId');
+      final response = await client.get(uri);
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          return data.cast<Map<String, dynamic>>();
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching child categories: $e');
+      return [];
+    }
+  }
+
+  /// Fetch divisions (regions)
+  Future<List<Map<String, dynamic>>> fetchDivisions() async {
+    try {
+      final uri = Uri.parse('$baseUrl/geo/regions/?country_name_eng=Bangladesh');
+      final response = await client.get(uri);
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          return data.cast<Map<String, dynamic>>();
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching divisions: $e');
+      return [];
+    }
+  }
+
+  /// Fetch districts (cities)
+  Future<List<Map<String, dynamic>>> fetchDistricts(String division) async {
+    try {
+      final uri = Uri.parse('$baseUrl/geo/cities/?region_name_eng=$division');
+      final response = await client.get(uri);
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          return data.cast<Map<String, dynamic>>();
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching districts: $e');
+      return [];
+    }
+  }
+
+  /// Fetch areas (upazilas)
+  Future<List<Map<String, dynamic>>> fetchAreas(String district) async {
+    try {
+      final uri = Uri.parse('$baseUrl/geo/upazila/?city_name_eng=$district');
+      final response = await client.get(uri);
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          return data.cast<Map<String, dynamic>>();
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching areas: $e');
+      return [];
+    }
+  }
+
+  /// Create a new sale post
+  Future<Map<String, dynamic>?> createSalePost(Map<String, dynamic> postData) async {
+    try {
+      print('Creating sale post with data: ${json.encode(postData)}');
+      
+      final uri = Uri.parse('$baseUrl/sale/posts/');
+      final response = await client.post(
+        uri,
+        headers: await _getHeaders(needsAuth: true),
+        body: json.encode(postData),
+      );
+
+      print('Create post response status: ${response.statusCode}');
+      print('Create post response body: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data is Map<String, dynamic> ? data : null;
+      } else if (response.statusCode == 400) {
+        // Check if it's actually a success (known backend issue)
+        try {
+          final data = json.decode(response.body);
+          if (data is Map && (data.containsKey('id') || data.containsKey('message'))) {
+            print('Detected success response with 400 status');
+            return data as Map<String, dynamic>;
+          }
+        } catch (e) {
+          // Parse failed, treat as error
+        }
+        print('Failed to create post. Status: ${response.statusCode}, Body: ${response.body}');
+        throw Exception('Validation error: ${response.body}');
+      } else {
+        print('Failed to create post. Status: ${response.statusCode}, Body: ${response.body}');
+        throw Exception('Failed to create post');
+      }
+    } catch (e) {
+      print('Error creating sale post: $e');
+      rethrow;
+    }
+  }
 }

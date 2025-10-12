@@ -11,6 +11,7 @@ import 'screens/my_classified_posts_screen.dart';
 import 'screens/sale_list_screen.dart';
 import 'screens/sale_detail_screen.dart';
 import 'screens/my_sale_posts_screen.dart';
+import 'screens/create_sale_post_screen.dart';
 import 'pages/login_page.dart';
 import 'services/auth_service.dart';
 import 'services/user_state_service.dart';
@@ -151,6 +152,10 @@ class MyApp extends StatelessWidget {
                 builder: (context) => MySalePostsScreen(
                   initialTab: args?['tab'],
                 ),
+              );
+            } else if (settings.name == '/create-sale-post') {
+              return MaterialPageRoute(
+                builder: (context) => const CreateSalePostScreen(),
               );
             }
             return null;
