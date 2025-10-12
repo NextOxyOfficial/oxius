@@ -420,8 +420,8 @@ class _SaleCategoryState extends State<SaleCategory> {
                   flex: 10,
                   child: GestureDetector(
                     onTap: () {
-                      // Navigate to post sale form
-                      Navigator.pushNamed(context, '/sale/create');
+                      // Navigate to create sale post form
+                      Navigator.pushNamed(context, '/create-sale-post');
                     },
                     child: _buildActionButton(
                       postSaleLabel,
