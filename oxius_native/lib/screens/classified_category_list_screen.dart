@@ -42,6 +42,12 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  
+  // AdsyAI Bot state
+  bool _aiUserChoice = false;
+  bool _aiSearching = false;
+  bool _aiSearchDeclined = false;
+  List<Map<String, dynamic>> _aiResults = [];
 
   @override
   void initState() {
@@ -215,8 +221,15 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                           if (_totalPages > 1) _buildPagination(),
                           
                           const SizedBox(height: 16),
-                          
-                          if (!_location!.allOverBangladesh && _nearbyPosts.isNotEmpty) ...[
+                        ],
+                        
+                        // Empty state
+                        if (_searchError) _buildEmptyState(),
+                        
+                        // Nearby Location Ads Section
+                        if (_location != null && !_location!.allOverBangladesh) ...[
+                          if (_nearbyPosts.isNotEmpty) ...[
+                            const SizedBox(height: 16),
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
@@ -226,22 +239,57 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                                 child: Text(
                                   'Nearby Location Ads',
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                     color: Color(0xFF065F46),
                                   ),
                                 ),
                               ),
                             ),
+                            _buildPostsList(_nearbyPosts, isNearby: true),
+                          ] else if (_isNearbyLoading) ...[
+                            const SizedBox(height: 16),
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(20.0),
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                                ),
+                              ),
+                            ),
                           ],
                         ],
                         
-                        // Empty state
-                        if (_searchError) _buildEmptyState(),
-                        
-                        // Nearby posts
-                        if (_nearbyPosts.isNotEmpty && !_location!.allOverBangladesh) ...[
-                          _buildPostsList(_nearbyPosts, isNearby: true),
+                        // AdsyAI Bot Section
+                        if (_location != null && ((_location!.city != null && _location!.city!.isNotEmpty) || _location!.allOverBangladesh)) ...[
+                          const SizedBox(height: 24),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+                            color: const Color(0xFFF9FAFB),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Row(
+                                children: const [
+                                  Text(
+                                    'AdsyAI Bot',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF065F46),
+                                    ),
+                                  ),
+                                  SizedBox(width: 6),
+                                  Icon(
+                                    Icons.smart_toy,
+                                    size: 24,
+                                    color: Color(0xFF10B981),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          _buildAdsyAIBot(),
                         ],
                         
                         const SizedBox(height: 80),
@@ -824,6 +872,384 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
         ],
       ),
     );
+  }
+
+  Widget _buildAdsyAIBot() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF10B981).withOpacity(0.3),
+          width: 2,
+          style: BorderStyle.solid,
+        ),
+      ),
+      child: Column(
+        children: [
+          // User hasn't made a choice yet
+          if (!_aiUserChoice) ...[
+            // Bot Icon
+            Container(
+              width: 80,
+              height: 80,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF10B981).withOpacity(0.2),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.smart_toy,
+                size: 48,
+                color: Color(0xFF10B981),
+              ),
+            ),
+            
+            // Message
+            const Text(
+              'আমি AdsyAI Bot 🤖\nআমি কি আপনার জন্য বিভিন্ন ওয়েবসাইট থেকে তথ্য খুঁজে বের করবো?',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+                height: 1.5,
+              ),
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Yes Button
+                ElevatedButton.icon(
+                  onPressed: _startAISearch,
+                  icon: const Icon(Icons.check_circle, size: 20),
+                  label: const Text(
+                    'হা',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                  ),
+                ),
+                
+                const SizedBox(width: 16),
+                
+                // No Button
+                OutlinedButton.icon(
+                  onPressed: _declineAISearch,
+                  icon: const Icon(Icons.cancel, size: 20),
+                  label: const Text(
+                    'না',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFEF4444),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                    side: const BorderSide(
+                      color: Color(0xFFEF4444),
+                      width: 2,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          
+          // Searching
+          if (_aiSearching) ...[
+            // Animated Bot Icon
+            Container(
+              width: 80,
+              height: 80,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.smart_toy,
+                size: 48,
+                color: Color(0xFF10B981),
+              ),
+            ),
+            
+            const Text(
+              'আমি AdsyAI Bot 🤖\nআপনার জন্য ইন্টারনেটে বিভিন্ন ওয়েবসাইট এ তথ্য খুঁজছি, একটু অপেক্ষা করুন...',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+                height: 1.5,
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+            ),
+            
+            const SizedBox(height: 12),
+            
+            Text(
+              'Finding information in ${_location?.displayLocation ?? "your area"}',
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF6B7280),
+              ),
+            ),
+          ],
+          
+          // Search Declined
+          if (_aiSearchDeclined) ...[
+            const Icon(
+              Icons.smart_toy,
+              size: 48,
+              color: Color(0xFF6B7280),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            const Text(
+              'আমি AdsyAI Bot 🤖\nঠিক আছে, আপনি যখন চাইবেন তখন আমি তথ্য খুঁজে দেখাবো।',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF111827),
+                height: 1.5,
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _aiUserChoice = false;
+                  _aiSearchDeclined = false;
+                });
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF10B981),
+              ),
+            ),
+          ],
+          
+          // Results
+          if (_aiResults.isNotEmpty) ...[
+            const Text(
+              'আমি AdsyAI Bot 🤖\nআপনার জন্য ইন্টারনেট থেকে নিচের এই তথ্য গুলো খুঁজে বের করতে সক্ষম হয়েছি:',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF065F46),
+                height: 1.5,
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 12),
+            
+            ..._aiResults.asMap().entries.map((entry) {
+              final index = entry.key;
+              final result = entry.value;
+              
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${index + 1}. ${result['name'] ?? 'N/A'}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                    if (result['description'] != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        result['description'],
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF4B5563),
+                        ),
+                      ),
+                    ],
+                    if (result['address'] != null) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.location_on, size: 16, color: Color(0xFF6B7280)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              result['address'],
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (result['phone'] != null) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.phone, size: 16, color: Color(0xFF6B7280)),
+                          const SizedBox(width: 4),
+                          Text(
+                            result['phone'],
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (result['email'] != null) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.email, size: 16, color: Color(0xFF6B7280)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              result['email'],
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF6B7280),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (result['website'] != null) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.language, size: 16, color: Color(0xFF6B7280)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              result['website'],
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF10B981),
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+          
+          // No results
+          if (_aiUserChoice && !_aiSearching && !_aiSearchDeclined && _aiResults.isEmpty) ...[
+            const Text(
+              'আমি AdsyAI Bot 🤖\nদুঃখিত, আপনার জন্য ইন্টারনেট থেকে কোনো তথ্য খুঁজে পাইনি।',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF6B7280),
+                height: 1.5,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _startAISearch() {
+    setState(() {
+      _aiUserChoice = true;
+      _aiSearching = true;
+      _aiSearchDeclined = false;
+    });
+    
+    // TODO: Replace with actual API call to your AI service
+    // Example:
+    // final response = await http.get(Uri.parse('$aiLink&country=${_location?.country}&city=${_location?.city}&state=${_location?.state}&business_type=${_categoryDetails?.businessType}'));
+    // final data = json.decode(response.body);
+    // _aiResults = data['data'] or data['data']['businesses'];
+    
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _aiSearching = false;
+          // No dummy results - will show "no results found" message
+          _aiResults = [];
+        });
+      }
+    });
+  }
+
+  void _declineAISearch() {
+    setState(() {
+      _aiUserChoice = true;
+      _aiSearching = false;
+      _aiSearchDeclined = true;
+      _aiResults = [];
+    });
   }
 
   @override
