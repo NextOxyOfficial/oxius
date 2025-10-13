@@ -96,7 +96,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
   }
 
   bool get hasInsufficientBalance {
-    final userBalance = _userService.userBalance;
+    final userBalance = _userService.balance;
     return userBalance < totalCost;
   }
 
@@ -563,7 +563,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Your balance: ৳${_userService.userBalance.toStringAsFixed(2)} | Required: ৳${totalCost.toStringAsFixed(2)}',
+                                  'Your balance: ৳${_userService.balance.toStringAsFixed(2)} | Required: ৳${totalCost.toStringAsFixed(2)}',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Color(0xFF92400E),

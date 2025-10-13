@@ -413,6 +413,17 @@ class _MobileDrawerState extends State<MobileDrawer> {
 
                     _buildDrawerItem(
                       context: context,
+                      title: _translationService.t('upgrade_to_pro', fallback: 'Upgrade to Pro'),
+                      icon: Icons.star,
+                      iconColor: const Color(0xFFFBBF24),
+                      badge: 'PRO',
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/upgrade-to-pro');
+                      },
+                    ),
+                    _buildDrawerItem(
+                      context: context,
                       title: _translationService.t('settings', fallback: 'Settings'),
                       icon: Icons.settings,
                       iconColor: Colors.grey.shade600,
@@ -594,6 +605,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
     required IconData icon,
     required Color iconColor,
     required VoidCallback onTap,
+    String? badge,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
@@ -614,13 +626,39 @@ class _MobileDrawerState extends State<MobileDrawer> {
               size: 18,
             ),
           ),
-          title: Text(
-            title,
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: iconColor,
-            ),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.roboto(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: iconColor,
+                  ),
+                ),
+              ),
+              if (badge != null) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [iconColor, iconColor.withOpacity(0.7)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    badge,
+                    style: GoogleFonts.roboto(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
           trailing: Icon(
             Icons.chevron_right,

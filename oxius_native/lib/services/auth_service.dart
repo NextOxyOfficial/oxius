@@ -19,6 +19,7 @@ class User {
   final double balance;
   final double pendingBalance;
   final int diamondBalance;
+  final bool isPro;
 
   User({
     required this.id,
@@ -36,6 +37,7 @@ class User {
     this.balance = 0.0,
     this.pendingBalance = 0.0,
     this.diamondBalance = 0,
+    this.isPro = false,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -63,6 +65,7 @@ class User {
       diamondBalance: json['diamond_balance'] is int 
           ? json['diamond_balance'] 
           : int.tryParse(json['diamond_balance']?.toString() ?? '0') ?? 0,
+      isPro: json['is_pro'] == true,
     );
   }
 
@@ -83,6 +86,7 @@ class User {
       'balance': balance,
       'pending_balance': pendingBalance,
       'diamond_balance': diamondBalance,
+      'is_pro': isPro,
     };
   }
 
@@ -132,6 +136,11 @@ class AuthService {
   static User? get currentUser => _currentUser;
   static String? get accessToken => _accessToken;
   static bool get isAuthenticated => _currentUser != null && _accessToken != null;
+  
+  // Get token method for compatibility
+  static Future<String?> getToken() async {
+    return _accessToken;
+  }
 
   // Initialize auth service and restore session if available
   static Future<void> initialize() async {

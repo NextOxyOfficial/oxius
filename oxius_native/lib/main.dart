@@ -13,6 +13,7 @@ import 'screens/sale_detail_screen.dart';
 import 'screens/my_sale_posts_screen.dart';
 import 'screens/create_sale_post_screen.dart';
 import 'screens/seller_profile_screen.dart';
+import 'screens/upgrade_to_pro_screen.dart';
 import 'pages/login_page.dart';
 import 'services/auth_service.dart';
 import 'services/user_state_service.dart';
@@ -99,6 +100,7 @@ class MyApp extends StatelessWidget {
               appBar: AppBar(title: const Text('Mobile Recharge')),
               body: const Center(child: Text('Coming Soon!')),
             ),
+            '/upgrade-to-pro': (context) => const UpgradeToProScreen(),
 
 
           },

@@ -28,9 +28,12 @@ class UserStateService extends ChangeNotifier {
   bool get isSuperuser => _currentUser?.isSuperuser ?? false;
   
   // Balance getters
-  double get userBalance => _currentUser?.balance ?? 0.0;
+  double get balance => _currentUser?.balance ?? 0.0;
   double get userPendingBalance => _currentUser?.pendingBalance ?? 0.0;
   int get userDiamondBalance => _currentUser?.diamondBalance ?? 0;
+  
+  // Subscription getter
+  bool get isPro => _currentUser?.isPro ?? false;
 
   /// Initialize user state from AuthService
   Future<void> initialize() async {
@@ -92,6 +95,11 @@ class UserStateService extends ChangeNotifier {
       print('Failed to refresh user data: $e');
       return false;
     }
+  }
+
+  /// Alias for refreshUserData - matches Vue composable naming
+  Future<bool> refreshUser() async {
+    return await refreshUserData();
   }
 
   /// Check if user has specific permissions
