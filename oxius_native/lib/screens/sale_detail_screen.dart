@@ -618,94 +618,101 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               ),
               borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
             ),
-            child: Column(
+            child: Stack(
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Column(
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Need financing?',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Get Free consultation from our experts',
-                            style: TextStyle(
-                              color: Color(0xFFD1FAE5),
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              ...List.generate(
-                                3,
-                                (index) => Container(
-                                  margin: const EdgeInsets.only(right: 4),
-                                  height: 24,
-                                  width: 24,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      index == 0 ? '\$' : index == 1 ? '%' : '✓',
-                                      style: const TextStyle(
-                                        color: Color(0xFF059669),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
+                              const Text(
+                                'Need financing?',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Get Free consultation from our experts',
+                                style: TextStyle(
+                                  color: Color(0xFFD1FAE5),
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  ...List.generate(
+                                    3,
+                                    (index) => Container(
+                                      margin: const EdgeInsets.only(right: 4),
+                                      height: 24,
+                                      width: 24,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          index == 0 ? '\$' : index == 1 ? '%' : '✓',
+                                          style: const TextStyle(
+                                            color: Color(0xFF059669),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Competitive rates available',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                                  const SizedBox(width: 8),
+                                  const Flexible(
+                                    child: Text(
+                                      'Competitive rates available',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: () {
-                        // TODO: Navigate to contact page
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Contact feature coming soon!')),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF059669),
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
                         ),
-                      ),
-                      child: const Text(
-                        'Apply Now',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: () {
+                            // TODO: Navigate to contact page
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Contact feature coming soon!')),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: const Color(0xFF059669),
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Now',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
+                
               ],
             ),
           ),
@@ -1181,25 +1188,33 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.grid_view, color: const Color(0xFF10B981), size: 20),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Similar Listings You May Like',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(Icons.grid_view, color: const Color(0xFF10B981), size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: const Text(
+                          'Similar Listings You May Like',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1F2937),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 InkWell(
                   onTap: () {
                     Navigator.pushNamed(context, '/sale');
                   },
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: const [
                       Text(
                         'View all',
