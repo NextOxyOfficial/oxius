@@ -224,7 +224,18 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   }
 
   Widget _buildContent() {
-    final name = _seller!['name'] ?? 'Seller';
+    // Build full name from first_name and last_name, or use name field if available
+    String name = 'Seller';
+    if (_seller!['name'] != null && _seller!['name'].toString().isNotEmpty) {
+      name = _seller!['name'];
+    } else {
+      final firstName = _seller!['first_name']?.toString() ?? '';
+      final lastName = _seller!['last_name']?.toString() ?? '';
+      if (firstName.isNotEmpty || lastName.isNotEmpty) {
+        name = '$firstName $lastName'.trim();
+      }
+    }
+    
     final image = _seller!['image'];
     final email = _seller!['email'];
     final phone = _seller!['phone'];
