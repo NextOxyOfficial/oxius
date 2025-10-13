@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/eshop_service.dart';
 import '../widgets/product_card.dart';
+import 'vendor_store_screen.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -830,6 +831,34 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                   OutlinedButton.icon(
                     onPressed: () {
                       // Navigate to store
+                      final storeUsername = ownerDetails is Map 
+                          ? (ownerDetails['store_username']?.toString() ?? ownerDetails['username']?.toString())
+                          : null;
+                      
+                      print('Visit Store button pressed');
+                      print('Store Username: $storeUsername');
+                      
+                      if (storeUsername != null && storeUsername.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => VendorStoreScreen(
+                              storeUsername: storeUsername,
+                              storeName: storeName,
+                            ),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Store username not available',
+                              style: GoogleFonts.roboto(fontSize: 13),
+                            ),
+                            backgroundColor: Colors.orange.shade700,
+                          ),
+                        );
+                      }
                     },
                     icon: Icon(
                       Icons.storefront_outlined,
