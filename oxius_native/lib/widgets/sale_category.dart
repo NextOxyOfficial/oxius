@@ -672,15 +672,23 @@ class _SaleCategoryState extends State<SaleCategory> {
         itemCount: products.length,
         itemBuilder: (context, index) {
           final product = products[index] as Map<String, dynamic>;
-          return Container(
-            width: MediaQuery.of(context).size.width * 0.45,
-            margin: EdgeInsets.only(right: index == products.length - 1 ? 4 : 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: Column(
+          return GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/sale/detail',
+                arguments: {'slug': product['slug']},
+              );
+            },
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.45,
+              margin: EdgeInsets.only(right: index == products.length - 1 ? 4 : 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Product image
@@ -800,6 +808,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                 ),
               ],
             ),
+          ),
           );
         },
       ),
@@ -819,15 +828,23 @@ class _SaleCategoryState extends State<SaleCategory> {
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index] as Map<String, dynamic>;
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        return GestureDetector(
+          onTap: () {
+            Navigator.pushNamed(
+              context,
+              '/sale/detail',
+              arguments: {'slug': product['slug']},
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               // Similar structure as mobile but adjusted for desktop
               Expanded(
                 flex: 3,
@@ -873,6 +890,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                 ),
               ),
             ],
+            ),
           ),
         );
       },
