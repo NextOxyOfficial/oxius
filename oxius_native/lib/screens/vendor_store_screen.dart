@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
 import '../widgets/product_card.dart';
+import '../models/cart_item.dart';
 
 class VendorStoreScreen extends StatefulWidget {
   final String storeUsername;
@@ -48,6 +49,65 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _navigateToCheckout(Map<String, dynamic> product) {
+    try {
+      // Convert product map to Product object
+      final cartProduct = Product(
+        id: product['id'],
+        name: product['name'] ?? product['title'] ?? 'Product',
+        description: product['description'],
+        regularPrice: _parseDouble(product['regular_price'] ?? product['price']),
+        salePrice: product['sale_price'] != null 
+            ? _parseDouble(product['sale_price']) 
+            : null,
+        quantity: product['quantity'] as int? ?? 999,
+        isFreeDelivery: product['is_free_delivery'] as bool?,
+        deliveryFeeInsideDhaka: product['delivery_fee_inside_dhaka'] != null
+            ? _parseDouble(product['delivery_fee_inside_dhaka'])
+            : null,
+        deliveryFeeOutsideDhaka: product['delivery_fee_outside_dhaka'] != null
+            ? _parseDouble(product['delivery_fee_outside_dhaka'])
+            : null,
+        imageDetails: product['image_details'] != null
+            ? (product['image_details'] as List)
+                .map((img) => ProductImage.fromJson(img as Map<String, dynamic>))
+                .toList()
+            : null,
+      );
+
+      // Create cart item with quantity 1
+      final cartItem = CartItem(
+        product: cartProduct,
+        quantity: 1,
+      );
+
+      // Navigate to checkout
+      Navigator.pushNamed(
+        context,
+        '/checkout',
+        arguments: {
+          'cartItems': [cartItem],
+        },
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: Unable to proceed to checkout. $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 
   void _onScroll() {
@@ -314,9 +374,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                     return ProductCard(
                       product: _products[index],
                       isLoading: false,
-                      onBuyNow: () {
-                        // Handle buy now
-                      },
+                      onBuyNow: () => _navigateToCheckout(_products[index]),
                     );
                   },
                   childCount: _products.length,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/eshop_service.dart';
 import '../widgets/product_card.dart';
+import '../models/cart_item.dart';
 import 'vendor_store_screen.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
@@ -51,6 +52,109 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     _similarProductsScrollController.removeListener(_onSimilarProductsScroll);
     _similarProductsScrollController.dispose();
     super.dispose();
+  }
+
+  void _handleBuyNow() {
+    final product = _productDetails ?? widget.product;
+    
+    // Convert product map to Product object
+    final cartProduct = Product(
+      id: product['id'], // Can be int or String (UUID)
+      name: product['name'] ?? product['title'] ?? 'Product',
+      description: product['description'],
+      regularPrice: _parseDouble(product['regular_price'] ?? product['price']),
+      salePrice: product['sale_price'] != null 
+          ? _parseDouble(product['sale_price']) 
+          : null,
+      quantity: product['quantity'] as int? ?? 999,
+      isFreeDelivery: product['is_free_delivery'] as bool?,
+      deliveryFeeInsideDhaka: product['delivery_fee_inside_dhaka'] != null
+          ? _parseDouble(product['delivery_fee_inside_dhaka'])
+          : null,
+      deliveryFeeOutsideDhaka: product['delivery_fee_outside_dhaka'] != null
+          ? _parseDouble(product['delivery_fee_outside_dhaka'])
+          : null,
+      imageDetails: product['image_details'] != null
+          ? (product['image_details'] as List)
+              .map((img) => ProductImage.fromJson(img as Map<String, dynamic>))
+              .toList()
+          : null,
+    );
+
+    // Create cart item with selected quantity
+    final cartItem = CartItem(
+      product: cartProduct,
+      quantity: _quantity,
+    );
+
+    // Navigate to checkout
+    Navigator.pushNamed(
+      context,
+      '/checkout',
+      arguments: {
+        'cartItems': [cartItem],
+      },
+    );
+  }
+
+  // Helper method for product cards (uses quantity 1)
+  void _handleBuyNowForProduct(Map<String, dynamic> product) {
+    try {
+      // Convert product map to Product object
+      final cartProduct = Product(
+        id: product['id'],
+        name: product['name'] ?? product['title'] ?? 'Product',
+        description: product['description'],
+        regularPrice: _parseDouble(product['regular_price'] ?? product['price']),
+        salePrice: product['sale_price'] != null 
+            ? _parseDouble(product['sale_price']) 
+            : null,
+        quantity: product['quantity'] as int? ?? 999,
+        isFreeDelivery: product['is_free_delivery'] as bool?,
+        deliveryFeeInsideDhaka: product['delivery_fee_inside_dhaka'] != null
+            ? _parseDouble(product['delivery_fee_inside_dhaka'])
+            : null,
+        deliveryFeeOutsideDhaka: product['delivery_fee_outside_dhaka'] != null
+            ? _parseDouble(product['delivery_fee_outside_dhaka'])
+            : null,
+        imageDetails: product['image_details'] != null
+            ? (product['image_details'] as List)
+                .map((img) => ProductImage.fromJson(img as Map<String, dynamic>))
+                .toList()
+            : null,
+      );
+
+      // Create cart item with quantity 1
+      final cartItem = CartItem(
+        product: cartProduct,
+        quantity: 1,
+      );
+
+      // Navigate to checkout
+      Navigator.pushNamed(
+        context,
+        '/checkout',
+        arguments: {
+          'cartItems': [cartItem],
+        },
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: Unable to proceed to checkout. $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 
   void _onSimilarProductsScroll() {
@@ -567,16 +671,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Proceeding to checkout with $_quantity item(s)',
-                        style: GoogleFonts.roboto(fontSize: 13),
-                      ),
-                      backgroundColor: const Color(0xFF10B981),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
+                  // Navigate to checkout with current product
+                  _handleBuyNow();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
@@ -615,10 +711,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         ? (ownerDetails['store_name']?.toString() ?? ownerDetails['name']?.toString() ?? 'Store')
         : 'Store';
     
-    // Debug: Print owner details to see what we're receiving
-    print('Owner Details: $ownerDetails');
-    
-    // Extract owner details
+        // Extract owner details
     final isPro = ownerDetails is Map ? (ownerDetails['is_pro'] == true || ownerDetails['subscription_type'] == 'pro') : false;
     final isVerified = ownerDetails is Map ? (ownerDetails['kyc'] == true || ownerDetails['is_verified'] == true) : false;
     
@@ -1529,9 +1622,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               return ProductCard(
                 product: _similarProducts[index],
                 isLoading: false,
-                onBuyNow: () {
-                  // Handle buy now
-                },
+                onBuyNow: () => _handleBuyNowForProduct(_similarProducts[index]),
                 onTap: () {
                   // Navigate to product details and reload
                   Navigator.pushReplacement(
@@ -1669,9 +1760,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                   child: ProductCard(
                     product: _storeProducts[index],
                     isLoading: false,
-                    onBuyNow: () {
-                      // Handle buy now
-                    },
+                    onBuyNow: () => _handleBuyNowForProduct(_storeProducts[index]),
                     onTap: () {
                       // Navigate to product details
                       Navigator.push(

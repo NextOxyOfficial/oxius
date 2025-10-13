@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oxius_native/screens/product_details_screen.dart';
@@ -34,37 +33,40 @@ class _ProductCardState extends State<ProductCard> {
     final discount = _calcDiscount(sale, regular);
     final isFreeDelivery = p['is_free_delivery'] == true;
 
+    final navigationCallback = widget.onTap ?? () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProductDetailsScreen(product: widget.product),
+        ),
+      );
+    };
+
     return Material(
       color: Colors.white,
       elevation: 2,
       borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: widget.onTap ?? () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductDetailsScreen(product: widget.product),
-            ),
-          );
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
               // Image Section - Square aspect ratio like eshop_section
-              MouseRegion(
-                onEnter: (_) => setState(() => _hovered = true),
-                onExit: (_) => setState(() => _hovered = false),
-                child: AspectRatio(
-                  aspectRatio: 1.0, // Square image
-                  child: Stack(
-                    children: [
+              // Wrap image in InkWell for navigation
+              InkWell(
+                onTap: navigationCallback,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                child: MouseRegion(
+                  onEnter: (_) => setState(() => _hovered = true),
+                  onExit: (_) => setState(() => _hovered = false),
+                  child: AspectRatio(
+                    aspectRatio: 1.0, // Square image
+                    child: Stack(
+                      children: [
                       SizedBox(
                         width: double.infinity,
                         height: double.infinity,
@@ -201,6 +203,7 @@ class _ProductCardState extends State<ProductCard> {
                   ),
                 ),
               ),
+            ),
 
               // Details - Reduced padding for more compact layout
               Flexible(
@@ -210,8 +213,15 @@ class _ProductCardState extends State<ProductCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                    // Price Section - Reduced bottom margin
-                    Container(
+                    // Wrap product info in InkWell (price, title, store)
+                    InkWell(
+                      onTap: navigationCallback,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Price Section - Reduced bottom margin
+                          Container(
                       margin: const EdgeInsets.only(bottom: 2),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -327,68 +337,60 @@ class _ProductCardState extends State<ProductCard> {
                         ],
                       ),
                     ),
+                        ],
+                      ),
+                    ),
+                    // End of product info InkWell
 
-                    // Full Width Buy Now Button (Vue styling) - EXACT MATCH
+                    // Full Width Buy Now Button
                     SizedBox(
                       width: double.infinity,
+                      height: 36,
                       child: ElevatedButton(
                         onPressed: widget.isLoading ? null : widget.onBuyNow,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF374151), // Vue: bg-gray-700
+                          backgroundColor: const Color(0xFF374151),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          minimumSize: const Size.fromHeight(32),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                           elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                         ),
                         child: widget.isLoading
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Processing...',
-                                    style: GoogleFonts.roboto(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
                               )
                             : Row(
                                 mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.shopping_cart_outlined, size: 13),
-                                  const SizedBox(width: 5),
+                                  const Icon(Icons.shopping_cart_outlined, size: 14),
+                                  const SizedBox(width: 6),
                                   Text(
                                     'Buy Now',
                                     style: GoogleFonts.roboto(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ],
                               ),
                       ),
-                    ),
-                  ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+                    ), // End Buy Now InkWell
+                  ], // End Column children (details column)
+                ), // End Column
+              ), // End Padding
+            ), // End Flexible
+          ], // End Column children (main column)
+        ), // End Column
+      ), // End Container
+    ); // End Material
   }
 
   // Helper methods

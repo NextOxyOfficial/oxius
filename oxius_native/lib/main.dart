@@ -14,10 +14,12 @@ import 'screens/my_sale_posts_screen.dart';
 import 'screens/create_sale_post_screen.dart';
 import 'screens/seller_profile_screen.dart';
 import 'screens/upgrade_to_pro_screen.dart';
+import 'screens/checkout_screen.dart';
 import 'pages/login_page.dart';
 import 'services/auth_service.dart';
 import 'services/user_state_service.dart';
 import 'services/translation_service.dart';
+import 'models/cart_item.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -101,8 +103,6 @@ class MyApp extends StatelessWidget {
               body: const Center(child: Text('Coming Soon!')),
             ),
             '/upgrade-to-pro': (context) => const UpgradeToProScreen(),
-
-
           },
           onGenerateRoute: (settings) {
             if (settings.name == '/classified-category') {
@@ -165,6 +165,14 @@ class MyApp extends StatelessWidget {
               return MaterialPageRoute(
                 builder: (context) => SellerProfileScreen(
                   userId: args?['userId'],
+                ),
+              );
+            } else if (settings.name == '/checkout') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              final cartItems = args?['cartItems'] as List<CartItem>? ?? [];
+              return MaterialPageRoute(
+                builder: (context) => CheckoutScreen(
+                  cartItems: cartItems,
                 ),
               );
             }

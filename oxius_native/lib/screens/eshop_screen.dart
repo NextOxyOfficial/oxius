@@ -6,6 +6,7 @@ import '../widgets/mobile_banner.dart';
 import '../widgets/hot_deals_section.dart';
 import '../widgets/product_card.dart';
 import '../widgets/mobile_sticky_nav.dart';
+import '../models/cart_item.dart';
 
 class EshopScreen extends StatefulWidget {
   const EshopScreen({super.key});
@@ -48,6 +49,65 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     _scrollController.addListener(_onScroll);
     _loadInitialData();
     _loadSearchHistory();
+  }
+
+  void _navigateToCheckout(Map<String, dynamic> product) {
+    try {
+      // Convert product map to Product object
+      final cartProduct = Product(
+        id: product['id'],
+        name: product['name'] ?? product['title'] ?? 'Product',
+        description: product['description'],
+        regularPrice: _parseDouble(product['regular_price'] ?? product['price']),
+        salePrice: product['sale_price'] != null 
+            ? _parseDouble(product['sale_price']) 
+            : null,
+        quantity: product['quantity'] as int? ?? 999,
+        isFreeDelivery: product['is_free_delivery'] as bool?,
+        deliveryFeeInsideDhaka: product['delivery_fee_inside_dhaka'] != null
+            ? _parseDouble(product['delivery_fee_inside_dhaka'])
+            : null,
+        deliveryFeeOutsideDhaka: product['delivery_fee_outside_dhaka'] != null
+            ? _parseDouble(product['delivery_fee_outside_dhaka'])
+            : null,
+        imageDetails: product['image_details'] != null
+            ? (product['image_details'] as List)
+                .map((img) => ProductImage.fromJson(img as Map<String, dynamic>))
+                .toList()
+            : null,
+      );
+
+      // Create cart item with quantity 1
+      final cartItem = CartItem(
+        product: cartProduct,
+        quantity: 1,
+      );
+
+      // Navigate to checkout
+      Navigator.pushNamed(
+        context,
+        '/checkout',
+        arguments: {
+          'cartItems': [cartItem],
+        },
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: Unable to proceed to checkout. $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 
   void _onScroll() {
@@ -636,15 +696,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         return ProductCard(
           product: _searchResults[index],
           isLoading: false,
-          onBuyNow: () {
-            // Handle buy now action
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Buy Now: ${_searchResults[index]['name'] ?? 'Product'}'),
-                backgroundColor: const Color(0xFF10B981),
-              ),
-            );
-          },
+          onBuyNow: () => _navigateToCheckout(_searchResults[index]),
           // onTap removed to use default navigation from ProductCard
         );
       },
@@ -725,15 +777,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                   return ProductCard(
                     product: _products[index],
                     isLoading: false,
-                    onBuyNow: () {
-                      // Handle buy now action
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Buy Now: ${_products[index]['name'] ?? 'Product'}'),
-                          backgroundColor: const Color(0xFF10B981),
-                        ),
-                      );
-                    },
+                    onBuyNow: () => _navigateToCheckout(_products[index]),
                     // onTap removed to use default navigation from ProductCard
                   );
                 },
