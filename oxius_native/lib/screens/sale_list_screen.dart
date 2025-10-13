@@ -1058,7 +1058,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                       color: Color(0xFF1F2937),
                       height: 1.2,
                     ),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   
@@ -1069,17 +1069,22 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.location_on, size: 12, color: Colors.grey.shade500),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Icon(Icons.location_on, size: 12, color: Colors.grey.shade500),
+                          ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               _formatLocation(post),
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 11,
                                 color: Colors.grey.shade600,
+                                height: 1.3,
                               ),
                             ),
                           ),

@@ -1254,9 +1254,9 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.8,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
+              childAspectRatio: 0.68,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
             ),
             itemCount: _similarPosts.length > 4 ? 4 : _similarPosts.length,
             itemBuilder: (context, index) {
@@ -1274,25 +1274,39 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.grey.shade200),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Image - aspect-video (16:9)
+                      // Image
                       ClipRRect(
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                         child: AspectRatio(
-                          aspectRatio: 16 / 9,
+                          aspectRatio: 1.1,
                           child: post.images != null && post.images!.isNotEmpty
                               ? CachedNetworkImage(
                                   imageUrl: post.images![0].image,
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => Container(
                                     color: Colors.grey.shade100,
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Color(0xFF10B981),
+                                      ),
+                                    ),
                                   ),
                                   errorWidget: (context, url, error) => Container(
                                     color: Colors.grey.shade100,
-                                    child: Icon(Icons.image, size: 40, color: Colors.grey.shade400),
+                                    child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey.shade400),
                                   ),
                                 )
                               : Container(
@@ -1303,9 +1317,10 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                       ),
                       // Info
                       Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               _capitalizeTitle(post.title),
@@ -1313,53 +1328,57 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF1F2937),
+                                height: 1.2,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
-                            if (post.division != null && post.district != null && post.area != null)
+                            if (post.division != null && post.district != null && post.area != null) ...[
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.location_on, size: 12, color: Colors.grey.shade600),
-                                  const SizedBox(width: 2),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Icon(Icons.location_on, size: 12, color: Colors.grey.shade500),
+                                  ),
+                                  const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
                                       '${post.division}, ${post.district}, ${post.area}',
-                                      style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
-                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey.shade600,
+                                        height: 1.3,
+                                      ),
+                                      maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
-                              )
-                            else
-                              Row(
-                                children: [
-                                  Icon(Icons.location_on, size: 12, color: Colors.grey.shade600),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    'All Over Bangladesh',
-                                    style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
-                                  ),
-                                ],
                               ),
-                            const SizedBox(height: 8),
+                              const SizedBox(height: 4),
+                            ],
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Text(
-                                  post.price > 0 ? _formatPrice(post.price) : 'Contact for Price',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF10B981),
+                                Expanded(
+                                  child: Text(
+                                    post.price > 0 ? _formatPrice(post.price) : 'Contact for Price',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF10B981),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
+                                const SizedBox(width: 8),
                                 Icon(
-                                  Icons.open_in_new,
-                                  size: 16,
+                                  Icons.arrow_forward,
+                                  size: 14,
                                   color: Colors.grey.shade400,
                                 ),
                               ],

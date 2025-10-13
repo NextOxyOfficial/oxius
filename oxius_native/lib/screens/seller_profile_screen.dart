@@ -809,7 +809,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
             
             // Info
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -821,30 +821,35 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF1F2937),
-                      height: 1.3,
+                      height: 1.2,
                     ),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   
                   // Location
                   if (post.division != null && post.district != null && post.area != null)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.only(bottom: 4),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.location_on, size: 12, color: Colors.grey.shade500),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Icon(Icons.location_on, size: 12, color: Colors.grey.shade500),
+                          ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              '${post.area}',
+                              '${post.division}, ${post.district}, ${post.area}',
                               style: TextStyle(
                                 fontSize: 11,
                                 color: Colors.grey.shade600,
+                                height: 1.3,
                               ),
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
