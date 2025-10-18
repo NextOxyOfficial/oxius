@@ -147,7 +147,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
 
   Widget _buildFilterTabs() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -256,15 +256,38 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text(
-          'Tasks List',
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.task_alt,
+                size: 16,
+                color: Color(0xFF10B981),
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Tasks List',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
         centerTitle: true,
       ),
       body: Column(
@@ -302,7 +325,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                             onRefresh: () => _loadPendingTasks(isRefresh: true),
                             child: ListView.builder(
                               controller: _scrollController,
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.fromLTRB(4, 8, 4, 80),
                               itemCount: _tasks.length + (_hasMore ? 1 : 0),
                               itemBuilder: (context, index) {
                                 if (index == _tasks.length) {
@@ -340,10 +363,10 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: Colors.grey[200]!,
           width: 1,
