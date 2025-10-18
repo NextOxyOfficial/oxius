@@ -63,10 +63,15 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
 
   Future<void> _fetchStoreDetails() async {
     try {
+      print('🏪 Fetching store details for: ${widget.storeUsername}');
+      
       final response = await http.get(
         Uri.parse('${ApiService.baseUrl}/store/${widget.storeUsername}/'),
         headers: {'Content-Type': 'application/json'},
       );
+      
+      print('🏪 Store details status: ${response.statusCode}');
+      print('🏪 Store details body: ${response.body}');
       
       if (response.statusCode == 200 && mounted) {
         setState(() {
@@ -74,6 +79,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
           _isLoading = false;
         });
       } else {
+        print('⚠️ Store endpoint returned ${response.statusCode}, using fallback');
         setState(() {
           _storeData = {
             'store_name': widget.storeName ?? widget.storeUsername,
@@ -83,6 +89,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         });
       }
     } catch (e) {
+      print('❌ Error fetching store details: $e');
       if (mounted) {
         setState(() {
           _storeData = {
@@ -101,30 +108,140 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
     try {
       setState(() => _isLoadingProducts = true);
       
-      final response = await http.get(
-        Uri.parse('${ApiService.baseUrl}/store/${widget.storeUsername}/products/?page=$_currentPage'),
-        headers: {'Content-Type': 'application/json'},
-      );
+      print('🔍 Store Username: ${widget.storeUsername}');
+      print('🔍 Store Name: ${widget.storeName}');
       
-      if (response.statusCode == 200 && mounted) {
+      // Try multiple endpoints
+      final endpoints = [
+        '${ApiService.baseUrl}/store/${widget.storeUsername}/products/?page=$_currentPage',
+        '${ApiService.baseUrl}/products/?owner__username=${widget.storeUsername}&page=$_currentPage',
+        '${ApiService.baseUrl}/products/?owner__store_username=${widget.storeUsername}&page=$_currentPage',
+        '${ApiService.baseUrl}/products/?page=$_currentPage&page_size=100', // Fallback: get all products
+      ];
+      
+      http.Response? response;
+      String? successfulEndpoint;
+      
+      for (final endpoint in endpoints) {
+        try {
+          final uri = Uri.parse(endpoint);
+          print('🔍 Trying endpoint: $uri');
+          
+          response = await http.get(uri, headers: {'Content-Type': 'application/json'});
+          
+          print('📦 Response status: ${response.statusCode}');
+          print('📦 Response body length: ${response.body.length} bytes');
+          
+          if (response.statusCode == 200) {
+            // Check if response actually has products
+            final testData = json.decode(response.body);
+            int productCount = 0;
+            
+            if (testData is List) {
+              productCount = testData.length;
+            } else if (testData is Map) {
+              final results = testData['results'] ?? testData['products'] ?? [];
+              productCount = results.length;
+            }
+            
+            print('📦 Products in response: $productCount');
+            
+            // Only accept this endpoint if it has products OR if it's the last endpoint
+            if (productCount > 0 || endpoint == endpoints.last) {
+              successfulEndpoint = endpoint;
+              print('✅ Success with endpoint: $endpoint');
+              break;
+            } else {
+              print('⚠️ Endpoint returned 200 but no products, trying next...');
+            }
+          }
+        } catch (e) {
+          print('❌ Error with endpoint $endpoint: $e');
+          continue;
+        }
+      }
+      
+      if (response == null || response.statusCode != 200) {
+        throw Exception('All endpoints failed');
+      }
+      
+      print('📦 Response body: ${response.body}');
+      print('📦 Response body length: ${response.body.length} bytes');
+      
+      if (mounted) {
         final data = json.decode(response.body);
-        final results = (data['results'] ?? []) as List;
+        print('📦 Decoded data type: ${data.runtimeType}');
+        print('📦 Decoded data: $data');
+        
+        List<dynamic> results = [];
+        
+        // Handle different response structures
+        if (data is List) {
+          results = data;
+          print('📦 Direct array response with ${results.length} items');
+        } else if (data is Map) {
+          print('📦 Response keys: ${data.keys.toList()}');
+          if (data.containsKey('results')) {
+            results = data['results'] ?? [];
+            print('📦 Paginated response with ${results.length} items');
+            print('📦 Total count: ${data['count']}');
+          } else if (data.containsKey('products')) {
+            results = data['products'] ?? [];
+            print('📦 Products key response with ${results.length} items');
+          } else {
+            print('⚠️ Unknown response structure: ${data.keys}');
+          }
+        }
+        
+        final newProducts = results.cast<Map<String, dynamic>>();
+        print('✅ Parsed ${newProducts.length} products');
+        
+        // Filter products by store name if we got all products (fallback endpoint)
+        List<Map<String, dynamic>> filteredProducts = newProducts;
+        if (successfulEndpoint?.contains('page_size=100') == true && widget.storeName != null) {
+          print('🔍 Filtering products by store name: ${widget.storeName}');
+          filteredProducts = newProducts.where((product) {
+            final ownerDetails = product['owner_details'];
+            if (ownerDetails is Map) {
+              final storeName = ownerDetails['store_name']?.toString() ?? 
+                               ownerDetails['name']?.toString() ?? '';
+              return storeName.toLowerCase() == widget.storeName?.toLowerCase();
+            }
+            return false;
+          }).toList();
+          print('✅ Filtered to ${filteredProducts.length} products for this store');
+        }
+        
+        // Check if products have is_active field
+        if (filteredProducts.isNotEmpty) {
+          print('📦 First product sample: ${filteredProducts.first}');
+          final activeProducts = filteredProducts.where((p) => p['is_active'] == true).toList();
+          print('✅ Active products: ${activeProducts.length} / ${filteredProducts.length}');
+        } else {
+          print('⚠️ No products found for this store!');
+          print('⚠️ Store Name: ${widget.storeName}');
+          print('⚠️ Store Username: ${widget.storeUsername}');
+        }
         
         setState(() {
           if (loadMore) {
-            _products.addAll(results.cast<Map<String, dynamic>>());
+            _products.addAll(filteredProducts);
           } else {
-            _products = results.cast<Map<String, dynamic>>();
+            _products = filteredProducts;
           }
-          _hasMore = data['next'] != null;
+          _hasMore = data is Map ? (data['next'] != null) : false;
           _isLoadingProducts = false;
           _error = null;
         });
+      } else {
+        print('❌ Failed with status: ${response.statusCode}');
+        throw Exception('Failed to load products: ${response.statusCode}');
       }
     } catch (e) {
+      print('❌ Error loading products: $e');
       if (mounted) {
         setState(() {
-          _error = 'Failed to load products';
+          _error = 'Failed to load products: $e';
           _isLoadingProducts = false;
         });
       }
@@ -220,13 +337,15 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               offset: const Offset(0, -30),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(4, 20, 4, 0),
-                child: Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: const Color(0xFF10B981), width: 2),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
                         // Store Logo, Name and Message Button Row
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -239,13 +358,6 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                                 border: Border.all(color: const Color(0xFF10B981), width: 3),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF10B981).withOpacity(0.3),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
                               ),
                               child: ClipOval(
                                 child: _storeData?['image'] != null
@@ -332,7 +444,6 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
 
                       ],
                     ),
-                  ),
                 ),
               ),
             ),
@@ -406,7 +517,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.65,
+                  childAspectRatio: 0.62,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
                 ),
