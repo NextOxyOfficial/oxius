@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
@@ -15,47 +18,12 @@ class _InboxScreenState extends State<InboxScreen>
   String _updatesFilter = 'all';
   int _newMessageCount = 0;
   int _newTicketCount = 0;
+  bool _isLoadingUpdates = true;
+  bool _isLoadingTickets = true;
   
-  // Mock data - replace with actual API calls
-  final List<Map<String, dynamic>> _updates = [
-    {
-      'id': 1,
-      'title': 'Welcome to Oxius!',
-      'message': 'Thank you for joining our platform.',
-      'isRead': false,
-      'timestamp': DateTime.now().subtract(const Duration(hours: 2)),
-      'type': 'system'
-    },
-    {
-      'id': 2,
-      'title': 'Profile Verification Required',
-      'message': 'Please complete your profile verification.',
-      'isRead': true,
-      'timestamp': DateTime.now().subtract(const Duration(days: 1)),
-      'type': 'verification'
-    }
-  ];
-
-  final List<Map<String, dynamic>> _tickets = [
-    {
-      'id': 1,
-      'title': 'Payment Issue',
-      'message': 'I am having trouble with my payment.',
-      'status': 'open',
-      'isRead': false,
-      'timestamp': DateTime.now().subtract(const Duration(hours: 3)),
-      'priority': 'high'
-    },
-    {
-      'id': 2,
-      'title': 'Account Access',
-      'message': 'Cannot access my account.',
-      'status': 'resolved',
-      'isRead': true,
-      'timestamp': DateTime.now().subtract(const Duration(days: 2)),
-      'priority': 'medium'
-    }
-  ];
+  // Real data from backend
+  List<Map<String, dynamic>> _updates = [];
+  List<Map<String, dynamic>> _tickets = [];
 
   @override
   void initState() {
@@ -66,6 +34,91 @@ class _InboxScreenState extends State<InboxScreen>
         _activeTab = _tabController.index == 0 ? 'updates' : 'support';
       });
     });
+    _loadInboxData();
+  }
+
+  Future<void> _loadInboxData() async {
+    await Future.wait([
+      _loadUpdates(),
+      _loadTickets(),
+    ]);
+  }
+
+  Future<void> _loadUpdates() async {
+    setState(() => _isLoadingUpdates = true);
+    
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse('http://localhost:8000/api/notifications/'),
+        headers: headers,
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as List;
+        if (mounted) {
+          setState(() {
+            _updates = data.map((item) => {
+              'id': item['id'],
+              'title': item['title'] ?? 'Notification',
+              'message': item['message'] ?? '',
+              'isRead': item['is_read'] ?? false,
+              'timestamp': DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
+              'type': item['type'] ?? 'system',
+            }).toList();
+            _isLoadingUpdates = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() => _isLoadingUpdates = false);
+        }
+      }
+    } catch (e) {
+      print('Error loading updates: $e');
+      if (mounted) {
+        setState(() => _isLoadingUpdates = false);
+      }
+    }
+  }
+
+  Future<void> _loadTickets() async {
+    setState(() => _isLoadingTickets = true);
+    
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse('http://localhost:8000/api/support-tickets/'),
+        headers: headers,
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as List;
+        if (mounted) {
+          setState(() {
+            _tickets = data.map((item) => {
+              'id': item['id'],
+              'title': item['title'] ?? 'Support Ticket',
+              'message': item['message'] ?? '',
+              'status': item['status'] ?? 'open',
+              'isRead': item['is_read'] ?? false,
+              'timestamp': DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
+              'priority': item['priority'] ?? 'medium',
+            }).toList();
+            _isLoadingTickets = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() => _isLoadingTickets = false);
+        }
+      }
+    } catch (e) {
+      print('Error loading tickets: $e');
+      if (mounted) {
+        setState(() => _isLoadingTickets = false);
+      }
+    }
   }
 
   @override
@@ -163,16 +216,34 @@ class _InboxScreenState extends State<InboxScreen>
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Message Center',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.inbox,
+                size: 16,
+                color: Color(0xFF10B981),
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Message Center',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
         centerTitle: true,
       ),
@@ -180,130 +251,117 @@ class _InboxScreenState extends State<InboxScreen>
         children: [
           // Header Section
           Container(
-            margin: EdgeInsets.all(isMobile ? 16 : 32),
+            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFF9FAFB), Color(0xFFF3F4F6)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                children: [
-                  // Icon
-                  Container(
-                    height: 48,
-                    width: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.inbox,
-                      color: Color(0xFF059669),
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Text
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Message Center',
-                          style: TextStyle(
-                            fontSize: isMobile ? 20 : 24,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1F2937),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Manage your notifications and support tickets',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF6B7280),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Message count badge
-                  if (_updates.length + _tickets.length > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF059669),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${_updates.length + _tickets.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF10B981).withOpacity(0.1),
+                  const Color(0xFF3B82F6).withOpacity(0.1),
                 ],
               ),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+            ),
+            child: Row(
+              children: [
+                // Icon
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.inbox,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Text
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Message Center',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Notifications & Tickets',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Message count badge
+                if (_updates.length + _tickets.length > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${_updates.length + _tickets.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
 
           // Action Buttons
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _openNewTicketModal,
-                    icon: const Icon(Icons.add, size: 18),
+                    icon: const Icon(Icons.add, size: 16),
                     label: const Text('Open Ticket'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF059669),
+                      backgroundColor: const Color(0xFF10B981),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
+                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: hasUnreadMessages ? _markAllAsRead : null,
-                    icon: const Icon(Icons.check_circle, size: 18),
-                    label: Text(isMobile ? 'Mark All Read' : 'Mark All Read'),
+                    icon: const Icon(Icons.check_circle, size: 16),
+                    label: const Text('Mark Read'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF6B7280),
-                      side: const BorderSide(color: Color(0xFFD1D5DB)),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      foregroundColor: const Color(0xFF10B981),
+                      side: const BorderSide(color: Color(0xFF10B981)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
+                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -311,11 +369,11 @@ class _InboxScreenState extends State<InboxScreen>
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Tab Bar
           Container(
-            margin: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 32),
+            margin: const EdgeInsets.symmetric(horizontal: 4),
             decoration: const BoxDecoration(
               border: Border(
                 bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
@@ -396,8 +454,8 @@ class _InboxScreenState extends State<InboxScreen>
           // Filter Chips
           Container(
             height: 60,
-            margin: EdgeInsets.symmetric(
-              horizontal: isMobile ? 16 : 32,
+            margin: const EdgeInsets.symmetric(
+              horizontal: 4,
               vertical: 12,
             ),
             child: SingleChildScrollView(
@@ -474,6 +532,15 @@ class _InboxScreenState extends State<InboxScreen>
   }
 
   Widget _buildUpdatesList() {
+    if (_isLoadingUpdates) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     final updates = filteredUpdates;
     
     if (updates.isEmpty) {
@@ -481,9 +548,7 @@ class _InboxScreenState extends State<InboxScreen>
     }
 
     return ListView.builder(
-      padding: EdgeInsets.symmetric(
-        horizontal: MediaQuery.of(context).size.width < 768 ? 16 : 32,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       itemCount: updates.length,
       itemBuilder: (context, index) {
         final update = updates[index];
@@ -493,6 +558,15 @@ class _InboxScreenState extends State<InboxScreen>
   }
 
   Widget _buildTicketsList() {
+    if (_isLoadingTickets) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     final tickets = filteredTickets;
     
     if (tickets.isEmpty) {
@@ -500,9 +574,7 @@ class _InboxScreenState extends State<InboxScreen>
     }
 
     return ListView.builder(
-      padding: EdgeInsets.symmetric(
-        horizontal: MediaQuery.of(context).size.width < 768 ? 16 : 32,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       itemCount: tickets.length,
       itemBuilder: (context, index) {
         final ticket = tickets[index];

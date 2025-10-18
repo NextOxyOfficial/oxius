@@ -263,112 +263,136 @@ class _PostGigScreenState extends State<PostGigScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Post a Gig',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: _isLoadingData
-          ? const Center(
-              child: Padding(
-                padding: EdgeInsets.all(40),
-                child: CircularProgressIndicator(),
-              ),
-            )
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Header Section
-                  _buildHeader(isMobile),
-
-                  // Form Section
-                  _buildForm(isMobile),
-                ],
-              ),
-            ),
-    );
-  }
-
-  Widget _buildHeader(bool isMobile) {
-    return Container(
-      margin: EdgeInsets.all(isMobile ? 16 : 40),
-      child: Column(
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF10B981), Color(0xFF059669)],
-              ),
-              borderRadius: BorderRadius.circular(50),
+              color: const Color(0xFF10B981).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Color(0xFF10B981), Color(0xFF059669)],
-                ).createShader(bounds),
-                child: Text(
-                  'Post A Gig',
-                  style: TextStyle(
-                    fontSize: isMobile ? 20 : 24,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+            child: const Icon(
+              Icons.add_circle_outline,
+              size: 16,
+              color: Color(0xFF10B981),
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Text(
+            'Post a Gig',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+      centerTitle: true,
+    ),
+    body: _isLoadingData
+        ? const Center(
+            child: Padding(
+              padding: EdgeInsets.all(40),
+              child: CircularProgressIndicator(),
+            ),
+          )
+        : SingleChildScrollView(
+            child: Column(
+              children: [
+                // Header Section
+                _buildHeader(isMobile),
+
+                // Form Section
+                _buildForm(isMobile),
+              ],
+            ),
+          ),
+  );
+}
+
+Widget _buildHeader(bool isMobile) {
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          const Color(0xFF10B981).withOpacity(0.1),
+          const Color(0xFF3B82F6).withOpacity(0.1),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+    ),
+    child: Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF10B981),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(
+            Icons.add_circle_outline,
+            color: Colors.white,
+            size: 24,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Create New Gig',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
                 ),
               ),
-            ),
+              const SizedBox(height: 2),
+              Text(
+                'Reach potential customers',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            'Create a new micro-gig and reach potential customers',
-            style: TextStyle(
-              fontSize: isMobile ? 16 : 18,
-              color: const Color(0xFF6B7280),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
-  Widget _buildForm(bool isMobile) {
-    return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: isMobile ? 16 : 40,
-        vertical: 16,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            // Basic Details Section
-            _buildSectionCard(
+Widget _buildForm(bool isMobile) {
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: Colors.grey.shade200),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.04),
+          blurRadius: 6,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          // Basic Details Section
+          _buildSectionCard(
               title: 'Basic Details',
               icon: Icons.description,
               child: Column(

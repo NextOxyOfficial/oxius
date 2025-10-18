@@ -540,22 +540,40 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'My Gigs',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.work_outline,
+                size: 16,
+                color: Color(0xFF10B981),
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'My Gigs',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(isMobile ? 16 : 24),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: Column(
             children: [
               // Account Balance Section
@@ -603,12 +621,12 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -618,37 +636,64 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         children: [
           // Header with title and filter
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'My Gigs',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                DropdownButton<String>(
-                  value: _selectedFilter,
-                  underline: Container(),
-                  icon: const Icon(Icons.filter_list, size: 20),
-                  items: const [
-                    DropdownMenuItem(value: 'all', child: Text('All')),
-                    DropdownMenuItem(value: 'live', child: Text('Live')),
-                    DropdownMenuItem(value: 'paused', child: Text('Paused')),
-                    DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                    DropdownMenuItem(value: 'completed', child: Text('Completed')),
-                    DropdownMenuItem(value: 'rejected', child: Text('Rejected')),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(
+                        Icons.work_outline,
+                        size: 14,
+                        color: Color(0xFF10B981),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'My Gigs',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
-                  onChanged: (String? newValue) {
-                    if (newValue != null) {
-                      setState(() {
-                        _selectedFilter = newValue;
-                        _applyFilter();
-                      });
-                    }
-                  },
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: DropdownButton<String>(
+                    value: _selectedFilter,
+                    underline: Container(),
+                    icon: const Icon(Icons.filter_list, size: 16),
+                    isDense: true,
+                    style: const TextStyle(fontSize: 12, color: Colors.black),
+                    items: const [
+                      DropdownMenuItem(value: 'all', child: Text('All')),
+                      DropdownMenuItem(value: 'live', child: Text('Live')),
+                      DropdownMenuItem(value: 'paused', child: Text('Paused')),
+                      DropdownMenuItem(value: 'pending', child: Text('Pending')),
+                      DropdownMenuItem(value: 'completed', child: Text('Completed')),
+                      DropdownMenuItem(value: 'rejected', child: Text('Rejected')),
+                    ],
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedFilter = newValue;
+                          _applyFilter();
+                        });
+                      }
+                    },
+                  ),
                 ),
               ],
             ),
