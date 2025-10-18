@@ -21,6 +21,7 @@ import 'wallet/wallet_screen.dart';
 import 'settings_screen.dart';
 import 'inbox_screen.dart';
 import 'eshop_screen.dart';
+import 'verification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -414,8 +415,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       const Color(0xFF64748B),
                       () {
                         setState(() => _isDropdownOpen = false);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Navigate to Verification')),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const VerificationScreen()),
                         );
                       },
                     ),
