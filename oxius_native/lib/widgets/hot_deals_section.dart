@@ -104,19 +104,19 @@ class _HotDealsSectionState extends State<HotDealsSection> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.pink.shade400, Colors.orange.shade500],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -126,28 +126,28 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                     const Icon(
                       Icons.flash_on,
                       color: Colors.white,
-                      size: 24,
+                      size: 18,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Text(
                       'Special Deals',
                       style: GoogleFonts.poppins(
-                        fontSize: 20,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         'Limited Time',
                         style: GoogleFonts.roboto(
-                          fontSize: 10,
+                          fontSize: 9,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -155,17 +155,17 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 
                 // Scrollable Cards
                 SizedBox(
-                  height: 140,
+                  height: 110,
                   child: ListView.separated(
                     controller: _scrollController,
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
                     itemCount: _specialDeals.length,
-                    separatorBuilder: (context, index) => const SizedBox(width: 12),
+                    separatorBuilder: (context, index) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
                       final deal = _specialDeals[index];
                       return _buildDealCard(deal);
@@ -216,8 +216,8 @@ class _HotDealsSectionState extends State<HotDealsSection> {
       child: IntrinsicWidth(
         child: Container(
           constraints: const BoxConstraints(
-            minWidth: 90,
-            maxWidth: 140,
+            minWidth: 75,
+            maxWidth: 110,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.9),
@@ -231,7 +231,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
             children: [
               // Image with badge
               Container(
-                height: 80,
+                height: 65,
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                   gradient: LinearGradient(
@@ -278,18 +278,18 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                     
                     // Badge
                     Positioned(
-                      top: 4,
-                      left: 4,
+                      top: 3,
+                      left: 3,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
                           color: badgeColor,
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           badge,
                           style: GoogleFonts.roboto(
-                            fontSize: 9,
+                            fontSize: 8,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
@@ -302,11 +302,11 @@ class _HotDealsSectionState extends State<HotDealsSection> {
               
               // Name - Single line with ellipsis
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                 child: Text(
                   name,
                   style: GoogleFonts.roboto(
-                    fontSize: 13,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: Colors.grey.shade800,
                   ),
