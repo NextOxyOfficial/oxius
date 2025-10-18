@@ -144,7 +144,7 @@ class _WithdrawTabState extends State<WithdrawTab> {
         : 0.0;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -160,7 +160,7 @@ class _WithdrawTabState extends State<WithdrawTab> {
               });
             },
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Phone Number Input
           TextField(
@@ -170,16 +170,17 @@ class _WithdrawTabState extends State<WithdrawTab> {
             decoration: InputDecoration(
               labelText: '${_selectedMethod == 'nagad' ? 'Nagad' : 'bKash'} Number',
               hintText: 'Enter ${_selectedMethod == 'nagad' ? 'Nagad' : 'bKash'} number',
-              prefixIcon: const Icon(Icons.phone_android),
+              prefixIcon: const Icon(Icons.phone_android, size: 20),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               filled: true,
-              fillColor: Colors.grey[50],
+              fillColor: Colors.white,
               errorText: _phoneError,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Amount Input
           AmountInputField(
@@ -195,63 +196,68 @@ class _WithdrawTabState extends State<WithdrawTab> {
           // Charge Information
           if (amount > 0) ...[
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.orange[50],
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.orange.shade50,
+                    Colors.red.shade50,
+                  ],
+                ),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange[200]!),
+                border: Border.all(color: Colors.orange.shade200),
               ),
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Withdrawal Amount:',
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                       ),
                       Text(
                         '৳${amount.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Charges (${WalletService.withdrawalChargePercent}%):',
-                        style: const TextStyle(fontSize: 14, color: Colors.red),
+                        style: TextStyle(fontSize: 12, color: Colors.red.shade700),
                       ),
                       Text(
                         '৳${(amount * WalletService.withdrawalChargePercent / 100).toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.red,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.red.shade700,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
-                  const Divider(),
+                  Divider(height: 12, color: Colors.grey.shade300),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
                         'Total Deduction:',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
                         '৳${totalDeduction.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFFEF4444),
                         ),
@@ -261,7 +267,7 @@ class _WithdrawTabState extends State<WithdrawTab> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
           ],
 
           // Terms Checkbox
@@ -275,21 +281,34 @@ class _WithdrawTabState extends State<WithdrawTab> {
             },
             errorText: _termsError,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Withdraw Button
-          SizedBox(
+          Container(
             width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFEF4444).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleWithdraw,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
+                backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                elevation: 2,
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -300,12 +319,19 @@ class _WithdrawTabState extends State<WithdrawTab> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text(
-                      'Submit Withdrawal Request',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.arrow_upward, size: 18),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Submit Withdrawal',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
             ),
           ),

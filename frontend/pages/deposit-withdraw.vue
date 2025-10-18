@@ -49,7 +49,7 @@
           @click="currentTab = 1"
         >
           <UIcon name="i-ic:baseline-arrow-downward" />
-          {{ $t("diposit") }}</UButton
+          {{ $t("deposit") }}</UButton
         >
 
         <UButton
@@ -169,7 +169,7 @@
           </p>
           <div class="my-2 space-x-3">
             <UButton size="sm" @click="deposit" :loading="isDepositLoading">{{
-              $t("diposit")
+              $t("deposit")
             }}</UButton>
             <!-- <UButton v-else size="sm" @click="isOpen = true">Deposit</UButton> -->
           </div>

@@ -115,7 +115,7 @@ class _DepositTabState extends State<DepositTab> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -127,39 +127,83 @@ class _DepositTabState extends State<DepositTab> {
             minAmount: WalletService.minDeposit,
             onChanged: _validateAmount,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           
-          // Payment Method Image
-          Center(
-            child: Image.asset(
-              'assets/images/payment.png',
-              width: 240,
-              height: 120,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 240,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.payment, size: 48, color: Colors.grey[400]),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Secure Payment',
-                        style: TextStyle(color: Colors.grey[600]),
+          // Payment Method Card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF10B981).withOpacity(0.1),
+                  const Color(0xFF3B82F6).withOpacity(0.1),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
-                  ),
-                );
-              },
+                      child: const Icon(
+                        Icons.security,
+                        color: Color(0xFF10B981),
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Secure Payment Gateway',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                        Text(
+                          'SSL Encrypted & Safe',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Image.asset(
+                  'assets/images/payment.png',
+                  height: 80,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildPaymentIcon(Icons.credit_card),
+                        _buildPaymentIcon(Icons.account_balance),
+                        _buildPaymentIcon(Icons.phone_android),
+                      ],
+                    );
+                  },
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           
           // Terms Checkbox
           TermsCheckbox(
@@ -172,21 +216,34 @@ class _DepositTabState extends State<DepositTab> {
             },
             errorText: _termsError,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           
           // Deposit Button
-          SizedBox(
+          Container(
             width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF10B981), Color(0xFF059669)],
+              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF10B981).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleDeposit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
+                backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                elevation: 2,
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -197,17 +254,37 @@ class _DepositTabState extends State<DepositTab> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text(
-                      'Proceed to Payment',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.lock_outline, size: 18),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Proceed to Payment',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPaymentIcon(IconData icon) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Icon(icon, size: 24, color: const Color(0xFF10B981)),
     );
   }
 }

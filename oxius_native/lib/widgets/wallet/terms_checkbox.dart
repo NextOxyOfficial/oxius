@@ -1,5 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import '../../screens/terms_and_conditions_screen.dart';
+import '../../screens/privacy_policy_screen.dart';
 
 class TermsCheckbox extends StatelessWidget {
   final bool value;
@@ -39,7 +41,7 @@ class TermsCheckbox extends StatelessWidget {
                 child: RichText(
                   text: TextSpan(
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       color: Colors.grey[700],
                       height: 1.4,
                     ),
@@ -50,24 +52,34 @@ class TermsCheckbox extends StatelessWidget {
                         style: const TextStyle(
                           color: Color(0xFF10B981),
                           decoration: TextDecoration.underline,
+                          fontWeight: FontWeight.w600,
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            // Navigate to terms page
-                            print('Navigate to Terms & Conditions');
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const TermsAndConditionsScreen(),
+                              ),
+                            );
                           },
                       ),
-                      const TextSpan(text: ', '),
+                      const TextSpan(text: ' and '),
                       TextSpan(
                         text: 'Privacy Policy',
                         style: const TextStyle(
                           color: Color(0xFF10B981),
                           decoration: TextDecoration.underline,
+                          fontWeight: FontWeight.w600,
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            // Navigate to privacy page
-                            print('Navigate to Privacy Policy');
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PrivacyPolicyScreen(),
+                              ),
+                            );
                           },
                       ),
                       const TextSpan(text: '.'),

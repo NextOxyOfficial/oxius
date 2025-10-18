@@ -66,7 +66,27 @@ class _WalletScreenState extends State<WalletScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text(t('deposit_withdraw')),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.account_balance_wallet_outlined,
+                size: 16,
+                color: Color(0xFF10B981),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              t('deposit_withdraw'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -80,12 +100,21 @@ class _WalletScreenState extends State<WalletScreen> {
             // Mobile Recharge Section
             const MobileRechargeSection(),
 
-            // Tab Buttons
+            // Compact Tab Buttons
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -116,7 +145,7 @@ class _WalletScreenState extends State<WalletScreen> {
 
             // Tab Content
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               child: _currentTab == 0
                   ? DepositTab(
                       balance: _balance?.balance ?? 0.0,
@@ -145,38 +174,60 @@ class _WalletScreenState extends State<WalletScreen> {
 
             // Transaction History Section (Always show)
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    t('transaction_history'),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E293B),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.history,
+                            size: 16,
+                            color: Color(0xFF10B981),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          t('transaction_history'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
                     // Transaction Type Toggle
                     Container(
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade200),
                       ),
                       child: Row(
                         children: [
                           Expanded(
-                            child: _buildTransactionTabButton('sent', 'Sent Transactions'),
+                            child: _buildTransactionTabButton('sent', 'Sent'),
                           ),
                           Expanded(
-                            child: _buildTransactionTabButton('received', 'Received Transactions'),
+                            child: _buildTransactionTabButton('received', 'Received'),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
 
                     // Transaction List
                     _isLoadingTransactions
@@ -201,24 +252,24 @@ class _WalletScreenState extends State<WalletScreen> {
     return GestureDetector(
       onTap: () => setState(() => _currentTab = index),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF10B981) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(6),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
-              size: 18,
+              size: 16,
               color: isSelected ? Colors.white : Colors.grey[600],
             ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: isSelected ? Colors.white : Colors.grey[600],
               ),
@@ -332,7 +383,7 @@ class _WalletScreenState extends State<WalletScreen> {
       case 'withdraw':
         return const Color(0xFFEF4444);
       case 'transfer':
-        return const Color(0xFF6366F1);
+        return const Color(0xFF3B82F6);
       default:
         return Colors.grey;
     }
@@ -343,16 +394,16 @@ class _WalletScreenState extends State<WalletScreen> {
     return GestureDetector(
       onTap: () => setState(() => _transactionTab = value),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6366F1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? const Color(0xFF10B981) : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
         ),
         child: Text(
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
             color: isSelected ? Colors.white : Colors.grey[700],
           ),
@@ -367,15 +418,15 @@ class _WalletScreenState extends State<WalletScreen> {
     if (transactions.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              Icon(Icons.receipt_long, size: 64, color: Colors.grey[300]),
-              const SizedBox(height: 16),
+              Icon(Icons.receipt_long, size: 48, color: Colors.grey[300]),
+              const SizedBox(height: 12),
               Text(
                 'No ${_transactionTab} transactions',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   color: Colors.grey[600],
                 ),
               ),
@@ -385,81 +436,84 @@ class _WalletScreenState extends State<WalletScreen> {
       );
     }
 
-    return ListView.builder(
+    return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: transactions.length > 10 ? 10 : transactions.length,
+      separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey.shade200),
       itemBuilder: (context, index) {
         final txn = transactions[index];
         final color = _getTransactionColor(txn.transactionType);
         final icon = _getTransactionIcon(txn.transactionType);
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.grey[200]!),
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            leading: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+          color: Colors.white,
+          child: Row(
+            children: [
+              // Icon
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 20),
               ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            title: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    txn.transactionType.toUpperCase(),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
+              const SizedBox(width: 12),
+              // Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          txn.transactionType.toUpperCase(),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildStatusBadge(txn.displayStatus),
+                      ],
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    if (txn.senderName != null && _transactionTab == 'received')
+                      Text(
+                        'From: ${txn.senderName}',
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                      ),
+                    if (txn.recipientName != null && _transactionTab == 'sent')
+                      Text(
+                        'To: ${txn.recipientName}',
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                      ),
+                    if (txn.paymentMethod != null)
+                      Text(
+                        txn.paymentMethod!,
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                      ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} ${txn.createdAt.hour}:${txn.createdAt.minute.toString().padLeft(2, '0')}',
+                      style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                    ),
+                  ],
                 ),
-                _buildStatusBadge(txn.displayStatus),
-              ],
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                if (txn.senderName != null && _transactionTab == 'received')
-                  Text(
-                    'From: ${txn.senderName}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                if (txn.recipientName != null && _transactionTab == 'sent')
-                  Text(
-                    'To: ${txn.recipientName}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                if (txn.paymentMethod != null)
-                  Text(
-                    'Method: ${txn.paymentMethod}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                const SizedBox(height: 4),
-                Text(
-                  '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} ${txn.createdAt.hour}:${txn.createdAt.minute.toString().padLeft(2, '0')}',
-                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-                ),
-              ],
-            ),
-            trailing: Text(
-              '৳${txn.amount.toStringAsFixed(2)}',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: color,
               ),
-            ),
+              // Amount
+              Text(
+                '৳${txn.amount.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -467,40 +521,35 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Widget _buildStatusBadge(String status) {
-    Color bgColor;
-    Color textColor;
-    String displayText = status.toUpperCase();
-
+    if (status.isEmpty) return const SizedBox.shrink();
+    
+    Color statusColor;
     switch (status.toLowerCase()) {
       case 'completed':
-        bgColor = const Color(0xFF10B981).withOpacity(0.1);
-        textColor = const Color(0xFF10B981);
+        statusColor = const Color(0xFF10B981);
         break;
       case 'pending':
-        bgColor = Colors.orange.withOpacity(0.1);
-        textColor = Colors.orange;
+        statusColor = Colors.orange;
         break;
       case 'rejected':
-        bgColor = const Color(0xFFEF4444).withOpacity(0.1);
-        textColor = const Color(0xFFEF4444);
+        statusColor = const Color(0xFFEF4444);
         break;
       default:
-        bgColor = Colors.grey.withOpacity(0.1);
-        textColor = Colors.grey;
+        statusColor = Colors.grey;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
-        displayText,
+        status,
         style: TextStyle(
-          fontSize: 10,
+          fontSize: 9,
           fontWeight: FontWeight.w600,
-          color: textColor,
+          color: statusColor,
         ),
       ),
     );

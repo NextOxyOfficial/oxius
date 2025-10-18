@@ -178,7 +178,7 @@ class _TransferTabState extends State<TransferTab> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -186,19 +186,20 @@ class _TransferTabState extends State<TransferTab> {
           Center(
             child: OutlinedButton.icon(
               onPressed: _showMyQrCode,
-              icon: const Icon(Icons.qr_code),
+              icon: const Icon(Icons.qr_code, size: 18),
               label: const Text('Show My QR Code'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF6366F1),
-                side: const BorderSide(color: Color(0xFF6366F1)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                foregroundColor: const Color(0xFF10B981),
+                side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
+                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Contact Input
           TextField(
@@ -208,9 +209,9 @@ class _TransferTabState extends State<TransferTab> {
             decoration: InputDecoration(
               labelText: 'Recipient Email or Phone',
               hintText: 'Enter email or phone number',
-              prefixIcon: const Icon(Icons.person_outline),
+              prefixIcon: const Icon(Icons.person_outline, size: 20),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.qr_code_scanner),
+                icon: const Icon(Icons.qr_code_scanner, size: 20),
                 onPressed: () {
                   // TODO: Implement QR code scanner
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -223,14 +224,15 @@ class _TransferTabState extends State<TransferTab> {
                 tooltip: 'Scan QR Code',
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               filled: true,
-              fillColor: Colors.grey[50],
+              fillColor: Colors.white,
               errorText: _contactError,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Amount Input
           AmountInputField(
@@ -241,7 +243,7 @@ class _TransferTabState extends State<TransferTab> {
             minAmount: WalletService.minTransfer,
             onChanged: _validateAmount,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Terms Checkbox
           TermsCheckbox(
@@ -254,21 +256,34 @@ class _TransferTabState extends State<TransferTab> {
             },
             errorText: _termsError,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // Transfer Button
-          SizedBox(
+          Container(
             width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF3B82F6).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: ElevatedButton(
               onPressed: _isLoading ? null : _handleTransfer,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6366F1),
+                backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                elevation: 2,
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -279,12 +294,19 @@ class _TransferTabState extends State<TransferTab> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text(
-                      'Transfer Money',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.swap_horiz, size: 18),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Transfer Money',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
             ),
           ),

@@ -21,12 +21,12 @@ class PaymentMethodSelector extends StatelessWidget {
         const Text(
           'Select Payment Method',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
             color: Color(0xFF1E293B),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Row(
           children: methods.map((method) {
             final isSelected = selectedMethod == method.value;
@@ -35,31 +35,23 @@ class PaymentMethodSelector extends StatelessWidget {
                 onTap: () => onMethodSelected(method.value),
                 child: Container(
                   margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFEEF2FF) : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    color: isSelected ? const Color(0xFF10B981).withOpacity(0.1) : Colors.white,
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF6366F1)
+                          ? const Color(0xFF10B981)
                           : Colors.grey[300]!,
-                      width: isSelected ? 2 : 1,
+                      width: isSelected ? 1.5 : 1,
                     ),
-                    boxShadow: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: const Color(0xFF6366F1).withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                    ],
                   ),
                   child: Column(
                     children: [
                       Container(
-                        width: 60,
-                        height: 60,
-                        padding: const EdgeInsets.all(8),
+                        width: 50,
+                        height: 50,
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
@@ -71,20 +63,20 @@ class PaymentMethodSelector extends StatelessWidget {
                           errorBuilder: (context, error, stackTrace) {
                             return Icon(
                               Icons.payment,
-                              size: 32,
+                              size: 28,
                               color: Colors.grey[400],
                             );
                           },
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         method.label,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: isSelected
-                              ? const Color(0xFF6366F1)
+                              ? const Color(0xFF10B981)
                               : Colors.grey[700],
                         ),
                       ),
