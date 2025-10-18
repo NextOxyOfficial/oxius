@@ -178,54 +178,14 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
         }
         
         return Container(
-          margin: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.grey.shade50,
-                Colors.white,
-              ],
-            ),
-          ),
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
           child: Column(
             children: [
-          // Header
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade100),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
+          // Compact Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             child: Row(
               children: [
-                // Gradient accent line
-                Container(
-                  width: 4,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFF10B981),
-                        Color(0xFF3B82F6),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 12),
                 // Icon
                 Container(
                   padding: const EdgeInsets.all(6),
@@ -235,16 +195,16 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                   ),
                   child: const Icon(
                     Icons.access_time,
-                    size: 20,
+                    size: 16,
                     color: Color(0xFF10B981),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 // Title
                 Text(
                   widget.sectionTitle,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF111827),
                   ),
@@ -253,19 +213,19 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
             ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 4),
 
           // Scrolling ads carousel
           GestureDetector(
             onPanStart: (_) => _pauseAutoScroll(),
             onPanEnd: (_) => _resumeAutoScroll(),
             child: SizedBox(
-              height: 230,
+              height: 200,
               child: ListView.builder(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
                 physics: const ClampingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
                 itemCount: duplicatedAds.length,
                 itemBuilder: (context, index) {
                   final ad = duplicatedAds[index];
@@ -296,7 +256,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
 
     return Container(
       width: cardWidth,
-      margin: EdgeInsets.only(right: _cardGap),
+      margin: const EdgeInsets.only(right: 8),
       child: GestureDetector(
         onTap: () {
           Navigator.push(
@@ -312,12 +272,12 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey.shade200, width: 1),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -330,11 +290,11 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(12),
+                      top: Radius.circular(10),
                     ),
                     child: CachedNetworkImage(
                       imageUrl: _getImageUrl(ad),
-                      height: 130,
+                      height: 110,
                       width: double.infinity,
                       fit: BoxFit.cover,
                       placeholder: (context, url) => Container(
@@ -360,19 +320,19 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                   ),
                   // Price badge
                   Positioned(
-                    top: 8,
-                    right: 8,
+                    top: 6,
+                    right: 6,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 6,
+                        vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        color: const Color(0xFF10B981),
+                        borderRadius: BorderRadius.circular(6),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withOpacity(0.15),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -384,8 +344,8 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                           const Text(
                             '৳',
                             style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF10B981),
+                              fontSize: 11,
+                              color: Colors.white,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -395,9 +355,9 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF10B981),
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -420,53 +380,46 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.normal,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                         color: Color(0xFF111827),
                         height: 1.3,
                       ),
                     ),
 
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
 
-                    // Location
+                    // Location & Date
                     Row(
                       children: [
                         const Icon(
-                          Icons.location_on,
-                          size: 14,
+                          Icons.location_on_outlined,
+                          size: 12,
                           color: Color(0xFF6B7280),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 3),
                         Expanded(
                           child: Text(
-                            '${ad.upazila ?? ''}, ${ad.city ?? ''}',
+                            '${ad.city ?? ''}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 11,
+                              fontSize: 10,
                               color: Color(0xFF6B7280),
                             ),
                           ),
                         ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 3),
-
-                    // Date
-                    Row(
-                      children: [
+                        const SizedBox(width: 6),
                         const Icon(
-                          Icons.calendar_today,
-                          size: 14,
+                          Icons.access_time,
+                          size: 12,
                           color: Color(0xFF6B7280),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 3),
                         Text(
                           _formatDate(ad.createdAt),
                           style: const TextStyle(
-                            fontSize: 11,
+                            fontSize: 10,
                             color: Color(0xFF6B7280),
                           ),
                         ),

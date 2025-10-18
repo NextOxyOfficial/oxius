@@ -152,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // 5. Recent Ads Scroll - Horizontal scrolling carousel of recent posts
                   if (_isLoadingPosts)
                     Container(
-                      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   else
                     // Debug: Show message if no posts
                     Container(
-                      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,

@@ -267,23 +267,55 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     final isMobile = MediaQuery.of(context).size.width < 768;
     
     return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8 : 16,
-        vertical: 16,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
         children: [
-          // Title
-          Text(
-            '${_translationService.t('micro_gigs', fallback: 'Micro Gigs')} (${_translationService.t('quick_earn', fallback: 'Quick Earn')})',
-            style: GoogleFonts.poppins(
-              fontSize: isMobile ? 20 : 24,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade900,
+          // Compact Title
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.work_outline,
+                    size: 16,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${_translationService.t('micro_gigs', fallback: 'Micro Gigs')}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade900,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    _translationService.t('quick_earn', fallback: 'Quick Earn'),
+                    style: GoogleFonts.roboto(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF10B981),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           
           // Account Balance Section (shows if logged in)
           const AccountBalanceSection(),
@@ -291,21 +323,21 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           // Mobile Recharge Section
           const MobileRechargeSection(),
           
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           
           // Main Card
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: Colors.grey.shade200,
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -431,12 +463,12 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
 
   Widget _buildMobileCategoriesDropdown() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.grey.shade50.withOpacity(0.7),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
         border: Border(
-          bottom: BorderSide(color: Colors.grey.shade300),
+          bottom: BorderSide(color: Colors.grey.shade200),
         ),
       ),
       child: DropdownButtonFormField<String>(
@@ -561,7 +593,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
       children: [
         // Header with Filter
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(color: Colors.grey.shade200),
@@ -573,7 +605,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               Text(
                 _translationService.t('available_gigs', fallback: 'Available Gigs'),
                 style: GoogleFonts.roboto(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -627,9 +659,12 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     final isMobile = MediaQuery.of(context).size.width < 768;
     
     return Container(
-      padding: EdgeInsets.all(isMobile ? 12 : 16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50.withOpacity(0.7),
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade100),
+        ),
       ),
       child: Column(
         children: [
@@ -638,23 +673,23 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             children: [
               // Gig Image
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
                 child: Image.network(
                   imageUrl,
-                  width: 48,
-                  height: 48,
+                  width: 40,
+                  height: 40,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      width: 48,
-                      height: 48,
+                      width: 40,
+                      height: 40,
                       color: Colors.grey.shade200,
-                      child: Icon(Icons.work_outline, color: Colors.grey.shade400),
+                      child: Icon(Icons.work_outline, size: 20, color: Colors.grey.shade400),
                     );
                   },
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               
               // Gig Details
               Expanded(
@@ -664,40 +699,47 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                     Text(
                       title,
                       style: GoogleFonts.roboto(
-                        fontSize: 15,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.grey.shade900,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Wrap(
-                      spacing: 16,
-                      runSpacing: 8,
+                      spacing: 12,
+                      runSpacing: 6,
                       children: [
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.notifications, size: 16),
-                            const SizedBox(width: 4),
+                            const Icon(Icons.people_outline, size: 14, color: Color(0xFF6B7280)),
+                            const SizedBox(width: 3),
                             Text(
-                              '$filledQty / ',
-                              style: GoogleFonts.roboto(fontSize: 14),
+                              '$filledQty/',
+                              style: GoogleFonts.roboto(fontSize: 12, color: Color(0xFF6B7280)),
                             ),
                             Text(
                               '$requiredQty',
                               style: GoogleFonts.roboto(
-                                fontSize: 14,
+                                fontSize: 12,
                                 color: Colors.green.shade600,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
-                        Text(
-                          _formatDate(createdAt),
-                          style: GoogleFonts.roboto(fontSize: 14),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.access_time, size: 14, color: Color(0xFF6B7280)),
+                            const SizedBox(width: 3),
+                            Text(
+                              _formatDate(createdAt),
+                              style: GoogleFonts.roboto(fontSize: 12, color: Color(0xFF6B7280)),
+                            ),
+                          ],
                         ),
                         if (!isMobile)
                           Row(
@@ -729,16 +771,23 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      '৳$price',
-                      style: GoogleFonts.roboto(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.green.shade900,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '৳$price',
+                        style: GoogleFonts.roboto(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    ElevatedButton(
+                    OutlinedButton(
                       onPressed: () async {
                         final result = await Navigator.push(
                           context,
@@ -754,12 +803,16 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                           _refreshGigs();
                         }
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF10B981),
+                        side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        textStyle: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
                       ),
-                      child: const Text('Earn'),
+                      child: const Text('Earn Now'),
                     ),
                   ],
                 ),
@@ -769,19 +822,26 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           
           // Mobile Price and Button
           if (isMobile) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '৳$price',
-                  style: GoogleFonts.roboto(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.green.shade900,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '৳$price',
+                    style: GoogleFonts.roboto(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-                ElevatedButton(
+                OutlinedButton(
                   onPressed: () async {
                     final result = await Navigator.push(
                       context,
@@ -797,12 +857,16 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                       _refreshGigs();
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade600,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF10B981),
+                    side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    textStyle: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
-                  child: const Text('Earn'),
+                  child: const Text('Earn Now'),
                 ),
               ],
             ),
