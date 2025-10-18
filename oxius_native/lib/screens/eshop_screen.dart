@@ -756,10 +756,10 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              const spacing = 12.0;
+              const spacing = 8.0;
               final availableWidth = constraints.maxWidth;
               final idealWidth = (availableWidth - spacing) / 2;
               
@@ -769,8 +769,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   childAspectRatio: 0.62,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
                 ),
                 itemCount: _products.length,
                 itemBuilder: (context, index) {
@@ -811,6 +811,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
               ),
             ),
           ),
+        
+        // Bottom spacing to prevent overflow
+        const SizedBox(height: 80),
       ],
     );
   }
