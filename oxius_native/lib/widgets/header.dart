@@ -976,9 +976,7 @@ class _AppHeaderState extends State<AppHeader> {
     
     switch (route) {
       case '/business-network':
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${t('business_network')} ${t('coming_soon')}')),
-        );
+        Navigator.pushNamed(context, '/business-network');
         break;
       case '/adsy-news':
         ScaffoldMessenger.of(context).showSnackBar(

@@ -474,6 +474,9 @@ class _HeroBannerState extends State<HeroBanner> {
                   context,
                   MaterialPageRoute(builder: (context) => const EshopScreen()),
                 );
+              } else if (service['label'] == _translationService.t('business_network', fallback: 'Business Network') || 
+                  service['label'] == 'Business Network') {
+                Navigator.pushNamed(context, '/business-network');
               } else {
                 // TODO: Navigate to respective service pages
               }

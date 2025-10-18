@@ -1306,6 +1306,8 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         MaterialPageRoute(builder: (context) => const EshopScreen()),
       );
+    } else if (destination == 'Business Network') {
+      Navigator.pushNamed(context, '/business-network');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
