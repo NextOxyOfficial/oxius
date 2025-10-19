@@ -26,12 +26,39 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   BusinessNetworkComment? _replyingTo;
   final TextEditingController _replyController = TextEditingController();
+  int _displayedCommentsCount = 10; // Show 10 comments initially
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
     _post = widget.post;
     _loadFullPost();
+    _scrollController.addListener(_onScroll);
+  }
+  
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreComments();
+    }
+  }
+  
+  void _loadMoreComments() {
+    if (_isLoadingMore) return;
+    
+    final totalComments = _post.comments.where((c) => c.parentComment == null || c.parentComment == 0).length;
+    if (_displayedCommentsCount >= totalComments) return;
+    
+    setState(() {
+      _isLoadingMore = true;
+      _displayedCommentsCount = (_displayedCommentsCount + 10).clamp(0, totalComments);
+    });
+    
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() => _isLoadingMore = false);
+      }
+    });
   }
 
   @override
@@ -130,182 +157,287 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  Future<void> _handleFollowToggle() async {
+    // Use user UUID or username for follow action
+    final userId = _post.user.uuid ?? _post.user.username ?? _post.user.id.toString();
+    final success = await BusinessNetworkService.toggleFollow(userId, _post.user.isFollowing);
+    
+    if (success && mounted) {
+      setState(() {
+        _post = _post.copyWith(
+          user: BusinessNetworkUser(
+            id: _post.user.id,
+            uuid: _post.user.uuid,
+            name: _post.user.name,
+            avatar: _post.user.avatar,
+            image: _post.user.image,
+            isVerified: _post.user.isVerified,
+            bio: _post.user.bio,
+            username: _post.user.username,
+            firstName: _post.user.firstName,
+            lastName: _post.user.lastName,
+            isFollowing: !_post.user.isFollowing,
+          ),
+        );
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_post.user.isFollowing ? 'Following ${_post.user.name}' : 'Unfollowed ${_post.user.name}'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768;
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Post',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 672),
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            padding: EdgeInsets.fromLTRB(4, 8, 4, isMobile ? 80 : 16),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+      backgroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
                 children: [
-                  // Post Header
-                  PostHeader(
-                    post: _post,
-                    onMorePressed: () {},
+                  // Back Button
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, size: 20),
+                    color: Colors.black87,
+                    onPressed: () => Navigator.pop(context),
+                    padding: const EdgeInsets.all(8),
                   ),
-                  
-                  // Post Title
-                  if (_post.title.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                      child: Text(
-                        _post.title,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                  
-                  // Post Content
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Text(
-                      _post.content,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade800,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Post Media
-                  if (_post.media.isNotEmpty)
-                    PostMediaGallery(
-                      media: _post.media,
-                      onMediaTap: (index) {
-                        // TODO: Open media viewer
-                      },
-                    ),
-                  
-                  // Post Actions
-                  PostActions(
-                    post: _post,
-                    onLike: _handleLikeToggle,
-                    onComment: () {
-                      // Scroll to comment input
-                    },
-                    onShare: _handleShare,
-                    onSave: _handleSave,
-                  ),
-                  
-                  const Divider(height: 1),
-                  
-                  // All Comments Section
-                  _buildCommentsSection(),
-                  
-                  // Reply Input (shown when replying to a comment)
-                  if (_replyingTo != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      color: Colors.blue.shade50,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                'Replying to ${_replyingTo!.user.name}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.blue.shade700,
-                                ),
-                              ),
-                              const Spacer(),
-                              IconButton(
-                                icon: const Icon(Icons.close, size: 18),
-                                onPressed: () {
-                                  setState(() {
-                                    _replyingTo = null;
-                                    _replyController.clear();
-                                  });
-                                },
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
+                  // Profile Section
+                  Expanded(
+                    child: Row(
+                      children: [
+                        // Profile Photo
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.grey.shade200,
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          PostCommentInput(
-                            onSubmit: (content) async {
-                              final comment = await BusinessNetworkService.addComment(
-                                postId: _post.id,
-                                content: content,
-                                parentCommentId: _replyingTo!.id,
-                              );
-                              if (comment != null) {
-                                _handleCommentAdded(comment);
-                                setState(() {
-                                  _replyingTo = null;
-                                  _replyController.clear();
-                                });
-                              }
-                            },
+                          child: ClipOval(
+                            child: _post.user.image != null || _post.user.avatar != null
+                                ? Image.network(
+                                    _post.user.image ?? _post.user.avatar!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        color: Colors.grey.shade100,
+                                        child: Icon(
+                                          Icons.person,
+                                          color: Colors.grey.shade400,
+                                          size: 20,
+                                        ),
+                                      );
+                                    },
+                                  )
+                                : Container(
+                                    color: Colors.grey.shade100,
+                                    child: Icon(
+                                      Icons.person,
+                                      color: Colors.grey.shade400,
+                                      size: 20,
+                                    ),
+                                  ),
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Name and Verified Badge
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      _post.user.name,
+                                      style: const TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: -0.2,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (_post.user.isVerified) ...[
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.verified,
+                                      size: 16,
+                                      color: Color(0xFF3B82F6),
+                                    ),
+                                  ],
+                                  // Follow Button (if not following) - inline with name
+                                  if (!_post.user.isFollowing) ...[
+                                    const SizedBox(width: 8),
+                                    InkWell(
+                                      onTap: _handleFollowToggle,
+                                      child: const Text(
+                                        '• Follow',
+                                        style: TextStyle(
+                                          color: Color(0xFF3B82F6),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              Text(
+                                formatTimeAgo(_post.createdAt),
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  
-                  // Add Comment Input
-                  if (_replyingTo == null)
-                    PostCommentInput(
-                      onSubmit: (content) async {
-                        final comment = await BusinessNetworkService.addComment(
-                          postId: _post.id,
-                          content: content,
-                        );
-                        if (comment != null) {
-                          _handleCommentAdded(comment);
-                        }
-                      },
-                    ),
+                  ),
                 ],
               ),
             ),
           ),
+        ),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Scrollable Content
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _loadFullPost,
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 672),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Post Title
+                        if (_post.title.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                            child: Text(
+                              _post.title,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        
+                        // Post Content
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            _post.content,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade800,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 12),
+                        
+                        // Post Media
+                        if (_post.media.isNotEmpty)
+                          PostMediaGallery(
+                            media: _post.media,
+                            onMediaTap: (index) {
+                              // TODO: Open media viewer
+                            },
+                          ),
+                        
+                        // Post Actions
+                        PostActions(
+                          post: _post,
+                          onLike: _handleLikeToggle,
+                          onComment: () {
+                            // Scroll to comment input
+                          },
+                          onShare: _handleShare,
+                          onSave: _handleSave,
+                        ),
+                  
+                        const Divider(height: 1),
+                        
+                        // All Comments Section with inline reply inputs
+                        _buildCommentsSection(),
+                        
+                        // Loading more indicator
+                        if (_isLoadingMore)
+                          const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        
+                        const SizedBox(height: 80), // Space for bottom input
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Sticky Bottom Input
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(color: Colors.grey.shade200, width: 1),
+                ),
+              ),
+              child: PostCommentInput(
+                onSubmit: (content) async {
+                  final comment = await BusinessNetworkService.addComment(
+                    postId: _post.id,
+                    content: content,
+                  );
+                  if (comment != null) {
+                    _handleCommentAdded(comment);
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -355,12 +487,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
             child: Text(
               'Comments (${_post.commentsCount})',
               style: const TextStyle(
@@ -379,13 +511,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   List<Widget> _buildCommentTree() {
     // Separate top-level comments and replies
-    final topLevelComments = _post.comments.where((c) => c.parentComment == null).toList();
-    final replies = _post.comments.where((c) => c.parentComment != null).toList();
+    final topLevelComments = _post.comments
+        .where((c) => c.parentComment == null || c.parentComment == 0)
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt)); // Sort newest first
+    
+    // Limit to displayed count
+    final displayedComments = topLevelComments.take(_displayedCommentsCount).toList();
+    
+    final replies = _post.comments
+        .where((c) => c.parentComment != null && c.parentComment != 0)
+        .toList();
     
     // Build comment tree
     final widgets = <Widget>[];
     
-    for (final comment in topLevelComments) {
+    for (final comment in displayedComments) {
+      final isReplyingToThis = _replyingTo?.id == comment.id;
+      
       // Add parent comment
       widgets.add(_CommentItem(
         comment: comment,
@@ -394,36 +537,155 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           setState(() {
             _replyingTo = comment;
           });
-          // Scroll to bottom to show reply input
-          Future.delayed(const Duration(milliseconds: 100), () {
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            );
-          });
         },
       ));
       
+      // Add inline reply input (shown directly under this comment when replying)
+      if (isReplyingToThis) {
+        widgets.add(
+          Container(
+            margin: const EdgeInsets.only(left: 40, top: 0, bottom: 12, right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: Colors.blue.shade200,
+                width: 0.5,
+              ),
+            ),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Icon(Icons.reply, size: 12, color: Colors.blue.shade700),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: TextField(
+                      controller: _replyController,
+                      decoration: InputDecoration(
+                        hintText: 'Reply to ${comment.user.name}...',
+                        hintStyle: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                        isDense: true,
+                      ),
+                      style: const TextStyle(fontSize: 11),
+                      maxLines: 4,
+                      minLines: 1,
+                      onSubmitted: (content) async {
+                        if (content.trim().isEmpty) return;
+                        final newComment = await BusinessNetworkService.addComment(
+                          postId: _post.id,
+                          content: content,
+                          parentCommentId: comment.id,
+                        );
+                        if (newComment != null) {
+                          _handleCommentAdded(newComment);
+                          setState(() {
+                            _replyingTo = null;
+                            _replyController.clear();
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () async {
+                              if (_replyController.text.trim().isEmpty) return;
+                              final newComment = await BusinessNetworkService.addComment(
+                                postId: _post.id,
+                                content: _replyController.text,
+                                parentCommentId: comment.id,
+                              );
+                              if (newComment != null) {
+                                _handleCommentAdded(newComment);
+                                setState(() {
+                                  _replyingTo = null;
+                                  _replyController.clear();
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(Icons.send, size: 14, color: Colors.blue.shade700),
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                _replyingTo = null;
+                                _replyController.clear();
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(Icons.close, size: 14, color: Colors.grey.shade600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+      
       // Add replies to this comment
-      final commentReplies = replies.where((r) => r.parentComment == comment.id).toList();
-      for (final reply in commentReplies) {
-        widgets.add(_CommentItem(
-          comment: reply,
-          isReply: true,
-          onReply: () {
-            setState(() {
-              _replyingTo = comment; // Reply to the parent comment
-            });
-            Future.delayed(const Duration(milliseconds: 100), () {
-              _scrollController.animateTo(
-                _scrollController.position.maxScrollExtent,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
-            });
-          },
-        ));
+      final commentReplies = replies
+          .where((r) => r.parentComment == comment.id)
+          .toList()
+        ..sort((a, b) => a.createdAt.compareTo(b.createdAt)); // Sort oldest first for replies
+      
+      if (commentReplies.isNotEmpty) {
+        widgets.add(const SizedBox(height: 1));
+        for (final reply in commentReplies) {
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(left: 40),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Vertical line
+                    Container(
+                      width: 2,
+                      margin: const EdgeInsets.only(top: 4, bottom: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Comment content
+                    Expanded(
+                      child: _CommentItem(
+                        comment: reply,
+                        isReply: true,
+                        onReply: null, // Don't allow replying to replies
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+        // Add margin after last reply
+        widgets.add(const SizedBox(height: 12));
       }
     }
     
@@ -433,51 +695,36 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
 class _CommentItem extends StatelessWidget {
   final BusinessNetworkComment comment;
-  final VoidCallback onReply;
+  final VoidCallback? onReply;
   final bool isReply;
 
   const _CommentItem({
     required this.comment,
-    required this.onReply,
+    this.onReply,
     this.isReply = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(left: isReply ? 48 : 0), // Indent replies
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: isReply ? Colors.grey.shade50 : Colors.transparent,
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey.shade100,
-            width: 1,
-          ),
-          left: isReply
-              ? BorderSide(
-                  color: Colors.blue.shade200,
-                  width: 3,
-                )
-              : BorderSide.none,
-        ),
-      ),
+    final avatarSize = isReply ? 28.0 : 32.0;
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // User Avatar
           Container(
-            width: 36,
-            height: 36,
+            width: avatarSize,
+            height: avatarSize,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
+              shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.grey.shade200,
-                width: 1,
+                color: Colors.grey.shade300,
+                width: 1.5,
               ),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
+            child: ClipOval(
               child: comment.user.image != null || comment.user.avatar != null
                   ? Image.network(
                       comment.user.image ?? comment.user.avatar!,
@@ -488,7 +735,7 @@ class _CommentItem extends StatelessWidget {
                           child: Icon(
                             Icons.person,
                             color: Colors.grey.shade400,
-                            size: 20,
+                            size: avatarSize * 0.6,
                           ),
                         );
                       },
@@ -498,90 +745,77 @@ class _CommentItem extends StatelessWidget {
                       child: Icon(
                         Icons.person,
                         color: Colors.grey.shade400,
-                        size: 20,
+                        size: avatarSize * 0.6,
                       ),
                     ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           // Comment Content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // User name and verified badge
                 Row(
                   children: [
-                    Text(
-                      comment.user.name,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                    Flexible(
+                      child: Text(
+                        comment.user.name,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (comment.user.isVerified) ...[
                       const SizedBox(width: 4),
                       const Icon(
                         Icons.verified,
-                        size: 14,
+                        size: 13,
                         color: Color(0xFF3B82F6),
                       ),
                     ],
-                    const Spacer(),
+                    const SizedBox(width: 8),
                     Text(
                       formatTimeAgo(comment.createdAt),
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         color: Colors.grey.shade500,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
+                // Comment text
                 Text(
                   comment.content,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: Colors.grey.shade800,
-                    height: 1.4,
+                    height: 1.3,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        // TODO: Like comment
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Text(
-                          'Like',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade600,
-                          ),
+                // Reply button
+                if (onReply != null) ...[
+                  const SizedBox(height: 4),
+                  InkWell(
+                    onTap: onReply,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Text(
+                        'Reply',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blue.shade700,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    InkWell(
-                      onTap: onReply,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Text(
-                          'Reply',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ],
             ),
           ),
