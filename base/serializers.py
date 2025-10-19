@@ -16,8 +16,11 @@ class UserSerializer(serializers.ModelSerializer):
     post_count = serializers.SerializerMethodField()
     follower_count = serializers.SerializerMethodField()
     follow_count = serializers.SerializerMethodField()
+    followers_count = serializers.SerializerMethodField()  # Alias for Flutter
+    following_count = serializers.SerializerMethodField()  # Alias for Flutter
     sale_post_count = serializers.SerializerMethodField()
     rating = serializers.SerializerMethodField()
+    is_following = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -37,6 +40,24 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_follow_count(self, obj):
         return BusinessNetworkFollowerModel.objects.filter(follower=obj).count()
+    
+    def get_followers_count(self, obj):
+        """Alias for follower_count - people following this user"""
+        return self.get_follower_count(obj)
+    
+    def get_following_count(self, obj):
+        """Alias for follow_count - people this user is following"""
+        return self.get_follow_count(obj)
+    
+    def get_is_following(self, obj):
+        """Check if the current user is following this user"""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return BusinessNetworkFollowerModel.objects.filter(
+                follower=request.user,
+                following=obj
+            ).exists()
+        return False
 
     def get_sale_post_count(self, obj):
         # Only count active sale posts, not pending or other statuses

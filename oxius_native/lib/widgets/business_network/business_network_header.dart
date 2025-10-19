@@ -389,7 +389,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
             child: isMobile
                 ? IconButton(
                     onPressed: () {
-                      // Navigate to login
+                      Navigator.pushNamed(context, '/login');
                     },
                     icon: Container(
                       width: 36,
@@ -408,7 +408,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                   )
                 : OutlinedButton(
                     onPressed: () {
-                      // Navigate to login
+                      Navigator.pushNamed(context, '/login');
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(

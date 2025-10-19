@@ -59,6 +59,16 @@ class _PostCardState extends State<PostCard> {
            _post.user.uuid == currentUser.id ||
            _post.user.id.toString() == currentUser.id;
   }
+  
+  bool _shouldShowFollowButton() {
+    // Don't show if user is not logged in
+    if (AuthService.currentUser == null) return false;
+    
+    // Don't show on own posts
+    if (_isSelfPost()) return false;
+    
+    return true;
+  }
 
   Future<void> _addComment(String content) async {
     if (_isAddingComment) return;
@@ -480,7 +490,7 @@ class _PostCardState extends State<PostCard> {
           // Post Header
           PostHeader(
             post: _post,
-            onFollowToggle: _isSelfPost() ? null : _handleFollowToggle,
+            onFollowToggle: null, // Don't show follow button in posts
             onMorePressed: _showPostOptions,
           ),
           // Post Title

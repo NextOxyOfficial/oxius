@@ -8,6 +8,7 @@ import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
+import 'create_post_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -78,8 +79,28 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       if (mounted) {
         setState(() {
           _userData = userData;
-          _userPosts = postsResult['posts'] as List<BusinessNetworkPost>;
+          final posts = postsResult['posts'] as List<BusinessNetworkPost>;
           _isFollowing = userData?['is_following'] ?? false;
+          
+          // Update all posts to reflect current follow status
+          _userPosts = posts.map((post) {
+            return post.copyWith(
+              user: BusinessNetworkUser(
+                id: post.user.id,
+                uuid: post.user.uuid,
+                name: post.user.name,
+                avatar: post.user.avatar,
+                image: post.user.image,
+                isVerified: post.user.isVerified,
+                bio: post.user.bio,
+                username: post.user.username,
+                firstName: post.user.firstName,
+                lastName: post.user.lastName,
+                isFollowing: _isFollowing, // Set to profile follow status
+              ),
+            );
+          }).toList();
+          
           _isLoading = false;
         });
       }
@@ -133,21 +154,64 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     setState(() => _followLoading = true);
     
     try {
-      final success = _isFollowing
+      final wasFollowing = _isFollowing; // Store original state
+      
+      print('=== Toggle Follow ===');
+      print('User ID: ${widget.userId}');
+      print('Was Following: $wasFollowing');
+      
+      final success = wasFollowing
           ? await BusinessNetworkService.unfollowUser(widget.userId)
           : await BusinessNetworkService.followUser(widget.userId);
       
+      print('Success: $success');
+      
       if (success && mounted) {
         setState(() {
-          _isFollowing = !_isFollowing;
-          // Update follower count
+          _isFollowing = !wasFollowing;
+          // Update follower count using original state
           if (_userData != null) {
             final currentCount = _userData!['followers_count'] ?? 0;
-            _userData!['followers_count'] = _isFollowing ? currentCount + 1 : currentCount - 1;
+            _userData!['followers_count'] = wasFollowing ? currentCount - 1 : currentCount + 1;
           }
+          
+          // Update all posts to reflect new follow status
+          _userPosts = _userPosts.map((post) {
+            return post.copyWith(
+              user: BusinessNetworkUser(
+                id: post.user.id,
+                uuid: post.user.uuid,
+                name: post.user.name,
+                avatar: post.user.avatar,
+                image: post.user.image,
+                isVerified: post.user.isVerified,
+                bio: post.user.bio,
+                username: post.user.username,
+                firstName: post.user.firstName,
+                lastName: post.user.lastName,
+                isFollowing: _isFollowing, // Update to new follow status
+              ),
+            );
+          }).toList();
         });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_isFollowing ? 'Following ${_userData?['name']}' : 'Unfollowed ${_userData?['name']}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to ${wasFollowing ? 'unfollow' : 'follow'} user'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
     } catch (e) {
+      print('Error in _toggleFollow: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -336,7 +400,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         break;
       case 2:
         // Create Post
-        // TODO: Navigate to create post
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const CreatePostScreen(),
+          ),
+        );
         break;
       case 3:
         // Profile - Already here
@@ -544,32 +613,137 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           
           const SizedBox(height: 14),
           
-          // QR Code Button (Centered)
-          OutlinedButton.icon(
-            onPressed: () {
-              if (_userData != null) {
-                showDialog(
-                  context: context,
-                  builder: (context) => QrCodeModal(user: _userData!),
-                );
-              }
-            },
-            icon: const Icon(Icons.qr_code, size: 16),
-            label: const Text(
-              'QR Code',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+          // QR Code and Follow Button (for viewing other profiles)
+          if (!isOwnProfile)
+            AuthService.currentUser != null
+                ? // Logged in: Show both buttons in a row
+                Row(
+                    children: [
+                      // QR Code Button
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            if (_userData != null) {
+                              showDialog(
+                                context: context,
+                                builder: (context) => QrCodeModal(user: _userData!),
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.qr_code, size: 16),
+                          label: const Text(
+                            'QR Code',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            side: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Follow Button
+                      Expanded(
+                        child: ElevatedButton(
+                    onPressed: _followLoading ? null : _toggleFollow,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isFollowing
+                          ? Colors.grey.shade200
+                          : const Color(0xFF3B82F6),
+                      foregroundColor: _isFollowing
+                          ? Colors.black87
+                          : Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _followLoading
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            _isFollowing ? 'Following' : 'Follow',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : // Not logged in: Show only QR Code button centered
+                Center(
+                    child: SizedBox(
+                      width: 200, // Fixed width for centered button
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          if (_userData != null) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => QrCodeModal(user: _userData!),
+                            );
+                          }
+                        },
+                        icon: const Icon(Icons.qr_code, size: 16),
+                        label: const Text(
+                          'QR Code',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                      ),
+                    ),
+                  ),
+          
+          // QR Code Button (for own profile)
+          if (isOwnProfile)
+            OutlinedButton.icon(
+              onPressed: () {
+                if (_userData != null) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => QrCodeModal(user: _userData!),
+                  );
+                }
+              },
+              icon: const Icon(Icons.qr_code, size: 16),
+              label: const Text(
+                'QR Code',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                side: BorderSide(color: Colors.grey.shade300),
               ),
             ),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              side: BorderSide(color: Colors.grey.shade300),
-            ),
-          ),
           
           // Diamond Balance (for own profile)
           if (isOwnProfile && _userData?['diamond_balance'] != null) ...[
@@ -619,58 +793,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               ],
             ),
           ],
-          
-          
-          const SizedBox(height: 12),
-          
-          // Follow/Edit Profile Button (Full Width)
-          if (!isOwnProfile)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _followLoading ? null : _toggleFollow,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _isFollowing
-                      ? Colors.grey.shade200
-                      : const Color(0xFF3B82F6),
-                  foregroundColor: _isFollowing
-                      ? Colors.black87
-                      : Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  elevation: 0,
-                ),
-                child: _followLoading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            _isFollowing ? Icons.check : Icons.person_add,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _isFollowing ? 'Following' : 'Follow',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
           
           // Bio Section
           if (_userData?['about'] != null || isOwnProfile) ...[

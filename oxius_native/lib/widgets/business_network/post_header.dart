@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/business_network_models.dart';
 import '../../utils/time_utils.dart';
+import '../../screens/business_network/profile_screen.dart';
 
 class PostHeader extends StatelessWidget {
   final BusinessNetworkPost post;
@@ -13,6 +14,16 @@ class PostHeader extends StatelessWidget {
     this.onFollowToggle,
     this.onMorePressed,
   });
+  
+  void _navigateToProfile(BuildContext context) {
+    final userId = post.user.uuid ?? post.user.id.toString();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfileScreen(userId: userId),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +33,7 @@ class PostHeader extends StatelessWidget {
         children: [
           // User Avatar
           GestureDetector(
-            onTap: () {
-              // TODO: Navigate to user profile
-            },
+            onTap: () => _navigateToProfile(context),
             child: Container(
               width: 40,
               height: 40,
@@ -72,14 +81,17 @@ class PostHeader extends StatelessWidget {
                 Row(
                   children: [
                     Flexible(
-                      child: Text(
-                        post.user.name,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                      child: GestureDetector(
+                        onTap: () => _navigateToProfile(context),
+                        child: Text(
+                          post.user.name,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (post.user.isVerified) ...[

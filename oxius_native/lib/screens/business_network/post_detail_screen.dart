@@ -8,6 +8,7 @@ import '../../widgets/business_network/post_media_gallery.dart';
 import '../../widgets/business_network/post_actions.dart';
 import '../../widgets/business_network/post_comment_input.dart';
 import '../../utils/time_utils.dart';
+import 'profile_screen.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -192,26 +193,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   bool _isSelfPost() {
-    // Check if the post belongs to the current logged-in user
-    // Compare using email/username from AuthService
     final currentUser = AuthService.currentUser;
+    if (currentUser == null) return false;
     
-    print('=== Self Post Check ===');
-    print('Current User: ${currentUser?.username} (ID: ${currentUser?.id})');
-    print('Post User: ${_post.user.username} (UUID: ${_post.user.uuid}, ID: ${_post.user.id})');
-    
-    if (currentUser == null) {
-      print('No current user - not self post');
-      return false;
-    }
-    
-    // Compare by username, UUID, or ID
-    final isSelf = _post.user.username == currentUser.username ||
-                   _post.user.uuid == currentUser.id ||
-                   _post.user.id.toString() == currentUser.id;
-    
-    print('Is Self Post: $isSelf');
-    return isSelf;
+    return _post.user.username == currentUser.username ||
+           _post.user.uuid == currentUser.id ||
+           _post.user.id.toString() == currentUser.id;
+  }
+  
+  void _navigateToProfile() {
+    final userId = _post.user.uuid ?? _post.user.id.toString();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfileScreen(userId: userId),
+      ),
+    );
   }
 
   Future<void> _handleFollowToggle() async {
@@ -281,10 +278,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   ),
                   // Profile Section
                   Expanded(
-                    child: Row(
-                      children: [
-                        // Profile Photo
-                        Container(
+                    child: GestureDetector(
+                      onTap: _navigateToProfile,
+                      child: Row(
+                        children: [
+                          // Profile Photo
+                          Container(
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
@@ -400,6 +399,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           ),
                         ),
                       ],
+                      ),
                     ),
                   ),
                 ],
@@ -818,41 +818,52 @@ class _CommentItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // User Avatar
-          Container(
-            width: avatarSize,
-            height: avatarSize,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.grey.shade300,
-                width: 1.5,
+          // User Avatar (clickable)
+          GestureDetector(
+            onTap: () {
+              final userId = comment.user.uuid ?? comment.user.id.toString();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProfileScreen(userId: userId),
+                ),
+              );
+            },
+            child: Container(
+              width: avatarSize,
+              height: avatarSize,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  width: 1.5,
+                ),
               ),
-            ),
-            child: ClipOval(
-              child: comment.user.image != null || comment.user.avatar != null
-                  ? Image.network(
-                      comment.user.image ?? comment.user.avatar!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade100,
-                          child: Icon(
-                            Icons.person,
-                            color: Colors.grey.shade400,
-                            size: avatarSize * 0.6,
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      color: Colors.grey.shade100,
-                      child: Icon(
-                        Icons.person,
-                        color: Colors.grey.shade400,
-                        size: avatarSize * 0.6,
+              child: ClipOval(
+                child: comment.user.image != null || comment.user.avatar != null
+                    ? Image.network(
+                        comment.user.image ?? comment.user.avatar!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.shade100,
+                            child: Icon(
+                              Icons.person,
+                              color: Colors.grey.shade400,
+                              size: avatarSize * 0.6,
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        color: Colors.grey.shade100,
+                        child: Icon(
+                          Icons.person,
+                          color: Colors.grey.shade400,
+                          size: avatarSize * 0.6,
+                        ),
                       ),
-                    ),
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -861,18 +872,29 @@ class _CommentItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // User name and verified badge
+                // User name and verified badge (clickable)
                 Row(
                   children: [
                     Flexible(
-                      child: Text(
-                        comment.user.name,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                      child: GestureDetector(
+                        onTap: () {
+                          final userId = comment.user.uuid ?? comment.user.id.toString();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfileScreen(userId: userId),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          comment.user.name,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (comment.user.isVerified) ...[

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/business_network_models.dart';
 import '../../utils/time_utils.dart';
+import '../../screens/business_network/profile_screen.dart';
 
 class PostCommentsPreview extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -306,41 +307,52 @@ class _CommentItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // User Avatar
-          Container(
-            width: avatarSize,
-            height: avatarSize,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.grey.shade300,
-                width: 1.5,
+          // User Avatar (clickable)
+          GestureDetector(
+            onTap: () {
+              final userId = comment.user.uuid ?? comment.user.id.toString();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProfileScreen(userId: userId),
+                ),
+              );
+            },
+            child: Container(
+              width: avatarSize,
+              height: avatarSize,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  width: 1.5,
+                ),
               ),
-            ),
-            child: ClipOval(
-              child: comment.user.image != null || comment.user.avatar != null
-                  ? Image.network(
-                      comment.user.image ?? comment.user.avatar!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade100,
-                          child: Icon(
-                            Icons.person,
-                            color: Colors.grey.shade400,
-                            size: avatarSize * 0.6,
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      color: Colors.grey.shade100,
-                      child: Icon(
-                        Icons.person,
-                        color: Colors.grey.shade400,
-                        size: avatarSize * 0.6,
+              child: ClipOval(
+                child: comment.user.image != null || comment.user.avatar != null
+                    ? Image.network(
+                        comment.user.image ?? comment.user.avatar!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.shade100,
+                            child: Icon(
+                              Icons.person,
+                              color: Colors.grey.shade400,
+                              size: avatarSize * 0.6,
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        color: Colors.grey.shade100,
+                        child: Icon(
+                          Icons.person,
+                          color: Colors.grey.shade400,
+                          size: avatarSize * 0.6,
+                        ),
                       ),
-                    ),
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -349,18 +361,29 @@ class _CommentItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // User name and verified badge
+                // User name and verified badge (clickable)
                 Row(
                   children: [
                     Flexible(
-                      child: Text(
-                        comment.user.name,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                      child: GestureDetector(
+                        onTap: () {
+                          final userId = comment.user.uuid ?? comment.user.id.toString();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfileScreen(userId: userId),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          comment.user.name,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (comment.user.isVerified) ...[
