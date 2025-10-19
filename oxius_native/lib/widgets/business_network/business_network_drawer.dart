@@ -19,67 +19,118 @@ class BusinessNetworkDrawer extends StatelessWidget {
     final user = AuthService.currentUser;
     
     return Drawer(
-      width: 288, // w-72 = 288px
+      width: 280,
       child: Container(
-        color: Colors.white,
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header with close button
-              Container(
-                height: 48,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const SizedBox(width: 40), // Spacer for alignment
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close),
-                      iconSize: 20,
-                      color: Colors.grey.shade600,
-                    ),
+        color: const Color(0xFFFAFAFA),
+        child: Column(
+          children: [
+            // Compact Header with gradient
+            Container(
+              height: 56,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.blue.shade600,
+                    Colors.indigo.shade600,
                   ],
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              
-              // Scrollable content
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
                     children: [
-                      // Main Menu Section
-                      DrawerMenu(currentRoute: currentRoute),
-                      
-                      const SizedBox(height: 28),
-                      
-                      // Gold Sponsor Section
-                      DrawerGoldSponsor(isLoggedIn: user != null),
-                      
-                      const SizedBox(height: 28),
-                      
-                      // News Section
-                      const DrawerNews(),
-                      
-                      const SizedBox(height: 28),
-                      
-                      // Hashtags Section
-                      const DrawerHashtags(),
-                      
-                      const SizedBox(height: 28),
-                      
-                      // Top Contributors Section
-                      const DrawerContributors(),
-                      
-                      const SizedBox(height: 80), // Bottom padding for mobile nav
+                      // Logo/Icon
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.business_center,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'Business Network',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                        iconSize: 22,
+                        color: Colors.white,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
                     ],
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+            
+            // Scrollable content with reduced padding
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Main Menu Section
+                    DrawerMenu(currentRoute: currentRoute),
+                    
+                    const SizedBox(height: 16),
+                    const Divider(height: 1, thickness: 1),
+                    const SizedBox(height: 16),
+                    
+                    // Gold Sponsor Section
+                    DrawerGoldSponsor(isLoggedIn: user != null),
+                    
+                    const SizedBox(height: 16),
+                    const Divider(height: 1, thickness: 1),
+                    const SizedBox(height: 16),
+                    
+                    // News Section
+                    const DrawerNews(),
+                    
+                    const SizedBox(height: 16),
+                    const Divider(height: 1, thickness: 1),
+                    const SizedBox(height: 16),
+                    
+                    // Hashtags Section
+                    const DrawerHashtags(),
+                    
+                    const SizedBox(height: 16),
+                    const Divider(height: 1, thickness: 1),
+                    const SizedBox(height: 16),
+                    
+                    // Top Contributors Section
+                    const DrawerContributors(),
+                    
+                    const SizedBox(height: 80), // Bottom padding for mobile nav
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
