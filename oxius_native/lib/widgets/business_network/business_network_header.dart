@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+import 'adsypay_qr_modal.dart';
 
 class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onMenuTap;
@@ -183,7 +184,16 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
         if (user != null) ...[
           // QR Code Button
           IconButton(
-            onPressed: widget.onQRCodeTap,
+            onPressed: () {
+              // Show AdsyPay QR modal
+              showDialog(
+                context: context,
+                builder: (context) => AdsyPayQrModal(
+                  qrData: 'adsypay://pay/${user.id}',
+                  title: '${user.firstName ?? user.username ?? "User"}\'s Payment QR',
+                ),
+              );
+            },
             icon: Container(
               width: 36,
               height: 36,

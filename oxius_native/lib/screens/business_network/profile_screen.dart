@@ -7,6 +7,7 @@ import '../../services/auth_service.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
+import '../../widgets/business_network/qr_code_modal.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -546,7 +547,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           // QR Code Button (Centered)
           OutlinedButton.icon(
             onPressed: () {
-              // TODO: Show QR code modal
+              if (_userData != null) {
+                showDialog(
+                  context: context,
+                  builder: (context) => QrCodeModal(user: _userData!),
+                );
+              }
             },
             icon: const Icon(Icons.qr_code, size: 16),
             label: const Text(
