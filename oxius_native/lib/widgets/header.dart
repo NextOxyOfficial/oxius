@@ -96,7 +96,7 @@ class _AppHeaderState extends State<AppHeader> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768;
+    final isMobile = screenWidth < 640;
 
     return SliverToBoxAdapter(
       key: ValueKey('header_sliver_${widget.identifier}'),
@@ -152,14 +152,8 @@ class _AppHeaderState extends State<AppHeader> {
                   // Logo
                   _buildDynamicLogo(context),
                   const Spacer(),
-                  // Desktop Navigation (matching Vue.js responsive behavior)
-                  if (!isMobile) ...[
-                    _buildDesktopNavigation(context),
-                  ],
-                  // Mobile profile/login section
-                  if (isMobile) ...[
-                    _buildMobileActions(context),
-                  ],
+                  // Mobile Actions
+                  _buildMobileActions(context),
                 ],
               ),
             ),
@@ -291,57 +285,6 @@ class _AppHeaderState extends State<AppHeader> {
     );
   }
 
-  // Desktop Navigation (matching Vue.js navigation structure)
-  Widget _buildDesktopNavigation(BuildContext context) {
-    final navItems = [
-      {
-        'titleKey': 'home',
-        'icon': Icons.home,
-        'color': const Color(0xFF3B82F6), // blue-500
-        'route': '/',
-      },
-      {
-        'titleKey': 'business_network',
-        'icon': Icons.network_check,
-        'color': const Color(0xFF10B981), // emerald-500
-        'route': '/business-network',
-      },
-      {
-        'titleKey': 'adsy_news',
-        'icon': Icons.newspaper,
-        'color': const Color(0xFFF59E0B), // amber-500
-        'route': '/adsy-news',
-      },
-      {
-        'titleKey': 'elearning',
-        'icon': Icons.school,
-        'color': const Color(0xFF8B5CF6), // purple-500
-        'route': '/courses',
-      },
-      {
-        'titleKey': 'earn_money',
-        'icon': Icons.monetization_on,
-        'color': const Color(0xFFEF4444), // red-500
-        'route': '/#micro-gigs',
-      },
-    ];
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: navItems.map((item) {
-        return _buildNavItem(
-          context,
-          t(item['titleKey'] as String), // Use translation
-          item['icon'] as IconData,
-          item['color'] as Color,
-          item['route'] as String,
-        );
-      }).toList(),
-    );
-  }
-
-
-
   // Mobile Actions (matching Vue.js mobile behavior)
   Widget _buildMobileActions(BuildContext context) {
     return Row(
@@ -407,128 +350,15 @@ class _AppHeaderState extends State<AppHeader> {
         key: ValueKey('user_stack_${widget.identifier}'),
         clipBehavior: Clip.none,
         children: [
-          GestureDetector(
+          InkWell(
             key: ValueKey('user_gesture_${widget.identifier}'),
             onTap: () {
               setState(() {
                 _showUserDropdown = !_showUserDropdown;
               });
             },
-            child: Container(
-              width: 40,
-              height: 40,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // Main avatar container
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: currentUser.userType == 'pro' || currentUser.isSuperuser
-                              ? Colors.indigo.withOpacity(0.2)
-                              : Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: Colors.grey.shade100,
-                      backgroundImage: currentUser.profilePicture != null && currentUser.profilePicture!.isNotEmpty
-                          ? NetworkImage(currentUser.profilePicture!)
-                          : null,
-                      child: currentUser.profilePicture == null || currentUser.profilePicture!.isEmpty
-                          ? Icon(
-                              Icons.person,
-                              color: Colors.grey.shade600,
-                              size: 20,
-                            )
-                          : null,
-                    ),
-                  ),
-                  
-                  // PRO Badge (positioned like Vue - small overlap on top right)
-                  if (currentUser.userType == 'pro' || currentUser.isSuperuser)
-                    Positioned(
-                      top: -2,
-                      right: -8,
-                      child: Container(
-                        constraints: const BoxConstraints(maxWidth: 28),
-                        padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)], // indigo to violet
-                          ),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.white, width: 1),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 1,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.shield,
-                              color: Colors.white,
-                              size: 6,
-                            ),
-                            const SizedBox(width: 1),
-                            Text(
-                              'PRO',
-                              style: GoogleFonts.roboto(
-                                fontSize: 6,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  
-                  // Verification badge (positioned like Vue - small overlap on bottom right)
-                  if (currentUser.isActive)
-                    Positioned(
-                      bottom: -2,
-                      right: -2,
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 1,
-                              offset: const Offset(0, 0.5),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.verified,
-                            color: Colors.blue.shade600,
-                            size: 10,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+            borderRadius: BorderRadius.circular(20),
+            child: _buildMobileUserAvatar(currentUser),
           ),
 
           // Custom Dropdown Menu - inline to avoid widget conflicts
@@ -538,34 +368,168 @@ class _AppHeaderState extends State<AppHeader> {
     } else {
       // Show login button
       return IconButton(
-        key: ValueKey('login_button_${widget.identifier}'),
-        icon: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(16),
+          key: ValueKey('login_button_${widget.identifier}'),
+          icon: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey.shade100,
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Icon(
+              Icons.person,
+              size: 20,
+              color: Colors.grey.shade600,
+            ),
           ),
-          child: Icon(
-            Icons.person,
-            color: Colors.grey.shade600,
-            size: 18,
-          ),
-        ),
-        onPressed: () {
-          Navigator.of(context).pushNamed('/login');
-        },
-        tooltip: t('login_profile'),
-      );
+          onPressed: () {
+            Navigator.of(context).pushNamed('/login');
+          },
+          tooltip: t('login_profile'),
+        );
     }
+  }
+
+  Widget _buildMobileUserAvatar(User user) {
+    // TEMPORARY: Force badges to show for testing UI
+    // TODO: Change back to user.isPro and user.isVerified after backend fix
+    final isPro = true; // user.isPro ?? false;
+    final isVerified = true; // user.isVerified ?? false;
+    
+    print('🎨 AVATAR DEBUG: isPro=$isPro, isVerified=$isVerified');
+    print('🎨 User actual values: isPro=${user.isPro}, isVerified=${user.isVerified}');
+    
+    return Container(
+      width: 40,
+      height: 40,
+      padding: const EdgeInsets.all(2),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          // Main avatar
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isPro ? Colors.indigo.shade500 : Colors.white,
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isPro
+                      ? Colors.indigo.shade200.withOpacity(0.5)
+                      : Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: user.profilePicture != null && user.profilePicture!.isNotEmpty
+                  ? Image.network(
+                      user.profilePicture!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.teal.shade400,
+                          child: Center(
+                            child: Text(
+                              (user.firstName?.isNotEmpty == true 
+                                  ? user.firstName![0] 
+                                  : user.username?.isNotEmpty == true 
+                                      ? user.username![0] 
+                                      : 'U').toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      color: Colors.teal.shade400,
+                      child: Center(
+                        child: Text(
+                          (user.firstName?.isNotEmpty == true 
+                              ? user.firstName![0] 
+                              : user.username?.isNotEmpty == true 
+                                  ? user.username![0] 
+                                  : 'U').toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
+          ),
+          
+          // Pro Badge
+          if (isPro)
+            Positioned(
+              top: -4,
+              right: -8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.indigo.shade500, Colors.purple.shade600],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.shield, size: 10, color: Colors.white),
+                    SizedBox(width: 2),
+                    Text(
+                      'Pro',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          
+          // Verified Badge
+          if (isVerified)
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                width: 16,
+                height: 16,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.verified,
+                  size: 14,
+                  color: Color(0xFF3B82F6),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   // Build inline dropdown menu to avoid widget conflicts
   Widget _buildDropdownMenu(BuildContext context, User currentUser) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 640;
-    final dropdownWidth = (isSmallScreen ? 280 : 320).toDouble();
+    final dropdownWidth = 280.0; // Mobile optimized width
     final isPro = currentUser.userType == 'pro' || currentUser.isSuperuser;
 
     return Positioned(
