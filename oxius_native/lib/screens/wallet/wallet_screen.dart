@@ -122,7 +122,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     child: _buildTabButton(
                       0,
                       Icons.arrow_downward,
-                      t('diposit'),
+                      t('deposit'),
                     ),
                   ),
                   Expanded(
