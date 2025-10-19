@@ -301,112 +301,99 @@ class _CommentItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final avatarSize = isReply ? 28.0 : 32.0;
     
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // User Avatar
-        Container(
-          width: avatarSize,
-          height: avatarSize,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.grey.shade300,
-              width: 1.5,
-            ),
-          ),
-          child: ClipOval(
-            child: comment.user.image != null || comment.user.avatar != null
-                ? Image.network(
-                    comment.user.image ?? comment.user.avatar!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey.shade100,
-                        child: Icon(
-                          Icons.person,
-                          color: Colors.grey.shade400,
-                          size: 18,
-                        ),
-                      );
-                    },
-                  )
-                : Container(
-                    color: Colors.grey.shade100,
-                    child: Icon(
-                      Icons.person,
-                      color: Colors.grey.shade400,
-                      size: 18,
-                    ),
-                  ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        // Comment Content
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(10),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // User Avatar
+          Container(
+            width: avatarSize,
+            height: avatarSize,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.grey.shade200,
-                width: 0.5,
+                color: Colors.grey.shade300,
+                width: 1.5,
               ),
             ),
+            child: ClipOval(
+              child: comment.user.image != null || comment.user.avatar != null
+                  ? Image.network(
+                      comment.user.image ?? comment.user.avatar!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey.shade100,
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.grey.shade400,
+                            size: avatarSize * 0.6,
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      color: Colors.grey.shade100,
+                      child: Icon(
+                        Icons.person,
+                        color: Colors.grey.shade400,
+                        size: avatarSize * 0.6,
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Comment Content
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // User name and verified badge
                 Row(
                   children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              comment.user.name,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black87,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (comment.user.isVerified) ...[
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.verified,
-                              size: 13,
-                              color: Color(0xFF3B82F6),
-                            ),
-                          ],
-                        ],
+                    Flexible(
+                      child: Text(
+                        comment.user.name,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    if (comment.user.isVerified) ...[
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.verified,
+                        size: 13,
+                        color: Color(0xFF3B82F6),
+                      ),
+                    ],
                     const SizedBox(width: 8),
                     Text(
                       _formatTimeAgo(comment.createdAt),
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.grey.shade500,
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 2),
+                // Comment text
                 Text(
                   comment.content,
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey.shade800,
-                    height: 1.4,
+                    height: 1.3,
                   ),
                 ),
                 // Reply button
                 if (onReply != null) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   InkWell(
                     onTap: onReply,
                     child: Padding(
@@ -414,7 +401,7 @@ class _CommentItem extends StatelessWidget {
                       child: Text(
                         'Reply',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: Colors.blue.shade700,
                         ),
@@ -425,8 +412,8 @@ class _CommentItem extends StatelessWidget {
               ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
