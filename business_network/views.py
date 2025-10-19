@@ -756,8 +756,21 @@ class UserFollowCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        user_id = self.kwargs.get("user_id")
+        
+        # Check if already following
+        existing_follow = BusinessNetworkFollowerModel.objects.filter(
+            follower=request.user,
+            following_id=user_id
+        ).first()
+        
+        if existing_follow:
+            # Already following - return the existing relationship
+            serializer = self.get_serializer(existing_follow)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
         serializer = self.get_serializer(
-            data={"follower": request.user.id, "following": self.kwargs.get("user_id")}
+            data={"follower": request.user.id, "following": user_id}
         )
 
         if not serializer.is_valid():
@@ -2073,8 +2086,21 @@ class UserFollowCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        user_id = self.kwargs.get("user_id")
+        
+        # Check if already following
+        existing_follow = BusinessNetworkFollowerModel.objects.filter(
+            follower=request.user,
+            following_id=user_id
+        ).first()
+        
+        if existing_follow:
+            # Already following - return the existing relationship
+            serializer = self.get_serializer(existing_follow)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
         serializer = self.get_serializer(
-            data={"follower": request.user.id, "following": self.kwargs.get("user_id")}
+            data={"follower": request.user.id, "following": user_id}
         )
 
         if not serializer.is_valid():

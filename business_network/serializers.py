@@ -13,7 +13,7 @@ class BusinessNetworkPostTagSerializer(serializers.ModelSerializer):
 
 
 class BusinessNetworkPostCommentSerializer(serializers.ModelSerializer):
-    author_details = UserSerializer(source="author", read_only=True)
+    author_details = serializers.SerializerMethodField()
     formatted_content = serializers.SerializerMethodField()
 
     class Meta:
@@ -32,6 +32,22 @@ class BusinessNetworkPostCommentSerializer(serializers.ModelSerializer):
             "diamond_amount",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def get_author_details(self, obj):
+        """Get author details with follow status"""
+        author_data = UserSerializer(obj.author).data
+        
+        # Add follow status if request user is authenticated
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            is_following = BusinessNetworkFollowerModel.objects.filter(
+                follower=request.user, following=obj.author
+            ).exists()
+            author_data["isFollowing"] = is_following
+        else:
+            author_data["isFollowing"] = False
+        
+        return author_data
 
     def get_formatted_content(self, obj):
         if obj.is_gift_comment and obj.diamond_amount > 0:
@@ -118,12 +134,12 @@ class BusinessNetworkPostFollowSerializer(serializers.ModelSerializer):
 
 
 class BusinessNetworkPostSerializer(serializers.ModelSerializer):
-    author_details = UserSerializer(source="author", read_only=True)
+    author_details = serializers.SerializerMethodField()
     post_media = BusinessNetworkMediaSerializer(
         source="media", many=True, read_only=True
     )
     post_likes = serializers.SerializerMethodField()
-    post_comments = BusinessNetworkPostCommentSerializer(many=True, read_only=True)
+    post_comments = serializers.SerializerMethodField()
     post_tags = BusinessNetworkPostTagSerializer(
         many=True, read_only=True, source="tags"
     )
@@ -154,6 +170,28 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "slug", "created_at", "updated_at"]
 
+    def get_author_details(self, obj):
+        """Get author details with follow status"""
+        author_data = UserSerializer(obj.author).data
+        
+        # Add follow status if request user is authenticated
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            is_following = BusinessNetworkFollowerModel.objects.filter(
+                follower=request.user, following=obj.author
+            ).exists()
+            author_data["isFollowing"] = is_following
+        else:
+            author_data["isFollowing"] = False
+        
+        return author_data
+
+    def get_post_comments(self, obj):
+        """Get post comments with context for follow status"""
+        return BusinessNetworkPostCommentSerializer(
+            obj.post_comments.all(), many=True, context=self.context
+        ).data
+
     def get_post_likes(self, obj):
         # Return all likes without artificial device-based limitations
         request = self.context.get("request")
@@ -168,7 +206,7 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
         else:
             # Return all likes for medium and high-end devices
             return BusinessNetworkPostLikeSerializer(
-                obj.post_likes.all(), many=True
+                obj.post_likes.all(), many=True, context=self.context
             ).data
 
     def get_like_count(self, obj):

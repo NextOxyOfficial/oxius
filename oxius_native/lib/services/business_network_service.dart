@@ -356,9 +356,9 @@ class BusinessNetworkService {
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
       
-      // Handle success
+      // Handle success (200 = already following, 201 = newly created)
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('Successfully followed user');
+        print('Successfully followed user (status: ${response.statusCode})');
         return true;
       }
       
