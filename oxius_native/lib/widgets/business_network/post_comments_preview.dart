@@ -2,26 +2,41 @@ import 'package:flutter/material.dart';
 import '../../models/business_network_models.dart';
 import '../../utils/time_utils.dart';
 
-class PostCommentsPreview extends StatelessWidget {
+class PostCommentsPreview extends StatefulWidget {
   final BusinessNetworkPost post;
   final VoidCallback onViewAll;
-  final Function(BusinessNetworkComment)? onReply;
+  final Function(BusinessNetworkComment, String)? onReplySubmit;
 
-  const PostCommentsPreview({
+  PostCommentsPreview({
     super.key,
     required this.post,
     required this.onViewAll,
-    this.onReply,
+    this.onReplySubmit,
   });
 
   @override
-  Widget build(BuildContext context) {
-    if (post.comments.isEmpty) return const SizedBox.shrink();
+  State<PostCommentsPreview> createState() => _PostCommentsPreviewState();
+}
 
-    // Show the last 2 comments (most recent) in reverse order (newest first)
-    final previewComments = post.comments.length <= 2
-        ? post.comments.reversed.toList()
-        : post.comments.sublist(post.comments.length - 2).reversed.toList();
+class _PostCommentsPreviewState extends State<PostCommentsPreview> {
+  BusinessNetworkComment? _replyingTo;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.post.comments.isEmpty) return const SizedBox.shrink();
+
+    // Separate parent comments and replies
+    final parentComments = widget.post.comments.where((c) => c.parentComment == null || c.parentComment == 0).toList();
+    final replies = widget.post.comments.where((c) => c.parentComment != null && c.parentComment != 0).toList();
+    
+    // If no parent comments, show last 2 comments as parents
+    final recentParents = parentComments.isEmpty
+        ? (widget.post.comments.length <= 2
+            ? widget.post.comments.reversed.toList()
+            : widget.post.comments.sublist(widget.post.comments.length - 2).reversed.toList())
+        : (parentComments.length <= 2
+            ? parentComments.reversed.toList()
+            : parentComments.sublist(parentComments.length - 2).reversed.toList());
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -37,27 +52,74 @@ class PostCommentsPreview extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Comments
-          ...previewComments.asMap().entries.map((entry) {
+          // Comments with their replies
+          ...recentParents.asMap().entries.expand((entry) {
             final index = entry.key;
             final comment = entry.value;
-            return Padding(
-              padding: EdgeInsets.only(bottom: index < previewComments.length - 1 ? 12 : 0),
-              child: _CommentItem(
+            final commentReplies = replies.where((r) => r.parentComment == comment.id).toList();
+            final isReplyingToThis = _replyingTo?.id == comment.id;
+            
+            return [
+              // Parent comment
+              _CommentItem(
                 comment: comment,
-                onReply: onReply != null ? () => onReply!(comment) : null,
+                onReply: widget.onReplySubmit != null ? () {
+                  setState(() {
+                    _replyingTo = comment;
+                  });
+                } : null,
               ),
-            );
+              // Reply input (shown directly under this comment when replying)
+              if (isReplyingToThis)
+                _ReplyInput(
+                  replyingTo: comment,
+                  onSubmit: (content) {
+                    widget.onReplySubmit?.call(comment, content);
+                    setState(() {
+                      _replyingTo = null;
+                    });
+                  },
+                  onCancel: () {
+                    setState(() {
+                      _replyingTo = null;
+                    });
+                  },
+                ),
+              // Replies to this comment (child comments)
+              if (commentReplies.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                ...commentReplies.map((reply) => Container(
+                  margin: const EdgeInsets.only(left: 40, bottom: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      left: BorderSide(
+                        color: Colors.grey.shade300,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  padding: const EdgeInsets.only(left: 8),
+                  child: _CommentItem(
+                    comment: reply,
+                    onReply: null, // Don't allow replying to replies for now
+                    isReply: true,
+                  ),
+                )),
+              ],
+              // Spacing between comment groups
+              if (index < recentParents.length - 1)
+                const SizedBox(height: 12),
+            ];
           }),
           // View all comments button
-          if (post.commentsCount > 2) ...[
+          if (widget.post.commentsCount > 2) ...[
             const SizedBox(height: 8),
             InkWell(
-              onTap: onViewAll,
+              onTap: widget.onViewAll,
               child: Row(
                 children: [
                   Text(
-                    'View all ${post.commentsCount} comments',
+                    'View all ${widget.post.commentsCount} comments',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.blue.shade700,
@@ -80,24 +142,126 @@ class PostCommentsPreview extends StatelessWidget {
   }
 }
 
+class _ReplyInput extends StatefulWidget {
+  final BusinessNetworkComment replyingTo;
+  final Function(String) onSubmit;
+  final VoidCallback onCancel;
+
+  const _ReplyInput({
+    required this.replyingTo,
+    required this.onSubmit,
+    required this.onCancel,
+  });
+
+  @override
+  State<_ReplyInput> createState() => _ReplyInputState();
+}
+
+class _ReplyInputState extends State<_ReplyInput> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(left: 40, top: 6, bottom: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: Colors.blue.shade200,
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Icon(Icons.reply, size: 12, color: Colors.blue.shade700),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxHeight: 60, // ~4 lines
+              ),
+              child: TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  hintText: 'Reply to ${widget.replyingTo.user.name}...',
+                  hintStyle: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  isDense: true,
+                ),
+                style: const TextStyle(fontSize: 11, height: 1.3),
+                maxLines: null,
+                minLines: 1,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: InkWell(
+              onTap: () {
+                if (_controller.text.trim().isNotEmpty) {
+                  widget.onSubmit(_controller.text.trim());
+                  _controller.clear();
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                child: Icon(Icons.send, size: 14, color: Colors.blue.shade700),
+              ),
+            ),
+          ),
+          const SizedBox(width: 2),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: InkWell(
+              onTap: widget.onCancel,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                child: Icon(Icons.close, size: 14, color: Colors.grey.shade600),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CommentItem extends StatelessWidget {
   final BusinessNetworkComment comment;
   final VoidCallback? onReply;
+  final bool isReply;
 
   const _CommentItem({
     required this.comment,
     this.onReply,
+    this.isReply = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final avatarSize = isReply ? 28.0 : 32.0;
+    
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // User Avatar
         Container(
-          width: 32,
-          height: 32,
+          width: avatarSize,
+          height: avatarSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(

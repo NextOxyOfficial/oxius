@@ -103,8 +103,8 @@ class PostHeader extends StatelessWidget {
               ],
             ),
           ),
-          // Follow Button (if not following)
-          if (!post.user.isFollowing && onFollowToggle != null) ...[
+          // Follow/Unfollow Button
+          if (onFollowToggle != null) ...[
             const SizedBox(width: 8),
             TextButton(
               onPressed: onFollowToggle,
@@ -112,16 +112,20 @@ class PostHeader extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: post.user.isFollowing 
+                    ? Colors.grey.shade200 
+                    : const Color(0xFF3B82F6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
-              child: const Text(
-                'Follow',
+              child: Text(
+                post.user.isFollowing ? 'Unfollow' : 'Follow',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white,
+                  color: post.user.isFollowing 
+                      ? Colors.grey.shade700 
+                      : Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
               ),

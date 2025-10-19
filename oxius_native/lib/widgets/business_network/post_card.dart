@@ -29,8 +29,9 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   late BusinessNetworkPost _post;
-  bool _showFullContent = false;
   bool _isAddingComment = false;
+  BusinessNetworkComment? _replyingTo;
+  bool _showFullContent = false;
 
   @override
   void initState() {
@@ -319,9 +320,33 @@ class _PostCardState extends State<PostCard> {
           PostCommentsPreview(
             post: _post,
             onViewAll: _handleViewAllComments,
-            onReply: (comment) {
-              // Navigate to post detail screen when replying
-              _handleViewAllComments();
+            onReplySubmit: (comment, content) async {
+              if (_isAddingComment) return;
+              
+              setState(() => _isAddingComment = true);
+              
+              // Add @mention to the reply content
+              final mentionedContent = '@${comment.user.name} $content';
+              
+              final newComment = await BusinessNetworkService.addComment(
+                postId: _post.id,
+                content: mentionedContent,
+                parentCommentId: comment.id,
+              );
+              
+              if (newComment != null && mounted) {
+                setState(() {
+                  _post = _post.copyWith(
+                    commentsCount: _post.commentsCount + 1,
+                    comments: [..._post.comments, newComment],
+                  );
+                  _isAddingComment = false;
+                });
+                
+                widget.onCommentAdded?.call(newComment);
+              } else if (mounted) {
+                setState(() => _isAddingComment = false);
+              }
             },
           ),
           // Add Comment Input

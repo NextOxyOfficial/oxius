@@ -349,6 +349,12 @@ class BusinessNetworkService {
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
       
+      // If 400 with "already following" error, consider it success
+      if (response.statusCode == 400 && response.body.contains('unique set')) {
+        print('User already following - treating as success');
+        return true;
+      }
+      
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       print('Error following user: $e');
@@ -381,6 +387,11 @@ class BusinessNetworkService {
 
   /// Toggle follow/unfollow a user
   static Future<bool> toggleFollow(String userId, bool isCurrentlyFollowing) async {
+    print('=== Toggle Follow Debug ===');
+    print('User ID: $userId');
+    print('Currently Following: $isCurrentlyFollowing');
+    print('Action: ${isCurrentlyFollowing ? "UNFOLLOW" : "FOLLOW"}');
+    
     if (isCurrentlyFollowing) {
       return await unfollowUser(userId);
     } else {
