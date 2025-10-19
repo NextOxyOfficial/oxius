@@ -325,12 +325,10 @@ class _PostCardState extends State<PostCard> {
               
               setState(() => _isAddingComment = true);
               
-              // Add @mention to the reply content
-              final mentionedContent = '@${comment.user.name} $content';
-              
+              // Don't add automatic @mention - user can type @ if they want
               final newComment = await BusinessNetworkService.addComment(
                 postId: _post.id,
-                content: mentionedContent,
+                content: content,
                 parentCommentId: comment.id,
               );
               
