@@ -82,10 +82,11 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
               _buildNavItem(
                 context: context,
                 index: 4,
-                icon: Icons.bar_chart_rounded,
+                icon: Icons.home_rounded,
                 label: 'AdsyClub',
                 color: const Color(0xFF22C55E),
                 isActive: currentIndex == 4,
+                useFavicon: true,
               ),
             ],
           ),
@@ -102,6 +103,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
     required Color color,
     required bool isActive,
     int? badge,
+    bool useFavicon = false,
   }) {
     return Expanded(
       child: GestureDetector(
@@ -115,7 +117,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
               Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  // Icon with gradient effect when active
+                  // Icon or Favicon with gradient effect when active
                   Container(
                     width: 24,
                     height: 24,
@@ -130,11 +132,24 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                           : null,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      icon,
-                      size: 22,
-                      color: isActive ? color : Colors.grey.shade600,
-                    ),
+                    child: useFavicon
+                        ? Image.asset(
+                            'assets/images/favicon.png',
+                            width: 22,
+                            height: 22,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                icon,
+                                size: 22,
+                                color: isActive ? color : Colors.grey.shade600,
+                              );
+                            },
+                          )
+                        : Icon(
+                            icon,
+                            size: 22,
+                            color: isActive ? color : Colors.grey.shade600,
+                          ),
                   ),
                   
                   // Badge for notifications

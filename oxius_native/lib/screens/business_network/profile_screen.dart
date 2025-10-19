@@ -391,8 +391,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     
     switch (index) {
       case 0:
-        // Recent - Navigate back to feed
-        Navigator.pop(context);
+        // Recent - Navigate to business network feed
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/business-network',
+          (route) => false,
+        );
         break;
       case 1:
         // Notifications
@@ -412,7 +416,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         break;
       case 4:
         // AdsyClub / Home - Navigate to public homepage
-        Navigator.pushReplacementNamed(context, '/home');
+        // Pop all routes to go back to home
+        Navigator.of(context).popUntil((route) => route.isFirst);
         break;
     }
   }

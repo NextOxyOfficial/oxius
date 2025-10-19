@@ -315,7 +315,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         break;
       case 4:
         // AdsyClub / Home - Navigate to public homepage
-        Navigator.pushReplacementNamed(context, '/home');
+        // Pop all routes to go back to home
+        Navigator.of(context).popUntil((route) => route.isFirst);
         break;
     }
   }
