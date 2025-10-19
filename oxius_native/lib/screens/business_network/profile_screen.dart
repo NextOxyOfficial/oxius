@@ -4,10 +4,11 @@ import 'dart:io';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
-import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/business_network_header.dart';
+import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
+import '../../widgets/business_network/post_card.dart';
 import 'create_post_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -32,6 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   int _currentNavIndex = 3; // Profile tab is index 3
   bool _isLoadingSaved = false;
   bool _isContactInfoExpanded = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   
   late TabController _tabController;
   int _currentTabIndex = 0;
@@ -333,10 +335,25 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     final currentUser = AuthService.currentUser;
     final isOwnProfile = currentUser?.id == widget.userId;
     
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+    
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: BusinessNetworkHeader(
-        onMenuTap: () => Navigator.pop(context),
+        onMenuTap: () {
+          if (isMobile) {
+            // Delay to ensure Scaffold is built
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (_scaffoldKey.currentState != null) {
+                _scaffoldKey.currentState!.openDrawer();
+              }
+            });
+          } else {
+            Navigator.pop(context);
+          }
+        },
         onSearchTap: () {
           // TODO: Implement search
         },
@@ -347,6 +364,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           // Already on profile page
         },
       ),
+      drawer: isMobile ? BusinessNetworkDrawer(currentRoute: '/business-network/profile/${widget.userId}') : null,
       body: _isLoading
           ? _buildLoadingState()
           : RefreshIndicator(

@@ -5,6 +5,7 @@ import '../../services/auth_service.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/business_network_header.dart';
+import '../../widgets/business_network/business_network_drawer.dart';
 import 'create_post_screen.dart';
 import 'profile_screen.dart';
 
@@ -153,7 +154,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
           }
         },
       ),
-      drawer: isMobile ? _buildDrawer() : null,
+      drawer: isMobile ? const BusinessNetworkDrawer(currentRoute: '/business-network') : null,
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 672), // max-w-3xl (768px - padding)
@@ -215,77 +216,6 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
               child: const Icon(Icons.add, color: Colors.white, size: 28),
             )
           : null,
-    );
-  }
-
-  Widget _buildDrawer() {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [const Color(0xFF3B82F6), const Color(0xFF6366F1)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                const CircleAvatar(
-                  radius: 32,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 32, color: Color(0xFF3B82F6)),
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Business Network',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.access_time, color: Color(0xFF3B82F6)),
-            title: const Text('Recent'),
-            onTap: () {
-              Navigator.pop(context);
-              _handleNavTap(0);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.notifications_outlined, color: Color(0xFF3B82F6)),
-            title: const Text('Notifications'),
-            onTap: () {
-              Navigator.pop(context);
-              _handleNavTap(1);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.person_outline, color: Color(0xFF3B82F6)),
-            title: const Text('Profile'),
-            onTap: () {
-              Navigator.pop(context);
-              _handleNavTap(2);
-            },
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.settings, color: Colors.grey),
-            title: const Text('Settings'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
     );
   }
 
