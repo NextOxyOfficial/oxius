@@ -74,22 +74,26 @@ class MindForceService {
       final token = await AuthService.getToken();
       if (token == null) return null;
 
-      final body = {
+      final body = <String, dynamic>{
         'title': title,
         'description': description,
         'payment_option': paymentOption,
-        'images': images,
       };
 
-      if (categoryId != null) {
-        body['category'] = categoryId.toString();
+      // Only add category if it's valid (not null and > 0)
+      if (categoryId != null && categoryId > 0) {
+        body['category'] = categoryId;
       }
 
-      if (paymentAmount != null) {
-        body['payment_amount'] = paymentAmount.toString();
+      // Only add payment_amount if it's valid
+      if (paymentAmount != null && paymentAmount > 0) {
+        body['payment_amount'] = paymentAmount;
       }
 
-      print('Creating problem with body: ${json.encode(body)}');
+      // Only add images if there are any
+      if (images.isNotEmpty) {
+        body['images'] = images;
+      }
       
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/bn/mindforce/'),
@@ -100,21 +104,14 @@ class MindForceService {
         body: json.encode(body),
       );
 
-      print('Create problem response status: ${response.statusCode}');
-      print('Create problem response body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}');
-
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = json.decode(response.body);
         return MindForceProblem.fromJson(data);
-      } else {
-        print('Failed to create problem: ${response.statusCode}');
-        print('Error response: ${response.body}');
       }
 
       return null;
     } catch (e) {
       print('Error creating problem: $e');
-      print('Stack trace: ${StackTrace.current}');
       return null;
     }
   }

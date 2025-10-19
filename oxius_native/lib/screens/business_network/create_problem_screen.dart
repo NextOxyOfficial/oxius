@@ -286,22 +286,50 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                       const SizedBox(height: 14),
 
                       // Category
-                      if (widget.categories.isNotEmpty) ...[
-                        _buildLabel('Category', Icons.category),
-                        const SizedBox(height: 6),
-                        DropdownButtonFormField<int>(
-                          value: _selectedCategoryId,
-                          decoration: _inputDecoration('Select a category'),
-                          items: widget.categories.map((cat) {
-                            return DropdownMenuItem(
-                              value: cat.id,
-                              child: Text(cat.name),
-                            );
-                          }).toList(),
-                          onChanged: (value) => setState(() => _selectedCategoryId = value),
-                        ),
-                        const SizedBox(height: 14),
-                      ],
+                      _buildLabel('Category', Icons.category),
+                      const SizedBox(height: 6),
+                      widget.categories.isEmpty
+                          ? Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.info_outline, size: 16, color: Colors.grey.shade600),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'No categories available',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : DropdownButtonFormField<int>(
+                              value: _selectedCategoryId,
+                              decoration: _inputDecoration('Select a category'),
+                              items: widget.categories.map((cat) {
+                                return DropdownMenuItem(
+                                  value: cat.id,
+                                  child: Text(cat.name),
+                                );
+                              }).toList(),
+                              onChanged: (value) => setState(() => _selectedCategoryId = value),
+                              validator: (value) {
+                                if (value == null) {
+                                  return 'Please select a category';
+                                }
+                                return null;
+                              },
+                            ),
+                      const SizedBox(height: 14),
 
                       // Help Type
                       _buildLabel('Help Type', Icons.help_outline),

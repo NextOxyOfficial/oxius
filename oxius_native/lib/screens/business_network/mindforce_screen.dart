@@ -87,8 +87,6 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
   }
 
   Future<void> _handleCreateProblem(Map<String, dynamic> data) async {
-    print('Handling create problem with data: $data');
-    
     final problem = await MindForceService.createProblem(
       title: data['title'],
       description: data['description'],

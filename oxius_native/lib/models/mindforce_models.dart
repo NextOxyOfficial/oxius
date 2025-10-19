@@ -124,7 +124,7 @@ class MindForceCategory {
 
   factory MindForceCategory.fromJson(Map<String, dynamic> json) {
     return MindForceCategory(
-      id: json['id'] ?? 0,
+      id: json['id'] is String ? int.tryParse(json['id']) ?? 0 : (json['id'] ?? 0),
       name: json['name'] ?? '',
       icon: json['icon'],
     );

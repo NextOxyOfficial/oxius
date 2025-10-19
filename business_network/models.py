@@ -467,7 +467,7 @@ class BusinessNetworkMindforce(models.Model):
     payment_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     description = models.TextField()
     status = models.CharField(max_length=255,choices=(('active','Active'),('solved','Solved')), blank=True, null=True, default='active')
-    category = models.ForeignKey(BusinessNetworkMindforceCategory, on_delete=models.CASCADE, related_name='business_network_mindforce', default=1)
+    category = models.ForeignKey(BusinessNetworkMindforceCategory, on_delete=models.CASCADE, related_name='business_network_mindforce', blank=True, null=True)
     media = models.ManyToManyField(BusinessNetworkMindforceMedia, blank=True, related_name='business_network_mindforce')
     views = models.PositiveIntegerField(default=0, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
