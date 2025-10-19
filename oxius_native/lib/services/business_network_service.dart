@@ -120,28 +120,13 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
       
-      print('=== Like Post ===');
-      print('Post ID: $postId');
-      print('URL: $_baseUrl/posts/$postId/like/');
-      
       final response = await http.post(
         Uri.parse('$_baseUrl/posts/$postId/like/'),
         headers: headers,
       );
       
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      
-      // 200 = already liked, 201 = newly created
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        print('Successfully liked post');
-        return true;
-      }
-      
-      print('Failed to like post $postId: ${response.statusCode}');
-      return false;
+      return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print('Error liking post: $e');
       return false;
     }
   }
@@ -151,30 +136,16 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
       
-      print('=== Unlike Post ===');
-      print('Post ID: $postId');
-      print('URL: $_baseUrl/posts/$postId/unlike/');
-      
       final response = await http.delete(
         Uri.parse('$_baseUrl/posts/$postId/unlike/'),
         headers: headers,
       );
       
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      
       // 200/204 = success, 404 = already unliked (treat as success)
-      if (response.statusCode == 200 || 
-          response.statusCode == 204 || 
-          response.statusCode == 404) {
-        print('Successfully unliked post');
-        return true;
-      }
-      
-      print('Failed to unlike post $postId: ${response.statusCode}');
-      return false;
+      return response.statusCode == 200 || 
+             response.statusCode == 204 || 
+             response.statusCode == 404;
     } catch (e) {
-      print('Error unliking post: $e');
       return false;
     }
   }

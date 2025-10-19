@@ -169,8 +169,8 @@ class _PostCardState extends State<PostCard> {
     if (mounted) {
       setState(() {
         _post = _post.copyWith(
-          isLiked: !_post.isLiked,
-          likesCount: _post.isLiked ? _post.likesCount - 1 : _post.likesCount + 1,
+          isLiked: !originalIsLiked,
+          likesCount: originalIsLiked ? originalLikesCount - 1 : originalLikesCount + 1,
         );
       });
     }
@@ -180,10 +180,7 @@ class _PostCardState extends State<PostCard> {
     
     _isLiking = false;
     
-    if (success) {
-      // Success - notify parent widget
-      widget.onLikeToggle?.call();
-    } else {
+    if (!success) {
       // Failed - rollback to original state
       if (mounted) {
         setState(() {
