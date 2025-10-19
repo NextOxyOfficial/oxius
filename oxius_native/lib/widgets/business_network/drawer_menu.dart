@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../screens/business_network/create_post_screen.dart';
 import '../../screens/business_network/profile_screen.dart';
+import '../../screens/business_network/notifications_screen.dart';
+import '../../screens/business_network/mindforce_screen.dart';
 
 class DrawerMenu extends StatelessWidget {
   final String? currentRoute;
@@ -159,6 +161,15 @@ class DrawerMenu extends StatelessWidget {
             color: const Color(0xFF10B981),
             badge: 'NEW',
             badgeColor: Colors.pink,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MindForceScreen(),
+                ),
+              );
+            },
           ),
           
           _buildMenuItem(
@@ -180,6 +191,15 @@ class DrawerMenu extends StatelessWidget {
             isActive: currentRoute == '/business-network/notifications',
             color: const Color(0xFFEF4444),
             notificationCount: 0, // TODO: Get from API
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
+                ),
+              );
+            },
           ),
           
           _buildMenuItem(
