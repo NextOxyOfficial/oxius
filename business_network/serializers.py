@@ -147,6 +147,8 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
     like_count = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
     follower_count = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
+    is_saved = serializers.SerializerMethodField()
 
     class Meta:
         model = BusinessNetworkPost
@@ -168,6 +170,8 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
             "like_count",
             "comment_count",
             "follower_count",
+            "is_liked",
+            "is_saved",
         ]
         read_only_fields = ["id", "slug", "created_at", "updated_at"]
 
@@ -218,6 +222,21 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
 
     def get_follower_count(self, obj):
         return obj.post_followers.count()
+    
+    def get_is_liked(self, obj):
+        """Check if the current user has liked this post"""
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            return obj.post_likes.filter(user=request.user).exists()
+        return False
+    
+    def get_is_saved(self, obj):
+        """Check if the current user has saved this post"""
+        request = self.context.get("request")
+        if request and request.user.is_authenticated:
+            from .models import UserSavedPosts
+            return UserSavedPosts.objects.filter(user=request.user, post=obj).exists()
+        return False
 
 
 class BusinessNetworkWorkspaceSerializer(serializers.ModelSerializer):

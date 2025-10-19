@@ -30,6 +30,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   int _displayedCommentsCount = 10; // Show 10 comments initially
   bool _isLoadingMore = false;
   final Set<int> _expandedReplies = {}; // Track which comments have expanded replies
+  bool _isLiking = false; // Prevent double-clicking
 
   @override
   void initState() {
@@ -86,15 +87,46 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   Future<void> _handleLikeToggle() async {
-    final success = await BusinessNetworkService.toggleLike(_post.id, _post.isLiked);
+    // Prevent double-clicking
+    if (_isLiking) return;
     
-    if (success && mounted) {
+    _isLiking = true;
+    
+    // Store original state for rollback
+    final originalIsLiked = _post.isLiked;
+    final originalLikesCount = _post.likesCount;
+    
+    // Optimistic update - update UI immediately
+    if (mounted) {
       setState(() {
         _post = _post.copyWith(
           isLiked: !_post.isLiked,
           likesCount: _post.isLiked ? _post.likesCount - 1 : _post.likesCount + 1,
         );
       });
+    }
+    
+    // Make API call
+    final success = await BusinessNetworkService.toggleLike(_post.id, originalIsLiked);
+    
+    _isLiking = false;
+    
+    if (!success && mounted) {
+      // Failed - rollback to original state
+      setState(() {
+        _post = _post.copyWith(
+          isLiked: originalIsLiked,
+          likesCount: originalLikesCount,
+        );
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to ${originalIsLiked ? 'unlike' : 'like'} post'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 

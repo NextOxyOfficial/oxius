@@ -120,7 +120,8 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
       
-      print('=== Like Post Debug ===');
+      print('=== Like Post ===');
+      print('Post ID: $postId');
       print('URL: $_baseUrl/posts/$postId/like/');
       
       final response = await http.post(
@@ -131,10 +132,16 @@ class BusinessNetworkService {
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
       
-      return response.statusCode == 200 || response.statusCode == 201;
-    } catch (e, stackTrace) {
+      // 200 = already liked, 201 = newly created
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Successfully liked post');
+        return true;
+      }
+      
+      print('Failed to like post $postId: ${response.statusCode}');
+      return false;
+    } catch (e) {
       print('Error liking post: $e');
-      print('Stack trace: $stackTrace');
       return false;
     }
   }
@@ -144,7 +151,8 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
       
-      print('=== Unlike Post Debug ===');
+      print('=== Unlike Post ===');
+      print('Post ID: $postId');
       print('URL: $_baseUrl/posts/$postId/unlike/');
       
       final response = await http.delete(
@@ -155,16 +163,18 @@ class BusinessNetworkService {
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
       
-      // 404 means like doesn't exist - treat as success
-      if (response.statusCode == 404) {
-        print('Like not found - already unliked');
+      // 200/204 = success, 404 = already unliked (treat as success)
+      if (response.statusCode == 200 || 
+          response.statusCode == 204 || 
+          response.statusCode == 404) {
+        print('Successfully unliked post');
         return true;
       }
       
-      return response.statusCode == 200 || response.statusCode == 204;
-    } catch (e, stackTrace) {
+      print('Failed to unlike post $postId: ${response.statusCode}');
+      return false;
+    } catch (e) {
       print('Error unliking post: $e');
-      print('Stack trace: $stackTrace');
       return false;
     }
   }

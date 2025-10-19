@@ -33,6 +33,7 @@ class _PostCardState extends State<PostCard> {
   bool _isAddingComment = false;
   BusinessNetworkComment? _replyingTo;
   bool _showFullContent = false;
+  bool _isLiking = false; // Prevent double-clicking
 
   @override
   void initState() {
@@ -155,18 +156,51 @@ class _PostCardState extends State<PostCard> {
   }
 
   Future<void> _handleLike() async {
-    final success = await BusinessNetworkService.toggleLike(_post.id, _post.isLiked);
+    // Prevent double-clicking
+    if (_isLiking) return;
     
-    if (success && mounted) {
+    _isLiking = true;
+    
+    // Store original state for rollback
+    final originalIsLiked = _post.isLiked;
+    final originalLikesCount = _post.likesCount;
+    
+    // Optimistic update - update UI immediately
+    if (mounted) {
       setState(() {
         _post = _post.copyWith(
           isLiked: !_post.isLiked,
           likesCount: _post.isLiked ? _post.likesCount - 1 : _post.likesCount + 1,
         );
       });
-      
-      // Notify parent widget
+    }
+    
+    // Make API call
+    final success = await BusinessNetworkService.toggleLike(_post.id, originalIsLiked);
+    
+    _isLiking = false;
+    
+    if (success) {
+      // Success - notify parent widget
       widget.onLikeToggle?.call();
+    } else {
+      // Failed - rollback to original state
+      if (mounted) {
+        setState(() {
+          _post = _post.copyWith(
+            isLiked: originalIsLiked,
+            likesCount: originalLikesCount,
+          );
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to ${originalIsLiked ? 'unlike' : 'like'} post'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 

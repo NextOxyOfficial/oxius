@@ -26,13 +26,18 @@ def create_follow_notification(sender, instance, created, **kwargs):
 def create_post_like_notification(sender, instance, created, **kwargs):
     """Create notification when a user likes a post"""
     if created and instance.post.author != instance.user:
+        # Use title if available, otherwise use content or default message
+        content = instance.post.title[:100] if instance.post.title else (
+            instance.post.content[:100] if instance.post.content else "Liked your post"
+        )
+        
         BusinessNetworkNotification.objects.create(
             recipient=instance.post.author,
             actor=instance.user,
             type='like_post',
             target_id=instance.post.id,
             read=False,
-            content=instance.post.title[:100]
+            content=content
         )
 
 

@@ -445,13 +445,14 @@ class BusinessNetworkPostLikeCreateView(generics.ListCreateAPIView):
         post = get_object_or_404(BusinessNetworkPost, pk=post_id)
 
         # Check if user has already liked the post
-        if BusinessNetworkPostLike.objects.filter(
+        existing_like = BusinessNetworkPostLike.objects.filter(
             post=post, user=request.user
-        ).exists():
-            return Response(
-                {"detail": "You have already liked this post."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        ).first()
+        
+        if existing_like:
+            # Already liked - return existing like
+            serializer = self.get_serializer(existing_like)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         like = BusinessNetworkPostLike(post=post, user=request.user)
         like.save()
@@ -1791,13 +1792,14 @@ class BusinessNetworkPostLikeCreateView(generics.ListCreateAPIView):
         post = get_object_or_404(BusinessNetworkPost, pk=post_id)
 
         # Check if user has already liked the post
-        if BusinessNetworkPostLike.objects.filter(
+        existing_like = BusinessNetworkPostLike.objects.filter(
             post=post, user=request.user
-        ).exists():
-            return Response(
-                {"detail": "You have already liked this post."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        ).first()
+        
+        if existing_like:
+            # Already liked - return existing like
+            serializer = self.get_serializer(existing_like)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         like = BusinessNetworkPostLike(post=post, user=request.user)
         like.save()
