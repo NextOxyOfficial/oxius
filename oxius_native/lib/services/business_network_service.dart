@@ -346,6 +346,7 @@ class BusinessNetworkService {
       
       print('=== Follow User Debug ===');
       print('URL: $_baseUrl/users/$userId/follow/');
+      print('Headers: $headers');
       
       final response = await http.post(
         Uri.parse('$_baseUrl/users/$userId/follow/'),
@@ -356,9 +357,16 @@ class BusinessNetworkService {
       print('Response body: ${response.body}');
       
       // If 400 with "already following" error, consider it success
-      if (response.statusCode == 400 && response.body.contains('unique set')) {
-        print('User already following - treating as success');
-        return true;
+      if (response.statusCode == 400) {
+        final body = response.body.toLowerCase();
+        if (body.contains('unique') || 
+            body.contains('already') || 
+            body.contains('duplicate')) {
+          print('User already following - treating as success');
+          return true;
+        }
+        print('ERROR: ${response.body}');
+        return false;
       }
       
       return response.statusCode == 200 || response.statusCode == 201;

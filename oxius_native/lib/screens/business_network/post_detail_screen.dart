@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
+import '../../services/auth_service.dart';
 import '../../widgets/business_network/post_header.dart';
 import '../../widgets/business_network/post_media_gallery.dart';
 import '../../widgets/business_network/post_actions.dart';
@@ -157,9 +158,36 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  bool _isSelfPost() {
+    // Check if the post belongs to the current logged-in user
+    // Compare using email/username from AuthService
+    final currentUser = AuthService.currentUser;
+    
+    print('=== Self Post Check ===');
+    print('Current User: ${currentUser?.username} (ID: ${currentUser?.id})');
+    print('Post User: ${_post.user.username} (UUID: ${_post.user.uuid}, ID: ${_post.user.id})');
+    
+    if (currentUser == null) {
+      print('No current user - not self post');
+      return false;
+    }
+    
+    // Compare by username, UUID, or ID
+    final isSelf = _post.user.username == currentUser.username ||
+                   _post.user.uuid == currentUser.id ||
+                   _post.user.id.toString() == currentUser.id;
+    
+    print('Is Self Post: $isSelf');
+    return isSelf;
+  }
+
   Future<void> _handleFollowToggle() async {
     // Use user UUID or username for follow action
     final userId = _post.user.uuid ?? _post.user.username ?? _post.user.id.toString();
+    
+    print('Attempting to toggle follow for user: $userId');
+    print('Current following status: ${_post.user.isFollowing}');
+    
     final success = await BusinessNetworkService.toggleFollow(userId, _post.user.isFollowing);
     
     if (success && mounted) {
@@ -184,6 +212,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_post.user.isFollowing ? 'Following ${_post.user.name}' : 'Unfollowed ${_post.user.name}'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to ${_post.user.isFollowing ? 'unfollow' : 'follow'} ${_post.user.name}'),
+          backgroundColor: Colors.red,
           duration: const Duration(seconds: 2),
         ),
       );
@@ -296,20 +332,35 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       color: Color(0xFF3B82F6),
                                     ),
                                   ],
-                                  // Follow Button (if not following) - inline with name
-                                  if (!_post.user.isFollowing) ...[
-                                    const SizedBox(width: 8),
-                                    InkWell(
-                                      onTap: _handleFollowToggle,
-                                      child: const Text(
-                                        '• Follow',
-                                        style: TextStyle(
-                                          color: Color(0xFF3B82F6),
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
+                                                  // Follow/Following Button (not for self posts) - inline with name
+                                  if (!_isSelfPost()) ...[
+                                    if (!_post.user.isFollowing) ...[
+                                      const SizedBox(width: 8),
+                                      InkWell(
+                                        onTap: _handleFollowToggle,
+                                        child: const Text(
+                                          '• Follow',
+                                          style: TextStyle(
+                                            color: Color(0xFF3B82F6),
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                    ] else ...[
+                                      const SizedBox(width: 8),
+                                      InkWell(
+                                        onTap: _handleFollowToggle,
+                                        child: Text(
+                                          '• Following',
+                                          style: TextStyle(
+                                            color: Colors.grey.shade600,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ],
                               ),

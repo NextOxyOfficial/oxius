@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
+import '../../services/auth_service.dart';
 import '../../screens/business_network/post_detail_screen.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
@@ -47,6 +48,15 @@ class _PostCardState extends State<PostCard> {
         _post = widget.post;
       });
     }
+  }
+
+  bool _isSelfPost() {
+    final currentUser = AuthService.currentUser;
+    if (currentUser == null) return false;
+    
+    return _post.user.username == currentUser.username ||
+           _post.user.uuid == currentUser.id ||
+           _post.user.id.toString() == currentUser.id;
   }
 
   Future<void> _addComment(String content) async {
@@ -217,7 +227,7 @@ class _PostCardState extends State<PostCard> {
           // Post Header
           PostHeader(
             post: _post,
-            onFollowToggle: _handleFollowToggle,
+            onFollowToggle: _isSelfPost() ? null : _handleFollowToggle,
             onMorePressed: () {
               // TODO: Show options menu
             },
