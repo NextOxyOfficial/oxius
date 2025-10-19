@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../widgets/business_network/post_card.dart';
-import '../../widgets/business_network/business_network_bottom_nav.dart';
+import '../../widgets/business_network/bottom_nav_bar.dart';
 import 'create_post_screen.dart';
 
 class BusinessNetworkScreen extends StatefulWidget {
@@ -226,10 +226,17 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         ),
       ),
       bottomNavigationBar: isMobile
-          ? BusinessNetworkBottomNav(
+          ? BusinessNetworkBottomNavBar(
               currentIndex: _currentNavIndex,
-              onTap: _handleNavTap,
-              onCreatePost: _openCreatePost,
+              onTap: (index) {
+                if (index == 2) {
+                  // Create post button
+                  _openCreatePost();
+                } else {
+                  _handleNavTap(index);
+                }
+              },
+              unreadCount: 0, // TODO: Get actual unread count from notifications
             )
           : null,
       floatingActionButton: !isMobile
