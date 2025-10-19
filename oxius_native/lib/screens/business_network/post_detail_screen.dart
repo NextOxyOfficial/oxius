@@ -215,35 +215,66 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     // Use user UUID or username for follow action
     final userId = _post.user.uuid ?? _post.user.username ?? _post.user.id.toString();
     
-    print('Attempting to toggle follow for user: $userId');
-    print('Current following status: ${_post.user.isFollowing}');
-    
     final wasFollowing = _post.user.isFollowing;
-    final success = await BusinessNetworkService.toggleFollow(userId, _post.user.isFollowing);
     
-    // Always reload to sync with backend state
+    // Optimistic update - update UI immediately
     if (mounted) {
-      await _loadFullPost();
-      
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_post.user.isFollowing ? 'Following ${_post.user.name}' : 'Unfollowed ${_post.user.name}'),
-            duration: const Duration(seconds: 2),
+      setState(() {
+        _post = _post.copyWith(
+          user: BusinessNetworkUser(
+            id: _post.user.id,
+            uuid: _post.user.uuid,
+            name: _post.user.name,
+            avatar: _post.user.avatar,
+            image: _post.user.image,
+            isVerified: _post.user.isVerified,
+            bio: _post.user.bio,
+            username: _post.user.username,
+            firstName: _post.user.firstName,
+            lastName: _post.user.lastName,
+            isFollowing: !wasFollowing, // Toggle immediately
           ),
         );
-      } else {
-        // Failed but still show current state after reload
-        if (_post.user.isFollowing != wasFollowing) {
-          // State changed despite error (e.g., already following)
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(_post.user.isFollowing ? 'Already following ${_post.user.name}' : 'Already unfollowed ${_post.user.name}'),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-      }
+      });
+    }
+    
+    // Make API call
+    final success = await BusinessNetworkService.toggleFollow(userId, wasFollowing);
+    
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_post.user.isFollowing ? 'Following ${_post.user.name}' : 'Unfollowed ${_post.user.name}'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else if (!success && mounted) {
+      // Failed - rollback to original state
+      setState(() {
+        _post = _post.copyWith(
+          user: BusinessNetworkUser(
+            id: _post.user.id,
+            uuid: _post.user.uuid,
+            name: _post.user.name,
+            avatar: _post.user.avatar,
+            image: _post.user.image,
+            isVerified: _post.user.isVerified,
+            bio: _post.user.bio,
+            username: _post.user.username,
+            firstName: _post.user.firstName,
+            lastName: _post.user.lastName,
+            isFollowing: wasFollowing, // Rollback
+          ),
+        );
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to ${wasFollowing ? 'unfollow' : 'follow'} ${_post.user.name}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     }
   }
 

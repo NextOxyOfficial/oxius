@@ -1138,18 +1138,35 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         const SizedBox(height: 12),
         
         // Always visible: Location, Company, and Joined Date
-        if (_userData?['city'] != null || _userData?['state'] != null)
+        if ((_userData?['city'] != null && _userData!['city'].toString().trim().isNotEmpty) || 
+            (_userData?['state'] != null && _userData!['state'].toString().trim().isNotEmpty))
           _buildContactItem(
             Icons.location_on,
             '${_userData?['city'] ?? ''}${_userData?['city'] != null && _userData?['state'] != null ? ', ' : ''}${_userData?['state'] ?? ''}',
             Colors.blue.shade500,
           ),
         
-        if (_userData?['company'] != null)
+        if (_userData?['company'] != null && _userData!['company'].toString().trim().isNotEmpty)
           _buildContactItem(
             Icons.business,
             _userData!['company'],
             Colors.purple.shade500,
+          ),
+        
+        // Email (always visible if available)
+        if (_userData?['email'] != null && _userData!['email'].toString().trim().isNotEmpty)
+          _buildContactItem(
+            Icons.email,
+            _userData!['email'],
+            Colors.orange.shade600,
+          ),
+        
+        // Phone (always visible if available)
+        if (_userData?['phone'] != null && _userData!['phone'].toString().trim().isNotEmpty)
+          _buildContactItem(
+            Icons.phone,
+            _userData!['phone'],
+            Colors.red.shade500,
           ),
         
         // Joined Date (always visible)
@@ -1162,21 +1179,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         
         // Expandable section for additional details
         if (_isContactInfoExpanded == true) ...[
-          // Email
-          if (_userData?['email'] != null)
-            _buildContactItem(
-              Icons.email,
-              _userData!['email'],
-              Colors.orange.shade600,
-            ),
-          
-          // Phone
-          if (_userData?['phone'] != null)
-            _buildContactItem(
-              Icons.phone,
-              _userData!['phone'],
-              Colors.red.shade500,
-            ),
           
           // Website
           if (_userData?['website'] != null && _userData!['website'].toString().isNotEmpty)
