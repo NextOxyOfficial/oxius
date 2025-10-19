@@ -8,6 +8,7 @@ import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/notifications/notification_item.dart';
 import '../business_network/profile_screen.dart';
 import '../business_network/post_detail_screen.dart';
+import '../business_network/create_post_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -32,18 +33,32 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _loadNotifications() async {
+    if (!mounted) return;
+    
     setState(() => _isLoading = true);
     
-    final result = await NotificationService.getNotifications(page: 1);
-    
-    if (mounted) {
-      setState(() {
-        _notifications = result['notifications'];
-        _hasMore = result['hasMore'];
-        _unreadCount = result['unreadCount'];
-        _currentPage = 1;
-        _isLoading = false;
-      });
+    try {
+      print('Loading notifications...');
+      final result = await NotificationService.getNotifications(page: 1);
+      print('Notifications loaded: ${result['notifications']?.length ?? 0}');
+      
+      if (mounted) {
+        setState(() {
+          _notifications = result['notifications'] ?? [];
+          _hasMore = result['hasMore'] ?? false;
+          _unreadCount = result['unreadCount'] ?? 0;
+          _currentPage = 1;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading notifications: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _notifications = [];
+        });
+      }
     }
   }
 
@@ -99,6 +114,51 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ),
       );
+    }
+  }
+
+  void _handleNavTap(int index) {
+    switch (index) {
+      case 0:
+        // Recent - Navigate to business network feed
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/business-network',
+          (route) => false,
+        );
+        break;
+      case 1:
+        // Notifications - already here, do nothing
+        break;
+      case 2:
+        // Create Post
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const CreatePostScreen(),
+          ),
+        );
+        break;
+      case 3:
+        // Profile
+        final currentUser = AuthService.currentUser;
+        if (currentUser != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProfileScreen(userId: currentUser.id),
+            ),
+          );
+        }
+        break;
+      case 4:
+        // AdsyClub/Home
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/',
+          (route) => false,
+        );
+        break;
     }
   }
 
@@ -199,9 +259,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       bottomNavigationBar: isMobile
           ? BusinessNetworkBottomNavBar(
               currentIndex: 1, // Notifications tab
-              onTap: (index) {
-                // Handle navigation
-              },
+              onTap: _handleNavTap,
               unreadCount: _unreadCount,
             )
           : null,

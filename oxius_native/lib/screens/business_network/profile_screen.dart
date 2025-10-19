@@ -10,6 +10,7 @@ import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
 import '../../widgets/business_network/post_card.dart';
 import 'create_post_screen.dart';
+import 'notifications_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -418,7 +419,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         break;
       case 1:
         // Notifications
-        // TODO: Navigate to notifications
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const NotificationsScreen(),
+          ),
+        );
         break;
       case 2:
         // Create Post

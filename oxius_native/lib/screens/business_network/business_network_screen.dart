@@ -9,6 +9,7 @@ import '../../widgets/business_network/business_network_drawer.dart';
 import 'create_post_screen.dart';
 import 'profile_screen.dart';
 import 'search_screen.dart';
+import 'notifications_screen.dart';
 
 class BusinessNetworkScreen extends StatefulWidget {
   const BusinessNetworkScreen({super.key});
@@ -235,7 +236,12 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         break;
       case 1:
         // Notifications
-        // TODO: Navigate to notifications
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const NotificationsScreen(),
+          ),
+        );
         break;
       case 3:
         // Profile
