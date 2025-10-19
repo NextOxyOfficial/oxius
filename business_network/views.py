@@ -1610,14 +1610,24 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         images_data = request.data.pop("images", None)
         tags_data = request.data.pop("tags", None)
-        serializer = self.get_serializer(
-            data={
-                "title": request.data["title"],
-                "content": request.data["content"],
-                "author": request.user.id,
-            }
-        )
-
+        
+        # Build post data - all fields are optional except author
+        # Users can post with any combination: title, content, images, tags, or visibility
+        post_data = {
+            "author": request.user.id,
+        }
+        
+        # Add optional fields if provided
+        if "title" in request.data and request.data.get("title"):
+            post_data["title"] = request.data["title"]
+        
+        if "content" in request.data and request.data.get("content"):
+            post_data["content"] = request.data["content"]
+            
+        if "visibility" in request.data:
+            post_data["visibility"] = request.data["visibility"]
+        
+        serializer = self.get_serializer(data=post_data)
         serializer.is_valid(raise_exception=True)
         post = serializer.save()
 

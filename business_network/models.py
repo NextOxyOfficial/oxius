@@ -124,6 +124,11 @@ class BusinessNetworkPostTag(models.Model):
         super().save(*args, **kwargs)
 
 class BusinessNetworkPost(models.Model):
+    VISIBILITY_CHOICES = [
+        ('public', 'Public'),
+        ('private', 'Private'),
+    ]
+    
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     slug = models.SlugField(max_length=300, unique=True, null=True, blank=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='business_network_posts')
@@ -131,6 +136,7 @@ class BusinessNetworkPost(models.Model):
     content = models.TextField(blank=True,null=True)
     media = models.ManyToManyField(BusinessNetworkMedia, blank=True, related_name='business_network_posts')
     tags = models.ManyToManyField(BusinessNetworkPostTag, blank=True, related_name='business_network_posts')
+    visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='public')
     is_banned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

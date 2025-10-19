@@ -157,6 +157,7 @@ class BusinessNetworkPostSerializer(serializers.ModelSerializer):
             "author_details",
             "title",
             "content",
+            "visibility",
             "created_at",
             "updated_at",
             "post_media",

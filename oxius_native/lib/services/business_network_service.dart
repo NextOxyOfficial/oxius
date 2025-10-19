@@ -61,19 +61,23 @@ class BusinessNetworkService {
 
   /// Create a new post
   static Future<BusinessNetworkPost?> createPost({
-    required String title,
-    required String content,
+    String? title,
+    String? content,
     List<String>? images,
     String? category,
+    List<String>? tags,
+    String visibility = 'public',
   }) async {
     try {
       final headers = await ApiService.getHeaders();
       
       final body = {
-        'title': title,
-        'content': content,
+        if (title != null && title.isNotEmpty) 'title': title,
+        if (content != null && content.isNotEmpty) 'content': content,
+        'visibility': visibility,
         if (images != null && images.isNotEmpty) 'images': images,
         if (category != null) 'category': category,
+        if (tags != null && tags.isNotEmpty) 'tags': tags,
       };
       
       final response = await http.post(
