@@ -554,13 +554,59 @@ class BusinessNetworkNotification(models.Model):
     parent_id = models.CharField(max_length=50, null=True, blank=True)  # ID of parent object (post for comments)
     content = models.TextField(null=True, blank=True)  # Optional content snippet
     created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"{self.sponsor.business_name} - {self.title or 'Banner'}"
+
+
+class HiddenPost(models.Model):
+    """Model to track posts hidden by users"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hidden_posts')
+    post = models.ForeignKey('BusinessNetworkPost', on_delete=models.CASCADE, related_name='hidden_by_users')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['user', 'post']
+        ordering = ['-created_at']
+        verbose_name = "Hidden Post"
+        verbose_name_plural = "Hidden Posts"
+    
+    def __str__(self):
+        return f"{self.user.username} hid post {self.post.id}"
+
+
+class PostReport(models.Model):
+    """Model to track post reports"""
+    REPORT_REASONS = [
+        ('spam', 'Spam or misleading'),
+        ('harassment', 'Harassment or hate speech'),
+        ('violence', 'Violence or dangerous content'),
+        ('inappropriate', 'Inappropriate content'),
+        ('other', 'Other'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('reviewed', 'Reviewed'),
+        ('resolved', 'Resolved'),
+        ('dismissed', 'Dismissed'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_reports')
+    post = models.ForeignKey('BusinessNetworkPost', on_delete=models.CASCADE, related_name='reports')
+    reason = models.CharField(max_length=20, choices=REPORT_REASONS)
+    description = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
+        unique_together = ['user', 'post', 'reason']
         ordering = ['-created_at']
-        
+        verbose_name = "Post Report"
+        verbose_name_plural = "Post Reports"
+    
     def __str__(self):
-        return f"{self.actor.username} {self.get_type_display()} to {self.recipient.username}"
+        return f"{self.user.username} reported post {self.post.id} for {self.get_reason_display()}"
 
 
 # Gold Sponsor Models

@@ -1556,8 +1556,14 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
 
         recent_threshold = timezone.now() - timedelta(hours=24)
 
+        # Get hidden post IDs for this user
+        hidden_post_ids = HiddenPost.objects.filter(user=user).values_list('post_id', flat=True)
+
         queryset = (
-            BusinessNetworkPost.objects.annotate(
+            BusinessNetworkPost.objects.exclude(
+                id__in=hidden_post_ids  # Exclude hidden posts
+            )
+            .annotate(
                 priority=Case(
                     # Priority 1: User's own recent posts (last 24 hours only)
                     When(author=user, created_at__gte=recent_threshold, then=Value(1)),
@@ -2820,9 +2826,115 @@ class BusinessNetworkUnreadNotificationCountView(generics.GenericAPIView):
         ).count()
         return Response({"count": count}, status=status.HTTP_200_OK)
 
-    def get(self, request):
-        """Return count of unread notifications"""
-        count = BusinessNetworkNotification.objects.filter(
-            recipient=request.user, read=False
-        ).count()
-        return Response({"count": count}, status=status.HTTP_200_OK)
+
+# Hide Post Views
+class HidePostView(APIView):
+    """View to hide a post from user's feed"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        """Hide a post"""
+        try:
+            post = BusinessNetworkPost.objects.get(id=post_id)
+            hidden_post, created = HiddenPost.objects.get_or_create(
+                user=request.user,
+                post=post
+            )
+            
+            if created:
+                return Response(
+                    {"message": "Post hidden successfully"},
+                    status=status.HTTP_201_CREATED
+                )
+            else:
+                return Response(
+                    {"message": "Post already hidden"},
+                    status=status.HTTP_200_OK
+                )
+        except BusinessNetworkPost.DoesNotExist:
+            return Response(
+                {"error": "Post not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def delete(self, request, post_id):
+        """Unhide a post"""
+        try:
+            hidden_post = HiddenPost.objects.get(
+                user=request.user,
+                post_id=post_id
+            )
+            hidden_post.delete()
+            return Response(
+                {"message": "Post unhidden successfully"},
+                status=status.HTTP_200_OK
+            )
+        except HiddenPost.DoesNotExist:
+            return Response(
+                {"error": "Post is not hidden"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+# Report Post Views
+class ReportPostView(APIView):
+    """View to report a post"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        """Report a post"""
+        try:
+            post = BusinessNetworkPost.objects.get(id=post_id)
+            reason = request.data.get('reason')
+            description = request.data.get('description', '')
+
+            # Validate reason
+            valid_reasons = [choice[0] for choice in PostReport.REPORT_REASONS]
+            if reason not in valid_reasons:
+                return Response(
+                    {"error": "Invalid report reason"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Create or get existing report
+            report, created = PostReport.objects.get_or_create(
+                user=request.user,
+                post=post,
+                reason=reason,
+                defaults={'description': description}
+            )
+
+            if created:
+                return Response(
+                    {
+                        "message": "Post reported successfully",
+                        "report_id": report.id
+                    },
+                    status=status.HTTP_201_CREATED
+                )
+            else:
+                return Response(
+                    {"message": "You have already reported this post for this reason"},
+                    status=status.HTTP_200_OK
+                )
+        except BusinessNetworkPost.DoesNotExist:
+            return Response(
+                {"error": "Post not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class UserHiddenPostsView(generics.ListAPIView):
+    """View to list all posts hidden by the user"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = BusinessNetworkPostSerializer
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        hidden_post_ids = HiddenPost.objects.filter(
+            user=self.request.user
+        ).values_list('post_id', flat=True)
+        
+        return BusinessNetworkPost.objects.filter(
+            id__in=hidden_post_ids
+        ).order_by('-created_at')

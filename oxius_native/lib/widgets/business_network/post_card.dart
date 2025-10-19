@@ -212,6 +212,212 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
+  void _showPostOptions() {
+    final isSelf = _isSelfPost();
+    
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Options for own posts
+              if (isSelf) ...[
+                ListTile(
+                  leading: const Icon(Icons.edit, color: Colors.blue),
+                  title: const Text('Edit'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleEditPost();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleDeletePost();
+                  },
+                ),
+              ],
+              // Options for public posts
+              if (!isSelf) ...[
+                ListTile(
+                  leading: const Icon(Icons.report, color: Colors.orange),
+                  title: const Text('Report'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleReportPost();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.visibility_off, color: Colors.grey),
+                  title: const Text('Hide'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleHidePost();
+                  },
+                ),
+              ],
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _handleEditPost() {
+    // TODO: Navigate to edit post screen
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Edit post feature coming soon'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _handleDeletePost() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Post'),
+        content: const Text('Are you sure you want to delete this post? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final success = await BusinessNetworkService.deletePost(_post.id);
+      
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Post deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        widget.onPostDeleted?.call();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to delete post'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _handleReportPost() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Report Post'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Why are you reporting this post?'),
+            const SizedBox(height: 16),
+            _buildReportOption('Spam or misleading'),
+            _buildReportOption('Harassment or hate speech'),
+            _buildReportOption('Violence or dangerous content'),
+            _buildReportOption('Inappropriate content'),
+            _buildReportOption('Other'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportOption(String reason) {
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+        _submitReport(reason);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Text(
+          reason,
+          style: const TextStyle(fontSize: 15),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submitReport(String reason) async {
+    final success = await BusinessNetworkService.reportPost(_post.id, reason);
+    
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Post reported: $reason'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to report post'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _handleHidePost() async {
+    final success = await BusinessNetworkService.hidePost(_post.id);
+    
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Post hidden from your feed'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      widget.onPostDeleted?.call(); // Remove from feed
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to hide post'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -228,9 +434,7 @@ class _PostCardState extends State<PostCard> {
           PostHeader(
             post: _post,
             onFollowToggle: _isSelfPost() ? null : _handleFollowToggle,
-            onMorePressed: () {
-              // TODO: Show options menu
-            },
+            onMorePressed: _showPostOptions,
           ),
           // Post Title
           if (_post.title.isNotEmpty)

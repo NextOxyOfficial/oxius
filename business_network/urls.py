@@ -215,6 +215,22 @@ urlpatterns = [
         BusinessNetworkUnreadNotificationCountView.as_view(),
         name="unread-notification-count",
     ),
+    # Hide and Report endpoints
+    path(
+        "posts/<str:post_id>/hide/",
+        HidePostView.as_view(),
+        name="hide-post",
+    ),
+    path(
+        "posts/<str:post_id>/report/",
+        ReportPostView.as_view(),
+        name="report-post",
+    ),
+    path(
+        "hidden-posts/",
+        UserHiddenPostsView.as_view(),
+        name="user-hidden-posts",
+    ),
     # Gold Sponsors endpoints
     path("gold-sponsors/", include("business_network.gold_sponsors.urls")),
 ]

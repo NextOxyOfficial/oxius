@@ -21,6 +21,52 @@ admin.site.register(AbnAdsPanelCategory)
 admin.site.register(AbnAdsPanel)
 admin.site.register(AbnAdsPanelMedia)
 
+# Hidden Posts and Reports Admin
+@admin.register(HiddenPost)
+class HiddenPostAdmin(admin.ModelAdmin):
+    list_display = ['user', 'post', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['user__username', 'post__id']
+    ordering = ['-created_at']
+
+@admin.register(PostReport)
+class PostReportAdmin(admin.ModelAdmin):
+    list_display = ['user', 'post', 'reason', 'status', 'created_at']
+    list_filter = ['reason', 'status', 'created_at']
+    search_fields = ['user__username', 'post__id', 'description']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Report Information', {
+            'fields': ('user', 'post', 'reason', 'description')
+        }),
+        ('Status', {
+            'fields': ('status',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['mark_as_reviewed', 'mark_as_resolved', 'mark_as_dismissed']
+    
+    def mark_as_reviewed(self, request, queryset):
+        updated = queryset.update(status='reviewed')
+        self.message_user(request, f'{updated} reports marked as reviewed.')
+    mark_as_reviewed.short_description = "Mark as reviewed"
+    
+    def mark_as_resolved(self, request, queryset):
+        updated = queryset.update(status='resolved')
+        self.message_user(request, f'{updated} reports marked as resolved.')
+    mark_as_resolved.short_description = "Mark as resolved"
+    
+    def mark_as_dismissed(self, request, queryset):
+        updated = queryset.update(status='dismissed')
+        self.message_user(request, f'{updated} reports dismissed.')
+    mark_as_dismissed.short_description = "Dismiss reports"
+
 # Gold Sponsors Admin
 @admin.register(SponsorshipPackage)
 class SponsorshipPackageAdmin(admin.ModelAdmin):

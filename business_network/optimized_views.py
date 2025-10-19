@@ -92,8 +92,14 @@ class OptimizedBusinessNetworkPostListView(generics.ListAPIView):
         # Simplified priority logic for better performance
         recent_threshold = timezone.now() - timedelta(hours=24)
 
+        # Get hidden post IDs for this user
+        hidden_post_ids = HiddenPost.objects.filter(user=user).values_list('post_id', flat=True)
+
         queryset = (
-            BusinessNetworkPost.objects.annotate(
+            BusinessNetworkPost.objects.exclude(
+                id__in=hidden_post_ids  # Exclude hidden posts
+            )
+            .annotate(
                 # Simplified priority with fewer cases
                 priority=Case(
                     When(author=user, created_at__gte=recent_threshold, then=Value(1)),

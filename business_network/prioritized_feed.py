@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Count, Q, Case, When, IntegerField, Value, Subquery
 from base.models import User
-from .models import BusinessNetworkPost, BusinessNetworkFollowerModel
+from .models import BusinessNetworkPost, BusinessNetworkFollowerModel, HiddenPost
 
 class PrioritizedFeedView(APIView):
     """
@@ -51,7 +51,12 @@ class PrioritizedFeedView(APIView):
         
         recent_threshold = timezone.now() - timedelta(hours=24)
         
-        queryset = BusinessNetworkPost.objects.annotate(
+        # Get hidden post IDs for this user
+        hidden_post_ids = HiddenPost.objects.filter(user=user).values_list('post_id', flat=True)
+        
+        queryset = BusinessNetworkPost.objects.exclude(
+            id__in=hidden_post_ids  # Exclude hidden posts
+        ).annotate(
             priority=Case(
                 # Priority 1: User's own recent posts (last 24 hours only)
                 When(author=user, created_at__gte=recent_threshold, then=Value(1)),

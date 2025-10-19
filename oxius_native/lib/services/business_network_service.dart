@@ -457,4 +457,67 @@ class BusinessNetworkService {
       return [];
     }
   }
+
+  /// Hide a post from feed
+  static Future<bool> hidePost(int postId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      final response = await http.post(
+        Uri.parse('$_baseUrl/posts/$postId/hide/'),
+        headers: headers,
+      );
+      
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        print('Post hidden successfully');
+        return true;
+      }
+      
+      print('Failed to hide post: ${response.statusCode}');
+      return false;
+    } catch (e) {
+      print('Error hiding post: $e');
+      return false;
+    }
+  }
+
+  /// Report a post
+  static Future<bool> reportPost(int postId, String reason) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      // Map Flutter reason to backend reason
+      final reasonMap = {
+        'Spam or misleading': 'spam',
+        'Harassment or hate speech': 'harassment',
+        'Violence or dangerous content': 'violence',
+        'Inappropriate content': 'inappropriate',
+        'Other': 'other',
+      };
+      
+      final backendReason = reasonMap[reason] ?? 'other';
+      
+      final body = {
+        'reason': backendReason,
+        'description': '',
+      };
+      
+      final response = await http.post(
+        Uri.parse('$_baseUrl/posts/$postId/report/'),
+        headers: headers,
+        body: json.encode(body),
+      );
+      
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        print('Post reported successfully');
+        return true;
+      }
+      
+      print('Failed to report post: ${response.statusCode}');
+      return false;
+    } catch (e) {
+      print('Error reporting post: $e');
+      return false;
+    }
+  }
 }
