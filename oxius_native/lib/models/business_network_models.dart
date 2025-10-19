@@ -1,3 +1,11 @@
+// Helper function to parse IDs that can be strings or integers
+int _parseId(dynamic value) {
+  if (value == null) return 0;
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value) ?? 0;
+  return 0;
+}
+
 class BusinessNetworkPost {
   final int id;
   final String title;
@@ -32,60 +40,90 @@ class BusinessNetworkPost {
   });
 
   factory BusinessNetworkPost.fromJson(Map<String, dynamic> json) {
-    // Handle both 'user' and 'author_details' fields
-    final userData = json['author_details'] ?? json['user'];
-    
-    // Handle post media
-    final mediaList = json['post_media'] ?? json['images'] ?? [];
-    final mediaItems = (mediaList as List).map((e) {
-      if (e is Map) {
-        return PostMedia.fromJson(Map<String, dynamic>.from(e));
-      }
-      return PostMedia(id: 0, image: e.toString(), post: json['id'] ?? 0);
-    }).toList();
-    
-    // Handle post tags
-    final tagsList = json['post_tags'] ?? [];
-    final tagItems = (tagsList as List).map((e) {
-      if (e is Map) {
-        return PostTag.fromJson(Map<String, dynamic>.from(e));
-      }
-      return PostTag(id: 0, tag: e.toString());
-    }).toList();
-    
-    // Handle both 'comments' and 'post_comments' fields
-    final commentsList = json['post_comments'] ?? json['comments'] ?? [];
-    
-    // Handle post likes
-    final likesData = json['post_likes'] ?? [];
-    final likesList = (likesData as List).map((e) {
-      if (e is Map) {
-        return PostLike.fromJson(Map<String, dynamic>.from(e));
-      }
-      return PostLike(id: 0, user: 0);
-    }).toList();
-    
-    bool isLiked = json['is_liked'] ?? likesList.isNotEmpty;
-    
-    return BusinessNetworkPost(
-      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
-      title: json['title'] ?? '',
-      user: userData != null ? BusinessNetworkUser.fromJson(userData) : BusinessNetworkUser(id: 0, name: 'Unknown', isVerified: false),
-      content: json['content'] ?? '',
-      media: mediaItems,
-      tags: tagItems,
-      likesCount: json['like_count'] ?? json['likes_count'] ?? 0,
-      commentsCount: json['comment_count'] ?? json['comments_count'] ?? 0,
-      isLiked: isLiked,
-      isSaved: json['is_saved'] ?? json['isSaved'] ?? false,
-      createdAt: json['created_at'] ?? '',
-      category: json['category'],
-      comments: (commentsList as List)
-              .map((e) => BusinessNetworkComment.fromJson(
-                  e is Map ? Map<String, dynamic>.from(e) : e))
-              .toList(),
-      postLikes: likesList,
-    );
+    try {
+      // Handle both 'user' and 'author_details' fields
+      final userData = json['author_details'] ?? json['user'];
+      
+      // Handle post media - ensure it's a list
+      final mediaList = json['post_media'] ?? json['images'] ?? [];
+      final mediaItems = (mediaList is List ? mediaList : []).map((e) {
+        try {
+          if (e is Map) {
+            return PostMedia.fromJson(Map<String, dynamic>.from(e));
+          }
+          return PostMedia(id: 0, image: e.toString(), post: json['id'] ?? 0);
+        } catch (e) {
+          print('Error parsing media item: $e');
+          return null;
+        }
+      }).whereType<PostMedia>().toList();
+      
+      // Handle post tags - ensure it's a list
+      final tagsList = json['post_tags'] ?? [];
+      final tagItems = (tagsList is List ? tagsList : []).map((e) {
+        try {
+          if (e is Map) {
+            return PostTag.fromJson(Map<String, dynamic>.from(e));
+          }
+          return PostTag(id: 0, tag: e.toString());
+        } catch (e) {
+          print('Error parsing tag item: $e');
+          return null;
+        }
+      }).whereType<PostTag>().toList();
+      
+      // Handle both 'comments' and 'post_comments' fields - ensure it's a list
+      final commentsList = json['post_comments'] ?? json['comments'] ?? [];
+      
+      // Handle post likes - ensure it's a list
+      final likesData = json['post_likes'] ?? [];
+      final likesList = (likesData is List ? likesData : []).map((e) {
+        try {
+          if (e is Map) {
+            return PostLike.fromJson(Map<String, dynamic>.from(e));
+          }
+          return PostLike(id: 0, user: 0);
+        } catch (e) {
+          print('Error parsing like item: $e');
+          return null;
+        }
+      }).whereType<PostLike>().toList();
+      
+      bool isLiked = json['is_liked'] ?? likesList.isNotEmpty;
+      
+      return BusinessNetworkPost(
+        id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+        title: json['title'] ?? '',
+        user: userData != null ? BusinessNetworkUser.fromJson(userData) : BusinessNetworkUser(id: 0, name: 'Unknown', isVerified: false),
+        content: json['content'] ?? '',
+        media: mediaItems,
+        tags: tagItems,
+        likesCount: json['like_count'] ?? json['likes_count'] ?? 0,
+        commentsCount: json['comment_count'] ?? json['comments_count'] ?? 0,
+        isLiked: isLiked,
+        isSaved: json['is_saved'] ?? json['isSaved'] ?? false,
+        createdAt: json['created_at'] ?? DateTime.now().toIso8601String(),
+        category: json['category'],
+        comments: (commentsList is List ? commentsList : [])
+                .map((e) {
+                  try {
+                    return BusinessNetworkComment.fromJson(
+                        e is Map ? Map<String, dynamic>.from(e) : e);
+                  } catch (e) {
+                    print('Error parsing comment: $e');
+                    return null;
+                  }
+                })
+                .whereType<BusinessNetworkComment>()
+                .toList(),
+        postLikes: likesList,
+      );
+    } catch (e, stackTrace) {
+      print('Error parsing BusinessNetworkPost: $e');
+      print('Stack trace: $stackTrace');
+      print('JSON data: $json');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -147,9 +185,9 @@ class PostMedia {
 
   factory PostMedia.fromJson(Map<String, dynamic> json) {
     return PostMedia(
-      id: json['id'] ?? 0,
+      id: _parseId(json['id']),
       image: json['image'] ?? '',
-      post: json['post'] ?? 0,
+      post: _parseId(json['post']),
     );
   }
 
@@ -173,7 +211,7 @@ class PostTag {
 
   factory PostTag.fromJson(Map<String, dynamic> json) {
     return PostTag(
-      id: json['id'] ?? 0,
+      id: _parseId(json['id']),
       tag: json['tag'] ?? '',
     );
   }
@@ -197,8 +235,8 @@ class PostLike {
 
   factory PostLike.fromJson(Map<String, dynamic> json) {
     return PostLike(
-      id: json['id'] ?? 0,
-      user: json['user'] ?? 0,
+      id: _parseId(json['id']),
+      user: _parseId(json['user']),
     );
   }
 
@@ -245,8 +283,18 @@ class BusinessNetworkUser {
       displayName = 'User';
     }
     
+    // Handle UUID strings by using hashCode
+    final idValue = json['id'];
+    int parsedId;
+    if (idValue is String) {
+      // Try to parse as int first, if that fails use hashCode for UUID
+      parsedId = int.tryParse(idValue) ?? idValue.hashCode;
+    } else {
+      parsedId = _parseId(idValue);
+    }
+    
     return BusinessNetworkUser(
-      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      id: parsedId,
       name: displayName,
       avatar: json['avatar'] ?? json['profile_picture'],
       image: json['image'],
@@ -293,11 +341,11 @@ class BusinessNetworkComment {
   factory BusinessNetworkComment.fromJson(Map<String, dynamic> json) {
     final userData = json['user'] ?? json['author_details'];
     return BusinessNetworkComment(
-      id: json['id'],
+      id: _parseId(json['id']),
       user: userData != null ? BusinessNetworkUser.fromJson(userData) : BusinessNetworkUser(id: 0, name: 'Unknown', isVerified: false),
       content: json['content'] ?? json['comment'] ?? '',
       createdAt: json['created_at'] ?? '',
-      parentComment: json['parent_comment'],
+      parentComment: _parseId(json['parent_comment']),
     );
   }
 

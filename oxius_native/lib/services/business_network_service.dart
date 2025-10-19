@@ -4,6 +4,8 @@ import '../models/business_network_models.dart';
 import 'api_service.dart';
 
 class BusinessNetworkService {
+  static const String _baseUrl = 'http://127.0.0.1:8000/api/bn';
+  
   /// Get posts feed with pagination
   static Future<Map<String, dynamic>> getPosts({
     int page = 1,
@@ -13,7 +15,7 @@ class BusinessNetworkService {
     try {
       final headers = await ApiService.getHeaders();
       
-      String url = 'http://localhost:8000/api/bn/posts/?page=$page&page_size=$pageSize';
+      String url = '$_baseUrl/posts/?page=$page&page_size=$pageSize';
       if (olderThan != null) {
         url += '&older_than=$olderThan';
       }
@@ -23,6 +25,9 @@ class BusinessNetworkService {
         headers: headers,
       );
       
+      print('=== Business Network API Debug ===');
+      print('URL: $url');
+      print('Headers: $headers');
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
       
@@ -32,15 +37,20 @@ class BusinessNetworkService {
         final results = data['results'] as List;
         print('Results count: ${results.length}');
         final posts = results.map((e) => BusinessNetworkPost.fromJson(e)).toList();
+        print('Parsed ${posts.length} posts successfully');
         
         return {
           'posts': posts,
           'hasMore': data['next'] != null,
           'count': data['count'] ?? 0,
         };
+      } else if (response.statusCode == 401) {
+        print('ERROR: Unauthorized - User not authenticated');
+        print('Response: ${response.body}');
+        return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0, 'error': 'unauthorized'};
       } else {
-        print('Error response: ${response.statusCode} - ${response.body}');
-        return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0};
+        print('ERROR: ${response.statusCode} - ${response.body}');
+        return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0, 'error': response.body};
       }
     } catch (e, stackTrace) {
       print('Error fetching posts: $e');
@@ -51,6 +61,7 @@ class BusinessNetworkService {
 
   /// Create a new post
   static Future<BusinessNetworkPost?> createPost({
+    required String title,
     required String content,
     List<String>? images,
     String? category,
@@ -59,24 +70,41 @@ class BusinessNetworkService {
       final headers = await ApiService.getHeaders();
       
       final body = {
+        'title': title,
         'content': content,
         if (images != null && images.isNotEmpty) 'images': images,
         if (category != null) 'category': category,
       };
       
       final response = await http.post(
-        Uri.parse('http://localhost:8000/api/bn/posts/'),
+        Uri.parse('$_baseUrl/posts/'),
         headers: headers,
         body: json.encode(body),
       );
       
+      print('=== Create Post Debug ===');
+      print('Request body: ${json.encode(body)}');
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
       if (response.statusCode == 201 || response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return BusinessNetworkPost.fromJson(data);
+        try {
+          final data = json.decode(response.body);
+          print('Decoded response data: $data');
+          final post = BusinessNetworkPost.fromJson(data);
+          print('Successfully created post with ID: ${post.id}');
+          return post;
+        } catch (parseError) {
+          print('Error parsing response: $parseError');
+          return null;
+        }
+      } else {
+        print('Failed with status: ${response.statusCode}');
+        return null;
       }
-      return null;
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('Error creating post: $e');
+      print('Stack trace: $stackTrace');
       return null;
     }
   }
@@ -87,7 +115,7 @@ class BusinessNetworkService {
       final headers = await ApiService.getHeaders();
       
       final response = await http.post(
-        Uri.parse('http://localhost:8000/api/bn/posts/$postId/like/'),
+        Uri.parse('$_baseUrl/posts/$postId/like/'),
         headers: headers,
       );
       
@@ -107,7 +135,7 @@ class BusinessNetworkService {
       final headers = await ApiService.getHeaders();
       
       final response = await http.post(
-        Uri.parse('http://localhost:8000/api/bn/posts/$postId/comment/'),
+        Uri.parse('$_baseUrl/posts/$postId/comment/'),
         headers: headers,
         body: json.encode({'content': content}),
       );
@@ -129,7 +157,7 @@ class BusinessNetworkService {
       final headers = await ApiService.getHeaders();
       
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/bn/posts/$postId/'),
+        Uri.parse('$_baseUrl/posts/$postId/'),
         headers: headers,
       );
       
@@ -150,7 +178,7 @@ class BusinessNetworkService {
       final headers = await ApiService.getHeaders();
       
       final response = await http.delete(
-        Uri.parse('http://localhost:8000/api/bn/posts/$postId/'),
+        Uri.parse('$_baseUrl/posts/$postId/'),
         headers: headers,
       );
       
@@ -178,7 +206,7 @@ class BusinessNetworkService {
       };
       
       final response = await http.put(
-        Uri.parse('http://localhost:8000/api/bn/posts/$postId/'),
+        Uri.parse('$_baseUrl/posts/$postId/'),
         headers: headers,
         body: json.encode(body),
       );

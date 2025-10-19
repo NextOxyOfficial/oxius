@@ -12,6 +12,7 @@ class CreatePostScreen extends StatefulWidget {
 }
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   
@@ -32,6 +33,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   @override
   void dispose() {
+    _titleController.dispose();
     _contentController.dispose();
     super.dispose();
   }
@@ -72,6 +74,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Future<void> _createPost() async {
+    if (_titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a title'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
     if (_contentController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -86,6 +98,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
     try {
       final post = await BusinessNetworkService.createPost(
+        title: _titleController.text.trim(),
         content: _contentController.text.trim(),
         images: _selectedImages.isNotEmpty ? _selectedImages : null,
         category: _selectedCategory,
@@ -169,10 +182,32 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Title input
+            TextField(
+              controller: _titleController,
+              maxLines: 1,
+              decoration: InputDecoration(
+                hintText: 'Post title',
+                hintStyle: TextStyle(color: Colors.grey.shade400),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
             // Content input
             TextField(
               controller: _contentController,
-              maxLines: 8,
+              maxLines: 6,
               decoration: InputDecoration(
                 hintText: 'What\'s on your mind?',
                 hintStyle: TextStyle(color: Colors.grey.shade400),

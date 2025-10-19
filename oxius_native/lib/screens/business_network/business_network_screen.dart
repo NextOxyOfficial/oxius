@@ -20,6 +20,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   int _currentPage = 1;
   String? _lastCreatedAt;
   int _currentNavIndex = 0;
+  String? _errorMessage;
   
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -46,7 +47,10 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   }
 
   Future<void> _loadPosts() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     
     final result = await BusinessNetworkService.getPosts(page: 1, pageSize: 5);
     
@@ -55,6 +59,15 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         _posts = result['posts'] as List<BusinessNetworkPost>;
         _hasMore = result['hasMore'] as bool;
         _isLoading = false;
+        
+        // Check for errors
+        if (result.containsKey('error')) {
+          if (result['error'] == 'unauthorized') {
+            _errorMessage = 'Please log in to view business network posts';
+          } else {
+            _errorMessage = 'Failed to load posts. Please try again.';
+          }
+        }
         
         if (_posts.isNotEmpty) {
           _lastCreatedAt = _posts.last.createdAt;
@@ -71,20 +84,19 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     _currentPage++;
     final result = await BusinessNetworkService.getPosts(
       page: _currentPage,
-      pageSize: 1,
+      pageSize: 5,
       olderThan: _lastCreatedAt,
     );
     
     if (mounted) {
       final newPosts = result['posts'] as List<BusinessNetworkPost>;
       setState(() {
-        _posts.addAll(newPosts);
-        _hasMore = result['hasMore'] as bool;
-        _isLoadingMore = false;
-        
         if (newPosts.isNotEmpty) {
+          _posts.addAll(newPosts);
           _lastCreatedAt = newPosts.last.createdAt;
         }
+        _hasMore = result['hasMore'] as bool;
+        _isLoadingMore = false;
       });
     }
   }
@@ -182,14 +194,17 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
             color: const Color(0xFF3B82F6),
             child: _isLoading
                 ? _buildLoadingState()
-                : _posts.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
+                : _errorMessage != null
+                    ? _buildErrorState()
+                    : _posts.isEmpty
+                        ? _buildEmptyState()
+                        : ListView.builder(
                         controller: _scrollController,
                         padding: EdgeInsets.fromLTRB(4, 8, 4, isMobile ? 80 : 16),
-                        itemCount: _posts.length + (_isLoadingMore ? 1 : 0) + 1,
+                        itemCount: _posts.length + 1, // +1 for loading/end indicator
                         itemBuilder: (context, index) {
-                          if (index == _posts.length) {
+                          // Show loading or end indicator after all posts
+                          if (index >= _posts.length) {
                             if (_isLoadingMore) {
                               return _buildLoadingMoreIndicator();
                             } else if (!_hasMore && _posts.isNotEmpty) {
@@ -198,6 +213,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                             return const SizedBox(height: 80);
                           }
                           
+                          // Show post card
                           return PostCard(
                             post: _posts[index],
                             onLikeToggle: () => _handleLikeToggle(index),
@@ -403,6 +419,63 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(40),
+              ),
+              child: Icon(
+                Icons.error_outline,
+                size: 40,
+                color: Colors.red.shade400,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Unable to Load Posts',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage ?? 'Something went wrong',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _refreshPosts,
+              icon: const Icon(Icons.refresh, size: 20),
+              label: const Text('Try Again'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
