@@ -162,6 +162,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
               // Search Button
               IconButton(
                 onPressed: () {
+                  print('Search button tapped - opening SearchScreen');
                   Navigator.push(
                     context,
                     MaterialPageRoute(

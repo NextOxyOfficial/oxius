@@ -35,6 +35,7 @@ class _SearchScreenState extends State<SearchScreen> {
   int _currentPage = 1;
   bool _hasMore = true;
   Timer? _debounce;
+  String _selectedTab = 'all'; // all, people, hashtags, posts
 
   @override
   void initState() {
@@ -139,12 +140,16 @@ class _SearchScreenState extends State<SearchScreen> {
 
       if (response.statusCode == 200 && mounted) {
         final data = json.decode(response.body);
+        print('Search API returned ${data['results']?.length ?? 0} results for query: $query');
+        
         final List<BusinessNetworkPost> newPosts = [];
         final Set<String> hashtags = {};
 
         if (data['results'] != null && data['results'] is List) {
           for (var item in data['results']) {
             final post = BusinessNetworkPost.fromJson(item);
+            print('Post: ${post.title} - ${post.content.substring(0, post.content.length > 50 ? 50 : post.content.length)}');
+            print('Author: ${post.user.name} (@${post.user.username})');
             newPosts.add(post);
             
             // Extract hashtags from posts
@@ -244,61 +249,67 @@ class _SearchScreenState extends State<SearchScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Container(
-          height: 36,
-          margin: const EdgeInsets.only(right: 12),
+          height: 40,
+          margin: const EdgeInsets.only(right: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFFF0F2F5),
-            borderRadius: BorderRadius.circular(20),
+            color: const Color(0xFFF5F5F5),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
           ),
-          child: Center(
-            child: TextField(
-              controller: _searchController,
-              focusNode: _searchFocusNode,
-              textAlignVertical: TextAlignVertical.center,
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                hintStyle: TextStyle(
-                  fontSize: 15,
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.w400,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(left: 12, right: 8),
+                child: Icon(
+                  Icons.search,
+                  size: 20,
+                  color: Color(0xFF757575),
                 ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                prefixIcon: Padding(
-                  padding: const EdgeInsets.only(left: 8, right: 4),
-                  child: Icon(
-                    Icons.search,
-                    size: 20,
-                    color: Colors.grey.shade600,
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  textAlignVertical: TextAlignVertical.center,
+                  decoration: InputDecoration(
+                    hintText: 'Search',
+                    hintStyle: const TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF9E9E9E),
+                      fontWeight: FontWeight.w400,
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(Icons.cancel, size: 18, color: Colors.grey.shade500),
+                            onPressed: () {
+                              setState(() {
+                                _searchController.clear();
+                                _posts.clear();
+                                _people.clear();
+                                _hashtags.clear();
+                                _hasSearched = false;
+                                _currentQuery = '';
+                              });
+                            },
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          )
+                        : null,
+                  ),
+                  onSubmitted: _performSearch,
+                  onChanged: _onSearchChanged,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF212121),
                   ),
                 ),
-                prefixIconConstraints: const BoxConstraints(
-                  minWidth: 40,
-                  minHeight: 36,
-                ),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(Icons.cancel, size: 18, color: Colors.grey.shade500),
-                        onPressed: () {
-                          setState(() {
-                            _searchController.clear();
-                            _posts.clear();
-                            _hasSearched = false;
-                            _currentQuery = '';
-                          });
-                        },
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      )
-                    : null,
               ),
-              onSubmitted: _performSearch,
-              onChanged: _onSearchChanged,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            ],
           ),
         ),
       ),
@@ -324,102 +335,234 @@ class _SearchScreenState extends State<SearchScreen> {
         // Results summary
         if (_hasSearched && (_posts.isNotEmpty || _people.isNotEmpty || _hashtags.isNotEmpty))
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const BoxDecoration(
               color: Colors.white,
-              border: Border(bottom: BorderSide(color: Color(0xFFE5E5E5), width: 0.5)),
+              border: Border(bottom: BorderSide(color: Color(0xFFE0E0E0), width: 1)),
             ),
-            child: Row(
-              children: [
-                Icon(
-                  _currentQuery.startsWith('#') ? Icons.tag : Icons.search,
-                  size: 16,
-                  color: Colors.grey.shade600,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Results for "$_currentQuery"',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade800,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Results for "$_currentQuery"',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF616161),
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.left,
             ),
           ),
         
-        // Results with sections
-        Expanded(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              // People section
-              if (_people.isNotEmpty) ...[
-                _buildSectionHeader('People', _people.length),
-                ..._people.map((person) => _buildPersonItem(person)),
-                const Divider(height: 1, thickness: 8, color: Color(0xFFF5F5F5)),
-              ],
-              
-              // Hashtags section
-              if (_hashtags.isNotEmpty) ...[
-                _buildSectionHeader('Hashtags', _hashtags.length),
-                _buildHashtagsGrid(),
-                const Divider(height: 1, thickness: 8, color: Color(0xFFF5F5F5)),
-              ],
-              
-              // Posts section
-              if (_posts.isNotEmpty) ...[
-                _buildSectionHeader('Posts', _posts.length),
-                ..._posts.map((post) => PostCard(
-                  post: post,
-                  onLikeToggle: () {},
-                  onCommentAdded: (comment) {},
-                  onPostDeleted: () {
-                    setState(() {
-                      _posts.remove(post);
-                    });
-                  },
-                )),
-                if (_hasMore) _buildLoadMoreButton(),
-              ],
-            ],
+        // Tab Bar
+        if (_hasSearched && (_posts.isNotEmpty || _people.isNotEmpty || _hashtags.isNotEmpty))
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(bottom: BorderSide(color: Color(0xFFE0E0E0), width: 1)),
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  _buildTab('All', 'all', _people.length + _posts.length + _hashtags.length),
+                  const SizedBox(width: 6),
+                  _buildTab('People', 'people', _people.length),
+                  const SizedBox(width: 6),
+                  _buildTab('Hashtags', 'hashtags', _hashtags.length),
+                  const SizedBox(width: 6),
+                  _buildTab('Posts', 'posts', _posts.length),
+                ],
+              ),
+            ),
           ),
+        
+        // Results based on selected tab
+        Expanded(
+          child: _buildTabContent(),
         ),
       ],
     );
   }
 
+  Widget _buildTab(String label, String value, int count) {
+    final isSelected = _selectedTab == value;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedTab = value;
+        });
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF1976D2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF1976D2) : const Color(0xFFE0E0E0),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isSelected ? Colors.white : const Color(0xFF424242),
+              ),
+            ),
+            if (count > 0) ...[
+              const SizedBox(width: 6),
+              Text(
+                count.toString(),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white.withOpacity(0.9) : const Color(0xFF757575),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabContent() {
+    if (_selectedTab == 'people') {
+      return _people.isEmpty
+          ? _buildEmptyTabState('No people found')
+          : ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: _people.length,
+              itemBuilder: (context, index) => _buildPersonItem(_people[index]),
+            );
+    } else if (_selectedTab == 'hashtags') {
+      return _hashtags.isEmpty
+          ? _buildEmptyTabState('No hashtags found')
+          : ListView(
+              padding: EdgeInsets.zero,
+              children: [_buildHashtagsGrid()],
+            );
+    } else if (_selectedTab == 'posts') {
+      return _posts.isEmpty
+          ? _buildEmptyTabState('No posts found')
+          : ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: _posts.length + (_hasMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == _posts.length) {
+                  return _buildLoadMoreButton();
+                }
+                return PostCard(
+                  post: _posts[index],
+                  onLikeToggle: () {},
+                  onCommentAdded: (comment) {},
+                  onPostDeleted: () {
+                    setState(() {
+                      _posts.removeAt(index);
+                    });
+                  },
+                );
+              },
+            );
+    } else {
+      // All tab - show everything
+      return ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          if (_people.isNotEmpty) ...[
+            _buildSectionHeader('People', _people.length),
+            ..._people.map((person) => _buildPersonItem(person)),
+            const Divider(height: 1, thickness: 8, color: Color(0xFFF5F5F5)),
+          ],
+          if (_hashtags.isNotEmpty) ...[
+            _buildSectionHeader('Hashtags', _hashtags.length),
+            _buildHashtagsGrid(),
+            const Divider(height: 1, thickness: 8, color: Color(0xFFF5F5F5)),
+          ],
+          if (_posts.isNotEmpty) ...[
+            _buildSectionHeader('Posts', _posts.length),
+            ..._posts.map((post) => PostCard(
+              post: post,
+              onLikeToggle: () {},
+              onCommentAdded: (comment) {},
+              onPostDeleted: () {
+                setState(() {
+                  _posts.remove(post);
+                });
+              },
+            )),
+            if (_hasMore) _buildLoadMoreButton(),
+          ],
+        ],
+      );
+    }
+  }
+
+  Widget _buildEmptyTabState(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, size: 48, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getPersonFullName(Map<String, dynamic> person) {
+    final firstName = person['first_name'] ?? '';
+    final lastName = person['last_name'] ?? '';
+    
+    // Combine first and last name
+    final fullName = '$firstName $lastName'.trim();
+    
+    // If no name, use username or 'Unknown'
+    if (fullName.isEmpty) {
+      return person['username'] ?? 'Unknown';
+    }
+    
+    return fullName;
+  }
+
   Widget _buildSectionHeader(String title, int count) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       color: Colors.white,
       child: Row(
         children: [
           Text(
             title,
             style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF212121),
+              letterSpacing: 0.1,
             ),
           ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0F2F5),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              count.toString(),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade700,
-              ),
+          const SizedBox(width: 6),
+          Text(
+            '($count)',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF757575),
             ),
           ),
         ],
@@ -440,7 +583,7 @@ class _SearchScreenState extends State<SearchScreen> {
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
               // Avatar
@@ -468,15 +611,22 @@ class _SearchScreenState extends State<SearchScreen> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: person['profession'] != null && person['profession'].toString().isNotEmpty
+                      ? MainAxisAlignment.start
+                      : MainAxisAlignment.center,
                   children: [
                     Row(
                       children: [
-                        Text(
-                          person['name'] ?? person['username'] ?? 'Unknown',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                        Flexible(
+                          child: Text(
+                            _getPersonFullName(person),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF212121),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (person['kyc'] == true) ...[
@@ -485,20 +635,12 @@ class _SearchScreenState extends State<SearchScreen> {
                         ],
                       ],
                     ),
-                    if (person['username'] != null)
-                      Text(
-                        '@${person['username']}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    if (person['profession'] != null)
+                    if (person['profession'] != null && person['profession'].toString().isNotEmpty)
                       Text(
                         person['profession'],
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF757575),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
