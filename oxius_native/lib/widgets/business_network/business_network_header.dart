@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import 'adsypay_qr_modal.dart';
+import '../../screens/business_network/search_screen.dart';
 
 class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onMenuTap;
@@ -25,31 +26,10 @@ class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidge
 
 class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
   bool _showUserMenu = false;
-  bool _isSearching = false;
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void dispose() {
-    _searchController.dispose();
-    _searchFocusNode.dispose();
     super.dispose();
-  }
-
-  void _toggleSearch() {
-    setState(() {
-      _isSearching = !_isSearching;
-      if (_isSearching) {
-        // Focus on search field when opened
-        Future.delayed(const Duration(milliseconds: 100), () {
-          _searchFocusNode.requestFocus();
-        });
-      } else {
-        // Clear search when closed
-        _searchController.clear();
-        _searchFocusNode.unfocus();
-      }
-    });
   }
 
   @override
@@ -62,10 +42,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
       children: [
         GestureDetector(
           onTap: () {
-            // Close search and dropdown when tapping outside
-            if (_isSearching) {
-              _toggleSearch();
-            }
+            // Close dropdown when tapping outside
             if (_showUserMenu) {
               setState(() {
                 _showUserMenu = false;
@@ -89,110 +66,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
             ],
           ),
         ),
-      title: _isSearching
-          ? Row(
-              children: [
-                // Menu button (always visible)
-                if (isMobile) ...[
-                  InkWell(
-                    onTap: widget.onMenuTap,
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.transparent,
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 18,
-                              height: 2,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade700,
-                                borderRadius: BorderRadius.circular(1),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              width: 14,
-                              height: 2,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade700,
-                                borderRadius: BorderRadius.circular(1),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              width: 18,
-                              height: 2,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade700,
-                                borderRadius: BorderRadius.circular(1),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                // Search input field
-                Expanded(
-                  child: Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.blue.shade200),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      focusNode: _searchFocusNode,
-                      decoration: InputDecoration(
-                        hintText: 'Search posts, people...',
-                        hintStyle: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade500,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon: Icon(
-                                  Icons.clear,
-                                  size: 20,
-                                  color: Colors.grey.shade600,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _searchController.clear();
-                                  });
-                                },
-                              )
-                            : null,
-                      ),
-                      style: const TextStyle(fontSize: 14),
-                      onChanged: (value) {
-                        setState(() {}); // Rebuild to show/hide clear button
-                      },
-                      onSubmitted: (value) {
-                        // TODO: Perform search
-                        print('Search for: $value');
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : Row(
+      title: Row(
               children: [
                 // Sidebar Toggle (Mobile Only)
                 if (isMobile) ...[
@@ -284,20 +158,17 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                 ),
               ],
             ),
-      actions: _isSearching
-          ? [
-              // Close search button
-              IconButton(
-                onPressed: _toggleSearch,
-                icon: const Icon(Icons.close, size: 22),
-                color: Colors.grey.shade700,
-                tooltip: 'Close',
-              ),
-            ]
-          : [
+      actions: [
               // Search Button
               IconButton(
-                onPressed: _toggleSearch,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SearchScreen(),
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.search, size: 22),
                 color: Colors.grey.shade700,
                 tooltip: 'Search',

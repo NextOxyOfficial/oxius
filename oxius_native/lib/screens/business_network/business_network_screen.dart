@@ -8,6 +8,7 @@ import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import 'create_post_screen.dart';
 import 'profile_screen.dart';
+import 'search_screen.dart';
 
 class BusinessNetworkScreen extends StatefulWidget {
   const BusinessNetworkScreen({super.key});
@@ -137,7 +138,12 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       appBar: BusinessNetworkHeader(
         onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
         onSearchTap: () {
-          // TODO: Implement search
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SearchScreen(),
+            ),
+          );
         },
         onQRCodeTap: () {
           // TODO: Show QR code modal

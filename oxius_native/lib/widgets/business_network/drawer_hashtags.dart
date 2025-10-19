@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../services/api_service.dart';
+import '../../screens/business_network/search_screen.dart';
 
 class DrawerHashtags extends StatefulWidget {
   const DrawerHashtags({super.key});
@@ -161,9 +162,14 @@ class _DrawerHashtagsState extends State<DrawerHashtags> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              // TODO: Navigate to hashtag feed
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Search for #${tag['tag']}')),
+              Navigator.pop(context); // Close drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SearchScreen(
+                    initialQuery: '#${tag['tag']}',
+                  ),
+                ),
               );
             },
             borderRadius: BorderRadius.circular(14),
