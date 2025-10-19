@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/user_state_service.dart';
+import '../screens/privacy_policy_screen.dart';
+import '../screens/terms_and_conditions_screen.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -134,27 +136,114 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: _buildLoginForm(),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.purple.shade700,
+              Colors.purple.shade500,
+              Colors.deepPurple.shade600,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 20),
+            child: Column(
+              children: [
+                // Back button
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Container(
+                    margin: const EdgeInsets.only(left: 8, top: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pushReplacementNamed('/');
+                      },
+                      tooltip: 'Back to Home',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildHeader(),
+                const SizedBox(height: 32),
+                _buildLoginForm(),
+                const SizedBox(height: 20),
+                _buildFooter(),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        // Logo with glow effect
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withOpacity(0.3),
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Image.asset(
+            'assets/images/logo.png',
+            height: 64,
+            width: 64,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(
+                Icons.business,
+                size: 64,
+                color: Colors.purple.shade600,
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'Your Business Network',
+          style: GoogleFonts.roboto(
+            fontSize: 14,
+            color: Colors.white.withOpacity(0.9),
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildLoginForm() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -163,31 +252,11 @@ class _LoginPageState extends State<LoginPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Logo
-            Image.asset(
-              'assets/images/logo.png',
-              height: 40,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 40,
-                  alignment: Alignment.center,
-                  child: Text(
-                    'OXIUS',
-                    style: GoogleFonts.roboto(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.purple.shade600,
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            
+            // Welcome text
             Text(
               'Welcome Back',
               style: GoogleFonts.roboto(
-                fontSize: 20,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey.shade800,
               ),
@@ -195,7 +264,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 6),
             Text(
-              'Sign in to your account',
+              'Sign in to continue',
               style: GoogleFonts.roboto(
                 fontSize: 14,
                 color: Colors.grey.shade600,
@@ -203,134 +272,178 @@ class _LoginPageState extends State<LoginPage> {
               textAlign: TextAlign.center,
             ),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 28),
             
             // Error message
             if (_errorMessage.isNotEmpty) ...[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2), // Light red background
-                  borderRadius: BorderRadius.circular(6),
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: const Color(0xFFFECACA), // Soft red border
+                    color: const Color(0xFFEF4444),
                     width: 1,
                   ),
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.info_outline,
-                        color: const Color(0xFFDC2626), // Red color
-                        size: 18,
-                      ),
+                    Icon(
+                      Icons.error_outline,
+                      color: const Color(0xFFEF4444),
+                      size: 20,
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Exception: $_errorMessage',
-                            style: GoogleFonts.roboto(
-                              color: const Color(0xFFDC2626), // Red text
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        _errorMessage,
+                        style: GoogleFonts.roboto(
+                          color: const Color(0xFFDC2626),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
             ],
             
             // Email Field
-            TextFormField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                hintText: 'Email address',
-                prefixIcon: Icon(Icons.email_outlined, color: Colors.grey.shade400, size: 20),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.purple.shade500, width: 1.5),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Email is required';
-                }
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                  return 'Please enter a valid email';
-                }
-                return null;
-              },
-            ),
-            
-            const SizedBox(height: 14),
-            
-            // Password Field
-            TextFormField(
-              controller: _passwordController,
-              obscureText: _obscurePassword,
-              decoration: InputDecoration(
-                hintText: 'Password',
-                prefixIcon: Icon(Icons.lock_outline, color: Colors.grey.shade400, size: 20),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                    color: Colors.grey.shade600,
-                    size: 20,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Email',
+                  style: GoogleFonts.roboto(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade700,
                   ),
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  style: GoogleFonts.roboto(fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: 'Enter your email',
+                    hintStyle: GoogleFonts.roboto(
+                      color: Colors.grey.shade400,
+                      fontSize: 14,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.email_outlined,
+                      color: Colors.grey.shade400,
+                      size: 20,
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: Colors.grey.shade200),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: Colors.purple.shade500, width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Email is required';
+                    }
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
                   },
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.purple.shade500, width: 1.5),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Password is required';
-                }
-                return null;
-              },
+              ],
             ),
             
-            const SizedBox(height: 14),
+            const SizedBox(height: 18),
+            
+            // Password Field
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Password',
+                  style: GoogleFonts.roboto(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  style: GoogleFonts.roboto(fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: 'Enter your password',
+                    hintStyle: GoogleFonts.roboto(
+                      color: Colors.grey.shade400,
+                      fontSize: 14,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.lock_outline,
+                      color: Colors.grey.shade400,
+                      size: 20,
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        color: Colors.grey.shade500,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: Colors.grey.shade200),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: Colors.purple.shade500, width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Password is required';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 12),
             
             // Forgot password
             Align(
@@ -340,7 +453,7 @@ class _LoginPageState extends State<LoginPage> {
                   // TODO: Navigate to forgot password
                 },
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  padding: EdgeInsets.zero,
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -349,68 +462,107 @@ class _LoginPageState extends State<LoginPage> {
                   style: GoogleFonts.roboto(
                     fontSize: 13,
                     color: Colors.purple.shade600,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             
             // Login Button
-            SizedBox(
-              height: 44,
+            Container(
+              height: 50,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.purple.shade600,
+                    Colors.deepPurple.shade600,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.purple.shade300.withOpacity(0.5),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleLogin,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple.shade600,
+                  backgroundColor: Colors.transparent,
                   foregroundColor: Colors.white,
                   elevation: 0,
+                  shadowColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 child: _isLoading
                     ? const SizedBox(
-                        height: 18,
-                        width: 18,
+                        height: 20,
+                        width: 20,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
+                          strokeWidth: 2.5,
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : Text(
                         'Sign In',
                         style: GoogleFonts.roboto(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
                         ),
                       ),
               ),
             ),
             
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
+            
+            // Divider
+            Row(
+              children: [
+                Expanded(child: Divider(color: Colors.grey.shade300)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'OR',
+                    style: GoogleFonts.roboto(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Expanded(child: Divider(color: Colors.grey.shade300)),
+              ],
+            ),
+            
+            const SizedBox(height: 20),
             
             // Sign Up Link
             Center(
               child: TextButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Registration feature coming soon!'),
+                    SnackBar(
+                      content: const Text('Registration feature coming soon!'),
+                      backgroundColor: Colors.purple.shade600,
+                      behavior: SnackBarBehavior.floating,
                     ),
                   );
                 },
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
                 child: RichText(
                   text: TextSpan(
                     style: GoogleFonts.roboto(
-                      color: Colors.grey.shade600,
-                      fontSize: 13,
+                      color: Colors.grey.shade700,
+                      fontSize: 14,
                     ),
                     children: [
                       const TextSpan(text: "Don't have an account? "),
@@ -418,7 +570,7 @@ class _LoginPageState extends State<LoginPage> {
                         text: 'Sign Up',
                         style: TextStyle(
                           color: Colors.purple.shade600,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
@@ -429,6 +581,72 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Column(
+      children: [
+        Text(
+          ' 2024 ADSYCLUB. All rights reserved.',
+          style: GoogleFonts.roboto(
+            fontSize: 12,
+            color: Colors.white.withOpacity(0.8),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PrivacyPolicyScreen(),
+                  ),
+                );
+              },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              ),
+              child: Text(
+                'Privacy Policy',
+                style: GoogleFonts.roboto(
+                  fontSize: 12,
+                  color: Colors.white.withOpacity(0.9),
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+            Text(
+              '•',
+              style: TextStyle(color: Colors.white.withOpacity(0.8)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TermsAndConditionsScreen(),
+                  ),
+                );
+              },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              ),
+              child: Text(
+                'Terms of Service',
+                style: GoogleFonts.roboto(
+                  fontSize: 12,
+                  color: Colors.white.withOpacity(0.9),
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
