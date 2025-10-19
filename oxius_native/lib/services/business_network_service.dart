@@ -356,20 +356,34 @@ class BusinessNetworkService {
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
       
-      // If 400 with "already following" error, consider it success
+      // Handle success
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Successfully followed user');
+        return true;
+      }
+      
+      // If 400, check if it's a duplicate follow (unique constraint error)
       if (response.statusCode == 400) {
-        final body = response.body.toLowerCase();
-        if (body.contains('unique') || 
-            body.contains('already') || 
-            body.contains('duplicate')) {
-          print('User already following - treating as success');
-          return true;
+        try {
+          final responseBody = response.body;
+          if (responseBody.isNotEmpty) {
+            final bodyLower = responseBody.toLowerCase();
+            // Check for unique constraint error - means already following
+            if (bodyLower.contains('unique') || bodyLower.contains('follower')) {
+              print('User already following (unique constraint)');
+              // Return false so UI reloads and syncs with backend
+              return false;
+            }
+          }
+        } catch (e) {
+          print('Error parsing response body: $e');
         }
-        print('ERROR: ${response.body}');
+        print('ERROR 400: ${response.body}');
         return false;
       }
       
-      return response.statusCode == 200 || response.statusCode == 201;
+      print('Unexpected status code: ${response.statusCode}');
+      return false;
     } catch (e) {
       print('Error following user: $e');
       return false;

@@ -29,6 +29,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   final TextEditingController _replyController = TextEditingController();
   int _displayedCommentsCount = 10; // Show 10 comments initially
   bool _isLoadingMore = false;
+  final Set<int> _expandedReplies = {}; // Track which comments have expanded replies
 
   @override
   void initState() {
@@ -188,41 +189,32 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     print('Attempting to toggle follow for user: $userId');
     print('Current following status: ${_post.user.isFollowing}');
     
+    final wasFollowing = _post.user.isFollowing;
     final success = await BusinessNetworkService.toggleFollow(userId, _post.user.isFollowing);
     
-    if (success && mounted) {
-      setState(() {
-        _post = _post.copyWith(
-          user: BusinessNetworkUser(
-            id: _post.user.id,
-            uuid: _post.user.uuid,
-            name: _post.user.name,
-            avatar: _post.user.avatar,
-            image: _post.user.image,
-            isVerified: _post.user.isVerified,
-            bio: _post.user.bio,
-            username: _post.user.username,
-            firstName: _post.user.firstName,
-            lastName: _post.user.lastName,
-            isFollowing: !_post.user.isFollowing,
+    // Always reload to sync with backend state
+    if (mounted) {
+      await _loadFullPost();
+      
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_post.user.isFollowing ? 'Following ${_post.user.name}' : 'Unfollowed ${_post.user.name}'),
+            duration: const Duration(seconds: 2),
           ),
         );
-      });
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_post.user.isFollowing ? 'Following ${_post.user.name}' : 'Unfollowed ${_post.user.name}'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to ${_post.user.isFollowing ? 'unfollow' : 'follow'} ${_post.user.name}'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      } else {
+        // Failed but still show current state after reload
+        if (_post.user.isFollowing != wasFollowing) {
+          // State changed despite error (e.g., already following)
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(_post.user.isFollowing ? 'Already following ${_post.user.name}' : 'Already unfollowed ${_post.user.name}'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -703,7 +695,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       
       if (commentReplies.isNotEmpty) {
         widgets.add(const SizedBox(height: 1));
-        for (final reply in commentReplies) {
+        
+        // Check if this comment's replies are expanded
+        final isExpanded = _expandedReplies.contains(comment.id);
+        final repliesToShow = isExpanded ? commentReplies : commentReplies.take(4).toList();
+        
+        for (final reply in repliesToShow) {
           widgets.add(
             Padding(
               padding: const EdgeInsets.only(left: 40),
@@ -735,6 +732,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
           );
         }
+        
+        // Show "See more replies" button if there are more than 4 replies
+        if (commentReplies.length > 4 && !isExpanded) {
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(left: 48, top: 4, bottom: 8),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    _expandedReplies.add(comment.id);
+                  });
+                },
+                child: Text(
+                  'See ${commentReplies.length - 4} more ${commentReplies.length - 4 == 1 ? 'reply' : 'replies'}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.blue.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        
         // Add margin after last reply
         widgets.add(const SizedBox(height: 12));
       }
