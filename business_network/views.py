@@ -547,6 +547,11 @@ class BusinessNetworkPostCommentListCreateView(generics.ListCreateAPIView):
 
             # Create data object with all required fields
             data = {"content": content, "post": post_id, "author": request.user.id}
+            
+            # Include parent_comment if provided (for replies)
+            parent_comment_id = request.data.get("parent_comment")
+            if parent_comment_id:
+                data["parent_comment"] = parent_comment_id
 
             # Create the serializer with our prepared data
             serializer = self.get_serializer(data=data)
@@ -1859,6 +1864,11 @@ class BusinessNetworkPostCommentListCreateView(generics.ListCreateAPIView):
 
             # Create data object with all required fields
             data = {"content": content, "post": post_id, "author": request.user.id}
+            
+            # Include parent_comment if provided (for replies)
+            parent_comment_id = request.data.get("parent_comment")
+            if parent_comment_id:
+                data["parent_comment"] = parent_comment_id
 
             # Create the serializer with our prepared data
             serializer = self.get_serializer(data=data)

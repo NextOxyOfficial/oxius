@@ -23,6 +23,7 @@ class BusinessNetworkPostCommentSerializer(serializers.ModelSerializer):
             "post",
             "author",
             "author_details",
+            "parent_comment",
             "content",
             "formatted_content",
             "created_at",

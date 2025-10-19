@@ -209,6 +209,7 @@ class BusinessNetworkPostComment(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     post = models.ForeignKey(BusinessNetworkPost, on_delete=models.CASCADE, related_name='post_comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='business_network_comments')
+    parent_comment = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

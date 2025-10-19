@@ -25,18 +25,32 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
   Widget build(BuildContext context) {
     if (widget.post.comments.isEmpty) return const SizedBox.shrink();
 
+    // Debug: Check what we're getting
+    print('=== Comment Structure Debug ===');
+    for (var c in widget.post.comments) {
+      print('Comment ${c.id}: parentComment=${c.parentComment} (type: ${c.parentComment.runtimeType})');
+    }
+
     // Separate parent comments and replies
-    final parentComments = widget.post.comments.where((c) => c.parentComment == null || c.parentComment == 0).toList();
-    final replies = widget.post.comments.where((c) => c.parentComment != null && c.parentComment != 0).toList();
+    final parentComments = widget.post.comments.where((c) => 
+      c.parentComment == null || c.parentComment == 0
+    ).toList();
     
-    // If no parent comments, show last 2 comments as parents
-    final recentParents = parentComments.isEmpty
-        ? (widget.post.comments.length <= 2
-            ? widget.post.comments.reversed.toList()
-            : widget.post.comments.sublist(widget.post.comments.length - 2).reversed.toList())
-        : (parentComments.length <= 2
-            ? parentComments.reversed.toList()
-            : parentComments.sublist(parentComments.length - 2).reversed.toList());
+    final replies = widget.post.comments.where((c) => 
+      c.parentComment != null && c.parentComment != 0
+    ).toList();
+    
+    print('Found ${parentComments.length} parent comments and ${replies.length} replies');
+    
+    // Only show parent comments (never show replies as standalone)
+    if (parentComments.isEmpty) {
+      return const SizedBox.shrink(); // No parent comments to show
+    }
+    
+    // Get last 2 parent comments (most recent)
+    final recentParents = parentComments.length <= 2
+        ? parentComments.reversed.toList()
+        : parentComments.sublist(parentComments.length - 2).reversed.toList();
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -56,8 +70,18 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
           ...recentParents.asMap().entries.expand((entry) {
             final index = entry.key;
             final comment = entry.value;
-            final commentReplies = replies.where((r) => r.parentComment == comment.id).toList();
+            final commentReplies = replies
+                .where((r) {
+                  print('Checking if reply ${r.id} (parent=${r.parentComment}) matches comment ${comment.id}');
+                  return r.parentComment == comment.id;
+                })
+                .toList()
+              ..sort((a, b) => a.createdAt.compareTo(b.createdAt)); // Sort by time
             final isReplyingToThis = _replyingTo?.id == comment.id;
+            
+            if (commentReplies.isNotEmpty) {
+              print('Comment ${comment.id} has ${commentReplies.length} replies');
+            }
             
             return [
               // Parent comment

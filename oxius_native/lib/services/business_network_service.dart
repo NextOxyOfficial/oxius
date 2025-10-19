@@ -398,4 +398,35 @@ class BusinessNetworkService {
       return await followUser(userId);
     }
   }
+
+  /// Search users for @mentions
+  static Future<List<BusinessNetworkUser>> searchUsers(String query) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      print('=== Search Users Debug ===');
+      print('Query: $query');
+      
+      final response = await http.get(
+        Uri.parse('$_baseUrl/users/search/?q=$query'),
+        headers: headers,
+      );
+      
+      print('Response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> results = data['results'] ?? data;
+        
+        return results
+            .map((json) => BusinessNetworkUser.fromJson(json))
+            .toList();
+      }
+      
+      return [];
+    } catch (e) {
+      print('Error searching users: $e');
+      return [];
+    }
+  }
 }
