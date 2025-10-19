@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/auth_service.dart';
+import 'business_network/adsypay_qr_modal.dart';
 
 class AppHeader extends StatefulWidget {
   final String identifier;
@@ -359,23 +360,35 @@ class _AppHeaderState extends State<AppHeader> {
           },
           tooltip: t('messages_inbox'),
         ),
-        // QR Code Scanner (matching Vue.js: i-ic:twotone-qr-code-scanner)
+        // QR Code Scanner - AdsyPay
         IconButton(
           key: ValueKey('qr_button_${widget.identifier}'),
-          icon: Icon(
-            Icons.qr_code_scanner,
-            color: const Color(0xFF10B981), // Green color matching Vue.js
-            size: 24,
+          icon: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.green.shade50,
+            ),
+            child: Icon(
+              Icons.qr_code_scanner,
+              color: Colors.green.shade600,
+              size: 20,
+            ),
           ),
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${t('qr_code_scanner')} ${t('coming_soon')}'),
-                backgroundColor: const Color(0xFF10B981),
-              ),
-            );
+            final user = AuthService.currentUser;
+            if (user != null) {
+              showDialog(
+                context: context,
+                builder: (context) => AdsyPayQrModal(
+                  qrData: 'adsypay://pay/${user.id}',
+                  title: '${user.firstName ?? user.username ?? "User"}\'s Payment QR',
+                ),
+              );
+            }
           },
-          tooltip: t('qr_code_scanner'),
+          tooltip: 'AdsyPay QR Code',
         ),
         // User Profile/Login button
         _buildUserProfileButton(context),
@@ -994,9 +1007,7 @@ class _AppHeaderState extends State<AppHeader> {
         );
         break;
       case '/deposit-withdraw':
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Adsy Pay coming soon!')),
-        );
+        Navigator.pushNamed(context, '/deposit-withdraw');
         break;
       case '/mobile-recharge':
         ScaffoldMessenger.of(context).showSnackBar(

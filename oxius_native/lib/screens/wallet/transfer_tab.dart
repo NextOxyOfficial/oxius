@@ -213,15 +213,16 @@ class _TransferTabState extends State<TransferTab> {
               suffixIcon: IconButton(
                 icon: const Icon(Icons.qr_code_scanner, size: 20),
                 onPressed: () {
-                  // TODO: Implement QR code scanner
+                  // TODO: Implement QR code scanner to scan recipient's payment QR
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('QR Scanner - Coming soon'),
+                      content: Text('Scan recipient QR code - Coming soon'),
                       duration: Duration(seconds: 2),
+                      backgroundColor: Colors.orange,
                     ),
                   );
                 },
-                tooltip: 'Scan QR Code',
+                tooltip: 'Scan Recipient QR Code',
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),

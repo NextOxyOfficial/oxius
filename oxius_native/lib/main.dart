@@ -16,6 +16,7 @@ import 'screens/create_sale_post_screen.dart';
 import 'screens/seller_profile_screen.dart';
 import 'screens/upgrade_to_pro_screen.dart';
 import 'screens/checkout_screen.dart';
+import 'screens/wallet/wallet_screen.dart';
 import 'pages/login_page.dart';
 import 'services/auth_service.dart';
 import 'services/user_state_service.dart';
@@ -92,10 +93,7 @@ class MyApp extends StatelessWidget {
             '/my-gigs': (context) => const MyGigsScreen(),
             '/post-a-gig': (context) => const PostGigScreen(),
             '/business-network': (context) => const BusinessNetworkScreen(),
-            '/deposit-withdraw': (context) => Scaffold(
-              appBar: AppBar(title: const Text('Deposit & Withdraw')),
-              body: const Center(child: Text('Coming Soon!')),
-            ),
+            '/deposit-withdraw': (context) => const WalletScreen(),
             '/pending-tasks': (context) => Scaffold(
               appBar: AppBar(title: const Text('Pending Tasks')),
               body: const Center(child: Text('Coming Soon!')),

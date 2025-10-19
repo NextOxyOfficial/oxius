@@ -22,6 +22,7 @@ import 'settings_screen.dart';
 import 'inbox_screen.dart';
 import 'eshop_screen.dart';
 import 'verification_screen.dart';
+import '../widgets/business_network/adsypay_qr_modal.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -1191,22 +1192,34 @@ class _HomeScreenState extends State<HomeScreen> {
                   // ),
                 ],
               ),
-              // QR Code Scanner Button
+              // QR Code Scanner Button - AdsyPay
               IconButton(
-                icon: const Icon(
-                  Icons.qr_code_scanner,
-                  color: Color(0xFF10B981),
-                  size: 24,
+                icon: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.green.shade50,
+                  ),
+                  child: Icon(
+                    Icons.qr_code_scanner,
+                    color: Colors.green.shade600,
+                    size: 20,
+                  ),
                 ),
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('QR Code Scanner coming soon'),
-                      backgroundColor: Color(0xFF10B981),
-                    ),
-                  );
+                  final user = AuthService.currentUser;
+                  if (user != null) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AdsyPayQrModal(
+                        qrData: 'adsypay://pay/${user.id}',
+                        title: '${user.firstName ?? user.username ?? "User"}\'s Payment QR',
+                      ),
+                    );
+                  }
                 },
-                tooltip: 'QR Code Scanner',
+                tooltip: 'AdsyPay QR Code',
               ),
               // User Profile Avatar
               GestureDetector(
