@@ -7,6 +7,7 @@ import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/mindforce/problem_card.dart';
 import '../business_network/profile_screen.dart';
+import 'create_problem_screen.dart';
 
 class MindForceScreen extends StatefulWidget {
   const MindForceScreen({super.key});
@@ -77,7 +78,8 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
 
     showDialog(
       context: context,
-      builder: (context) => _CreateProblemDialog(
+      barrierDismissible: false,
+      builder: (context) => CreateProblemScreen(
         categories: _categories,
         onSubmit: _handleCreateProblem,
       ),
@@ -85,12 +87,15 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
   }
 
   Future<void> _handleCreateProblem(Map<String, dynamic> data) async {
+    print('Handling create problem with data: $data');
+    
     final problem = await MindForceService.createProblem(
       title: data['title'],
       description: data['description'],
       categoryId: data['categoryId'],
       paymentOption: data['paymentOption'] ?? 'free',
       paymentAmount: data['paymentAmount'],
+      images: data['images'] ?? [],
     );
 
     if (problem != null && mounted) {
@@ -99,7 +104,18 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
       });
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Problem posted successfully!')),
+        const SnackBar(
+          content: Text('Problem posted successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to post problem. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -135,73 +151,112 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
         },
       ),
       drawer: isMobile ? const BusinessNetworkDrawer(currentRoute: '/business-network/mindforce') : null,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 896),
-          child: Column(
-            children: [
-              // Header with Create button
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+      body: Column(
+        children: [
+          // Compact Header with gradient
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.purple.shade600,
+                  Colors.deepPurple.shade700,
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
-                child: Row(
-                  children: [
-                    const Text(
-                      'MindForce',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.psychology,
+                    size: 20,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'MindForce',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const Spacer(),
+                ElevatedButton.icon(
+                  onPressed: _showCreateProblemDialog,
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text(
+                    'Post',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.purple.shade700,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    minimumSize: const Size(0, 32),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const Spacer(),
-                    ElevatedButton.icon(
-                      onPressed: _showCreateProblemDialog,
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Post Problem'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B82F6),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              
-              // Tabs
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  labelColor: const Color(0xFF3B82F6),
-                  unselectedLabelColor: Colors.grey.shade600,
-                  indicatorColor: const Color(0xFF3B82F6),
-                  tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
-                ),
-              ),
-              
-              // Content
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _buildProblemsList(_activeProblems, 'No active problems'),
-                          _buildProblemsList(_solvedProblems, 'No solved problems'),
-                          _buildProblemsList(_myProblems, 'You haven\'t posted any problems'),
-                        ],
-                      ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          
+          // Compact Tabs
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Colors.purple.shade700,
+              unselectedLabelColor: const Color(0xFF757575),
+              indicatorColor: Colors.purple.shade700,
+              indicatorWeight: 3,
+              labelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
+            ),
+          ),
+          
+          // Content with 4px padding
+          Expanded(
+            child: Container(
+              color: const Color(0xFFF5F5F5),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildProblemsList(_activeProblems, 'No active problems'),
+                        _buildProblemsList(_solvedProblems, 'No solved problems'),
+                        _buildProblemsList(_myProblems, 'You haven\'t posted any problems'),
+                      ],
+                    ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: isMobile
           ? BusinessNetworkBottomNavBar(
@@ -218,11 +273,39 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.help_outline, size: 64, color: Colors.grey.shade300),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.purple.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.psychology_outlined,
+                size: 48,
+                color: Colors.purple.shade400,
+              ),
+            ),
             const SizedBox(height: 16),
             Text(
               emptyMessage,
-              style: TextStyle(color: Colors.grey.shade600),
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFF616161),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton.icon(
+              onPressed: _showCreateProblemDialog,
+              icon: Icon(Icons.add, size: 18, color: Colors.purple.shade700),
+              label: Text(
+                'Post a Problem',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.purple.shade700,
+                ),
+              ),
             ),
           ],
         ),
@@ -232,141 +315,20 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
     return RefreshIndicator(
       onRefresh: _loadData,
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: problems.length,
         itemBuilder: (context, index) {
-          return MindForceProblemCard(
-            problem: problems[index],
-            currentUserId: int.tryParse(AuthService.currentUser?.id ?? ''),
-            onTap: () {
-              // TODO: Navigate to problem detail
-            },
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: MindForceProblemCard(
+              problem: problems[index],
+              currentUserId: int.tryParse(AuthService.currentUser?.id ?? ''),
+              onTap: () {
+                // TODO: Navigate to problem detail
+              },
+            ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _CreateProblemDialog extends StatefulWidget {
-  final List<MindForceCategory> categories;
-  final Function(Map<String, dynamic>) onSubmit;
-
-  const _CreateProblemDialog({
-    required this.categories,
-    required this.onSubmit,
-  });
-
-  @override
-  State<_CreateProblemDialog> createState() => _CreateProblemDialogState();
-}
-
-class _CreateProblemDialogState extends State<_CreateProblemDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  int? _selectedCategoryId;
-  String _paymentOption = 'free';
-  final _amountController = TextEditingController();
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _amountController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Post a Problem',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 24),
-              
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 4,
-                validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              
-              if (widget.categories.isNotEmpty)
-                DropdownButtonFormField<int>(
-                  value: _selectedCategoryId,
-                  decoration: const InputDecoration(
-                    labelText: 'Category',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: widget.categories.map((cat) {
-                    return DropdownMenuItem(
-                      value: cat.id,
-                      child: Text(cat.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) => setState(() => _selectedCategoryId = value),
-                ),
-              
-              const SizedBox(height: 24),
-              
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        widget.onSubmit({
-                          'title': _titleController.text,
-                          'description': _descriptionController.text,
-                          'categoryId': _selectedCategoryId,
-                          'paymentOption': _paymentOption,
-                          'paymentAmount': _amountController.text.isNotEmpty
-                              ? double.tryParse(_amountController.text)
-                              : null,
-                        });
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Post'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

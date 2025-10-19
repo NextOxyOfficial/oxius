@@ -8,7 +8,7 @@ class MindForceService {
   // Fetch all problems
   static Future<List<MindForceProblem>> getProblems() async {
     try {
-      final token = AuthService.getToken();
+      final token = await AuthService.getToken();
       final headers = token != null
           ? {
               'Authorization': 'Bearer $token',
@@ -36,9 +36,17 @@ class MindForceService {
   // Fetch categories
   static Future<List<MindForceCategory>> getCategories() async {
     try {
+      final token = await AuthService.getToken();
+      final headers = token != null
+          ? {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            }
+          : {'Content-Type': 'application/json'};
+
       final response = await http.get(
         Uri.parse('${ApiService.baseUrl}/bn/mindforce/categories/'),
-        headers: {'Content-Type': 'application/json'},
+        headers: headers,
       );
 
       if (response.statusCode == 200) {
@@ -63,7 +71,7 @@ class MindForceService {
     List<String> images = const [],
   }) async {
     try {
-      final token = AuthService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) return null;
 
       final body = {
@@ -81,6 +89,8 @@ class MindForceService {
         body['payment_amount'] = paymentAmount.toString();
       }
 
+      print('Creating problem with body: ${json.encode(body)}');
+      
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/bn/mindforce/'),
         headers: {
@@ -90,14 +100,21 @@ class MindForceService {
         body: json.encode(body),
       );
 
+      print('Create problem response status: ${response.statusCode}');
+      print('Create problem response body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}');
+
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = json.decode(response.body);
         return MindForceProblem.fromJson(data);
+      } else {
+        print('Failed to create problem: ${response.statusCode}');
+        print('Error response: ${response.body}');
       }
 
       return null;
     } catch (e) {
       print('Error creating problem: $e');
+      print('Stack trace: ${StackTrace.current}');
       return null;
     }
   }
@@ -105,7 +122,7 @@ class MindForceService {
   // Update problem
   static Future<bool> updateProblem(int problemId, Map<String, dynamic> updates) async {
     try {
-      final token = AuthService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) return false;
 
       final response = await http.patch(
@@ -127,7 +144,7 @@ class MindForceService {
   // Delete problem
   static Future<bool> deleteProblem(int problemId) async {
     try {
-      final token = AuthService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) return false;
 
       final response = await http.delete(
@@ -148,7 +165,7 @@ class MindForceService {
   // Fetch comments for a problem
   static Future<List<MindForceComment>> getComments(int problemId) async {
     try {
-      final token = AuthService.getToken();
+      final token = await AuthService.getToken();
       final headers = token != null
           ? {
               'Authorization': 'Bearer $token',
@@ -180,7 +197,7 @@ class MindForceService {
     List<String> images = const [],
   }) async {
     try {
-      final token = AuthService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) return null;
 
       final response = await http.post(
@@ -210,7 +227,7 @@ class MindForceService {
   // Mark comment as solution
   static Future<bool> markCommentAsSolution(int commentId) async {
     try {
-      final token = AuthService.getToken();
+      final token = await AuthService.getToken();
       if (token == null) return false;
 
       final response = await http.patch(
