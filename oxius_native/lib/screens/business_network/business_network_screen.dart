@@ -314,8 +314,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         }
         break;
       case 4:
-        // AdsyClub / Home
-        // TODO: Navigate to home
+        // AdsyClub / Home - Navigate to public homepage
+        Navigator.pushReplacementNamed(context, '/home');
         break;
     }
   }

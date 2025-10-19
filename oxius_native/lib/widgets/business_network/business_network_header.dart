@@ -212,7 +212,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
           
           // User Profile Button
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: 12),
             child: InkWell(
               onTap: () {
                 if (isMobile) {

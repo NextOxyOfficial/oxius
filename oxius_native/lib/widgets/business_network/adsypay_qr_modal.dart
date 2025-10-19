@@ -484,13 +484,8 @@ class _AdsyPayQrModalState extends State<AdsyPayQrModal>
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  // TODO: Navigate to deposit-withdraw page
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Send Money feature coming soon!'),
-                      backgroundColor: Colors.blue,
-                    ),
-                  );
+                  // Navigate to deposit-withdraw page
+                  Navigator.pushNamed(context, '/deposit-withdraw');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,

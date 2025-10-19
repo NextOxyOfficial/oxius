@@ -342,8 +342,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         // Profile - Already here
         break;
       case 4:
-        // AdsyClub / Home
-        // TODO: Navigate to home
+        // AdsyClub / Home - Navigate to public homepage
+        Navigator.pushReplacementNamed(context, '/home');
         break;
     }
   }
