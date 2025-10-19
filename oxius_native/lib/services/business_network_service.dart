@@ -109,20 +109,60 @@ class BusinessNetworkService {
     }
   }
 
-  /// Like or unlike a post
-  static Future<bool> toggleLike(int postId) async {
+  /// Like a post
+  static Future<bool> likePost(int postId) async {
     try {
       final headers = await ApiService.getHeaders();
+      
+      print('=== Like Post Debug ===');
+      print('URL: $_baseUrl/posts/$postId/like/');
       
       final response = await http.post(
         Uri.parse('$_baseUrl/posts/$postId/like/'),
         headers: headers,
       );
       
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
       return response.statusCode == 200 || response.statusCode == 201;
-    } catch (e) {
-      print('Error toggling like: $e');
+    } catch (e, stackTrace) {
+      print('Error liking post: $e');
+      print('Stack trace: $stackTrace');
       return false;
+    }
+  }
+
+  /// Unlike a post
+  static Future<bool> unlikePost(int postId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      print('=== Unlike Post Debug ===');
+      print('URL: $_baseUrl/posts/$postId/unlike/');
+      
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/posts/$postId/unlike/'),
+        headers: headers,
+      );
+      
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e, stackTrace) {
+      print('Error unliking post: $e');
+      print('Stack trace: $stackTrace');
+      return false;
+    }
+  }
+
+  /// Toggle like/unlike a post
+  static Future<bool> toggleLike(int postId, bool isCurrentlyLiked) async {
+    if (isCurrentlyLiked) {
+      return await unlikePost(postId);
+    } else {
+      return await likePost(postId);
     }
   }
 
@@ -130,15 +170,29 @@ class BusinessNetworkService {
   static Future<BusinessNetworkComment?> addComment({
     required int postId,
     required String content,
+    int? parentCommentId,
   }) async {
     try {
       final headers = await ApiService.getHeaders();
       
+      final body = {
+        'content': content,
+        if (parentCommentId != null) 'parent_comment': parentCommentId,
+      };
+      
+      print('=== Add Comment Debug ===');
+      print('URL: $_baseUrl/posts/$postId/comments/');
+      print('Content: $content');
+      print('Parent Comment ID: $parentCommentId');
+      
       final response = await http.post(
-        Uri.parse('$_baseUrl/posts/$postId/comment/'),
+        Uri.parse('$_baseUrl/posts/$postId/comments/'),
         headers: headers,
-        body: json.encode({'content': content}),
+        body: json.encode(body),
       );
+      
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
       
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -219,6 +273,118 @@ class BusinessNetworkService {
     } catch (e) {
       print('Error updating post: $e');
       return null;
+    }
+  }
+
+  /// Save a post
+  static Future<bool> savePost(int postId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      print('=== Save Post Debug ===');
+      print('URL: $_baseUrl/posts/save/');
+      print('Post ID: $postId');
+      
+      final response = await http.post(
+        Uri.parse('$_baseUrl/posts/save/'),
+        headers: headers,
+        body: json.encode({'post': postId}),
+      );
+      
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      print('Error saving post: $e');
+      return false;
+    }
+  }
+
+  /// Unsave a post
+  static Future<bool> unsavePost(int postId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      print('=== Unsave Post Debug ===');
+      print('URL: $_baseUrl/saved-posts/delete/$postId/');
+      
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/saved-posts/delete/$postId/'),
+        headers: headers,
+      );
+      
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('Error unsaving post: $e');
+      return false;
+    }
+  }
+
+  /// Toggle save/unsave a post
+  static Future<bool> toggleSave(int postId, bool isCurrentlySaved) async {
+    if (isCurrentlySaved) {
+      return await unsavePost(postId);
+    } else {
+      return await savePost(postId);
+    }
+  }
+
+  /// Follow a user
+  static Future<bool> followUser(String userId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      print('=== Follow User Debug ===');
+      print('URL: $_baseUrl/users/$userId/follow/');
+      
+      final response = await http.post(
+        Uri.parse('$_baseUrl/users/$userId/follow/'),
+        headers: headers,
+      );
+      
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      print('Error following user: $e');
+      return false;
+    }
+  }
+
+  /// Unfollow a user
+  static Future<bool> unfollowUser(String userId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      print('=== Unfollow User Debug ===');
+      print('URL: $_baseUrl/users/$userId/unfollow/');
+      
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/users/$userId/unfollow/'),
+        headers: headers,
+      );
+      
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print('Error unfollowing user: $e');
+      return false;
+    }
+  }
+
+  /// Toggle follow/unfollow a user
+  static Future<bool> toggleFollow(String userId, bool isCurrentlyFollowing) async {
+    if (isCurrentlyFollowing) {
+      return await unfollowUser(userId);
+    } else {
+      return await followUser(userId);
     }
   }
 }

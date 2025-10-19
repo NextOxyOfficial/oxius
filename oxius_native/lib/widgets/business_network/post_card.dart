@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
+import '../../screens/business_network/post_detail_screen.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
 import 'post_actions.dart';
@@ -57,10 +59,18 @@ class _PostCardState extends State<PostCard> {
     );
 
     if (comment != null && mounted) {
+      // Update local post state to show new comment immediately
+      setState(() {
+        _post = _post.copyWith(
+          commentsCount: _post.commentsCount + 1,
+          comments: [..._post.comments, comment],
+        );
+        _isAddingComment = false;
+      });
+      
+      // Also notify parent widget
       widget.onCommentAdded?.call(comment);
-    }
-
-    if (mounted) {
+    } else if (mounted) {
       setState(() => _isAddingComment = false);
     }
   }
@@ -94,15 +104,101 @@ class _PostCardState extends State<PostCard> {
   }
 
   void _handleViewAllComments() {
-    // TODO: Navigate to comments screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PostDetailScreen(post: _post),
+      ),
+    );
   }
 
-  void _handleShare() {
-    // TODO: Implement share functionality
+  Future<void> _handleShare() async {
+    try {
+      // Create share text with post title and content
+      String shareText = '';
+      
+      if (_post.title.isNotEmpty) {
+        shareText += '${_post.title}\n\n';
+      }
+      
+      shareText += _post.content;
+      
+      // Add post link (you can customize this URL)
+      shareText += '\n\nView on Business Network: http://127.0.0.1:8000/bn/posts/${_post.id}/';
+      
+      // Share the content
+      await Share.share(
+        shareText,
+        subject: _post.title.isNotEmpty ? _post.title : 'Business Network Post',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  void _handleSave() {
-    // TODO: Implement save functionality
+  Future<void> _handleSave() async {
+    final success = await BusinessNetworkService.toggleSave(_post.id, _post.isSaved);
+    
+    if (success && mounted) {
+      setState(() {
+        _post = _post.copyWith(
+          isSaved: !_post.isSaved,
+        );
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_post.isSaved ? 'Post saved' : 'Post unsaved'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _handleFollowToggle() async {
+    // Check if we have the user UUID
+    if (_post.user.uuid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to follow user'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final success = await BusinessNetworkService.toggleFollow(
+      _post.user.uuid!,
+      _post.user.isFollowing,
+    );
+    
+    if (success && mounted) {
+      setState(() {
+        // Create updated user with toggled follow status
+        final updatedUser = BusinessNetworkUser(
+          id: _post.user.id,
+          uuid: _post.user.uuid,
+          name: _post.user.name,
+          avatar: _post.user.avatar,
+          image: _post.user.image,
+          isVerified: _post.user.isVerified,
+          bio: _post.user.bio,
+          username: _post.user.username,
+          firstName: _post.user.firstName,
+          lastName: _post.user.lastName,
+          isFollowing: !_post.user.isFollowing,
+        );
+        
+        _post = _post.copyWith(user: updatedUser);
+      });
+    }
   }
 
   @override
@@ -120,9 +216,7 @@ class _PostCardState extends State<PostCard> {
           // Post Header
           PostHeader(
             post: _post,
-            onFollowToggle: () {
-              // TODO: Implement follow toggle
-            },
+            onFollowToggle: _handleFollowToggle,
             onMorePressed: () {
               // TODO: Show options menu
             },
@@ -225,6 +319,10 @@ class _PostCardState extends State<PostCard> {
           PostCommentsPreview(
             post: _post,
             onViewAll: _handleViewAllComments,
+            onReply: (comment) {
+              // Navigate to post detail screen when replying
+              _handleViewAllComments();
+            },
           ),
           // Add Comment Input
           PostCommentInput(

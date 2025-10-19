@@ -588,7 +588,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
 
   void _handleLikeToggle(int index) async {
     final post = _posts[index];
-    final success = await BusinessNetworkService.toggleLike(post.id);
+    final success = await BusinessNetworkService.toggleLike(post.id, post.isLiked);
     
     if (success && mounted) {
       setState(() {

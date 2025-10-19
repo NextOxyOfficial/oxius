@@ -88,6 +88,10 @@ class _PostCommentInputState extends State<PostCommentInput> {
           // Comment Input
           Expanded(
             child: Container(
+              constraints: const BoxConstraints(
+                minHeight: 32,
+                maxHeight: 100,
+              ),
               decoration: BoxDecoration(
                 color: Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(20),
@@ -97,6 +101,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
                 ),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
                     child: TextField(
@@ -109,19 +114,20 @@ class _PostCommentInputState extends State<PostCommentInput> {
                         ),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
+                          horizontal: 14,
+                          vertical: 4,
                         ),
                       ),
                       style: const TextStyle(fontSize: 13),
                       maxLines: null,
+                      minLines: 1,
                       textInputAction: TextInputAction.send,
                       onSubmitted: (_) => _handleSubmit(),
                     ),
                   ),
                   if (_isSubmitting)
                     const Padding(
-                      padding: EdgeInsets.only(right: 12),
+                      padding: EdgeInsets.only(right: 12, bottom: 10),
                       child: SizedBox(
                         width: 16,
                         height: 16,
@@ -129,17 +135,20 @@ class _PostCommentInputState extends State<PostCommentInput> {
                       ),
                     )
                   else
-                    IconButton(
-                      onPressed: _handleSubmit,
-                      icon: Icon(
-                        Icons.send,
-                        size: 18,
-                        color: _controller.text.trim().isEmpty
-                            ? Colors.grey.shade400
-                            : const Color(0xFF3B82F6),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: IconButton(
+                        onPressed: _handleSubmit,
+                        icon: Icon(
+                          Icons.send,
+                          size: 18,
+                          color: _controller.text.trim().isEmpty
+                              ? Colors.grey.shade400
+                              : const Color(0xFF3B82F6),
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        constraints: const BoxConstraints(),
                       ),
-                      padding: const EdgeInsets.all(8),
-                      constraints: const BoxConstraints(),
                     ),
                 ],
               ),

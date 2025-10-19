@@ -146,6 +146,7 @@ class BusinessNetworkPost {
   }
 
   BusinessNetworkPost copyWith({
+    BusinessNetworkUser? user,
     int? likesCount,
     bool? isLiked,
     bool? isSaved,
@@ -156,7 +157,7 @@ class BusinessNetworkPost {
     return BusinessNetworkPost(
       id: id,
       title: title,
-      user: user,
+      user: user ?? this.user,
       content: content,
       media: media,
       tags: tags,
@@ -250,6 +251,7 @@ class PostLike {
 
 class BusinessNetworkUser {
   final int id;
+  final String? uuid; // Original UUID string for API calls
   final String name;
   final String? avatar;
   final String? image;
@@ -262,6 +264,7 @@ class BusinessNetworkUser {
 
   BusinessNetworkUser({
     required this.id,
+    this.uuid,
     required this.name,
     this.avatar,
     this.image,
@@ -286,7 +289,10 @@ class BusinessNetworkUser {
     // Handle UUID strings by using hashCode
     final idValue = json['id'];
     int parsedId;
+    String? uuidString;
+    
     if (idValue is String) {
+      uuidString = idValue; // Store original UUID
       // Try to parse as int first, if that fails use hashCode for UUID
       parsedId = int.tryParse(idValue) ?? idValue.hashCode;
     } else {
@@ -295,6 +301,7 @@ class BusinessNetworkUser {
     
     return BusinessNetworkUser(
       id: parsedId,
+      uuid: uuidString,
       name: displayName,
       avatar: json['avatar'] ?? json['profile_picture'],
       image: json['image'],
@@ -303,7 +310,7 @@ class BusinessNetworkUser {
       username: json['username'],
       firstName: json['first_name'],
       lastName: json['last_name'],
-      isFollowing: json['is_following'] ?? false,
+      isFollowing: json['is_following'] ?? json['isFollowing'] ?? false,
     );
   }
 
