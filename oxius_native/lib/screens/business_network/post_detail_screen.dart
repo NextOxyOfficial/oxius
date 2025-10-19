@@ -393,7 +393,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         // Post Title
                         if (_post.title.isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                             child: Text(
                               _post.title,
                               style: const TextStyle(
@@ -406,18 +406,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         
                         // Post Content
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          padding: EdgeInsets.fromLTRB(16, _post.title.isNotEmpty ? 0 : 16, 16, 0),
                           child: Text(
                             _post.content,
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey.shade800,
-                              height: 1.4,
+                              height: 1.5,
                             ),
                           ),
                         ),
                         
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         
                         // Post Media
                         if (_post.media.isNotEmpty)
