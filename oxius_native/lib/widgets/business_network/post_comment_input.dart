@@ -89,15 +89,15 @@ class _PostCommentInputState extends State<PostCommentInput> {
           Expanded(
             child: Container(
               constraints: const BoxConstraints(
-                minHeight: 32,
+                minHeight: 36,
                 maxHeight: 100,
               ),
               decoration: BoxDecoration(
                 color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18),
                 border: Border.all(
                   color: Colors.grey.shade200,
-                  width: 1,
+                  width: 0.5,
                 ),
               ),
               child: Row(
@@ -115,8 +115,9 @@ class _PostCommentInputState extends State<PostCommentInput> {
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 14,
-                          vertical: 4,
+                          vertical: 8,
                         ),
+                        isDense: true,
                       ),
                       style: const TextStyle(fontSize: 13),
                       maxLines: null,

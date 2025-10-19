@@ -112,7 +112,8 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
               // Replies to this comment (child comments)
               if (commentReplies.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                ...commentReplies.map((reply) => Container(
+                // Show only last 3 replies
+                ...commentReplies.take(3).map((reply) => Container(
                   margin: const EdgeInsets.only(left: 40, bottom: 8),
                   decoration: BoxDecoration(
                     border: Border(
@@ -129,6 +130,27 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                     isReply: true,
                   ),
                 )),
+                // "See more replies" button if there are more than 3
+                if (commentReplies.length > 3)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 48, bottom: 8, right: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        InkWell(
+                          onTap: widget.onViewAll,
+                          child: Text(
+                            'See ${commentReplies.length - 3} more ${commentReplies.length - 3 == 1 ? 'reply' : 'replies'}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
               // Spacing between comment groups
               if (index < recentParents.length - 1)

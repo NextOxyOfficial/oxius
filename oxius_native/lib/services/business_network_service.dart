@@ -149,6 +149,12 @@ class BusinessNetworkService {
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
       
+      // 404 means like doesn't exist - treat as success
+      if (response.statusCode == 404) {
+        print('Like not found - already unliked');
+        return true;
+      }
+      
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e, stackTrace) {
       print('Error unliking post: $e');

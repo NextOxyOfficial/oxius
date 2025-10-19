@@ -33,7 +33,7 @@ class PostActions extends StatelessWidget {
           const SizedBox(width: 16),
           // Comment Button
           _ActionButton(
-            icon: Icons.chat_bubble_outline,
+            icon: Icons.mode_comment_outlined,
             iconColor: Colors.grey.shade600,
             label: _formatCount(post.commentsCount),
             onTap: onComment,
@@ -41,7 +41,7 @@ class PostActions extends StatelessWidget {
           const SizedBox(width: 16),
           // Share Button
           _ActionButton(
-            icon: Icons.share_outlined,
+            icon: Icons.ios_share,
             iconColor: Colors.grey.shade600,
             label: 'Share',
             onTap: onShare,
@@ -52,9 +52,9 @@ class PostActions extends StatelessWidget {
             IconButton(
               onPressed: onSave,
               icon: Icon(
-                post.isSaved ? Icons.bookmark : Icons.bookmark_border,
+                post.isSaved ? Icons.bookmark : Icons.bookmark_border_rounded,
                 color: post.isSaved ? const Color(0xFF3B82F6) : Colors.grey.shade600,
-                size: 22,
+                size: 23,
               ),
               padding: const EdgeInsets.all(4),
               constraints: const BoxConstraints(),
