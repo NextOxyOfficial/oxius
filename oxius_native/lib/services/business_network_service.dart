@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../models/business_network_models.dart';
 import 'api_service.dart';
 
@@ -497,6 +499,65 @@ class BusinessNetworkService {
     } catch (e) {
       print('Error fetching user posts: $e');
       return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0};
+    }
+  }
+
+  /// Upload profile picture
+  static Future<bool> uploadProfilePicture(dynamic imageFile) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      print('=== Upload Profile Picture Debug ===');
+      print('Image file type: ${imageFile.runtimeType}');
+      
+      final dio = Dio();
+      
+      // Prepare form data
+      FormData formData;
+      
+      if (imageFile is File) {
+        // For mobile (Android/iOS)
+        print('Using File path: ${imageFile.path}');
+        formData = FormData.fromMap({
+          'image': await MultipartFile.fromFile(
+            imageFile.path,
+            filename: 'profile.jpg',
+          ),
+        });
+      } else {
+        // For web (XFile)
+        print('Using XFile/bytes');
+        final bytes = await imageFile.readAsBytes();
+        formData = FormData.fromMap({
+          'image': MultipartFile.fromBytes(
+            bytes,
+            filename: 'profile.jpg',
+          ),
+        });
+      }
+      
+      print('Sending request to: ${ApiService.baseUrl}/api/user/profile/update/');
+      
+      final response = await dio.patch(
+        '${ApiService.baseUrl}/api/user/profile/update/',
+        data: formData,
+        options: Options(
+          headers: headers,
+          validateStatus: (status) => status! < 500,
+        ),
+      );
+      
+      print('Response status: ${response.statusCode}');
+      print('Response data: ${response.data}');
+      
+      if (response.statusCode == 200) {
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      print('Error uploading profile picture: $e');
+      return false;
     }
   }
 

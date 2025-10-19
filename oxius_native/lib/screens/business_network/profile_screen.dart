@@ -216,22 +216,40 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Uploading profile picture...'),
-            duration: Duration(seconds: 2),
+            duration: Duration(seconds: 30),
           ),
         );
       }
 
-      // TODO: Upload to server
-      // final success = await BusinessNetworkService.uploadProfilePicture(File(image.path));
+      // Upload to server (pass XFile directly for cross-platform support)
+      final success = await BusinessNetworkService.uploadProfilePicture(image);
       
-      // For now, just show success message
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile picture upload feature coming soon!'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        // Hide loading snackbar
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        
+        if (success) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile picture updated successfully!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+          
+          // Reload profile data to show new image
+          _loadProfileData();
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to upload profile picture. Please try again.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -678,7 +696,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         Text(
           count.toString(),
           style: const TextStyle(
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.w700,
             color: Colors.black87,
           ),
