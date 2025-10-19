@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
+import '../../services/auth_service.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
+import '../../widgets/business_network/business_network_header.dart';
 import 'create_post_screen.dart';
+import 'profile_screen.dart';
 
 class BusinessNetworkScreen extends StatefulWidget {
   const BusinessNetworkScreen({super.key});
@@ -130,60 +133,25 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF9FAFB),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: isMobile
-            ? IconButton(
-                icon: const Icon(Icons.menu, color: Colors.black, size: 22),
-                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              )
-            : IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
-                onPressed: () => Navigator.pop(context),
+      appBar: BusinessNetworkHeader(
+        onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+        onSearchTap: () {
+          // TODO: Implement search
+        },
+        onQRCodeTap: () {
+          // TODO: Show QR code modal
+        },
+        onProfileTap: () {
+          final currentUser = AuthService.currentUser;
+          if (currentUser != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfileScreen(userId: currentUser.id),
               ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.business_center,
-                size: 16,
-                color: Color(0xFF3B82F6),
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Business Network',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.black, size: 22),
-            onPressed: () {
-              // TODO: Implement search
-            },
-          ),
-          if (!isMobile)
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined, color: Colors.black, size: 22),
-              onPressed: () {
-                // TODO: Implement notifications
-              },
-            ),
-        ],
+            );
+          }
+        },
       ),
       drawer: isMobile ? _buildDrawer() : null,
       body: Center(
@@ -333,13 +301,21 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         // Notifications
         // TODO: Navigate to notifications
         break;
-      case 2:
-        // Profile
-        // TODO: Navigate to profile
-        break;
       case 3:
-        // More
-        // TODO: Show more options
+        // Profile
+        final currentUser = AuthService.currentUser;
+        if (currentUser != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProfileScreen(userId: currentUser.id),
+            ),
+          );
+        }
+        break;
+      case 4:
+        // AdsyClub / Home
+        // TODO: Navigate to home
         break;
     }
   }

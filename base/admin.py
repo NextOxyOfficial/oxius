@@ -229,7 +229,7 @@ class CustomUserAdmin(UserAdmin):
 
         return [
             (
-                None,
+                "Basic Information",
                 {
                     "fields": (
                         "email",
@@ -243,40 +243,99 @@ class CustomUserAdmin(UserAdmin):
                         "age",
                         "gender",
                         "image",
+                    )
+                },
+            ),
+            (
+                "Profile Details",
+                {
+                    "fields": (
                         "about",
+                        "profession",
+                        "company",
+                        "website",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
+            (
+                "Social Links",
+                {
+                    "fields": (
                         "face_link",
                         "instagram_link",
                         "gmail_link",
                         "whatsapp_link",
-                        "is_vendor",
-                        "is_active",
-                        "kyc_pending",
-                        "kyc",
-                        "is_topcontributor",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
+            (
+                "Location Information",
+                {
+                    "fields": (
                         "address",
                         "country",
                         "city",
                         "state",
                         "upazila",
                         "zip",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
+            (
+                "Account Status",
+                {
+                    "fields": (
+                        "is_vendor",
+                        "is_active",
+                        "kyc_pending",
+                        "kyc",
+                        "is_topcontributor",
+                        "user_type",
+                    ),
+                },
+            ),
+            (
+                "Financial Information",
+                {
+                    "fields": (
                         "balance",
                         "pending_balance",
                         "diamond_balance",
-                        "user_type",
+                        "nid_number",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
+            (
+                "Referral System",
+                {
+                    "fields": (
                         "refer",
                         "refer_count",
                         "commission_earned",
                         "commission",
                         "referral_code",
-                        "nid_number",
-                        "is_staff",
-                        "is_superuser",
-                        "groups",
-                        "user_permissions",
-                        "last_login",
-                        "date_joined",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
+            (
+                "Pro Subscription",
+                {
+                    "fields": (
                         "is_pro",
                         "pro_validity",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
+            (
+                "Store Information",
+                {
+                    "fields": (
                         "store_name",
                         "store_username",
                         "store_logo",
@@ -284,9 +343,32 @@ class CustomUserAdmin(UserAdmin):
                         "store_address",
                         "store_description",
                         "product_limit",
-                    )
+                    ),
+                    "classes": ("collapse",),
                 },
-            )
+            ),
+            (
+                "Permissions",
+                {
+                    "fields": (
+                        "is_staff",
+                        "is_superuser",
+                        "groups",
+                        "user_permissions",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
+            (
+                "Important Dates",
+                {
+                    "fields": (
+                        "last_login",
+                        "date_joined",
+                    ),
+                    "classes": ("collapse",),
+                },
+            ),
         ]
 
     def get_readonly_fields(self, request, obj=None):

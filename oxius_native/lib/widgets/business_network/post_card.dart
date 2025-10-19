@@ -154,6 +154,22 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
+  Future<void> _handleLike() async {
+    final success = await BusinessNetworkService.toggleLike(_post.id, _post.isLiked);
+    
+    if (success && mounted) {
+      setState(() {
+        _post = _post.copyWith(
+          isLiked: !_post.isLiked,
+          likesCount: _post.isLiked ? _post.likesCount - 1 : _post.likesCount + 1,
+        );
+      });
+      
+      // Notify parent widget
+      widget.onLikeToggle?.call();
+    }
+  }
+
   Future<void> _handleSave() async {
     final success = await BusinessNetworkService.toggleSave(_post.id, _post.isSaved);
     
@@ -525,7 +541,7 @@ class _PostCardState extends State<PostCard> {
           // Post Actions
           PostActions(
             post: _post,
-            onLike: widget.onLikeToggle ?? () {},
+            onLike: _handleLike,
             onComment: _handleViewAllComments,
             onShare: _handleShare,
             onSave: _handleSave,

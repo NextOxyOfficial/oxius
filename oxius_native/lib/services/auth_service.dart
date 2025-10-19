@@ -20,6 +20,7 @@ class User {
   final double pendingBalance;
   final int diamondBalance;
   final bool isPro;
+  final bool isVerified;
 
   User({
     required this.id,
@@ -38,6 +39,7 @@ class User {
     this.pendingBalance = 0.0,
     this.diamondBalance = 0,
     this.isPro = false,
+    this.isVerified = false,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -66,6 +68,7 @@ class User {
           ? json['diamond_balance'] 
           : int.tryParse(json['diamond_balance']?.toString() ?? '0') ?? 0,
       isPro: json['is_pro'] == true,
+      isVerified: json['kyc'] == true || json['is_verified'] == true,
     );
   }
 
@@ -87,6 +90,7 @@ class User {
       'pending_balance': pendingBalance,
       'diamond_balance': diamondBalance,
       'is_pro': isPro,
+      'kyc': isVerified,
     };
   }
 

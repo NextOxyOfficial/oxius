@@ -431,6 +431,106 @@ class BusinessNetworkService {
     }
   }
 
+  /// Get user profile data
+  static Future<Map<String, dynamic>> getUserProfile(String userId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      print('=== Get User Profile Debug ===');
+      print('User ID: $userId');
+      print('URL: ${ApiService.baseUrl}/user/$userId/');
+      
+      final response = await http.get(
+        Uri.parse('${ApiService.baseUrl}/user/$userId/'),
+        headers: headers,
+      );
+      
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        print('ERROR: Failed to load user profile - ${response.statusCode}');
+        throw Exception('Failed to load user profile: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching user profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Get user posts
+  static Future<Map<String, dynamic>> getUserPosts(String userId, {int page = 1, int pageSize = 10}) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      print('=== Get User Posts Debug ===');
+      print('User ID: $userId');
+      print('URL: $_baseUrl/user/$userId/posts/?page=$page&page_size=$pageSize');
+      
+      final response = await http.get(
+        Uri.parse('$_baseUrl/user/$userId/posts/?page=$page&page_size=$pageSize'),
+        headers: headers,
+      );
+      
+      print('Response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('Posts data received: ${data['count']} posts');
+        
+        final posts = (data['results'] as List)
+            .map((json) => BusinessNetworkPost.fromJson(json))
+            .toList();
+        
+        return {
+          'posts': posts,
+          'hasMore': data['next'] != null,
+          'count': data['count'] ?? 0,
+        };
+      } else {
+        print('ERROR: Failed to load user posts - ${response.statusCode}');
+        return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0};
+      }
+    } catch (e) {
+      print('Error fetching user posts: $e');
+      return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0};
+    }
+  }
+
+  /// Get saved posts
+  static Future<List<BusinessNetworkPost>> getSavedPosts() async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      print('=== Get Saved Posts Debug ===');
+      print('URL: $_baseUrl/posts/save/');
+      
+      final response = await http.get(
+        Uri.parse('$_baseUrl/posts/save/'),
+        headers: headers,
+      );
+      
+      print('Response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> results = data['results'] ?? data;
+        
+        return results
+            .map((json) => BusinessNetworkPost.fromJson(json))
+            .toList();
+      }
+      
+      return [];
+    } catch (e) {
+      print('Error fetching saved posts: $e');
+      return [];
+    }
+  }
+
   /// Search users for @mentions
   static Future<List<BusinessNetworkUser>> searchUsers(String query) async {
     try {
