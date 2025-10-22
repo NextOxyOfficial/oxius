@@ -336,6 +336,8 @@ class BusinessNetworkComment {
   final String content;
   final String createdAt;
   final int? parentComment;
+  final bool isGiftComment;
+  final int? diamondAmount;
 
   BusinessNetworkComment({
     required this.id,
@@ -343,6 +345,8 @@ class BusinessNetworkComment {
     required this.content,
     required this.createdAt,
     this.parentComment,
+    this.isGiftComment = false,
+    this.diamondAmount,
   });
 
   factory BusinessNetworkComment.fromJson(Map<String, dynamic> json) {
@@ -353,6 +357,8 @@ class BusinessNetworkComment {
       content: json['content'] ?? json['comment'] ?? '',
       createdAt: json['created_at'] ?? '',
       parentComment: _parseId(json['parent_comment']),
+      isGiftComment: json['is_gift_comment'] == true,
+      diamondAmount: json['diamond_amount'] != null ? int.tryParse(json['diamond_amount'].toString()) : null,
     );
   }
 
@@ -363,6 +369,8 @@ class BusinessNetworkComment {
       'content': content,
       'created_at': createdAt,
       'parent_comment': parentComment,
+      'is_gift_comment': isGiftComment,
+      'diamond_amount': diamondAmount,
     };
   }
 }

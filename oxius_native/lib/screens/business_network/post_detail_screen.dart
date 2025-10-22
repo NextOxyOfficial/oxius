@@ -133,12 +133,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> _handleCommentAdded(BusinessNetworkComment comment) async {
     if (mounted) {
-      setState(() {
-        _post = _post.copyWith(
-          commentsCount: _post.commentsCount + 1,
-          comments: [..._post.comments, comment],
-        );
-      });
+      // Reload post from API to ensure proper reply relationships and gift comments
+      final updatedPost = await BusinessNetworkService.getPost(_post.id);
+      if (updatedPost != null && mounted) {
+        setState(() {
+          _post = updatedPost;
+        });
+      } else if (mounted) {
+        // Fallback to local update
+        setState(() {
+          _post = _post.copyWith(
+            commentsCount: _post.commentsCount + 1,
+            comments: [..._post.comments, comment],
+          );
+        });
+      }
     }
   }
 
@@ -540,6 +549,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   if (comment != null) {
                     _handleCommentAdded(comment);
                   }
+                },
+                postId: _post.id.toString(),
+                postAuthorId: _post.user.uuid ?? _post.user.id.toString(),
+                postAuthorName: _post.user.name,
+                onGiftSent: () {
+                  // Reload post to show new gift comment
+                  _loadFullPost();
                 },
               ),
             ),

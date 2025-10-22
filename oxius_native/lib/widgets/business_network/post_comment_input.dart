@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
+import '../../services/auth_service.dart';
+import 'diamond_gift_bottom_sheet.dart';
 
 class PostCommentInput extends StatefulWidget {
   final Function(String) onSubmit;
   final String? userAvatar;
+  final String postId;
+  final String postAuthorId;
+  final String postAuthorName;
+  final VoidCallback? onGiftSent;
 
   const PostCommentInput({
     super.key,
     required this.onSubmit,
     this.userAvatar,
+    required this.postId,
+    required this.postAuthorId,
+    required this.postAuthorName,
+    this.onGiftSent,
   });
 
   @override
@@ -106,8 +116,8 @@ class _PostCommentInputState extends State<PostCommentInput> {
           Expanded(
             child: Container(
               constraints: const BoxConstraints(
-                minHeight: 40,
-                maxHeight: 100,
+                minHeight: 20,
+                maxHeight: 40,
               ),
               decoration: BoxDecoration(
                 color: Colors.grey.shade50,
@@ -172,6 +182,38 @@ class _PostCommentInputState extends State<PostCommentInput> {
               ),
             ),
           ),
+          // Gift Button (only show if not the post author)
+          if (AuthService.currentUser != null && 
+              AuthService.currentUser!.id != widget.postAuthorId)
+            Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.pink.shade50,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    DiamondGiftBottomSheet.show(
+                      context,
+                      postId: widget.postId,
+                      postAuthorId: widget.postAuthorId,
+                      postAuthorName: widget.postAuthorName,
+                      onGiftSent: widget.onGiftSent,
+                    );
+                  },
+                  icon: Icon(
+                    Icons.card_giftcard,
+                    size: 20,
+                    color: Colors.pink.shade500,
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ),
+            ),
         ],
       ),
     );

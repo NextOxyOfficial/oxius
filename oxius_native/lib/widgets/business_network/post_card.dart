@@ -82,17 +82,30 @@ class _PostCardState extends State<PostCard> {
     );
 
     if (comment != null && mounted) {
-      // Update local post state to show new comment immediately
-      setState(() {
-        _post = _post.copyWith(
-          commentsCount: _post.commentsCount + 1,
-          comments: [..._post.comments, comment],
-        );
-        _isAddingComment = false;
-      });
+      // Small delay to allow UI to update smoothly
+      await Future.delayed(const Duration(milliseconds: 100));
       
-      // Also notify parent widget
-      widget.onCommentAdded?.call(comment);
+      // Reload post from API to ensure gift comments and all properties are preserved
+      final updatedPost = await BusinessNetworkService.getPost(_post.id);
+      if (updatedPost != null && mounted) {
+        setState(() {
+          _post = updatedPost;
+          _isAddingComment = false;
+        });
+        
+        widget.onCommentAdded?.call(comment);
+      } else if (mounted) {
+        // Fallback to local update
+        setState(() {
+          _post = _post.copyWith(
+            commentsCount: _post.commentsCount + 1,
+            comments: [..._post.comments, comment],
+          );
+          _isAddingComment = false;
+        });
+        
+        widget.onCommentAdded?.call(comment);
+      }
     } else if (mounted) {
       setState(() => _isAddingComment = false);
     }
@@ -625,15 +638,30 @@ class _PostCardState extends State<PostCard> {
               );
               
               if (newComment != null && mounted) {
-                setState(() {
-                  _post = _post.copyWith(
-                    commentsCount: _post.commentsCount + 1,
-                    comments: [..._post.comments, newComment],
-                  );
-                  _isAddingComment = false;
-                });
+                // Small delay to allow UI to update smoothly
+                await Future.delayed(const Duration(milliseconds: 100));
                 
-                widget.onCommentAdded?.call(newComment);
+                // Reload post from API to ensure proper reply relationships
+                final updatedPost = await BusinessNetworkService.getPost(_post.id);
+                if (updatedPost != null && mounted) {
+                  setState(() {
+                    _post = updatedPost;
+                    _isAddingComment = false;
+                  });
+                  
+                  widget.onCommentAdded?.call(newComment);
+                } else if (mounted) {
+                  // Fallback to local update
+                  setState(() {
+                    _post = _post.copyWith(
+                      commentsCount: _post.commentsCount + 1,
+                      comments: [..._post.comments, newComment],
+                    );
+                    _isAddingComment = false;
+                  });
+                  
+                  widget.onCommentAdded?.call(newComment);
+                }
               } else if (mounted) {
                 setState(() => _isAddingComment = false);
               }
@@ -643,6 +671,21 @@ class _PostCardState extends State<PostCard> {
           PostCommentInput(
             onSubmit: _addComment,
             userAvatar: null, // TODO: Get current user avatar
+            postId: _post.id.toString(),
+            postAuthorId: _post.user.uuid ?? _post.user.id.toString(),
+            postAuthorName: _post.user.name,
+            onGiftSent: () async {
+              // Small delay to allow UI to update smoothly
+              await Future.delayed(const Duration(milliseconds: 100));
+              
+              // Reload post data to show new gift comment
+              final updatedPost = await BusinessNetworkService.getPost(_post.id);
+              if (updatedPost != null && mounted) {
+                setState(() {
+                  _post = updatedPost;
+                });
+              }
+            },
           ),
         ],
       ),

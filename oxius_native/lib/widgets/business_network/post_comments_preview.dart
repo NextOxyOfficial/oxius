@@ -48,10 +48,27 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
       return const SizedBox.shrink(); // No parent comments to show
     }
     
-    // Get last 2 parent comments (most recent)
-    final recentParents = parentComments.length <= 2
-        ? parentComments.reversed.toList()
-        : parentComments.sublist(parentComments.length - 2).reversed.toList();
+    // Find the comment with highest diamond amount for pinning at the top (like Vue)
+    BusinessNetworkComment? highestGiftComment;
+    final giftComments = parentComments.where((c) => c.isGiftComment).toList();
+    if (giftComments.isNotEmpty) {
+      giftComments.sort((a, b) => (b.diamondAmount ?? 0).compareTo(a.diamondAmount ?? 0));
+      highestGiftComment = giftComments.first;
+    }
+    
+    // Filter out the highest gift comment from regular comments to avoid duplication
+    List<BusinessNetworkComment> displayedComments = [...parentComments];
+    if (highestGiftComment != null) {
+      displayedComments = displayedComments.where((c) => c.id != highestGiftComment!.id).toList();
+    }
+    
+    // Sort comments by creation date in ascending order (oldest first)
+    displayedComments.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    
+    // Get last 3 comments (most recent)
+    final recentParents = displayedComments.length <= 3
+        ? displayedComments.reversed.toList()
+        : displayedComments.sublist(displayedComments.length - 3).reversed.toList();
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -67,7 +84,63 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Comments with their replies
+          // Pinned highest gift comment (if exists)
+          if (highestGiftComment != null) ...[
+            Row(
+              children: [
+                Icon(Icons.star, size: 12, color: Colors.amber.shade600),
+                const SizedBox(width: 4),
+                Text(
+                  'Top Gift',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.amber.shade700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            _CommentItem(
+              comment: highestGiftComment!,
+              onReply: widget.onReplySubmit != null ? () {
+                setState(() {
+                  _replyingTo = highestGiftComment;
+                });
+              } : null,
+            ),
+            // Replies to highest gift comment
+            ...(() {
+              final giftReplies = replies.where((r) => r.parentComment == highestGiftComment!.id).toList()
+                ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+              return giftReplies.map((reply) => _CommentItem(
+                comment: reply,
+                isReply: true,
+              ));
+            })(),
+            // Reply input for highest gift
+            if (_replyingTo?.id == highestGiftComment.id)
+              _ReplyInput(
+                replyingTo: highestGiftComment!,
+                onCancel: () {
+                  setState(() {
+                    _replyingTo = null;
+                  });
+                },
+                onSubmit: (content) async {
+                  if (widget.onReplySubmit != null) {
+                    await widget.onReplySubmit!(highestGiftComment!, content);
+                    setState(() {
+                      _replyingTo = null;
+                    });
+                  }
+                },
+              ),
+            const SizedBox(height: 8),
+            Divider(height: 1, color: Colors.grey.shade200),
+            const SizedBox(height: 8),
+          ],
+          // Regular comments with replies (including other gift comments)
           ...recentParents.asMap().entries.expand((entry) {
             final index = entry.key;
             final comment = entry.value;
@@ -405,15 +478,67 @@ class _CommentItem extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 2),
-                // Comment text
-                Text(
-                  comment.content,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade800,
-                    height: 1.3,
+                // Comment text or gift comment
+                if (comment.isGiftComment)
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.pink.shade50.withOpacity(0.7),
+                          Colors.purple.shade50.withOpacity(0.7),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.pink.shade200, width: 1),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Gift label
+                        Row(
+                          children: [
+                            Icon(Icons.card_giftcard, size: 14, color: Colors.pink.shade600),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Sent ${comment.diamondAmount ?? 0} diamonds',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.pink.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (comment.content.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          () {
+                            final extractedMessage = _extractGiftMessage(comment.content);
+                            if (extractedMessage.isNotEmpty) {
+                              return Text(
+                                extractedMessage,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade800,
+                                  height: 1.4,
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          }(),
+                        ],
+                      ],
+                    ),
+                  )
+                else
+                  Text(
+                    comment.content,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade800,
+                      height: 1.3,
+                    ),
                   ),
-                ),
                 // Reply button
                 if (onReply != null) ...[
                   const SizedBox(height: 4),
@@ -442,5 +567,15 @@ class _CommentItem extends StatelessWidget {
 
   String _formatTimeAgo(String dateString) {
     return formatTimeAgo(dateString);
+  }
+
+  String _extractGiftMessage(String content) {
+    // Remove common prefixes like "Sent X diamonds as a gift! ✨"
+    if (content.contains('diamonds as a gift')) {
+      final cleaned = content.replaceFirst(RegExp(r'Sent \d+ diamonds as a gift! ✨\s*'), '').trim();
+      // Only return the custom message if it's not empty
+      return cleaned.isEmpty ? '' : cleaned;
+    }
+    return content;
   }
 }

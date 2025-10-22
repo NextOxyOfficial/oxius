@@ -498,8 +498,9 @@ class AuthService {
       final token = await getValidToken();
       if (token == null) return;
 
+      // Try validate-token endpoint which returns user data
       final response = await http.get(
-        Uri.parse('${ApiService.baseUrl}/auth/user/'),
+        Uri.parse('${ApiService.baseUrl}/auth/validate-token/'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -508,11 +509,14 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        _currentUser = User.fromJson(data);
-        
-        // Update stored user data
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_userKey, jsonEncode(_currentUser!.toJson()));
+        // validate-token returns user data in 'user' field
+        if (data['user'] != null) {
+          _currentUser = User.fromJson(data['user']);
+          
+          // Update stored user data
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_userKey, jsonEncode(_currentUser!.toJson()));
+        }
       }
     } catch (e) {
       print('Error refreshing user data: $e');

@@ -90,4 +90,37 @@ class DiamondService {
   static int calculateDiamonds(double price) {
     return (price * 10).round();
   }
+
+  // Send diamond gift to post author
+  static Future<Map<String, dynamic>?> sendGift({
+    required int amount,
+    required String recipientId,
+    required String postId,
+    required String message,
+  }) async {
+    try {
+      final headers = await ApiService.getHeaders();
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/diamonds/send-gift/'),
+        headers: headers,
+        body: json.encode({
+          'amount': amount,
+          'recipientId': recipientId,
+          'postId': postId,
+          'message': message,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return json.decode(response.body);
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error['error'] ?? 'Failed to send gift');
+      }
+    } catch (e) {
+      print('Error sending gift: $e');
+      rethrow;
+    }
+  }
 }
