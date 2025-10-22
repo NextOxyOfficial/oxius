@@ -659,8 +659,8 @@ class GoldSponsor(models.Model):
     slug = models.SlugField(max_length=255, unique=True, blank=True)
     contact_email = models.EmailField()
     phone_number = models.CharField(max_length=20)
-    website = models.URLField(blank=True, null=True)
-    profile_url = models.URLField(blank=True, null=True)
+    website = models.CharField(max_length=255, blank=True, null=True)  # Allow any text
+    profile_url = models.CharField(max_length=255, blank=True, null=True)  # Allow any text
     logo = models.ImageField(upload_to=sponsor_logo_path, blank=True, null=True)
     
     # Package information
@@ -742,7 +742,7 @@ class GoldSponsorBanner(models.Model):
     sponsor = models.ForeignKey(GoldSponsor, on_delete=models.CASCADE, related_name='banners')
     title = models.CharField(max_length=255, blank=True, null=True)
     image = models.ImageField(upload_to=sponsor_banner_path)
-    link_url = models.URLField(blank=True, null=True)
+    link_url = models.CharField(max_length=255, blank=True, null=True)  # Allow any text
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

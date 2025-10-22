@@ -59,11 +59,19 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   Future<void> _loadUserBalance() async {
     setState(() => _isLoadingBalance = true);
     try {
-      final user = AuthService.currentUser;
-      if (user != null && user.balance != null) {
-        setState(() {
-          _userBalance = user.balance!.toDouble();
-        });
+      // Validate token and refresh user data from backend
+      final isValid = await AuthService.validateToken();
+      
+      if (isValid) {
+        // Get updated user data
+        final user = AuthService.currentUser;
+        if (user != null && user.balance != null) {
+          setState(() {
+            _userBalance = user.balance!.toDouble();
+          });
+        }
+      } else {
+        print('Token validation failed');
       }
     } catch (e) {
       print('Error loading balance: $e');
@@ -146,33 +154,61 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
     });
 
     try {
-      // TODO: Implement API call to submit gold sponsor application
-      // POST /bn/gold-sponsors/apply/
-      // Include form data, logo, banners
-      
-      await Future.delayed(const Duration(seconds: 2)); // Mock delay
+      // Prepare banner data with XFile objects
+      final List<Map<String, dynamic>>? bannerData = _banners.isNotEmpty
+          ? _banners.map((banner) {
+              return {
+                'title': banner.title,
+                'link_url': banner.linkUrl,
+                'file': banner.file, // Pass XFile directly
+              };
+            }).toList()
+          : null;
+
+      // Submit to backend API
+      final result = await GoldSponsorService.submitApplication(
+        businessName: _businessNameController.text.trim(),
+        businessDescription: _businessDescController.text.trim(),
+        contactEmail: _emailController.text.trim(),
+        phoneNumber: _phoneController.text.trim(),
+        website: _websiteController.text.trim().isEmpty ? null : _websiteController.text.trim(),
+        profileUrl: _profileUrlController.text.trim().isEmpty ? null : _profileUrlController.text.trim(),
+        packageId: _selectedPackageId,
+        logoFile: _logoFile, // Pass XFile directly
+        banners: bannerData,
+      );
       
       if (mounted) {
-        setState(() {
-          _success = true;
-          _error = null;
-        });
-        
-        // Show success and go back
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Gold Sponsor application submitted successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) Navigator.pop(context);
-        });
+        if (result['success'] == true) {
+          // Reload user balance to show updated amount
+          await _loadUserBalance();
+          
+          setState(() {
+            _success = true;
+            _error = null;
+          });
+          
+          // Show success and go back
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Success! Your new balance is ৳${_userBalance.toStringAsFixed(0)}'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) Navigator.pop(context);
+          });
+        } else {
+          setState(() {
+            _error = result['error'] ?? 'Failed to submit application';
+            _success = false;
+          });
+        }
       }
     } catch (e) {
       setState(() {
-        _error = 'Failed to submit application. Please try again.';
+        _error = 'Failed to submit application: $e';
         _success = false;
       });
     } finally {

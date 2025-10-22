@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:image_picker/image_picker.dart';
 import '../models/gold_sponsor_models.dart';
 import 'auth_service.dart';
 import 'api_service.dart';
@@ -129,6 +131,125 @@ class GoldSponsorService {
     } catch (e) {
       print('Error incrementing sponsor views: $e');
       return false;
+    }
+  }
+
+  // Submit gold sponsor application
+  static Future<Map<String, dynamic>> submitApplication({
+    required String businessName,
+    required String businessDescription,
+    required String contactEmail,
+    required String phoneNumber,
+    String? website,
+    String? profileUrl,
+    required int packageId,
+    XFile? logoFile,
+    List<Map<String, dynamic>>? banners,
+  }) async {
+    try {
+      final token = AuthService.accessToken;
+      if (token == null) {
+        return {'success': false, 'error': 'Authentication required'};
+      }
+
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/bn/gold-sponsors/apply/'),
+      );
+
+      // Add headers
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add form fields
+      request.fields['business_name'] = businessName;
+      request.fields['business_description'] = businessDescription;
+      request.fields['contact_email'] = contactEmail;
+      request.fields['phone_number'] = phoneNumber;
+      request.fields['package_id'] = packageId.toString();
+      
+      // Only add URL fields if they have valid content
+      if (website != null && website.trim().isNotEmpty) {
+        request.fields['website'] = website.trim();
+      }
+      if (profileUrl != null && profileUrl.trim().isNotEmpty) {
+        request.fields['profile_url'] = profileUrl.trim();
+      }
+
+      // Add logo file if provided (cross-platform)
+      if (logoFile != null) {
+        final bytes = await logoFile.readAsBytes();
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'logo',
+            bytes,
+            filename: logoFile.name,
+          ),
+        );
+      }
+
+      // Add banners if provided (cross-platform)
+      if (banners != null && banners.isNotEmpty) {
+        request.fields['banner_count'] = banners.length.toString();
+        for (int i = 0; i < banners.length; i++) {
+          final banner = banners[i];
+          if (banner['title'] != null && banner['title'].toString().trim().isNotEmpty) {
+            request.fields['banner_${i}_title'] = banner['title'].toString().trim();
+          }
+          if (banner['link_url'] != null && banner['link_url'].toString().trim().isNotEmpty) {
+            request.fields['banner_${i}_link_url'] = banner['link_url'].toString().trim();
+          }
+          if (banner['file'] != null && banner['file'] is XFile) {
+            final XFile file = banner['file'];
+            final bytes = await file.readAsBytes();
+            request.files.add(
+              http.MultipartFile.fromBytes(
+                'banner_${i}_image',
+                bytes,
+                filename: file.name,
+              ),
+            );
+          }
+          request.fields['banner_${i}_order'] = (i + 1).toString();
+          request.fields['banner_${i}_is_active'] = 'true';
+        }
+      }
+
+      print('Submitting gold sponsor application to: ${request.url}');
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      print('Application response status: ${response.statusCode}');
+      print('Application response body: ${response.body}');
+
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        try {
+          final errorData = json.decode(response.body);
+          
+          // Extract validation errors
+          if (errorData is Map) {
+            final errorMessages = <String>[];
+            errorData.forEach((key, value) {
+              if (value is List) {
+                errorMessages.add('$key: ${value.join(', ')}');
+              } else {
+                errorMessages.add('$key: $value');
+              }
+            });
+            return {'success': false, 'error': errorMessages.join('\n')};
+          }
+          
+          return {'success': false, 'error': errorData['message'] ?? 'Failed to submit application'};
+        } catch (e) {
+          return {'success': false, 'error': 'Failed to submit application (Status: ${response.statusCode})'};
+        }
+      }
+    } catch (e, stackTrace) {
+      print('Error submitting application: $e');
+      print('Stack trace: $stackTrace');
+      return {'success': false, 'error': 'Failed to submit application: $e'};
     }
   }
 }
