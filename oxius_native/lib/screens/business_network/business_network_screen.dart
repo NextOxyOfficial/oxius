@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/user_suggestions_service.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
+import '../../widgets/business_network/user_suggestions_card.dart';
+import '../../widgets/business_network/sponsored_products_card.dart';
 import 'create_post_screen.dart';
 import 'profile_screen.dart';
 import 'search_screen.dart';
@@ -21,6 +25,7 @@ class BusinessNetworkScreen extends StatefulWidget {
 
 class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   List<BusinessNetworkPost> _posts = [];
+  List<Map<String, dynamic>> _sponsoredProducts = [];
   bool _isLoading = true;
   bool _isLoadingMore = false;
   bool _hasMore = true;
@@ -31,12 +36,51 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final Random _random = Random();
 
   @override
   void initState() {
     super.initState();
     _loadPosts();
+    _loadSponsoredProducts();
     _scrollController.addListener(_onScroll);
+  }
+
+  Future<void> _loadSponsoredProducts() async {
+    try {
+      final products = await UserSuggestionsService.getSponsoredProducts(limit: 20);
+      if (mounted) {
+        setState(() {
+          _sponsoredProducts = products;
+        });
+      }
+    } catch (e) {
+      print('Error loading sponsored products: $e');
+    }
+  }
+
+  List<Map<String, dynamic>> _getRandomProducts(int count) {
+    if (_sponsoredProducts.isEmpty) return [];
+    
+    final shuffled = List<Map<String, dynamic>>.from(_sponsoredProducts)..shuffle(_random);
+    return shuffled.take(count).toList();
+  }
+
+  int _calculateTotalItems() {
+    int total = _posts.length + 1; // +1 for gold sponsors at top
+    
+    // Add user suggestions cards (every 10th post)
+    final suggestionsCount = (_posts.length / 10).floor();
+    total += suggestionsCount;
+    
+    // Add sponsored product cards (every 5th post)
+    final productsCount = (_posts.length / 5).floor();
+    total += productsCount;
+    
+    // +1 for loading/end indicator
+    total += 1;
+    
+    return total;
   }
 
   @override
@@ -178,36 +222,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                         : ListView.builder(
                         controller: _scrollController,
                         padding: EdgeInsets.fromLTRB(4, 8, 4, isMobile ? 80 : 16),
-                        itemCount: _posts.length + 2, // +1 for gold sponsors, +1 for loading/end indicator
+                        itemCount: _calculateTotalItems(),
                         itemBuilder: (context, index) {
-                          // Show Gold Sponsors at the top (index 0)
-                          if (index == 0) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 4),
-                              child: GoldSponsorsSlider(),
-                            );
-                          }
-                          
-                          // Adjust index for posts (subtract 1 because of gold sponsors)
-                          final postIndex = index - 1;
-                          
-                          // Show loading or end indicator after all posts
-                          if (postIndex >= _posts.length) {
-                            if (_isLoadingMore) {
-                              return _buildLoadingMoreIndicator();
-                            } else if (!_hasMore && _posts.isNotEmpty) {
-                              return _buildEndOfFeedIndicator();
-                            }
-                            return const SizedBox(height: 80);
-                          }
-                          
-                          // Show post card
-                          return PostCard(
-                            post: _posts[postIndex],
-                            onLikeToggle: () => _handleLikeToggle(postIndex),
-                            onCommentAdded: (comment) => _handleCommentAdded(postIndex, comment),
-                            onPostDeleted: () => _handlePostDeleted(postIndex),
-                          );
+                          return _buildFeedItem(index);
                         },
                       ),
           ),
@@ -273,6 +290,61 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         Navigator.of(context).popUntil((route) => route.isFirst);
         break;
     }
+  }
+
+  Widget _buildFeedItem(int index) {
+    // Show Gold Sponsors at the top (index 0)
+    if (index == 0) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 4),
+        child: GoldSponsorsSlider(),
+      );
+    }
+
+    // Calculate actual post position considering injected cards
+    int currentPostCount = 0;
+    int currentIndex = 1; // Start after gold sponsors
+    
+    for (int i = 0; i < _posts.length; i++) {
+      // Check if we should inject user suggestions (every 10th post)
+      if (i > 0 && i % 10 == 0) {
+        if (currentIndex == index) {
+          return const UserSuggestionsCard();
+        }
+        currentIndex++;
+      }
+      
+      // Check if we should inject sponsored products (every 5th post)
+      if (i > 0 && i % 5 == 0 && i % 10 != 0) { // Don't overlap with suggestions
+        if (currentIndex == index) {
+          return SponsoredProductsCard(
+            products: _getRandomProducts(3),
+          );
+        }
+        currentIndex++;
+      }
+      
+      // Show the post
+      if (currentIndex == index) {
+        return PostCard(
+          post: _posts[i],
+          onLikeToggle: () => _handleLikeToggle(i),
+          onCommentAdded: (comment) => _handleCommentAdded(i, comment),
+          onPostDeleted: () => _handlePostDeleted(i),
+        );
+      }
+      currentIndex++;
+      currentPostCount++;
+    }
+    
+    // Show loading or end indicator after all posts
+    if (_isLoadingMore) {
+      return _buildLoadingMoreIndicator();
+    } else if (!_hasMore && _posts.isNotEmpty) {
+      return _buildEndOfFeedIndicator();
+    }
+    
+    return const SizedBox(height: 80);
   }
 
   Widget _buildLoadingState() {

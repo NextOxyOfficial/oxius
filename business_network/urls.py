@@ -4,6 +4,7 @@ from .optimized_views import CachedBusinessNetworkStatsView, get_device_optimize
 from .prioritized_feed import PrioritizedFeedView
 from .views import *
 from .views_fixed import FixedUserSuggestionsView
+from .improved_suggestions import ImprovedUserSuggestionsView
 
 urlpatterns = [
     # Post endpoints
@@ -117,7 +118,7 @@ urlpatterns = [
         name="check-follow-status",
     ),
     path(
-        "user-suggestions/", FixedUserSuggestionsView.as_view(), name="user-suggestions"
+        "user-suggestions/", ImprovedUserSuggestionsView.as_view(), name="user-suggestions"
     ),
     path(
         "simple-user-suggestions/",
