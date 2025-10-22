@@ -198,6 +198,64 @@ class BusinessNetworkService {
     }
   }
 
+  /// Update a comment
+  static Future<BusinessNetworkComment?> updateComment({
+    required int commentId,
+    required String content,
+  }) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      final body = {
+        'content': content,
+      };
+      
+      print('=== Update Comment Debug ===');
+      print('URL: $_baseUrl/comments/$commentId/');
+      print('Content: $content');
+      
+      final response = await http.put(
+        Uri.parse('$_baseUrl/comments/$commentId/'),
+        headers: headers,
+        body: json.encode(body),
+      );
+      
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return BusinessNetworkComment.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      print('Error updating comment: $e');
+      return null;
+    }
+  }
+
+  /// Delete a comment
+  static Future<bool> deleteComment(int commentId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      print('=== Delete Comment Debug ===');
+      print('URL: $_baseUrl/comments/$commentId/');
+      
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/comments/$commentId/'),
+        headers: headers,
+      );
+      
+      print('Response status: ${response.statusCode}');
+      
+      return response.statusCode == 204 || response.statusCode == 200;
+    } catch (e) {
+      print('Error deleting comment: $e');
+      return false;
+    }
+  }
+
   /// Get a single post by ID
   static Future<BusinessNetworkPost?> getPost(int postId) async {
     try {

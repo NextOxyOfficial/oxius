@@ -7,6 +7,7 @@ import '../../widgets/business_network/post_header.dart';
 import '../../widgets/business_network/post_media_gallery.dart';
 import '../../widgets/business_network/post_actions.dart';
 import '../../widgets/business_network/post_comment_input.dart';
+import '../../services/user_search_service.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/mention_parser.dart';
 import 'profile_screen.dart';
@@ -970,9 +971,24 @@ class _CommentItem extends StatelessWidget {
                     children: MentionParser.parseTextWithMentions(
                       comment.content,
                       context,
-                      onMentionTap: (username) {
-                        // Navigate to user profile when mention is tapped
-                        print('Tapped mention: $username');
+                      onMentionTap: (username) async {
+                        // Search for user by name to get their ID
+                        try {
+                          final users = await UserSearchService.searchUsers(username);
+                          if (users.isNotEmpty && context.mounted) {
+                            final user = users.first;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProfileScreen(
+                                  userId: user.id ?? username,
+                                ),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          print('Error finding user: $e');
+                        }
                       },
                     ),
                   ),

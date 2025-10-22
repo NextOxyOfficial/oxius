@@ -157,7 +157,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
             child: FlutterMentions(
                 key: _mentionKey,
                 suggestionPosition: SuggestionPosition.Top,
-                maxLines: 3,
+                maxLines: 4,
                 minLines: 1,
                 decoration: InputDecoration(
                   hintText: 'Write a comment...',
@@ -190,7 +190,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 14,
-                    vertical: 10,
+                    vertical: 4,
                   ),
                   isDense: true,
                   suffixIcon: _isSubmitting

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/business_network_models.dart';
+import '../../services/user_search_service.dart';
+import '../../services/business_network_service.dart';
+import '../../services/auth_service.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/mention_parser.dart';
 import '../../screens/business_network/profile_screen.dart';
@@ -361,20 +364,56 @@ class _ReplyInputState extends State<_ReplyInput> {
   }
 }
 
-class _CommentItem extends StatelessWidget {
+class _CommentItem extends StatefulWidget {
   final BusinessNetworkComment comment;
   final VoidCallback? onReply;
   final bool isReply;
+  final Function(BusinessNetworkComment)? onCommentUpdated;
+  final VoidCallback? onCommentDeleted;
 
   const _CommentItem({
     required this.comment,
     this.onReply,
     this.isReply = false,
+    this.onCommentUpdated,
+    this.onCommentDeleted,
   });
 
   @override
+  State<_CommentItem> createState() => _CommentItemState();
+}
+
+class _CommentItemState extends State<_CommentItem> {
+  bool _isEditing = false;
+  late TextEditingController _editController;
+  String? _currentUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _editController = TextEditingController(text: widget.comment.content);
+    _loadCurrentUser();
+  }
+
+  void _loadCurrentUser() {
+    final user = AuthService.currentUser;
+    _currentUserId = user?.id;
+  }
+
+  @override
+  void dispose() {
+    _editController.dispose();
+    super.dispose();
+  }
+
+  bool get _canEditDelete {
+    return _currentUserId != null && 
+           widget.comment.user.id == _currentUserId;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final avatarSize = isReply ? 28.0 : 32.0;
+    final avatarSize = widget.isReply ? 28.0 : 32.0;
     
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -384,7 +423,7 @@ class _CommentItem extends StatelessWidget {
           // User Avatar (clickable)
           GestureDetector(
             onTap: () {
-              final userId = comment.user.uuid ?? comment.user.id.toString();
+              final userId = widget.comment.user.uuid ?? widget.comment.user.id.toString();
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -403,9 +442,9 @@ class _CommentItem extends StatelessWidget {
                 ),
               ),
               child: ClipOval(
-                child: comment.user.image != null || comment.user.avatar != null
+                child: widget.comment.user.image != null || widget.comment.user.avatar != null
                     ? Image.network(
-                        comment.user.image ?? comment.user.avatar!,
+                        widget.comment.user.image ?? widget.comment.user.avatar!,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
@@ -441,7 +480,7 @@ class _CommentItem extends StatelessWidget {
                     Flexible(
                       child: GestureDetector(
                         onTap: () {
-                          final userId = comment.user.uuid ?? comment.user.id.toString();
+                          final userId = widget.comment.user.uuid ?? widget.comment.user.id.toString();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -450,7 +489,7 @@ class _CommentItem extends StatelessWidget {
                           );
                         },
                         child: Text(
-                          comment.user.name,
+                          widget.comment.user.name,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -460,7 +499,7 @@ class _CommentItem extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (comment.user.isVerified) ...[
+                    if (widget.comment.user.isVerified) ...[
                       const SizedBox(width: 4),
                       const Icon(
                         Icons.verified,
@@ -470,17 +509,78 @@ class _CommentItem extends StatelessWidget {
                     ],
                     const SizedBox(width: 8),
                     Text(
-                      _formatTimeAgo(comment.createdAt),
+                      _formatTimeAgo(widget.comment.createdAt),
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.grey.shade500,
                       ),
                     ),
+                    const Spacer(),
+                    // Three-dot menu for edit/delete
+                    if (_canEditDelete)
+                      PopupMenuButton<String>(
+                        icon: Icon(Icons.more_horiz, size: 16, color: Colors.grey.shade600),
+                        padding: EdgeInsets.zero,
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit, size: 16),
+                                SizedBox(width: 8),
+                                Text('Edit'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete, size: 16, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text('Delete', style: TextStyle(color: Colors.red)),
+                              ],
+                            ),
+                          ),
+                        ],
+                        onSelected: (value) async {
+                          if (value == 'edit') {
+                            setState(() => _isEditing = true);
+                          } else if (value == 'delete') {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Delete Comment'),
+                                content: const Text('Are you sure you want to delete this comment?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context, true),
+                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirm == true) {
+                              final success = await BusinessNetworkService.deleteComment(widget.comment.id);
+                              if (success && mounted) {
+                                widget.onCommentDeleted?.call();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Comment deleted')),
+                                );
+                              }
+                            }
+                          }
+                        },
+                      ),
                   ],
                 ),
                 const SizedBox(height: 2),
                 // Comment text or gift comment
-                if (comment.isGiftComment)
+                if (widget.comment.isGiftComment)
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -502,7 +602,7 @@ class _CommentItem extends StatelessWidget {
                             Icon(Icons.card_giftcard, size: 14, color: Colors.pink.shade600),
                             const SizedBox(width: 4),
                             Text(
-                              'Sent ${comment.diamondAmount ?? 0} diamonds',
+                              'Sent ${widget.comment.diamondAmount ?? 0} diamonds',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -511,10 +611,10 @@ class _CommentItem extends StatelessWidget {
                             ),
                           ],
                         ),
-                        if (comment.content.isNotEmpty) ...[
+                        if (widget.comment.content.isNotEmpty) ...[
                           const SizedBox(height: 6),
                           () {
-                            final extractedMessage = _extractGiftMessage(comment.content);
+                            final extractedMessage = _extractGiftMessage(widget.comment.content);
                             if (extractedMessage.isNotEmpty) {
                               return Text(
                                 extractedMessage,
@@ -531,30 +631,89 @@ class _CommentItem extends StatelessWidget {
                       ],
                     ),
                   )
+                else if (_isEditing)
+                  // Edit mode
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: _editController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: 'Edit comment...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _isEditing = false;
+                                _editController.text = widget.comment.content;
+                              });
+                            },
+                            child: const Text('Cancel'),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () async {
+                              final updatedComment = await BusinessNetworkService.updateComment(
+                                commentId: widget.comment.id,
+                                content: _editController.text,
+                              );
+                              if (updatedComment != null && mounted) {
+                                setState(() => _isEditing = false);
+                                widget.onCommentUpdated?.call(updatedComment);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Comment updated')),
+                                );
+                              }
+                            },
+                            child: const Text('Save'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
                 else
                   // Regular comment with mention support
                   Text.rich(
                     TextSpan(
                       children: MentionParser.parseTextWithMentions(
-                        comment.content,
+                        widget.comment.content,
                         context,
-                        onMentionTap: (username) {
-                          // Navigate to user profile (search by name)
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ProfileScreen(userId: username),
-                            ),
-                          );
+                        onMentionTap: (username) async {
+                          // Search for user by name to get their ID
+                          try {
+                            final users = await UserSearchService.searchUsers(username);
+                            if (users.isNotEmpty && context.mounted) {
+                              final user = users.first;
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ProfileScreen(
+                                    userId: user.id ?? username,
+                                  ),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            print('Error finding user: $e');
+                          }
                         },
                       ),
                     ),
                   ),
                 // Reply button
-                if (onReply != null) ...[
+                if (widget.onReply != null && !_isEditing) ...[
                   const SizedBox(height: 4),
                   InkWell(
-                    onTap: onReply,
+                    onTap: widget.onReply,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: Text(
