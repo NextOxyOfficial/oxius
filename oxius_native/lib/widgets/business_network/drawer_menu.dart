@@ -172,16 +172,17 @@ class DrawerMenu extends StatelessWidget {
             },
           ),
           
-          _buildMenuItem(
-            context: context,
-            icon: Icons.star,
-            label: 'Workspaces',
-            route: '/business-network/workspaces',
-            isActive: currentRoute == '/business-network/workspaces',
-            color: const Color(0xFFF59E0B),
-            badge: 'BETA',
-            badgeColor: Colors.orange,
-          ),
+          // TODO: Workspaces - Hidden for next release
+          // _buildMenuItem(
+          //   context: context,
+          //   icon: Icons.star,
+          //   label: 'Workspaces',
+          //   route: '/business-network/workspaces',
+          //   isActive: currentRoute == '/business-network/workspaces',
+          //   color: const Color(0xFFF59E0B),
+          //   badge: 'BETA',
+          //   badgeColor: Colors.orange,
+          // ),
           
           _buildMenuItem(
             context: context,

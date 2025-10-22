@@ -93,12 +93,16 @@ class MindForceUser {
   final String name;
   final String? image;
   final String? username;
+  final bool isPro;
+  final bool kyc;
 
   MindForceUser({
     required this.id,
     required this.name,
     this.image,
     this.username,
+    this.isPro = false,
+    this.kyc = false,
   });
 
   factory MindForceUser.fromJson(Map<String, dynamic> json) {
@@ -107,6 +111,8 @@ class MindForceUser {
       name: json['name'] ?? json['username'] ?? 'Unknown User',
       image: json['image'] ?? json['avatar'],
       username: json['username'],
+      isPro: json['is_pro'] == true,
+      kyc: json['kyc'] == true,
     );
   }
 }

@@ -479,93 +479,106 @@ class _MindForceScreenState extends State<MindForceScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                // Name, Time and Stats
+                // Name, Badges, and Stats
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              problem.userDetails.name,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey.shade900,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          // Verified Badge
-                          if (_isUserVerified(problem)) ...[
-                            const SizedBox(width: 3),
-                            Icon(
-                              Icons.verified,
-                              size: 15,
-                              color: Colors.blue.shade500,
-                            ),
-                          ],
-                          // Pro Badge
-                          if (_isUserPro(problem)) ...[
-                            const SizedBox(width: 3),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [Color(0xFF7f00ff), Color(0xFFe100ff)],
-                                ),
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                              child: const Text(
-                                'PRO',
+                      // Name with badges
+                      Flexible(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                problem.userDetails.name,
                                 style: TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                  letterSpacing: 0.3,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey.shade900,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                            // Verified Badge
+                            if (_isUserVerified(problem)) ...[
+                              const SizedBox(width: 3),
+                              Icon(
+                                Icons.verified,
+                                size: 15,
+                                color: Colors.blue.shade500,
+                              ),
+                            ],
+                            // Pro Badge
+                            if (_isUserPro(problem)) ...[
+                              const SizedBox(width: 3),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Color(0xFF7f00ff), Color(0xFFe100ff)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                child: const Text(
+                                  'PRO',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
-                      Row(
-                        children: [
-                          Icon(Icons.access_time, size: 11, color: Colors.grey.shade500),
-                          const SizedBox(width: 3),
-                          Text(
-                            _formatTimeAgo(problem.createdAt),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Icon(Icons.visibility_outlined, size: 13, color: Colors.grey.shade500),
-                          const SizedBox(width: 3),
-                          Text(
-                            '${problem.views}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey.shade500),
-                          const SizedBox(width: 3),
-                          Text(
-                            '${problem.comments.length}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
+                      // Separator
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Text('•', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                      ),
+                      // Time
+                      Text(
+                        _formatTimeAgo(problem.createdAt),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      // Separator
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Text('•', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                      ),
+                      // Views
+                      Icon(Icons.visibility_outlined, size: 12, color: Colors.grey.shade700),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${problem.views}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      // Separator
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: Text('•', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                      ),
+                      // Comments
+                      Icon(Icons.chat_bubble_outline, size: 11, color: Colors.grey.shade700),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${problem.comments.length}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey.shade700,
+                        ),
                       ),
                     ],
                   ),
@@ -597,44 +610,50 @@ class _MindForceScreenState extends State<MindForceScreen> {
                   ),
               ],
             ),
-            const SizedBox(height: 10),
-            // Title
-            Text(
-              problem.title,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade900,
-                height: 1.35,
-                letterSpacing: -0.1,
+            const SizedBox(height: 6),
+            // Title - aligned with name
+            Padding(
+              padding: const EdgeInsets.only(left: 46), // Avatar (36px) + spacing (10px)
+              child: Text(
+                problem.title,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                  height: 1.35,
+                  letterSpacing: -0.1,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
-            // Payment Badge (if applicable)
+            // Payment Badge (if applicable) - aligned with title
             if (problem.paymentOption == 'paid' && problem.paymentAmount != null) ...[
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.amber.shade300, width: 0.5),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.payments_outlined, size: 13, color: Colors.amber.shade700),
-                    const SizedBox(width: 4),
-                    Text(
-                      '৳${problem.paymentAmount!.toStringAsFixed(0)}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.amber.shade800,
+              Padding(
+                padding: const EdgeInsets.only(left: 46), // Aligned with title
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.amber.shade300, width: 0.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.payments_outlined, size: 13, color: Colors.amber.shade700),
+                      const SizedBox(width: 4),
+                      Text(
+                        '৳${problem.paymentAmount!.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.amber.shade900,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -709,15 +728,11 @@ class _MindForceScreenState extends State<MindForceScreen> {
   }
 
   bool _isUserPro(MindForceProblem problem) {
-    // Check if user has pro status
-    // This would need to be added to the user model
-    return false; // TODO: Implement when user model has is_pro field
+    return problem.userDetails.isPro;
   }
 
   bool _isUserVerified(MindForceProblem problem) {
-    // Check if user is verified
-    // This would need to be added to the user model
-    return false; // TODO: Implement when user model has kyc/verified field
+    return problem.userDetails.kyc;
   }
 
   Widget _buildCategoryChip(String label, int? categoryId, bool isSelected) {
