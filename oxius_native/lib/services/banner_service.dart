@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'api_service.dart';
 
 class BannerService {
   static final BannerService _instance = BannerService._internal();
   factory BannerService() => _instance;
   BannerService._internal();
 
-  // Use your live production URL or localhost for development
-  static const String baseUrl = 'http://localhost:8000/api';
-  // For production: static const String baseUrl = 'https://adsyclub.com/api';
+  // Use centralized API service base URL
+  static String get baseUrl => ApiService.baseUrl;
 
   List<Map<String, dynamic>> _banners = [];
   bool _isLoading = false;

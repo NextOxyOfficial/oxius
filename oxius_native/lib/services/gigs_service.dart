@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'api_service.dart';
 
 class GigsService {
-  static const String baseUrl = 'http://localhost:8000/api';
+  static String get baseUrl => ApiService.baseUrl;
 
   Future<Map<String, dynamic>> fetchMicroGigs({
     bool showSubmitted = false,

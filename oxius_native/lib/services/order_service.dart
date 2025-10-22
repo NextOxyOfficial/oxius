@@ -5,7 +5,7 @@ import 'api_service.dart';
 import 'auth_service.dart';
 
 class OrderService {
-  static const String _baseUrl = ApiService.baseUrl;
+  static String get _baseUrl => ApiService.baseUrl;
 
   Future<OrderResponse?> createOrder(CreateOrderRequest orderData) async {
     try {

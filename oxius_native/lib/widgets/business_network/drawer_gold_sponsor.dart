@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/business_network_service.dart';
+import '../../screens/business_network/become_gold_sponsor_screen.dart';
 
 class DrawerGoldSponsor extends StatefulWidget {
   final bool isLoggedIn;
@@ -204,9 +205,11 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              // TODO: Open Gold Sponsor modal
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Gold Sponsor feature coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BecomeGoldSponsorScreen(),
+                ),
               );
             },
             style: ElevatedButton.styleFrom(

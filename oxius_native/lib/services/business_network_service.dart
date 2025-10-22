@@ -6,7 +6,7 @@ import '../models/business_network_models.dart';
 import 'api_service.dart';
 
 class BusinessNetworkService {
-  static const String _baseUrl = 'http://127.0.0.1:8000/api/bn';
+  static String get _baseUrl => '${ApiService.baseUrl}/bn';
   
   /// Get posts feed with pagination
   static Future<Map<String, dynamic>> getPosts({

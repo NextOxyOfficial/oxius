@@ -6,6 +6,7 @@ import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
+import '../../widgets/business_network/gold_sponsors_slider.dart';
 import 'create_post_screen.dart';
 import 'profile_screen.dart';
 import 'search_screen.dart';
@@ -177,10 +178,21 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                         : ListView.builder(
                         controller: _scrollController,
                         padding: EdgeInsets.fromLTRB(4, 8, 4, isMobile ? 80 : 16),
-                        itemCount: _posts.length + 1, // +1 for loading/end indicator
+                        itemCount: _posts.length + 2, // +1 for gold sponsors, +1 for loading/end indicator
                         itemBuilder: (context, index) {
+                          // Show Gold Sponsors at the top (index 0)
+                          if (index == 0) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4),
+                              child: GoldSponsorsSlider(),
+                            );
+                          }
+                          
+                          // Adjust index for posts (subtract 1 because of gold sponsors)
+                          final postIndex = index - 1;
+                          
                           // Show loading or end indicator after all posts
-                          if (index >= _posts.length) {
+                          if (postIndex >= _posts.length) {
                             if (_isLoadingMore) {
                               return _buildLoadingMoreIndicator();
                             } else if (!_hasMore && _posts.isNotEmpty) {
@@ -191,10 +203,10 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                           
                           // Show post card
                           return PostCard(
-                            post: _posts[index],
-                            onLikeToggle: () => _handleLikeToggle(index),
-                            onCommentAdded: (comment) => _handleCommentAdded(index, comment),
-                            onPostDeleted: () => _handlePostDeleted(index),
+                            post: _posts[postIndex],
+                            onLikeToggle: () => _handleLikeToggle(postIndex),
+                            onCommentAdded: (comment) => _handleCommentAdded(postIndex, comment),
+                            onPostDeleted: () => _handlePostDeleted(postIndex),
                           );
                         },
                       ),
