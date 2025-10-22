@@ -286,7 +286,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                       const SizedBox(height: 14),
 
                       // Category
-                      _buildLabel('Category', Icons.category),
+                      _buildLabel('Category (Optional)', Icons.category),
                       const SizedBox(height: 6),
                       widget.categories.isEmpty
                           ? Container(
@@ -314,7 +314,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                             )
                           : DropdownButtonFormField<int>(
                               value: _selectedCategoryId,
-                              decoration: _inputDecoration('Select a category'),
+                              decoration: _inputDecoration('Select a category (optional)'),
                               items: widget.categories.map((cat) {
                                 return DropdownMenuItem(
                                   value: cat.id,
@@ -322,12 +322,6 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                                 );
                               }).toList(),
                               onChanged: (value) => setState(() => _selectedCategoryId = value),
-                              validator: (value) {
-                                if (value == null) {
-                                  return 'Please select a category';
-                                }
-                                return null;
-                              },
                             ),
                       const SizedBox(height: 14),
 

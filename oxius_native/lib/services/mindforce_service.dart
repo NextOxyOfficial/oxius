@@ -104,9 +104,15 @@ class MindForceService {
         body: json.encode(body),
       );
 
+      print('Create problem response status: ${response.statusCode}');
+      print('Create problem response body: ${response.body}');
+
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = json.decode(response.body);
         return MindForceProblem.fromJson(data);
+      } else {
+        print('Failed to create problem. Status: ${response.statusCode}');
+        print('Error response: ${response.body}');
       }
 
       return null;
@@ -117,7 +123,7 @@ class MindForceService {
   }
 
   // Update problem
-  static Future<bool> updateProblem(int problemId, Map<String, dynamic> updates) async {
+  static Future<bool> updateProblem(String problemId, Map<String, dynamic> updates) async {
     try {
       final token = await AuthService.getToken();
       if (token == null) return false;
@@ -139,7 +145,7 @@ class MindForceService {
   }
 
   // Delete problem
-  static Future<bool> deleteProblem(int problemId) async {
+  static Future<bool> deleteProblem(String problemId) async {
     try {
       final token = await AuthService.getToken();
       if (token == null) return false;
@@ -160,7 +166,7 @@ class MindForceService {
   }
 
   // Fetch comments for a problem
-  static Future<List<MindForceComment>> getComments(int problemId) async {
+  static Future<List<MindForceComment>> getComments(String problemId) async {
     try {
       final token = await AuthService.getToken();
       final headers = token != null
@@ -189,7 +195,7 @@ class MindForceService {
 
   // Add comment
   static Future<MindForceComment?> addComment({
-    required int problemId,
+    required String problemId,
     required String content,
     List<String> images = const [],
   }) async {
@@ -222,7 +228,7 @@ class MindForceService {
   }
 
   // Mark comment as solution
-  static Future<bool> markCommentAsSolution(int commentId) async {
+  static Future<bool> markCommentAsSolution(String commentId) async {
     try {
       final token = await AuthService.getToken();
       if (token == null) return false;
@@ -244,12 +250,12 @@ class MindForceService {
   }
 
   // Mark problem as solved
-  static Future<bool> markProblemAsSolved(int problemId) async {
+  static Future<bool> markProblemAsSolved(String problemId) async {
     return updateProblem(problemId, {'status': 'solved'});
   }
 
   // Increment view count
-  static Future<void> incrementViews(int problemId, int currentViews) async {
+  static Future<void> incrementViews(String problemId, int currentViews) async {
     await updateProblem(problemId, {'views': currentViews + 1});
   }
 }

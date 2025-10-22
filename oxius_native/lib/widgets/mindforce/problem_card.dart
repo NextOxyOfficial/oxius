@@ -5,7 +5,7 @@ import '../../utils/time_utils.dart';
 class MindForceProblemCard extends StatelessWidget {
   final MindForceProblem problem;
   final VoidCallback onTap;
-  final int? currentUserId;
+  final String? currentUserId;
 
   const MindForceProblemCard({
     super.key,

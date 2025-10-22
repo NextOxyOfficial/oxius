@@ -1,5 +1,5 @@
 class MindForceProblem {
-  final int id;
+  final String id;
   final String title;
   final String description;
   final String status; // active, solved
@@ -31,7 +31,7 @@ class MindForceProblem {
 
   factory MindForceProblem.fromJson(Map<String, dynamic> json) {
     return MindForceProblem(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '0',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       status: json['status'] ?? 'active',
@@ -43,8 +43,8 @@ class MindForceProblem {
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
       userDetails: MindForceUser.fromJson(json['user_details'] ?? {}),
-      category: json['category'] != null 
-          ? MindForceCategory.fromJson(json['category']) 
+      category: json['category_details'] != null 
+          ? MindForceCategory.fromJson(json['category_details']) 
           : null,
       media: json['media'] != null
           ? (json['media'] as List).map((m) => MindForceMedia.fromJson(m)).toList()
@@ -56,7 +56,7 @@ class MindForceProblem {
   }
 
   MindForceProblem copyWith({
-    int? id,
+    String? id,
     String? title,
     String? description,
     String? status,
@@ -89,7 +89,7 @@ class MindForceProblem {
 }
 
 class MindForceUser {
-  final int id;
+  final String id;
   final String name;
   final String? image;
   final String? username;
@@ -103,7 +103,7 @@ class MindForceUser {
 
   factory MindForceUser.fromJson(Map<String, dynamic> json) {
     return MindForceUser(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '0',
       name: json['name'] ?? json['username'] ?? 'Unknown User',
       image: json['image'] ?? json['avatar'],
       username: json['username'],
@@ -132,7 +132,7 @@ class MindForceCategory {
 }
 
 class MindForceMedia {
-  final int id;
+  final String id;
   final String image;
 
   MindForceMedia({
@@ -142,14 +142,14 @@ class MindForceMedia {
 
   factory MindForceMedia.fromJson(Map<String, dynamic> json) {
     return MindForceMedia(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '0',
       image: json['image'] ?? '',
     );
   }
 }
 
 class MindForceComment {
-  final int id;
+  final String id;
   final String content;
   final bool isSolved;
   final String createdAt;
@@ -167,7 +167,7 @@ class MindForceComment {
 
   factory MindForceComment.fromJson(Map<String, dynamic> json) {
     return MindForceComment(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '0',
       content: json['content'] ?? '',
       isSolved: json['is_solved'] ?? false,
       createdAt: json['created_at'] ?? '',
@@ -179,7 +179,7 @@ class MindForceComment {
   }
 
   MindForceComment copyWith({
-    int? id,
+    String? id,
     String? content,
     bool? isSolved,
     String? createdAt,

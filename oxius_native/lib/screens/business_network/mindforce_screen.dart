@@ -7,7 +7,10 @@ import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/mindforce/problem_card.dart';
 import '../business_network/profile_screen.dart';
+import '../business_network/notifications_screen.dart';
+import '../business_network/create_post_screen.dart';
 import 'create_problem_screen.dart';
+import 'mindforce_detail_screen.dart';
 
 class MindForceScreen extends StatefulWidget {
   const MindForceScreen({super.key});
@@ -16,30 +19,47 @@ class MindForceScreen extends StatefulWidget {
   State<MindForceScreen> createState() => _MindForceScreenState();
 }
 
-class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProviderStateMixin {
+class _MindForceScreenState extends State<MindForceScreen> {
   List<MindForceProblem> _problems = [];
   List<MindForceCategory> _categories = [];
   bool _isLoading = true;
-  late TabController _tabController;
+  bool _isLoadingMore = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  final List<String> _tabs = ['Active', 'Solved', 'My Problems'];
+  final ScrollController _scrollController = ScrollController();
+  
+  String _selectedFilter = 'all'; // all, active, solved, my
+  int? _selectedCategoryId; // null means 'All'
+  int _currentPage = 1;
+  bool _hasMore = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
     _loadData();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
   }
 
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (!_isLoadingMore && _hasMore) {
+        _loadMoreData();
+      }
+    }
+  }
+
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _currentPage = 1;
+      _hasMore = true;
+    });
     
     final problems = await MindForceService.getProblems();
     final categories = await MindForceService.getCategories();
@@ -53,18 +73,54 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
     }
   }
 
-  List<MindForceProblem> get _activeProblems {
-    return _problems.where((p) => p.status == 'active').toList();
+  Future<void> _loadMoreData() async {
+    if (_isLoadingMore) return;
+    
+    setState(() {
+      _isLoadingMore = true;
+      _currentPage++;
+    });
+    
+    // TODO: Implement paginated API call when backend supports it
+    // For now, we'll just set hasMore to false
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    if (mounted) {
+      setState(() {
+        _isLoadingMore = false;
+        _hasMore = false; // Set to true when pagination is implemented
+      });
+    }
   }
 
-  List<MindForceProblem> get _solvedProblems {
-    return _problems.where((p) => p.status == 'solved').toList();
-  }
-
-  List<MindForceProblem> get _myProblems {
-    final user = AuthService.currentUser;
-    if (user == null) return [];
-    return _problems.where((p) => p.userDetails.id == int.tryParse(user.id)).toList();
+  List<MindForceProblem> get _filteredProblems {
+    var filtered = _problems;
+    
+    // Filter by status
+    switch (_selectedFilter) {
+      case 'active':
+        filtered = filtered.where((p) => p.status == 'active').toList();
+        break;
+      case 'solved':
+        filtered = filtered.where((p) => p.status == 'solved').toList();
+        break;
+      case 'my':
+        final user = AuthService.currentUser;
+        if (user == null) return [];
+        filtered = filtered.where((p) => p.userDetails.id == user.id).toList();
+        break;
+      default:
+        // By default, show only active problems (not solved)
+        filtered = filtered.where((p) => p.status == 'active').toList();
+        break;
+    }
+    
+    // Filter by category
+    if (_selectedCategoryId != null) {
+      filtered = filtered.where((p) => p.category?.id == _selectedCategoryId).toList();
+    }
+    
+    return filtered;
   }
 
   void _showCreateProblemDialog() {
@@ -151,64 +207,87 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
       drawer: isMobile ? const BusinessNetworkDrawer(currentRoute: '/business-network/mindforce') : null,
       body: Column(
         children: [
-          // Compact Header with gradient
+          // Header with Filter Dropdown
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.purple.shade600,
-                  Colors.deepPurple.shade700,
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              color: Colors.white,
+              border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 0.5)),
             ),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.psychology,
-                    size: 20,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Text(
+                Icon(Icons.psychology, size: 22, color: Colors.purple.shade700),
+                const SizedBox(width: 8),
+                Text(
                   'MindForce',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    letterSpacing: -0.3,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade900,
+                    letterSpacing: -0.2,
                   ),
                 ),
-                const Spacer(),
-                ElevatedButton.icon(
-                  onPressed: _showCreateProblemDialog,
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text(
-                    'Post',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                const SizedBox(width: 12),
+                // Filter Dropdown
+                Expanded(
+                  child: Container(
+                    height: 32,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300, width: 0.5),
+                      borderRadius: BorderRadius.circular(6),
+                      color: Colors.grey.shade50,
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedFilter,
+                        isExpanded: true,
+                        icon: Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.grey.shade600),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey.shade800,
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'all', child: Text('All Problems')),
+                          DropdownMenuItem(value: 'active', child: Text('Active')),
+                          DropdownMenuItem(value: 'solved', child: Text('Solved')),
+                          DropdownMenuItem(value: 'my', child: Text('My Problems')),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _selectedFilter = value);
+                          }
+                        },
+                      ),
+                    ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.purple.shade700,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    minimumSize: const Size(0, 32),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                ),
+                const SizedBox(width: 8),
+                // Post Button
+                Material(
+                  color: Colors.purple.shade600,
+                  borderRadius: BorderRadius.circular(6),
+                  child: InkWell(
+                    onTap: _showCreateProblemDialog,
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add, size: 16, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Post',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -216,56 +295,58 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
             ),
           ),
           
-          // Compact Tabs
-          Container(
-            color: Colors.white,
-            child: TabBar(
-              controller: _tabController,
-              labelColor: Colors.purple.shade700,
-              unselectedLabelColor: const Color(0xFF757575),
-              indicatorColor: Colors.purple.shade700,
-              indicatorWeight: 3,
-              labelStyle: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+          // Category Tabs
+          if (_categories.isNotEmpty)
+            Container(
+              height: 44,
+              color: Colors.white,
+              padding: const EdgeInsets.only(bottom: 1),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                itemCount: _categories.length + 1, // +1 for 'All'
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    // All category
+                    return _buildCategoryChip(
+                      'All',
+                      null,
+                      _selectedCategoryId == null,
+                    );
+                  }
+                  final category = _categories[index - 1];
+                  return _buildCategoryChip(
+                    category.name,
+                    category.id,
+                    _selectedCategoryId == category.id,
+                  );
+                },
               ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-              tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
             ),
-          ),
           
-          // Content with 4px padding
+          // Content List
           Expanded(
             child: Container(
-              color: const Color(0xFFF5F5F5),
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              color: const Color(0xFFF8F9FA),
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _buildProblemsList(_activeProblems, 'No active problems'),
-                        _buildProblemsList(_solvedProblems, 'No solved problems'),
-                        _buildProblemsList(_myProblems, 'You haven\'t posted any problems'),
-                      ],
-                    ),
+                  : _buildProblemsList(),
             ),
           ),
         ],
       ),
       bottomNavigationBar: isMobile
           ? BusinessNetworkBottomNavBar(
-              currentIndex: 0,
-              onTap: (index) {},
+              currentIndex: 4, // More tab since MindForce is in drawer
+              onTap: _handleNavTap,
             )
           : null,
     );
   }
 
-  Widget _buildProblemsList(List<MindForceProblem> problems, String emptyMessage) {
+  Widget _buildProblemsList() {
+    final problems = _filteredProblems;
+    
     if (problems.isEmpty) {
       return Center(
         child: Column(
@@ -285,7 +366,8 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
             ),
             const SizedBox(height: 16),
             Text(
-              emptyMessage,
+              _getEmptyMessage(),
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 16,
                 color: Color(0xFF616161),
@@ -313,20 +395,356 @@ class _MindForceScreenState extends State<MindForceScreen> with SingleTickerProv
     return RefreshIndicator(
       onRefresh: _loadData,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: problems.length,
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+        itemCount: problems.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: MindForceProblemCard(
-              problem: problems[index],
-              currentUserId: int.tryParse(AuthService.currentUser?.id ?? ''),
-              onTap: () {
-                // TODO: Navigate to problem detail
-              },
+          if (index == problems.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+          
+          return _buildCompactProblemItem(problems[index]);
+        },
+      ),
+    );
+  }
+
+  String _getEmptyMessage() {
+    switch (_selectedFilter) {
+      case 'active':
+        return 'No active problems';
+      case 'solved':
+        return 'No solved problems';
+      case 'my':
+        return 'You haven\'t posted any problems';
+      default:
+        return 'No problems found';
+    }
+  }
+
+  Widget _buildCompactProblemItem(MindForceProblem problem) {
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MindForceDetailScreen(
+                problemId: problem.id,
+              ),
             ),
           );
         },
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 0.5)),
+          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Row
+            Row(
+              children: [
+                // Avatar
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade200, width: 0.5),
+                  ),
+                  child: ClipOval(
+                    child: problem.userDetails.image != null
+                        ? Image.network(
+                            problem.userDetails.image!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey.shade200,
+                                child: Icon(Icons.person, size: 18, color: Colors.grey.shade400),
+                              );
+                            },
+                          )
+                        : Container(
+                            color: Colors.grey.shade200,
+                            child: Icon(Icons.person, size: 18, color: Colors.grey.shade400),
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // Name, Time and Stats
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              problem.userDetails.name,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade900,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          // Verified Badge
+                          if (_isUserVerified(problem)) ...[
+                            const SizedBox(width: 3),
+                            Icon(
+                              Icons.verified,
+                              size: 15,
+                              color: Colors.blue.shade500,
+                            ),
+                          ],
+                          // Pro Badge
+                          if (_isUserPro(problem)) ...[
+                            const SizedBox(width: 3),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Color(0xFF7f00ff), Color(0xFFe100ff)],
+                                ),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: const Text(
+                                'PRO',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(Icons.access_time, size: 11, color: Colors.grey.shade500),
+                          const SizedBox(width: 3),
+                          Text(
+                            _formatTimeAgo(problem.createdAt),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Icon(Icons.visibility_outlined, size: 13, color: Colors.grey.shade500),
+                          const SizedBox(width: 3),
+                          Text(
+                            '${problem.views}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey.shade500),
+                          const SizedBox(width: 3),
+                          Text(
+                            '${problem.comments.length}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                // Status Badge
+                if (problem.status == 'solved')
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: Colors.green.shade200, width: 0.5),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.check_circle, size: 11, color: Colors.green.shade700),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Solved',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.green.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            // Title
+            Text(
+              problem.title,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade900,
+                height: 1.35,
+                letterSpacing: -0.1,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            // Payment Badge (if applicable)
+            if (problem.paymentOption == 'paid' && problem.paymentAmount != null) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.amber.shade300, width: 0.5),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.payments_outlined, size: 13, color: Colors.amber.shade700),
+                    const SizedBox(width: 4),
+                    Text(
+                      '৳${problem.paymentAmount!.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.amber.shade800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        ),
+      ),
+    );
+  }
+
+  void _handleNavTap(int index) {
+    switch (index) {
+      case 0:
+        // Recent - Navigate to business network feed
+        Navigator.pushReplacementNamed(context, '/business-network');
+        break;
+      case 1:
+        // Notifications
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const NotificationsScreen(),
+          ),
+        );
+        break;
+      case 2:
+        // Create Post
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const CreatePostScreen(),
+          ),
+        );
+        break;
+      case 3:
+        // Profile
+        final user = AuthService.currentUser;
+        if (user != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProfileScreen(userId: user.id),
+            ),
+          );
+        }
+        break;
+      case 4:
+        // More (Drawer)
+        _scaffoldKey.currentState?.openDrawer();
+        break;
+    }
+  }
+
+  String _formatTimeAgo(String dateString) {
+    final date = DateTime.parse(dateString);
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 365) {
+      return '${(difference.inDays / 365).floor()}y';
+    } else if (difference.inDays > 30) {
+      return '${(difference.inDays / 30).floor()}mo';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays}d';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m';
+    } else {
+      return 'now';
+    }
+  }
+
+  bool _isUserPro(MindForceProblem problem) {
+    // Check if user has pro status
+    // This would need to be added to the user model
+    return false; // TODO: Implement when user model has is_pro field
+  }
+
+  bool _isUserVerified(MindForceProblem problem) {
+    // Check if user is verified
+    // This would need to be added to the user model
+    return false; // TODO: Implement when user model has kyc/verified field
+  }
+
+  Widget _buildCategoryChip(String label, int? categoryId, bool isSelected) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: Material(
+        color: isSelected ? Colors.purple.shade600 : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              _selectedCategoryId = isSelected ? null : categoryId;
+            });
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+                color: isSelected ? Colors.white : Colors.grey.shade700,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

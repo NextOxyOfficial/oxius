@@ -1235,8 +1235,9 @@ class BusinessNetworkMindForceListCreateView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         print(request.data)
-        images_data = request.data.pop("images", None)
-        data = request.data
+        # Create a mutable copy of request.data
+        data = request.data.copy()
+        images_data = data.pop("images", None)
         data["user"] = request.user.id
         serializer = self.get_serializer(data=data)
 
@@ -2582,8 +2583,9 @@ class BusinessNetworkMindForceListCreateView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         print(request.data)
-        images_data = request.data.pop("images", None)
-        data = request.data
+        # Create a mutable copy of request.data
+        data = request.data.copy()
+        images_data = data.pop("images", None)
         data["user"] = request.user.id
         serializer = self.get_serializer(data=data)
 
