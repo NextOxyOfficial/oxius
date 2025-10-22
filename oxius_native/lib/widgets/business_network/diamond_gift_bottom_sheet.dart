@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/diamond_service.dart';
 import '../../services/auth_service.dart';
+import 'diamond_purchase_bottom_sheet.dart';
 
 class DiamondGiftBottomSheet extends StatefulWidget {
   final String postId;
@@ -327,7 +328,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
                   // Send Gift Button
                   SizedBox(
@@ -370,23 +371,83 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     ),
                   ),
 
-                  // No Balance Message
+                  // No Balance / Purchase Button
                   if (_currentDiamondBalance == 0)
                     Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Column(
                         children: [
-                          Icon(Icons.info_outline, size: 16, color: Colors.orange.shade600),
-                          const SizedBox(width: 6),
-                          Text(
-                            'You need diamonds to send a gift',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.orange.shade700,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.info_outline, size: 14, color: Colors.orange.shade600),
+                              const SizedBox(width: 4),
+                              Text(
+                                'You need diamonds to send a gift',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.orange.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 40,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                DiamondPurchaseBottomSheet.show(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue.shade600,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.shopping_cart, size: 16),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'Purchase Diamonds',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
+                      ),
+                    )
+                  else
+                    // Purchase button for users with balance
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: TextButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          DiamondPurchaseBottomSheet.show(context);
+                        },
+                        icon: Icon(Icons.add_shopping_cart, size: 14, color: Colors.blue.shade700),
+                        label: Text(
+                          'Buy more Diamonds!',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.blue.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        ),
                       ),
                     ),
                 ],
