@@ -208,7 +208,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Available Balance Card - Compact
+                  // Available Balance Card - Compact with Buy Button
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
@@ -221,30 +221,69 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Available Diamonds',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                        Row(
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.diamond, size: 18, color: Colors.pink.shade500),
-                            const SizedBox(width: 6),
                             Text(
-                              '$_currentDiamondBalance',
+                              'Available Diamonds',
                               style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                foreground: Paint()
-                                  ..shader = LinearGradient(
-                                    colors: [Colors.pink.shade600, Colors.purple.shade600],
-                                  ).createShader(const Rect.fromLTWH(0, 0, 150, 50)),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey.shade700,
                               ),
                             ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.diamond, size: 18, color: Colors.pink.shade500),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '$_currentDiamondBalance',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    foreground: Paint()
+                                      ..shader = LinearGradient(
+                                        colors: [Colors.pink.shade600, Colors.purple.shade600],
+                                      ).createShader(const Rect.fromLTWH(0, 0, 150, 50)),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
+                        ),
+                        // Buy More / Purchase Button
+                        InkWell(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            DiamondPurchaseBottomSheet.show(context);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade600,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _currentDiamondBalance == 0 ? Icons.shopping_cart : Icons.add_shopping_cart,
+                                  size: 12,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _currentDiamondBalance == 0 ? 'Purchase' : 'Buy More',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -371,83 +410,23 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     ),
                   ),
 
-                  // No Balance / Purchase Button
+                  // No Balance Warning
                   if (_currentDiamondBalance == 0)
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
-                      child: Column(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.info_outline, size: 14, color: Colors.orange.shade600),
-                              const SizedBox(width: 4),
-                              Text(
-                                'You need diamonds to send a gift',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.orange.shade700,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 40,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                DiamondPurchaseBottomSheet.show(context);
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue.shade600,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.shopping_cart, size: 16),
-                                  const SizedBox(width: 6),
-                                  const Text(
-                                    'Purchase Diamonds',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                          Icon(Icons.info_outline, size: 14, color: Colors.orange.shade600),
+                          const SizedBox(width: 4),
+                          Text(
+                            'You need diamonds to send a gift',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.orange.shade700,
                             ),
                           ),
                         ],
-                      ),
-                    )
-                  else
-                    // Purchase button for users with balance
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: TextButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          DiamondPurchaseBottomSheet.show(context);
-                        },
-                        icon: Icon(Icons.add_shopping_cart, size: 14, color: Colors.blue.shade700),
-                        label: Text(
-                          'Buy more Diamonds!',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.blue.shade700,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        ),
                       ),
                     ),
                 ],
