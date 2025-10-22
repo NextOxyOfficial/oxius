@@ -252,4 +252,51 @@ class GoldSponsorService {
       return {'success': false, 'error': 'Failed to submit application: $e'};
     }
   }
+
+  // Get user's gold sponsor stats (for drawer/sidebar)
+  static Future<Map<String, dynamic>> getMySponsorsStats() async {
+    try {
+      final token = AuthService.accessToken;
+      if (token == null) {
+        return {
+          'active_count': 0,
+          'total_views': 0,
+          'featured_sponsors': [],
+        };
+      }
+
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+
+      print('Fetching my sponsors stats from: $baseUrl/bn/gold-sponsors/stats/');
+      final response = await http.get(
+        Uri.parse('$baseUrl/bn/gold-sponsors/stats/'),
+        headers: headers,
+      );
+
+      print('Stats response status: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        print('Stats response body: ${response.body}');
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        print('Failed to load stats: ${response.statusCode} - ${response.body}');
+        return {
+          'active_count': 0,
+          'total_views': 0,
+          'featured_sponsors': [],
+        };
+      }
+    } catch (e, stackTrace) {
+      print('Error fetching sponsor stats: $e');
+      print('Stack trace: $stackTrace');
+      return {
+        'active_count': 0,
+        'total_views': 0,
+        'featured_sponsors': [],
+      };
+    }
+  }
 }

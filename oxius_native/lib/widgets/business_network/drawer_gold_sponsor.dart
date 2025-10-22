@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/business_network_service.dart';
+import '../../services/gold_sponsor_service.dart';
 import '../../screens/business_network/become_gold_sponsor_screen.dart';
 
 class DrawerGoldSponsor extends StatefulWidget {
@@ -33,23 +34,23 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
     setState(() => _isLoading = true);
     
     try {
-      // TODO: Replace with actual API call
-      // final response = await BusinessNetworkService.getMyGoldSponsors();
-      // setState(() {
-      //   _activeCount = response['active_count'];
-      //   _totalViews = response['total_views'];
-      //   _expiringCount = response['expiring_count'];
-      //   _sponsors = response['sponsors'];
-      // });
+      // Fetch real data from API
+      final response = await GoldSponsorService.getMySponsorsStats();
       
-      // Mock data for now
-      await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
         setState(() {
-          _activeCount = 0;
-          _totalViews = 0;
-          _expiringCount = 0;
-          _sponsors = [];
+          _activeCount = response['active_count'] ?? 0;
+          _totalViews = response['total_views'] ?? 0;
+          
+          // Calculate expiring count (sponsors expiring in next 7 days)
+          final sponsors = response['featured_sponsors'] as List? ?? [];
+          _expiringCount = 0; // TODO: Calculate from end_date if needed
+          
+          _sponsors = sponsors.map((s) => Map<String, dynamic>.from(s)).toList();
+          
+          print('DEBUG: Loaded ${_sponsors.length} sponsors');
+          print('DEBUG: Active count: $_activeCount');
+          print('DEBUG: Sponsors: $_sponsors');
         });
       }
     } catch (e) {
@@ -464,28 +465,36 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      '${sponsor['views'] ?? 0} views',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
+                    if (sponsor['business_description'] != null)
+                      Text(
+                        sponsor['business_description'],
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey.shade600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade100,
+                  color: _getStatusColor(sponsor['status']).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: _getStatusColor(sponsor['status']).withOpacity(0.3),
+                    width: 1,
+                  ),
                 ),
                 child: Text(
-                  sponsor['status'] ?? 'active',
+                  _getStatusText(sponsor['status']).toUpperCase(),
                   style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.green.shade800,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 9,
+                    color: _getStatusColor(sponsor['status']),
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
@@ -503,5 +512,35 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
       return '${(views / 1000).toStringAsFixed(1)}K';
     }
     return views.toString();
+  }
+
+  String _getStatusText(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return 'Active';
+      case 'pending':
+        return 'Pending Approval';
+      case 'expired':
+        return 'Expired';
+      case 'rejected':
+        return 'Rejected';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return Colors.green.shade600;
+      case 'pending':
+        return Colors.orange.shade600;
+      case 'expired':
+        return Colors.red.shade600;
+      case 'rejected':
+        return Colors.red.shade600;
+      default:
+        return Colors.grey.shade600;
+    }
   }
 }
