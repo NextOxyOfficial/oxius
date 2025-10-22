@@ -17,9 +17,26 @@ class PostCommentInput extends StatefulWidget {
 class _PostCommentInputState extends State<PostCommentInput> {
   final TextEditingController _controller = TextEditingController();
   bool _isSubmitting = false;
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    final hasText = _controller.text.trim().isNotEmpty;
+    if (hasText != _hasText) {
+      setState(() {
+        _hasText = hasText;
+      });
+    }
+  }
 
   @override
   void dispose() {
+    _controller.removeListener(_onTextChanged);
     _controller.dispose();
     super.dispose();
   }
@@ -143,9 +160,9 @@ class _PostCommentInputState extends State<PostCommentInput> {
                         icon: Icon(
                           Icons.send,
                           size: 18,
-                          color: _controller.text.trim().isEmpty
-                              ? Colors.grey.shade400
-                              : const Color(0xFF3B82F6),
+                          color: _hasText
+                              ? const Color(0xFF3B82F6)
+                              : Colors.grey.shade400,
                         ),
                         padding: const EdgeInsets.all(8),
                         constraints: const BoxConstraints(),
