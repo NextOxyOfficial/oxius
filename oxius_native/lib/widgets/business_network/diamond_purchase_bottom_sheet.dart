@@ -46,10 +46,18 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
   final TextEditingController _customAmountController = TextEditingController();
 
   bool _hasPurchased = false;
+  
+  // Local balance state for immediate updates
+  late int _currentDiamondBalance;
+  late double _currentAccountBalance;
 
   @override
   void initState() {
     super.initState();
+    // Initialize local balance from current user
+    _currentDiamondBalance = AuthService.currentUser?.diamondBalance ?? 0;
+    _currentAccountBalance = AuthService.currentUser?.balance ?? 0.0;
+    
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index == 1) {
@@ -134,7 +142,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
 
     final hasAmount = _selectedPackage != null || (_customAmount != null && _customAmount! >= 10);
     final total = _calculateTotal();
-    final hasBalance = user.balance >= total;
+    // Use local balance state for immediate validation
+    final hasBalance = _currentAccountBalance >= total;
 
     return hasAmount && hasBalance && total > 0;
   }
@@ -148,15 +157,26 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
       final amount = _selectedPackage ?? _customAmount!;
       final cost = _calculateTotal();
 
+      // Calculate new balances immediately
+      final newDiamondBalance = _currentDiamondBalance + amount;
+      final newAccountBalance = _currentAccountBalance - cost;
+
       await DiamondService.purchaseDiamonds(
         amount: amount,
         cost: cost,
       );
 
-      // Refresh user data to get updated balance
-      await AuthService.refreshUserData();
-
       if (mounted) {
+        // Update local balance state immediately with calculated values
+        setState(() {
+          _isLoading = false;
+          _selectedPackage = null;
+          _customAmount = null;
+          // Update balances immediately
+          _currentDiamondBalance = newDiamondBalance;
+          _currentAccountBalance = newAccountBalance;
+        });
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Successfully purchased $amount diamonds! 🎉'),
@@ -170,12 +190,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
         // Mark that purchase happened
         _hasPurchased = true;
         
-        // Update the UI to show new balance and reset form
-        setState(() {
-          _isLoading = false;
-          _selectedPackage = null;
-          _customAmount = null;
-        });
+        // Refresh user data in background
+        AuthService.refreshUserData();
         
         _customAmountController.clear();
         
@@ -306,7 +322,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                         Icon(Icons.diamond, size: 16, color: Colors.pink.shade500),
                         const SizedBox(width: 4),
                         Text(
-                          '${user?.diamondBalance ?? 0}',
+                          '$_currentDiamondBalance',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -328,7 +344,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '৳${user?.balance.toStringAsFixed(2) ?? '0.00'}',
+                      '৳${_currentAccountBalance.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -787,19 +803,15 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                           margin: const EdgeInsets.only(top: 4),
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: transaction.status == 'completed'
-                                ? Colors.green.shade100
-                                : Colors.amber.shade100,
+                            color: Colors.green.shade100,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            transaction.status,
+                            'Completed',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: transaction.status == 'completed'
-                                  ? Colors.green.shade800
-                                  : Colors.amber.shade800,
+                              color: Colors.green.shade800,
                             ),
                           ),
                         ),
