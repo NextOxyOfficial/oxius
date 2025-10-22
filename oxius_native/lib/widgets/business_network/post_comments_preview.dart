@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/business_network_models.dart';
 import '../../utils/time_utils.dart';
+import '../../utils/mention_parser.dart';
 import '../../screens/business_network/profile_screen.dart';
 
 class PostCommentsPreview extends StatefulWidget {
@@ -531,12 +532,22 @@ class _CommentItem extends StatelessWidget {
                     ),
                   )
                 else
-                  Text(
-                    comment.content,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade800,
-                      height: 1.3,
+                  // Regular comment with mention support
+                  Text.rich(
+                    TextSpan(
+                      children: MentionParser.parseTextWithMentions(
+                        comment.content,
+                        context,
+                        onMentionTap: (username) {
+                          // Navigate to user profile (search by name)
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfileScreen(userId: username),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 // Reply button

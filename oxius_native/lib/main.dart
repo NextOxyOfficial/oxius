@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_portal/flutter_portal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
 import 'screens/inbox_screen.dart';
@@ -76,17 +77,18 @@ class MyApp extends StatelessWidget {
           );
         }
 
-        return MaterialApp(
-          title: 'AdsyClub Native',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
-            useMaterial3: true,
-            textTheme: GoogleFonts.robotoTextTheme(),
-          ),
-          // Use initialRoute instead of home to avoid conflict
-          initialRoute: '/',
-          routes: {
+        return Portal(
+          child: MaterialApp(
+            title: 'AdsyClub Native',
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
+              useMaterial3: true,
+              textTheme: GoogleFonts.robotoTextTheme(),
+            ),
+            // Use initialRoute instead of home to avoid conflict
+            initialRoute: '/',
+            routes: {
             '/': (context) => const HomeScreen(),
             '/login': (context) => const LoginPage(),
             '/inbox': (context) => const InboxScreen(),
@@ -178,6 +180,7 @@ class MyApp extends StatelessWidget {
             }
             return null;
           },
+          ),
         );
       },
     );
