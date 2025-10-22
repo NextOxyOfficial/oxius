@@ -8,6 +8,7 @@ import '../../widgets/business_network/post_media_gallery.dart';
 import '../../widgets/business_network/post_actions.dart';
 import '../../widgets/business_network/post_comment_input.dart';
 import '../../utils/time_utils.dart';
+import '../../utils/mention_parser.dart';
 import 'profile_screen.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -963,13 +964,17 @@ class _CommentItem extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 2),
-                // Comment text
-                Text(
-                  comment.content,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade800,
-                    height: 1.3,
+                // Comment text with mention support
+                Text.rich(
+                  TextSpan(
+                    children: MentionParser.parseTextWithMentions(
+                      comment.content,
+                      context,
+                      onMentionTap: (username) {
+                        // Navigate to user profile when mention is tapped
+                        print('Tapped mention: $username');
+                      },
+                    ),
                   ),
                 ),
                 // Reply button
