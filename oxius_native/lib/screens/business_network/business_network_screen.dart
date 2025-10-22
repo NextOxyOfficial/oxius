@@ -543,13 +543,87 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   }
 
   Widget _buildLoadingMoreIndicator() {
+    return Column(
+      children: List.generate(2, (index) => _buildSkeletonPost()),
+    );
+  }
+
+  Widget _buildSkeletonPost() {
     return Container(
-      padding: const EdgeInsets.all(16),
-      alignment: Alignment.center,
-      child: const SizedBox(
-        width: 24,
-        height: 24,
-        child: CircularProgressIndicator(strokeWidth: 2),
+      margin: const EdgeInsets.only(bottom: 12, left: 4, right: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header skeleton
+          Row(
+            children: [
+              _buildShimmerBox(40, 40, borderRadius: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildShimmerBox(12, 120),
+                    const SizedBox(height: 6),
+                    _buildShimmerBox(10, 80),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          
+          // Content skeleton
+          _buildShimmerBox(14, double.infinity),
+          const SizedBox(height: 6),
+          _buildShimmerBox(14, double.infinity),
+          const SizedBox(height: 6),
+          _buildShimmerBox(14, 200),
+          
+          const SizedBox(height: 12),
+          
+          // Image skeleton
+          _buildShimmerBox(180, double.infinity, borderRadius: 8),
+          
+          const SizedBox(height: 12),
+          
+          // Actions skeleton
+          Row(
+            children: [
+              _buildShimmerBox(28, 60, borderRadius: 6),
+              const SizedBox(width: 12),
+              _buildShimmerBox(28, 60, borderRadius: 6),
+              const Spacer(),
+              _buildShimmerBox(28, 60, borderRadius: 6),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerBox(double height, double width, {double? borderRadius}) {
+    return Container(
+      height: height,
+      width: width,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment(-1.0, 0.0),
+          end: Alignment(1.0, 0.0),
+          colors: [
+            Colors.grey.shade200,
+            Colors.grey.shade100,
+            Colors.grey.shade200,
+          ],
+          stops: const [0.0, 0.5, 1.0],
+        ),
+        borderRadius: BorderRadius.circular(borderRadius ?? 4),
       ),
     );
   }

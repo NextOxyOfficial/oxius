@@ -73,7 +73,7 @@ class SponsoredProductsCard extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: isMobile ? 2 : 3,
-              childAspectRatio: 0.62,
+              childAspectRatio: 0.61,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
             ),

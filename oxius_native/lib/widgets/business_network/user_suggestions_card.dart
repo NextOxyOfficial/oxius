@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/user_suggestions_service.dart';
+import '../../screens/business_network/profile_screen.dart';
 
 class UserSuggestionsCard extends StatefulWidget {
   final VoidCallback? onRefresh;
@@ -323,8 +324,13 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to profile
-          // Navigator.pushNamed(context, '/business-network/profile/${user['id']}');
+          // Navigate to user's profile
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProfileScreen(userId: userId),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Container(
