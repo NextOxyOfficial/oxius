@@ -9,6 +9,7 @@ import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
 import '../../widgets/business_network/post_card.dart';
+import '../../widgets/business_network/diamond_purchase_bottom_sheet.dart';
 import 'create_post_screen.dart';
 import 'notifications_screen.dart';
 
@@ -793,7 +794,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 const SizedBox(width: 12),
                 ElevatedButton(
                   onPressed: () {
-                    // TODO: Show diamond top-up modal
+                    DiamondPurchaseBottomSheet.show(
+                      context,
+                      onPurchaseSuccess: () {
+                        setState(() {
+                          _loadProfileData();
+                        });
+                      },
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.pink.shade500,

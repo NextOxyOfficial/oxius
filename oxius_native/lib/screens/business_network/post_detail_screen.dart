@@ -304,7 +304,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   IconButton(
                     icon: const Icon(Icons.arrow_back_ios, size: 20),
                     color: Colors.black87,
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => Navigator.pop(context, _post),
                     padding: const EdgeInsets.all(8),
                   ),
                   // Profile Section

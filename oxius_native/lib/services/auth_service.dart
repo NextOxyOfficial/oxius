@@ -491,4 +491,31 @@ class AuthService {
         throw Exception('Unsupported HTTP method: $method');
     }
   }
+
+  // Refresh current user data from API
+  static Future<void> refreshUserData() async {
+    try {
+      final token = await getValidToken();
+      if (token == null) return;
+
+      final response = await http.get(
+        Uri.parse('${ApiService.baseUrl}/auth/user/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _currentUser = User.fromJson(data);
+        
+        // Update stored user data
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_userKey, jsonEncode(_currentUser!.toJson()));
+      }
+    } catch (e) {
+      print('Error refreshing user data: $e');
+    }
+  }
 }

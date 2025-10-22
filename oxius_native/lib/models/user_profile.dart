@@ -19,6 +19,8 @@ class UserProfile {
   final String? about;
   final bool? kyc;
   final String? country;
+  final double balance;
+  final int diamondBalance;
 
   UserProfile({
     this.id,
@@ -41,6 +43,8 @@ class UserProfile {
     this.about,
     this.kyc,
     this.country,
+    this.balance = 0.0,
+    this.diamondBalance = 0,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -65,6 +69,8 @@ class UserProfile {
       about: json['about'],
       kyc: json['kyc'],
       country: json['country'],
+      balance: double.tryParse(json['balance']?.toString() ?? '0') ?? 0.0,
+      diamondBalance: int.tryParse(json['diamond_balance']?.toString() ?? '0') ?? 0,
     );
   }
 
@@ -90,6 +96,8 @@ class UserProfile {
       if (about != null) 'about': about,
       if (kyc != null) 'kyc': kyc,
       if (country != null) 'country': country,
+      'balance': balance,
+      'diamond_balance': diamondBalance,
       'name': '${firstName ?? ''} ${lastName ?? ''}'.trim(),
     };
   }
@@ -115,6 +123,8 @@ class UserProfile {
     String? about,
     bool? kyc,
     String? country,
+    double? balance,
+    int? diamondBalance,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -137,6 +147,8 @@ class UserProfile {
       about: about ?? this.about,
       kyc: kyc ?? this.kyc,
       country: country ?? this.country,
+      balance: balance ?? this.balance,
+      diamondBalance: diamondBalance ?? this.diamondBalance,
     );
   }
 }

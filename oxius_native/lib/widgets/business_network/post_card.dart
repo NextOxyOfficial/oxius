@@ -126,13 +126,20 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
-  void _handleViewAllComments() {
-    Navigator.push(
+  Future<void> _handleViewAllComments() async {
+    final updatedPost = await Navigator.push<BusinessNetworkPost>(
       context,
       MaterialPageRoute(
         builder: (context) => PostDetailScreen(post: _post),
       ),
     );
+    
+    // Update the post if it was modified (e.g., new comments added)
+    if (updatedPost != null && mounted) {
+      setState(() {
+        _post = updatedPost;
+      });
+    }
   }
 
   Future<void> _handleShare() async {
