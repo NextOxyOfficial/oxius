@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mentions/flutter_mentions.dart';
 import '../../models/business_network_models.dart';
 import '../../services/user_search_service.dart';
 import '../../services/business_network_service.dart';
@@ -414,6 +415,8 @@ class _CommentItem extends StatefulWidget {
 class _CommentItemState extends State<_CommentItem> {
   bool _isEditing = false;
   late TextEditingController _editController;
+  final GlobalKey<FlutterMentionsState> _editMentionKey = GlobalKey();
+  List<Map<String, dynamic>> _userData = [];
   String? _currentUserId;
 
   @override
@@ -443,6 +446,21 @@ class _CommentItemState extends State<_CommentItem> {
     // Force rebuild to show the menu
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final users = await UserSearchService.searchUsers(query);
+      return users.map((user) => {
+        'id': user.id ?? user.name,
+        'display': user.name,
+        'photo': user.image ?? user.avatar,
+      }).toList();
+    } catch (e) {
+      print('Error searching users: $e');
+      return [];
     }
   }
 
@@ -698,19 +716,84 @@ class _CommentItemState extends State<_CommentItem> {
                     ),
                   )
                 else if (_isEditing)
-                  // Edit mode
+                  // Edit mode with mention support
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextField(
-                        controller: _editController,
+                      FlutterMentions(
+                        key: _editMentionKey,
+                        suggestionPosition: SuggestionPosition.Top,
                         maxLines: 3,
+                        minLines: 1,
+                        defaultText: _editController.text,
                         decoration: InputDecoration(
                           hintText: 'Edit comment...',
+                          hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
                           ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          isDense: true,
                         ),
+                        style: const TextStyle(fontSize: 13),
+                        mentions: [
+                          Mention(
+                            trigger: '@',
+                            data: _userData,
+                            style: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            matchAll: false,
+                            suggestionBuilder: (data) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 16,
+                                      backgroundImage: data['photo'] != null
+                                          ? NetworkImage(data['photo'])
+                                          : null,
+                                      child: data['photo'] == null
+                                          ? const Icon(Icons.person, size: 16)
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      data['display'],
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                        onChanged: (value) async {
+                          // Search users when typing @
+                          if (value.contains('@')) {
+                            final lastAtIndex = value.lastIndexOf('@');
+                            final query = value.substring(lastAtIndex + 1);
+                            if (query.isNotEmpty && !query.contains(' ')) {
+                              final users = await _searchUsers(query);
+                              setState(() {
+                                _userData = users;
+                              });
+                            }
+                          }
+                        },
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -733,11 +816,16 @@ class _CommentItemState extends State<_CommentItem> {
                           const SizedBox(width: 8),
                           ElevatedButton(
                             onPressed: () async {
-                              // Don't auto-format mentions on save - keep text as-is
-                              // The mention parser will handle display formatting
+                              // Get text from FlutterMentions and format for storage
+                              final plainText = _editMentionKey.currentState?.controller?.text ?? '';
+                              final formattedText = plainText.replaceAllMapped(
+                                RegExp(r'@([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)(?=\s|[.!?,;:]|$)'),
+                                (match) => '@${match.group(1)}  ',
+                              );
+                              
                               final updatedComment = await BusinessNetworkService.updateComment(
                                 commentId: widget.comment.id,
-                                content: _editController.text,
+                                content: formattedText,
                               );
                               if (updatedComment != null && mounted) {
                                 setState(() => _isEditing = false);
