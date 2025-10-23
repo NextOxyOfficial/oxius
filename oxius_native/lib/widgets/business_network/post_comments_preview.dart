@@ -12,12 +12,14 @@ class PostCommentsPreview extends StatefulWidget {
   final BusinessNetworkPost post;
   final VoidCallback onViewAll;
   final Function(BusinessNetworkComment, String)? onReplySubmit;
+  final VoidCallback? onCommentCountChanged;
 
   PostCommentsPreview({
     super.key,
     required this.post,
     required this.onViewAll,
     this.onReplySubmit,
+    this.onCommentCountChanged,
   });
 
   @override
@@ -31,13 +33,23 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
   @override
   void didUpdateWidget(PostCommentsPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Clear deleted IDs and reply state when post comments change
-    if (oldWidget.post.comments.length != widget.post.comments.length) {
-      print('=== Post Updated ===');
-      print('Old comments: ${oldWidget.post.comments.length}');
-      print('New comments: ${widget.post.comments.length}');
-      print('Clearing deleted IDs: $_deletedCommentIds');
-      _deletedCommentIds.clear();
+    
+    // Check if the actual comment IDs have changed (not just length)
+    final oldIds = oldWidget.post.comments.map((c) => c.id).toSet();
+    final newIds = widget.post.comments.map((c) => c.id).toSet();
+    
+    // If comments were removed (IDs in old but not in new)
+    final removedIds = oldIds.difference(newIds);
+    if (removedIds.isNotEmpty) {
+      print('=== Comments Removed: $removedIds ===');
+      // Remove these IDs from deleted set since they're already gone from the list
+      _deletedCommentIds.removeAll(removedIds);
+    }
+    
+    // If new comments were added
+    final addedIds = newIds.difference(oldIds);
+    if (addedIds.isNotEmpty) {
+      print('=== New Comments Added: $addedIds ===');
       _replyingTo = null;
     }
   }
@@ -45,35 +57,47 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
   void _handleCommentDeleted(int commentId) {
     setState(() {
       _deletedCommentIds.add(commentId);
-      // Remove from post's comment list
-      widget.post.comments.removeWhere((c) => c.id == commentId);
+      // Don't mutate widget.post.comments directly - just use the deleted IDs set for filtering
     });
+    // Notify parent to update comment count
+    widget.onCommentCountChanged?.call();
   }
 
   void _handleCommentUpdated(BusinessNetworkComment updatedComment) {
+    // Don't mutate widget.post.comments directly
+    // The parent widget should handle updating the post object
+    // For now, just trigger a rebuild
     setState(() {
-      final index = widget.post.comments.indexWhere((c) => c.id == updatedComment.id);
-      if (index != -1) {
-        widget.post.comments[index] = updatedComment;
-      }
+      // Force rebuild without mutation
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    print('=== BUILD START ===');
+    print('Post ID: ${widget.post.id}');
+    print('Total comments received: ${widget.post.comments.length}');
+    print('Deleted IDs in state: $_deletedCommentIds');
+    
     if (widget.post.comments.isEmpty) return const SizedBox.shrink();
 
     // Debug: Check what we're getting
     print('=== Comment Structure Debug ===');
     for (var c in widget.post.comments) {
-      print('Comment ${c.id}: parentComment=${c.parentComment} (type: ${c.parentComment.runtimeType})');
+      print('Comment ${c.id}: parentComment=${c.parentComment}, isGift=${c.isGiftComment}');
     }
 
     // Separate parent comments and replies (filter out deleted)
-    final parentComments = widget.post.comments.where((c) => 
-      !_deletedCommentIds.contains(c.id) &&
-      (c.parentComment == null || c.parentComment == 0)
-    ).toList();
+    print('=== Filtering Comments ===');
+    print('Total comments: ${widget.post.comments.length}');
+    print('Deleted IDs: $_deletedCommentIds');
+    
+    final parentComments = widget.post.comments.where((c) {
+      final isDeleted = _deletedCommentIds.contains(c.id);
+      final isParent = c.parentComment == null || c.parentComment == 0;
+      print('Comment ${c.id}: isDeleted=$isDeleted, isParent=$isParent, parentComment=${c.parentComment}');
+      return !isDeleted && isParent;
+    }).toList();
     
     final replies = widget.post.comments.where((c) => 
       !_deletedCommentIds.contains(c.id) &&
@@ -84,6 +108,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
     
     // Only show parent comments (never show replies as standalone)
     if (parentComments.isEmpty) {
+      print('WARNING: No parent comments found! Returning empty widget.');
       return const SizedBox.shrink(); // No parent comments to show
     }
     
@@ -158,6 +183,13 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
             ...(() {
               final giftReplies = replies.where((r) => r.parentComment == highestGiftComment!.id).toList()
                 ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+              print('=== Gift Replies ===');
+              print('Total replies: ${replies.length}');
+              print('Gift comment ID: ${highestGiftComment!.id}');
+              print('Matching replies: ${giftReplies.length}');
+              for (var r in replies) {
+                print('Reply ${r.id}: parentComment=${r.parentComment}');
+              }
               return giftReplies.map((reply) => _CommentItem(
                 comment: reply,
                 isReply: true,
@@ -658,17 +690,23 @@ class _CommentItemState extends State<_CommentItem> {
                                           ],
                                         ),
                                       );
-                                      if (confirm == true && mounted) {
+                                      if (confirm == true) {
                                         final success = await BusinessNetworkService.deleteComment(widget.comment.id);
-                                        if (success && mounted) {
+                                        if (!mounted) return;
+                                        
+                                        if (success) {
                                           widget.onCommentDeleted?.call();
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('Comment deleted')),
-                                          );
-                                        } else if (mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('Failed to delete comment'), backgroundColor: Colors.red),
-                                          );
+                                          if (mounted && context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('Comment deleted')),
+                                            );
+                                          }
+                                        } else {
+                                          if (mounted && context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('Failed to delete comment'), backgroundColor: Colors.red),
+                                            );
+                                          }
                                         }
                                       }
                                     },
@@ -853,12 +891,16 @@ class _CommentItemState extends State<_CommentItem> {
                                 commentId: widget.comment.id,
                                 content: formattedText,
                               );
-                              if (updatedComment != null && mounted) {
+                              if (!mounted) return;
+                              
+                              if (updatedComment != null) {
                                 setState(() => _isEditing = false);
                                 widget.onCommentUpdated?.call(updatedComment);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Comment updated')),
-                                );
+                                if (mounted && context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Comment updated')),
+                                  );
+                                }
                               }
                             },
                             child: const Text('Save'),

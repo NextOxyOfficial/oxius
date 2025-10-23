@@ -628,6 +628,13 @@ class _PostCardState extends State<PostCard> {
           PostCommentsPreview(
             post: _post,
             onViewAll: _handleViewAllComments,
+            onCommentCountChanged: () {
+              setState(() {
+                _post = _post.copyWith(
+                  commentsCount: _post.commentsCount > 0 ? _post.commentsCount - 1 : 0,
+                );
+              });
+            },
             onReplySubmit: (comment, content) async {
               if (_isAddingComment) return;
               
@@ -643,13 +650,33 @@ class _PostCardState extends State<PostCard> {
               if (newComment != null && mounted) {
                 // Just add the new comment to existing list instead of reloading
                 // This prevents losing parent comments when API returns incomplete data
+                print('=== Adding Reply to Post ===');
+                print('Current comments count: ${_post.comments.length}');
+                print('Parent comment ID: ${comment.id}');
+                print('New reply ID: ${newComment.id}');
+                print('Comments before add:');
+                for (var c in _post.comments) {
+                  print('  - Comment ${c.id}: parentComment=${c.parentComment}');
+                }
+                
                 setState(() {
+                  // Create a completely new immutable list
+                  final updatedComments = List<BusinessNetworkComment>.from(_post.comments)
+                    ..add(newComment);
+                  
                   _post = _post.copyWith(
                     commentsCount: _post.commentsCount + 1,
-                    comments: [..._post.comments, newComment],
+                    comments: updatedComments,
                   );
                   _isAddingComment = false;
                 });
+                
+                print('Comments after add:');
+                for (var c in _post.comments) {
+                  print('  - Comment ${c.id}: parentComment=${c.parentComment}');
+                }
+                print('Post comments list identity: ${_post.comments.hashCode}');
+                print('Post object identity: ${_post.hashCode}');
                 
                 widget.onCommentAdded?.call(newComment);
               } else if (mounted) {
