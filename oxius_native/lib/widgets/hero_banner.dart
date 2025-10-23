@@ -3,6 +3,7 @@ import 'dart:async';
 import '../services/api_service.dart';
 import '../services/translation_service.dart';
 import '../screens/eshop_screen.dart';
+import '../screens/elearning_screen.dart';
 
 class HeroBanner extends StatefulWidget {
   const HeroBanner({super.key});
@@ -477,6 +478,13 @@ class _HeroBannerState extends State<HeroBanner> {
               } else if (service['label'] == _translationService.t('business_network', fallback: 'Business Network') || 
                   service['label'] == 'Business Network') {
                 Navigator.pushNamed(context, '/business-network');
+              } else if (service['label'] == _translationService.t('elearning', fallback: 'eLearning') || 
+                  service['label'] == 'eLearning' || 
+                  service['label'] == 'E-Learning') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ElearningScreen()),
+                );
               } else {
                 // TODO: Navigate to respective service pages
               }
