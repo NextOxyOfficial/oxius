@@ -28,6 +28,20 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
   BusinessNetworkComment? _replyingTo;
   final Set<int> _deletedCommentIds = {};
 
+  @override
+  void didUpdateWidget(PostCommentsPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Clear deleted IDs and reply state when post comments change
+    if (oldWidget.post.comments.length != widget.post.comments.length) {
+      print('=== Post Updated ===');
+      print('Old comments: ${oldWidget.post.comments.length}');
+      print('New comments: ${widget.post.comments.length}');
+      print('Clearing deleted IDs: $_deletedCommentIds');
+      _deletedCommentIds.clear();
+      _replyingTo = null;
+    }
+  }
+
   void _handleCommentDeleted(int commentId) {
     setState(() {
       _deletedCommentIds.add(commentId);
@@ -79,6 +93,10 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
     if (giftComments.isNotEmpty) {
       giftComments.sort((a, b) => (b.diamondAmount ?? 0).compareTo(a.diamondAmount ?? 0));
       highestGiftComment = giftComments.first;
+      print('=== Gift Comment Found ===');
+      print('Gift comment ID: ${highestGiftComment.id}');
+      print('Is in deleted IDs: ${_deletedCommentIds.contains(highestGiftComment.id)}');
+      print('Replying to ID: ${_replyingTo?.id}');
     }
     
     // Filter out the highest gift comment from regular comments to avoid duplication

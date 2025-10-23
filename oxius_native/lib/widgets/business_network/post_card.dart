@@ -518,12 +518,15 @@ class _PostCardState extends State<PostCard> {
           if (_post.title.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Text(
-                _post.title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+              child: GestureDetector(
+                onTap: _handleViewAllComments,
+                child: Text(
+                  _post.title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
             ),
@@ -638,30 +641,17 @@ class _PostCardState extends State<PostCard> {
               );
               
               if (newComment != null && mounted) {
-                // Small delay to allow UI to update smoothly
-                await Future.delayed(const Duration(milliseconds: 100));
+                // Just add the new comment to existing list instead of reloading
+                // This prevents losing parent comments when API returns incomplete data
+                setState(() {
+                  _post = _post.copyWith(
+                    commentsCount: _post.commentsCount + 1,
+                    comments: [..._post.comments, newComment],
+                  );
+                  _isAddingComment = false;
+                });
                 
-                // Reload post from API to ensure proper reply relationships
-                final updatedPost = await BusinessNetworkService.getPost(_post.id);
-                if (updatedPost != null && mounted) {
-                  setState(() {
-                    _post = updatedPost;
-                    _isAddingComment = false;
-                  });
-                  
-                  widget.onCommentAdded?.call(newComment);
-                } else if (mounted) {
-                  // Fallback to local update
-                  setState(() {
-                    _post = _post.copyWith(
-                      commentsCount: _post.commentsCount + 1,
-                      comments: [..._post.comments, newComment],
-                    );
-                    _isAddingComment = false;
-                  });
-                  
-                  widget.onCommentAdded?.call(newComment);
-                }
+                widget.onCommentAdded?.call(newComment);
               } else if (mounted) {
                 setState(() => _isAddingComment = false);
               }
