@@ -3,6 +3,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
+import '../../config/app_config.dart';
 import '../../screens/business_network/post_detail_screen.dart';
 import '../../screens/business_network/search_screen.dart';
 import 'post_header.dart';
@@ -166,8 +167,8 @@ class _PostCardState extends State<PostCard> {
       
       shareText += _post.content;
       
-      // Add post link (you can customize this URL)
-      shareText += '\n\nView on Business Network: http://127.0.0.1:8000/bn/posts/${_post.id}/';
+      // Add post link
+      shareText += '\n\nView on Business Network: ${AppConfig.mediaBaseUrl}/bn/posts/${_post.id}/';
       
       // Share the content
       await Share.share(

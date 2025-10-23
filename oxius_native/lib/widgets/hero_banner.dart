@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../services/api_service.dart';
 import '../services/translation_service.dart';
+import '../config/app_config.dart';
 import '../screens/eshop_screen.dart';
 import '../screens/elearning_screen.dart';
 import '../screens/news_screen.dart';
@@ -21,24 +22,15 @@ class _HeroBannerState extends State<HeroBanner> {
   bool isLoading = true;
   final TranslationService _translationService = TranslationService();
 
-  // Build absolute URL for Django static assets used by Vue (e.g., /static/frontend/images/*.png)
+  // Build absolute URL for static assets
   String _absStatic(String path) {
-    if (path.isEmpty) return path;
-    if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    // These images live in the frontend's public folder and are served by the Nuxt dev server
-    // Use port 3000 (frontend) instead of 8000 (Django) to avoid 404s for /static paths
-    const origin = 'http://localhost:3000';
-    final p = path.startsWith('/') ? path : '/$path';
-    return '$origin$p';
+    return AppConfig.getAbsoluteUrl(path);
   }
 
-  // Provide candidate URLs (Nuxt dev, then Django) and try them in order
+  // Provide candidate URLs for static assets
   List<String> _absStaticCandidates(String path) {
-    final p = path.startsWith('/') ? path : '/$path';
-    return [
-      'http://localhost:3000$p',
-      'http://localhost:8000$p',
-    ];
+    final absUrl = AppConfig.getAbsoluteUrl(path);
+    return [absUrl];
   }
 
   // Mobile service buttons data matching Vue.js structure

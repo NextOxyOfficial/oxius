@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/news_models.dart';
+import '../config/app_config.dart';
 
 class NewsService {
-  static const String baseUrl = 'http://127.0.0.1:8000';
+  static String get baseUrl => AppConfig.mediaBaseUrl;
 
   // Cache for storing fetched data
   static final Map<String, dynamic> _cache = {};

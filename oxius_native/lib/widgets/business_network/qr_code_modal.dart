@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter/rendering.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import '../../config/app_config.dart';
 
 class QrCodeModal extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -43,8 +44,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
   }
 
   String get profileUrl {
-    // You can adjust this URL based on your deployment
-    return 'http://127.0.0.1:8000/business-network/profile/${widget.user['id']}';
+    return '${AppConfig.mediaBaseUrl}/business-network/profile/${widget.user['id']}';
   }
 
   Future<void> downloadQrCode() async {

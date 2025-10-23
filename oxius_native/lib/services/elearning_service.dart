@@ -3,9 +3,11 @@ import 'package:http/http.dart' as http;
 import '../models/elearning_models.dart';
 import 'api_service.dart';
 
+import '../config/app_config.dart';
+
 class ElearningService {
-  // ApiService.baseUrl already includes '/api', so we use it directly
-  static const String baseUrl = 'http://127.0.0.1:8000';
+  // Use AppConfig for base URL
+  static String get baseUrl => AppConfig.mediaBaseUrl;
 
   // Cache for storing fetched data
   static final Map<String, dynamic> _cache = {};

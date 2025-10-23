@@ -3,6 +3,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
+import '../../config/app_config.dart';
 import '../../widgets/business_network/post_header.dart';
 import '../../widgets/business_network/post_media_gallery.dart';
 import '../../widgets/business_network/post_actions.dart';
@@ -165,7 +166,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       shareText += _post.content;
       
       // Add post link
-      shareText += '\n\nView on Business Network: http://127.0.0.1:8000/bn/posts/${_post.id}/';
+      shareText += '\n\nView on Business Network: ${AppConfig.mediaBaseUrl}/bn/posts/${_post.id}/';
       
       // Share the content
       await Share.share(
