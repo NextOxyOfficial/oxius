@@ -541,20 +541,22 @@ class _CommentItemState extends State<_CommentItem> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // User Avatar (clickable)
-          GestureDetector(
-            onTap: () {
-              final userId = widget.comment.user.uuid ?? widget.comment.user.id.toString();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProfileScreen(userId: userId),
-                ),
-              );
-            },
-            child: Container(
-              width: avatarSize,
-              height: avatarSize,
+          // User Avatar (clickable) - wrapped in Padding to align with text baseline
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: GestureDetector(
+              onTap: () {
+                final userId = widget.comment.user.uuid ?? widget.comment.user.id.toString();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(userId: userId),
+                  ),
+                );
+              },
+              child: Container(
+                width: avatarSize,
+                height: avatarSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -586,6 +588,7 @@ class _CommentItemState extends State<_CommentItem> {
                           size: avatarSize * 0.6,
                         ),
                       ),
+                ),
               ),
             ),
           ),
@@ -597,6 +600,7 @@ class _CommentItemState extends State<_CommentItem> {
               children: [
                 // User name and verified badge (clickable)
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Flexible(
                       child: GestureDetector(
