@@ -608,6 +608,12 @@ class _CommentItemState extends State<_CommentItem> {
                                     title: const Text('Edit Comment'),
                                     onTap: () {
                                       Navigator.pop(context);
+                                      // Update edit controller with current comment content
+                                      final plainContent = widget.comment.content.replaceAllMapped(
+                                        RegExp(r'@([^@]+?)  '),
+                                        (match) => '@${match.group(1)} ',
+                                      );
+                                      _editController.text = plainContent;
                                       setState(() => _isEditing = true);
                                     },
                                   ),
