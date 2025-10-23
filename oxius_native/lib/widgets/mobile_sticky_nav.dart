@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../services/user_state_service.dart';
 import '../screens/eshop_screen.dart';
+import '../screens/eshop_manager_screen.dart';
 import '../screens/home_screen.dart';
 
 class MobileStickyNav extends StatefulWidget {
@@ -213,9 +214,9 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
         ),
         _buildNavItem(
           icon: Icons.shopping_bag,
-          label: 'eShop',
-          isActive: widget.currentRoute == 'eShop',
-          onTap: () => _handleNavigation(context, 'eShop'),
+          label: 'eShop Manager',
+          isActive: widget.currentRoute == 'eShop Manager',
+          onTap: () => _handleNavigation(context, 'eShop Manager'),
           hasNotification: false,
         ),
         _buildNavItem(
@@ -303,7 +304,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
 
   void _handleNavigation(BuildContext context, String destination) {
     // Prevent navigation to current page
-    if ((destination == 'eShop' && widget.currentRoute == 'eShop') ||
+    if ((destination == 'eShop Manager' && widget.currentRoute == 'eShop Manager') ||
         (destination == 'Home' && widget.currentRoute == 'Home') ||
         (destination == 'Deposit/Withdraw' && widget.currentRoute == 'Wallet') ||
         (destination == 'Mobile Recharge' && widget.currentRoute == 'Recharge') ||
@@ -320,10 +321,10 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
         MaterialPageRoute(builder: (context) => const HomeScreen()),
         (route) => false,
       );
-    } else if (destination == 'eShop') {
+    } else if (destination == 'eShop Manager') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const EshopScreen()),
+        MaterialPageRoute(builder: (context) => const EshopManagerScreen()),
       );
     } else if (destination == 'Deposit/Withdraw') {
       // Navigate to deposit/withdraw page using named route

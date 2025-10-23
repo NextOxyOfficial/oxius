@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/auth_service.dart';
+import '../screens/eshop_manager_screen.dart';
 import 'business_network/adsypay_qr_modal.dart';
 
 class AppHeader extends StatefulWidget {
@@ -966,8 +967,9 @@ class _AppHeaderState extends State<AppHeader> {
         );
         break;
       case '/shop-manager':
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('eShop Manager coming soon!')),
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const EshopManagerScreen()),
         );
         break;
       case '/deposit-withdraw':
