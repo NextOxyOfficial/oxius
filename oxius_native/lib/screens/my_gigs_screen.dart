@@ -244,7 +244,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       final balance = price * additionalQuantity;
       
       final response = await http.put(
-        Uri.parse('http://localhost:8000/api/update-user-micro-gig/$gigId/'),
+        Uri.parse(ApiService.getApiUrl('update-user-micro-gig/$gigId/')),
         headers: headers,
         body: json.encode({
           'required_quantity': additionalQuantity,
@@ -395,7 +395,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       final headers = await ApiService.getHeaders();
       
       final response = await http.put(
-        Uri.parse('http://localhost:8000/api/update-user-micro-gig/$gigId/'),
+        Uri.parse(ApiService.getApiUrl('update-user-micro-gig/$gigId/')),
         headers: headers,
         body: json.encode({
           'title': title,

@@ -50,7 +50,7 @@ class _InboxScreenState extends State<InboxScreen>
     try {
       final headers = await ApiService.getHeaders();
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/notifications/'),
+        Uri.parse(ApiService.getApiUrl('notifications/')),
         headers: headers,
       );
       
@@ -88,7 +88,7 @@ class _InboxScreenState extends State<InboxScreen>
     try {
       final headers = await ApiService.getHeaders();
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/support-tickets/'),
+        Uri.parse(ApiService.getApiUrl('support-tickets/')),
         headers: headers,
       );
       

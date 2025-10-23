@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/auth_service.dart';
 import '../screens/eshop_manager_screen.dart';
+import '../config/app_config.dart';
 import 'business_network/adsypay_qr_modal.dart';
 
 class AppHeader extends StatefulWidget {
@@ -28,12 +29,7 @@ class _AppHeaderState extends State<AppHeader> {
   bool _showUserDropdown = false;
 
   String _abs(String? url) {
-    if (url == null || url.isEmpty) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    // Derive origin from the logo API endpoint
-    const origin = 'http://localhost:8000';
-    final u = url.startsWith('/') ? url : '/$url';
-    return '$origin$u';
+    return AppConfig.getAbsoluteUrl(url);
   }
 
   // Translation helper (matching Vue.js translations)
@@ -69,7 +65,7 @@ class _AppHeaderState extends State<AppHeader> {
   // Load logo dynamically from API (matching Vue.js PublicLogo component)
   Future<void> _loadLogo() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:8000/api/logo/'));
+      final response = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/logo/'));
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

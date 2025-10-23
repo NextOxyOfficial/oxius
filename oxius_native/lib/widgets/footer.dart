@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../screens/eshop_screen.dart';
+import '../config/app_config.dart';
 
 class AppFooter extends StatefulWidget {
   final bool showMobileNav;
@@ -29,12 +30,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
   bool get wantKeepAlive => true;
 
   String _abs(String? url) {
-    if (url == null || url.isEmpty) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    // Derive origin from the logo API endpoint
-    const origin = 'http://localhost:8000';
-    final u = url.startsWith('/') ? url : '/$url';
-    return '$origin$u';
+    return AppConfig.getAbsoluteUrl(url);
   }
 
   // Translation helper (matching Vue.js translations)
@@ -80,7 +76,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
     if (_disposed) return;
     
     try {
-      final response = await http.get(Uri.parse('http://localhost:8000/api/logo/'));
+      final response = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/logo/'));
       
       if (_disposed) return;
       

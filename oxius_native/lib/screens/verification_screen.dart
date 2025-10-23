@@ -46,7 +46,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     try {
       final headers = await ApiService.getHeaders();
       final response = await http.get(
-        Uri.parse('http://localhost:8000/api/get-user-nid/'),
+        Uri.parse(ApiService.getApiUrl('get-user-nid/')),
         headers: headers,
       );
       
@@ -183,7 +183,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     try {
       final headers = await ApiService.getHeaders();
       final response = await http.post(
-        Uri.parse('http://localhost:8000/api/add-user-nid/'),
+        Uri.parse(ApiService.getApiUrl('add-user-nid/')),
         headers: headers,
         body: json.encode({
           'front': _frontImage,

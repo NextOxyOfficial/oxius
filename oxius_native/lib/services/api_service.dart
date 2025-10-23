@@ -2,10 +2,23 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:developer';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/app_config.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  static String get baseUrl => AppConfig.apiBaseUrl;
+  static String get mediaBaseUrl => AppConfig.mediaBaseUrl;
   static const String _tokenKey = 'adsyclub_token';
+
+  // Helper method to get full API URL
+  static String getApiUrl(String path) {
+    final cleanPath = path.startsWith('/') ? path.substring(1) : path;
+    return '$baseUrl/$cleanPath';
+  }
+
+  // Helper method to get absolute media URL
+  static String getAbsoluteUrl(String? url) {
+    return AppConfig.getAbsoluteUrl(url);
+  }
 
   // Get headers with authentication token if available
   static Future<Map<String, String>> getHeaders() async {
