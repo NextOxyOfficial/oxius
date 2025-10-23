@@ -25,6 +25,24 @@ class PostCommentsPreview extends StatefulWidget {
 
 class _PostCommentsPreviewState extends State<PostCommentsPreview> {
   BusinessNetworkComment? _replyingTo;
+  final Set<int> _deletedCommentIds = {};
+
+  void _handleCommentDeleted(int commentId) {
+    setState(() {
+      _deletedCommentIds.add(commentId);
+      // Remove from post's comment list
+      widget.post.comments.removeWhere((c) => c.id == commentId);
+    });
+  }
+
+  void _handleCommentUpdated(BusinessNetworkComment updatedComment) {
+    setState(() {
+      final index = widget.post.comments.indexWhere((c) => c.id == updatedComment.id);
+      if (index != -1) {
+        widget.post.comments[index] = updatedComment;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,13 +54,15 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
       print('Comment ${c.id}: parentComment=${c.parentComment} (type: ${c.parentComment.runtimeType})');
     }
 
-    // Separate parent comments and replies
+    // Separate parent comments and replies (filter out deleted)
     final parentComments = widget.post.comments.where((c) => 
-      c.parentComment == null || c.parentComment == 0
+      !_deletedCommentIds.contains(c.id) &&
+      (c.parentComment == null || c.parentComment == 0)
     ).toList();
     
     final replies = widget.post.comments.where((c) => 
-      c.parentComment != null && c.parentComment != 0
+      !_deletedCommentIds.contains(c.id) &&
+      (c.parentComment != null && c.parentComment != 0)
     ).toList();
     
     print('Found ${parentComments.length} parent comments and ${replies.length} replies');
@@ -112,6 +132,8 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                   _replyingTo = highestGiftComment;
                 });
               } : null,
+              onCommentDeleted: () => _handleCommentDeleted(highestGiftComment!.id),
+              onCommentUpdated: _handleCommentUpdated,
             ),
             // Replies to highest gift comment
             ...(() {
@@ -120,6 +142,8 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
               return giftReplies.map((reply) => _CommentItem(
                 comment: reply,
                 isReply: true,
+                onCommentDeleted: () => _handleCommentDeleted(reply.id),
+                onCommentUpdated: _handleCommentUpdated,
               ));
             })(),
             // Reply input for highest gift
@@ -170,6 +194,8 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                     _replyingTo = comment;
                   });
                 } : null,
+                onCommentDeleted: () => _handleCommentDeleted(comment.id),
+                onCommentUpdated: _handleCommentUpdated,
               ),
               // Reply input (shown directly under this comment when replying)
               if (isReplyingToThis)
@@ -206,6 +232,8 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                     comment: reply,
                     onReply: null, // Don't allow replying to replies for now
                     isReply: true,
+                    onCommentDeleted: () => _handleCommentDeleted(reply.id),
+                    onCommentUpdated: _handleCommentUpdated,
                   ),
                 )),
                 // "See more replies" button if there are more than 3
@@ -391,13 +419,31 @@ class _CommentItemState extends State<_CommentItem> {
   @override
   void initState() {
     super.initState();
-    _editController = TextEditingController(text: widget.comment.content);
+    // Remove mention formatting for editing (keep just the plain text)
+    final plainContent = widget.comment.content.replaceAllMapped(
+      RegExp(r'@([^@]+?)  '),
+      (match) => '@${match.group(1)} ',
+    );
+    _editController = TextEditingController(text: plainContent);
     _loadCurrentUser();
   }
 
   void _loadCurrentUser() {
     final user = AuthService.currentUser;
     _currentUserId = user?.id;
+    print('=== Edit/Delete Check ===');
+    print('Current user: $user');
+    print('Current user ID: $_currentUserId (type: ${_currentUserId.runtimeType})');
+    print('Comment author: ${widget.comment.user.name}');
+    print('Comment author ID: ${widget.comment.user.id} (type: ${widget.comment.user.id.runtimeType})');
+    print('Comment author UUID: ${widget.comment.user.uuid}');
+    print('IDs match: ${widget.comment.user.id == _currentUserId}');
+    print('Can edit/delete: $_canEditDelete');
+    
+    // Force rebuild to show the menu
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -407,8 +453,15 @@ class _CommentItemState extends State<_CommentItem> {
   }
 
   bool get _canEditDelete {
-    return _currentUserId != null && 
-           widget.comment.user.id == _currentUserId;
+    if (_currentUserId == null) return false;
+    
+    // Compare with UUID if available (String comparison)
+    if (widget.comment.user.uuid != null) {
+      return widget.comment.user.uuid == _currentUserId;
+    }
+    
+    // Otherwise compare with ID (convert to string for comparison)
+    return widget.comment.user.id.toString() == _currentUserId;
   }
 
   @override
@@ -508,73 +561,86 @@ class _CommentItemState extends State<_CommentItem> {
                       ),
                     ],
                     const SizedBox(width: 8),
-                    Text(
-                      _formatTimeAgo(widget.comment.createdAt),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade500,
+                    Expanded(
+                      child: Text(
+                        _formatTimeAgo(widget.comment.createdAt),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
                     ),
-                    const Spacer(),
-                    // Three-dot menu for edit/delete
+                    // Three-dot menu for edit/delete (far right)
                     if (_canEditDelete)
-                      PopupMenuButton<String>(
-                        icon: Icon(Icons.more_horiz, size: 16, color: Colors.grey.shade600),
-                        padding: EdgeInsets.zero,
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: 'edit',
-                            child: Row(
-                              children: [
-                                Icon(Icons.edit, size: 16),
-                                SizedBox(width: 8),
-                                Text('Edit'),
-                              ],
+                      GestureDetector(
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                             ),
-                          ),
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete, size: 16, color: Colors.red),
-                                SizedBox(width: 8),
-                                Text('Delete', style: TextStyle(color: Colors.red)),
-                              ],
-                            ),
-                          ),
-                        ],
-                        onSelected: (value) async {
-                          if (value == 'edit') {
-                            setState(() => _isEditing = true);
-                          } else if (value == 'delete') {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Delete Comment'),
-                                content: const Text('Are you sure you want to delete this comment?'),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, false),
-                                    child: const Text('Cancel'),
+                            builder: (context) => Container(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Edit option
+                                  ListTile(
+                                    leading: const Icon(Icons.edit, color: Color(0xFF3B82F6)),
+                                    title: const Text('Edit Comment'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      setState(() => _isEditing = true);
+                                    },
                                   ),
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context, true),
-                                    child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                  const Divider(height: 1),
+                                  // Delete option
+                                  ListTile(
+                                    leading: const Icon(Icons.delete, color: Colors.red),
+                                    title: const Text('Delete Comment', style: TextStyle(color: Colors.red)),
+                                    onTap: () async {
+                                      Navigator.pop(context);
+                                      final confirm = await showDialog<bool>(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text('Delete Comment'),
+                                          content: const Text('Are you sure you want to delete this comment?'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context, false),
+                                              child: const Text('Cancel'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context, true),
+                                              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (confirm == true && mounted) {
+                                        final success = await BusinessNetworkService.deleteComment(widget.comment.id);
+                                        if (success && mounted) {
+                                          widget.onCommentDeleted?.call();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text('Comment deleted')),
+                                          );
+                                        } else if (mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(content: Text('Failed to delete comment'), backgroundColor: Colors.red),
+                                          );
+                                        }
+                                      }
+                                    },
                                   ),
                                 ],
                               ),
-                            );
-                            if (confirm == true) {
-                              final success = await BusinessNetworkService.deleteComment(widget.comment.id);
-                              if (success && mounted) {
-                                widget.onCommentDeleted?.call();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Comment deleted')),
-                                );
-                              }
-                            }
-                          }
+                            ),
+                          );
                         },
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(Icons.more_horiz, size: 18, color: Colors.grey.shade600),
+                        ),
                       ),
                   ],
                 ),
@@ -654,7 +720,12 @@ class _CommentItemState extends State<_CommentItem> {
                             onPressed: () {
                               setState(() {
                                 _isEditing = false;
-                                _editController.text = widget.comment.content;
+                                // Reset to original plain content
+                                final plainContent = widget.comment.content.replaceAllMapped(
+                                  RegExp(r'@([^@]+?)  '),
+                                  (match) => '@${match.group(1)} ',
+                                );
+                                _editController.text = plainContent;
                               });
                             },
                             child: const Text('Cancel'),
@@ -662,6 +733,8 @@ class _CommentItemState extends State<_CommentItem> {
                           const SizedBox(width: 8),
                           ElevatedButton(
                             onPressed: () async {
+                              // Don't auto-format mentions on save - keep text as-is
+                              // The mention parser will handle display formatting
                               final updatedComment = await BusinessNetworkService.updateComment(
                                 commentId: widget.comment.id,
                                 content: _editController.text,

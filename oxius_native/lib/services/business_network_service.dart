@@ -214,7 +214,8 @@ class BusinessNetworkService {
       print('URL: $_baseUrl/comments/$commentId/');
       print('Content: $content');
       
-      final response = await http.put(
+      // Use PATCH for partial update instead of PUT
+      final response = await http.patch(
         Uri.parse('$_baseUrl/comments/$commentId/'),
         headers: headers,
         body: json.encode(body),

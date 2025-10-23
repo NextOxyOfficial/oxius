@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 
 class MentionParser {
   // Regex to match @mentions in text
+  // Matches @Name or @First Last (capitalized words only, stops at lowercase or special chars)
   static final RegExp _mentionRegex = RegExp(
-    r'@([a-zA-Z0-9_\-\s]+?)(?=\s{2,}|\s*[.!?,:;]|\s+@|\s*$)',
+    r'@([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)(?=\s|[.!?,:;]|$)',
     multiLine: true,
   );
 
