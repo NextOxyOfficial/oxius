@@ -579,19 +579,18 @@ class _CommentItemState extends State<_CommentItem> {
                       ),
                     ],
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _formatTimeAgo(widget.comment.createdAt),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade500,
-                        ),
+                    Text(
+                      _formatTimeAgo(widget.comment.createdAt),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
                       ),
                     ),
+                    const Spacer(),
                     // Three-dot menu for edit/delete (far right)
                     if (_canEditDelete)
-                      GestureDetector(
-                        onTap: () {
+                      IconButton(
+                        onPressed: () {
                           showModalBottomSheet(
                             context: context,
                             shape: const RoundedRectangleBorder(
@@ -661,10 +660,13 @@ class _CommentItemState extends State<_CommentItem> {
                             ),
                           );
                         },
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: Icon(Icons.more_horiz, size: 18, color: Colors.grey.shade600),
+                        icon: Icon(
+                          Icons.more_horiz,
+                          color: Colors.grey.shade600,
+                          size: 18,
                         ),
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(),
                       ),
                   ],
                 ),
