@@ -21,6 +21,7 @@ import 'wallet/wallet_screen.dart';
 import 'settings_screen.dart';
 import 'inbox_screen.dart';
 import 'eshop_screen.dart';
+import 'news_screen.dart';
 import 'verification_screen.dart';
 import '../widgets/business_network/adsypay_qr_modal.dart';
 
@@ -1321,6 +1322,11 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     } else if (destination == 'Business Network') {
       Navigator.pushNamed(context, '/business-network');
+    } else if (destination == 'News') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const NewsScreen()),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
