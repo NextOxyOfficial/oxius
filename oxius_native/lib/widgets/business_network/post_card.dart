@@ -237,6 +237,12 @@ class _PostCardState extends State<PostCard> {
   }
 
   Future<void> _handleViewAllComments() async {
+    // Check authentication
+    if (AuthService.currentUser == null) {
+      _showLoginPrompt('view comments');
+      return;
+    }
+    
     final updatedPost = await Navigator.push<BusinessNetworkPost>(
       context,
       MaterialPageRoute(
@@ -250,6 +256,32 @@ class _PostCardState extends State<PostCard> {
         _post = updatedPost;
       });
     }
+  }
+  
+  void _showLoginPrompt(String action) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Login Required'),
+        content: Text('Please login to $action'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/login');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF3B82F6),
+            ),
+            child: const Text('Login'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _handleShare() async {
@@ -284,6 +316,12 @@ class _PostCardState extends State<PostCard> {
   }
 
   Future<void> _handleLike() async {
+    // Check authentication
+    if (AuthService.currentUser == null) {
+      _showLoginPrompt('like this post');
+      return;
+    }
+    
     // Prevent double-clicking
     if (_isLiking) return;
     
@@ -330,6 +368,12 @@ class _PostCardState extends State<PostCard> {
   }
 
   Future<void> _handleSave() async {
+    // Check authentication
+    if (AuthService.currentUser == null) {
+      _showLoginPrompt('save this post');
+      return;
+    }
+    
     final success = await BusinessNetworkService.toggleSave(_post.id, _post.isSaved);
     
     if (success && mounted) {

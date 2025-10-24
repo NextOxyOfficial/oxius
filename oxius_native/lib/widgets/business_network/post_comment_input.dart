@@ -109,6 +109,45 @@ class _PostCommentInputState extends State<PostCommentInput> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoggedIn = AuthService.currentUser != null;
+    
+    // Show login prompt for non-logged-in users
+    if (!isLoggedIn) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        child: InkWell(
+          onTap: () {
+            Navigator.pushNamed(context, '/login');
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.grey.shade200,
+                width: 0.5,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.login, size: 18, color: Colors.grey.shade600),
+                const SizedBox(width: 8),
+                Text(
+                  'Login to comment',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Row(
