@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_html/flutter_html.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
@@ -482,13 +483,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         // Post Content
                         Padding(
                           padding: EdgeInsets.fromLTRB(16, _post.title.isNotEmpty ? 0 : 16, 16, 0),
-                          child: Text(
-                            _post.content,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade800,
-                              height: 1.5,
-                            ),
+                          child: Html(
+                            data: _post.content,
+                            style: {
+                              "body": Style(
+                                margin: Margins.zero,
+                                padding: HtmlPaddings.zero,
+                                fontSize: FontSize(14),
+                                color: Colors.grey.shade800,
+                                lineHeight: const LineHeight(1.5),
+                              ),
+                              "p": Style(
+                                margin: Margins.zero,
+                                padding: HtmlPaddings.zero,
+                              ),
+                            },
                           ),
                         ),
                         

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_html/flutter_html.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
@@ -579,15 +580,21 @@ class _PostCardState extends State<PostCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _post.content,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade800,
-                    height: 1.4,
-                  ),
-                  maxLines: _showFullContent ? null : 4,
-                  overflow: _showFullContent ? null : TextOverflow.ellipsis,
+                Html(
+                  data: _showFullContent ? _post.content : (_post.content.length > 160 ? '${_post.content.substring(0, 160)}...' : _post.content),
+                  style: {
+                    "body": Style(
+                      margin: Margins.zero,
+                      padding: HtmlPaddings.zero,
+                      fontSize: FontSize(14),
+                      color: Colors.grey.shade800,
+                      lineHeight: const LineHeight(1.4),
+                    ),
+                    "p": Style(
+                      margin: Margins.zero,
+                      padding: HtmlPaddings.zero,
+                    ),
+                  },
                 ),
                 if (_post.content.length > 160)
                   TextButton(
