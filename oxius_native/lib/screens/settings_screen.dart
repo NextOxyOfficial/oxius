@@ -6,7 +6,7 @@ import '../services/user_state_service.dart';
 import '../models/user_profile.dart';
 import '../widgets/footer.dart';
 import '../widgets/mobile_drawer.dart';
-import '../widgets/header.dart';
+import '../widgets/header/header.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -206,19 +206,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      drawer: const MobileDrawer(),
+      drawer: const HeaderDrawer(),
       body: Column(
         children: [
-          // Fixed Header at top - Using CustomScrollView to support AppHeader (Sliver)
-          SizedBox(
-            height: 64,
-            child: CustomScrollView(
-              physics: const NeverScrollableScrollPhysics(),
-              slivers: [
-                const AppHeader(identifier: 'settings'),
-              ],
-            ),
-          ),
+          // Fixed Header at top
+          const AppHeader(),
           
           // Scrollable content area
           Expanded(

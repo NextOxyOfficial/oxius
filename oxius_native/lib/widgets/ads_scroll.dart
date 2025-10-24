@@ -361,7 +361,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                   onEnter: (_) => _pauseAutoScroll(),
                   onExit: (_) => _resumeAutoScroll(),
                   child: Container(
-                    height: MediaQuery.of(context).size.width < 640 ? 200 : 220, // Increased height to prevent overflow
+                    height: 220, // Fixed height for card + padding
                     padding: const EdgeInsets.all(14),
                     child: ListView.builder(
                       controller: _scrollController,
@@ -419,120 +419,116 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
 
   Widget _buildAdCard(Map<String, dynamic> ad) {
     try {
-      return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 2,
-            offset: const Offset(0, 1),
+      return SizedBox(
+        height: 192, // Fixed total card height
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image container with price tag
-          Expanded(
-            flex: 3,
-            child: Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                  child: CachedNetworkImage(
-                    imageUrl: _getImageSrc(ad),
-                    width: double.infinity,
-                    height: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey.shade100,
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey.shade100,
-                      child: const Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                ),
-                
-                // Price tag
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 2,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Text(
-                      '৳${_formatPrice(ad['price'])}',
-                      style: GoogleFonts.roboto(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green.shade600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Content area
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Image container with price badge - fixed 120px
+              Stack(
                 children: [
-                  // Title
-                  Flexible(
-                    child: Text(
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                    child: Container(
+                      height: 120,
+                      width: double.infinity,
+                      color: Colors.grey.shade100,
+                      child: CachedNetworkImage(
+                        imageUrl: _getImageSrc(ad),
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF10B981)),
+                        ),
+                        errorWidget: (context, url, error) => Center(
+                          child: Icon(Icons.image_not_supported, color: Colors.grey.shade400, size: 32),
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  // Price badge
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        '\u09f3${_formatPrice(ad['price'])}',
+                        style: GoogleFonts.roboto(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              
+              // Content area
+              Padding(
+                padding: const EdgeInsets.all(4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Title
+                    Text(
                       _formatTitle(ad),
                       style: GoogleFonts.roboto(
                         fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                         color: Colors.grey.shade800,
-                        height: 1.2, // Reduced line height
+                        height: 1.3,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  
-                  const Spacer(),
-                  
-                  // Location
-                  Flexible(
-                    child: Row(
+                    
+                    const SizedBox(height: 4),
+                    
+                    // Location
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.location_on,
+                          Icons.location_on_outlined,
                           size: 12,
                           color: Colors.grey.shade500,
                         ),
-                        const SizedBox(width: 2),
+                        const SizedBox(width: 3),
                         Expanded(
                           child: Text(
                             _formatLocation(ad),
                             style: GoogleFonts.roboto(
                               fontSize: 10,
-                              color: Colors.grey.shade500,
+                              color: Colors.grey.shade600,
+                              height: 1.2,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -540,40 +536,39 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                         ),
                       ],
                     ),
-                  ),
-                  
-                  const SizedBox(height: 1), // Reduced height
-                  
-                  // Date
-                  Flexible(
-                    child: Row(
+                    
+                    const SizedBox(height: 1),
+                    
+                    // Date
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.access_time,
+                          Icons.access_time_outlined,
                           size: 12,
                           color: Colors.grey.shade500,
                         ),
-                        const SizedBox(width: 2),
+                        const SizedBox(width: 3),
                         Flexible(
                           child: Text(
                             _formatDate(ad['created_at']?.toString()),
                             style: GoogleFonts.roboto(
                               fontSize: 10,
-                              color: Colors.grey.shade500,
+                              color: Colors.grey.shade600,
+                              height: 1.2,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
-    );
+        ),
+      );
     } catch (e) {
       // Return a fallback ad card if there's any error
       return Container(

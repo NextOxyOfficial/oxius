@@ -379,21 +379,54 @@ class _HeroBannerState extends State<HeroBanner> {
                 });
               },
               itemBuilder: (context, index) {
-                final imageUrl = imagesToShow[index]['image'] ?? '';
+                final rawImageUrl = imagesToShow[index]['image'] ?? '';
+                final imageUrl = AppConfig.getAbsoluteUrl(rawImageUrl);
+                
+                print('🖼️ Loading banner image: $imageUrl');
 
                 return Container(
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(imageUrl),
-                      fit: BoxFit.cover,
-                      onError: (error, stackTrace) {
-                        print('Error loading image: $error');
-                      },
-                    ),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: Colors.grey.shade300,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      print('❌ Banner image error: $error');
+                      print('❌ URL: $imageUrl');
+                      return Container(
+                        color: Colors.grey.shade300,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.broken_image, size: 48, color: Colors.grey.shade600),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Image failed to load',
+                                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  // Remove overlay texts to keep images clean
-                  child: const SizedBox.expand(),
                 );
               },
             ),
