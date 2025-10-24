@@ -233,10 +233,19 @@ class _SaleCategoryState extends State<SaleCategory> {
   }
 
   String _formatLocation(Map<String, dynamic> p) {
-    final parts = [p['area'], p['district'], p['division']]
-        .where((e) => e != null && e.toString().trim().isNotEmpty)
-        .toList();
-    return parts.isNotEmpty ? parts.first.toString() : '';
+    // Match Vue.js logic: if division, district, and area all exist, show them
+    // Otherwise show "All Over Bangladesh"
+    final division = p['division'];
+    final district = p['district'];
+    final area = p['area'];
+    
+    if (division != null && division.toString().trim().isNotEmpty &&
+        district != null && district.toString().trim().isNotEmpty &&
+        area != null && area.toString().trim().isNotEmpty) {
+      return '$division, $district, $area';
+    }
+    
+    return 'All Over Bangladesh';
   }
 
   String _relativeDate(dynamic createdAt) {
@@ -487,25 +496,23 @@ class _SaleCategoryState extends State<SaleCategory> {
   Widget _buildBannerSection() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: SizedBox(
-                height: 80,
-                child: _buildBannerTile(index: 0),
-              ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: SizedBox(
+              height: 80,
+              width: double.infinity,
+              child: _buildBannerTile(index: 0),
             ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: SizedBox(
-                height: 80,
-                child: _buildBannerTile(index: 1),
-              ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: SizedBox(
+              height: 80,
+              width: double.infinity,
+              child: _buildBannerTile(index: 1),
             ),
           ),
         ],
@@ -685,70 +692,93 @@ class _SaleCategoryState extends State<SaleCategory> {
               margin: EdgeInsets.only(right: index == products.length - 1 ? 4 : 8),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Product image
-                Stack(
-                  children: [
-                    Container(
-                      height: 100,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                        image: ((product['main_image'] is String) && (product['main_image'] as String).isNotEmpty)
-                            ? DecorationImage(
-                                image: NetworkImage(product['main_image'] as String),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                    ),
-                    // Price badge
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981),
-                          borderRadius: BorderRadius.circular(4),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Product image
+                  Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                        child: Container(
+                          height: 120,
+                          width: double.infinity,
+                          color: Colors.grey.shade100,
+                          child: ((product['main_image'] is String) && (product['main_image'] as String).isNotEmpty)
+                              ? Image.network(
+                                  product['main_image'] as String,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => Center(
+                                    child: Icon(Icons.image_not_supported, color: Colors.grey.shade400, size: 32),
+                                  ),
+                                )
+                              : Center(
+                                  child: Icon(Icons.image_not_supported, color: Colors.grey.shade400, size: 32),
+                                ),
                         ),
-                        child: Text(
-                          _formatPrice(product['price'], product['negotiable'] == true),
-                          style: GoogleFonts.roboto(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                      ),
+                      // Price badge
+                      Positioned(
+                        top: 6,
+                        right: 6,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            _formatPrice(product['price'], product['negotiable'] == true),
+                            style: GoogleFonts.roboto(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                
-                // Product details
-                Expanded(
-                  child: Padding(
+                    ],
+                  ),
+                  
+                  // Product details
+                  Padding(
                     padding: const EdgeInsets.all(8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        // Title
                         Text(
                           product['title'] ?? '',
                           style: GoogleFonts.roboto(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: Colors.grey.shade800,
+                            height: 1.3,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         
-                        const Spacer(),
+                        const SizedBox(height: 6),
                         
                         // Location
                         Row(
@@ -756,15 +786,16 @@ class _SaleCategoryState extends State<SaleCategory> {
                             Icon(
                               Icons.location_on_outlined,
                               size: 12,
-                              color: Colors.grey.shade600,
+                              color: Colors.grey.shade500,
                             ),
-                            const SizedBox(width: 2),
+                            const SizedBox(width: 3),
                             Expanded(
                               child: Text(
                                 _formatLocation(product),
                                 style: GoogleFonts.roboto(
                                   fontSize: 10,
                                   color: Colors.grey.shade600,
+                                  height: 1.2,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -773,31 +804,34 @@ class _SaleCategoryState extends State<SaleCategory> {
                           ],
                         ),
                         
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         
                         // Condition and date
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                product['condition'] ?? '',
-                                style: GoogleFonts.roboto(
-                                  fontSize: 8,
-                                  color: Colors.grey.shade600,
+                            if (product['condition'] != null && product['condition'].toString().isNotEmpty)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  product['condition'] ?? '',
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 9,
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                            ),
+                            const Spacer(),
                             Text(
                               _relativeDate(product['created_at']),
                               style: GoogleFonts.roboto(
-                                fontSize: 8,
-                                color: Colors.grey.shade600,
+                                fontSize: 9,
+                                color: Colors.grey.shade500,
                               ),
                             ),
                           ],
@@ -805,10 +839,9 @@ class _SaleCategoryState extends State<SaleCategory> {
                       ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
           );
         },
       ),
