@@ -292,9 +292,14 @@ class _SaleCategoryState extends State<SaleCategory> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      padding: const EdgeInsets.all(8),
+      margin: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.01,
+        vertical: 8,
+      ),
+      padding: EdgeInsets.all(screenWidth * 0.025),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -304,60 +309,36 @@ class _SaleCategoryState extends State<SaleCategory> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: const Color(0xFF10B981).withOpacity(0.2),
           width: 1,
         ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Header row: icon with dot + title on same line, subtitle below (left aligned)
+          // Header row: icon + title + subtitle
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF10B981).withOpacity(0.25),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.local_offer_outlined,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                    ),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
                   ),
-                  Positioned(
-                    right: -2,
-                    top: -2,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF10B981),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.local_offer_outlined,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: screenWidth * 0.02),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,18 +347,22 @@ class _SaleCategoryState extends State<SaleCategory> {
                     Text(
                       _translationService.t('sale_listing', fallback: 'Sale Listings'),
                       style: GoogleFonts.roboto(
-                        fontSize: 18,
+                        fontSize: screenWidth * 0.042,
                         fontWeight: FontWeight.w700,
                         color: Colors.grey.shade900,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       _translationService.t('buy_and_sell_products', fallback: 'Buy & sell amazing products'),
                       style: GoogleFonts.roboto(
-                        fontSize: 12,
+                        fontSize: screenWidth * 0.028,
                         color: Colors.grey.shade600,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -385,71 +370,79 @@ class _SaleCategoryState extends State<SaleCategory> {
             ],
           ),
           
-          const SizedBox(height: 16),
+          SizedBox(height: screenWidth * 0.03),
           
-          // Action buttons (weighted flex + fitted text to avoid truncation)
-          Builder(builder: (context) {
-            final marketplaceLabel = _translationService.t('marketplace', fallback: 'Marketplace');
-            final myPostsLabel = _translationService.t('my_posts', fallback: 'My Posts');
-            final postSaleLabel = _translationService.t('post_sale', fallback: 'Post Sale');
-
-            return Row(
-              children: [
-                Expanded(
-                  flex: 11, // widest for Marketplace
-                  child: GestureDetector(
-                    onTap: () {
-                      // Navigate to sale marketplace (all products)
-                      Navigator.pushNamed(context, '/sale');
-                    },
-                    child: _buildActionButton(
-                      marketplaceLabel,
-                      Icons.shopping_bag_outlined,
-                      false,
+          // Action buttons - Responsive layout
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final marketplaceLabel = _translationService.t('marketplace', fallback: 'Marketplace');
+              final myPostsLabel = _translationService.t('my_posts', fallback: 'My Posts');
+              final postSaleLabel = _translationService.t('post_sale', fallback: 'Post Sale');
+              
+              return Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/sale');
+                      },
+                      child: _buildActionButton(
+                        marketplaceLabel,
+                        Icons.shopping_bag_outlined,
+                        false,
+                        constraints.maxWidth,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 9,
-                  child: GestureDetector(
-                    onTap: () {
-                      // Navigate to my sale posts
-                      Navigator.pushNamed(context, '/my-sale-posts');
-                    },
-                    child: _buildActionButton(
-                      myPostsLabel,
-                      Icons.description_outlined,
-                      false,
+                  SizedBox(width: screenWidth * 0.015),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/my-sale-posts');
+                      },
+                      child: _buildActionButton(
+                        myPostsLabel,
+                        Icons.description_outlined,
+                        false,
+                        constraints.maxWidth,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 10,
-                  child: GestureDetector(
-                    onTap: () {
-                      // Navigate to create sale post form
-                      Navigator.pushNamed(context, '/create-sale-post');
-                    },
-                    child: _buildActionButton(
-                      postSaleLabel,
-                      Icons.add_circle_outline,
-                      true, // Highlighted
+                  SizedBox(width: screenWidth * 0.015),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, '/create-sale-post');
+                      },
+                      child: _buildActionButton(
+                        postSaleLabel,
+                        Icons.add_circle_outline,
+                        true,
+                        constraints.maxWidth,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          }),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, bool isHighlighted) {
+  Widget _buildActionButton(String label, IconData icon, bool isHighlighted, double containerWidth) {
+    // Calculate responsive sizes based on available width
+    final buttonPadding = containerWidth < 300 ? 6.0 : 8.0;
+    final iconSize = containerWidth < 300 ? 14.0 : 16.0;
+    final fontSize = containerWidth < 300 ? 10.0 : 11.0;
+    final iconTextGap = containerWidth < 300 ? 2.0 : 4.0;
+    
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+      padding: EdgeInsets.symmetric(
+        vertical: buttonPadding,
+        horizontal: buttonPadding,
+      ),
       decoration: BoxDecoration(
         color: isHighlighted 
             ? const Color(0xFF10B981).withOpacity(0.1)
@@ -458,36 +451,37 @@ class _SaleCategoryState extends State<SaleCategory> {
           color: isHighlighted 
               ? const Color(0xFF10B981)
               : Colors.grey.shade300,
+          width: 1,
         ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             icon,
-            size: 16,
+            size: iconSize,
             color: isHighlighted 
                 ? const Color(0xFF10B981)
                 : Colors.grey.shade600,
           ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                label,
-                style: GoogleFonts.roboto(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: isHighlighted 
-                      ? const Color(0xFF10B981)
-                      : Colors.grey.shade600,
-                ),
+          SizedBox(width: iconTextGap),
+          Flexible(
+            child: Text(
+              label,
+              style: GoogleFonts.roboto(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w500,
+                color: isHighlighted 
+                    ? const Color(0xFF10B981)
+                    : Colors.grey.shade600,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
-          )
+          ),
         ],
       ),
     );
