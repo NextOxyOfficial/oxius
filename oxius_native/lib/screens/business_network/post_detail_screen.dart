@@ -205,6 +205,129 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  void _handleMediaTap(int index) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Drag handle
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade600,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Close button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Image ${index + 1} of ${_post.media.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              // Image
+              Expanded(
+                child: PageView.builder(
+                  controller: PageController(initialPage: index),
+                  itemCount: _post.media.length,
+                  itemBuilder: (context, pageIndex) => InteractiveViewer(
+                    minScale: 0.5,
+                    maxScale: 4.0,
+                    child: Center(
+                      child: Image.network(
+                        _post.media[pageIndex].image,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                              color: Colors.white,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.error_outline, size: 64, color: Colors.grey.shade600),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Failed to load image',
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Image indicator dots
+              if (_post.media.length > 1)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      _post.media.length,
+                      (dotIndex) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: dotIndex == index
+                              ? Colors.white
+                              : Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   bool _isSelfPost() {
     final currentUser = AuthService.currentUser;
     if (currentUser == null) return false;
@@ -485,19 +608,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           padding: EdgeInsets.fromLTRB(16, _post.title.isNotEmpty ? 0 : 16, 16, 0),
                           child: Html(
                             data: _post.content,
-                            style: {
-                              "body": Style(
-                                margin: Margins.zero,
-                                padding: HtmlPaddings.zero,
-                                fontSize: FontSize(14),
-                                color: Colors.grey.shade800,
-                                lineHeight: const LineHeight(1.5),
-                              ),
-                              "p": Style(
-                                margin: Margins.zero,
-                                padding: HtmlPaddings.zero,
-                              ),
-                            },
                           ),
                         ),
                         
@@ -507,9 +617,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         if (_post.media.isNotEmpty)
                           PostMediaGallery(
                             media: _post.media,
-                            onMediaTap: (index) {
-                              // TODO: Open media viewer
-                            },
+                            onMediaTap: _handleMediaTap,
                           ),
                         
                         // Post Actions

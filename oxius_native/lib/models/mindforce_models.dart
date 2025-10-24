@@ -106,10 +106,26 @@ class MindForceUser {
   });
 
   factory MindForceUser.fromJson(Map<String, dynamic> json) {
+    // Try multiple field combinations for the user's name
+    String userName = 'Unknown User';
+    
+    if (json['name'] != null && json['name'].toString().isNotEmpty) {
+      userName = json['name'];
+    } else if (json['full_name'] != null && json['full_name'].toString().isNotEmpty) {
+      userName = json['full_name'];
+    } else if (json['first_name'] != null || json['last_name'] != null) {
+      final firstName = json['first_name'] ?? '';
+      final lastName = json['last_name'] ?? '';
+      userName = '$firstName $lastName'.trim();
+      if (userName.isEmpty) userName = 'Unknown User';
+    } else if (json['username'] != null && json['username'].toString().isNotEmpty) {
+      userName = json['username'];
+    }
+    
     return MindForceUser(
       id: json['id']?.toString() ?? '0',
-      name: json['name'] ?? json['username'] ?? 'Unknown User',
-      image: json['image'] ?? json['avatar'],
+      name: userName,
+      image: json['image'] ?? json['avatar'] ?? json['profile_picture'],
       username: json['username'],
       isPro: json['is_pro'] == true,
       kyc: json['kyc'] == true,
