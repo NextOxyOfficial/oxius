@@ -42,10 +42,15 @@ class ApiService {
   // Load banner images from API
   static Future<List<dynamic>> loadBannerImages() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/banners/'));
+      final response = await http.get(Uri.parse('$baseUrl/banner-images/'));
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        // Backend returns array directly (not paginated)
+        if (data is List) {
+          return data;
+        }
+        // Fallback for paginated response
         return data['results'] ?? [];
       } else {
         throw Exception('Failed to load banner images: ${response.statusCode}');

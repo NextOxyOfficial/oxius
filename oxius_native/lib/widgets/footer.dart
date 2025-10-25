@@ -19,7 +19,9 @@ class AppFooter extends StatefulWidget {
 
 class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixin {
   Map<String, dynamic>? logoData;
+  List<dynamic> footerBanners = [];
   bool isLoading = true;
+  bool isLoadingBanners = true;
   bool _disposed = false;
   ScrollController? _scrollController;
   bool isScrollingDown = false;
@@ -60,6 +62,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_disposed) {
         _loadLogo();
+        _loadFooterBanners();
       }
     });
   }
@@ -69,6 +72,42 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
     _disposed = true;
     _scrollController?.dispose();
     super.dispose();
+  }
+
+  // Load footer banners from API
+  Future<void> _loadFooterBanners() async {
+    if (_disposed) return;
+    
+    try {
+      final response = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/banner-images/'));
+      
+      if (_disposed) return;
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        List<dynamic> banners = data is List ? data : (data['results'] ?? []);
+        
+        if (!_disposed && mounted) {
+          setState(() {
+            footerBanners = banners;
+            isLoadingBanners = false;
+          });
+        }
+      } else {
+        if (!_disposed && mounted) {
+          setState(() {
+            isLoadingBanners = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading footer banners: $e');
+      if (!_disposed && mounted) {
+        setState(() {
+          isLoadingBanners = false;
+        });
+      }
+    }
   }
 
   // Load logo dynamically from API (matching Vue.js PublicLogo component)
@@ -123,118 +162,51 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9).withOpacity(0.7), // slate-100/70
+        color: const Color(0xFFF9FAFB), // gray-50
+        border: Border(
+          top: BorderSide(color: Colors.grey.shade200),
+        ),
       ),
-      child: Stack(
-        children: [
-          // Subtle gradient accents
-          Positioned(
-            top: -96,
-            right: -96,
-            child: Container(
-              width: 288,
-              height: 288,
-              decoration: BoxDecoration(
-                color: const Color(0xFF34D399).withOpacity(0.05), // emerald-400
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF34D399).withOpacity(0.05),
-                    blurRadius: 100,
-                    spreadRadius: 50,
-                  ),
-                ],
-              ),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: 4, // 4px side padding
+          vertical: isMobile ? 16 : 20,
+        ),
+        child: Column(
+          children: [
+            // Logo and description
+            _buildLogoSection(context, isMobile),
+            
+            const SizedBox(height: 16),
+            
+            // Navigation links
+            _buildNavigationSection(context, isMobile),
+            
+            const SizedBox(height: 16),
+            
+            // Payment section
+            _buildAppPaymentSection(context, isMobile),
+            
+            const SizedBox(height: 12),
+            
+            // Divider
+            Container(
+              height: 1,
+              color: Colors.grey.shade200,
+              margin: const EdgeInsets.symmetric(horizontal: 8),
             ),
-          ),
-          
-          Positioned(
-            bottom: -96,
-            left: -96,
-            child: Container(
-              width: 288,
-              height: 288,
-              decoration: BoxDecoration(
-                color: const Color(0xFF60A5FA).withOpacity(0.05), // blue-400
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF60A5FA).withOpacity(0.05),
-                    blurRadius: 100,
-                    spreadRadius: 50,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          // Footer Content
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: SingleChildScrollView(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 1200),
-                margin: EdgeInsets.symmetric(horizontal: isMobile ? 24 : 48),
-                child: Column(
-                  children: [
-                    // Top divider
-                    Container(
-                      width: 240,
-                      height: 1,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            Colors.grey.shade300,
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                      margin: const EdgeInsets.only(bottom: 24),
-                    ),
-                    
-                    // Logo and description
-                    _buildLogoSection(context, isMobile),
-                    
-                    const SizedBox(height: 32),
-                    
-                    // Navigation links
-                    _buildNavigationSection(context, isMobile),
-                    
-                    const SizedBox(height: 32),
-                    
-                    // App download and payment section
-                    _buildAppPaymentSection(context, isMobile),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Terms and privacy
-                    _buildTermsSection(context),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Final divider
-                    Container(
-                      height: 1,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            Colors.grey.shade300.withOpacity(0.6),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                    
-                    // Copyright
-                    _buildCopyrightSection(context, isMobile),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+            
+            const SizedBox(height: 12),
+            
+            // Terms and privacy
+            _buildTermsSection(context),
+            
+            const SizedBox(height: 8),
+            
+            // Copyright
+            _buildCopyrightSection(context, isMobile),
+          ],
+        ),
       ),
     );
   }
@@ -244,18 +216,17 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
       children: [
         // Dynamic Logo
         _buildDynamicLogo(context, isMobile),
-        const SizedBox(height: 24),
+        const SizedBox(height: 12),
         
         // Description
-        Container(
-          constraints: const BoxConstraints(maxWidth: 600),
-          padding: const EdgeInsets.symmetric(horizontal: 28),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Text(
-            'AdsyClub – Social Business Network: Earn Money, Connect with Society & Find the Services You Need!',
+            'Earn Money, Connect with Society & Find the Services You Need!',
             style: GoogleFonts.roboto(
-              fontSize: isMobile ? 14 : 16,
+              fontSize: 13,
               color: Colors.grey.shade600,
-              height: 1.5,
+              height: 1.4,
             ),
             textAlign: TextAlign.center,
           ),
@@ -276,75 +247,147 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
       {'title': t('contact_us'), 'route': '/contact-us'},
     ];
 
-    if (isMobile) {
-      // Wrap navigation for mobile to show multiple items per line
-      return Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 16,
-        runSpacing: 8,
-        children: navLinks.map((link) => InkWell(
-          onTap: () => _handleNavigation(context, link['title']!),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            child: Text(
-              link['title']!,
-              style: GoogleFonts.roboto(
-                fontSize: 16,
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.normal,
-              ),
-              textAlign: TextAlign.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: isMobile ? 12 : 20,
+      runSpacing: 6,
+      children: navLinks.map((link) => InkWell(
+        onTap: () => _handleNavigation(context, link['title']!),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          child: Text(
+            link['title']!,
+            style: GoogleFonts.roboto(
+              fontSize: 13,
+              color: Colors.grey.shade700,
+              fontWeight: FontWeight.w400,
             ),
+            textAlign: TextAlign.center,
           ),
-        )).toList(),
-      );
-    } else {
-      // Horizontal navigation for desktop
-      return Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 32,
-        runSpacing: 16,
-        children: navLinks.map((link) => InkWell(
-          onTap: () => _handleNavigation(context, link['title']!),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-            child: Text(
-              link['title']!,
-              style: GoogleFonts.roboto(
-                fontSize: 16,
-                color: Colors.grey.shade700,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ),
-        )).toList(),
-      );
-    }
+        ),
+      )).toList(),
+    );
   }
 
   Widget _buildAppPaymentSection(BuildContext context, bool isMobile) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 1000),
-      child: isMobile
-          ? Column(
-              children: [
-                _buildAppDownloadSection(context, true),
-                const SizedBox(height: 32),
-                _buildPaymentSection(context, true),
-              ],
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(child: _buildAppDownloadSection(context, false)),
-                const SizedBox(width: 48),
-                Expanded(child: _buildPaymentSection(context, false)),
-              ],
-            ),
+      child: Center(
+        child: _buildPaymentSection(context, isMobile),
+      ),
     );
   }
 
   Widget _buildAppDownloadSection(BuildContext context, bool isMobile) {
+    // If loading, show skeleton
+    if (isLoadingBanners) {
+      return Column(
+        children: [
+          if (!isMobile)
+            Text(
+              t('download_app'),
+              style: GoogleFonts.roboto(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          if (!isMobile) const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
+            children: [
+              Container(
+                width: 117,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 119,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    // If we have banners, show them
+    if (footerBanners.isNotEmpty) {
+      return Column(
+        children: [
+          if (!isMobile)
+            Text(
+              t('download_app'),
+              style: GoogleFonts.roboto(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          if (!isMobile) const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: isMobile ? MainAxisAlignment.center : MainAxisAlignment.start,
+            children: footerBanners.take(2).map((banner) {
+              final imageUrl = _abs(banner['image']);
+              final link = banner['link'];
+              
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    if (link != null && link.isNotEmpty) {
+                      _handleNavigation(context, link);
+                    }
+                  },
+                  child: Container(
+                    width: 117,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.shade300,
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      );
+    }
+
+    // Fallback to static images if no banners
     return Column(
       children: [
         if (!isMobile)
@@ -445,31 +488,32 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
   Widget _buildPaymentSection(BuildContext context, bool isMobile) {
     return Column(
       children: [
-        if (!isMobile)
-          Text(
-            t('we_accept'),
-            style: GoogleFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
-            ),
-            textAlign: TextAlign.center,
+        Text(
+          t('we_accept'),
+          style: GoogleFonts.roboto(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey.shade600,
           ),
-        if (!isMobile) const SizedBox(height: 16),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
         
         Container(
           constraints: const BoxConstraints(maxWidth: 370),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(6),
             child: Image.asset(
               'assets/images/payment.png',
               fit: BoxFit.contain,
+              height: 70,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: Colors.grey.shade200),
                   ),
                   child: Row(
@@ -547,18 +591,19 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           child: Text(
             t('terms_conditions'),
             style: GoogleFonts.roboto(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-              fontWeight: FontWeight.normal,
+              fontSize: 12,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),
         
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          width: 1,
-          height: 16,
-          color: Colors.grey.shade400,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(
+            '|',
+            style: TextStyle(color: Colors.grey.shade400),
+          ),
         ),
         
         InkWell(
@@ -566,9 +611,9 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           child: Text(
             t('privacy_policy'),
             style: GoogleFonts.roboto(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-              fontWeight: FontWeight.normal,
+              fontSize: 12,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),
@@ -581,25 +626,25 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
       onTap: () => _handleNavigation(context, 'Home'),
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: isMobile ? 40 : 48,
-          maxWidth: isMobile ? 120 : 150,
+          maxHeight: 32,
+          maxWidth: 110,
         ),
         child: isLoading
             ? Container(
-                height: isMobile ? 32 : 40,
-                width: isMobile ? 100 : 120,
+                height: 32,
+                width: 100,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Center(
                   child: SizedBox(
-                    width: 16,
-                    height: 16,
+                    width: 14,
+                    height: 14,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.grey.shade600,
+                        Colors.grey.shade500,
                       ),
                     ),
                   ),
@@ -607,11 +652,11 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
               )
             : logoData != null && logoData!['image'] != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                     child: Image.network(
                       logoData!['image'],
                       fit: BoxFit.contain,
-                      height: isMobile ? 32 : 40,
+                      height: 32,
                       errorBuilder: (context, error, stackTrace) {
                         return _buildFallbackLogo(context, isMobile);
                       },
@@ -625,14 +670,14 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
   Widget _buildFallbackLogo(BuildContext context, bool isMobile) {
     return Image.asset(
       'assets/images/logo.png',
-      height: isMobile ? 32 : 40,
+      height: 32,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) {
         // Only show text as final fallback if logo image fails to load
         return Text(
           logoData?['text'] ?? 'AdsyClub',
           style: GoogleFonts.roboto(
-            fontSize: isMobile ? 16 : 20,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.grey.shade800,
           ),
@@ -642,29 +687,29 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
   }
 
   Widget _buildCopyrightSection(BuildContext context, bool isMobile) {
-    return Container(
+    return Padding(
       padding: EdgeInsets.only(
-        top: 24,
-        bottom: isMobile ? 80 : 24, // Extra bottom padding for mobile nav
+        bottom: isMobile ? 72 : 8, // Extra bottom padding for mobile nav
       ),
       child: RichText(
         textAlign: TextAlign.center,
         text: TextSpan(
           style: GoogleFonts.roboto(
-            fontSize: 14,
-            color: Colors.grey.shade600,
+            fontSize: 11,
+            color: Colors.grey.shade500,
+            height: 1.4,
           ),
           children: [
             const TextSpan(text: 'Developed With '),
             WidgetSpan(
               child: Icon(
                 Icons.favorite,
-                color: Colors.red.shade500,
-                size: 16,
+                color: Colors.red.shade400,
+                size: 12,
               ),
             ),
             TextSpan(
-              text: ' By Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
+              text: ' By Lyricz Softwares & Technology Limited \u00A9 ${DateTime.now().year}',
             ),
           ],
         ),
@@ -831,19 +876,73 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
 
   // Helper methods
   void _handleNavigation(BuildContext context, String destination) {
-    if (destination == 'eShop') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const EshopScreen()),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Navigate to $destination'),
-          backgroundColor: const Color(0xFF10B981),
-          duration: const Duration(seconds: 1),
-        ),
-      );
+    // Map destinations to routes
+    String? route;
+    
+    switch (destination.toLowerCase()) {
+      case 'home':
+        route = '/';
+        break;
+      case 'eshop':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const EshopScreen()),
+        );
+        return;
+      case 'terms & conditions':
+      case 'terms_conditions':
+        route = '/terms-and-conditions';
+        break;
+      case 'privacy policy':
+      case 'privacy_policy':
+        route = '/privacy-policy';
+        break;
+      case 'mobile recharge':
+        route = '/mobile-recharge';
+        break;
+      case 'classified service':
+        route = '/';
+        break;
+      case 'earn money':
+        route = '/#micro-gigs';
+        break;
+      case 'packages':
+      case 'packeges':
+        route = '/upgrade-to-pro';
+        break;
+      case 'refer program':
+        route = '/refer-a-friend';
+        break;
+      case 'about us':
+        route = '/about';
+        break;
+      case 'faq':
+        route = '/faq';
+        break;
+      case 'contact us':
+        route = '/contact-us';
+        break;
+      case 'business network':
+        route = '/business-network';
+        break;
+      case 'news':
+        route = '/adsy-news';
+        break;
+      default:
+        // For any unhandled routes, show a message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Navigate to $destination'),
+            backgroundColor: const Color(0xFF10B981),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+        return;
+    }
+    
+    // Navigate using named route
+    if (route != null) {
+      Navigator.pushNamed(context, route);
     }
   }
 
