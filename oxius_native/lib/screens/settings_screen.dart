@@ -2167,7 +2167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: color.shade900,
+              color: color,
             ),
           ),
         ),
