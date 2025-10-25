@@ -518,6 +518,7 @@ class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
 class GetMicroGigs(generics.ListCreateAPIView):
     serializer_class = MicroGigPostSerializer
     permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
         queryset = MicroGigPost.objects.exclude(
@@ -545,11 +546,6 @@ class GetMicroGigs(generics.ListCreateAPIView):
                 queryset = queryset.exclude(microgigposttask__user=user)
 
         return queryset.order_by("-created_at")
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # Micro Gig Post

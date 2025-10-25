@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/settings_service.dart';
@@ -6,6 +7,7 @@ import '../services/user_state_service.dart';
 import '../models/user_profile.dart';
 import '../widgets/footer.dart';
 import '../widgets/mobile_drawer.dart';
+import 'debug_screen.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -423,6 +425,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Expanded(
                   child: _buildTabButton('password', 'Password', Icons.lock, isSmallMobile),
                 ),
+                if (kDebugMode) ...[
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildTabButton('debug', 'Debug', Icons.bug_report, isSmallMobile),
+                  ),
+                ],
               ],
             ),
           ),
@@ -432,7 +440,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: EdgeInsets.all(isSmallMobile ? 12 : 16),
             child: _activeTab == 'profile'
                 ? _buildProfileTab(isSmallMobile, isMobile)
-                : _buildPasswordTab(isSmallMobile),
+                : _activeTab == 'password'
+                    ? _buildPasswordTab(isSmallMobile)
+                    : _buildDebugTab(isSmallMobile),
           ),
         ],
       ),

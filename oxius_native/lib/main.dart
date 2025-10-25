@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'config/app_config.dart';
 import 'screens/home_screen.dart';
 import 'screens/inbox_screen.dart';
 import 'screens/my_gigs_screen.dart';
@@ -26,6 +27,9 @@ import 'models/cart_item.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Print app configuration (shows which environment is active)
+  AppConfig.printConfig();
   
   // Initialize translation service
   print('Initializing translation service...');
