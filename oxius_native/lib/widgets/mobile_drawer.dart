@@ -127,80 +127,29 @@ class _MobileDrawerState extends State<MobileDrawer> {
       );
     }
     return Drawer(
-      backgroundColor: Colors.white,
+      width: 280,
+      backgroundColor: const Color(0xFFFAFAFA),
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Drawer Header (matching Vue.js mobile drawer header)
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF10B981),
-                    Color(0xFF059669),
-                  ],
-                ),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.white.withOpacity(0.2),
-                    child: const Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 32,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _translationService.t('welcome', fallback: 'Welcome'),
-                          style: GoogleFonts.roboto(
-                            fontSize: 14,
-                            color: Colors.white.withOpacity(0.9),
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        Text(
-                          'AdsyClub',
-                          style: GoogleFonts.roboto(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
             // Interactive Language Switcher Section
             GestureDetector(
               onTap: () => _showLanguageSelector(context),
               child: Container(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 child: Row(
                   children: [
                     Icon(
                       Icons.language,
                       color: Colors.grey.shade600,
-                      size: 20,
+                      size: 18,
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     Text(
                       _translationService.t('language', fallback: 'Language'),
                       style: GoogleFonts.roboto(
-                        fontSize: 16,
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: Colors.grey.shade700,
                       ),
@@ -215,14 +164,14 @@ class _MobileDrawerState extends State<MobileDrawer> {
                           children: [
                             Text(
                               currentLang?['flag'] ?? '🌐',
-                              style: const TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 14),
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 4),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF10B981).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   color: const Color(0xFF10B981).withOpacity(0.3),
                                   width: 1,
@@ -234,16 +183,16 @@ class _MobileDrawerState extends State<MobileDrawer> {
                                   Text(
                                     _translationService.currentLanguage.toUpperCase(),
                                     style: GoogleFonts.roboto(
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                       color: const Color(0xFF10B981),
                                     ),
                                   ),
-                                  const SizedBox(width: 4),
+                                  const SizedBox(width: 2),
                                   const Icon(
                                     Icons.keyboard_arrow_down,
                                     color: Color(0xFF10B981),
-                                    size: 16,
+                                    size: 14,
                                   ),
                                 ],
                               ),
@@ -259,19 +208,19 @@ class _MobileDrawerState extends State<MobileDrawer> {
 
             // Divider
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Divider(color: Colors.grey.shade200, height: 1),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Divider(color: Colors.grey.shade300, height: 1),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
 
             // Menu Items Title
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
               child: Text(
                 _translationService.t('menu', fallback: 'Menu'),
                 style: GoogleFonts.roboto(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.grey.shade800,
                 ),
@@ -281,13 +230,9 @@ class _MobileDrawerState extends State<MobileDrawer> {
             // Menu Items (matching Vue.js mobile navigation with dynamic translations)
             Expanded(
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                margin: const EdgeInsets.symmetric(horizontal: 8),
                 child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   children: [
                     _buildDrawerItem(
                       context: context,
@@ -296,22 +241,17 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       iconColor: const Color(0xFF3B82F6),
                       onTap: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(_translationService.t('home', fallback: 'Navigate to Home')),
-                            backgroundColor: const Color(0xFF3B82F6),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/');
                       },
                     ),
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('classified_service', fallback: 'My Posts'),
+                      title: _translationService.t('classified_service', fallback: 'Classified Service'),
                       icon: Icons.list_alt,
                       iconColor: const Color(0xFF10B981),
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/my-classified-posts');
+                        Navigator.pushNamed(context, '/');
                       },
                     ),
                     _buildDrawerItem(
@@ -321,12 +261,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       iconColor: const Color(0xFF8B5CF6),
                       onTap: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${_translationService.t('elearning', fallback: 'E-Learning')} ${_translationService.t('coming_soon', fallback: 'coming soon!')}'),
-                            backgroundColor: const Color(0xFF8B5CF6),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/courses');
                       },
                     ),
                     _buildDrawerItem(
@@ -336,12 +271,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       iconColor: const Color(0xFFF59E0B),
                       onTap: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${_translationService.t('earn_money', fallback: 'Earn Money')} ${_translationService.t('coming_soon', fallback: 'coming soon!')}'),
-                            backgroundColor: const Color(0xFFF59E0B),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/');
                       },
                     ),
                     _buildDrawerItem(
@@ -351,12 +281,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       iconColor: const Color(0xFFEF4444),
                       onTap: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${_translationService.t('faq', fallback: 'FAQ')} ${_translationService.t('coming_soon', fallback: 'coming soon!')}'),
-                            backgroundColor: const Color(0xFFEF4444),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/faq');
                       },
                     ),
                     _buildDrawerItem(
@@ -366,12 +291,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       iconColor: const Color(0xFF06B6D4),
                       onTap: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${_translationService.t('business_network', fallback: 'Business Network')} ${_translationService.t('coming_soon', fallback: 'coming soon!')}'),
-                            backgroundColor: const Color(0xFF06B6D4),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/business-network');
                       },
                     ),
                     _buildDrawerItem(
@@ -381,12 +301,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       iconColor: const Color(0xFFF97316),
                       onTap: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${_translationService.t('adsy_news', fallback: 'News')} ${_translationService.t('coming_soon', fallback: 'coming soon!')}'),
-                            backgroundColor: const Color(0xFFF97316),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/adsy-news');
                       },
                     ),
                     _buildDrawerItem(
@@ -396,19 +311,14 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       iconColor: const Color(0xFF8B5CF6),
                       onTap: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${_translationService.t('refer_program', fallback: 'Referral Program')} ${_translationService.t('coming_soon', fallback: 'coming soon!')}'),
-                            backgroundColor: const Color(0xFF8B5CF6),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/refer-a-friend');
                       },
                     ),
 
                     // Divider
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                      child: Divider(height: 1),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                      child: Divider(height: 1, color: Colors.grey.shade300),
                     ),
 
                     _buildDrawerItem(
@@ -442,12 +352,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       iconColor: Colors.grey.shade600,
                       onTap: () {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${_translationService.t('support', fallback: 'Help & Support')} ${_translationService.t('coming_soon', fallback: 'coming soon!')}'),
-                            backgroundColor: Colors.grey.shade600,
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/support');
                       },
                     ),
                   ],
@@ -457,18 +362,18 @@ class _MobileDrawerState extends State<MobileDrawer> {
 
             // Social Media Section with dynamic translations
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
               child: Row(
                 children: [
                   Text(
                     _translationService.t('follow_us', fallback: 'Follow Us'),
                     style: GoogleFonts.roboto(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -479,8 +384,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       );
                     },
                     child: Container(
-                      width: 32,
-                      height: 32,
+                      width: 28,
+                      height: 28,
                       decoration: const BoxDecoration(
                         color: Color(0xFF1877F2),
                         shape: BoxShape.circle,
@@ -488,7 +393,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       child: const Icon(
                         Icons.facebook,
                         color: Colors.white,
-                        size: 18,
+                        size: 16,
                       ),
                     ),
                   ),
@@ -511,22 +416,22 @@ class _MobileDrawerState extends State<MobileDrawer> {
     String? badge,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         child: ListTile(
           leading: Container(
-            width: 32,
-            height: 32,
+            width: 28,
+            height: 28,
             decoration: BoxDecoration(
               color: iconColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
               icon,
               color: iconColor,
-              size: 18,
+              size: 16,
             ),
           ),
           title: Row(
@@ -535,26 +440,26 @@ class _MobileDrawerState extends State<MobileDrawer> {
                 child: Text(
                   title,
                   style: GoogleFonts.roboto(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: iconColor,
                   ),
                 ),
               ),
               if (badge != null) ...[
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [iconColor, iconColor.withOpacity(0.7)],
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     badge,
                     style: GoogleFonts.roboto(
-                      fontSize: 10,
+                      fontSize: 9,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -566,13 +471,14 @@ class _MobileDrawerState extends State<MobileDrawer> {
           trailing: Icon(
             Icons.chevron_right,
             color: iconColor.withOpacity(0.5),
-            size: 18,
+            size: 16,
           ),
           onTap: onTap,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-          minLeadingWidth: 40,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+          minLeadingWidth: 32,
+          dense: true,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(6),
           ),
         ),
       ),

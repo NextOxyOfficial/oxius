@@ -42,6 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
   List<ClassifiedPost>? _recentPosts;
   bool _isLoadingPosts = false;
 
+  // Header animation
+  bool _isHeaderVisible = true;
+  double _lastScrollPosition = 0;
+
   // Helper method to translate keys
   String t(String key) {
     return _translationService.translate(key);
@@ -52,6 +56,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _scrollController = ScrollController();
     _postService = ClassifiedPostService(baseUrl: ApiService.baseUrl);
+
+    // Add scroll listener for header animation
+    _scrollController.addListener(_onScroll);
+
     // Don't initialize the scroll service immediately - wait for the widget to be built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !_disposed) {
@@ -63,15 +71,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchRecentPosts() async {
     if (_isLoadingPosts) return;
-    
+
     print('🔍 HomeScreen: Fetching recent posts...');
     setState(() => _isLoadingPosts = true);
-    
+
     try {
       final posts = await _postService.fetchRecentPosts(limit: 10);
-      
+
       print('✅ HomeScreen: Fetched ${posts.length} recent posts');
-      
+
       if (mounted && !_disposed) {
         setState(() {
           _recentPosts = posts;
@@ -90,9 +98,42 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onScroll() {
+    if (_disposed || !mounted) return;
+
+    final currentScrollPosition = _scrollController.position.pixels;
+    final scrollDelta = currentScrollPosition - _lastScrollPosition;
+
+    // Only react to significant scroll movements
+    if (scrollDelta.abs() < 5) {
+      _lastScrollPosition = currentScrollPosition;
+      return;
+    }
+
+    // Check if user is scrolling down or up
+    if (scrollDelta > 0 && currentScrollPosition > 100) {
+      // Scrolling down - hide header
+      if (_isHeaderVisible) {
+        setState(() {
+          _isHeaderVisible = false;
+        });
+      }
+    } else if (scrollDelta < 0) {
+      // Scrolling up - show header
+      if (!_isHeaderVisible) {
+        setState(() {
+          _isHeaderVisible = true;
+        });
+      }
+    }
+
+    _lastScrollPosition = currentScrollPosition;
+  }
+
   @override
   void dispose() {
     _disposed = true;
+    _scrollController.removeListener(_onScroll);
     // Dispose scroll service before disposing the controller
     _scrollService.dispose();
     _scrollController.dispose();
@@ -106,41 +147,14 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: const MobileDrawer(),
       body: Stack(
         children: [
-          Column(
-            children: [
-              // Fixed Header at top
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.95),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey.shade200.withOpacity(0.5),
-                      width: 0.5,
-                    ),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      offset: const Offset(0, 1),
-                      blurRadius: 3,
-                    ),
-                  ],
-                ),
-                child: SafeArea(
-                  bottom: false,
-                  child: _buildFixedHeader(context),
-                ),
-              ),
-          
           // Scrollable content area
-          Expanded(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              child: Column(
+          SingleChildScrollView(
+            controller: _scrollController,
+            child: Column(
                 children: [
+                  // Add spacing for header
+                  SizedBox(height: MediaQuery.of(context).padding.top + 56 + 8),
                   // 1. Hero Banner - Main banner slider + service menu grid
-                  const SizedBox(height: 8),
                   const HeroBanner(),
                   
                   // 2. Sale Category - eShop product categories
@@ -215,8 +229,44 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-          ),
-            ],
+          
+          // Animated Header positioned at top
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              transform: Matrix4.translationValues(
+                0,
+                _isHeaderVisible ? 0 : -100, // Slide up by 100px when hidden
+                0,
+              ),
+              curve: Curves.easeInOut,
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.95),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.grey.shade200.withOpacity(0.5),
+                      width: 0.5,
+                    ),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      offset: const Offset(0, 1),
+                      blurRadius: 3,
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: _buildFixedHeader(context),
+                ),
+              ),
+            ),
           ),
           
           // User Dropdown Menu Overlay
@@ -1028,8 +1078,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final userState = UserStateService();
     
     return Container(
-      height: 64,
-      padding: EdgeInsets.symmetric(horizontal: 8),
+      height: 56,
+      padding: EdgeInsets.only(left: 4, right: 12),
       child: ListenableBuilder(
         listenable: userState,
         builder: (context, _) {
@@ -1040,22 +1090,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 builder: (context) => IconButton(
                   icon: Icon(
                     Icons.menu,
-                    color: Colors.grey.shade800,
+                    color: Colors.grey.shade700,
                     size: 24,
                   ),
                   onPressed: () => Scaffold.of(context).openDrawer(),
-                  tooltip: 'Open Menu',
+                  tooltip: 'Menu',
+                  padding: EdgeInsets.all(8),
+                  constraints: BoxConstraints(),
                 ),
               ),
-              SizedBox(width: 4),
               
-              // Logo (extracted from header widget)
+              // Logo
               _buildDynamicLogo(context),
               
               const Spacer(),
               
-              // Mobile actions
-              _buildMobileActions(context),
+              // Right side actions
+              _buildHeaderActions(context, userState),
             ],
           );
         },
@@ -1063,254 +1114,278 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Extract logo building logic from AppHeader
   Widget _buildDynamicLogo(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (!_disposed) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Navigate to Home'),
-              backgroundColor: Color(0xFF10B981),
-              duration: Duration(seconds: 1),
-            ),
-          );
-        }
+        // Navigate to home
+        Navigator.pushNamed(context, '/');
       },
       child: Container(
+        height: 28,
         constraints: BoxConstraints(
-          minHeight: 28,
-          maxHeight: 28,
-          minWidth: 80,
-          maxWidth: 170,
+          maxWidth: 120,
         ),
-        child: Container(
-          height: 26,
-          padding: EdgeInsets.symmetric(
-            horizontal: 6,
-            vertical: 2,
-          ),
-          child: Image.asset(
-            'assets/images/logo.png',
-            height: 22,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF059669)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF10B981).withOpacity(0.3),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  'AdsyClub',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              );
-            },
-          ),
+        child: Image.asset(
+          'assets/images/logo.png',
+          height: 28,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return Text(
+              'AdsyClub',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF10B981),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildMobileActions(BuildContext context) {
-    final userState = UserStateService();
-    
-    return ListenableBuilder(
-      listenable: userState,
-      builder: (context, _) {
-        final isAuthenticated = userState.isAuthenticated;
-        final user = userState.currentUser;
+  Widget _buildHeaderActions(BuildContext context, UserStateService userState) {
+    final isAuthenticated = userState.isAuthenticated;
+    final user = userState.currentUser;
 
-        return Row(
-          mainAxisSize: MainAxisSize.min,
+    if (!isAuthenticated || user == null) {
+      // Guest user - show login button
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pushNamed(context, '/login'),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                border: Border.all(color: Colors.grey.shade200),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.person,
+                color: Colors.grey.shade600,
+                size: 20,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Logged in user
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Inbox button
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const InboxScreen()),
+            );
+          },
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.mark_email_unread_outlined,
+              color: Color(0xFF3B82F6),
+              size: 24,
+            ),
+          ),
+        ),
+        
+        SizedBox(width: 4),
+        
+        // QR Code button
+        GestureDetector(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) => AdsyPayQrModal(
+                qrData: 'adsypay://pay/${user.id}',
+                title: '${user.firstName ?? user.username ?? "User"}\'s QR',
+              ),
+            );
+          },
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.qr_code_scanner,
+              color: Colors.green.shade600,
+              size: 24,
+            ),
+          ),
+        ),
+        
+        SizedBox(width: 4),
+        
+        // User profile with Pro/Verified badges
+        _buildUserProfile(context, user),
+      ],
+    );
+  }
+
+  Widget _buildUserProfile(BuildContext context, dynamic user) {
+    final isPro = user.isPro ?? false;
+    final isVerified = user.isVerified ?? false;
+    final profilePic = user.profilePicture ?? '';
+    final displayName = user.firstName ?? user.displayName ?? user.username ?? 'U';
+    final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U';
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isDropdownOpen = !_isDropdownOpen;
+        });
+      },
+      child: Container(
+        width: 40,
+        height: 40,
+        child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            // Show user action buttons only if logged in
-            if (isAuthenticated && user != null) ...[
-              // Inbox Button with badge
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.mark_email_unread_outlined,
-                      color: Color(0xFF3B82F6),
-                      size: 24,
+            // Main avatar
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isPro ? Color(0xFF6366F1) : Colors.white,
+                  width: 2,
+                ),
+                boxShadow: [
+                  if (isPro)
+                    BoxShadow(
+                      color: Color(0xFF6366F1).withOpacity(0.3),
+                      blurRadius: 8,
+                      spreadRadius: 1,
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const InboxScreen(),
-                        ),
-                      );
-                    },
-                    tooltip: 'Messages/Inbox',
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
                   ),
-                  // Badge for unread messages (placeholder)
-                  // Positioned(
-                  //   right: 8,
-                  //   top: 8,
-                  //   child: Container(
-                  //     padding: const EdgeInsets.all(2),
-                  //     decoration: const BoxDecoration(
-                  //       color: Colors.red,
-                  //       shape: BoxShape.circle,
-                  //     ),
-                  //     constraints: const BoxConstraints(
-                  //       minWidth: 16,
-                  //       minHeight: 16,
-                  //     ),
-                  //     child: const Text(
-                  //       '5',
-                  //       style: TextStyle(
-                  //         color: Colors.white,
-                  //         fontSize: 10,
-                  //         fontWeight: FontWeight.bold,
-                  //       ),
-                  //       textAlign: TextAlign.center,
-                  //     ),
-                  //   ),
-                  // ),
                 ],
               ),
-              // QR Code Scanner Button - AdsyPay
-              IconButton(
-                icon: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.green.shade50,
-                  ),
-                  child: Icon(
-                    Icons.qr_code_scanner,
-                    color: Colors.green.shade600,
-                    size: 20,
-                  ),
-                ),
-                onPressed: () {
-                  final user = AuthService.currentUser;
-                  if (user != null) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AdsyPayQrModal(
-                        qrData: 'adsypay://pay/${user.id}',
-                        title: '${user.firstName ?? user.username ?? "User"}\'s Payment QR',
-                      ),
-                    );
-                  }
-                },
-                tooltip: 'AdsyPay QR Code',
-              ),
-              // User Profile Avatar
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isDropdownOpen = !_isDropdownOpen;
-                  });
-                },
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child: user.profilePicture != null && user.profilePicture!.isNotEmpty
-                        ? Image.network(
-                            user.profilePicture!,
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: const Color(0xFF10B981),
-                                child: Center(
-                                  child: Text(
-                                    user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          )
-                        : Container(
-                            color: const Color(0xFF10B981),
+              child: ClipOval(
+                child: profilePic.isNotEmpty
+                    ? Image.network(
+                        profilePic,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Color(0xFF10B981),
                             child: Center(
                               child: Text(
-                                user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U',
-                                style: const TextStyle(
+                                initial,
+                                style: TextStyle(
                                   color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
                                 ),
                               ),
                             ),
+                          );
+                        },
+                      )
+                    : Container(
+                        color: Color(0xFF10B981),
+                        child: Center(
+                          child: Text(
+                            initial,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
                           ),
+                        ),
+                      ),
+              ),
+            ),
+            
+            // Pro badge (top-right)
+            if (isPro)
+              Positioned(
+                top: -6,
+                right: -10,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0xFF6366F1).withOpacity(0.4),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.shield,
+                        size: 10,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 2),
+                      Text(
+                        'Pro',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ] else ...[
-              // Show login button for guests
-              IconButton(
-                icon: Container(
-                  width: 32,
-                  height: 32,
+            
+            // Verified badge (bottom-right)
+            if (isVerified)
+              Positioned(
+                bottom: -2,
+                right: -2,
+                child: Container(
+                  width: 18,
+                  height: 18,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 2,
+                      ),
+                    ],
                   ),
                   child: Icon(
-                    Icons.person,
-                    color: Colors.grey.shade600,
+                    Icons.verified,
                     size: 18,
+                    color: Color(0xFF3B82F6),
                   ),
                 ),
-                onPressed: () {
-                  Navigator.of(context).pushNamed('/login');
-                },
-                tooltip: 'Login / Profile',
               ),
-            ],
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 

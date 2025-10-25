@@ -78,31 +78,36 @@ class PostHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: GestureDetector(
-                        onTap: () => _navigateToProfile(context),
-                        child: Text(
-                          post.user.name,
+                GestureDetector(
+                  onTap: () => _navigateToProfile(context),
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: post.user.name,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                             color: Colors.black87,
+                            height: 1.2,
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
+                        if (post.user.isVerified) ...[
+                          const TextSpan(text: ' '),
+                          const WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Icon(
+                              Icons.verified,
+                              size: 15,
+                              color: Color(0xFF3B82F6),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                    if (post.user.isVerified) ...[
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.verified,
-                        size: 14,
-                        color: Color(0xFF3B82F6),
-                      ),
-                    ],
-                  ],
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(

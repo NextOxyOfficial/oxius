@@ -598,10 +598,11 @@ class _CommentItemState extends State<_CommentItem> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // User name and verified badge (clickable)
+                // User name, verified badge, time, and menu
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    // Name and verified badge
                     Flexible(
                       child: GestureDetector(
                         onTap: () {
@@ -613,31 +614,44 @@ class _CommentItemState extends State<_CommentItem> {
                             ),
                           );
                         },
-                        child: Text(
-                          widget.comment.user.name,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: widget.comment.user.name,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                  height: 1.2,
+                                ),
+                              ),
+                              if (widget.comment.user.isVerified) ...[
+                                const TextSpan(text: ' '),
+                                const WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: Icon(
+                                    Icons.verified,
+                                    size: 14,
+                                    color: Color(0xFF3B82F6),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
-                    if (widget.comment.user.isVerified) ...[
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.verified,
-                        size: 13,
-                        color: Color(0xFF3B82F6),
-                      ),
-                    ],
-                    const SizedBox(width: 8),
+                    // Time (inline on right)
+                    const SizedBox(width: 6),
                     Text(
                       _formatTimeAgo(widget.comment.createdAt),
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 12,
                         color: Colors.grey.shade500,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                     const Spacer(),
@@ -730,7 +744,6 @@ class _CommentItemState extends State<_CommentItem> {
                       ),
                   ],
                 ),
-                const SizedBox(height: 2),
                 // Comment text or gift comment
                 if (widget.comment.isGiftComment)
                   Container(
