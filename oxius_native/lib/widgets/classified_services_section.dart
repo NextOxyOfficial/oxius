@@ -175,55 +175,30 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   Widget _buildHeader(bool isMobile) {
+    final screenWidth = MediaQuery.of(context).size.width;
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 8 : 24,
         vertical: isMobile ? 12 : 16,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ShaderMask(
-                      shaderCallback: (bounds) => const LinearGradient(
-                        colors: [Color(0xFF0EA5E9), Color(0xFF34D399)],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ).createShader(bounds),
-                      child: Text(
-                        _translationService.t('classified_service', fallback: 'Classified Service'),
-                        style: GoogleFonts.poppins(
-                          fontSize: isMobile ? 20 : 24,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: .2,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      height: 4,
-                      width: isMobile ? 60 : 96,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(999),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF0EA5E9), Color(0xFF34D399)],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+          Expanded(
+            child: Text(
+              _translationService.t('my_services', fallback: 'My Services'),
+              style: GoogleFonts.roboto(
+                fontSize: screenWidth * 0.048,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade900,
               ),
-              const SizedBox(width: 16),
-              _buildActionButton(isMobile),
-            ],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
+          const SizedBox(width: 12),
+          _buildActionButton(isMobile),
         ],
       ),
     );
@@ -304,59 +279,39 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   Widget _buildActionButton(bool isMobile) {
     final isLoading = _loadingButtons.contains('post-free-ad');
     
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(999),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0EA5E9), Color(0xFF14B8A6)],
+    return OutlinedButton.icon(
+      onPressed: isLoading ? null : () => _handleButtonClick('post-free-ad'),
+      icon: isLoading
+          ? const SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF06B6D4)),
+              ),
+            )
+          : const Icon(
+              Icons.add,
+              size: 16,
+            ),
+      label: isLoading
+          ? const SizedBox.shrink()
+          : Text(
+              _translationService.t('post_free_service', fallback: 'Post Free Service'),
+              style: GoogleFonts.roboto(
+                fontSize: isMobile ? 12 : 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: const Color(0xFF06B6D4),
+        side: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
+        padding: EdgeInsets.symmetric(
+          horizontal: isMobile ? 12 : 16,
+          vertical: isMobile ? 8 : 10,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0EA5E9).withOpacity(0.25),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(999),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(999),
-          splashColor: Colors.white24,
-          onTap: isLoading ? null : () => _handleButtonClick('post-free-ad'),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: isMobile ? 16 : 22,
-              vertical: isMobile ? 8 : 10,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: isLoading
-                      ? const CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        )
-                      : const Icon(Icons.add, color: Colors.white, size: 18),
-                ),
-                if (!isLoading) ...[
-                  const SizedBox(width: 8),
-                  Text(
-                    _translationService.t('post_free_ad', fallback: 'Post Free Ad'),
-                    style: GoogleFonts.poppins(
-                      fontSize: isMobile ? 12 : 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
         ),
       ),
     );

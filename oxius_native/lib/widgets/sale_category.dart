@@ -666,7 +666,7 @@ class _SaleCategoryState extends State<SaleCategory> {
 
   Widget _buildMobileProductsList(List<dynamic> products) {
     return SizedBox(
-      height: 200,
+      height: 215,
       child: ListView.builder(
         padding: const EdgeInsets.only(left: 4, right: 4),
         scrollDirection: Axis.horizontal,

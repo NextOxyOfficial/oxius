@@ -103,37 +103,83 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
-    final placeholder = _ts.t('classified_search_placeholder', fallback: 'Search classifieds');
+    final placeholder = _ts.t('classified_search_placeholder', fallback: 'Search services, categories...');
     return Container(
-      margin: widget.margin ?? EdgeInsets.symmetric(horizontal: isMobile ? 8 : 12),
+      margin: widget.margin ?? EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextField(
-            controller: _controller,
-            onChanged: _onChanged,
-            textInputAction: TextInputAction.search,
-            style: GoogleFonts.roboto(fontSize: isMobile ? 13 : 14, height: 1.2),
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              prefixIcon: const Icon(Icons.search, size: 20, color: Color(0xFF059669)),
-              suffixIcon: _controller.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.close, size: 18, color: Colors.grey),
-                      onPressed: _clear,
-                    )
-                  : null,
-              hintText: placeholder,
-              hintStyle: GoogleFonts.roboto(color: Colors.grey.shade500, fontSize: isMobile ? 13 : 14),
-              filled: true,
-              fillColor: Colors.white,
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TextField(
+              controller: _controller,
+              onChanged: _onChanged,
+              textInputAction: TextInputAction.search,
+              style: GoogleFonts.inter(
+                fontSize: isMobile ? 14 : 15,
+                height: 1.4,
+                color: const Color(0xFF111827),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFF059669), width: 1.4),
+              decoration: InputDecoration(
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: isMobile ? 14 : 16,
+                ),
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.only(left: 12, right: 8),
+                  child: Icon(
+                    Icons.search_rounded,
+                    size: 22,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 44,
+                  minHeight: 44,
+                ),
+                suffixIcon: _controller.text.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.close_rounded,
+                          size: 20,
+                          color: Colors.grey.shade400,
+                        ),
+                        onPressed: _clear,
+                        tooltip: 'Clear',
+                      )
+                    : null,
+                hintText: placeholder,
+                hintStyle: GoogleFonts.inter(
+                  color: Colors.grey.shade400,
+                  fontSize: isMobile ? 14 : 15,
+                  fontWeight: FontWeight.w400,
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF06B6D4),
+                    width: 2,
+                  ),
+                ),
               ),
             ),
           ),
