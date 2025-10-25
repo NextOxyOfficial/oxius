@@ -6,7 +6,6 @@ import '../services/user_state_service.dart';
 import '../models/user_profile.dart';
 import '../widgets/footer.dart';
 import '../widgets/mobile_drawer.dart';
-import '../widgets/header/header.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -206,11 +205,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      drawer: const HeaderDrawer(),
+      drawer: const MobileDrawer(),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        title: const Text(
+          'Settings',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        iconTheme: IconThemeData(color: Colors.grey[800]),
+      ),
       body: Column(
         children: [
-          // Fixed Header at top
-          const AppHeader(),
           
           // Scrollable content area
           Expanded(

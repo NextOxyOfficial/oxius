@@ -1079,20 +1079,20 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Container(
         constraints: BoxConstraints(
-          minHeight: 32,
-          maxHeight: 32,
+          minHeight: 28,
+          maxHeight: 28,
           minWidth: 80,
           maxWidth: 170,
         ),
         child: Container(
-          height: 30,
+          height: 26,
           padding: EdgeInsets.symmetric(
             horizontal: 6,
             vertical: 2,
           ),
           child: Image.asset(
             'assets/images/logo.png',
-            height: 26,
+            height: 22,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) {
               return Container(
