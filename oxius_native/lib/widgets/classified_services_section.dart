@@ -138,12 +138,12 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: isMobile ? 6 : 16,
-        vertical: 8,
+        vertical: 4,
       ),
       child: Column(
         children: [
           _buildHeader(isMobile),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           // Search bar (mobile first)
           ClassifiedSearchBar(
             onSearch: _onSearch,
@@ -159,7 +159,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
           // See More / See Less button
           if (hasMoreCategories && !_loadingCategories)
             _buildSeeMoreButton(isMobile),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           // Show ads scroll widget with real data from backend
           if (_posts.isNotEmpty)
             AdsScrollWidget(
@@ -179,7 +179,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 8 : 24,
-        vertical: isMobile ? 12 : 16,
+        vertical: isMobile ? 8 : 12,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -208,70 +208,53 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     final remainingCount = _categories.length - _initialCategoryCount;
     
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8 : 16,
-        vertical: 8,
+      padding: EdgeInsets.only(
+        right: isMobile ? 16 : 24,
+        top: 4,
+        bottom: 4,
       ),
-      child: Center(
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () {
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          TextButton(
+            onPressed: () {
               setState(() {
                 _isExpanded = !_isExpanded;
               });
             },
-            child: Container(
+            style: TextButton.styleFrom(
               padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 16 : 20,
-                vertical: isMobile ? 8 : 10,
+                horizontal: isMobile ? 8 : 12,
+                vertical: 6,
               ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _isExpanded
+                      ? _translationService.t('see_less', fallback: 'See Less')
+                      : '${_translationService.t('see_more', fallback: 'See More')} ($remainingCount)',
+                  style: GoogleFonts.roboto(
+                    fontSize: isMobile ? 12 : 13,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF06B6D4),
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _isExpanded 
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    size: 18,
-                    color: const Color(0xFF0EA5E9),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    _isExpanded
-                        ? _translationService.t('see_less', fallback: 'See Less')
-                        : '${_translationService.t('see_more', fallback: 'See More')} ($remainingCount)',
-                    style: GoogleFonts.poppins(
-                      fontSize: isMobile ? 12 : 13,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF0EA5E9),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    _isExpanded 
-                        ? Icons.keyboard_arrow_up_rounded
-                        : Icons.keyboard_arrow_down_rounded,
-                    size: 18,
-                    color: const Color(0xFF0EA5E9),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  _isExpanded 
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  size: 18,
+                  color: const Color(0xFF06B6D4),
+                ),
+              ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
