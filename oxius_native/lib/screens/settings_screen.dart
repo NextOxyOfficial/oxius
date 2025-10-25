@@ -1998,4 +1998,180 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _isLoading = false);
     }
   }
+
+  Widget _buildDebugTab(bool isSmallMobile) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 600),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.bug_report,
+                        color: Colors.orange.shade700,
+                        size: 28,
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Debug Tools',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Development tools and configuration viewer. Only visible in debug mode.',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  
+                  // Full Debug Screen Button
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DebugScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.settings_applications),
+                    label: const Text('Open Debug Screen'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade700,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  
+                  // Quick Info
+                  _buildDebugInfoRow(
+                    'Environment',
+                    kDebugMode ? 'Development' : 'Production',
+                    kDebugMode ? Colors.orange : Colors.green,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildDebugInfoRow(
+                    'Platform',
+                    kIsWeb ? 'Web' : defaultTargetPlatform.toString().split('.').last,
+                    Colors.blue,
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Info Box
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.blue.shade200,
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: Colors.blue.shade700,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Development Mode Active',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blue.shade900,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          '• Using local backend (localhost:8000)\n'
+                          '• Debug logs enabled\n'
+                          '• Hot reload available\n'
+                          '• Build with --release for production',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.blue.shade900,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDebugInfoRow(String label, String value, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: color.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color.shade900,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
