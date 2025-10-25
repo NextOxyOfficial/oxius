@@ -20,12 +20,65 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   String _errorMessage = '';
+  String _errorType = 'error'; // error, warning, info
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  /// Parse and format error messages for better UX
+  String _parseErrorMessage(dynamic error) {
+    String errorStr = error.toString();
+    
+    // Remove technical prefixes
+    errorStr = errorStr
+        .replaceFirst('Exception: ', '')
+        .replaceFirst('Login error: ', '')
+        .replaceFirst('Login failed with status ', '');
+    
+    // Parse JSON error messages
+    if (errorStr.contains('{"error":')) {
+      try {
+        final match = RegExp(r'\{"error":"([^"]+)"\}').firstMatch(errorStr);
+        if (match != null) {
+          return match.group(1)!;
+        }
+      } catch (e) {
+        // Continue with default handling
+      }
+    }
+    
+    // Handle common HTTP status codes with user-friendly messages
+    if (errorStr.contains('401')) {
+      return 'Invalid email or password. Please check your credentials and try again.';
+    }
+    if (errorStr.contains('404')) {
+      return 'Account not found. Please check your email or sign up.';
+    }
+    if (errorStr.contains('429')) {
+      return 'Too many login attempts. Please wait a few minutes and try again.';
+    }
+    if (errorStr.contains('500') || errorStr.contains('502') || errorStr.contains('503')) {
+      return 'Server is temporarily unavailable. Please try again in a moment.';
+    }
+    if (errorStr.toLowerCase().contains('network') || 
+        errorStr.toLowerCase().contains('connection') ||
+        errorStr.toLowerCase().contains('failed host lookup')) {
+      return 'Unable to connect. Please check your internet connection and try again.';
+    }
+    if (errorStr.toLowerCase().contains('timeout')) {
+      return 'Connection timeout. Please check your internet and try again.';
+    }
+    
+    // Return cleaned up message or generic error
+    if (errorStr.length > 100) {
+      return 'Login failed. Please check your credentials and try again.';
+    }
+    
+    return errorStr.isEmpty ? 'Login failed. Please try again.' : errorStr;
   }
 
   Future<void> _handleLogin() async {
@@ -36,6 +89,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
       _errorMessage = '';
+      _errorType = 'error';
     });
 
     try {
@@ -115,13 +169,15 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else if (mounted) {
         setState(() {
-          _errorMessage = 'Login failed. Please try again.';
+          _errorMessage = 'Login failed. Please check your credentials and try again.';
+          _errorType = 'error';
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString().replaceFirst('Exception: ', '').replaceFirst('Login error: ', '');
+          _errorMessage = _parseErrorMessage(e);
+          _errorType = 'error';
         });
       }
     } finally {
@@ -274,35 +330,90 @@ class _LoginPageState extends State<LoginPage> {
             
             const SizedBox(height: 28),
             
-            // Error message
+            // Error/Warning/Info message
             if (_errorMessage.isNotEmpty) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
-                  borderRadius: BorderRadius.circular(8),
+                  color: _errorType == 'error'
+                      ? const Color(0xFFFEF2F2)
+                      : _errorType == 'warning'
+                          ? const Color(0xFFFFFBEB)
+                          : const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: const Color(0xFFEF4444),
-                    width: 1,
+                    color: _errorType == 'error'
+                        ? const Color(0xFFEF4444)
+                        : _errorType == 'warning'
+                            ? const Color(0xFFF59E0B)
+                            : const Color(0xFF3B82F6),
+                    width: 1.5,
                   ),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      Icons.error_outline,
-                      color: const Color(0xFFEF4444),
-                      size: 20,
+                      _errorType == 'error'
+                          ? Icons.error_outline_rounded
+                          : _errorType == 'warning'
+                              ? Icons.warning_amber_rounded
+                              : Icons.info_outline_rounded,
+                      color: _errorType == 'error'
+                          ? const Color(0xFFDC2626)
+                          : _errorType == 'warning'
+                              ? const Color(0xFFD97706)
+                              : const Color(0xFF2563EB),
+                      size: 22,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
-                        _errorMessage,
-                        style: GoogleFonts.roboto(
-                          color: const Color(0xFFDC2626),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _errorType == 'error'
+                                ? 'Login Failed'
+                                : _errorType == 'warning'
+                                    ? 'Attention'
+                                    : 'Information',
+                            style: GoogleFonts.roboto(
+                              color: _errorType == 'error'
+                                  ? const Color(0xFFDC2626)
+                                  : _errorType == 'warning'
+                                      ? const Color(0xFFD97706)
+                                      : const Color(0xFF2563EB),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _errorMessage,
+                            style: GoogleFonts.roboto(
+                              color: _errorType == 'error'
+                                  ? const Color(0xFF991B1B)
+                                  : _errorType == 'warning'
+                                      ? const Color(0xFF92400E)
+                                      : const Color(0xFF1E40AF),
+                              fontSize: 13,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      color: Colors.grey.shade600,
+                      onPressed: () {
+                        setState(() {
+                          _errorMessage = '';
+                        });
+                      },
                     ),
                   ],
                 ),
