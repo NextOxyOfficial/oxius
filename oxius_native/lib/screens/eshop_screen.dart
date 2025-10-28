@@ -389,41 +389,21 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 Expanded(
                   child: GestureDetector(
                     onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
-                    child: Row(
-                      children: [
-                        // Dynamic eShop Logo
-                        if (_eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty)
-                          Container(
-                            height: 32,
-                            constraints: const BoxConstraints(maxWidth: 120),
-                            child: Image.network(
-                              _eshopLogoUrl!,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => _buildFallbackLogo(),
-                            ),
-                          )
-                        else
-                          _buildFallbackLogo(),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF10B981), Color(0xFF059669)],
-                            ),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'eShop',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: 
+                          // Dynamic eShop Logo only
+                          _eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty
+                            ? Container(
+                                height: 32,
+                                constraints: const BoxConstraints(maxWidth: 140),
+                                child: Image.network(
+                                  _eshopLogoUrl!,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) => _buildFallbackLogo(),
+                                ),
+                              )
+                            : _buildFallbackLogo(),
                     ),
                   ),
                 ),
@@ -495,18 +475,20 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
   Widget _buildFallbackLogo() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2937),
-        borderRadius: BorderRadius.circular(6),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF10B981), Color(0xFF059669)],
+        ),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: const Text(
-        'AdsyClub',
+        'eShop',
         style: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.w700,
-          fontSize: 14,
-          letterSpacing: 0.3,
+          fontSize: 16,
+          letterSpacing: 0.5,
         ),
       ),
     );
