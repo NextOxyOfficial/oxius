@@ -319,27 +319,30 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         title: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Text(
             _post!.title,
             style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.2,
             ),
           ),
         ),
         backgroundColor: const Color(0xFF10B981),
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.share),
+            icon: const Icon(Icons.share_rounded, size: 22),
             onPressed: _showShareDialog,
             tooltip: 'Share',
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: SingleChildScrollView(
@@ -363,14 +366,14 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                   
                   // Title and Basic Info
                   Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Location
                         Row(
                           children: [
-                            const Icon(Icons.location_on, size: 16, color: Color(0xFF6B7280)),
+                            const Icon(Icons.location_on_rounded, size: 15, color: Color(0xFF6B7280)),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
@@ -378,8 +381,9 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                                     .where((e) => e != null && e.isNotEmpty)
                                     .join(', '),
                                 style: const TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 13,
                                   color: Color(0xFF6B7280),
+                                  letterSpacing: -0.1,
                                 ),
                               ),
                             ),
@@ -392,37 +396,37 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
-                                color: Colors.grey[100],
+                                color: const Color(0xFFF3F4F6),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.visibility, size: 14, color: Color(0xFF6B7280)),
-                                  const SizedBox(width: 4),
+                                  const Icon(Icons.visibility_rounded, size: 12, color: Color(0xFF6B7280)),
+                                  const SizedBox(width: 3),
                                   Text(
                                     '${_post!.viewsCount} views',
                                     style: const TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       color: Color(0xFF6B7280),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
-                                color: Colors.grey[100],
+                                color: const Color(0xFFF3F4F6),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
                                 'ID: ${_getNumericServiceId()}',
                                 style: const TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 11,
                                   color: Color(0xFF6B7280),
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -432,22 +436,22 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                             InkWell(
                               onTap: _showReportDialog,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: Colors.red[50],
+                                  color: const Color(0xFFFEE2E2),
                                   borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: Colors.red[300]!),
+                                  border: Border.all(color: const Color(0xFFFCA5A5)),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.flag_outlined, size: 14, color: Colors.red[700]),
-                                    const SizedBox(width: 4),
-                                    Text(
+                                    const Icon(Icons.flag_outlined, size: 12, color: Color(0xFFDC2626)),
+                                    const SizedBox(width: 3),
+                                    const Text(
                                       'Report',
                                       style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.red[700],
+                                        fontSize: 11,
+                                        color: Color(0xFFDC2626),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -480,7 +484,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
             // Safety Tips
             _buildSafetyTipsCard(),
             
-            const SizedBox(height: 80), // Bottom padding for contact bar
+            const SizedBox(height: 70), // Bottom padding for contact bar
           ],
         ),
       ),
@@ -639,7 +643,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
   Widget _buildPriceBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -658,18 +662,20 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                 const Text(
                   'Price',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: Color(0xFF6B7280),
                     fontWeight: FontWeight.w500,
+                    letterSpacing: -0.1,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   _post!.displayPrice,
                   style: const TextStyle(
-                    fontSize: 24,
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF10B981),
+                    letterSpacing: -0.3,
                   ),
                 ),
               ],
@@ -678,7 +684,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
           Text(
             _post!.getRelativeTime(),
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: Color(0xFF6B7280),
             ),
           ),
@@ -690,27 +696,28 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
   Widget _buildDescriptionCard() {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Description',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Color(0xFF1F2937),
+              letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Html(
             data: _post!.instructions!,
             style: {
               "body": Style(
                 margin: Margins.zero,
                 padding: HtmlPaddings.zero,
-                fontSize: FontSize(15),
-                lineHeight: const LineHeight(1.6),
+                fontSize: FontSize(13),
+                lineHeight: const LineHeight(1.5),
                 color: const Color(0xFF374151),
               ),
             },
@@ -726,24 +733,24 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 6,
+            offset: const Offset(0, -1),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       child: Row(
         children: [
           Expanded(
             child: ElevatedButton.icon(
               onPressed: _contactProvider,
-              icon: const Icon(Icons.phone),
-              label: const Text('Call Now'),
+              icon: const Icon(Icons.phone_rounded, size: 18),
+              label: const Text('Call Now', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -751,7 +758,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           Expanded(
             child: OutlinedButton.icon(
               onPressed: () {
@@ -765,12 +772,12 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                   );
                 }
               },
-              icon: const Icon(Icons.message),
-              label: const Text('Chat'),
+              icon: const Icon(Icons.message_rounded, size: 18),
+              label: const Text('Chat', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF10B981),
-                side: const BorderSide(color: Color(0xFF10B981), width: 2),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -786,7 +793,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
   Widget _buildSafetyTipsCard() {
     return Container(
       color: const Color(0xFFFFF3CD),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -797,9 +804,10 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               Text(
                 'Safety Tips',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF92400E),
+                  letterSpacing: -0.1,
                 ),
               ),
             ],
@@ -822,7 +830,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
           const Text(
             '• ',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               color: Color(0xFF92400E),
               fontWeight: FontWeight.bold,
             ),
@@ -831,8 +839,9 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
             child: Text(
               tip,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 color: Color(0xFF92400E),
+                height: 1.3,
               ),
             ),
           ),
@@ -854,25 +863,26 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Provider',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Color(0xFF1F2937),
+              letterSpacing: -0.2,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           
           // Profile row
           Row(
             children: [
               CircleAvatar(
-                radius: 32,
+                radius: 28,
                 backgroundColor: const Color(0xFF10B981).withOpacity(0.1),
                 backgroundImage: user.profilePicture != null
                     ? CachedNetworkImageProvider(user.profilePicture!)
@@ -881,14 +891,14 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                     ? Text(
                         user.displayName[0].toUpperCase(),
                         style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 20,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF10B981),
                         ),
                       )
                     : null,
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -896,15 +906,16 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                     Text(
                       user.displayName,
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF1F2937),
+                        letterSpacing: -0.1,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, size: 14, color: Color(0xFF6B7280)),
+                        const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFF6B7280)),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -912,7 +923,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                                 .where((e) => e != null && e.isNotEmpty)
                                 .join(', '),
                             style: const TextStyle(
-                              fontSize: 13,
+                              fontSize: 12,
                               color: Color(0xFF6B7280),
                             ),
                             maxLines: 1,
@@ -925,7 +936,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                     Text(
                       'Posted ${_post!.getRelativeTime()}',
                       style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         color: Color(0xFF9CA3AF),
                       ),
                     ),
@@ -935,7 +946,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
             ],
           ),
           
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           
           // About
           if (user.about != null) ...[
@@ -945,7 +956,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                 "body": Style(
                   margin: Margins.zero,
                   padding: HtmlPaddings.zero,
-                  fontSize: FontSize(14),
+                  fontSize: FontSize(13),
                 ),
               },
             ),
@@ -954,7 +965,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
           
           // Contact info
           Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.grey[50],
                 borderRadius: BorderRadius.circular(8),
@@ -1026,12 +1037,12 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: _contactProvider,
-              icon: const Icon(Icons.phone),
-              label: const Text('Contact Provider'),
+              icon: const Icon(Icons.phone_rounded, size: 18),
+              label: const Text('Contact Provider', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -1046,13 +1057,13 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
   Widget _buildContactRow(IconData icon, String text, {Widget? trailing}) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: const Color(0xFF6B7280)),
-        const SizedBox(width: 8),
+        Icon(icon, size: 15, color: const Color(0xFF6B7280)),
+        const SizedBox(width: 6),
         Expanded(
           child: Text(
             text,
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               color: Color(0xFF374151),
             ),
           ),
