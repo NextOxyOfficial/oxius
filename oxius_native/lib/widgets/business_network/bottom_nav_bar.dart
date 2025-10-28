@@ -38,9 +38,10 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         ],
       ),
       child: SafeArea(
+        minimum: EdgeInsets.zero,
         child: Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -110,17 +111,18 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         onTap: () => onTap(index),
         behavior: HitTestBehavior.opaque,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: 2),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Stack(
                 clipBehavior: Clip.none,
                 children: [
                   // Icon or Favicon with gradient effect when active
                   Container(
-                    width: 24,
-                    height: 24,
+                    width: 22,
+                    height: 22,
                     decoration: BoxDecoration(
                       gradient: isActive
                           ? RadialGradient(
@@ -135,19 +137,20 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                     child: useFavicon
                         ? Image.asset(
                             'assets/images/favicon.png',
-                            width: 22,
-                            height: 22,
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) {
                               return Icon(
                                 icon,
-                                size: 22,
+                                size: 20,
                                 color: isActive ? color : Colors.grey.shade600,
                               );
                             },
                           )
                         : Icon(
                             icon,
-                            size: 22,
+                            size: 20,
                             color: isActive ? color : Colors.grey.shade600,
                           ),
                   ),
@@ -201,14 +204,15 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 1),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 9,
                   fontWeight: FontWeight.w600,
                   color: isActive ? color : Colors.grey.shade600,
                   letterSpacing: 0,
+                  height: 1.1,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -218,7 +222,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
               if (isActive)
                 Container(
                   margin: const EdgeInsets.only(top: 1),
-                  width: 24,
+                  width: 20,
                   height: 2,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -248,8 +252,8 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [
@@ -272,7 +276,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                 child: const Icon(
                   Icons.add,
                   color: Colors.white,
-                  size: 22,
+                  size: 20,
                 ),
               ),
             ],
