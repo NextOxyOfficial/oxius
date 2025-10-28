@@ -99,11 +99,12 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-        height: 150,
+        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+        height: 140,
         child: const Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+            strokeWidth: 2.5,
           ),
         ),
       );
@@ -114,105 +115,124 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
               children: [
-                // Title with accent bar
+                // Icon with gradient background
                 Container(
-                  width: 4,
-                  height: 24,
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
                       colors: [
-                        Colors.green.shade400,
-                        Colors.green.shade600,
+                        const Color(0xFF10B981),
+                        const Color(0xFF059669),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.local_fire_department_rounded,
+                    color: Colors.white,
+                    size: 16,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Text(
                   'New & Hot Arrivals',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade800,
+                  style: GoogleFonts.roboto(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1F2937),
+                    letterSpacing: 0.2,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(12),
+                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color(0xFF10B981).withOpacity(0.2),
+                      width: 1,
+                    ),
                   ),
                   child: Text(
-                    'Just In',
+                    'TRENDING',
                     style: GoogleFonts.roboto(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.green.shade600,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF059669),
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
                 const Spacer(),
                 
                 // View All Button
-                GestureDetector(
-                  onTap: _handleViewAll,
-                  child: Row(
-                    children: [
-                      if (_viewAllLoading)
-                        SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade600),
-                          ),
-                        )
-                      else
-                        Text(
-                          'View All',
-                          style: GoogleFonts.roboto(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.green.shade600,
-                          ),
-                        ),
-                      if (!_viewAllLoading) ...[
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.chevron_right,
-                          size: 16,
-                          color: Colors.green.shade600,
-                        ),
-                      ],
-                    ],
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _handleViewAll,
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_viewAllLoading)
+                            SizedBox(
+                              width: 14,
+                              height: 12,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF10B981)),
+                              ),
+                            )
+                          else ...[
+                            Text(
+                              'View All',
+                              style: GoogleFonts.roboto(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF059669),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.arrow_forward_rounded,
+                              size: 14,
+                              color: const Color(0xFF059669),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
           
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           
           // Scrollable Cards
           SizedBox(
-            height: 135,
+            height: 140,
             child: ListView.separated(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 6),
               itemCount: _hotArrivals.length,
               separatorBuilder: (context, index) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
@@ -228,127 +248,159 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
 
   Widget _buildArrivalCard(Map<String, dynamic> arrival) {
     final imageUrl = arrival['image']?.toString() ?? '';
-    final name = arrival['name']?.toString() ?? '';
-    final badge = arrival['badge']?.toString() ?? 'NEW';
-    final badgeColor = _getBadgeColor(arrival['badge_color']?.toString());
+    final name = arrival['name']?.toString() ?? 'Unnamed Category';
+    final badge = arrival['badge']?.toString();
+    final badgeColorStr = arrival['badge_color']?.toString();
+    final description = arrival['description']?.toString();
+    final productCount = arrival['product_count'];
     
-    return GestureDetector(
-      onTap: () {
-        if (widget.onCategorySelected != null && arrival['id'] != null) {
-          widget.onCategorySelected!(arrival['id'].toString());
-        }
-      },
-      child: IntrinsicWidth(
+    // Only show badge if it exists in the data
+    final hasBadge = badge != null && badge.isNotEmpty;
+    final badgeColor = hasBadge ? _getBadgeColor(badgeColorStr) : Colors.transparent;
+    
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          if (widget.onCategorySelected != null && arrival['id'] != null) {
+            widget.onCategorySelected!(arrival['id'].toString());
+          }
+        },
+        borderRadius: BorderRadius.circular(10),
         child: Container(
-          constraints: const BoxConstraints(
-            minWidth: 90,
-            maxWidth: 140,
-          ),
+          width: 105,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: Colors.grey.shade100,
+              color: const Color(0xFFE5E7EB),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 4,
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-            // Image with badge
-            Container(
-              height: 80,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    badgeColor.withOpacity(0.05),
+              // Image with dynamic badge
+              Container(
+                height: 90,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                  color: const Color(0xFFF9FAFB),
+                ),
+                child: Stack(
+                  children: [
+                    // Product Image
+                    if (imageUrl.isNotEmpty)
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                        child: Image.network(
+                          imageUrl,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Icon(
+                                Icons.image_rounded,
+                                size: 32,
+                                color: const Color(0xFF9CA3AF),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    else
+                      Center(
+                        child: Icon(
+                          Icons.image_rounded,
+                          size: 32,
+                          color: const Color(0xFF9CA3AF),
+                        ),
+                      ),
+                    
+                    // Dynamic Badge - only show if exists
+                    if (hasBadge)
+                      Positioned(
+                        top: 6,
+                        right: 6,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: badgeColor,
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: badgeColor.withOpacity(0.3),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            badge!.toUpperCase(),
+                            style: GoogleFonts.roboto(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                      ),
+                    
+                    // Product count badge - bottom left
+                    if (productCount != null && productCount > 0)
+                      Positioned(
+                        bottom: 6,
+                        left: 6,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '$productCount items',
+                            style: GoogleFonts.roboto(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
-              child: Stack(
-                children: [
-                  // Product Image
-                  if (imageUrl.isNotEmpty)
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                      child: Image.network(
-                        imageUrl,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey.shade50,
-                            child: Icon(
-                              Icons.shopping_bag_outlined,
-                              size: 24,
-                              color: Colors.grey.shade300,
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  else
-                    Container(
-                      color: Colors.grey.shade50,
-                      child: Icon(
-                        Icons.shopping_bag_outlined,
-                        size: 24,
-                        color: Colors.grey.shade300,
-                      ),
+              
+              // Name - Compact padding
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  alignment: Alignment.center,
+                  child: Text(
+                    name,
+                    style: GoogleFonts.roboto(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF374151),
+                      height: 1.3,
                     ),
-                  
-                  // Badge
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: badgeColor,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        badge,
-                        style: GoogleFonts.roboto(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
-            ),
-            
-            // Name - Single line with ellipsis
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-              child: Text(
-                name,
-                style: GoogleFonts.roboto(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade800,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );

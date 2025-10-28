@@ -119,7 +119,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
       ),
       curve: Curves.easeInOut,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+        margin: const EdgeInsets.fromLTRB(24, 0, 24, 8),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.9),
           borderRadius: BorderRadius.circular(12),
@@ -136,9 +136,8 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
           borderRadius: BorderRadius.circular(12),
           child: Container(
             color: Colors.white.withOpacity(0.9),
-            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+            padding: const EdgeInsets.symmetric(vertical: 8),
             child: SafeArea(
-              minimum: EdgeInsets.zero,
               child: _userStateService.isAuthenticated
                   ? _buildLoggedInNavigation(context)
                   : _buildGuestNavigation(context),
@@ -250,21 +249,18 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+        padding: const EdgeInsets.all(8),
         child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
           children: [
             if (useFavicon)
               Image.asset(
                 'assets/images/favicon.png',
-                width: 24,
-                height: 24,
-                fit: BoxFit.contain,
+                width: 28,
+                height: 28,
                 errorBuilder: (context, error, stackTrace) {
                   return Icon(
                     icon,
-                    size: 24,
+                    size: 28,
                     color: const Color(0xFF34D399),
                   );
                 },
@@ -272,7 +268,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
             else
               Icon(
                 icon,
-                size: 24,
+                size: 28,
                 color: const Color(0xFF34D399),
               ),
             if (hasNotification && notificationCount > 0)
