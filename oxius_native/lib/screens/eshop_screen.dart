@@ -6,6 +6,7 @@ import '../widgets/mobile_banner.dart';
 import '../widgets/hot_deals_section.dart';
 import '../widgets/product_card.dart';
 import '../widgets/mobile_sticky_nav.dart';
+import '../widgets/product_skeleton_loader.dart';
 import '../models/cart_item.dart';
 
 class EshopScreen extends StatefulWidget {
@@ -31,6 +32,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   List<String> _recentSearches = [];
   List<String> _trendingSearches = ['Electronics', 'Fashion', 'Home & Garden', 'Sports'];
   
+  String? _eshopLogoUrl;
   int _currentPage = 1;
   late AnimationController _searchAnimationController;
   late Animation<double> _searchAnimation;
@@ -49,6 +51,18 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     _scrollController.addListener(_onScroll);
     _loadInitialData();
     _loadSearchHistory();
+    _loadEshopLogo();
+  }
+
+  Future<void> _loadEshopLogo() async {
+    try {
+      final logoUrl = await EshopService.getEshopLogo();
+      if (mounted) {
+        setState(() => _eshopLogoUrl = logoUrl);
+      }
+    } catch (e) {
+      print('Error loading eshop logo: $e');
+    }
   }
 
   void _navigateToCheckout(Map<String, dynamic> product) {
@@ -334,73 +348,79 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200),
+        border: const Border(
+          bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            offset: const Offset(0, 1),
-            blurRadius: 3,
+            color: Colors.black.withOpacity(0.03),
+            offset: const Offset(0, 2),
+            blurRadius: 4,
           ),
         ],
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          padding: const EdgeInsets.fromLTRB(4, 10, 4, 10),
           child: Row(
             children: [
-              // Back/Menu Button
+              // Back Button
               _isSearchActive
                   ? IconButton(
                       onPressed: _deactivateSearch,
-                      icon: const Icon(Icons.arrow_back),
-                      iconSize: 24,
+                      icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF374151)),
+                      iconSize: 22,
+                      padding: const EdgeInsets.all(8),
+                      constraints: const BoxConstraints(),
                     )
                   : IconButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      icon: const Icon(Icons.arrow_back),
-                      iconSize: 24,
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF374151)),
+                      iconSize: 22,
+                      padding: const EdgeInsets.all(8),
+                      constraints: const BoxConstraints(),
                     ),
               
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               
-              // Logo or Title
+              // Logo or Search Input
               if (!_isSearchActive) ...[
                 Expanded(
                   child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-                    },
+                    onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
                     child: Row(
                       children: [
+                        // Dynamic eShop Logo
+                        if (_eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty)
+                          Container(
+                            height: 32,
+                            constraints: const BoxConstraints(maxWidth: 120),
+                            child: Image.network(
+                              _eshopLogoUrl!,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => _buildFallbackLogo(),
+                            ),
+                          )
+                        else
+                          _buildFallbackLogo(),
+                        const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
                               colors: [Color(0xFF10B981), Color(0xFF059669)],
                             ),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: const Text(
-                            'AdsyClub',
+                            'eShop',
                             style: TextStyle(
                               color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              letterSpacing: 0.3,
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'eShop',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF1F2937),
                           ),
                         ),
                       ],
@@ -409,18 +429,22 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 ),
                 
                 // Search Button
-                IconButton(
-                  onPressed: _activateSearch,
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Icon(
-                      Icons.search,
-                      size: 20,
-                      color: Colors.grey.shade700,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _activateSearch,
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.search_rounded,
+                        size: 20,
+                        color: Color(0xFF6B7280),
+                      ),
                     ),
                   ),
                 ),
@@ -428,40 +452,61 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 // Search Input (when active)
                 Expanded(
                   child: Container(
-                    height: 44,
+                    height: 38,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: Colors.grey.shade200),
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(19),
+                      border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
                     ),
                     child: TextField(
                       controller: _searchController,
                       autofocus: true,
                       onChanged: _performSearch,
                       textAlignVertical: TextAlignVertical.center,
+                      style: const TextStyle(fontSize: 14, color: Color(0xFF374151)),
                       decoration: InputDecoration(
                         hintText: 'Search products...',
-                        hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 15),
-                        prefixIcon: Icon(Icons.search, color: Colors.grey.shade400, size: 22),
+                        hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                        prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF10B981), size: 20),
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
                                 onPressed: () {
                                   _searchController.clear();
                                   _performSearch('');
                                 },
-                                icon: Icon(Icons.clear, color: Colors.grey.shade400, size: 20),
+                                icon: const Icon(Icons.close_rounded, color: Color(0xFF9CA3AF), size: 18),
+                                padding: const EdgeInsets.all(8),
+                                constraints: const BoxConstraints(),
                               )
                             : null,
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
                         isDense: true,
                       ),
-                      style: const TextStyle(fontSize: 15),
                     ),
                   ),
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackLogo() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F2937),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: const Text(
+        'AdsyClub',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+          fontSize: 14,
+          letterSpacing: 0.3,
         ),
       ),
     );
@@ -705,9 +750,13 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
   Widget _buildMainContent() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF10B981),
+      return SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 16),
+            const ProductSkeletonLoader(itemCount: 6),
+            const SizedBox(height: 100),
+          ],
         ),
       );
     }
@@ -716,9 +765,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       controller: _scrollController,
       child: Column(
         children: [
-          // 1. eShop Banner (using existing MobileBannerWidget)
+          // 1. Dynamic eShop Banner - 4px padding
           const Padding(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(4, 12, 4, 0),
             child: MobileBannerWidget(
               autoplayInterval: 5000,
               autoplayEnabled: true,
@@ -726,11 +775,11 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
             ),
           ),
           
-          // 2. Hot Deals Section (existing widget)
+          // 2. Hot Deals Section - compact spacing
           const HotDealsSection(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           
-          // 3. Product Cards Section - Show existing product cards
+          // 3. Product Cards Section
           _buildProductsGrid(),
         ],
       ),
@@ -786,28 +835,42 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           ),
         ),
         
-        // Loading indicator for pagination
+        // Skeleton loader for pagination
         if (_isLoadingMore)
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF10B981),
-              ),
-            ),
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: ProductSkeletonLoader(itemCount: 4),
           ),
         
         // End of results indicator
         if (!_hasMoreResults && _products.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Center(
-              child: Text(
-                'No more products',
-                style: TextStyle(
-                  color: Colors.grey.shade500,
-                  fontSize: 12,
-                ),
+          Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline_rounded,
+                    color: Color(0xFF10B981),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'You\'ve reached the end',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

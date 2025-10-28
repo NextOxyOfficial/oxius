@@ -516,4 +516,32 @@ class EshopService {
     }
   }
 
+  // Get eShop logo (different from main logo)
+  static Future<String?> getEshopLogo() async {
+    try {
+      final uri = Uri.parse('$baseUrl/eshop/logo/');
+      
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final logoUrl = data['logo']?.toString();
+        if (logoUrl != null && logoUrl.isNotEmpty) {
+          return _abs(logoUrl);
+        }
+      }
+      
+      return null;
+    } catch (e) {
+      print('EshopService: Error fetching eshop logo: $e');
+      return null;
+    }
+  }
+
 }

@@ -104,7 +104,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      margin: const EdgeInsets.fromLTRB(4, 8, 4, 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.pink.shade400, Colors.orange.shade500],
