@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:math';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
@@ -178,7 +179,13 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
     
-    return Scaffold(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: BusinessNetworkHeader(
@@ -252,6 +259,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
               child: const Icon(Icons.add, color: Colors.white, size: 28),
             )
           : null,
+      ),
     );
   }
 

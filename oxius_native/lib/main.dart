@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'config/app_config.dart';
@@ -27,6 +28,17 @@ import 'models/cart_item.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Set status bar to white with dark icons
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.white,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
   
   // Print app configuration (shows which environment is active)
   AppConfig.printConfig();
@@ -70,6 +82,13 @@ class MyApp extends StatelessWidget {
               colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
               useMaterial3: true,
               textTheme: GoogleFonts.robotoTextTheme(),
+              appBarTheme: const AppBarTheme(
+                systemOverlayStyle: SystemUiOverlayStyle(
+                  statusBarColor: Colors.white,
+                  statusBarIconBrightness: Brightness.dark,
+                  statusBarBrightness: Brightness.light,
+                ),
+              ),
             ),
             home: const Scaffold(
               body: Center(
@@ -89,6 +108,13 @@ class MyApp extends StatelessWidget {
               colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
               useMaterial3: true,
               textTheme: GoogleFonts.robotoTextTheme(),
+              appBarTheme: const AppBarTheme(
+                systemOverlayStyle: SystemUiOverlayStyle(
+                  statusBarColor: Colors.white,
+                  statusBarIconBrightness: Brightness.dark,
+                  statusBarBrightness: Brightness.light,
+                ),
+              ),
             ),
             // Use initialRoute instead of home to avoid conflict
             initialRoute: '/',

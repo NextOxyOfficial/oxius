@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../widgets/footer.dart';
 import '../widgets/mobile_drawer.dart';
 import '../widgets/hero_banner.dart';
@@ -142,10 +143,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      drawer: const MobileDrawer(),
-      body: Stack(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade50,
+        drawer: const MobileDrawer(),
+        body: Stack(
         children: [
           // Scrollable content area
           SingleChildScrollView(
@@ -299,6 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
