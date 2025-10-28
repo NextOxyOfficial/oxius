@@ -1249,6 +1249,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final profilePic = user.profilePicture ?? '';
     final displayName = user.firstName ?? user.displayName ?? user.username ?? 'U';
     final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U';
+    
+    // Debug: Print profile picture URL
+    if (profilePic.isNotEmpty) {
+      print('🖼️ User Profile Picture URL: $profilePic');
+    } else {
+      print('⚠️ No profile picture found for user: ${user.username}');
+    }
 
     return GestureDetector(
       onTap: () {

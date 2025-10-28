@@ -43,6 +43,22 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    // Construct absolute URL for profile picture
+    String? imageUrl;
+    if (json['image'] != null && json['image'].toString().isNotEmpty) {
+      final imagePath = json['image'].toString();
+      // Check if it's already an absolute URL
+      if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        imageUrl = imagePath;
+      } else {
+        // Construct absolute URL using API base URL
+        imageUrl = '${ApiService.baseUrl.replaceAll('/api', '')}$imagePath';
+        if (!imagePath.startsWith('/')) {
+          imageUrl = '${ApiService.baseUrl.replaceAll('/api', '')}/$imagePath';
+        }
+      }
+    }
+    
     return User(
       id: json['id']?.toString() ?? '', // Convert to string to handle both int and string IDs
       email: json['email'] ?? '',
@@ -52,7 +68,7 @@ class User {
       userType: json['user_type'] ?? 'regular',
       isSuperuser: json['is_superuser'] ?? false,
       isActive: json['is_active'] ?? true,
-      profilePicture: json['profile_picture'],
+      profilePicture: imageUrl,
       referralCode: json['referral_code'],
       referCount: json['refer_count'],
       commissionEarned: json['commission_earned'] is String 
@@ -82,7 +98,7 @@ class User {
       'user_type': userType,
       'is_superuser': isSuperuser,
       'is_active': isActive,
-      'profile_picture': profilePicture,
+      'image': profilePicture,
       'referral_code': referralCode,
       'refer_count': referCount,
       'commission_earned': commissionEarned,

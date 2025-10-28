@@ -5,6 +5,7 @@ import '../services/translation_service.dart';
 import '../services/eshop_service.dart';
 import '../screens/eshop_screen.dart';
 import '../screens/product_details_screen.dart';
+import '../models/cart_item.dart';
 import 'hot_deals_section.dart';
 import 'hot_arrivals_section.dart';
 import 'mobile_banner.dart';
@@ -24,6 +25,63 @@ class _EshopSectionState extends State<EshopSection> {
   bool _loadingProducts = false;
   bool _initialized = false;
   final Set<String> _buyLoading = <String>{};
+
+  // Navigate to checkout with product
+  void _navigateToCheckout(Map<String, dynamic> product) {
+    try {
+      final cartProduct = Product(
+        id: product['id'],
+        name: product['name'] ?? product['title'] ?? 'Product',
+        description: product['description'],
+        regularPrice: _parseDouble(product['regular_price'] ?? product['price']),
+        salePrice: product['sale_price'] != null
+            ? _parseDouble(product['sale_price'])
+            : null,
+        quantity: product['quantity'] as int? ?? 999,
+        isFreeDelivery: product['is_free_delivery'] as bool?,
+        deliveryFeeInsideDhaka: product['delivery_fee_inside_dhaka'] != null
+            ? _parseDouble(product['delivery_fee_inside_dhaka'])
+            : null,
+        deliveryFeeOutsideDhaka: product['delivery_fee_outside_dhaka'] != null
+            ? _parseDouble(product['delivery_fee_outside_dhaka'])
+            : null,
+        imageDetails: product['image_details'] != null
+            ? (product['image_details'] as List)
+                .map((img) => ProductImage.fromJson(img as Map<String, dynamic>))
+                .toList()
+            : null,
+      );
+
+      final cartItem = CartItem(
+        product: cartProduct,
+        quantity: 1,
+      );
+
+      Navigator.pushNamed(
+        context,
+        '/checkout',
+        arguments: {
+          'cartItems': [cartItem],
+        },
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: Unable to proceed to checkout. $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
 
   // Pick up to [maxItems] random unique items from the list
   List<Map<String, dynamic>> _pickRandom(List<Map<String, dynamic>> list, int maxItems) {
@@ -345,11 +403,8 @@ class _EshopSectionState extends State<EshopSection> {
                     isLoading: _buyLoading.contains(id),
                     width: cardWidth,
                     height: cardHeight,
-                    onBuyNow: () async {
-                      setState(() => _buyLoading.add(id));
-                      await Future.delayed(const Duration(milliseconds: 800));
-                      if (!mounted) return;
-                      setState(() => _buyLoading.remove(id));
+                    onBuyNow: () {
+                      _navigateToCheckout(product);
                     },
                     // onTap removed to use default navigation from _EshopProductCard
                   ),

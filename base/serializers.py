@@ -104,6 +104,13 @@ class UserSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         # Remove the password field from the output
         representation.pop("password", None)
+        
+        # Convert image field to absolute URL
+        if representation.get('image'):
+            request = self.context.get('request')
+            if request:
+                representation['image'] = request.build_absolute_uri(representation['image'])
+        
         return representation
 
 
@@ -152,6 +159,18 @@ class UserSerializerGet(serializers.ModelSerializer):
             # 'username': {'read_only': True},
         }
         depth = 1
+    
+    def to_representation(self, instance):
+        """Customize the serialized output."""
+        representation = super().to_representation(instance)
+        
+        # Convert image field to absolute URL
+        if representation.get('image'):
+            request = self.context.get('request')
+            if request:
+                representation['image'] = request.build_absolute_uri(representation['image'])
+        
+        return representation
 
 
 class ClassifiedServicesSerializer(serializers.ModelSerializer):
@@ -356,7 +375,8 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         # Generate tokens using Simple JWT
         refresh = RefreshToken.for_user(user)
 
-        user_data = UserSerializer(user).data
+        # Pass context to serializer for absolute URL construction
+        user_data = UserSerializer(user, context=self.context).data
 
         # If authentication is successful, get the tokens
         data = {

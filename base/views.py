@@ -1296,7 +1296,8 @@ class TokenValidationView(APIView):
         # Generate tokens using Simple JWT
         refresh = RefreshToken.for_user(user)
 
-        user_data = UserSerializerGet(user).data
+        # Pass context to serializer for absolute URL construction
+        user_data = UserSerializerGet(user, context={'request': request}).data
         # Prepare the data to be returned
         data = {
             "refresh": str(refresh),
