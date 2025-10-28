@@ -520,6 +520,7 @@ class EshopService {
   static Future<String?> getEshopLogo() async {
     try {
       final uri = Uri.parse('$baseUrl/eshop/logo/');
+      print('EshopService: Fetching eShop logo from: $uri');
       
       final response = await http.get(
         uri,
@@ -529,14 +530,23 @@ class EshopService {
         },
       ).timeout(const Duration(seconds: 5));
 
+      print('EshopService: Logo response status: ${response.statusCode}');
+      print('EshopService: Logo response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final logoUrl = data['logo']?.toString();
+        print('EshopService: Raw logo URL from backend: $logoUrl');
         if (logoUrl != null && logoUrl.isNotEmpty) {
-          return _abs(logoUrl);
+          final absoluteUrl = _abs(logoUrl);
+          print('EshopService: Absolute logo URL: $absoluteUrl');
+          return absoluteUrl;
+        } else {
+          print('EshopService: Logo URL is null or empty');
         }
       }
       
+      print('EshopService: Returning null for logo');
       return null;
     } catch (e) {
       print('EshopService: Error fetching eshop logo: $e');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oxius_native/screens/product_details_screen.dart';
+import '../config/app_config.dart';
 
 class ProductCard extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -443,18 +444,18 @@ class _ProductCardState extends State<ProductCard> {
   String _makeAbsoluteUrl(String url) {
     if (url.isEmpty) return '';
     if (url.startsWith('http://') || url.startsWith('https://')) {
-      // If it's already an absolute URL, check if it's using the old domain
-      if (url.contains('adsyclub.com')) {
-        // Replace old domain with current backend domain
-        return url.replaceFirst('adsyclub.com', 'oxius.vercel.app');
-      }
       return url;
     }
     
+    // Use AppConfig to get the correct base URL (localhost in debug, production in release)
+    final baseUrl = AppConfig.mediaBaseUrl;
+    print('ProductCard: Making absolute URL from "$url" using base: $baseUrl');
+    
     // Handle Django media URLs
-    const baseUrl = 'https://oxius.vercel.app'; // Your current backend URL
     if (url.startsWith('/media/') || url.startsWith('media/')) {
-      return '$baseUrl${url.startsWith('/') ? url : '/$url'}';
+      final finalUrl = '$baseUrl${url.startsWith('/') ? url : '/$url'}';
+      print('ProductCard: Media URL result: $finalUrl');
+      return finalUrl;
     }
     if (url.startsWith('/')) {
       return '$baseUrl$url';

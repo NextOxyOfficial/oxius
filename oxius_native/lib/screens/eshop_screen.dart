@@ -56,12 +56,17 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
   Future<void> _loadEshopLogo() async {
     try {
+      print('EshopScreen: Loading dynamic eShop logo...');
       final logoUrl = await EshopService.getEshopLogo();
+      print('EshopScreen: Received logo URL: $logoUrl');
       if (mounted) {
-        setState(() => _eshopLogoUrl = logoUrl);
+        setState(() {
+          _eshopLogoUrl = logoUrl;
+        });
+        print('EshopScreen: Logo URL set in state: $_eshopLogoUrl');
       }
     } catch (e) {
-      print('Error loading eshop logo: $e');
+      print('EshopScreen: Error loading eshop logo: $e');
     }
   }
 
@@ -714,7 +719,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       padding: const EdgeInsets.fromLTRB(4, 8, 4, 80),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.62,
+        childAspectRatio: 0.64,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
       ),
