@@ -33,60 +33,60 @@ class _HeroBannerState extends State<HeroBanner> {
     return [absUrl];
   }
 
-  // Mobile service buttons data matching Vue.js structure
+  // Mobile service buttons data with local asset icons
   List<Map<String, dynamic>> get mobileServices => [
     {
       'icon': Icons.group,
-      'image': '/static/frontend/images/globalconnection.png',
+      'image': 'assets/images/globalconnection.png',
       'label': _translationService.t('business_network', fallback: 'Business Network'),
       'color': const Color(0xFF3B82F6), // Blue
       'bgColor': const Color(0xFFEFF6FF),
     },
     {
       'icon': Icons.newspaper,
-      'image': '/static/frontend/images/news.png',
+      'image': 'assets/images/news.png',
       'label': _translationService.t('adsy_news', fallback: 'News'),
       'color': const Color(0xFFF59E0B), // Amber
       'bgColor': const Color(0xFFFFF7ED),
     },
     {
       'icon': Icons.monetization_on,
-      'image': '/static/frontend/images/money.png',
+      'image': 'assets/images/money.png',
       'label': _translationService.t('earn_money', fallback: 'Earn Money'),
       'color': const Color(0xFF10B981), // Emerald
       'bgColor': const Color(0xFFECFDF5),
     },
     {
       'icon': Icons.shopping_cart,
-      'image': '/static/frontend/images/onlineshopping.png',
+      'image': 'assets/images/onlineshopping.png',
       'label': _translationService.t('eshop', fallback: 'eShop'),
       'color': const Color(0xFF8B5CF6), // Purple
       'bgColor': const Color(0xFFF5F3FF),
     },
     {
       'icon': Icons.sell,
-      'image': '/static/frontend/images/sign.png',
+      'image': 'assets/images/donate.png',
       'label': _translationService.t('sale_listing', fallback: 'Sale Listings'),
       'color': const Color(0xFF4F46E5), // Indigo
       'bgColor': const Color(0xFFF0F9FF),
     },
     {
       'icon': Icons.psychology,
-      'image': '/static/frontend/images/question.png',
+      'image': 'assets/images/question.png',
       'label': _translationService.t('mindforce', fallback: 'MindForce'),
       'color': const Color(0xFF06B6D4), // Cyan
       'bgColor': const Color(0xFFE0F7FA),
     },
     {
       'icon': Icons.school,
-      'image': '/static/frontend/images/onlinelearning.png',
+      'image': 'assets/images/onlinelearning.png',
       'label': _translationService.t('elearning', fallback: 'eLearning'),
       'color': const Color(0xFFE11D48), // Rose
       'bgColor': const Color(0xFFFFF1F2),
     },
     {
       'icon': Icons.medical_services,
-      'image': '/static/frontend/images/medicalreport.png',
+      'image': 'assets/images/medicalreport.png',
       'label': _translationService.t('shastho_sheba', fallback: 'Health Service'),
       'color': Colors.grey,
       'bgColor': const Color(0xFFF9FAFB),
@@ -94,7 +94,7 @@ class _HeroBannerState extends State<HeroBanner> {
     },
     {
       'icon': Icons.payment,
-      'image': '/static/frontend/images/payment.png',
+      'image': 'assets/images/payment.png',
       'label': _translationService.t('bill_pay', fallback: 'Bill Pay'),
       'color': Colors.grey,
       'bgColor': const Color(0xFFF9FAFB),
@@ -102,21 +102,21 @@ class _HeroBannerState extends State<HeroBanner> {
     },
     {
       'icon': Icons.phone_android,
-      'image': '/static/frontend/images/mobileapp.png',
+      'image': 'assets/images/mobileapp.png',
       'label': _translationService.t('mobile_recharge', fallback: 'Mobile Recharge'),
       'color': const Color(0xFFEA580C), // Orange
       'bgColor': const Color(0xFFFFF7ED),
     },
     {
       'icon': Icons.account_balance_wallet,
-      'image': '/static/frontend/images/transaction.png',
+      'image': 'assets/images/transaction.png',
       'label': _translationService.t('adsy_pay', fallback: 'AdsyPay'),
       'color': const Color(0xFF84CC16), // Lime
       'bgColor': const Color(0xFFF7FEE7),
     },
     {
       'icon': Icons.star,
-      'image': '/static/frontend/images/premium.png',
+      'image': 'assets/images/premium.png',
       'label': _translationService.t('packeges', fallback: 'Membership'),
       'color': const Color(0xFFDB2777), // Pink
       'bgColor': const Color(0xFFFDF2F8),
@@ -483,8 +483,7 @@ class _HeroBannerState extends State<HeroBanner> {
     final bool isComingSoon = service['isComingSoon'] ?? false;
     return _ServiceTile(
       icon: service['icon'] as IconData?,
-      imageUrl: service['image'] != null ? _absStatic(service['image'] as String) : null,
-      imageUrlFallbacks: service['image'] != null ? _absStaticCandidates(service['image'] as String) : const [],
+      imageAsset: service['image'] as String?,
       label: service['label'] as String,
       color: service['color'] as Color,
       bgColor: service['bgColor'] as Color,
@@ -529,8 +528,7 @@ class _HeroBannerState extends State<HeroBanner> {
 
 class _ServiceTile extends StatefulWidget {
   final IconData? icon;
-  final String? imageUrl;
-  final List<String> imageUrlFallbacks;
+  final String? imageAsset;
   final String label;
   final Color color;
   final Color bgColor;
@@ -540,8 +538,7 @@ class _ServiceTile extends StatefulWidget {
 
   const _ServiceTile({
     this.icon,
-    this.imageUrl,
-    this.imageUrlFallbacks = const [],
+    this.imageAsset,
     required this.label,
     required this.color,
     required this.bgColor,
@@ -560,7 +557,6 @@ class _ServiceTileState extends State<_ServiceTile> with SingleTickerProviderSta
   late final Animation<double> _breath;
   late final Animation<double> _drift; // vertical bob
   late final Animation<double> _tilt;  // slight rotation
-  int _imageIndex = 0;
 
   @override
   void initState() {
@@ -655,21 +651,13 @@ class _ServiceTileState extends State<_ServiceTile> with SingleTickerProviderSta
                       ],
                     ),
                     child: Center(
-                      child: widget.imageUrl != null
-                          ? Image.network(
-                              widget.imageUrlFallbacks.isNotEmpty
-                                  ? widget.imageUrlFallbacks[_imageIndex]
-                                  : widget.imageUrl!,
+                      child: widget.imageAsset != null
+                          ? Image.asset(
+                              widget.imageAsset!,
                               width: 32,
                               height: 32,
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {
-                                if (_imageIndex + 1 < widget.imageUrlFallbacks.length) {
-                                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                                    if (mounted) setState(() => _imageIndex++);
-                                  });
-                                  return const SizedBox(width: 32, height: 32);
-                                }
                                 return Icon(
                                   widget.icon ?? Icons.widgets_outlined,
                                   color: widget.color,
