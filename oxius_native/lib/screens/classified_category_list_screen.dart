@@ -42,6 +42,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  bool _isSearchActive = false;
   
   // AdsyAI Bot state
   bool _aiUserChoice = false;
@@ -151,9 +152,12 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   }
 
   void _showLocationSelector() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: false,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
       builder: (context) => GeoSelectorDialog(
         initialLocation: _location,
         onLocationSelected: (location) async {
@@ -181,7 +185,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
         title: Text(
           _categoryDetails?.title ?? 'Classified Ads',
           style: const TextStyle(
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -189,14 +193,33 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _isSearchActive = !_isSearchActive;
+                if (!_isSearchActive) {
+                  _searchController.clear();
+                  _searchQuery = '';
+                  _filterSearch();
+                }
+              });
+            },
+            icon: Icon(
+              _isSearchActive ? Icons.close_rounded : Icons.search_rounded,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: Column(
         children: [
           // Location breadcrumb
           if (_location != null) _buildLocationBreadcrumb(),
           
-          // Search bar
-          _buildSearchBar(),
+          // Search bar (collapsible)
+          if (_isSearchActive) _buildSearchBar(),
           
           // Results count
           if (!_isLoading && _posts.isNotEmpty) _buildResultsCount(),
@@ -402,14 +425,14 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
 
   Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -417,45 +440,51 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
         children: [
           Expanded(
             child: Container(
-              height: 44,
+              height: 40,
               decoration: BoxDecoration(
                 color: const Color(0xFFF3F4F6),
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withOpacity(0.3),
+                  width: 1,
+                ),
               ),
               child: TextField(
                 controller: _searchController,
+                autofocus: true,
                 decoration: const InputDecoration(
                   hintText: 'Search ads...',
                   hintStyle: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: Color(0xFF9CA3AF),
                   ),
                   prefixIcon: Icon(
-                    Icons.search,
-                    size: 20,
-                    color: Color(0xFF6B7280),
+                    Icons.search_rounded,
+                    size: 18,
+                    color: Color(0xFF10B981),
                   ),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
+                    horizontal: 10,
+                    vertical: 10,
                   ),
+                  isDense: true,
                 ),
-                style: const TextStyle(fontSize: 14),
+                style: const TextStyle(fontSize: 13),
                 onChanged: (value) => _searchQuery = value,
                 onSubmitted: (_) => _filterSearch(),
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           SizedBox(
-            height: 44,
+            height: 40,
             child: ElevatedButton(
               onPressed: _isLoading ? null : () => _filterSearch(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -464,8 +493,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               ),
               child: _isLoading
                   ? const SizedBox(
-                      height: 20,
-                      width: 20,
+                      height: 18,
+                      width: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -474,8 +503,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                   : const Text(
                       'Search',
                       style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        letterSpacing: -0.1,
                       ),
                     ),
             ),

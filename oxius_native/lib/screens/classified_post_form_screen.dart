@@ -232,8 +232,12 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
   }
 
   Future<void> _showLocationSelector() async {
-    final selectedLocation = await showDialog<GeoLocation>(
+    final selectedLocation = await showModalBottomSheet<GeoLocation>(
       context: context,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
       builder: (context) => GeoSelectorDialog(
         initialLocation: _location,
         onLocationSelected: (location) {},
