@@ -138,6 +138,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
             color: Colors.white.withOpacity(0.9),
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: SafeArea(
+              bottom: false, // Disable bottom padding to prevent extra white space
               child: _userStateService.isAuthenticated
                   ? _buildLoggedInNavigation(context)
                   : _buildGuestNavigation(context),
