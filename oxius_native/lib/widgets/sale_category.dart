@@ -413,22 +413,24 @@ class _SaleCategoryState extends State<SaleCategory> {
                       ),
                     ),
                   ],
-                  if (isLoggedIn) ...[
-                    SizedBox(width: screenWidth * 0.015),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
+                  SizedBox(width: screenWidth * 0.015),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        if (isLoggedIn) {
                           Navigator.pushNamed(context, '/create-sale-post');
-                        },
-                        child: _buildActionButton(
-                          postSaleLabel,
-                          Icons.add_circle_outline,
-                          true,
-                          constraints.maxWidth,
-                        ),
+                        } else {
+                          Navigator.pushNamed(context, '/login');
+                        }
+                      },
+                      child: _buildActionButton(
+                        postSaleLabel,
+                        Icons.add_circle_outline,
+                        true,
+                        constraints.maxWidth,
                       ),
                     ),
-                  ],
+                  ),
                 ],
               );
             },

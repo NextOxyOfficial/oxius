@@ -25,6 +25,7 @@ class _NewsScreenState extends State<NewsScreen> {
   bool _hasMore = true;
   bool _isGridLayout = true;
   List<TipSuggestion> _visibleTips = [];
+  String? _newsLogoUrl;
 
   @override
   void initState() {
@@ -43,11 +44,13 @@ class _NewsScreenState extends State<NewsScreen> {
         NewsService.getPosts(page: 1),
         NewsService.getCategories(),
         NewsService.getTipsAndSuggestions(),
+        NewsService.getNewsLogo(),
       ]);
 
       final paginatedResponse = results[0] as PaginatedNewsResponse;
       final categories = results[1] as List<NewsCategory>;
       final tips = results[2] as List<TipSuggestion>;
+      final logoUrl = results[3] as String?;
 
       setState(() {
         _allPosts = paginatedResponse.results;
@@ -55,6 +58,7 @@ class _NewsScreenState extends State<NewsScreen> {
         _tips = tips;
         _visibleTips = tips.take(6).toList();
         _hasMore = paginatedResponse.hasMore;
+        _newsLogoUrl = logoUrl;
         _loading = false;
       });
     } catch (e) {
@@ -114,24 +118,47 @@ class _NewsScreenState extends State<NewsScreen> {
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0.5,
-        title: Image.asset(
-          'assets/images/adsy-news-logo.png',
-          height: 32,
-          errorBuilder: (context, error, stackTrace) {
-            return const Text(
-              'AdsyNews',
-              style: TextStyle(
-                color: Color(0xFFE53E3E),
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
+        elevation: 0,
+        title: _newsLogoUrl != null
+            ? Image.network(
+                _newsLogoUrl!,
+                height: 28,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    'assets/images/adsy-news-logo.png',
+                    height: 28,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Text(
+                        'AdsyNews',
+                        style: TextStyle(
+                          color: Color(0xFFE53E3E),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
+                          letterSpacing: -0.2,
+                        ),
+                      );
+                    },
+                  );
+                },
+              )
+            : Image.asset(
+                'assets/images/adsy-news-logo.png',
+                height: 28,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Text(
+                    'AdsyNews',
+                    style: TextStyle(
+                      color: Color(0xFFE53E3E),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      letterSpacing: -0.2,
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: Color(0xFF1F2937)),
+            icon: const Icon(Icons.search_rounded, color: Color(0xFF1F2937), size: 22),
             onPressed: () {
               showSearch(
                 context: context,
@@ -139,8 +166,12 @@ class _NewsScreenState extends State<NewsScreen> {
               );
             },
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: Colors.grey.shade200),
+        ),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -161,7 +192,7 @@ class _NewsScreenState extends State<NewsScreen> {
               : SingleChildScrollView(
                   child: Container(
                     constraints: const BoxConstraints(maxWidth: 1280),
-                    margin: const EdgeInsets.symmetric(horizontal: 0),
+                    margin: const EdgeInsets.all(4),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -181,15 +212,16 @@ class _NewsScreenState extends State<NewsScreen> {
 
                         // All News Section Header
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+                          padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
                                 'All News',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.1,
                                   color: Color(0xFF1F2937),
                                 ),
                               ),
@@ -202,7 +234,8 @@ class _NewsScreenState extends State<NewsScreen> {
                                       });
                                     },
                                     icon: Icon(
-                                      Icons.grid_view,
+                                      Icons.grid_view_rounded,
+                                      size: 20,
                                       color: _isGridLayout
                                           ? const Color(0xFFE53E3E)
                                           : Colors.grey,
@@ -215,7 +248,8 @@ class _NewsScreenState extends State<NewsScreen> {
                                       });
                                     },
                                     icon: Icon(
-                                      Icons.view_list,
+                                      Icons.view_list_rounded,
+                                      size: 20,
                                       color: !_isGridLayout
                                           ? const Color(0xFFE53E3E)
                                           : Colors.grey,
@@ -229,15 +263,15 @@ class _NewsScreenState extends State<NewsScreen> {
 
                         // News Grid/List
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: _isGridLayout
                               ? GridView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: isMobile ? 2 : 4,
-                                    crossAxisSpacing: 8,
-                                    mainAxisSpacing: 8,
+                                    crossAxisSpacing: 6,
+                                    mainAxisSpacing: 6,
                                     childAspectRatio: 0.75,
                                   ),
                                   itemCount: _allPosts.length,
@@ -255,7 +289,7 @@ class _NewsScreenState extends State<NewsScreen> {
                                   itemCount: _allPosts.length,
                                   itemBuilder: (context, index) {
                                     return Padding(
-                                      padding: const EdgeInsets.only(bottom: 16),
+                                      padding: const EdgeInsets.only(bottom: 12),
                                       child: NewsCard(
                                         post: _allPosts[index],
                                         isListLayout: true,
@@ -269,24 +303,25 @@ class _NewsScreenState extends State<NewsScreen> {
                         // Load More Button
                         if (_hasMore)
                           Padding(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
                             child: Center(
                               child: ElevatedButton(
                                 onPressed: _loadingMore ? null : _loadMorePosts,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey.shade200,
-                                  foregroundColor: const Color(0xFF1F2937),
+                                  backgroundColor: const Color(0xFFE53E3E),
+                                  foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
-                                    vertical: 16,
+                                    horizontal: 24,
+                                    vertical: 12,
                                   ),
+                                  elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(24),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
                                 child: Text(
                                   _loadingMore ? 'Loading...' : 'Load More Articles',
-                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                                 ),
                               ),
                             ),
@@ -295,8 +330,8 @@ class _NewsScreenState extends State<NewsScreen> {
                         // Trending Topics
                         if (_categories.isNotEmpty)
                           Container(
-                            margin: const EdgeInsets.all(16),
-                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(12),
@@ -307,15 +342,16 @@ class _NewsScreenState extends State<NewsScreen> {
                                 const Text(
                                   'Trending Topics',
                                   style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.1,
                                     color: Color(0xFF1F2937),
                                   ),
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 10),
                                 Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
+                                  spacing: 6,
+                                  runSpacing: 6,
                                   children: _categories.take(7).map((category) {
                                     return InkWell(
                                       onTap: () {
@@ -323,12 +359,12 @@ class _NewsScreenState extends State<NewsScreen> {
                                       },
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 8,
+                                          horizontal: 10,
+                                          vertical: 6,
                                         ),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(20),
+                                          borderRadius: BorderRadius.circular(16),
                                           boxShadow: [
                                             BoxShadow(
                                               color: Colors.black.withOpacity(0.05),
@@ -340,16 +376,16 @@ class _NewsScreenState extends State<NewsScreen> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             const Icon(
-                                              Icons.trending_up,
-                                              size: 16,
+                                              Icons.trending_up_rounded,
+                                              size: 14,
                                               color: Color(0xFFE53E3E),
                                             ),
-                                            const SizedBox(width: 6),
+                                            const SizedBox(width: 5),
                                             Text(
                                               category.name,
                                               style: const TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w500,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
                                               ),
                                             ),
                                           ],
@@ -365,8 +401,8 @@ class _NewsScreenState extends State<NewsScreen> {
                         // Tips and Suggestions
                         if (_tips.isNotEmpty)
                           Container(
-                            margin: const EdgeInsets.all(16),
-                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(12),
@@ -377,26 +413,27 @@ class _NewsScreenState extends State<NewsScreen> {
                                 const Text(
                                   'Tips and Suggestions',
                                   style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.1,
                                     color: Color(0xFF1F2937),
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 10),
                                 GridView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: isMobile ? 1 : 3,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 12,
+                                    crossAxisSpacing: 8,
+                                    mainAxisSpacing: 8,
                                     childAspectRatio: isMobile ? 3 : 2,
                                   ),
                                   itemCount: _visibleTips.length,
                                   itemBuilder: (context, index) {
                                     final tip = _visibleTips[index];
                                     return Container(
-                                      padding: const EdgeInsets.all(12),
+                                      padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.circular(8),
@@ -413,19 +450,20 @@ class _NewsScreenState extends State<NewsScreen> {
                                           Text(
                                             tip.title,
                                             style: const TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              letterSpacing: -0.1,
                                               color: Color(0xFF1F2937),
                                             ),
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                          const SizedBox(height: 6),
+                                          const SizedBox(height: 4),
                                           Expanded(
                                             child: Text(
                                               tip.description,
                                               style: TextStyle(
-                                                fontSize: 12,
+                                                fontSize: 11,
                                                 color: Colors.grey.shade600,
                                               ),
                                               maxLines: 3,
@@ -439,15 +477,20 @@ class _NewsScreenState extends State<NewsScreen> {
                                 ),
                                 if (_visibleTips.length < _tips.length)
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 16),
+                                    padding: const EdgeInsets.only(top: 12),
                                     child: Center(
                                       child: ElevatedButton(
                                         onPressed: _loadMoreTips,
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.grey.shade200,
-                                          foregroundColor: const Color(0xFF1F2937),
+                                          backgroundColor: const Color(0xFFE53E3E),
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                          elevation: 0,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
                                         ),
-                                        child: const Text('Load More'),
+                                        child: const Text('Load More', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                                       ),
                                     ),
                                   ),
@@ -455,7 +498,7 @@ class _NewsScreenState extends State<NewsScreen> {
                             ),
                           ),
 
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),

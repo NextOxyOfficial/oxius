@@ -6,19 +6,19 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
   @override
-  String get searchFieldLabel => 'Search news...';
+  String get searchFieldLabel => 'Search articles...';
 
   @override
   ThemeData appBarTheme(BuildContext context) {
     return Theme.of(context).copyWith(
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
-        elevation: 0.5,
-        iconTheme: IconThemeData(color: Color(0xFF1F2937)),
+        elevation: 0,
+        iconTheme: IconThemeData(color: Color(0xFF1F2937), size: 22),
       ),
-      inputDecorationTheme: const InputDecorationTheme(
+      inputDecorationTheme: InputDecorationTheme(
         border: InputBorder.none,
-        hintStyle: TextStyle(color: Colors.grey),
+        hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 15),
       ),
     );
   }
@@ -28,7 +28,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
     return [
       if (query.isNotEmpty)
         IconButton(
-          icon: const Icon(Icons.clear),
+          icon: const Icon(Icons.clear_rounded, size: 20),
           onPressed: () {
             query = '';
             showSuggestions(context);
@@ -40,7 +40,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
   @override
   Widget buildLeading(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.arrow_back),
+      icon: const Icon(Icons.arrow_back_rounded),
       onPressed: () => close(context, null),
     );
   }
@@ -74,15 +74,16 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.search_off,
-                  size: 64,
+                  Icons.search_off_rounded,
+                  size: 56,
                   color: Colors.grey.shade400,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'No results found for "$query"',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
                     color: Colors.grey.shade600,
                   ),
                 ),
@@ -92,6 +93,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
         }
 
         return ListView.builder(
+          padding: const EdgeInsets.all(4),
           itemCount: results.length,
           itemBuilder: (context, index) {
             final post = results[index];
@@ -110,15 +112,16 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.search,
-              size: 64,
+              Icons.search_rounded,
+              size: 56,
               color: Colors.grey.shade400,
             ),
             const SizedBox(height: 16),
             Text(
               'Search for news articles',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
                 color: Colors.grey.shade600,
               ),
             ),
@@ -162,11 +165,19 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Colors.grey.shade200),
-          ),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,23 +188,23 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
                 borderRadius: BorderRadius.circular(8),
                 child: CachedNetworkImage(
                   imageUrl: post.image!,
-                  width: 80,
-                  height: 80,
+                  width: 72,
+                  height: 72,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
-                    width: 80,
-                    height: 80,
+                    width: 72,
+                    height: 72,
                     color: Colors.grey.shade200,
                   ),
                   errorWidget: (context, url, error) => Container(
-                    width: 80,
-                    height: 80,
+                    width: 72,
+                    height: 72,
                     color: Colors.grey.shade200,
-                    child: const Icon(Icons.image_not_supported),
+                    child: const Icon(Icons.image_not_supported, size: 20),
                   ),
                 ),
               ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             // Content
             Expanded(
               child: Column(
@@ -208,7 +219,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
                         children: post.tags.take(2).map((tag) {
                           return Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
+                              horizontal: 5,
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
@@ -219,8 +230,8 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
                               tag.toUpperCase(),
                               style: const TextStyle(
                                 color: Color(0xFFE53E3E),
-                                fontSize: 9,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 8,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           );
@@ -231,8 +242,9 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
                   Text(
                     post.title,
                     style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.1,
                       color: Color(0xFF1F2937),
                     ),
                     maxLines: 2,
@@ -243,7 +255,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
                   Text(
                     post.summary,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       color: Colors.grey.shade600,
                     ),
                     maxLines: 2,
@@ -254,7 +266,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
                   Text(
                     post.formattedDate,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 10,
                       color: Colors.grey.shade500,
                     ),
                   ),

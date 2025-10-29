@@ -208,4 +208,35 @@ class NewsService {
     _cache.remove(key);
     _cacheTimestamps.remove(key);
   }
+
+  // Get AdsyNews logo
+  static Future<String?> getNewsLogo() async {
+    const cacheKey = 'news_logo';
+
+    if (_isCacheValid(cacheKey)) {
+      return _cache[cacheKey] as String?;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/news/logo/'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final logoUrl = data['logo'] as String?;
+
+        if (logoUrl != null && logoUrl.isNotEmpty) {
+          final absoluteUrl = AppConfig.getAbsoluteUrl(logoUrl);
+          _cache[cacheKey] = absoluteUrl;
+          _cacheTimestamps[cacheKey] = DateTime.now();
+          return absoluteUrl;
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching news logo: $e');
+      return null;
+    }
+  }
 }
