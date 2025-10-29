@@ -1197,6 +1197,17 @@ def postBalance(request):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+    # Map 'selected' to 'payment_method' for withdraw/deposit
+    if "selected" in data:
+        data["payment_method"] = data["selected"]
+        del data["selected"]
+        print(f"Mapped payment_method: {data.get('payment_method')}")
+    
+    # Map 'payment_number' to 'card_number' for withdraw
+    if "payment_number" in data and data.get("transaction_type", "").lower() == "withdraw":
+        data["card_number"] = data["payment_number"]
+        print(f"Mapped card_number: {data.get('card_number')}")
+
     # Check if 'merchant_invoice_no' exists in the data
     if "merchant_invoice_no" in data:
         # Check if Balance with the given merchant_invoice_no exists
@@ -1217,6 +1228,7 @@ def postBalance(request):
         to_user = User.objects.get(Q(email=data["contact"]) | Q(phone=data["contact"]))
         del data["contact"]
 
+    print(f"Final data before serialization: {data}")
     serializer = BalanceSerializer(data=data)
 
     if serializer.is_valid():

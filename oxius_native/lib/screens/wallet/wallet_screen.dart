@@ -677,33 +677,132 @@ class _WalletScreenState extends State<WalletScreen> {
             const SizedBox(height: 16),
             // Amount
             _buildDetailRow('Amount', '৳${txn.amount.toStringAsFixed(2)}', color),
-            // Transaction ID
-            _buildDetailRow('Transaction ID', txn.id),
+            // Transaction ID - Always show (either transaction number or UUID)
+            _buildDetailRow(
+              'Transaction ID', 
+              txn.transactionNumber != null && txn.transactionNumber!.isNotEmpty 
+                ? txn.transactionNumber! 
+                : txn.id.substring(0, 13).toUpperCase(), // Show first 13 chars of UUID if no transaction number
+            ),
             // Date
             _buildDetailRow(
               'Date',
               '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} ${txn.createdAt.hour}:${txn.createdAt.minute.toString().padLeft(2, '0')}',
             ),
-            // Payment Method
-            if (txn.paymentMethod != null)
-              _buildDetailRow('Payment Method', txn.paymentMethod!),
-            // Payment Number
-            if (txn.paymentNumber != null)
-              _buildDetailRow('Payment Number', txn.paymentNumber!),
-            // Sender
-            if (txn.senderName != null)
+            // Payment Method - Always show
+            _buildDetailRow('Payment Method', _getPaymentMethodDisplay(txn)),
+            // Payment Number (only for deposit/withdraw with card_number)
+            if ((txn.transactionType.toLowerCase() == 'deposit' || txn.transactionType.toLowerCase() == 'withdraw') && 
+                txn.paymentNumber != null && txn.paymentNumber!.isNotEmpty)
+              _buildDetailRow('Card/Account Number', txn.paymentNumber!),
+            // Sender (from user_details)
+            if (txn.senderName != null && txn.senderName!.isNotEmpty)
               _buildDetailRow('From', txn.senderName!),
-            // Recipient
-            if (txn.recipientName != null)
+            // Recipient (from to_user_details)
+            if (txn.recipientName != null && txn.recipientName!.isNotEmpty)
               _buildDetailRow('To', txn.recipientName!),
-            // Note
-            if (txn.note != null && txn.note!.isNotEmpty)
-              _buildDetailRow('Note', txn.note!),
+            // Note/Description - Always show
+            _buildDetailRow('Description', _getNoteDisplay(txn)),
             const SizedBox(height: 20),
           ],
         ),
       ),
     );
+  }
+
+  String _getNoteDisplay(Transaction txn) {
+    // If note exists, return it
+    if (txn.note != null && txn.note!.isNotEmpty) {
+      return txn.note!;
+    }
+    
+    // Otherwise, provide default description based on transaction type
+    switch (txn.transactionType.toLowerCase()) {
+      case 'deposit':
+        return 'Money added to account';
+      case 'withdraw':
+        return 'Money withdrawn from account';
+      case 'transfer':
+        if (txn.recipientName != null && txn.recipientName!.isNotEmpty) {
+          return 'Money transferred to ${txn.recipientName}';
+        }
+        return 'Money transferred';
+      case 'order_payment':
+        return 'Payment for product purchase';
+      case 'pro_subscription':
+        return 'Pro subscription payment';
+      case 'mobile_recharge':
+        return 'Mobile recharge transaction';
+      case 'referral_commission':
+        return 'Referral commission earned';
+      case 'diamond_purchase':
+        return 'Diamond purchase';
+      case 'diamond_gift':
+        return 'Diamond gift sent';
+      case 'diamond_bonus':
+        return 'Diamond bonus received';
+      case 'diamond_refund':
+        return 'Diamond refund';
+      case 'diamond_admin':
+        return 'Diamond adjustment by admin';
+      default:
+        return 'Transaction completed';
+    }
+  }
+
+  String _getPaymentMethodDisplay(Transaction txn) {
+    // If payment method exists, format it
+    if (txn.paymentMethod != null && txn.paymentMethod!.isNotEmpty) {
+      return _formatPaymentMethod(txn.paymentMethod!);
+    }
+    
+    // Otherwise, provide default based on transaction type
+    switch (txn.transactionType.toLowerCase()) {
+      case 'withdraw':
+        return 'Mobile Banking'; // Default for old withdrawals without payment_method
+      case 'deposit':
+        return 'Mobile Banking'; // Default for old deposits without payment_method
+      case 'transfer':
+        return 'Account Balance';
+      case 'order_payment':
+      case 'pro_subscription':
+      case 'mobile_recharge':
+      case 'referral_commission':
+        return 'Account Balance';
+      case 'diamond_purchase':
+      case 'diamond_gift':
+      case 'diamond_bonus':
+      case 'diamond_refund':
+      case 'diamond_admin':
+        return 'Account Balance';
+      default:
+        return 'Not Specified';
+    }
+  }
+
+  String _formatPaymentMethod(String method) {
+    // Format payment method to be user-friendly
+    switch (method.toLowerCase()) {
+      case 'bkash':
+        return 'bKash';
+      case 'nagad':
+        return 'Nagad';
+      case 'rocket':
+        return 'Rocket';
+      case 'upay':
+        return 'Upay';
+      case 'balance':
+        return 'Account Balance';
+      case 'bank':
+        return 'Bank Transfer';
+      case 'card':
+        return 'Card Payment';
+      default:
+        // Capitalize first letter of each word
+        return method.split('_').map((word) => 
+          word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1)
+        ).join(' ');
+    }
   }
 
   Widget _buildDetailRow(String label, String value, [Color? valueColor]) {

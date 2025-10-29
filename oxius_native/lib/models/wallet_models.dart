@@ -1,5 +1,6 @@
 class Transaction {
   final String id; // Changed from int to String to handle UUID
+  final String? transactionNumber; // Human-readable transaction number
   final String transactionType;
   final double amount;
   final String? status;
@@ -17,6 +18,7 @@ class Transaction {
 
   Transaction({
     required this.id,
+    this.transactionNumber,
     required this.transactionType,
     required this.amount,
     this.status,
@@ -58,16 +60,20 @@ class Transaction {
     }
     
     // Parse amount - backend may return as string or number
+    // Prioritize payable_amount for withdraw/deposit transactions
     double amount = 0.0;
-    final amountValue = json['amount'] ?? json['payable_amount'];
+    final amountValue = json['payable_amount'] ?? json['amount'];
     if (amountValue != null) {
       amount = amountValue is String 
         ? double.parse(amountValue) 
         : (amountValue as num).toDouble();
+      // Use absolute value to always show positive amounts
+      amount = amount.abs();
     }
     
     return Transaction(
       id: json['id']?.toString() ?? '',
+      transactionNumber: json['transaction_number'],
       transactionType: json['transaction_type'] ?? '',
       amount: amount,
       status: json['status'],
@@ -105,7 +111,7 @@ class DepositRequest {
 
   Map<String, dynamic> toJson() {
     return {
-      'amount': amount,
+      'payable_amount': amount,
       'policy': policy,
     };
   }
@@ -128,7 +134,7 @@ class WithdrawRequest {
     return {
       'selected': paymentMethod,
       'payment_number': paymentNumber,
-      'withdrawAmount': amount,
+      'payable_amount': amount,
       'policy': policy,
     };
   }

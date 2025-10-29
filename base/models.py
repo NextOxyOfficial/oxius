@@ -641,6 +641,7 @@ class Balance(models.Model):
         User, on_delete=models.SET_NULL, blank=True, null=True, related_name="to_user"
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    transaction_number = models.CharField(max_length=20, unique=True, blank=True, null=True, db_index=True)
     PAYMENT_STATUS = [  # delete this, use completed, approved, rejected booleans
         ("pending", "Pending"),
         ("rejected", "Rejected"),
@@ -672,6 +673,23 @@ class Balance(models.Model):
         return f"{self.user}'s Service: {self.payable_amount}"
 
     def save(self, *args, **kwargs):
+        # Generate transaction number if not exists
+        if not self.transaction_number:
+            import random
+            import string
+            from datetime import datetime
+            
+            # Format: TXN + YYYYMMDD + 6 random digits
+            # Example: TXN20251029123456
+            date_str = datetime.now().strftime('%Y%m%d')
+            random_digits = ''.join(random.choices(string.digits, k=6))
+            self.transaction_number = f"TXN{date_str}{random_digits}"
+            
+            # Ensure uniqueness
+            while Balance.objects.filter(transaction_number=self.transaction_number).exists():
+                random_digits = ''.join(random.choices(string.digits, k=6))
+                self.transaction_number = f"TXN{date_str}{random_digits}"
+        
         # Normalize transaction_type to lowercase for consistency
         self.transaction_type = (self.transaction_type or "").lower()
         # Handle transfer

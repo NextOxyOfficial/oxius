@@ -106,12 +106,15 @@ class WalletService {
       }
 
       final response = await http.post(
-        Uri.parse('$baseUrl/deposit/'),
+        Uri.parse('$baseUrl/add-user-balance/'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: json.encode(request.toJson()),
+        body: json.encode({
+          ...request.toJson(),
+          'transaction_type': 'deposit',
+        }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -144,12 +147,15 @@ class WalletService {
       }
 
       final response = await http.post(
-        Uri.parse('$baseUrl/withdraw/'),
+        Uri.parse('$baseUrl/add-user-balance/'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: json.encode(request.toJson()),
+        body: json.encode({
+          ...request.toJson(),
+          'transaction_type': 'withdraw',
+        }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -182,12 +188,15 @@ class WalletService {
       }
 
       final response = await http.post(
-        Uri.parse('$baseUrl/transfer/'),
+        Uri.parse('$baseUrl/add-user-balance/'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: json.encode(request.toJson()),
+        body: json.encode({
+          ...request.toJson(),
+          'transaction_type': 'transfer',
+        }),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
