@@ -350,44 +350,50 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   }
 
   Widget _buildHeader() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: const Border(
-          bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
-        ),
+        color: isMobile 
+            ? const Color(0xFFE2E8F0).withOpacity(0.7) 
+            : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ],
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(8),
+          bottomRight: Radius.circular(8),
+        ),
       ),
       child: SafeArea(
-        bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(4, 10, 4, 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: (screenWidth * 0.015).clamp(4.0, 12.0),
+            vertical: isMobile ? 4 : 10,
+          ),
           child: Row(
             children: [
               // Back Button
               _isSearchActive
                   ? IconButton(
                       onPressed: _deactivateSearch,
-                      icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF374151)),
-                      iconSize: 22,
-                      padding: const EdgeInsets.all(8),
+                      icon: const Icon(Icons.arrow_back_rounded, size: 22),
+                      padding: const EdgeInsets.all(6),
                       constraints: const BoxConstraints(),
                     )
                   : IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF374151)),
-                      iconSize: 22,
-                      padding: const EdgeInsets.all(8),
+                      icon: const Icon(Icons.arrow_back_rounded, size: 22),
+                      padding: const EdgeInsets.all(6),
                       constraints: const BoxConstraints(),
                     ),
               
-              const SizedBox(width: 6),
+              const SizedBox(width: 2),
               
               // Logo or Search Input
               if (!_isSearchActive) ...[
@@ -399,9 +405,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                       child: 
                           // Dynamic eShop Logo only
                           _eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty
-                            ? Container(
-                                height: 32,
-                                constraints: const BoxConstraints(maxWidth: 140),
+                            ? SizedBox(
+                                width: 50,
+                                height: 22,
                                 child: Image.network(
                                   _eshopLogoUrl!,
                                   fit: BoxFit.contain,
