@@ -519,7 +519,7 @@ class EshopService {
   // Get eShop logo (different from main logo)
   static Future<String?> getEshopLogo() async {
     try {
-      final uri = Uri.parse('$baseUrl/eshop/logo/');
+      final uri = Uri.parse('$baseUrl/eshop-logo/');
       print('EshopService: Fetching eShop logo from: $uri');
       
       final response = await http.get(
@@ -535,7 +535,7 @@ class EshopService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final logoUrl = data['logo']?.toString();
+        final logoUrl = data['image']?.toString();
         print('EshopService: Raw logo URL from backend: $logoUrl');
         if (logoUrl != null && logoUrl.isNotEmpty) {
           final absoluteUrl = _abs(logoUrl);

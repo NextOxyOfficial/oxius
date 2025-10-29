@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/classified_post.dart';
@@ -43,6 +44,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool _isSearchActive = false;
+  Timer? _debounce;
   
   // AdsyAI Bot state
   bool _aiUserChoice = false;
@@ -56,6 +58,13 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     _postService = ClassifiedPostService(baseUrl: ApiService.baseUrl);
     _geoService = GeoLocationService(baseUrl: ApiService.baseUrl);
     _initialize();
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _initialize() async {
@@ -471,8 +480,21 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                   isDense: true,
                 ),
                 style: const TextStyle(fontSize: 13),
-                onChanged: (value) => _searchQuery = value,
-                onSubmitted: (_) => _filterSearch(),
+                onChanged: (value) {
+                  _searchQuery = value;
+                  // Cancel previous timer
+                  _debounce?.cancel();
+                  // Start new timer for debounce (500ms delay)
+                  _debounce = Timer(const Duration(milliseconds: 500), () {
+                    if (mounted) {
+                      _filterSearch();
+                    }
+                  });
+                },
+                onSubmitted: (_) {
+                  _debounce?.cancel();
+                  _filterSearch();
+                },
               ),
             ),
           ),
@@ -1281,11 +1303,5 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       _aiSearchDeclined = true;
       _aiResults = [];
     });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 }
