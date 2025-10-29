@@ -517,6 +517,10 @@ class _HeroBannerState extends State<HeroBanner> {
                   context,
                   MaterialPageRoute(builder: (context) => const ElearningScreen()),
                 );
+              } else if (service['label'] == _translationService.t('sale_listing', fallback: 'Buy & Sell') || 
+                  service['label'] == 'Buy & Sell' || 
+                  service['label'] == 'Sale Listings') {
+                Navigator.pushNamed(context, '/sale');
               } else {
                 // TODO: Navigate to respective service pages
               }

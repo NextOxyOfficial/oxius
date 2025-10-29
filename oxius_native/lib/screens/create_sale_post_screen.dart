@@ -405,7 +405,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+          padding: const EdgeInsets.all(4),
           children: [
             // Basic Details Section
             _buildSection(
@@ -414,12 +414,12 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               children: [
                 _buildCategoryDropdown(),
                 if (_childCategories.isNotEmpty) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   _buildChildCategoryDropdown(),
                 ],
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 _buildTitleField(),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 _buildDescriptionField(),
               ],
             ),
@@ -432,7 +432,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               icon: Icons.attach_money,
               children: [
                 _buildConditionSelection(),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 _buildPriceField(),
               ],
             ),
@@ -456,7 +456,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               icon: Icons.location_on_outlined,
               children: [
                 _buildLocationFields(),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 _buildAddressField(),
               ],
             ),
@@ -469,7 +469,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               icon: Icons.phone_outlined,
               children: [
                 _buildPhoneField(),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 _buildEmailField(),
               ],
             ),
@@ -509,25 +509,26 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFF10B981), size: 18),
-              const SizedBox(width: 6),
+              Icon(icon, color: const Color(0xFF10B981), size: 16),
+              const SizedBox(width: 5),
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
+                  letterSpacing: -0.1,
                   color: Color(0xFF111827),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           ...children,
         ],
       ),
@@ -852,7 +853,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           controlAffinity: ListTileControlAffinity.leading,
         ),
         if (!_allOverBangladesh) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _selectedDivision,
             decoration: InputDecoration(
@@ -878,7 +879,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             },
             validator: (value) => !_allOverBangladesh && value == null && _checkSubmit ? 'Required' : null,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _selectedDistrict,
             decoration: InputDecoration(
@@ -903,7 +904,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             },
             validator: (value) => !_allOverBangladesh && value == null && _checkSubmit ? 'Required' : null,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _selectedArea,
             decoration: InputDecoration(
