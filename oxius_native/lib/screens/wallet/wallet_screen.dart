@@ -84,9 +84,9 @@ class _WalletScreenState extends State<WalletScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              t('deposit_withdraw'),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            const Text(
+              'AdsyPay',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ],
         ),

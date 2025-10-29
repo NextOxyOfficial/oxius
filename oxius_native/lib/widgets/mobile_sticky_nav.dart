@@ -307,7 +307,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
     // Prevent navigation to current page
     if ((destination == 'eShop Manager' && widget.currentRoute == 'eShop Manager') ||
         (destination == 'Home' && widget.currentRoute == 'Home') ||
-        (destination == 'Deposit/Withdraw' && widget.currentRoute == 'Wallet') ||
+        (destination == 'AdsyPay' && widget.currentRoute == 'Wallet') ||
         (destination == 'Mobile Recharge' && widget.currentRoute == 'Recharge') ||
         (destination == 'Business Network' && widget.currentRoute == 'Network') ||
         (destination == 'News' && widget.currentRoute == 'News') ||
@@ -327,8 +327,8 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
         context,
         MaterialPageRoute(builder: (context) => const EshopManagerScreen()),
       );
-    } else if (destination == 'Deposit/Withdraw') {
-      // Navigate to deposit/withdraw page using named route
+    } else if (destination == 'AdsyPay' || destination == 'Deposit/Withdraw') {
+      // Navigate to AdsyPay page using named route
       Navigator.pushNamed(context, '/deposit-withdraw');
     } else if (destination == 'Mobile Recharge') {
       // Navigate to mobile recharge route

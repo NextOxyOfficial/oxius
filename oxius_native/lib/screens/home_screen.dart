@@ -420,7 +420,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, t('deposit_withdraw'), Icons.account_balance_wallet_outlined, 
+                        child: _buildNavLink(context, 'AdsyPay', Icons.account_balance_wallet_outlined, 
                           const Color(0xFF10B981), false, null),
                       ),
                       const SizedBox(width: 8),
@@ -849,7 +849,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         
         // Handle navigation based on label
-        if (label == t('deposit_withdraw')) {
+        if (label == 'AdsyPay' || label == t('deposit_withdraw')) {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -1410,6 +1410,10 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         MaterialPageRoute(builder: (context) => const EshopScreen()),
       );
+    } else if (destination == 'AdsyPay' || destination == 'Deposit/Withdraw') {
+      Navigator.pushNamed(context, '/deposit-withdraw');
+    } else if (destination == 'Mobile Recharge') {
+      Navigator.pushNamed(context, '/mobile-recharge');
     } else if (destination == 'Business Network') {
       Navigator.pushNamed(context, '/business-network');
     } else if (destination == 'News') {
@@ -1494,7 +1498,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         _buildMobileNavItem(
           child: const Icon(Icons.account_balance_wallet, size: 28, color: Color(0xFF34D399)),
-          onTap: () => _handleButtonClick('mobile_deposit', 'Deposit/Withdraw', loadingButtons),
+          onTap: () => _handleButtonClick('mobile_deposit', 'AdsyPay', loadingButtons),
           buttonId: 'mobile_deposit',
           loadingButtons: loadingButtons,
         ),

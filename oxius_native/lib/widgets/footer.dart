@@ -770,7 +770,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
         ),
         _buildNavItem(
           icon: Icons.account_balance_wallet,
-          onTap: () => _handleNavigation(context, 'Deposit/Withdraw'),
+          onTap: () => _handleNavigation(context, 'AdsyPay'),
           hasNotification: false,
         ),
         _buildNavItem(
@@ -927,6 +927,10 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
         break;
       case 'news':
         route = '/adsy-news';
+        break;
+      case 'adsypay':
+      case 'adsy pay':
+        route = '/deposit-withdraw';
         break;
       default:
         // For any unhandled routes, show a message
