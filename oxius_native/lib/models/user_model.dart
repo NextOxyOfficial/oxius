@@ -5,6 +5,8 @@ class User {
   final String? image;
   final String? avatar;
   final String? profession;
+  final String? phone;
+  final String? email;
   final bool isVerified;
 
   User({
@@ -14,6 +16,8 @@ class User {
     this.image,
     this.avatar,
     this.profession,
+    this.phone,
+    this.email,
     this.isVerified = false,
   });
 
@@ -36,6 +40,8 @@ class User {
       image: json['image'],
       avatar: json['avatar'],
       profession: json['profession'],
+      phone: json['phone'],
+      email: json['email'],
       isVerified: json['is_verified'] ?? false,
     );
   }
@@ -48,6 +54,8 @@ class User {
       if (image != null) 'image': image,
       if (avatar != null) 'avatar': avatar,
       if (profession != null) 'profession': profession,
+      if (phone != null) 'phone': phone,
+      if (email != null) 'email': email,
       'is_verified': isVerified,
     };
   }

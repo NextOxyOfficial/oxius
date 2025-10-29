@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
+import '../../services/auth_service.dart';
 import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
 
@@ -28,7 +30,6 @@ class _TransferTabState extends State<TransferTab> {
   String? _contactError;
   String? _amountError;
   String? _termsError;
-  bool _showQrCode = false;
 
   @override
   void dispose() {
@@ -65,51 +66,153 @@ class _TransferTabState extends State<TransferTab> {
   }
 
   void _showMyQrCode() {
-    showDialog(
+    final user = AuthService.currentUser;
+    if (user == null) return;
+
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('My QR Code'),
-        content: Column(
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Drag handle
             Container(
-              padding: const EdgeInsets.all(16),
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Title
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.qr_code_2,
+                    color: Color(0xFF10B981),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Receive Money',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Show this QR code to receive payment',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            // QR Code
+            Container(
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF10B981), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: QrImageView(
+                data: 'adsypay://pay/${user.id}',
+                version: QrVersions.auto,
+                size: 200,
+                backgroundColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // User info
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[200]!),
               ),
               child: Column(
                 children: [
-                  // Placeholder for QR code
-                  // You'd need to add qr_flutter package and generate QR
-                  Container(
-                    width: 200,
-                    height: 200,
-                    color: Colors.grey[200],
-                    child: const Center(
-                      child: Icon(Icons.qr_code, size: 100),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   Text(
-                    widget.userPhone,
+                    '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim().isNotEmpty
+                        ? '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim()
+                        : user.username ?? '',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    user.email ?? '',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                    ),
+                  ),
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            // Security badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.verified_user,
+                    size: 16,
+                    color: const Color(0xFF10B981),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Secure Payment',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[700],
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
   }
