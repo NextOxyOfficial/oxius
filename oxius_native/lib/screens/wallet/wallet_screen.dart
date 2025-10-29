@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
 import '../../services/user_state_service.dart';
+import '../../services/auth_service.dart';
 import '../../services/translation_service.dart';
 import '../../widgets/home/account_balance_section.dart';
 import '../../widgets/home/mobile_recharge_section.dart';
@@ -34,8 +35,28 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   void initState() {
     super.initState();
+    _checkAuthentication();
     _loadBalance();
     _loadTransactions();
+  }
+
+  void _checkAuthentication() {
+    // Check if user is logged in
+    if (!AuthService.isAuthenticated) {
+      // User is not logged in, redirect to login page
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/login');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please login to access AdsyPay'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      });
+    }
   }
 
   Future<void> _loadBalance() async {

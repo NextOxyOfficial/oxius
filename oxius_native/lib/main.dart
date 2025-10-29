@@ -21,6 +21,7 @@ import 'screens/seller_profile_screen.dart';
 import 'screens/upgrade_to_pro_screen.dart';
 import 'screens/checkout_screen.dart';
 import 'screens/wallet/wallet_screen.dart';
+import 'screens/mobile_recharge/mobile_recharge_screen.dart';
 import 'pages/login_page.dart';
 import 'services/auth_service.dart';
 import 'services/user_state_service.dart';
@@ -132,10 +133,7 @@ class MyApp extends StatelessWidget {
               appBar: AppBar(title: const Text('Pending Tasks')),
               body: const Center(child: Text('Coming Soon!')),
             ),
-            '/mobile-recharge': (context) => Scaffold(
-              appBar: AppBar(title: const Text('Mobile Recharge')),
-              body: const Center(child: Text('Coming Soon!')),
-            ),
+            '/mobile-recharge': (context) => const MobileRechargeScreen(),
             '/upgrade-to-pro': (context) => const UpgradeToProScreen(),
           },
           onGenerateRoute: (settings) {

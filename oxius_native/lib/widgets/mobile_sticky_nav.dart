@@ -4,6 +4,7 @@ import '../services/user_state_service.dart';
 import '../screens/eshop_screen.dart';
 import '../screens/eshop_manager_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/news_screen.dart';
 
 class MobileStickyNav extends StatefulWidget {
   final String? currentRoute;
@@ -154,7 +155,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildNavItem(
-          icon: Icons.home,
+          icon: Icons.home_rounded,
           label: 'Home',
           isActive: widget.currentRoute == 'Home',
           onTap: () => _handleNavigation(context, 'Home'),
@@ -162,21 +163,21 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
           useFavicon: true,
         ),
         _buildNavItem(
-          icon: Icons.account_balance_wallet,
+          icon: Icons.account_balance_wallet_rounded,
           label: 'Wallet',
           isActive: widget.currentRoute == 'Wallet',
           onTap: () => _handleNavigation(context, 'Wallet'),
           hasNotification: false,
         ),
         _buildNavItem(
-          icon: Icons.phone_android,
+          icon: Icons.phone_android_rounded,
           label: 'Recharge',
           isActive: widget.currentRoute == 'Recharge',
           onTap: () => _handleNavigation(context, 'Mobile Recharge'),
           hasNotification: false,
         ),
         _buildNavItem(
-          icon: Icons.network_check,
+          icon: Icons.group_rounded,
           label: 'Network',
           isActive: widget.currentRoute == 'Network',
           onTap: () => _handleNavigation(context, 'Business Network'),
@@ -184,7 +185,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
           notificationCount: unreadCount,
         ),
         _buildNavItem(
-          icon: Icons.newspaper,
+          icon: Icons.article_rounded,
           label: 'News',
           isActive: widget.currentRoute == 'News',
           onTap: () => _handleNavigation(context, 'News'),
@@ -199,7 +200,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildNavItem(
-          icon: Icons.home,
+          icon: Icons.home_rounded,
           label: 'Home',
           isActive: widget.currentRoute == 'Home',
           onTap: () => _handleNavigation(context, 'Home'),
@@ -207,28 +208,28 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
           useFavicon: true,
         ),
         _buildNavItem(
-          icon: Icons.work,
+          icon: Icons.work_rounded,
           label: 'Gigs',
           isActive: widget.currentRoute == 'Gigs',
           onTap: () => _handleNavigation(context, 'Microgigs'),
           hasNotification: false,
         ),
         _buildNavItem(
-          icon: Icons.shopping_bag,
+          icon: Icons.shopping_bag_rounded,
           label: 'eShop Manager',
           isActive: widget.currentRoute == 'eShop Manager',
           onTap: () => _handleNavigation(context, 'eShop Manager'),
           hasNotification: false,
         ),
         _buildNavItem(
-          icon: Icons.network_check,
+          icon: Icons.group_rounded,
           label: 'Network',
           isActive: widget.currentRoute == 'Network',
           onTap: () => _handleNavigation(context, 'Business Network'),
           hasNotification: false,
         ),
         _buildNavItem(
-          icon: Icons.newspaper,
+          icon: Icons.article_rounded,
           label: 'News',
           isActive: widget.currentRoute == 'News',
           onTap: () => _handleNavigation(context, 'News'),
@@ -308,8 +309,10 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
     if ((destination == 'eShop Manager' && widget.currentRoute == 'eShop Manager') ||
         (destination == 'Home' && widget.currentRoute == 'Home') ||
         (destination == 'AdsyPay' && widget.currentRoute == 'Wallet') ||
+        (destination == 'Wallet' && widget.currentRoute == 'Wallet') ||
         (destination == 'Mobile Recharge' && widget.currentRoute == 'Recharge') ||
         (destination == 'Business Network' && widget.currentRoute == 'Network') ||
+        (destination == 'MindForce' && widget.currentRoute == 'MindForce') ||
         (destination == 'News' && widget.currentRoute == 'News') ||
         (destination == 'Microgigs' && widget.currentRoute == 'Gigs')) {
       return;
@@ -332,34 +335,20 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
       Navigator.pushNamed(context, '/deposit-withdraw');
     } else if (destination == 'Mobile Recharge') {
       // Navigate to mobile recharge route
-      Navigator.pushNamed(context, '/mobile-recharge');
+      Navigator.pushNamed(context, '/mobile-recharge_screen');
     } else if (destination == 'Business Network') {
-      // Show coming soon for now
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Business Network - Coming Soon!'),
-          backgroundColor: Color(0xFF10B981),
-          duration: Duration(seconds: 1),
-        ),
-      );
+      Navigator.pushNamed(context, '/business-network');
+    } else if (destination == 'MindForce') {
+      Navigator.pushNamed(context, '/mindforce');
     } else if (destination == 'News') {
-      // Show coming soon for now
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('News - Coming Soon!'),
-          backgroundColor: Color(0xFF10B981),
-          duration: Duration(seconds: 1),
-        ),
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const NewsScreen()),
       );
     } else if (destination == 'Microgigs') {
-      // Show coming soon for now
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Microgigs - Coming Soon!'),
-          backgroundColor: Color(0xFF10B981),
-          duration: Duration(seconds: 1),
-        ),
-      );
+      Navigator.pushNamed(context, '/my-gigs');
+    } else if (destination == 'Wallet') {
+      Navigator.pushNamed(context, '/deposit-withdraw');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
