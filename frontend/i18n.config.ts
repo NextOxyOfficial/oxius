@@ -195,7 +195,7 @@ export default defineI18nConfig(() => ({
       tap_add: "Tap 'Add' in the top right corner",
       // got_it: "Got It",
       all_over_bangladesh: "All Over Bangladesh",
-      sale_listing: "Sale Listings",
+      sale_listing: "Buy & Sell",
       mindforce: "Mindforce",
       shastho_sheba: "Shastho Sheba",
       bill_pay: "Bill Pay",

@@ -519,7 +519,7 @@ class _HeroBannerState extends State<HeroBanner> {
                 );
               } else if (service['label'] == _translationService.t('sale_listing', fallback: 'Buy & Sell') || 
                   service['label'] == 'Buy & Sell' || 
-                  service['label'] == 'Sale Listings') {
+                  service['label'] == 'Buy & Sell') {
                 Navigator.pushNamed(context, '/sale');
               } else {
                 // TODO: Navigate to respective service pages
