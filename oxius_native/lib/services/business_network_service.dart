@@ -632,6 +632,29 @@ class BusinessNetworkService {
     }
   }
 
+  /// Get user by contact (email or phone)
+  static Future<BusinessNetworkUser?> getUserByContact(String contact) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/users/search/?q=$contact&page_size=1'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as List;
+        if (results.isNotEmpty) {
+          return BusinessNetworkUser.fromJson(results.first);
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching user by contact: $e');
+      return null;
+    }
+  }
+
   /// Search users for @mentions
   static Future<List<BusinessNetworkUser>> searchUsers(String query) async {
     try {

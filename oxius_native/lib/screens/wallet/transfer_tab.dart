@@ -5,6 +5,7 @@ import '../../services/wallet_service.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
+import 'transfer_confirmation_dialog.dart';
 
 class TransferTab extends StatefulWidget {
   final double balance;
@@ -229,53 +230,27 @@ class _TransferTabState extends State<TransferTab> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    final contact = _contactController.text.trim();
+    final amount = double.parse(_amountController.text);
 
-    try {
-      final amount = double.parse(_amountController.text);
-      final request = TransferRequest(
-        contact: _contactController.text.trim(),
+    // Show transfer confirmation dialog with password
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => TransferConfirmationDialog(
+        contact: contact,
         amount: amount,
-        policy: _acceptedTerms,
-      );
+        onSuccess: () {
+          // Reset form
+          _contactController.clear();
+          _amountController.clear();
+          setState(() => _acceptedTerms = false);
 
-      final response = await WalletService.createTransfer(request);
-
-      if (response != null && mounted) {
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              response['message'] ?? 'Transfer completed successfully',
-            ),
-            backgroundColor: const Color(0xFF10B981),
-            duration: const Duration(seconds: 3),
-          ),
-        );
-
-        // Reset form
-        _contactController.clear();
-        _amountController.clear();
-        setState(() => _acceptedTerms = false);
-
-        // Refresh balance
-        widget.onTransferSuccess();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
+          // Refresh balance
+          widget.onTransferSuccess();
+        },
+      ),
+    );
   }
 
   @override
