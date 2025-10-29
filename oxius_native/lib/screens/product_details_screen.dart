@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/eshop_service.dart';
 import '../widgets/product_card.dart';
 import '../models/cart_item.dart';
@@ -308,13 +309,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: Colors.grey.shade50,
+        backgroundColor: const Color(0xFFF9FAFB),
         appBar: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black87),
+            icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
             onPressed: () => Navigator.pop(context),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(height: 1, color: Colors.grey.shade200),
           ),
         ),
         body: const Center(
@@ -335,49 +340,73 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     final shortDescription = product['short_description'] ?? '';
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: const Color(0xFFF9FAFB),
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
           // App Bar
           SliverAppBar(
             expandedHeight: 0,
-            floating: true,
+            floating: false,
             pinned: true,
             backgroundColor: Colors.white,
             elevation: 0,
+            automaticallyImplyLeading: true,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black87),
+              icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
               onPressed: () => Navigator.pop(context),
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.share, color: Colors.black87),
-                onPressed: () {
-                  // Share functionality
+                icon: const Icon(Icons.share_rounded, color: Color(0xFF1F2937), size: 20),
+                onPressed: () async {
+                  final product = _productDetails ?? widget.product;
+                  final title = product['name'] ?? product['title'] ?? 'Product';
+                  final productId = product['id'];
+                  final shareText = 'Check out this product: $title\n\nView on AdsyClub: https://oxius.vercel.app/eshop/product/$productId';
+                  
+                  try {
+                    // Using share_plus package
+                    await Share.share(shareText);
+                  } catch (e) {
+                    print('Error sharing: $e');
+                  }
                 },
               ),
-              IconButton(
-                icon: const Icon(Icons.favorite_border, color: Colors.black87),
-                onPressed: () {
-                  // Add to wishlist
-                },
-              ),
+              const SizedBox(width: 4),
             ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(height: 1, color: Colors.grey.shade200),
+            ),
           ),
 
           // Product Content
           SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Image Gallery
-                _buildImageGallery(product),
+            child: Padding(
+              padding: const EdgeInsets.all(4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image Gallery
+                  _buildImageGallery(product),
 
-                // Product Info
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.all(16),
+                  const SizedBox(height: 4),
+
+                  // Product Info
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -385,12 +414,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                       Text(
                         title,
                         style: GoogleFonts.roboto(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade900,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.2,
+                          color: const Color(0xFF1F2937),
+                          height: 1.3,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
 
                       // Price Section
                       Row(
@@ -401,38 +432,39 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                 TextSpan(
                                   text: '৳',
                                   style: GoogleFonts.roboto(
-                                    fontSize: 16,
-                                    color: Color(0xFF10B981),
+                                    fontSize: 14,
+                                    color: const Color(0xFF10B981),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 TextSpan(
                                   text: _formatPrice(sale ?? regular),
                                   style: GoogleFonts.roboto(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF10B981),
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.5,
+                                    color: const Color(0xFF10B981),
                                   ),
                                 ),
                               ],
                             ),
                           ),
                           if (sale != null && _toNum(sale) != null && regular != null && _toNum(regular) != null && _toNum(sale)! < _toNum(regular)!) ...[
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 10),
                             Text.rich(
                               TextSpan(
                                 children: [
                                   TextSpan(
                                     text: '৳',
                                     style: GoogleFonts.roboto(
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       color: Colors.grey.shade400,
                                     ),
                                   ),
                                   TextSpan(
                                     text: _formatPrice(regular),
                                     style: GoogleFonts.roboto(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       color: Colors.grey.shade400,
                                       decoration: TextDecoration.lineThrough,
                                     ),
@@ -440,18 +472,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
                                 color: Colors.red.shade50,
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 '$discount% OFF',
                                 style: GoogleFonts.roboto(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
                                   color: Colors.red.shade600,
                                 ),
                               ),
@@ -459,19 +491,19 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                           ],
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
                       // Short Description
                       if (shortDescription.isNotEmpty) ...[
                         Text(
                           shortDescription,
                           style: GoogleFonts.roboto(
-                            fontSize: 14,
+                            fontSize: 13,
                             color: Colors.grey.shade600,
-                            height: 1.5,
+                            height: 1.6,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                       ],
 
                       // Quantity Selector
@@ -480,30 +512,31 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
 
                 // Store Information
                 _buildStoreInfo(product),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
 
                 // Description Tabs
                 _buildDescriptionTabs(product),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
 
                 // More from Store
                 if (_storeProducts.isNotEmpty) _buildStoreProducts(product),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
 
                 // Similar Products
                 if (_similarProducts.isNotEmpty) _buildSimilarProducts(),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
               ],
             ),
           ),
+        ),
         ],
       ),
     );
@@ -626,18 +659,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         Text(
           'Quantity',
           style: GoogleFonts.roboto(
-            fontSize: 14,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
             color: Colors.grey.shade700,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
+              height: 44,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
               ),
               child: Row(
                 children: [
@@ -645,30 +680,35 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                     onPressed: _quantity > 1
                         ? () => setState(() => _quantity--)
                         : null,
-                    icon: const Icon(Icons.remove),
+                    icon: const Icon(Icons.remove, size: 18),
                     color: _quantity > 1 ? Colors.grey.shade700 : Colors.grey.shade400,
+                    padding: const EdgeInsets.all(8),
+                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                   ),
                   Container(
-                    width: 40,
+                    width: 32,
                     alignment: Alignment.center,
                     child: Text(
                       _quantity.toString(),
                       style: GoogleFonts.roboto(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                   IconButton(
                     onPressed: () => setState(() => _quantity++),
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(Icons.add, size: 18),
                     color: Colors.grey.shade700,
+                    padding: const EdgeInsets.all(8),
+                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
+            const SizedBox(width: 10),
+            SizedBox(
+              height: 44,
               child: ElevatedButton(
                 onPressed: () {
                   // Navigate to checkout with current product
@@ -677,21 +717,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                  padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.flash_on, size: 18),
-                    const SizedBox(width: 6),
+                    const Icon(Icons.flash_on_rounded, size: 16),
+                    const SizedBox(width: 5),
                     Text(
                       'Buy Now',
                       style: GoogleFonts.roboto(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -798,20 +838,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                         Text(
                           storeName,
                           style: GoogleFonts.roboto(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: Colors.grey.shade900,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 5),
                         // Badges Row - Pro/Free and Verified/Unverified
                         Row(
                           children: [
                             // Pro/Free Badge
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
                                 color: isPro ? const Color(0xFFFFA000) : Colors.grey.shade600,
                                 borderRadius: BorderRadius.circular(4),
@@ -820,12 +860,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (isPro)
-                                    const Icon(Icons.star, size: 12, color: Colors.white),
-                                  if (isPro) const SizedBox(width: 4),
+                                    const Icon(Icons.star, size: 10, color: Colors.white),
+                                  if (isPro) const SizedBox(width: 3),
                                   Text(
                                     isPro ? 'Pro' : 'Free',
                                     style: GoogleFonts.roboto(
-                                      fontSize: 11,
+                                      fontSize: 9,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                     ),
@@ -833,7 +873,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 5),
                             // Verified/Unverified Badge
                             GestureDetector(
                               onTap: () {
@@ -888,7 +928,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                 );
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                                 decoration: BoxDecoration(
                                   color: isVerified ? const Color(0xFF3B82F6) : const Color(0xFFFB923C),
                                   borderRadius: BorderRadius.circular(4),
@@ -898,14 +938,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                   children: [
                                     Icon(
                                       isVerified ? Icons.verified : Icons.info_outline,
-                                      size: 12,
+                                      size: 10,
                                       color: Colors.white,
                                     ),
-                                    const SizedBox(width: 4),
+                                    const SizedBox(width: 3),
                                     Text(
                                       isVerified ? 'Verified' : 'Unverified',
                                       style: GoogleFonts.roboto(
-                                        fontSize: 11,
+                                        fontSize: 9,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.white,
                                       ),
@@ -921,7 +961,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                   ),
                   const SizedBox(width: 8),
                   // Visit Store Button
-                  OutlinedButton.icon(
+                  TextButton.icon(
                     onPressed: () {
                       // Navigate to store
                       final storeUsername = ownerDetails is Map 
@@ -966,13 +1006,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                         color: Colors.grey.shade700,
                       ),
                     ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.grey.shade300),
+                    style: TextButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      backgroundColor: Colors.white,
+                      backgroundColor: Colors.grey.shade50,
                     ),
                   ),
                 ],
@@ -1577,8 +1616,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
 
   Widget _buildSimilarProducts() {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 0,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1639,7 +1688,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           ),
           if (_isLoadingMoreSimilarProducts)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 4),
               child: Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
