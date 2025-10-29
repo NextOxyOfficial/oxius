@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/translation_service.dart';
 import '../services/sale_service.dart';
 import '../services/category_icon_mapping.dart';
+import '../services/auth_service.dart';
 
 class SaleCategory extends StatefulWidget {
   const SaleCategory({super.key});
@@ -345,7 +346,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _translationService.t('sale_listing', fallback: 'Sale Listings'),
+                      _translationService.t('sale_listing', fallback: 'Buy & Sell Marketplace'),
                       style: GoogleFonts.roboto(
                         fontSize: screenWidth * 0.042,
                         fontWeight: FontWeight.w700,
@@ -379,6 +380,8 @@ class _SaleCategoryState extends State<SaleCategory> {
               final myPostsLabel = _translationService.t('my_posts', fallback: 'My Posts');
               final postSaleLabel = _translationService.t('post_sale', fallback: 'Post Sale');
               
+              final isLoggedIn = AuthService.isAuthenticated;
+              
               return Row(
                 children: [
                   Expanded(
@@ -394,25 +397,31 @@ class _SaleCategoryState extends State<SaleCategory> {
                       ),
                     ),
                   ),
-                  SizedBox(width: screenWidth * 0.015),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/my-sale-posts');
-                      },
-                      child: _buildActionButton(
-                        myPostsLabel,
-                        Icons.description_outlined,
-                        false,
-                        constraints.maxWidth,
+                  if (isLoggedIn) ...[
+                    SizedBox(width: screenWidth * 0.015),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(context, '/my-sale-posts');
+                        },
+                        child: _buildActionButton(
+                          myPostsLabel,
+                          Icons.description_outlined,
+                          false,
+                          constraints.maxWidth,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                   SizedBox(width: screenWidth * 0.015),
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.pushNamed(context, '/create-sale-post');
+                        if (isLoggedIn) {
+                          Navigator.pushNamed(context, '/create-sale-post');
+                        } else {
+                          Navigator.pushNamed(context, '/login');
+                        }
                       },
                       child: _buildActionButton(
                         postSaleLabel,

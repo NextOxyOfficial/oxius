@@ -66,7 +66,7 @@ class _HeroBannerState extends State<HeroBanner> {
     {
       'icon': Icons.sell,
       'image': 'assets/images/donate.png',
-      'label': _translationService.t('sale_listing', fallback: 'Sale Listings'),
+      'label': _translationService.t('sale_listing', fallback: 'Buy & Sell'),
       'color': const Color(0xFF4F46E5), // Indigo
       'bgColor': const Color(0xFFF0F9FF),
     },
