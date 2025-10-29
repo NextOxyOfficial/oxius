@@ -371,6 +371,20 @@ class _WalletScreenState extends State<WalletScreen> {
         return Icons.arrow_upward;
       case 'transfer':
         return Icons.swap_horiz;
+      case 'diamond_purchase':
+      case 'diamond_gift':
+      case 'diamond_bonus':
+      case 'diamond_refund':
+      case 'diamond_admin':
+        return Icons.diamond;
+      case 'mobile_recharge':
+        return Icons.phone_android;
+      case 'order_payment':
+        return Icons.shopping_bag;
+      case 'pro_subscription':
+        return Icons.workspace_premium;
+      case 'referral_commission':
+        return Icons.people;
       default:
         return Icons.money;
     }
@@ -384,6 +398,20 @@ class _WalletScreenState extends State<WalletScreen> {
         return const Color(0xFFEF4444);
       case 'transfer':
         return const Color(0xFF3B82F6);
+      case 'diamond_purchase':
+      case 'diamond_gift':
+      case 'diamond_bonus':
+      case 'diamond_refund':
+      case 'diamond_admin':
+        return const Color(0xFF9333EA); // Purple
+      case 'mobile_recharge':
+        return const Color(0xFF3B82F6); // Blue
+      case 'order_payment':
+        return const Color(0xFF059669); // Green
+      case 'pro_subscription':
+        return const Color(0xFFF59E0B); // Amber
+      case 'referral_commission':
+        return const Color(0xFFEAB308); // Yellow
       default:
         return Colors.grey;
     }
@@ -446,74 +474,79 @@ class _WalletScreenState extends State<WalletScreen> {
         final color = _getTransactionColor(txn.transactionType);
         final icon = _getTransactionIcon(txn.transactionType);
 
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-          color: Colors.white,
-          child: Row(
-            children: [
-              // Icon
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+        return InkWell(
+          onTap: () => _showTransactionDetails(txn),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+            color: Colors.white,
+            child: Row(
+              children: [
+                // Icon
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
                 ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(width: 12),
-              // Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          txn.transactionType.toUpperCase(),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
+                const SizedBox(width: 12),
+                // Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _getTransactionTypeName(txn.transactionType),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
+                          const SizedBox(width: 8),
+                          _buildStatusBadge(txn.displayStatus),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      if (txn.senderName != null && _transactionTab == 'received')
+                        Text(
+                          'From: ${txn.senderName}',
+                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                         ),
-                        const SizedBox(width: 8),
-                        _buildStatusBadge(txn.displayStatus),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    if (txn.senderName != null && _transactionTab == 'received')
+                      if (txn.recipientName != null && _transactionTab == 'sent')
+                        Text(
+                          'To: ${txn.recipientName}',
+                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                        ),
+                      if (txn.paymentMethod != null)
+                        Text(
+                          txn.paymentMethod!,
+                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                        ),
+                      const SizedBox(height: 2),
                       Text(
-                        'From: ${txn.senderName}',
-                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                        '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} ${txn.createdAt.hour}:${txn.createdAt.minute.toString().padLeft(2, '0')}',
+                        style: TextStyle(fontSize: 10, color: Colors.grey[500]),
                       ),
-                    if (txn.recipientName != null && _transactionTab == 'sent')
-                      Text(
-                        'To: ${txn.recipientName}',
-                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                      ),
-                    if (txn.paymentMethod != null)
-                      Text(
-                        txn.paymentMethod!,
-                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                      ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} ${txn.createdAt.hour}:${txn.createdAt.minute.toString().padLeft(2, '0')}',
-                      style: TextStyle(fontSize: 10, color: Colors.grey[500]),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              // Amount
-              Text(
-                '৳${txn.amount.toStringAsFixed(2)}',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+                // Amount
+                Text(
+                  '৳${txn.amount.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -551,6 +584,155 @@ class _WalletScreenState extends State<WalletScreen> {
           fontWeight: FontWeight.w600,
           color: statusColor,
         ),
+      ),
+    );
+  }
+
+  String _getTransactionTypeName(String type) {
+    switch (type.toLowerCase()) {
+      case 'deposit':
+        return 'Deposit';
+      case 'withdraw':
+        return 'Withdrawal';
+      case 'transfer':
+        return 'Transfer';
+      case 'diamond_purchase':
+        return 'Diamond Purchase';
+      case 'diamond_gift':
+        return 'Diamond Gift Sent';
+      case 'diamond_bonus':
+        return 'Diamond Bonus';
+      case 'diamond_refund':
+        return 'Diamond Refund';
+      case 'diamond_admin':
+        return 'Diamond Adjustment';
+      case 'mobile_recharge':
+        return 'Mobile Recharge';
+      case 'pro_subscription':
+        return 'Pro Subscription';
+      case 'order_payment':
+        return 'Product Purchase';
+      case 'referral_commission':
+        return 'Referral Commission';
+      default:
+        return type.replaceAll('_', ' ').split(' ').map((word) => word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1)).join(' ');
+    }
+  }
+
+  void _showTransactionDetails(Transaction txn) {
+    final color = _getTransactionColor(txn.transactionType);
+    final icon = _getTransactionIcon(txn.transactionType);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _getTransactionTypeName(txn.transactionType),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      _buildStatusBadge(txn.displayStatus),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 16),
+            // Amount
+            _buildDetailRow('Amount', '৳${txn.amount.toStringAsFixed(2)}', color),
+            // Transaction ID
+            _buildDetailRow('Transaction ID', txn.id),
+            // Date
+            _buildDetailRow(
+              'Date',
+              '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} ${txn.createdAt.hour}:${txn.createdAt.minute.toString().padLeft(2, '0')}',
+            ),
+            // Payment Method
+            if (txn.paymentMethod != null)
+              _buildDetailRow('Payment Method', txn.paymentMethod!),
+            // Payment Number
+            if (txn.paymentNumber != null)
+              _buildDetailRow('Payment Number', txn.paymentNumber!),
+            // Sender
+            if (txn.senderName != null)
+              _buildDetailRow('From', txn.senderName!),
+            // Recipient
+            if (txn.recipientName != null)
+              _buildDetailRow('To', txn.recipientName!),
+            // Note
+            if (txn.note != null && txn.note!.isNotEmpty)
+              _buildDetailRow('Note', txn.note!),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, [Color? valueColor]) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: valueColor ?? Colors.grey[900],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
