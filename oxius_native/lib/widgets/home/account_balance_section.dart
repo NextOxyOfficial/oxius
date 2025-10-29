@@ -11,10 +11,10 @@ class AccountBalanceSection extends StatefulWidget {
   const AccountBalanceSection({super.key});
 
   @override
-  State<AccountBalanceSection> createState() => _AccountBalanceSectionState();
+  State<AccountBalanceSection> createState() => AccountBalanceSectionState();
 }
 
-class _AccountBalanceSectionState extends State<AccountBalanceSection> {
+class AccountBalanceSectionState extends State<AccountBalanceSection> {
   final TranslationService _translationService = TranslationService();
   WalletBalance? _balance;
   bool _isLoading = true;
@@ -24,10 +24,10 @@ class _AccountBalanceSectionState extends State<AccountBalanceSection> {
   @override
   void initState() {
     super.initState();
-    _loadBalance();
+    loadBalance();
   }
 
-  Future<void> _loadBalance() async {
+  Future<void> loadBalance() async {
     setState(() => _isLoading = true);
     final balance = await WalletService.getBalance();
     if (mounted) {

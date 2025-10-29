@@ -27,6 +27,7 @@ class _WalletScreenState extends State<WalletScreen> {
   bool _isLoadingTransactions = true;
   final UserStateService _userState = UserStateService();
   final TranslationService _translationService = TranslationService();
+  final GlobalKey<AccountBalanceSectionState> _balanceKey = GlobalKey();
 
   String t(String key) => _translationService.translate(key);
 
@@ -45,6 +46,8 @@ class _WalletScreenState extends State<WalletScreen> {
         _balance = balance;
         _isLoadingBalance = false;
       });
+      // Also refresh the AccountBalanceSection
+      _balanceKey.currentState?.loadBalance();
     }
   }
 
@@ -95,7 +98,7 @@ class _WalletScreenState extends State<WalletScreen> {
         child: Column(
           children: [
             // Balance Cards Section - Using Homepage Component
-            const AccountBalanceSection(),
+            AccountBalanceSection(key: _balanceKey),
 
             // Mobile Recharge Section
             const MobileRechargeSection(),
@@ -122,21 +125,21 @@ class _WalletScreenState extends State<WalletScreen> {
                     child: _buildTabButton(
                       0,
                       Icons.arrow_downward,
-                      t('deposit'),
+                      'Deposit',
                     ),
                   ),
                   Expanded(
                     child: _buildTabButton(
                       1,
                       Icons.arrow_upward,
-                      t('withdraw'),
+                      'Withdraw',
                     ),
                   ),
                   Expanded(
                     child: _buildTabButton(
                       2,
                       Icons.swap_horiz,
-                      t('transfer'),
+                      'Transfer',
                     ),
                   ),
                 ],
