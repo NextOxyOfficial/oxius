@@ -392,6 +392,9 @@ class SalePostService {
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = json.decode(response.body);
         return data is Map<String, dynamic> ? data : null;
+      } else if (response.statusCode == 401) {
+        print('❌ UNAUTHORIZED: User is not authenticated or token is invalid');
+        throw Exception('You must be logged in to create a post. Please login and try again.');
       } else if (response.statusCode == 400) {
         // Check if it's actually a success (known backend issue)
         try {

@@ -8,6 +8,7 @@ import '../models/geo_location.dart';
 import '../services/sale_post_service.dart';
 import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../services/translation_service.dart';
 import '../widgets/sale_skeleton_loader.dart';
 import 'package:intl/intl.dart';
@@ -575,13 +576,14 @@ class _SaleListScreenState extends State<SaleListScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.list_alt_rounded, size: 22),
-            onPressed: () {
-              Navigator.pushNamed(context, '/my-sale-posts');
-            },
-            tooltip: 'My Posts',
-          ),
+          if (AuthService.isAuthenticated)
+            IconButton(
+              icon: const Icon(Icons.list_alt_rounded, size: 22),
+              onPressed: () {
+                Navigator.pushNamed(context, '/my-sale-posts');
+              },
+              tooltip: 'My Posts',
+            ),
           IconButton(
             icon: const Icon(Icons.filter_list_rounded, size: 22),
             onPressed: _showFilters,
@@ -622,17 +624,19 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 const SizedBox(height: 70),
               ],
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Navigate to create post
-          Navigator.pushNamed(context, '/my-sale-posts', arguments: {'tab': 'post-sale'});
-        },
-        backgroundColor: const Color(0xFF10B981),
-        foregroundColor: Colors.white,
-        elevation: 4,
-        icon: const Icon(Icons.add_rounded, size: 20),
-        label: const Text('Post Ad', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: -0.1)),
-      ),
+      floatingActionButton: AuthService.isAuthenticated
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                // Navigate to create sale post screen
+                Navigator.pushNamed(context, '/create-sale-post');
+              },
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              elevation: 4,
+              icon: const Icon(Icons.add_rounded, size: 20),
+              label: const Text('Post Ad', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: -0.1)),
+            )
+          : null,
     );
   }
 
