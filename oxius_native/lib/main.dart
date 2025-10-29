@@ -8,6 +8,7 @@ import 'screens/inbox_screen.dart';
 import 'screens/my_gigs_screen.dart';
 import 'screens/post_gig_screen.dart';
 import 'screens/business_network/business_network_screen.dart';
+import 'screens/business_network/mindforce_screen.dart';
 import 'screens/classified_category_list_screen.dart';
 import 'screens/classified_post_details_screen.dart';
 import 'screens/classified_post_form_screen.dart';
@@ -125,6 +126,7 @@ class MyApp extends StatelessWidget {
             '/my-gigs': (context) => const MyGigsScreen(),
             '/post-a-gig': (context) => const PostGigScreen(),
             '/business-network': (context) => const BusinessNetworkScreen(),
+            '/mindforce': (context) => const MindForceScreen(),
             '/deposit-withdraw': (context) => const WalletScreen(),
             '/pending-tasks': (context) => Scaffold(
               appBar: AppBar(title: const Text('Pending Tasks')),

@@ -518,11 +518,28 @@ class _HeroBannerState extends State<HeroBanner> {
                   MaterialPageRoute(builder: (context) => const ElearningScreen()),
                 );
               } else if (service['label'] == _translationService.t('sale_listing', fallback: 'Buy & Sell') || 
-                  service['label'] == 'Buy & Sell' || 
                   service['label'] == 'Buy & Sell') {
                 Navigator.pushNamed(context, '/sale');
+              } else if (service['label'] == _translationService.t('earn_money', fallback: 'Earn Money') || 
+                  service['label'] == 'Earn Money') {
+                Navigator.pushNamed(context, '/my-gigs');
+              } else if (service['label'] == _translationService.t('mindforce', fallback: 'MindForce') || 
+                  service['label'] == 'MindForce') {
+                Navigator.pushNamed(context, '/mindforce');
+              } else if (service['label'] == _translationService.t('mobile_recharge', fallback: 'Mobile Recharge') || 
+                  service['label'] == 'Mobile Recharge') {
+                Navigator.pushNamed(context, '/mobile-recharge');
+              } else if (service['label'] == _translationService.t('adsy_pay', fallback: 'AdsyPay') || 
+                  service['label'] == 'AdsyPay' ||
+                  service['label'] == 'Adsy Pay') {
+                Navigator.pushNamed(context, '/deposit-withdraw');
+              } else if (service['label'] == _translationService.t('packeges', fallback: 'Membership') || 
+                  service['label'] == 'Membership' ||
+                  service['label'] == 'Packages') {
+                Navigator.pushNamed(context, '/upgrade-to-pro');
               } else {
-                // TODO: Navigate to respective service pages
+                // For any unhandled services, show a debug message
+                debugPrint('No navigation configured for: ${service['label']}');
               }
             },
     );
