@@ -964,9 +964,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
   }
 
   Widget _buildPostCard(SalePost post) {
-    final imageUrl = post.images != null && post.images!.isNotEmpty
-        ? post.images![0].image
-        : 'https://via.placeholder.com/300x200?text=No+Image';
+    final bool hasImage = post.images != null && post.images!.isNotEmpty;
 
     return GestureDetector(
       onTap: () {
@@ -1000,23 +998,48 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                   child: AspectRatio(
                     aspectRatio: 1.1,
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey.shade100,
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF10B981),
+                    child: hasImage
+                        ? CachedNetworkImage(
+                            imageUrl: post.images![0].image,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey.shade100,
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF10B981),
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey.shade100,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.image_not_supported_rounded, color: Colors.grey.shade400, size: 40),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'No Image',
+                                    style: TextStyle(color: Colors.grey.shade500, fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : Container(
+                            color: Colors.grey.shade100,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.image_outlined, color: Colors.grey.shade400, size: 40),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'No Image',
+                                  style: TextStyle(color: Colors.grey.shade500, fontSize: 10),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey.shade100,
-                        child: Icon(Icons.image_not_supported, color: Colors.grey.shade400, size: 40),
-                      ),
-                    ),
                   ),
                 ),
                 // Condition Badge (if available)
@@ -1256,7 +1279,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 210,
+            height: 160,
             child: ListView.builder(
               controller: _recentScrollController,
               scrollDirection: Axis.horizontal,
@@ -1272,9 +1295,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 }
                 
                 final listing = _recentListings[index];
-                final imageUrl = listing.images != null && listing.images!.isNotEmpty
-                    ? listing.images![0].image
-                    : 'https://via.placeholder.com/300x200?text=No+Image';
+                final bool hasImage = listing.images != null && listing.images!.isNotEmpty;
 
                 return GestureDetector(
                   onTap: () {
@@ -1307,12 +1328,54 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                           child: Stack(
                             children: [
-                              CachedNetworkImage(
-                                imageUrl: imageUrl,
-                                height: 110,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
+                              hasImage
+                                  ? CachedNetworkImage(
+                                      imageUrl: listing.images![0].image,
+                                      height: 110,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => Container(
+                                        height: 110,
+                                        color: Colors.grey.shade100,
+                                        child: const Center(
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Color(0xFFF59E0B),
+                                          ),
+                                        ),
+                                      ),
+                                      errorWidget: (context, url, error) => Container(
+                                        height: 110,
+                                        color: Colors.grey.shade100,
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.image_not_supported_rounded, color: Colors.grey.shade400, size: 32),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'No Image',
+                                              style: TextStyle(color: Colors.grey.shade500, fontSize: 9),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      height: 110,
+                                      width: double.infinity,
+                                      color: Colors.grey.shade100,
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.image_outlined, color: Colors.grey.shade400, size: 32),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'No Image',
+                                            style: TextStyle(color: Colors.grey.shade500, fontSize: 9),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                               if (_getCategoryName(listing.categoryId) != null)
                                 Positioned(
                                   top: 8,
