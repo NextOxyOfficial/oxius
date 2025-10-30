@@ -279,46 +279,54 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   Widget _buildActionButton(bool isMobile) {
     final isLoading = _loadingButtons.contains('post-free-ad');
     
-    return ElevatedButton(
-      onPressed: isLoading ? null : () => _handleButtonClick('post-free-ad'),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF10B981),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 16 : 20,
-          vertical: 12,
+    return GestureDetector(
+      onTap: isLoading ? null : () => _handleButtonClick('post-free-ad'),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: 8,
+          horizontal: 8,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF10B981).withOpacity(0.1),
+          border: Border.all(
+            color: const Color(0xFF10B981),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(6),
         ),
-      ),
-      child: isLoading
-          ? const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
-          : Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.add_circle_outline_rounded,
-                  size: 18,
+        child: isLoading
+            ? SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF10B981)),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  isMobile ? 'Post' : 'Post Service',
-                  style: GoogleFonts.roboto(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.add_circle_outline,
+                    size: 16,
+                    color: Color(0xFF10B981),
                   ),
-                ),
-              ],
-            ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Post Free Service',
+                    style: GoogleFonts.roboto(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF10B981),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+      ),
     );
   }
 
