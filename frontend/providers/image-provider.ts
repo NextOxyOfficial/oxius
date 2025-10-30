@@ -5,6 +5,13 @@ export const getImage: ProviderGetImage = (
   src,
   { modifiers = {}, baseURL } = {}
 ) => {
+  // Handle null, undefined, or empty string
+  if (!src || typeof src !== 'string') {
+    return {
+      url: '/static/frontend/images/no-image.jpg'
+    }
+  }
+
   const { width, height, fit, format, quality } = modifiers
 
   // Handle absolute URLs (external images)

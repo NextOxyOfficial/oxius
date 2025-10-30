@@ -774,7 +774,7 @@ const INITIAL_LIMITS = {
 
 // Load micro gigs with pagination
 const { data } = await get(`/micro-gigs/?limit=${INITIAL_LIMITS.microGigs}`);
-microGigs.value = data;
+microGigs.value = Array.isArray(data) ? data : [];
 
 // Load services with pagination
 const res = await get(
@@ -851,11 +851,20 @@ function handleImageError(index) {
 }
 
 async function getMicroGigsCategories() {
+  // Ensure microGigs is an array before processing
+  if (!Array.isArray(microGigs.value)) {
+    console.warn('microGigs is not an array, skipping category calculation');
+    categoryArray.value = [];
+    return;
+  }
+
   const categoryCounts = microGigs.value.reduce((acc, gig) => {
-    const category = gig.category_details.title;
-    const id = gig.category_details.id;
+    const category = gig.category_details?.title;
+    const id = gig.category_details?.id;
     const isActiveAndApproved =
       gig.active_gig && gig.gig_status === "approved" && gig.user?.id;
+
+    if (!category || !id) return acc; // Skip if category details are missing
 
     if (!acc[category]) {
       acc[category] = { total: 0, active: 0, id: id };
@@ -886,14 +895,15 @@ setTimeout(() => {
 async function getMicroGigsByAvailability(e) {
   if (e === "completed") {
     const { data, error } = await get(`/micro-gigs/?show_submitted=true`);
-    microGigs.value = data;
+    microGigs.value = Array.isArray(data) ? data : [];
   } else if (e === "approved") {
     const { data, error } = await get(`/micro-gigs/?show_submitted=false`);
-    microGigs.value = data;
+    microGigs.value = Array.isArray(data) ? data : [];
   } else {
     const { data, error } = await get(`/micro-gigs/`);
-    microGigs.value = data;
+    microGigs.value = Array.isArray(data) ? data : [];
   }
+  getMicroGigsCategories(); // Recalculate categories after filter
 }
 
 const selectCategory = async (category) => {
@@ -902,7 +912,7 @@ const selectCategory = async (category) => {
     const { data, error } = await get(
       `/micro-gigs/?category=${category.id}&show_submitted=${false}`
     );
-    microGigs.value = data;
+    microGigs.value = Array.isArray(data) ? data : [];
   } catch (error) {
     console.error(error);
     toast.add({ title: "error" });

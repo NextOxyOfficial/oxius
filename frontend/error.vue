@@ -18,7 +18,7 @@
             label="Try Again"
           />
           <UButton 
-            @click="clearError" 
+            @click="handleClearError" 
             variant="ghost" 
             size="lg" 
             block
@@ -40,9 +40,9 @@ const handleError = () => {
   }
 };
 
-const clearError = async () => {
+const handleClearError = async () => {
   // Clear the error and navigate to home
-  await clearError();
+  clearError();
   await navigateTo('/');
 };
 </script>

@@ -25,8 +25,14 @@ defineProps({
 const { get } = useApi();
 const logo = ref({});
 async function getLogo() {
-  const res = await get("/logo/");
-  logo.value = res.data;
+  try {
+    const res = await get("/logo/");
+    logo.value = res.data;
+  } catch (error) {
+    // Fallback to default logo if API fails
+    console.warn('Logo API not available, using default logo');
+    logo.value = {};
+  }
 }
 await getLogo();
 </script>
