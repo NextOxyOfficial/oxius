@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+import '../../services/business_network_service.dart';
 import 'adsypay_qr_modal.dart';
 import '../../screens/business_network/search_screen.dart';
 
@@ -26,6 +27,22 @@ class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidge
 
 class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
   bool _showUserMenu = false;
+  String? _businessNetworkLogoUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBusinessNetworkLogo();
+  }
+
+  Future<void> _loadBusinessNetworkLogo() async {
+    final logoUrl = await BusinessNetworkService.getBusinessNetworkLogo();
+    if (mounted) {
+      setState(() {
+        _businessNetworkLogoUrl = logoUrl;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -118,30 +135,55 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                   const SizedBox(width: 8),
                 ],
                 
-                // Logo
+                // Logo (Dynamic with Fallback)
                 InkWell(
                   onTap: () {
-                    // Navigate to home
+                    // Navigate to business network home
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/business-network',
+                      (route) => route.settings.name == '/',
+                    );
                   },
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.blue.shade500,
-                              Colors.indigo.shade600,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.business_center,
-                          size: 18,
-                          color: Colors.white,
-                        ),
-                      ),
+                      _businessNetworkLogoUrl != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                _businessNetworkLogoUrl!,
+                                width: 32,
+                                height: 32,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return _buildFallbackLogo();
+                                },
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade100,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                            Colors.blue.shade500,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            )
+                          : _buildFallbackLogo(),
                       const SizedBox(width: 8),
                       if (!isMobile)
                         const Text(
@@ -821,6 +863,28 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
           
           const SizedBox(width: 4),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFallbackLogo() {
+    return Container(
+      width: 32,
+      height: 32,
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.blue.shade500,
+            Colors.indigo.shade600,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Icon(
+        Icons.business_center,
+        size: 18,
+        color: Colors.white,
       ),
     );
   }

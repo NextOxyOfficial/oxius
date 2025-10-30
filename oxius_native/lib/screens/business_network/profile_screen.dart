@@ -4,6 +4,7 @@ import 'dart:io';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
@@ -33,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   bool _isFollowing = false;
   bool _followLoading = false;
   int _currentNavIndex = 3; // Profile tab is index 3
+  int _unreadNotificationCount = 0;
   bool _isLoadingSaved = false;
   bool _isContactInfoExpanded = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -62,6 +64,22 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       }
     });
     _loadProfileData();
+    _loadUnreadNotificationCount();
+  }
+
+  Future<void> _loadUnreadNotificationCount() async {
+    if (!AuthService.isAuthenticated) return;
+    
+    try {
+      final result = await NotificationService.getNotifications(page: 1);
+      if (mounted) {
+        setState(() {
+          _unreadNotificationCount = result['unreadCount'] ?? 0;
+        });
+      }
+    } catch (e) {
+      print('Error loading notification count: $e');
+    }
   }
 
   @override
@@ -397,8 +415,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       bottomNavigationBar: MediaQuery.of(context).size.width < 768
           ? BusinessNetworkBottomNavBar(
               currentIndex: _currentNavIndex,
+              isLoggedIn: AuthService.isAuthenticated,
               onTap: _handleNavTap,
-              unreadCount: 0,
+              unreadCount: _unreadNotificationCount,
             )
           : null,
     );
@@ -418,12 +437,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         break;
       case 1:
         // Notifications
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const NotificationsScreen(),
-          ),
-        );
+          MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+        ).then((_) {
+          // Refresh notification count when returning
+          _loadUnreadNotificationCount();
+        });
         break;
       case 2:
         // Create Post

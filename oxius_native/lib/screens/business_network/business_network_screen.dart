@@ -5,6 +5,7 @@ import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_suggestions_service.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/business_network_header.dart';
@@ -34,6 +35,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   String? _lastCreatedAt;
   int _currentNavIndex = 0;
   String? _errorMessage;
+  int _unreadNotificationCount = 0;
   
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -44,6 +46,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     super.initState();
     _loadPosts();
     _loadSponsoredProducts();
+    _loadUnreadNotificationCount();
     _scrollController.addListener(_onScroll);
   }
 
@@ -57,6 +60,21 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       }
     } catch (e) {
       print('Error loading sponsored products: $e');
+    }
+  }
+
+  Future<void> _loadUnreadNotificationCount() async {
+    if (!AuthService.isAuthenticated) return;
+    
+    try {
+      final result = await NotificationService.getNotifications(page: 1);
+      if (mounted) {
+        setState(() {
+          _unreadNotificationCount = result['unreadCount'] ?? 0;
+        });
+      }
+    } catch (e) {
+      print('Error loading notification count: $e');
     }
   }
 
@@ -240,6 +258,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       bottomNavigationBar: isMobile
           ? BusinessNetworkBottomNavBar(
               currentIndex: _currentNavIndex,
+              isLoggedIn: AuthService.isAuthenticated,
               onTap: (index) {
                 if (index == 2) {
                   // Create post button
@@ -248,7 +267,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                   _handleNavTap(index);
                 }
               },
-              unreadCount: 0, // TODO: Get actual unread count from notifications
+              unreadCount: _unreadNotificationCount,
             )
           : null,
       floatingActionButton: !isMobile

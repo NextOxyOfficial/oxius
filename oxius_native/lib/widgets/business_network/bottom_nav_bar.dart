@@ -4,12 +4,14 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
   final int unreadCount;
+  final bool isLoggedIn;
 
   const BusinessNetworkBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
     this.unreadCount = 0,
+    this.isLoggedIn = false,
   });
 
   @override
@@ -44,60 +46,114 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // Recent
-              _buildNavItem(
-                context: context,
-                index: 0,
-                icon: Icons.schedule_rounded,
-                label: 'Recent',
-                color: const Color(0xFF3B82F6),
-                isActive: currentIndex == 0,
-              ),
-              
-              // Notifications
-              _buildNavItem(
-                context: context,
-                index: 1,
-                icon: Icons.notifications_rounded,
-                label: 'Notifications',
-                color: const Color(0xFFEF4444),
-                isActive: currentIndex == 1,
-                badge: unreadCount > 0 ? unreadCount : null,
-              ),
-              
-              // Create Post (Center - Elevated)
-              _buildCreateButton(context),
-              
-              // Profile
-              _buildNavItem(
-                context: context,
-                index: 3,
-                icon: Icons.person_rounded,
-                label: 'Profile',
-                color: const Color(0xFFA855F7),
-                isActive: currentIndex == 3,
-              ),
-              
-              // Home/AdsyClub
-              _buildNavItem(
-                context: context,
-                index: 4,
-                icon: Icons.home_rounded,
-                label: 'AdsyClub',
-                color: const Color(0xFF22C55E),
-                isActive: currentIndex == 4,
-                useFavicon: true,
-              ),
-            ],
+            children: isLoggedIn ? _buildLoggedInNav(context) : _buildLoggedOutNav(context),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNavItem({
-    required BuildContext context,
+  // Logged IN users: Recent | Notifications | Create Post | Profile | AdsyClub
+  List<Widget> _buildLoggedInNav(BuildContext context) {
+    return [
+      // Recent
+      _buildNavItem(
+        context,
+        index: 0,
+        icon: Icons.schedule_rounded,
+        label: 'Recent',
+        color: const Color(0xFF3B82F6),
+        isActive: currentIndex == 0,
+      ),
+      
+      // Notifications
+      _buildNavItem(
+        context,
+        index: 1,
+        icon: Icons.notifications_rounded,
+        label: 'Notifications',
+        color: const Color(0xFFEF4444),
+        isActive: currentIndex == 1,
+        badge: unreadCount > 0 ? unreadCount : null,
+      ),
+      
+      // Create Post (Center - Elevated)
+      _buildCreateButton(context, enabled: true),
+      
+      // Profile
+      _buildNavItem(
+        context,
+        index: 3,
+        icon: Icons.person_rounded,
+        label: 'Profile',
+        color: const Color(0xFFA855F7),
+        isActive: currentIndex == 3,
+      ),
+      
+      // AdsyClub
+      _buildNavItem(
+        context,
+        index: 4,
+        icon: Icons.home_rounded,
+        label: 'AdsyClub',
+        color: const Color(0xFF22C55E),
+        isActive: currentIndex == 4,
+        useFavicon: true,
+      ),
+    ];
+  }
+
+  // Logged OUT users: Recent | Login | Create Post (disabled) | Earn | AdsyClub
+  List<Widget> _buildLoggedOutNav(BuildContext context) {
+    return [
+      // Recent
+      _buildNavItem(
+        context,
+        index: 0,
+        icon: Icons.schedule_rounded,
+        label: 'Recent',
+        color: const Color(0xFF3B82F6),
+        isActive: currentIndex == 0,
+      ),
+      
+      // Login
+      _buildNavItem(
+        context,
+        index: 1,
+        icon: Icons.login_rounded,
+        label: 'Login',
+        color: const Color(0xFFA855F7),
+        isActive: currentIndex == 1,
+      ),
+      
+      // Create Post (Disabled - grayed out)
+      _buildCreateButton(context, enabled: false),
+      
+      // Earn
+      _buildNavItem(
+        context,
+        index: 3,
+        icon: Icons.attach_money_rounded,
+        label: 'Earn',
+        color: const Color(0xFFF59E0B),
+        isActive: currentIndex == 3,
+      ),
+      
+      // AdsyClub
+      _buildNavItem(
+        context,
+        index: 4,
+        icon: Icons.home_rounded,
+        label: 'AdsyClub',
+        color: const Color(0xFF22C55E),
+        isActive: currentIndex == 4,
+        useFavicon: true,
+      ),
+    ];
+  }
+
+  Widget _buildNavItem(
+    BuildContext context, {
     required int index,
     required IconData icon,
     required String label,
@@ -242,10 +298,10 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildCreateButton(BuildContext context) {
+  Widget _buildCreateButton(BuildContext context, {required bool enabled}) {
     return Expanded(
       child: GestureDetector(
-        onTap: () => onTap(2),
+        onTap: enabled ? () => onTap(2) : null,
         child: Transform.translate(
           offset: const Offset(0, -6),
           child: Column(
@@ -255,27 +311,38 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF3B82F6),
-                      Color(0xFF6366F1),
-                      Color(0xFF8B5CF6),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  gradient: enabled
+                      ? const LinearGradient(
+                          colors: [
+                            Color(0xFF3B82F6),
+                            Color(0xFF6366F1),
+                            Color(0xFF8B5CF6),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: enabled ? null : const Color(0xFFCBD5E1).withOpacity(0.3),
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF3B82F6).withOpacity(0.4),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                  boxShadow: enabled
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF3B82F6).withOpacity(0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.add,
-                  color: Colors.white,
+                  color: enabled ? Colors.white : Colors.grey.shade300,
                   size: 20,
                 ),
               ),

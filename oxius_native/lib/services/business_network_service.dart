@@ -8,6 +8,47 @@ import 'api_service.dart';
 class BusinessNetworkService {
   static String get _baseUrl => '${ApiService.baseUrl}/bn';
   
+  /// Get Business Network logo
+  static Future<String?> getBusinessNetworkLogo() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiService.baseUrl}/bn-logo/'),
+      );
+
+      print('🔵 BN Logo API Status: ${response.statusCode}');
+      print('🔵 BN Logo API Response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('🔵 Decoded data: $data');
+        
+        // The endpoint returns a list, get the first (most recent) logo
+        if (data is List && data.isNotEmpty) {
+          final logoData = data[0];
+          final logoUrl = logoData['image'] as String?;
+          
+          print('🔵 Logo URL from API: $logoUrl');
+          
+          if (logoUrl != null && logoUrl.isNotEmpty) {
+            // Convert relative URL to absolute if needed
+            if (logoUrl.startsWith('/')) {
+              final fullUrl = '${ApiService.baseUrl}$logoUrl';
+              print('🔵 Full logo URL: $fullUrl');
+              return fullUrl;
+            }
+            print('🔵 Returning logo URL: $logoUrl');
+            return logoUrl;
+          }
+        }
+      }
+      print('❌ No logo found or API error');
+      return null;
+    } catch (e) {
+      print('❌ Error fetching business network logo: $e');
+      return null;
+    }
+  }
+  
   /// Get posts feed with pagination
   static Future<Map<String, dynamic>> getPosts({
     int page = 1,

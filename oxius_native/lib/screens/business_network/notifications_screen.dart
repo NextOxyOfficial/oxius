@@ -390,6 +390,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       bottomNavigationBar: isMobile
           ? BusinessNetworkBottomNavBar(
               currentIndex: 1, // Notifications tab
+              isLoggedIn: AuthService.isAuthenticated,
               onTap: _handleNavTap,
               unreadCount: _unreadCount,
             )

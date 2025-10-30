@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import '../services/user_state_service.dart';
+import '../services/notification_service.dart';
 import '../screens/eshop_screen.dart';
 import '../screens/eshop_manager_screen.dart';
 import '../screens/home_screen.dart';
@@ -35,6 +36,11 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
     super.initState();
     // Listen to user state changes
     _userStateService.addListener(_onUserStateChanged);
+    
+    // Load notification count if authenticated
+    if (_userStateService.isAuthenticated) {
+      _loadUnreadNotificationCount();
+    }
     
     // Initialize animation controller with slower duration
     _animationController = AnimationController(
@@ -75,6 +81,32 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
   void _onUserStateChanged() {
     if (mounted) {
       setState(() {});
+      // Refresh notification count when user state changes
+      if (_userStateService.isAuthenticated) {
+        _loadUnreadNotificationCount();
+      } else {
+        setState(() {
+          unreadCount = 0;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadUnreadNotificationCount() async {
+    try {
+      print('📱 Mobile Sticky Nav: Fetching notification count...');
+      final result = await NotificationService.getNotifications(page: 1);
+      final count = result['unreadCount'] ?? 0;
+      print('📱 Mobile Sticky Nav: Got notification count: $count');
+      
+      if (mounted) {
+        setState(() {
+          unreadCount = count;
+        });
+        print('📱 Mobile Sticky Nav: Updated state with count: $unreadCount');
+      }
+    } catch (e) {
+      print('❌ Mobile Sticky Nav: Error loading notification count: $e');
     }
   }
 
@@ -154,6 +186,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
   }
 
   Widget _buildLoggedInNavigation(BuildContext context) {
+    print('📱 Mobile Sticky Nav: Building logged-in nav with unreadCount: $unreadCount');
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -288,25 +321,24 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
                 ),
               if (hasNotification && notificationCount > 0)
                 Positioned(
-                  right: 0,
-                  top: 0,
+                  top: -4,
+                  right: -4,
                   child: Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEF4444),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
                     constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
+                      minWidth: 18,
+                      minHeight: 18,
                     ),
                     child: Text(
                       notificationCount > 99 ? '99+' : notificationCount.toString(),
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -352,7 +384,12 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
       // Navigate to mobile recharge route
       Navigator.pushNamed(context, '/mobile-recharge_screen');
     } else if (destination == 'Business Network') {
-      Navigator.pushNamed(context, '/business-network');
+      Navigator.pushNamed(context, '/business-network').then((_) {
+        // Refresh notification count when returning from business network
+        if (mounted && _userStateService.isAuthenticated) {
+          _loadUnreadNotificationCount();
+        }
+      });
     } else if (destination == 'MindForce') {
       Navigator.pushNamed(context, '/mindforce');
     } else if (destination == 'News') {

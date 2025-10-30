@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/mindforce_models.dart';
 import '../../services/mindforce_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
@@ -22,7 +23,8 @@ class MindForceScreen extends StatefulWidget {
 class _MindForceScreenState extends State<MindForceScreen> {
   List<MindForceProblem> _problems = [];
   List<MindForceCategory> _categories = [];
-  bool _isLoading = true;
+  bool _isLoading = false;
+  int _unreadNotificationCount = 0;
   bool _isLoadingMore = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
@@ -36,7 +38,23 @@ class _MindForceScreenState extends State<MindForceScreen> {
   void initState() {
     super.initState();
     _loadData();
+    _loadUnreadNotificationCount();
     _scrollController.addListener(_onScroll);
+  }
+
+  Future<void> _loadUnreadNotificationCount() async {
+    if (!AuthService.isAuthenticated) return;
+    
+    try {
+      final result = await NotificationService.getNotifications(page: 1);
+      if (mounted) {
+        setState(() {
+          _unreadNotificationCount = result['unreadCount'] ?? 0;
+        });
+      }
+    } catch (e) {
+      print('Error loading notification count: $e');
+    }
   }
 
   @override
@@ -338,7 +356,9 @@ class _MindForceScreenState extends State<MindForceScreen> {
       bottomNavigationBar: isMobile
           ? BusinessNetworkBottomNavBar(
               currentIndex: 4, // More tab since MindForce is in drawer
+              isLoggedIn: AuthService.isAuthenticated,
               onTap: _handleNavTap,
+              unreadCount: _unreadNotificationCount,
             )
           : null,
     );
@@ -672,16 +692,22 @@ class _MindForceScreenState extends State<MindForceScreen> {
           context,
           '/business-network',
           (route) => route.settings.name == '/',
-        );
+        ).then((_) {
+          // Refresh notification count when returning
+          _loadUnreadNotificationCount();
+        });
         break;
       case 1:
         // Notifications
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => const NotificationsScreen(),
           ),
-        );
+        ).then((_) {
+          // Refresh notification count when returning
+          _loadUnreadNotificationCount();
+        });
         break;
       case 2:
         // Create Post
