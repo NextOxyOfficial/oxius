@@ -5,8 +5,8 @@ class NotificationModel {
   final String? content;
   final String createdAt;
   final bool read;
-  final int? targetId;
-  final String? targetType;
+  final String? targetId;
+  final String? parentId;
 
   NotificationModel({
     required this.id,
@@ -16,7 +16,7 @@ class NotificationModel {
     required this.createdAt,
     required this.read,
     this.targetId,
-    this.targetType,
+    this.parentId,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
@@ -29,8 +29,8 @@ class NotificationModel {
       content: json['content'],
       createdAt: json['created_at'] ?? '',
       read: json['read'] ?? false,
-      targetId: json['target_id'],
-      targetType: json['target_type'],
+      targetId: json['target_id']?.toString(),
+      parentId: json['parent_id']?.toString(),
     );
   }
 
@@ -41,8 +41,8 @@ class NotificationModel {
     String? content,
     String? createdAt,
     bool? read,
-    int? targetId,
-    String? targetType,
+    String? targetId,
+    String? parentId,
   }) {
     return NotificationModel(
       id: id ?? this.id,
@@ -52,7 +52,7 @@ class NotificationModel {
       createdAt: createdAt ?? this.createdAt,
       read: read ?? this.read,
       targetId: targetId ?? this.targetId,
-      targetType: targetType ?? this.targetType,
+      parentId: parentId ?? this.parentId,
     );
   }
 }
@@ -86,7 +86,8 @@ class NotificationType {
   static const String likePost = 'like_post';
   static const String likeComment = 'like_comment';
   static const String comment = 'comment';
-  static const String mention = 'mention';
-  static const String share = 'share';
   static const String reply = 'reply';
+  static const String mention = 'mention';
+  static const String solution = 'solution';
+  static const String giftDiamonds = 'gift_diamonds';
 }

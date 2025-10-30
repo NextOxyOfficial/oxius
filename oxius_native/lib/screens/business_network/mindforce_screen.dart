@@ -668,7 +668,11 @@ class _MindForceScreenState extends State<MindForceScreen> {
     switch (index) {
       case 0:
         // Recent - Navigate to business network feed
-        Navigator.pushReplacementNamed(context, '/business-network');
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/business-network',
+          (route) => route.settings.name == '/',
+        );
         break;
       case 1:
         // Notifications
@@ -698,11 +702,13 @@ class _MindForceScreenState extends State<MindForceScreen> {
               builder: (context) => ProfileScreen(userId: user.id),
             ),
           );
+        } else {
+          Navigator.pushNamed(context, '/login');
         }
         break;
       case 4:
-        // More (Drawer)
-        _scaffoldKey.currentState?.openDrawer();
+        // AdsyClub/Home - Navigate to main home screen
+        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         break;
     }
   }

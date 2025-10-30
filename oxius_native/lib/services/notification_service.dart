@@ -20,32 +20,54 @@ class NotificationService {
         },
       );
 
-      print('Notification API Status: ${response.statusCode}');
-      print('Notification API Response: ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}');
+      print('🔔 Notification API Status: ${response.statusCode}');
+      print('🔔 Notification API Response: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('🔔 Decoded data type: ${data.runtimeType}');
+        print('🔔 Has results key: ${data.containsKey('results')}');
+        
         final List<NotificationModel> notifications = [];
         
         if (data['results'] != null && data['results'] is List) {
+          print('🔔 Results list length: ${data['results'].length}');
           for (var item in data['results']) {
             try {
               notifications.add(NotificationModel.fromJson(item));
+              print('✅ Parsed notification: ${item['type']} from ${item['actor']?['name']}');
             } catch (e) {
-              print('Error parsing notification: $e');
-              print('Notification data: $item');
+              print('❌ Error parsing notification: $e');
+              print('❌ Notification data: $item');
             }
+          }
+        } else {
+          print('❌ No results in response or results is not a list');
+          print('❌ Response data: $data');
+        }
+
+        // Count unread notifications
+        int unreadCount = 0;
+        if (data['results'] != null && data['results'] is List) {
+          for (var item in data['results']) {
+            if (item['read'] == false) unreadCount++;
           }
         }
 
-        print('Parsed ${notifications.length} notifications');
-        return {
+        print('🔔 Parsed ${notifications.length} notifications, $unreadCount unread');
+        print('🔔 Returning: notifications list type = ${notifications.runtimeType}');
+        
+        final result = {
           'notifications': notifications,
           'hasMore': data['next'] != null,
-          'unreadCount': data['unread_count'] ?? 0,
+          'unreadCount': unreadCount,
         };
+        
+        print('🔔 Result map: $result');
+        return result;
       } else {
-        print('Notification API Error: ${response.statusCode} - ${response.body}');
+        print('❌ Notification API Error: ${response.statusCode}');
+        print('❌ Response body: ${response.body}');
       }
 
       return {'notifications': [], 'hasMore': false, 'unreadCount': 0};

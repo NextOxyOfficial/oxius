@@ -407,20 +407,18 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   void _handleNavTap(int index) {
     if (index == _currentNavIndex) return; // Already on profile
     
-    setState(() => _currentNavIndex = index);
-    
     switch (index) {
       case 0:
         // Recent - Navigate to business network feed
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/business-network',
-          (route) => false,
+          (route) => route.settings.name == '/',
         );
         break;
       case 1:
         // Notifications
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => const NotificationsScreen(),
@@ -440,9 +438,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         // Profile - Already here
         break;
       case 4:
-        // AdsyClub / Home - Navigate to public homepage
-        // Pop all routes to go back to home
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        // AdsyClub / Home - Navigate to main home screen
+        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         break;
     }
   }

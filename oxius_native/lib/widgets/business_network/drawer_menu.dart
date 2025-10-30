@@ -131,6 +131,16 @@ class DrawerMenu extends StatelessWidget {
             route: '/business-network',
             isActive: currentRoute == '/business-network',
             color: const Color(0xFF3B82F6),
+            onTap: () {
+              Navigator.pop(context); // Close drawer
+              // If already on business network screen, just close drawer
+              // Otherwise navigate to it
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/business-network',
+                (route) => route.settings.name == '/',
+              );
+            },
           ),
           
           if (user != null)
@@ -207,9 +217,14 @@ class DrawerMenu extends StatelessWidget {
             context: context,
             icon: Icons.settings,
             label: 'Settings',
-            route: '/business-network/settings',
-            isActive: currentRoute == '/business-network/settings',
+            route: '/settings',
+            isActive: currentRoute == '/settings',
             color: const Color(0xFF6B7280),
+            onTap: () {
+              Navigator.pop(context); // Close drawer
+              // Navigate to settings screen
+              Navigator.pushNamed(context, '/settings');
+            },
           ),
         ],
       ),

@@ -264,11 +264,10 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   }
 
   void _handleNavTap(int index) {
-    setState(() => _currentNavIndex = index);
-    
     switch (index) {
       case 0:
-        // Recent - already on this screen
+        // Recent - already on this screen, refresh
+        setState(() => _currentNavIndex = 0);
         _refreshPosts();
         break;
       case 1:
@@ -278,7 +277,10 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
           MaterialPageRoute(
             builder: (context) => const NotificationsScreen(),
           ),
-        );
+        ).then((_) {
+          // Reset index when coming back
+          if (mounted) setState(() => _currentNavIndex = 0);
+        });
         break;
       case 3:
         // Profile
@@ -289,13 +291,18 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
             MaterialPageRoute(
               builder: (context) => ProfileScreen(userId: currentUser.id),
             ),
-          );
+          ).then((_) {
+            // Reset index when coming back
+            if (mounted) setState(() => _currentNavIndex = 0);
+          });
+        } else {
+          // Navigate to login if not authenticated
+          Navigator.pushNamed(context, '/login');
         }
         break;
       case 4:
-        // AdsyClub / Home - Navigate to public homepage
-        // Pop all routes to go back to home
-        Navigator.of(context).popUntil((route) => route.isFirst);
+        // AdsyClub / Home - Navigate to main home screen
+        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         break;
     }
   }

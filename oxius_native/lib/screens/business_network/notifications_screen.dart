@@ -24,40 +24,100 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _hasMore = false;
   int _currentPage = 1;
   int _unreadCount = 0;
+  bool _isRefreshing = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    _loadNotifications();
+    _loadNotifications(isInitial: true);
   }
 
-  Future<void> _loadNotifications() async {
-    if (!mounted) return;
+  Future<void> _loadNotifications({bool isInitial = false}) async {
+    print('📱 Loading notifications... isInitial: $isInitial');
     
-    setState(() => _isLoading = true);
+    // Only show loading indicator on initial load
+    if (isInitial) {
+      setState(() => _isLoading = true);
+    } else {
+      _isRefreshing = true;
+    }
     
     try {
-      print('Loading notifications...');
       final result = await NotificationService.getNotifications(page: 1);
-      print('Notifications loaded: ${result['notifications']?.length ?? 0}');
+      print('📱 Got result from service: ${result['notifications']?.length} notifications');
       
       if (mounted) {
+        final notifications = result['notifications'];
+        print('📱 Notifications type: ${notifications.runtimeType}');
+        print('📱 Notifications value: $notifications');
+        
         setState(() {
-          _notifications = result['notifications'] ?? [];
+          if (notifications is List<NotificationModel>) {
+            _notifications = notifications;
+          } else if (notifications is List) {
+            _notifications = List<NotificationModel>.from(notifications);
+          } else {
+            _notifications = [];
+          }
+          
           _hasMore = result['hasMore'] ?? false;
           _unreadCount = result['unreadCount'] ?? 0;
           _currentPage = 1;
           _isLoading = false;
         });
+        
+        print('📱 State updated: ${_notifications.length} notifications, $_unreadCount unread, loading: $_isLoading');
+        print('📱 Notifications list: $_notifications');
+        
+        // Show success message only when manually refreshing
+        if (!isInitial && _isRefreshing) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
+                  Text('Refreshed ${_notifications.length} notification${_notifications.length != 1 ? 's' : ''}'),
+                ],
+              ),
+              backgroundColor: const Color(0xFF22C55E),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          );
+        }
+        _isRefreshing = false;
       }
     } catch (e) {
       print('Error loading notifications: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _notifications = [];
         });
+        
+        // Show error message
+        if (!isInitial) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
+                  const Text('Failed to refresh notifications'),
+                ],
+              ),
+              backgroundColor: const Color(0xFFEF4444),
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+              margin: const EdgeInsets.all(16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          );
+        }
+        _isRefreshing = false;
       }
     }
   }
@@ -100,20 +160,68 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       _markAsRead(notification.id);
     }
 
-    // Navigate based on notification type
-    if (notification.targetType == 'post' && notification.targetId != null) {
-      // Navigate to post detail
-      // Navigator.push(context, MaterialPageRoute(...));
-    } else if (notification.type == NotificationType.follow && notification.actor != null) {
-      // Navigate to user profile
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProfileScreen(
-            userId: notification.actor!.id.toString(),
-          ),
-        ),
-      );
+    // Navigate based on notification type (matching Vue implementation)
+    switch (notification.type) {
+      case NotificationType.follow:
+        // Navigate to user profile
+        if (notification.actor != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProfileScreen(
+                userId: notification.actor!.id.toString(),
+              ),
+            ),
+          );
+        }
+        break;
+        
+      case NotificationType.likePost:
+      case NotificationType.comment:
+      case NotificationType.mention:
+        // Navigate to post detail
+        if (notification.targetId != null) {
+          Navigator.pushNamed(
+            context,
+            '/business-network/post/${notification.targetId}',
+          );
+        }
+        break;
+        
+      case NotificationType.likeComment:
+      case NotificationType.reply:
+        // Navigate to post detail using parent_id
+        if (notification.parentId != null) {
+          Navigator.pushNamed(
+            context,
+            '/business-network/post/${notification.parentId}',
+          );
+        }
+        break;
+        
+      case NotificationType.solution:
+        // Navigate to MindForce post
+        if (notification.targetId != null) {
+          Navigator.pushNamed(
+            context,
+            '/business-network/mindforce/${notification.targetId}',
+          );
+        }
+        break;
+        
+      case NotificationType.giftDiamonds:
+        // Navigate to post detail for gift diamonds
+        if (notification.targetId != null) {
+          Navigator.pushNamed(
+            context,
+            '/business-network/post/${notification.targetId}',
+          );
+        }
+        break;
+        
+      default:
+        // Default to business network home
+        Navigator.pushNamed(context, '/business-network');
     }
   }
 
@@ -124,7 +232,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/business-network',
-          (route) => false,
+          (route) => route.settings.name == '/',
         );
         break;
       case 1:
@@ -143,21 +251,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         // Profile
         final currentUser = AuthService.currentUser;
         if (currentUser != null) {
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) => ProfileScreen(userId: currentUser.id),
             ),
           );
+        } else {
+          Navigator.pushNamed(context, '/login');
         }
         break;
       case 4:
-        // AdsyClub/Home
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/',
-          (route) => false,
-        );
+        // AdsyClub/Home - Navigate to main home screen
+        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         break;
     }
   }
@@ -199,62 +305,87 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         },
       ),
       drawer: isMobile ? const BusinessNetworkDrawer(currentRoute: '/business-network/notifications') : null,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 672),
-          child: Column(
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey.shade200),
+      body: Column(
+        children: [
+          // Compact Professional Header
+          Container(
+            padding: const EdgeInsets.fromLTRB(6, 12, 6, 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+              ),
+            ),
+            child: Row(
+              children: [
+                const SizedBox(width: 2),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.notifications_rounded,
+                    size: 18,
+                    color: Colors.white,
                   ),
                 ),
-                child: Row(
-                  children: [
-                    const Text(
-                      'All Notifications',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                const SizedBox(width: 10),
+                const Text(
+                  'Notifications',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                if (_unreadCount > 0) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      _unreadCount > 99 ? '99+' : _unreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    if (_unreadCount > 0) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade500,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          _unreadCount.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              
-              // Content
-              Expanded(
-                child: _isLoading
-                    ? _buildLoadingState()
-                    : _notifications.isEmpty
-                        ? _buildEmptyState()
-                        : _buildNotificationsList(),
-              ),
-            ],
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
+          
+          // Content
+          Expanded(
+            child: Container(
+              color: const Color(0xFFF9FAFB),
+              child: Builder(
+                builder: (context) {
+                  print('📱 Building content: isLoading=$_isLoading, count=${_notifications.length}, isEmpty=${_notifications.isEmpty}');
+                  
+                  if (_isLoading) {
+                    return _buildLoadingState();
+                  } else if (_notifications.isEmpty) {
+                    return _buildEmptyState();
+                  } else {
+                    return _buildNotificationsList();
+                  }
+                },
+              ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: isMobile
           ? BusinessNetworkBottomNavBar(
@@ -271,14 +402,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [const Color(0xFF3B82F6).withOpacity(0.1), const Color(0xFF6366F1).withOpacity(0.1)],
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+              strokeWidth: 3,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
             'Loading notifications...',
             style: TextStyle(
               color: Colors.grey.shade600,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -287,37 +430,87 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return RefreshIndicator(
+      onRefresh: _loadNotifications,
+      color: const Color(0xFF3B82F6),
+      backgroundColor: Colors.white,
+      strokeWidth: 2.5,
+      displacement: 40,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade100,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.notifications_outlined,
-              size: 48,
-              color: Colors.blue.shade500,
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'No notifications yet',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'When someone interacts with your content\nor mentions you, you\'ll see it here',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade600,
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.65,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF3B82F6).withOpacity(0.1),
+                          const Color(0xFF6366F1).withOpacity(0.15),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.notifications_none_rounded,
+                      size: 56,
+                      color: Color(0xFF3B82F6),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'No notifications yet',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1F2937),
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'When someone interacts with your\ncontent or mentions you, you\'ll see it here',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.5,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.swipe_down_rounded,
+                          size: 16,
+                          color: Colors.grey.shade500,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Pull down to refresh',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -329,7 +522,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return RefreshIndicator(
       onRefresh: _loadNotifications,
       color: const Color(0xFF3B82F6),
+      backgroundColor: Colors.white,
+      strokeWidth: 2.5,
+      displacement: 40,
       child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
         itemCount: _notifications.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == _notifications.length) {
@@ -337,10 +535,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           }
           
           final notification = _notifications[index];
-          return NotificationItem(
-            notification: notification,
-            onTap: () => _handleNotificationTap(notification),
-            onMarkAsRead: () => _markAsRead(notification.id),
+          return Container(
+            margin: const EdgeInsets.only(bottom: 6),
+            child: NotificationItem(
+              notification: notification,
+              onTap: () => _handleNotificationTap(notification),
+              onMarkAsRead: () => _markAsRead(notification.id),
+            ),
           );
         },
       ),
@@ -349,21 +550,45 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _buildLoadMoreButton() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       child: Center(
         child: _isLoadingMore
-            ? const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-              )
-            : ElevatedButton(
-                onPressed: _loadMoreNotifications,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.blue.shade500,
-                  side: BorderSide(color: Colors.blue.shade200),
-                  elevation: 0,
+            ? Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [const Color(0xFF3B82F6).withOpacity(0.1), const Color(0xFF6366F1).withOpacity(0.1)],
+                  ),
+                  shape: BoxShape.circle,
                 ),
-                child: const Text('Load more'),
+                child: const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                    strokeWidth: 2.5,
+                  ),
+                ),
+              )
+            : TextButton.icon(
+                onPressed: _loadMoreNotifications,
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF3B82F6),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: Colors.grey.shade200),
+                  ),
+                ),
+                icon: const Icon(Icons.expand_more_rounded, size: 18),
+                label: const Text(
+                  'Load More',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
       ),
     );

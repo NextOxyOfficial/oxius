@@ -1445,8 +1445,10 @@ class BusinessNetworkNotificationListView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        """Return notifications for the current user"""
-        return BusinessNetworkNotification.objects.filter(recipient=self.request.user)
+        """Return notifications for the current user, ordered by most recent first"""
+        return BusinessNetworkNotification.objects.filter(
+            recipient=self.request.user
+        ).select_related('actor').order_by('-created_at')
 
 
 class BusinessNetworkNotificationReadView(generics.UpdateAPIView):
@@ -2793,8 +2795,10 @@ class BusinessNetworkNotificationListView(generics.ListAPIView):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
-        """Return notifications for the current user"""
-        return BusinessNetworkNotification.objects.filter(recipient=self.request.user)
+        """Return notifications for the current user, ordered by most recent first"""
+        return BusinessNetworkNotification.objects.filter(
+            recipient=self.request.user
+        ).select_related('actor').order_by('-created_at')
 
 
 class BusinessNetworkNotificationReadView(generics.UpdateAPIView):
