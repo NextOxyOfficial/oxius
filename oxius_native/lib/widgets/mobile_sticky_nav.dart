@@ -120,7 +120,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
       ),
       curve: Curves.easeInOut,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(8, 0, 8, 4),
+        margin: const EdgeInsets.fromLTRB(36, 0, 36, 4),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),

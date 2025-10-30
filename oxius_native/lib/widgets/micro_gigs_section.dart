@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/gigs_service.dart';
 import '../services/translation_service.dart';
 import '../services/auth_service.dart';
+import '../services/user_state_service.dart';
 import '../screens/gig_details_screen.dart';
 import 'home/account_balance_section.dart';
 import 'home/mobile_recharge_section.dart';
@@ -17,6 +18,7 @@ class MicroGigsSection extends StatefulWidget {
 class _MicroGigsSectionState extends State<MicroGigsSection> {
   final TranslationService _translationService = TranslationService();
   final GigsService _gigsService = GigsService();
+  final UserStateService _userStateService = UserStateService();
   
   List<Map<String, dynamic>> _microGigs = [];
   List<Map<String, dynamic>> _categories = [];
@@ -35,18 +37,30 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   void initState() {
     super.initState();
     _translationService.addListener(_onTranslationsChanged);
+    _userStateService.addListener(_onUserStateChanged);
     _loadData();
   }
 
   @override
   void dispose() {
     _translationService.removeListener(_onTranslationsChanged);
+    _userStateService.removeListener(_onUserStateChanged);
     super.dispose();
   }
 
   void _onTranslationsChanged() {
     if (!mounted) return;
     setState(() {});
+  }
+
+  void _onUserStateChanged() {
+    if (!mounted) return;
+    setState(() {
+      // Reset filter to 'all' if user logs out and was viewing 'completed'
+      if (!_userStateService.isAuthenticated && _filterStatus == 'completed') {
+        _filterStatus = 'all';
+      }
+    });
   }
 
   Future<void> _loadData() async {
@@ -77,7 +91,6 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         });
       }
     } catch (e) {
-      print('Error loading micro gigs data: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -161,7 +174,6 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         });
       }
     } catch (e) {
-      print('Error filtering gigs: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -200,7 +212,6 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         });
       }
     } catch (e) {
-      print('Error filtering by status: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -246,7 +257,6 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         });
       }
     } catch (e) {
-      print('Error loading page: $e');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -358,7 +368,6 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     return GestureDetector(
       onTap: () {
         // Navigate to mobile recharge page
-        print('Navigate to /mobile-recharge');
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -632,7 +641,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   }
 
   Widget _buildStatusFilter() {
-    final isLoggedIn = AuthService.isAuthenticated;
+    // Use UserStateService for reactive authentication state
+    final isLoggedIn = _userStateService.isAuthenticated;
     
     return DropdownButton<String>(
       value: _filterStatus,
