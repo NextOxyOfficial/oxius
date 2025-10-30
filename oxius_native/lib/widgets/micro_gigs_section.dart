@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/gigs_service.dart';
 import '../services/translation_service.dart';
+import '../services/auth_service.dart';
 import '../screens/gig_details_screen.dart';
 import 'home/account_balance_section.dart';
 import 'home/mobile_recharge_section.dart';
@@ -23,7 +24,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   
   bool _isLoading = true;
   String? _selectedCategory;
-  String _filterStatus = 'approved'; // 'all', 'approved', 'completed'
+  String _filterStatus = 'all'; // 'all', 'available', 'completed'
   
   // Pagination
   int _currentPage = 1;
@@ -175,6 +176,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     });
     
     try {
+      // For 'all' and 'available', show non-submitted gigs (showSubmitted: false)
+      // For 'completed', show submitted gigs (showSubmitted: true)
       final showSubmitted = status == 'completed';
       final gigsData = _selectedCategory == null
           ? await _gigsService.fetchMicroGigs(
@@ -629,13 +632,17 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   }
 
   Widget _buildStatusFilter() {
+    final isLoggedIn = AuthService.isAuthenticated;
+    
     return DropdownButton<String>(
       value: _filterStatus,
       underline: const SizedBox(),
-      items: const [
-        DropdownMenuItem(value: '', child: Text('All')),
-        DropdownMenuItem(value: 'approved', child: Text('Available')),
-        DropdownMenuItem(value: 'completed', child: Text('Completed')),
+      items: [
+        const DropdownMenuItem(value: 'all', child: Text('All')),
+        const DropdownMenuItem(value: 'available', child: Text('Available')),
+        // Only show Completed filter for logged-in users
+        if (isLoggedIn)
+          const DropdownMenuItem(value: 'completed', child: Text('Completed')),
       ],
       onChanged: (value) {
         if (value != null) _filterByStatus(value);
