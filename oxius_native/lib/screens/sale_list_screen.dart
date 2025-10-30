@@ -971,28 +971,13 @@ class _SaleListScreenState extends State<SaleListScreen> {
   Widget _buildPostCard(SalePost post) {
     final bool hasImage = post.images != null && post.images!.isNotEmpty;
     
-    // Helper function to fix image URLs for production (same as ProductCard)
-    String fixImageUrl(String imageUrl) {
-      print('🔍 Original sale image URL: $imageUrl');
-      if (imageUrl.isEmpty) return '';
-      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-        return imageUrl;
-      }
-      
-      // Use AppConfig to get the correct base URL (localhost in debug, production in release)
-      final baseUrl = AppConfig.mediaBaseUrl;
-      print('📱 Sale image: Making absolute URL from "$imageUrl" using base: $baseUrl');
-      
-      // Handle Django media URLs
-      if (imageUrl.startsWith('/media/') || imageUrl.startsWith('media/')) {
-        final finalUrl = '$baseUrl${imageUrl.startsWith('/') ? imageUrl : '/$imageUrl'}';
-        print('🖼️ Sale image: Media URL result: $finalUrl');
-        return finalUrl;
-      }
-      if (imageUrl.startsWith('/')) {
-        return '$baseUrl$imageUrl';
-      }
-      return '$baseUrl/$imageUrl';
+    // Get the image URL using AppConfig's standard method
+    String getImageUrl() {
+      if (!hasImage) return '';
+      final imageUrl = post.images![0].image;
+      final absoluteUrl = AppConfig.getAbsoluteUrl(imageUrl);
+      print('🖼️ Sale image URL: $imageUrl → $absoluteUrl');
+      return absoluteUrl;
     }
 
     return GestureDetector(
@@ -1029,7 +1014,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     aspectRatio: 1.1,
                     child: hasImage
                         ? CachedNetworkImage(
-                            imageUrl: fixImageUrl(post.images![0].image),
+                            imageUrl: getImageUrl(),
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
                               color: Colors.grey.shade100,
