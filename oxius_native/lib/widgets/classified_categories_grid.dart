@@ -30,14 +30,8 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isLoading) {
-      return _buildLoadingSkeleton();
-    }
-
     if (widget.categories.isEmpty) {
-      return Center(
-        child: Text(_ts.t('no_categories', fallback: 'No categories found')),
-      );
+      return const SizedBox.shrink();
     }
 
     // Hero section inspired grid layout: 4 columns with square tiles
