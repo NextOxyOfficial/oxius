@@ -23,102 +23,111 @@ class EshopManagerScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0.5,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'eShop Manager',
           style: TextStyle(
             color: Color(0xFF1F2937),
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            letterSpacing: -0.2,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: const Color(0xFFE5E7EB),
           ),
         ),
       ),
       body: Center(
         child: SingleChildScrollView(
           child: Container(
-            constraints: const BoxConstraints(maxWidth: 600),
-            padding: const EdgeInsets.all(24),
+            constraints: const BoxConstraints(maxWidth: 500),
+            padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Icon
                 Container(
-                  width: 120,
-                  height: 120,
+                  width: 80,
+                  height: 80,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(60),
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF2563EB).withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
+                        color: const Color(0xFF2563EB).withOpacity(0.2),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: const Icon(
-                    Icons.store,
-                    size: 60,
+                    Icons.store_rounded,
+                    size: 40,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 20),
 
                 // Title
                 const Text(
                   'Store Management Portal',
                   style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
                     color: Color(0xFF1F2937),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-
-                // Description
-                Text(
-                  'To manage your eShop store, please access our comprehensive web portal through your browser.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey.shade700,
-                    height: 1.6,
+                    letterSpacing: -0.3,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
 
+                // Description
                 Text(
-                  'The web portal provides advanced features and tools for efficient store management.',
+                  'Manage your eShop store with our comprehensive web portal.',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey.shade600,
+                    color: Colors.grey.shade700,
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 8),
+
+                Text(
+                  'Access advanced features and tools for efficient management.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
 
                 // Features List
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: Colors.grey.shade200),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
@@ -128,12 +137,13 @@ class EshopManagerScreen extends StatelessWidget {
                       Text(
                         'Available Features:',
                         style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
                           color: Colors.grey.shade900,
+                          letterSpacing: -0.1,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _buildFeatureItem(
                         icon: Icons.inventory_2,
                         title: 'Product Management',
@@ -157,7 +167,7 @@ class EshopManagerScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
 
                 // Open Web Portal Button
                 SizedBox(
@@ -167,21 +177,21 @@ class EshopManagerScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2563EB),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      elevation: 2,
+                      elevation: 0,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.open_in_browser, size: 20),
+                        const Icon(Icons.open_in_browser_rounded, size: 18),
                         const SizedBox(width: 8),
                         const Text(
                           'Open Web Portal',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -189,31 +199,31 @@ class EshopManagerScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // Info Text
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.1),
+                    color: const Color(0xFF3B82F6).withOpacity(0.08),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: const Color(0xFF3B82F6).withOpacity(0.2),
+                      color: const Color(0xFF3B82F6).withOpacity(0.15),
                     ),
                   ),
                   child: Row(
                     children: [
                       Icon(
-                        Icons.info_outline,
-                        size: 20,
+                        Icons.info_outline_rounded,
+                        size: 18,
                         color: const Color(0xFF2563EB),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'This will open in your default browser',
+                          'Opens in your default browser',
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 12,
                             color: Colors.grey.shade700,
                           ),
                         ),
@@ -235,24 +245,24 @@ class EshopManagerScreen extends StatelessWidget {
     required String description,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: const Color(0xFF3B82F6).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              size: 20,
+              size: 18,
               color: const Color(0xFF2563EB),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,7 +270,7 @@ class EshopManagerScreen extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF1F2937),
                   ),
@@ -269,7 +279,7 @@ class EshopManagerScreen extends StatelessWidget {
                 Text(
                   description,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     color: Colors.grey.shade600,
                   ),
                 ),

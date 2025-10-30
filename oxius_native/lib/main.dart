@@ -23,6 +23,7 @@ import 'screens/checkout_screen.dart';
 import 'screens/wallet/wallet_screen.dart';
 import 'screens/mobile_recharge/mobile_recharge_screen.dart';
 import 'screens/eshop_screen.dart';
+import 'screens/eshop_manager_screen.dart';
 import 'pages/login_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/register_page.dart';
@@ -141,6 +142,7 @@ class MyApp extends StatelessWidget {
             '/mobile-recharge': (context) => const MobileRechargeScreen(),
             '/upgrade-to-pro': (context) => const UpgradeToProScreen(),
             '/eshop': (context) => const EshopScreen(),
+            '/shop-manager': (context) => const EshopManagerScreen(),
           },
           onGenerateRoute: (settings) {
             if (settings.name == '/classified-category') {

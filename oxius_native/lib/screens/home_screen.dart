@@ -464,7 +464,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 8),
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, t('eshop'), Icons.shopping_bag_outlined, 
+                        child: _buildNavLink(context, 'Shop Manager', Icons.shopping_bag_outlined, 
                           const Color(0xFF3B82F6), true, t('pro')),
                       ),
                     ],
@@ -910,13 +910,8 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context) => const WalletScreen(),
             ),
           );
-        } else if (label == t('eshop')) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const EshopScreen(),
-            ),
-          );
+        } else if (label == t('eshop') || label == 'eShop Manager' || label == 'Shop Manager') {
+          Navigator.pushNamed(context, '/shop-manager');
         } else if (label == t('ad')) {
           // Navigate to My Classified Posts
           Navigator.pushNamed(context, '/my-classified-posts');
