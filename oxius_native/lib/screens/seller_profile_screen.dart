@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/sale_post.dart';
 import '../services/api_service.dart';
 
@@ -26,6 +28,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   bool _isLoading = true;
   bool _isLoadingPosts = true;
   bool _showPhone = false;
+  bool _showShareDialog = false;
+  bool _copied = false;
   String _selectedSort = 'recent';
   String? _selectedCategory;
 
@@ -170,32 +174,49 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Get seller name
+    String sellerName = 'Seller Profile';
+    if (_seller != null) {
+      if (_seller!['name'] != null && _seller!['name'].toString().isNotEmpty) {
+        sellerName = _seller!['name'];
+      } else {
+        final firstName = _seller!['first_name']?.toString() ?? '';
+        final lastName = _seller!['last_name']?.toString() ?? '';
+        if (firstName.isNotEmpty || lastName.isNotEmpty) {
+          sellerName = '$firstName $lastName'.trim();
+        }
+      }
+    }
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        title: const Text(
-          'Seller Profile',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        title: Text(
+          sellerName,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         backgroundColor: const Color(0xFF10B981),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.share, size: 20),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Share feature coming soon!')),
-              );
-            },
+            icon: const Icon(Icons.share_rounded, size: 22),
+            onPressed: () => setState(() => _showShareDialog = true),
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)))
-          : _seller == null
-              ? _buildErrorState()
-              : _buildContent(),
+      body: Stack(
+        children: [
+          _isLoading
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)))
+              : _seller == null
+                  ? _buildErrorState()
+                  : _buildContent(),
+          
+          // Share Dialog
+          if (_showShareDialog) _buildShareDialog(),
+        ],
+      ),
     );
   }
 
@@ -253,7 +274,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         children: [
           // Profile Header Card
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
@@ -744,7 +765,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
       onTap: () {
         Navigator.pushNamed(
           context,
-          '/sale-detail',
+          '/sale/detail',
           arguments: {'slug': post.slug},
         );
       },
@@ -886,6 +907,113 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShareDialog() {
+    final sellerId = widget.userId ?? '';
+    final sellerName = _seller?['name'] ?? 'Seller';
+    final shareUrl = 'https://oxius.com/seller/$sellerId';
+    
+    return GestureDetector(
+      onTap: () => setState(() => _showShareDialog = false),
+      child: Container(
+        color: Colors.black54,
+        child: Center(
+          child: GestureDetector(
+            onTap: () {},
+            child: Container(
+              margin: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Share $sellerName\'s Profile',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => setState(() => _showShareDialog = false),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Copy Link
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.link, color: Color(0xFF10B981)),
+                    ),
+                    title: const Text('Copy Link', style: TextStyle(fontSize: 14)),
+                    trailing: _copied 
+                        ? const Icon(Icons.check, color: Color(0xFF10B981))
+                        : null,
+                    onTap: () async {
+                      await Clipboard.setData(ClipboardData(text: shareUrl));
+                      setState(() => _copied = true);
+                      Future.delayed(const Duration(seconds: 2), () {
+                        if (mounted) setState(() => _copied = false);
+                      });
+                    },
+                  ),
+                  
+                  const Divider(height: 1),
+                  
+                  // Social Media Options
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1877F2).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.facebook, color: Color(0xFF1877F2)),
+                    ),
+                    title: const Text('Share on Facebook', style: TextStyle(fontSize: 14)),
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Facebook share coming soon!')),
+                      );
+                    },
+                  ),
+                  
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF25D366).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.chat, color: Color(0xFF25D366)),
+                    ),
+                    title: const Text('Share on WhatsApp', style: TextStyle(fontSize: 14)),
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('WhatsApp share coming soon!')),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
