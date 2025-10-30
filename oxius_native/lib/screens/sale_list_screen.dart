@@ -51,6 +51,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
   String? _selectedDistrict;
   String? _selectedArea;
   
+  // Search state
+  bool _isSearchActive = false;
+  
   // Location data (using proper geo models)
   List<Region> _regions = [];
   List<City> _cities = [];
@@ -192,6 +195,14 @@ class _SaleListScreenState extends State<SaleListScreen> {
         _loadMoreRecentListings();
       }
     }
+  }
+
+  Future<void> _handleRefresh() async {
+    // Refresh all data
+    await Future.wait([
+      _fetchPosts(refresh: true),
+      _fetchRecentListings(refresh: true),
+    ]);
   }
 
   Future<void> _fetchRecentListings({bool refresh = false}) async {
@@ -528,27 +539,28 @@ class _SaleListScreenState extends State<SaleListScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, IconData icon, VoidCallback onRemove, {Color color = const Color(0xFF6B7280)}) {
+  Widget _buildFilterChip(String label, IconData icon, VoidCallback onRemove, {Color? color}) {
+    final chipColor = color ?? const Color(0xFF6B7280);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: chipColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: chipColor.withOpacity(0.3), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: color),
+          Icon(icon, size: 12, color: chipColor),
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600),
+            style: TextStyle(fontSize: 11, color: chipColor, fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 4),
           GestureDetector(
             onTap: onRemove,
-            child: Icon(Icons.close, size: 14, color: color),
+            child: Icon(Icons.close, size: 14, color: chipColor),
           ),
         ],
       ),
@@ -560,14 +572,34 @@ class _SaleListScreenState extends State<SaleListScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        title: Text(
-          widget.categoryName ?? 'Sale Products',
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.2,
-          ),
-        ),
+        title: _isSearchActive
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+                decoration: InputDecoration(
+                  hintText: 'Search products...',
+                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
+                  border: InputBorder.none,
+                ),
+                onChanged: (value) {
+                  _debounceTimer?.cancel();
+                  _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+                    setState(() {
+                      _searchQuery = value.isEmpty ? null : value;
+                    });
+                    _fetchPosts();
+                  });
+                },
+              )
+            : Text(
+                widget.categoryName ?? 'Sale Products',
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
+                ),
+              ),
         backgroundColor: const Color(0xFF10B981),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -577,6 +609,23 @@ class _SaleListScreenState extends State<SaleListScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          IconButton(
+            icon: Icon(
+              _isSearchActive ? Icons.close_rounded : Icons.search_rounded,
+              size: 22,
+            ),
+            onPressed: () {
+              setState(() {
+                _isSearchActive = !_isSearchActive;
+                if (!_isSearchActive) {
+                  _searchController.clear();
+                  _searchQuery = null;
+                  _fetchPosts();
+                }
+              });
+            },
+            tooltip: _isSearchActive ? 'Close Search' : 'Search',
+          ),
           if (AuthService.isAuthenticated)
             IconButton(
               icon: const Icon(Icons.list_alt_rounded, size: 22),
@@ -594,15 +643,16 @@ class _SaleListScreenState extends State<SaleListScreen> {
       ),
       body: _isLoading && _posts.isEmpty
           ? const SaleSkeletonLoader(itemCount: 6)
-          : ListView(
-              controller: _scrollController,
-              children: [
+          : RefreshIndicator(
+              color: const Color(0xFF10B981),
+              onRefresh: _handleRefresh,
+              child: ListView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
                 // Location Header
                 if (_selectedDivision != null || _selectedDistrict != null || _selectedArea != null)
                   _buildLocationHeader(),
-                
-                // Search Bar
-                _buildSearchBar(),
                 
                 // Results Count & Sort
                 _buildResultsBar(),
@@ -617,18 +667,15 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   _buildPostsGridSection(),
                 
                 // Recent Listings
-                if (_recentListings.isNotEmpty) _buildRecentListings(),
+                _buildRecentListings(),
                 
-                // Tips and Safety
-                _buildTipsAndSafety(),
-                
-                const SizedBox(height: 70),
+                const SizedBox(height: 80),
               ],
             ),
+          ),
       floatingActionButton: AuthService.isAuthenticated
           ? FloatingActionButton.extended(
               onPressed: () {
-                // Navigate to create sale post screen
                 Navigator.pushNamed(context, '/create-sale-post');
               },
               backgroundColor: const Color(0xFF10B981),

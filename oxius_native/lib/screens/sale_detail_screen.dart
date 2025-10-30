@@ -127,14 +127,26 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        title: const Text(
-          'Product Details',
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.2,
-          ),
-        ),
+        title: _post != null
+            ? SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Text(
+                  _post!.title,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              )
+            : const Text(
+                'Product Details',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2,
+                ),
+              ),
         backgroundColor: const Color(0xFF10B981),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -478,7 +490,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           
           // Price
           Text(
-            post.price > 0 ? _formatPrice(post.price) : 'Contact for Price',
+            post.price > 0 ? _formatPrice(post.price) : 'Negotiable',
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -501,7 +513,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               _buildInfoGridItem(Icons.tag_rounded, 'Category', post.categoryName ?? 'N/A'),
               _buildInfoGridItem(Icons.layers_rounded, 'Sub-Category', post.subcategoryName ?? 'N/A'),
               _buildInfoGridItem(Icons.shield_rounded, 'Condition', _capitalizeCondition(post.condition)),
-              _buildInfoGridItem(Icons.location_on_rounded, 'Location', 
+              _buildInfoGridItem(Icons.location_on_rounded, 'Delivery to', 
                 post.division != null && post.district != null && post.area != null
                   ? '${post.division}, ${post.district}, ${post.area}'
                   : 'All Over Bangladesh'),
@@ -718,7 +730,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                             ),
                           ),
                           child: const Text(
-                            'Apply Now',
+                            'Contact Support',
                             style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                           ),
                         ),
@@ -776,7 +788,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            post.description!,
+            post.description!.replaceAll(RegExp(r'<p>|</p>'), '').trim(),
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade600,
@@ -1276,7 +1288,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                 onTap: () {
                   Navigator.pushReplacementNamed(
                     context,
-                    '/sale-detail',
+                    '/sale/detail',
                     arguments: {'slug': post.slug},
                   );
                 },
@@ -1333,16 +1345,25 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              _capitalizeTitle(post.title),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF1F2937),
-                                height: 1.2,
+                            InkWell(
+                              onTap: () {
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/sale/detail',
+                                  arguments: {'slug': post.slug},
+                                );
+                              },
+                              child: Text(
+                                _capitalizeTitle(post.title),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1F2937),
+                                  height: 1.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 4),
                             if (post.division != null && post.district != null && post.area != null) ...[
@@ -1376,7 +1397,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    post.price > 0 ? _formatPrice(post.price) : 'Contact for Price',
+                                    post.price > 0 ? _formatPrice(post.price) : 'Negotiable',
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
