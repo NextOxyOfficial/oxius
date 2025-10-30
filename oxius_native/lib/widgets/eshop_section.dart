@@ -373,17 +373,29 @@ class _EshopSectionState extends State<EshopSection> {
     final row1 = items.take(5).toList();
     final row2 = items.length > 5 ? items.sublist(5, items.length.clamp(5, 10)) : <Map<String, dynamic>>[];
 
-    const spacing = 4.0;
+    const spacing = 8.0; // Increased spacing for better touch targets
     return LayoutBuilder(
       builder: (context, constraints) {
-  final availableWidth = constraints.maxWidth;
-  // Ideal width to fit 2 cards across properly with some spacing
-  final idealWidth = (availableWidth - spacing * 3) / 2;
-        // Keep sensible min/max widths so cards don't get too small or too large
-        final cardWidth = idealWidth.clamp(160.0, 200.0);
-        // Allocate enough room for details + bottom breathing space below the button
-        const detailsMinHeight = 160.0;
-        final cardHeight = cardWidth + detailsMinHeight;        
+        final availableWidth = constraints.maxWidth;
+        final screenWidth = MediaQuery.of(context).size.width;
+        
+        // Responsive card sizing
+        final isSmallScreen = screenWidth < 360;
+        final isLargeScreen = screenWidth > 600;
+        
+        // Calculate ideal card width based on screen size
+        final crossAxisCount = isSmallScreen ? 1 : isMobile ? 2 : 3;
+        final spacingTotal = spacing * (crossAxisCount - 1);
+        final cardWidth = (availableWidth - spacingTotal) / crossAxisCount;
+        
+        // Ensure minimum and maximum card widths
+        final constrainedCardWidth = cardWidth.clamp(140.0, isLargeScreen ? 200.0 : 180.0);
+        
+        // Calculate card height based on content
+        final imageHeight = constrainedCardWidth; // Square aspect ratio
+        final detailsMinHeight = isSmallScreen ? 160.0 : isLargeScreen ? 200.0 : 180.0;
+        final cardHeight = imageHeight + detailsMinHeight;
+        
         Widget buildRow(List<Map<String, dynamic>> data) {
           return SizedBox(
             height: cardHeight,
@@ -391,17 +403,17 @@ class _EshopSectionState extends State<EshopSection> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 4),
               itemCount: data.length,
-              separatorBuilder: (_, __) => const SizedBox(width: spacing),
+              separatorBuilder: (_, __) => SizedBox(width: spacing),
               itemBuilder: (context, idx) {
                 final product = data[idx];
                 final id = (product['id'] ?? idx).toString();
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
-                  width: cardWidth,
+                  width: constrainedCardWidth,
                   child: _EshopProductCard(
                     product: product,
                     isLoading: _buyLoading.contains(id),
-                    width: cardWidth,
+                    width: constrainedCardWidth,
                     height: cardHeight,
                     onBuyNow: () {
                       _navigateToCheckout(product);
@@ -548,6 +560,20 @@ class _EshopProductCardState extends State<_EshopProductCard> {
     final title = (p['name'] ?? p['title'] ?? '---').toString();
     final imageUrl = _getImage(p);
 
+    // Get screen size for responsive design
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+    final isLargeScreen = screenWidth > 600;
+
+    // Responsive sizing
+    final buttonHeight = isSmallScreen ? 36.0 : isLargeScreen ? 48.0 : 40.0;
+    final buttonPadding = isSmallScreen ? 8.0 : isLargeScreen ? 12.0 : 10.0;
+    final iconSize = isSmallScreen ? 14.0 : isLargeScreen ? 18.0 : 16.0;
+    final textSize = isSmallScreen ? 11.0 : isLargeScreen ? 15.0 : 13.0;
+    final priceTextSize = isSmallScreen ? 14.0 : isLargeScreen ? 18.0 : 16.0;
+    final titleTextSize = isSmallScreen ? 12.0 : isLargeScreen ? 14.0 : 13.0;
+    final storeTextSize = isSmallScreen ? 10.0 : isLargeScreen ? 13.0 : 12.0;
+
     final imageHeight = widget.width; // square image
 
     return SizedBox(
@@ -691,13 +717,13 @@ class _EshopProductCardState extends State<_EshopProductCard> {
 
               // Details
               Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                       // Price Section - Moved to top (Vue: mb-2)
                       Container(
-                        margin: const EdgeInsets.only(bottom: 8),
+                        margin: const EdgeInsets.only(bottom: 6),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -707,14 +733,14 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                                   TextSpan(
                                     text: '৳',
                                     style: GoogleFonts.roboto(
-                                      fontSize: 12,
+                                      fontSize: textSize - 1,
                                       color: Colors.grey.shade500,
                                     ),
                                   ),
                                   TextSpan(
                                     text: _formatPrice(sale ?? regular),
                                     style: GoogleFonts.roboto(
-                                      fontSize: 16,
+                                      fontSize: priceTextSize,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.grey.shade800,
                                     ),
@@ -751,13 +777,13 @@ class _EshopProductCardState extends State<_EshopProductCard> {
 
                       // Product Title - Moved above store name (Vue: mb-2)
                       Container(
-                        margin: const EdgeInsets.only(bottom: 8),
+                        margin: const EdgeInsets.only(bottom: 6),
                         child: Text(
                           title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.roboto(
-                            fontSize: 13,
+                            fontSize: titleTextSize,
                             fontWeight: FontWeight.w500,
                             color: Colors.grey.shade800,
                           ),
@@ -766,7 +792,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
 
                       // Store Link - Moved below product name (Vue: mb-3)
                       Container(
-                        margin: const EdgeInsets.only(bottom: 12),
+                        margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.grey.shade50,
@@ -803,7 +829,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.roboto(
-                                  fontSize: 12,
+                                  fontSize: storeTextSize,
                                   fontWeight: FontWeight.w500,
                                   color: Colors.grey.shade600,
                                 ),
@@ -821,8 +847,8 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF374151), // Vue: bg-gray-700
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            minimumSize: const Size.fromHeight(40),
+                            padding: EdgeInsets.symmetric(vertical: buttonPadding),
+                            minimumSize: Size.fromHeight(buttonHeight),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                             elevation: 0,
@@ -831,10 +857,10 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                               ? Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
+                                    SizedBox(
+                                      width: iconSize,
+                                      height: iconSize,
+                                      child: const CircularProgressIndicator(
                                         strokeWidth: 2,
                                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                       ),
@@ -843,7 +869,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                                     Text(
                                       'Processing...',
                                       style: GoogleFonts.roboto(
-                                        fontSize: 13,
+                                        fontSize: textSize,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -852,12 +878,12 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                               : Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Icons.shopping_cart_outlined, size: 16),
+                                    Icon(Icons.shopping_cart_outlined, size: iconSize),
                                     const SizedBox(width: 8),
                                     Text(
                                       'Buy Now',
                                       style: GoogleFonts.roboto(
-                                        fontSize: 13,
+                                        fontSize: textSize,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),

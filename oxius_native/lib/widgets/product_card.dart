@@ -26,6 +26,11 @@ class _ProductCardState extends State<ProductCard> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+    final isSmallScreen = screenWidth < 360;
+    final isLargeScreen = screenWidth > 600;
+
     final p = widget.product;
     final title = p['name'] ?? p['title'] ?? 'Product';
     final regular = p['regular_price'] ?? p['price'];
@@ -33,6 +38,14 @@ class _ProductCardState extends State<ProductCard> {
     final imageUrl = _getProductImageUrl(p);
     final discount = _calcDiscount(sale, regular);
     final isFreeDelivery = p['is_free_delivery'] == true;
+
+    // Responsive sizing
+    final buttonHeight = isSmallScreen ? 32.0 : isLargeScreen ? 44.0 : 36.0;
+    final iconSize = isSmallScreen ? 12.0 : isLargeScreen ? 16.0 : 14.0;
+    final textSize = isSmallScreen ? 11.0 : isLargeScreen ? 14.0 : 12.0;
+    final priceTextSize = isSmallScreen ? 14.0 : isLargeScreen ? 18.0 : 15.0;
+    final storeIconSize = isSmallScreen ? 14.0 : isLargeScreen ? 18.0 : 16.0;
+    final storeTextSize = isSmallScreen ? 9.0 : isLargeScreen ? 12.0 : 10.0;
 
     final navigationCallback = widget.onTap ?? () {
       Navigator.push(
@@ -131,12 +144,12 @@ class _ProductCardState extends State<ProductCard> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.flash_on, size: 12, color: Colors.white),
+                                Icon(Icons.flash_on, size: iconSize - 2, color: Colors.white),
                                 const SizedBox(width: 4),
                                 Text(
                                   '$discount% OFF',
                                   style: GoogleFonts.roboto(
-                                    fontSize: 10,
+                                    fontSize: textSize - 1,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
                                   ),
@@ -233,14 +246,14 @@ class _ProductCardState extends State<ProductCard> {
                                 TextSpan(
                                   text: '৳',
                                   style: GoogleFonts.roboto(
-                                    fontSize: 11,
+                                    fontSize: textSize - 1,
                                     color: Colors.grey.shade500,
                                   ),
                                 ),
                                 TextSpan(
                                   text: _formatPrice(sale ?? regular),
                                   style: GoogleFonts.roboto(
-                                    fontSize: 15,
+                                    fontSize: priceTextSize,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.grey.shade800,
                                   ),
@@ -283,7 +296,7 @@ class _ProductCardState extends State<ProductCard> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.roboto(
-                          fontSize: 11,
+                          fontSize: textSize,
                           fontWeight: FontWeight.w500,
                           color: Colors.grey.shade800,
                         ),
@@ -346,7 +359,7 @@ class _ProductCardState extends State<ProductCard> {
                     // Full Width Buy Now Button
                     SizedBox(
                       width: double.infinity,
-                      height: 36,
+                      height: buttonHeight,
                       child: ElevatedButton(
                         onPressed: widget.isLoading ? null : widget.onBuyNow,
                         style: ElevatedButton.styleFrom(
@@ -356,13 +369,13 @@ class _ProductCardState extends State<ProductCard> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 6 : 8),
                         ),
                         child: widget.isLoading
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
+                            ? SizedBox(
+                                width: iconSize,
+                                height: iconSize,
+                                child: const CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
@@ -371,12 +384,12 @@ class _ProductCardState extends State<ProductCard> {
                                 mainAxisSize: MainAxisSize.min,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.shopping_cart_outlined, size: 14),
+                                  Icon(Icons.shopping_cart_outlined, size: iconSize),
                                   const SizedBox(width: 6),
                                   Text(
                                     'Buy Now',
                                     style: GoogleFonts.roboto(
-                                      fontSize: 12,
+                                      fontSize: textSize,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),

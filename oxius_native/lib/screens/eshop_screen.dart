@@ -407,7 +407,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                           _eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty
                             ? SizedBox(
                                 width: 50,
-                                height: 22,
+                                height: 26,
                                 child: Image.network(
                                   _eshopLogoUrl!,
                                   fit: BoxFit.contain,
@@ -725,7 +725,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       padding: const EdgeInsets.fromLTRB(4, 8, 4, 80),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.64,
+        childAspectRatio: 0.60,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
       ),
@@ -797,6 +797,25 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
     return Column(
       children: [
+        // All Products Title
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 4),
+          child: Row(
+            children: [
+              Icon(Icons.inventory_2_rounded, size: 20, color: Colors.grey.shade600),
+              const SizedBox(width: 8),
+              Text(
+                'All Products',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade800,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: LayoutBuilder(
@@ -810,7 +829,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.62,
+                  childAspectRatio: 0.58,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
                 ),

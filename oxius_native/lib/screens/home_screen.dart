@@ -47,6 +47,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isHeaderVisible = true;
   double _lastScrollPosition = 0;
 
+  // Double-tap back to exit
+  DateTime? _lastBackPressTime;
+
   // Helper method to translate keys
   String t(String key) {
     return _translationService.translate(key);
@@ -141,18 +144,67 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  Future<bool> _onWillPop() async {
+    final now = DateTime.now();
+    final backButtonHasNotBeenPressedOrSnackBarHasBeenClosed =
+        _lastBackPressTime == null ||
+            now.difference(_lastBackPressTime!) > const Duration(seconds: 2);
+
+    if (backButtonHasNotBeenPressedOrSnackBarHasBeenClosed) {
+      _lastBackPressTime = now;
+      
+      // Show toast message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.info_outline, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Press back again to exit',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF374151),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      }
+      return false; // Don't exit
+    }
+    return true; // Exit app
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.white,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade50,
-        drawer: const MobileDrawer(),
-        body: Stack(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) async {
+        if (didPop) return;
+        final shouldPop = await _onWillPop();
+        if (shouldPop && mounted) {
+          SystemNavigator.pop();
+        }
+      },
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.white,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.grey.shade50,
+          drawer: const MobileDrawer(),
+          body: Stack(
         children: [
           // Scrollable content area
           SingleChildScrollView(
@@ -307,6 +359,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+        ),
       ),
     );
   }
