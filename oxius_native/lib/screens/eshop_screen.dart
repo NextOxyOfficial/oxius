@@ -846,7 +846,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       children: [
         // All Products Title
         Padding(
-          padding: const EdgeInsets.fromLTRB(4, 8, 4, 4),
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
           child: Row(
             children: [
               Icon(Icons.inventory_2_rounded, size: 20, color: Colors.grey.shade600),
@@ -864,7 +864,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: LayoutBuilder(
             builder: (context, constraints) {
               const spacing = 8.0;
@@ -874,6 +874,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   childAspectRatio: 0.60,
