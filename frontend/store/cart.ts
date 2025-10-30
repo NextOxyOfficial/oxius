@@ -8,16 +8,20 @@ export const useStoreCart = defineStore("cart", {
 
   getters: {
     totalPrice: (state) =>
-      state.products.reduce(
-        (acc: number, product) => acc + product.sale_price * product.count,
-        0
-      ),
+      Array.isArray(state.products)
+        ? state.products.reduce(
+            (acc: number, product) => acc + product.sale_price * product.count,
+            0
+          )
+        : 0,
 
     totalDiscountPrice: (state) =>
-      state.products.reduce(
-        (acc: number, product) => acc + product.sale_price * product.count,
-        0
-      ),
+      Array.isArray(state.products)
+        ? state.products.reduce(
+            (acc: number, product) => acc + product.sale_price * product.count,
+            0
+          )
+        : 0,
   },
 
   actions: {

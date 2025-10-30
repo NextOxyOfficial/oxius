@@ -172,6 +172,19 @@ export default defineNuxtConfig({
   },
   image: {
     dir: "/static/frontend/",
+    domains: ["adsyclub.com"],
+    alias: {
+      media: "/media",
+    },
+    providers: {
+      customProvider: {
+        name: "customProvider",
+        provider: "~/providers/image-provider.ts",
+        options: {
+          baseURL: process.env.NODE_ENV === "production" ? "https://adsyclub.com" : "http://127.0.0.1:8000",
+        },
+      },
+    },
   },
   pages: true, // Enable file-based routing
 
