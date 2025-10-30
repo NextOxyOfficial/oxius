@@ -17,31 +17,23 @@ class NotificationItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: notification.read 
-              ? Colors.grey.shade200 
-              : const Color(0xFF3B82F6).withOpacity(0.3),
-          width: notification.read ? 1 : 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+        color: notification.read 
+            ? Colors.white 
+            : const Color(0xFFEFF6FF),
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey.shade100,
+            width: 0.5,
           ),
-        ],
+        ),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(10),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -52,14 +44,8 @@ class NotificationItem extends StatelessWidget {
                     Container(
                       width: 44,
                       height: 44,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: notification.read 
-                              ? Colors.grey.shade200 
-                              : Colors.blue.shade500,
-                          width: 2,
-                        ),
                       ),
                       child: ClipOval(
                         child: notification.actor?.image != null
@@ -76,24 +62,18 @@ class NotificationItem extends StatelessWidget {
                 
                 // Type icon badge
                 Positioned(
-                  bottom: -2,
-                  right: -2,
+                  bottom: -1,
+                  right: -1,
                   child: Container(
-                    padding: const EdgeInsets.all(5),
+                    padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
                       color: _getTypeColor(),
                       shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
+                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
                     child: Icon(
                       _getTypeIcon(),
-                      size: 12,
+                      size: 9,
                       color: Colors.white,
                     ),
                   ),
@@ -114,16 +94,15 @@ class NotificationItem extends StatelessWidget {
                         fontSize: 13,
                         color: Colors.grey.shade800,
                         height: 1.3,
-                        fontWeight: notification.read 
-                            ? FontWeight.w500 
-                            : FontWeight.w600,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: -0.3,
                       ),
                       children: [
                         TextSpan(
                           text: notification.actor?.name ?? 'Someone',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1F2937),
+                          style: TextStyle(
+                            fontWeight: notification.read ? FontWeight.w600 : FontWeight.w700,
+                            color: const Color(0xFF050505),
                           ),
                         ),
                         TextSpan(
@@ -135,74 +114,44 @@ class NotificationItem extends StatelessWidget {
                   
                   if (notification.content != null && notification.content!.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.only(top: 3),
+                      padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         notification.content!,
                         style: TextStyle(
                           fontSize: 12,
-                          height: 1.3,
-                          color: notification.read 
-                              ? Colors.grey.shade600 
-                              : const Color(0xFF374151),
+                          height: 1.2,
+                          color: Colors.grey.shade600,
+                          letterSpacing: -0.2,
                         ),
-                        maxLines: 2,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 3),
                   
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time_rounded,
-                        size: 11,
-                        color: Colors.grey.shade500,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        TimeUtils.formatTimeAgo(notification.createdAt),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                      
-                      if (!notification.read) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF3B82F6),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ],
-                    ],
+                  Text(
+                    TimeUtils.formatTimeAgo(notification.createdAt),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade500,
+                      letterSpacing: -0.2,
+                    ),
                   ),
                 ],
               ),
             ),
             
-            // Mark as read button
+            // Unread indicator dot
             if (!notification.read)
               Container(
-                margin: const EdgeInsets.only(left: 4),
-                child: IconButton(
-                  onPressed: onMarkAsRead,
-                  icon: const Icon(
-                    Icons.check_circle_rounded,
-                    size: 22,
-                    color: Color(0xFF3B82F6),
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 32,
-                    minHeight: 32,
-                  ),
-                  tooltip: 'Mark as read',
+                margin: const EdgeInsets.only(left: 6),
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF1877F2),
+                  shape: BoxShape.circle,
                 ),
               ),
             ],
@@ -215,21 +164,15 @@ class NotificationItem extends StatelessWidget {
 
   Widget _buildAvatarFallback() {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [const Color(0xFF3B82F6).withOpacity(0.15), const Color(0xFF6366F1).withOpacity(0.2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+      color: Colors.grey.shade300,
       child: Center(
         child: Text(
           _getInitials(),
-          style: const TextStyle(
-            color: Color(0xFF3B82F6),
-            fontWeight: FontWeight.w700,
+          style: TextStyle(
+            color: Colors.grey.shade700,
+            fontWeight: FontWeight.w600,
             fontSize: 16,
-            letterSpacing: -0.5,
+            letterSpacing: -0.2,
           ),
         ),
       ),

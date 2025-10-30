@@ -31,6 +31,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void initState() {
     super.initState();
     _loadNotifications(isInitial: true);
+    _markAllNotificationsAsRead();
+  }
+
+  Future<void> _markAllNotificationsAsRead() async {
+    // Mark all as read after a short delay to let user see the count
+    await Future.delayed(const Duration(milliseconds: 800));
+    final success = await NotificationService.markAllAsRead();
+    if (success && mounted) {
+      // Reload to update UI
+      _loadNotifications();
+    }
   }
 
   Future<void> _loadNotifications({bool isInitial = false}) async {
@@ -52,12 +63,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         print('📱 Notifications type: ${notifications.runtimeType}');
         print('📱 Notifications value: $notifications');
         
+        print('📱 Raw notifications from result: $notifications');
+        print('📱 Notifications is List<NotificationModel>: ${notifications is List<NotificationModel>}');
+        print('📱 Notifications is List: ${notifications is List}');
+        
         setState(() {
           if (notifications is List<NotificationModel>) {
+            print('📱 Case 1: Direct assignment');
             _notifications = notifications;
           } else if (notifications is List) {
+            print('📱 Case 2: Converting list - length: ${notifications.length}');
             _notifications = List<NotificationModel>.from(notifications);
+            print('📱 After conversion: ${_notifications.length}');
           } else {
+            print('📱 Case 3: Empty - notifications is: ${notifications.runtimeType}');
             _notifications = [];
           }
           
@@ -68,27 +87,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         });
         
         print('📱 State updated: ${_notifications.length} notifications, $_unreadCount unread, loading: $_isLoading');
-        print('📱 Notifications list: $_notifications');
+        print('📱 First notification: ${_notifications.isNotEmpty ? _notifications.first : 'none'}');
         
-        // Show success message only when manually refreshing
-        if (!isInitial && _isRefreshing) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.check_circle, color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                  Text('Refreshed ${_notifications.length} notification${_notifications.length != 1 ? 's' : ''}'),
-                ],
-              ),
-              backgroundColor: const Color(0xFF22C55E),
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 2),
-              margin: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          );
-        }
         _isRefreshing = false;
       }
     } catch (e) {
@@ -528,7 +528,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       displacement: 40,
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        padding: EdgeInsets.zero,
         itemCount: _notifications.length + (_hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == _notifications.length) {
@@ -536,13 +536,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           }
           
           final notification = _notifications[index];
-          return Container(
-            margin: const EdgeInsets.only(bottom: 6),
-            child: NotificationItem(
-              notification: notification,
-              onTap: () => _handleNotificationTap(notification),
-              onMarkAsRead: () => _markAsRead(notification.id),
-            ),
+          return NotificationItem(
+            notification: notification,
+            onTap: () => _handleNotificationTap(notification),
+            onMarkAsRead: () => _markAsRead(notification.id),
           );
         },
       ),

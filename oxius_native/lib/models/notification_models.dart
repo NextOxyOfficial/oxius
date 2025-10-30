@@ -58,7 +58,7 @@ class NotificationModel {
 }
 
 class NotificationActor {
-  final int id;
+  final String id;
   final String name;
   final String? image;
   final String? username;
@@ -72,7 +72,7 @@ class NotificationActor {
 
   factory NotificationActor.fromJson(Map<String, dynamic> json) {
     return NotificationActor(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '0',
       name: json['name'] ?? json['username'] ?? 'Unknown User',
       image: json['image'] ?? json['avatar'],
       username: json['username'],
