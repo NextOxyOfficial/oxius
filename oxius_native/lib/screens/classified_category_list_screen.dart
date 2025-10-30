@@ -579,8 +579,12 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                   height: 85,
                   color: const Color(0xFFF3F4F6),
                   child: post.medias != null && post.medias!.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: post.medias!.first.image ?? '',
+                      ? Builder(
+                          builder: (context) {
+                            final imageUrl = post.medias!.first.image ?? '';
+                            print('🖼️ Classified List - Image URL: $imageUrl');
+                            return CachedNetworkImage(
+                              imageUrl: imageUrl,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => const Center(
                             child: SizedBox(
@@ -614,6 +618,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                               ],
                             ),
                           ),
+                            );
+                          },
                         )
                       : post.categoryDetails?.image != null
                           ? CachedNetworkImage(

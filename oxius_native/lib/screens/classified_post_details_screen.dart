@@ -7,6 +7,7 @@ import 'package:flutter_html/flutter_html.dart';
 import '../models/classified_post.dart';
 import '../services/classified_post_service.dart';
 import '../services/api_service.dart';
+import '../config/app_config.dart';
 
 class ClassifiedPostDetailsScreen extends StatefulWidget {
   final String postId;
@@ -538,9 +539,13 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                     },
                     itemCount: hasImages ? images.length : 1,
                     itemBuilder: (context, index) {
-                      final imageUrl = hasImages
+                      final rawImageUrl = hasImages
                           ? images[index].image!
                           : _post!.categoryDetails!.image!;
+                      
+                      // Convert to absolute URL using AppConfig
+                      final imageUrl = AppConfig.getAbsoluteUrl(rawImageUrl);
+                      print('🖼️ Classified Details - Raw: $rawImageUrl → Absolute: $imageUrl');
                       
                       return CachedNetworkImage(
                         imageUrl: imageUrl,
@@ -550,10 +555,23 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[400]!),
                           ),
                         ),
-                        errorWidget: (context, url, error) => Icon(
-                          Icons.error,
-                          color: Colors.grey[400],
-                        ),
+                        errorWidget: (context, url, error) {
+                          print('❌ Classified Details - Image load error for $url: $error');
+                          return Container(
+                            color: Colors.grey[800],
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.broken_image_rounded, color: Colors.grey[400], size: 48),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Image failed to load',
+                                  style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
