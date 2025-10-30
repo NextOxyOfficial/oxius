@@ -222,7 +222,7 @@ class _ProductCardState extends State<ProductCard> {
               // Details - Reduced padding for more compact layout
               Flexible(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 6),
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 3),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -357,10 +357,12 @@ class _ProductCardState extends State<ProductCard> {
                     // End of product info InkWell
 
                     // Full Width Buy Now Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: buttonHeight,
-                      child: ElevatedButton(
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: buttonHeight,
+                        child: ElevatedButton(
                         onPressed: widget.isLoading ? null : widget.onBuyNow,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF374151),
@@ -396,7 +398,8 @@ class _ProductCardState extends State<ProductCard> {
                                 ],
                               ),
                       ),
-                    ), // End Buy Now InkWell
+                    ),
+                    ), // End Buy Now Button Padding
                   ], // End Column children (details column)
                 ), // End Column
               ), // End Padding

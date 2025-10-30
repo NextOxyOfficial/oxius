@@ -1,15 +1,12 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/settings_service.dart';
 import '../services/translation_service.dart';
 import '../services/user_state_service.dart';
 import '../models/user_profile.dart';
-import '../widgets/footer.dart';
-import '../widgets/mobile_drawer.dart';
-import 'debug_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
-import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 
@@ -201,97 +198,594 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768;
-    final isSmallMobile = screenWidth < 640;
-
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      drawer: const MobileDrawer(),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        title: const Text(
-          'Settings',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Modern Header (no AppBar)
+            _buildModernHeader(),
+            
+            // Tab Bar
+            _buildCompactTabBar(),
+            
+            // Content
+            Expanded(
+              child: _activeTab == 'profile'
+                  ? _buildProfileContent()
+                  : _buildPasswordContent(),
+            ),
+          ],
         ),
-        iconTheme: IconThemeData(color: Colors.grey[800]),
       ),
-      body: Column(
+    );
+  }
+
+  Widget _buildModernHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(4, 12, 4, 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+        ),
+      ),
+      child: Row(
         children: [
-          
-          // Scrollable content area
-          Expanded(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.grey[50]!,
-                      Colors.grey[100]!,
-                    ],
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    // Settings Content
-                    Container(
-                      constraints: BoxConstraints(
-                        maxWidth: screenWidth < 896 ? double.infinity : 896,
-                      ),
-                      margin: EdgeInsets.symmetric(
-                        horizontal: isSmallMobile ? 4 : 8,
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        vertical: isSmallMobile ? 16 : 24,
-                      ),
-                      child: Column(
-                        children: [
-                          // User Info Summary
-                          if (_userProfile != null) _buildUserInfoSummary(isSmallMobile),
-                          
-                          SizedBox(height: isSmallMobile ? 16 : 24),
-                          
-                          // Settings Navigation & Content
-                          _buildSettingsContent(isSmallMobile, isMobile),
-                          
-                          // Spacer for sticky button
-                          if (_activeTab == 'profile') SizedBox(height: isSmallMobile ? 96 : 64),
-                        ],
-                      ),
-                    ),
-                    
-                    // Footer
-                    AppFooter(
-                      showMobileNav: isMobile,
-                    ),
-                  ],
-                ),
-              ),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.arrow_back_rounded, size: 22),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            color: const Color(0xFF374151),
+          ),
+          const SizedBox(width: 12),
+          const Text(
+            'Settings',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF111827),
+              letterSpacing: -0.3,
             ),
           ),
         ],
       ),
-      floatingActionButton: _activeTab == 'profile' && _formDirty
-          ? AnimatedSlide(
-              duration: const Duration(milliseconds: 300),
-              offset: _showStickyButton ? Offset.zero : const Offset(0, 2),
-              child: _buildStickyButton(isSmallMobile),
-            )
-          : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  // Build methods
-  
+  Widget _buildCompactTabBar() {
+    return Container(
+      margin: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildCompactTab('profile', 'Profile', Icons.person_rounded),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: _buildCompactTab('password', 'Password', Icons.lock_rounded),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactTab(String tab, String label, IconData icon) {
+    final isActive = _activeTab == tab;
+    return GestureDetector(
+      onTap: () => setState(() => _activeTab = tab),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF10B981) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isActive ? Colors.white : Colors.grey.shade600,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isActive ? Colors.white : Colors.grey.shade600,
+                letterSpacing: -0.1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileContent() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFF10B981)),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Profile Image Section
+          _buildCompactImageSection(),
+          const SizedBox(height: 8),
+          
+          // Personal Info
+          _buildCompactSection(
+            'Personal Information',
+            Icons.person_outline,
+            [
+              _buildCompactField('First Name', _firstNameController, Icons.person_rounded),
+              _buildCompactField('Last Name', _lastNameController, Icons.person_rounded),
+              _buildCompactField('Phone', _phoneController, Icons.phone_rounded),
+              _buildCompactField('Profession', _professionController, Icons.work_outline_rounded),
+              _buildCompactField('Company', _companyController, Icons.business_rounded),
+              _buildCompactField('Website', _websiteController, Icons.link_rounded),
+            ],
+          ),
+          const SizedBox(height: 8),
+          
+          // Address Info
+          _buildCompactSection(
+            'Address',
+            Icons.location_on_outlined,
+            [
+              _buildCompactField('Address', _addressController, Icons.home_rounded),
+              _buildCompactField('City', _cityController, Icons.location_city_rounded),
+              _buildCompactField('State', _stateController, Icons.map_rounded),
+              _buildCompactField('ZIP', _zipController, Icons.pin_drop_rounded),
+            ],
+          ),
+          const SizedBox(height: 8),
+          
+          // Social Media
+          _buildCompactSection(
+            'Social Media',
+            Icons.share_rounded,
+            [
+              _buildCompactField('Facebook', _facebookController, Icons.facebook),
+              _buildCompactField('Instagram', _instagramController, Icons.camera_alt_rounded),
+              _buildCompactField('WhatsApp', _whatsappController, Icons.chat_rounded),
+            ],
+          ),
+          const SizedBox(height: 8),
+          
+          // About
+          _buildCompactSection(
+            'About Me',
+            Icons.description_outlined,
+            [
+              _buildCompactField('About', _aboutController, Icons.text_fields, maxLines: 3),
+            ],
+          ),
+          const SizedBox(height: 12),
+          
+          // Save Button
+          _buildSaveButton(),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasswordContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(4),
+      child: Column(
+        children: [
+          _buildCompactSection(
+            'Change Password',
+            Icons.lock_outline,
+            [
+              _buildCompactField('Current Password', _oldPasswordController, Icons.lock_rounded, isPassword: true),
+              _buildCompactField('New Password', _newPasswordController, Icons.lock_rounded, isPassword: true),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildChangePasswordButton(),
+          const SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactImageSection() {
+    return Column(
+      children: [
+        // Profile Image Card
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Colors.grey.shade50],
+            ),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Profile Image with gradient border
+              Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                  ),
+                ),
+                child: Container(
+                  width: 56,
+                  height: 56,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                  child: ClipOval(
+                    child: _userProfile?.image != null
+                        ? CachedNetworkImage(
+                            key: ValueKey(_userProfile!.image!),
+                            imageUrl: _userProfile!.image!,
+                            fit: BoxFit.cover,
+                            errorWidget: (context, url, error) => const Icon(Icons.person, size: 28, color: Colors.grey),
+                          )
+                        : const Icon(Icons.person, size: 28, color: Colors.grey),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${_userProfile?.firstName ?? ''} ${_userProfile?.lastName ?? ''}'.trim(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _userProfile?.email ?? '',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: IconButton(
+                  onPressed: _pickProfileImage,
+                  icon: const Icon(Icons.camera_alt_rounded, size: 18),
+                  color: const Color(0xFF10B981),
+                  padding: const EdgeInsets.all(8),
+                  constraints: const BoxConstraints(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        
+        // Banner Upload Card
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.image_rounded, size: 14, color: Colors.grey.shade700),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Store Banner',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade700,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: _pickBannerImage,
+                child: Container(
+                  width: double.infinity,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.grey.shade300,
+                      style: BorderStyle.solid,
+                    ),
+                  ),
+                  child: _userProfile?.storeBanner != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Stack(
+                            children: [
+                              CachedNetworkImage(
+                                key: ValueKey(_userProfile!.storeBanner!),
+                                imageUrl: _userProfile!.storeBanner!,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                errorWidget: (context, url, error) => _buildBannerPlaceholder(),
+                              ),
+                              Positioned(
+                                top: 4,
+                                right: 4,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  padding: const EdgeInsets.all(6),
+                                  child: const Icon(Icons.edit, size: 14, color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : _buildBannerPlaceholder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBannerPlaceholder() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.add_photo_alternate_outlined, size: 32, color: Colors.grey.shade400),
+        const SizedBox(height: 4),
+        Text(
+          'Upload Banner',
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCompactSection(String title, IconData icon, List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: const Color(0xFF10B981)),
+              const SizedBox(width: 6),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactField(
+    String label,
+    TextEditingController controller,
+    IconData icon, {
+    int maxLines = 1,
+    bool isPassword = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: TextFormField(
+        controller: controller,
+        obscureText: isPassword,
+        maxLines: maxLines,
+        style: const TextStyle(fontSize: 13),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(fontSize: 12),
+          prefixIcon: Icon(icon, size: 18, color: Colors.grey.shade600),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Color(0xFF10B981)),
+          ),
+          filled: true,
+          fillColor: Colors.grey.shade50,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSaveButton() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: ElevatedButton(
+        onPressed: _isProcessing ? null : _saveProfile,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF10B981),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          elevation: 0,
+        ),
+        child: _isProcessing
+            ? const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
+            : const Text('Save Profile', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
+
+  Widget _buildChangePasswordButton() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: ElevatedButton(
+        onPressed: _passwordLoading ? null : _changePassword,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF10B981),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          elevation: 0,
+        ),
+        child: _passwordLoading
+            ? const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              )
+            : const Text('Change Password', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
+
+  Future<void> _saveProfile() async {
+    if (_userProfile == null) return;
+    
+    setState(() => _isProcessing = true);
+    
+    try {
+      final profileData = {
+        'first_name': _firstNameController.text.trim(),
+        'last_name': _lastNameController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'address': _addressController.text.trim(),
+        'city': _cityController.text.trim(),
+        'state': _stateController.text.trim(),
+        'zip': _zipController.text.trim(),
+        'face_link': _facebookController.text.trim(),
+        'instagram_link': _instagramController.text.trim(),
+        'whatsapp_link': _whatsappController.text.trim(),
+        'profession': _professionController.text.trim(),
+        'company': _companyController.text.trim(),
+        'website': _websiteController.text.trim(),
+        'about': _aboutController.text.trim(),
+      };
+
+      final result = await SettingsService.updateProfile(_userProfile!.email, profileData);
+
+      if (result['success'] == true) {
+        _showSnackBar('Profile updated successfully');
+        await _loadUserProfile();
+      } else {
+        _showSnackBar(result['message'] ?? 'Failed to update profile', isError: true);
+      }
+    } catch (e) {
+      _showSnackBar('Failed to update profile', isError: true);
+    } finally {
+      setState(() => _isProcessing = false);
+    }
+  }
+
+  Future<void> _changePassword() async {
+    if (_oldPasswordController.text.isEmpty || _newPasswordController.text.isEmpty) {
+      _showSnackBar('Please fill all fields', isError: true);
+      return;
+    }
+
+    if (_newPasswordController.text.length < 8) {
+      _showSnackBar('Password must be at least 8 characters', isError: true);
+      return;
+    }
+
+    setState(() => _passwordLoading = true);
+
+    try {
+      final result = await SettingsService.changePassword(
+        oldPassword: _oldPasswordController.text,
+        newPassword: _newPasswordController.text,
+      );
+
+      if (result['success'] == true) {
+        _oldPasswordController.clear();
+        _newPasswordController.clear();
+        _showSnackBar('Password changed successfully');
+      } else {
+        _showSnackBar(result['message'] ?? 'Failed to change password', isError: true);
+      }
+    } catch (e) {
+      _showSnackBar('Failed to change password', isError: true);
+    } finally {
+      setState(() => _passwordLoading = false);
+    }
+  }
+
+  // Old methods below - can be removed later
   Widget _buildUserInfoSummary(bool isSmallMobile) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -425,12 +919,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Expanded(
                   child: _buildTabButton('password', 'Password', Icons.lock, isSmallMobile),
                 ),
-                if (kDebugMode) ...[
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildTabButton('debug', 'Debug', Icons.bug_report, isSmallMobile),
-                  ),
-                ],
               ],
             ),
           ),
@@ -440,9 +928,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: EdgeInsets.all(isSmallMobile ? 12 : 16),
             child: _activeTab == 'profile'
                 ? _buildProfileTab(isSmallMobile, isMobile)
-                : _activeTab == 'password'
-                    ? _buildPasswordTab(isSmallMobile)
-                    : _buildDebugTab(isSmallMobile),
+                : _buildPasswordTab(isSmallMobile),
           ),
         ],
       ),
@@ -1752,87 +2238,175 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // Image and banner upload methods
   Future<void> _pickProfileImage() async {
+    if (_userProfile == null) return;
+
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     
     if (image == null) return;
 
+    setState(() => _isProcessing = true);
+
     try {
-      final File imageFile = File(image.path);
-      final bytes = await imageFile.readAsBytes();
+      // Use XFile.readAsBytes() for web compatibility
+      final bytes = await image.readAsBytes();
+      
+      // Check file size (max 5MB)
+      if (bytes.length > 5 * 1024 * 1024) {
+        _showSnackBar('Image too large. Max size is 5MB', isError: true);
+        setState(() => _isProcessing = false);
+        return;
+      }
       
       // Decode the image
       img.Image? originalImage = img.decodeImage(bytes);
       if (originalImage == null) {
         _showSnackBar('Failed to process image', isError: true);
+        setState(() => _isProcessing = false);
         return;
       }
 
-      // Resize to max 1024x1024 while maintaining aspect ratio
-      img.Image resized = img.copyResize(
-        originalImage,
-        width: originalImage.width > originalImage.height ? 1024 : null,
-        height: originalImage.height >= originalImage.width ? 1024 : null,
-      );
+      // Resize to 300x300 for profile image
+      img.Image resized = img.copyResize(originalImage, width: 300, height: 300);
 
       // Encode as JPEG with 85% quality
       final compressed = img.encodeJpg(resized, quality: 85);
       
+      print('Profile image size: ${compressed.length} bytes');
+      
       // Convert to base64
-      final base64Image = 'data:image/jpeg;base64,${base64Encode(compressed)}';
+      final base64Image = base64Encode(compressed);
+      final dataUri = 'data:image/jpeg;base64,$base64Image';
       
-      setState(() {
-        _userProfile = _userProfile?.copyWith(image: base64Image);
-        _checkFormChanges();
-      });
+      print('Uploading profile image to server...');
       
-      _showSnackBar('Profile image uploaded successfully');
-    } catch (e) {
-      _showSnackBar('Failed to upload image', isError: true);
+      // Upload to server
+      final result = await SettingsService.updateProfile(
+        _userProfile!.email,
+        {'image': dataUri},
+      );
+
+      print('Upload result: ${result['success']}');
+
+      if (result['success'] == true) {
+        // Clear image cache for the new profile image
+        if (_userProfile?.image != null) {
+          await CachedNetworkImage.evictFromCache(_userProfile!.image!);
+        }
+        
+        setState(() {
+          _userProfile = UserProfile.fromJson(result['data']);
+          _originalProfile = UserProfile.fromJson(json.decode(json.encode(result['data'])));
+        });
+        
+        // Force rebuild after a short delay to ensure cache is cleared
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (mounted) {
+          setState(() {});
+        }
+        
+        _showSnackBar('Profile image uploaded successfully');
+      } else {
+        final errorMsg = result['message'] ?? 'Failed to upload image';
+        print('Upload failed: $errorMsg');
+        _showSnackBar(errorMsg, isError: true);
+      }
+    } catch (e, stackTrace) {
+      print('Profile image upload error: $e');
+      print('Stack trace: $stackTrace');
+      _showSnackBar('Failed to upload image: ${e.toString()}', isError: true);
+    } finally {
+      setState(() => _isProcessing = false);
     }
   }
 
   Future<void> _pickBannerImage() async {
+    if (_userProfile == null) return;
+
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     
     if (image == null) return;
 
+    setState(() => _isProcessing = true);
+
     try {
-      final File imageFile = File(image.path);
-      final bytes = await imageFile.readAsBytes();
+      // Use XFile.readAsBytes() for web compatibility
+      final bytes = await image.readAsBytes();
+      
+      // Check file size (max 5MB)
+      if (bytes.length > 5 * 1024 * 1024) {
+        _showSnackBar('Image too large. Max size is 5MB', isError: true);
+        setState(() => _isProcessing = false);
+        return;
+      }
       
       // Decode the image
       img.Image? originalImage = img.decodeImage(bytes);
       if (originalImage == null) {
         _showSnackBar('Failed to process banner image', isError: true);
+        setState(() => _isProcessing = false);
         return;
       }
 
-      // Resize to max 1920x600 while maintaining aspect ratio
+      // Resize to max 800x300 while maintaining aspect ratio
       img.Image resized;
-      if (originalImage.width > 1920) {
-        resized = img.copyResize(originalImage, width: 1920);
-      } else if (originalImage.height > 600) {
-        resized = img.copyResize(originalImage, height: 600);
+      if (originalImage.width > 800) {
+        resized = img.copyResize(originalImage, width: 800);
+      } else if (originalImage.height > 300) {
+        resized = img.copyResize(originalImage, height: 300);
       } else {
         resized = originalImage;
       }
 
-      // Encode as JPEG with 90% quality
-      final compressed = img.encodeJpg(resized, quality: 90);
+      // Encode as JPEG with 80% quality for smaller size
+      final compressed = img.encodeJpg(resized, quality: 80);
+      
+      print('Banner image size: ${compressed.length} bytes');
       
       // Convert to base64
-      final base64Image = 'data:image/jpeg;base64,${base64Encode(compressed)}';
+      final base64Image = base64Encode(compressed);
+      final dataUri = 'data:image/jpeg;base64,$base64Image';
       
-      setState(() {
-        _userProfile = _userProfile?.copyWith(storeBanner: base64Image);
-        _checkFormChanges();
-      });
+      print('Uploading banner to server...');
       
-      _showSnackBar('Banner image uploaded successfully');
-    } catch (e) {
-      _showSnackBar('Failed to upload banner', isError: true);
+      // Upload to server
+      final result = await SettingsService.updateProfile(
+        _userProfile!.email,
+        {'store_banner': dataUri},
+      );
+
+      print('Upload result: ${result['success']}');
+
+      if (result['success'] == true) {
+        // Clear image cache for the new banner
+        if (_userProfile?.storeBanner != null) {
+          await CachedNetworkImage.evictFromCache(_userProfile!.storeBanner!);
+        }
+        
+        setState(() {
+          _userProfile = UserProfile.fromJson(result['data']);
+          _originalProfile = UserProfile.fromJson(json.decode(json.encode(result['data'])));
+        });
+        
+        // Force rebuild after a short delay to ensure cache is cleared
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (mounted) {
+          setState(() {});
+        }
+        
+        _showSnackBar('Banner uploaded successfully');
+      } else {
+        final errorMsg = result['message'] ?? 'Failed to upload banner';
+        print('Upload failed: $errorMsg');
+        _showSnackBar(errorMsg, isError: true);
+      }
+    } catch (e, stackTrace) {
+      print('Banner upload error: $e');
+      print('Stack trace: $stackTrace');
+      _showSnackBar('Failed to upload banner: ${e.toString()}', isError: true);
+    } finally {
+      setState(() => _isProcessing = false);
     }
   }
 
@@ -1999,179 +2573,4 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Widget _buildDebugTab(bool isSmallMobile) {
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 600),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.bug_report,
-                        color: Colors.orange.shade700,
-                        size: 28,
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Debug Tools',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Development tools and configuration viewer. Only visible in debug mode.',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // Full Debug Screen Button
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DebugScreen(),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.settings_applications),
-                    label: const Text('Open Debug Screen'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade700,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  const Divider(),
-                  const SizedBox(height: 16),
-                  
-                  // Quick Info
-                  _buildDebugInfoRow(
-                    'Environment',
-                    kDebugMode ? 'Development' : 'Production',
-                    kDebugMode ? Colors.orange : Colors.green,
-                  ),
-                  const SizedBox(height: 8),
-                  _buildDebugInfoRow(
-                    'Platform',
-                    kIsWeb ? 'Web' : defaultTargetPlatform.toString().split('.').last,
-                    Colors.blue,
-                  ),
-                  
-                  const SizedBox(height: 24),
-                  
-                  // Info Box
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.blue.shade200,
-                        width: 1,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: Colors.blue.shade700,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Development Mode Active',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue.shade900,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          '• Using local backend (localhost:8000)\n'
-                          '• Debug logs enabled\n'
-                          '• Hot reload available\n'
-                          '• Build with --release for production',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.blue.shade900,
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDebugInfoRow(String label, String value, Color color) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: color.withOpacity(0.3),
-              width: 1,
-            ),
-          ),
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }

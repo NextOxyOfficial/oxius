@@ -14,10 +14,11 @@ class AccountBalanceSection extends StatefulWidget {
   State<AccountBalanceSection> createState() => AccountBalanceSectionState();
 }
 
-class AccountBalanceSectionState extends State<AccountBalanceSection> {
+class AccountBalanceSectionState extends State<AccountBalanceSection> with RouteAware {
   final TranslationService _translationService = TranslationService();
   WalletBalance? _balance;
   bool _isLoading = true;
+  DateTime? _lastRefresh;
 
   String t(String key) => _translationService.translate(key);
 
@@ -27,15 +28,37 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> {
     loadBalance();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Auto-refresh when widget becomes visible again
+    _checkAndRefresh();
+  }
+
+  void _checkAndRefresh() {
+    // Refresh if more than 3 seconds have passed since last refresh
+    if (_lastRefresh == null || DateTime.now().difference(_lastRefresh!).inSeconds > 3) {
+      loadBalance();
+    }
+  }
+
   Future<void> loadBalance() async {
+    if (!mounted) return;
+    
     setState(() => _isLoading = true);
     final balance = await WalletService.getBalance();
     if (mounted) {
       setState(() {
         _balance = balance;
         _isLoading = false;
+        _lastRefresh = DateTime.now();
       });
     }
+  }
+
+  // Public method to manually refresh - can be called from outside
+  void refresh() {
+    loadBalance();
   }
 
   @override
@@ -571,13 +594,17 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> {
                 ),
               ),
               InkWell(
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const PendingTasksScreen(),
                     ),
                   );
+                  // Refresh balance when returning from pending tasks
+                  if (mounted) {
+                    loadBalance();
+                  }
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

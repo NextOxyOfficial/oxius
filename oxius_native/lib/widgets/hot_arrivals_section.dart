@@ -153,26 +153,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: const Color(0xFF10B981).withOpacity(0.2),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    'TRENDING',
-                    style: GoogleFonts.roboto(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF059669),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
+                
                 const Spacer(),
                 
                 // View All Button
