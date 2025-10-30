@@ -23,6 +23,7 @@ import 'screens/checkout_screen.dart';
 import 'screens/wallet/wallet_screen.dart';
 import 'screens/mobile_recharge/mobile_recharge_screen.dart';
 import 'pages/login_page.dart';
+import 'pages/reset_password_page.dart';
 import 'services/auth_service.dart';
 import 'services/user_state_service.dart';
 import 'services/translation_service.dart';
@@ -123,6 +124,7 @@ class MyApp extends StatelessWidget {
             routes: {
             '/': (context) => const HomeScreen(),
             '/login': (context) => const LoginPage(),
+            '/reset-password': (context) => const ResetPasswordPage(),
             '/inbox': (context) => const InboxScreen(),
             '/my-gigs': (context) => const MyGigsScreen(),
             '/post-a-gig': (context) => const PostGigScreen(),

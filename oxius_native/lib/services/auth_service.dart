@@ -585,4 +585,109 @@ class AuthService {
       print('Error refreshing user data: $e');
     }
   }
+
+  // Send OTP for password reset
+  static Future<Map<String, dynamic>> sendOtp({
+    required String method,
+    required String phone,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/send-otp/'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'method': method,
+          method: phone,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? errorData['message'] ?? 'Failed to send OTP');
+      }
+    } catch (e) {
+      throw Exception(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  // Verify OTP
+  static Future<Map<String, dynamic>> verifyOtp({
+    required String method,
+    required String phone,
+    required String otp,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/verify-otp/'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'method': method,
+          method: phone,
+          'otp': otp,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? errorData['message'] ?? 'Invalid verification code');
+      }
+    } catch (e) {
+      throw Exception(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  // Reset password
+  static Future<Map<String, dynamic>> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/reset-password/'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'token': token,
+          'new_password': newPassword,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final result = jsonDecode(response.body);
+        
+        // If auto-login is enabled, save tokens
+        if (result['auto_login'] == true && result['tokens'] != null) {
+          _accessToken = result['tokens']['access'];
+          _refreshToken = result['tokens']['refresh'];
+          
+          // Save tokens
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_tokenKey, _accessToken!);
+          await prefs.setString(_refreshTokenKey, _refreshToken!);
+          
+          // Parse and save user data if provided
+          if (result['user'] != null) {
+            _currentUser = User.fromJson(result['user']);
+            await prefs.setString(_userKey, jsonEncode(_currentUser!.toJson()));
+          }
+        }
+        
+        return result;
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? errorData['message'] ?? 'Failed to reset password');
+      }
+    } catch (e) {
+      throw Exception(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
 }
