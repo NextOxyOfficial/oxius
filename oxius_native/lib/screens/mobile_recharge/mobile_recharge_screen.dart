@@ -1322,32 +1322,49 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                     }
                     
                     if (snapshot.hasError || snapshot.data?['success'] != true) {
+                      final errorMessage = snapshot.data?['message'] ?? 
+                                          snapshot.error?.toString() ?? 
+                                          'Failed to load history';
+                      print('🔴 History error: $errorMessage');
+                      
                       return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade50,
-                                borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.shade50,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Icons.error_outline_rounded,
+                                  size: 48,
+                                  color: Colors.red.shade400,
+                                ),
                               ),
-                              child: Icon(
-                                Icons.error_outline_rounded,
-                                size: 48,
-                                color: Colors.red.shade400,
+                              const SizedBox(height: 12),
+                              Text(
+                                'Failed to load history',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey.shade700,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'Failed to load history',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade700,
+                              const SizedBox(height: 8),
+                              Text(
+                                errorMessage,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     }
