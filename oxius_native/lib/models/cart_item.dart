@@ -41,13 +41,13 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'], // Can be int or String
-      name: json['name'] as String,
-      description: json['description'] as String?,
+      name: json['name']?.toString() ?? 'Product',
+      description: json['description']?.toString(),
       regularPrice: _parseDouble(json['regular_price']),
       salePrice: json['sale_price'] != null
           ? _parseDouble(json['sale_price'])
           : null,
-      quantity: json['quantity'] as int? ?? 0,
+      quantity: _parseInt(json['quantity']),
       isFreeDelivery: json['is_free_delivery'] as bool?,
       deliveryFeeInsideDhaka: json['delivery_fee_inside_dhaka'] != null
           ? _parseDouble(json['delivery_fee_inside_dhaka'])
@@ -70,10 +70,18 @@ class Product {
     if (value is String) return double.tryParse(value) ?? 0.0;
     return 0.0;
   }
+
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
 }
 
 class ProductImage {
-  final int id;
+  final dynamic id; // Can be int or String
   final String image;
 
   ProductImage({
@@ -83,8 +91,8 @@ class ProductImage {
 
   factory ProductImage.fromJson(Map<String, dynamic> json) {
     return ProductImage(
-      id: json['id'] as int,
-      image: json['image'] as String,
+      id: json['id'], // Accept any type - int or String
+      image: json['image']?.toString() ?? '',
     );
   }
 }
