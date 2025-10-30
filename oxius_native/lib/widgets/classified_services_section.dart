@@ -139,18 +139,20 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: isMobile ? 6 : 16,
-        vertical: 4,
+        horizontal: isMobile ? 4 : 12,
+        vertical: 8,
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(isMobile),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           // Search bar (mobile first)
           ClassifiedSearchBar(
             onSearch: _onSearch,
-            margin: EdgeInsets.only(left: isMobile ? 0 : 4, right: isMobile ? 0 : 4, bottom: 8),
+            margin: EdgeInsets.symmetric(horizontal: isMobile ? 4 : 8),
           ),
+          const SizedBox(height: 16),
           // Categories horizontal chips (limited or all based on expanded state)
           ClassifiedCategoriesGrid(
             categories: categoriesToShow,
@@ -161,15 +163,17 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
           // See More / See Less button
           if (hasMoreCategories && !_loadingCategories)
             _buildSeeMoreButton(isMobile),
-          const SizedBox(height: 4),
+          const SizedBox(height: 12),
           // Show ads scroll widget with real data from backend
-          if (_posts.isNotEmpty)
+          if (_posts.isNotEmpty) ...[
             AdsScrollWidget(
               ads: {
                 'results': _posts
               }, 
               sectionTitle: _translationService.t('recent_ads', fallback: 'Recent Ads'),
             ),
+            const SizedBox(height: 12),
+          ],
           _buildPostsArea(isMobile),
         ],
       ),
@@ -177,26 +181,39 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   Widget _buildHeader(bool isMobile) {
-    final screenWidth = MediaQuery.of(context).size.width;
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8 : 24,
-        vertical: isMobile ? 8 : 12,
+        horizontal: isMobile ? 8 : 16,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
-            child: Text(
-              _translationService.t('my_services', fallback: 'My Services'),
-              style: GoogleFonts.roboto(
-                fontSize: screenWidth * 0.048,
-                fontWeight: FontWeight.w700,
-                color: Colors.grey.shade900,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _translationService.t('my_services', fallback: 'My Services'),
+                  style: GoogleFonts.roboto(
+                    fontSize: isMobile ? 18 : 20,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF111827),
+                    letterSpacing: -0.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Browse and post services',
+                  style: GoogleFonts.roboto(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 12),
@@ -210,50 +227,48 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     final remainingCount = _categories.length - _initialCategoryCount;
     
     return Padding(
-      padding: EdgeInsets.only(
-        right: isMobile ? 16 : 24,
-        top: 4,
-        bottom: 4,
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 8 : 16,
+        vertical: 8,
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          TextButton(
+          OutlinedButton.icon(
             onPressed: () {
               setState(() {
                 _isExpanded = !_isExpanded;
               });
             },
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 8 : 12,
-                vertical: 6,
-              ),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            icon: Icon(
+              _isExpanded 
+                  ? Icons.keyboard_arrow_up_rounded
+                  : Icons.keyboard_arrow_down_rounded,
+              size: 18,
+              color: const Color(0xFF06B6D4),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _isExpanded
-                      ? _translationService.t('see_less', fallback: 'See Less')
-                      : '${_translationService.t('see_more', fallback: 'See More')} ($remainingCount)',
-                  style: GoogleFonts.roboto(
-                    fontSize: isMobile ? 12 : 13,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF06B6D4),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  _isExpanded 
-                      ? Icons.keyboard_arrow_up
-                      : Icons.keyboard_arrow_down,
-                  size: 18,
-                  color: const Color(0xFF06B6D4),
-                ),
-              ],
+            label: Text(
+              _isExpanded
+                  ? _translationService.t('see_less', fallback: 'See Less')
+                  : '${_translationService.t('see_more', fallback: 'See More')} ($remainingCount)',
+              style: GoogleFonts.roboto(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF06B6D4),
+              side: BorderSide(
+                color: const Color(0xFF06B6D4).withOpacity(0.3),
+                width: 1.5,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
         ],
@@ -264,52 +279,69 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   Widget _buildActionButton(bool isMobile) {
     final isLoading = _loadingButtons.contains('post-free-ad');
     
-    return OutlinedButton.icon(
+    return ElevatedButton(
       onPressed: isLoading ? null : () => _handleButtonClick('post-free-ad'),
-      icon: isLoading
-          ? const SizedBox(
-              width: 14,
-              height: 14,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF06B6D4)),
-              ),
-            )
-          : const Icon(
-              Icons.add,
-              size: 16,
-            ),
-      label: isLoading
-          ? const SizedBox.shrink()
-          : Text(
-              _translationService.t('post_free_service', fallback: 'Post Free Service'),
-              style: GoogleFonts.roboto(
-                fontSize: isMobile ? 12 : 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF06B6D4),
-        side: const BorderSide(color: Color(0xFF06B6D4), width: 1.5),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF10B981),
+        foregroundColor: Colors.white,
+        elevation: 0,
         padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 12 : 16,
-          vertical: isMobile ? 8 : 10,
+          horizontal: isMobile ? 16 : 20,
+          vertical: 12,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10),
         ),
       ),
+      child: isLoading
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.add_circle_outline_rounded,
+                  size: 18,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  isMobile ? 'Post' : 'Post Service',
+                  style: GoogleFonts.roboto(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
   Widget _buildPostsArea(bool isMobile) {
     if (_loadingPosts) {
-      return SizedBox(
-        height: 120,
+      return Container(
+        padding: const EdgeInsets.all(40),
         child: Center(
-          child: CircularProgressIndicator(
-            strokeWidth: 3,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.teal.shade600),
+          child: Column(
+            children: [
+              const CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Loading services...',
+                style: GoogleFonts.roboto(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -319,96 +351,156 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
       return const SizedBox.shrink();
     }
 
-    // Simple list placeholder - can be upgraded later to card grid
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _posts.length.clamp(0, 6), // show up to 6 for initial mobile compact view
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (context, idx) {
-        final p = _posts[idx];
-        final title = (p['title_bn'] ?? p['title_en'] ?? p['title'] ?? '---').toString();
-        final price = p['price']?.toString();
-        return Material(
-          color: Colors.white,
-          elevation: 0,
-          borderRadius: BorderRadius.circular(10),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: () {},
-            // TODO: Navigate to post detail screen
-            // ignore: avoid_print
-            // For now log tap
-            // You can implement Navigator.push(...) when detail page exists
-            onLongPress: () { print('Post long pressed: '+ (p['id']?.toString() ?? '')); },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade200),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE6FBF4),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 16),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: _posts.length.clamp(0, 6),
+        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        itemBuilder: (context, idx) {
+          final p = _posts[idx];
+          final title = (p['title_bn'] ?? p['title_en'] ?? p['title'] ?? '---').toString();
+          final price = p['price']?.toString();
+          final imageUrl = _getImageUrl(p);
+          
+          return Material(
+            color: Colors.white,
+            elevation: 0,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                // Navigate to post detail
+                Navigator.pushNamed(
+                  context,
+                  '/classified-post-details',
+                  arguments: p['id'],
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade200),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    // Image
+                    ClipRRect(
                       borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        color: Colors.grey.shade100,
+                        child: imageUrl != null
+                            ? Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: const Color(0xFFE6FBF4),
+                                    child: const Icon(
+                                      Icons.image_outlined,
+                                      color: Color(0xFF10B981),
+                                      size: 28,
+                                    ),
+                                  );
+                                },
+                              )
+                            : Container(
+                                color: const Color(0xFFE6FBF4),
+                                child: const Icon(
+                                  Icons.image_outlined,
+                                  color: Color(0xFF10B981),
+                                  size: 28,
+                                ),
+                              ),
+                      ),
                     ),
-                    child: const Icon(Icons.image_outlined, color: Color(0xFF059669)),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.roboto(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade800,
+                    const SizedBox(width: 12),
+                    // Content
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.roboto(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF111827),
+                              height: 1.3,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        if (price != null) Text(
-                          price,
-                          style: GoogleFonts.roboto(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF059669),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.location_on_outlined, size: 14, color: Colors.grey.shade500),
-                            const SizedBox(width: 2),
-                            Flexible(
-                              child: Text(
-                                (p['location'] ?? p['area'] ?? p['city'] ?? '').toString(),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.roboto(fontSize: 11.5, color: Colors.grey.shade600),
+                          const SizedBox(height: 6),
+                          if (price != null && price.isNotEmpty)
+                            Text(
+                              price,
+                              style: GoogleFonts.roboto(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF10B981),
                               ),
                             ),
-                          ],
-                        ),
-                      ],
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.location_on_outlined,
+                                size: 14,
+                                color: Colors.grey.shade500,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  (p['location'] ?? p['area'] ?? p['city'] ?? 'Not specified').toString(),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(Icons.chevron_right, size: 20, color: Colors.grey.shade400),
-                ],
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 16,
+                      color: Colors.grey.shade400,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
+  }
+  
+  String? _getImageUrl(Map<String, dynamic> post) {
+    String? imageUrl;
+    
+    if (post['image'] != null && post['image'].toString().isNotEmpty) {
+      imageUrl = post['image'].toString();
+    } else if (post['images'] != null && post['images'] is List && (post['images'] as List).isNotEmpty) {
+      imageUrl = (post['images'] as List).first.toString();
+    } else if (post['featured_image'] != null && post['featured_image'].toString().isNotEmpty) {
+      imageUrl = post['featured_image'].toString();
+    }
+    
+    if (imageUrl != null && !imageUrl.startsWith('http')) {
+      imageUrl = 'https://oxius.vercel.app$imageUrl';
+    }
+    
+    return imageUrl;
   }
 }
