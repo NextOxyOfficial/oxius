@@ -43,8 +43,10 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
   void _showSponsorModal(GoldSponsor sponsor) {
     _incrementViews(sponsor.id);
     
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => _SponsorDetailModal(sponsor: sponsor),
     );
   }
@@ -339,313 +341,293 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
     }
   }
 
+  Widget _buildContactRow(IconData icon, String text, VoidCallback? onTap) {
+    final row = Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Colors.amber.shade600),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 13,
+                color: onTap != null ? Colors.amber.shade700 : const Color(0xFF374151),
+                fontWeight: FontWeight.w500,
+                decoration: onTap != null ? TextDecoration.underline : null,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+    
+    return onTap != null
+        ? GestureDetector(onTap: onTap, child: row)
+        : row;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 600),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Banner Carousel
-            if (_banners.isNotEmpty && !_isLoadingBanners)
-              Stack(
-                children: [
-                  SizedBox(
-                    height: 200,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      onPageChanged: (index) {
-                        setState(() => _currentBannerIndex = index);
-                      },
-                      itemCount: _banners.length,
-                      itemBuilder: (context, index) {
-                        final banner = _banners[index];
-                        return ClipRRect(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                          child: Image.network(
-                            banner.image,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.amber.shade50,
-                                child: Icon(Icons.image, size: 48, color: Colors.amber.shade200),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.close, size: 20),
-                      ),
-                    ),
-                  ),
-                  if (_banners.length > 1)
-                    Positioned(
-                      bottom: 8,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          _banners.length,
-                          (index) => Container(
-                            width: 8,
-                            height: 8,
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _currentBannerIndex == index
-                                  ? Colors.amber
-                                  : Colors.white.withOpacity(0.7),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              )
-            else
-              Stack(
-                children: [
-                  Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.amber.shade50, Colors.yellow.shade50],
-                      ),
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.close, size: 20),
-                      ),
-                    ),
-                  ),
-                ],
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.5,
+      maxChildSize: 0.85,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 16,
+                offset: const Offset(0, -4),
               ),
-            
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Description
-                  if (widget.sponsor.businessDescription != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        widget.sponsor.businessDescription!,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF4B5563),
-                          height: 1.5,
+            ],
+          ),
+          child: Column(
+            children: [
+              // Compact Header
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.amber.shade400, Colors.yellow.shade500],
                         ),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                    ),
-                  
-                  // Profile and Contact
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Profile Image
-                      Stack(
-                        children: [
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.amber.shade400, Colors.yellow.shade400],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.all(2),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: widget.sponsor.logo != null
-                                    ? Image.network(
-                                        widget.sponsor.logo!,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Icon(Icons.business, size: 40, color: Colors.grey.shade400);
-                                        },
-                                      )
-                                    : Icon(Icons.business, size: 40, color: Colors.grey.shade400),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [Colors.amber.shade500, Colors.yellow.shade500],
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.star, size: 14, color: Colors.white),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.star_rounded, color: Colors.white, size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            'Gold Sponsor',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(width: 16),
-                      
-                      // Contact Info
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(Icons.close_rounded, size: 22, color: Colors.grey.shade600),
+                      padding: const EdgeInsets.all(8),
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Banner Carousel
+                      if (_banners.isNotEmpty && !_isLoadingBanners)
+                        Stack(
                           children: [
-                            Text(
-                              widget.sponsor.businessName,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
+                            SizedBox(
+                              height: 180,
+                              child: PageView.builder(
+                                controller: _pageController,
+                                onPageChanged: (index) => setState(() => _currentBannerIndex = index),
+                                itemCount: _banners.length,
+                                itemBuilder: (context, index) {
+                                  return Image.network(
+                                    _banners[index].image,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      color: Colors.amber.shade50,
+                                      child: Icon(Icons.image, size: 40, color: Colors.amber.shade300),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Gold Sponsor',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.amber.shade700,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            
-                            if (widget.sponsor.contactEmail != null)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
+                            if (_banners.length > 1)
+                              Positioned(
+                                bottom: 8,
+                                left: 0,
+                                right: 0,
                                 child: Row(
-                                  children: [
-                                    Icon(Icons.email, size: 16, color: Colors.amber.shade600),
-                                    const SizedBox(width: 6),
-                                    Flexible(
-                                      child: Text(
-                                        widget.sponsor.contactEmail!,
-                                        style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(
+                                    _banners.length,
+                                    (index) => Container(
+                                      width: 5,
+                                      height: 5,
+                                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: _currentBannerIndex == index
+                                            ? Colors.white
+                                            : Colors.white.withOpacity(0.4),
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            
-                            if (widget.sponsor.phoneNumber != null)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.phone, size: 16, color: Colors.amber.shade600),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      widget.sponsor.phoneNumber!,
-                                      style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            
-                            if (widget.sponsor.website != null)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
-                                child: GestureDetector(
-                                  onTap: () => _launchUrl(widget.sponsor.website!),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.language, size: 16, color: Colors.amber.shade600),
-                                      const SizedBox(width: 6),
-                                      Flexible(
-                                        child: Text(
-                                          widget.sponsor.website!,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.amber.shade700,
-                                            decoration: TextDecoration.underline,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
                                   ),
                                 ),
                               ),
                           ],
                         ),
+                      
+                      // Content
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Business Name & Logo
+                            Row(
+                              children: [
+                                // Logo
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [Colors.amber.shade400, Colors.yellow.shade500],
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.all(2),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: widget.sponsor.logo != null
+                                          ? Image.network(
+                                              widget.sponsor.logo!,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) => Icon(
+                                                Icons.business,
+                                                size: 28,
+                                                color: Colors.grey.shade400,
+                                              ),
+                                            )
+                                          : Icon(Icons.business, size: 28, color: Colors.grey.shade400),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                
+                                // Business Name
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        widget.sponsor.businessName,
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: -0.3,
+                                          color: Color(0xFF111827),
+                                        ),
+                                      ),
+                                      if (widget.sponsor.businessDescription != null) ...[
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          widget.sponsor.businessDescription!,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey.shade600,
+                                            height: 1.3,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            
+                            const SizedBox(height: 20),
+                            
+                            // Contact Info
+                            if (widget.sponsor.contactEmail != null)
+                              _buildContactRow(
+                                Icons.email_rounded,
+                                widget.sponsor.contactEmail!,
+                                null,
+                              ),
+                            if (widget.sponsor.phoneNumber != null)
+                              _buildContactRow(
+                                Icons.phone_rounded,
+                                widget.sponsor.phoneNumber!,
+                                null,
+                              ),
+                            if (widget.sponsor.website != null)
+                              _buildContactRow(
+                                Icons.language_rounded,
+                                widget.sponsor.website!,
+                                () => _launchUrl(widget.sponsor.website!),
+                              ),
+                            
+                            // Visit Button
+                            if (widget.sponsor.profileUrl != null) ...[
+                              const SizedBox(height: 20),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    _launchUrl(widget.sponsor.profileUrl!);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.amber.shade600,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Visit Profile',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  
-                  // Visit Profile Button
-                  if (widget.sponsor.profileUrl != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _launchUrl(widget.sponsor.profileUrl!);
-                          },
-                          icon: const Icon(Icons.arrow_forward, size: 18),
-                          label: const Text('Visit Sponsor\'s Profile'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber.shade600,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

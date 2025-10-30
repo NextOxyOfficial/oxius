@@ -21,7 +21,7 @@ class BusinessNetworkDrawer extends StatelessWidget {
     final user = AuthService.currentUser;
     
     return Drawer(
-      width: 288,
+      width: 280,
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -50,15 +50,15 @@ class BusinessNetworkDrawer extends StatelessWidget {
               child: SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
                       // Modern Logo Icon
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: Colors.white.withOpacity(0.2),
                             width: 1,
@@ -66,26 +66,26 @@ class BusinessNetworkDrawer extends StatelessWidget {
                         ),
                         child: const Icon(
                           Icons.business_center_rounded,
-                          size: 24,
+                          size: 20,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       const Expanded(
                         child: Text(
                           'Business Network',
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
                             color: Colors.white,
-                            letterSpacing: -0.3,
+                            letterSpacing: -0.2,
                           ),
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: const Icon(Icons.close),
-                        iconSize: 22,
+                        iconSize: 20,
                         color: Colors.white,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -96,75 +96,75 @@ class BusinessNetworkDrawer extends StatelessWidget {
               ),
             ),
             
-            // Scrollable content with modern spacing
+            // Scrollable content with compact spacing
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(vertical: 20),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Main Menu Section
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: DrawerMenu(currentRoute: currentRoute),
                     ),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     _buildModernDivider(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     
                     // Useful Links Section
                     const DrawerUsefulLinks(),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     _buildModernDivider(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     
                     // Gold Sponsor Section
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: DrawerGoldSponsor(isLoggedIn: user != null),
                     ),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     _buildModernDivider(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     
                     // News Section
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: const DrawerNews(),
                     ),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     _buildModernDivider(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     
                     // Hashtags Section
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: const DrawerHashtags(),
                     ),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     _buildModernDivider(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     
                     // Featured Product Section
                     const DrawerFeaturedProduct(),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     _buildModernDivider(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     
                     // Top Contributors Section
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: const DrawerContributors(),
                     ),
                     
-                    const SizedBox(height: 100), // Bottom padding for mobile nav
+                    const SizedBox(height: 80), // Bottom padding for mobile nav
                   ],
                 ),
               ),
@@ -177,7 +177,7 @@ class BusinessNetworkDrawer extends StatelessWidget {
 
   Widget _buildModernDivider() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 12),
       height: 1,
       decoration: BoxDecoration(
         gradient: LinearGradient(

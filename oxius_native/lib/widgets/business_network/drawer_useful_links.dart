@@ -17,16 +17,16 @@ class DrawerUsefulLinks extends StatelessWidget {
       children: [
         // Header
         Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
           child: Row(
             children: [
-              Icon(Icons.link, size: 14, color: Colors.grey.shade600),
-              const SizedBox(width: 6),
+              Icon(Icons.link, size: 12, color: Colors.grey.shade600),
+              const SizedBox(width: 4),
               Text(
                 'USEFUL LINKS',
                 style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
                   color: Colors.grey.shade600,
                   letterSpacing: 0.5,
                 ),
@@ -37,14 +37,14 @@ class DrawerUsefulLinks extends StatelessWidget {
         
         // Links Grid
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           child: GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 1.3,
+            mainAxisSpacing: 6,
+            crossAxisSpacing: 6,
+            childAspectRatio: 2.0,
             children: links.map((link) {
               return _buildLinkCard(
                 context,
@@ -64,40 +64,30 @@ class DrawerUsefulLinks extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to path
-          // Navigator.pushNamed(context, path);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Navigate to: $path')),
-          );
+          Navigator.pop(context); // Close drawer first
+          Navigator.pushNamed(context, path);
         },
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.grey.shade50,
-            border: Border.all(color: Colors.grey.shade100),
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.02),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
+            border: Border.all(color: Colors.grey.shade200),
+            borderRadius: BorderRadius.circular(6),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                size: 20,
+                size: 18,
                 color: Colors.blue.shade600,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
                   color: Colors.grey.shade800,
                 ),
                 textAlign: TextAlign.center,
