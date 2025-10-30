@@ -6,8 +6,42 @@ from django.utils.html import format_html
 
 from .models import *
 
-admin.site.register(Operator)
-admin.site.register(Package)
+class OperatorAdmin(admin.ModelAdmin):
+    list_display = ('name', 'icon_display', 'bg_color_display', 'active', 'created_at')
+    list_filter = ('active', 'created_at')
+    search_fields = ('name',)
+    
+    def icon_display(self, obj):
+        """Display operator icon in admin"""
+        if obj.icon:
+            return format_html('<img src="{}" style="width: 32px; height: 32px; border-radius: 4px; border: 1px solid #ddd;" />', obj.icon.url)
+        return format_html('<div style="width: 32px; height: 32px; border-radius: 4px; border: 1px solid #ddd; background-color: {}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{}</div>', 
+                         obj.bg_color or '#ccc', obj.name[:2].upper())
+    icon_display.short_description = 'Icon'
+    
+    def bg_color_display(self, obj):
+        """Display background color as colored square"""
+        return format_html('<div style="width: 20px; height: 20px; border-radius: 4px; background-color: {}; border: 1px solid #ddd;"></div>', obj.bg_color or '#ccc')
+    bg_color_display.short_description = 'Color'
+
+admin.site.register(Operator, OperatorAdmin)
+
+class PackageAdmin(admin.ModelAdmin):
+    list_display = ('operator_display', 'type', 'price', 'data', 'validity', 'calls', 'popular', 'active')
+    list_filter = ('operator', 'type', 'popular', 'active', 'created_at')
+    search_fields = ('operator__name', 'type', 'price', 'data')
+    list_editable = ('popular', 'active')
+    
+    def operator_display(self, obj):
+        """Display operator name with icon"""
+        if obj.operator.icon:
+            return format_html('<div style="display: flex; align-items: center;"><img src="{}" style="width: 20px; height: 20px; border-radius: 3px; margin-right: 8px;" /><strong>{}</strong></div>', 
+                             obj.operator.icon.url, obj.operator.name)
+        return format_html('<div style="display: flex; align-items: center;"><div style="width: 20px; height: 20px; border-radius: 3px; background-color: {}; margin-right: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;">{}</div><strong>{}</strong></div>', 
+                         obj.operator.bg_color or '#ccc', obj.operator.name[:2].upper(), obj.operator.name)
+    operator_display.short_description = 'Operator'
+
+admin.site.register(Package, PackageAdmin)
 
 class RechargeAdmin(admin.ModelAdmin):
     list_display = ('user','phone_number','status_display','operator', 'package', 'amount', 'created_at')

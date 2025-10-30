@@ -38,18 +38,38 @@ class MobileRechargeService {
         },
       );
 
-      print('📱 Packages response: ${response.statusCode}');
+      print('📱 Packages response status: ${response.statusCode}');
+      print('📱 Packages response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('📱 Decoded data type: ${data.runtimeType}');
+        print('📱 Data keys: ${data is Map ? data.keys.toList() : 'Not a Map'}');
+        
+        // Handle both paginated and non-paginated responses
+        List<dynamic> results;
+        if (data is List) {
+          results = data;
+        } else if (data is Map && data['results'] != null) {
+          results = data['results'];
+        } else {
+          results = [];
+        }
+        
+        print('📱 Total results found: ${results.length}');
+        if (results.isNotEmpty) {
+          print('📱 Sample package: ${results.first}');
+        }
+        
         return {
           'success': true,
-          'results': data['results'] ?? data,
-          'count': data['count'] ?? (data is List ? data.length : 0),
-          'next': data['next'],
-          'previous': data['previous'],
+          'results': results,
+          'count': data is Map ? (data['count'] ?? results.length) : results.length,
+          'next': data is Map ? data['next'] : null,
+          'previous': data is Map ? data['previous'] : null,
         };
       } else {
+        print('❌ API Error: Status ${response.statusCode}, Body: ${response.body}');
         throw Exception('Failed to load packages: ${response.statusCode}');
       }
     } catch (e) {
@@ -97,7 +117,7 @@ class MobileRechargeService {
   static Future<Map<String, dynamic>> submitRecharge({
     required int packageId,
     required String phoneNumber,
-    required String operator,
+    required int operator,
     required double amount,
   }) async {
     try {
@@ -105,6 +125,8 @@ class MobileRechargeService {
       if (token == null) {
         throw Exception('Not authenticated');
       }
+
+      print('📱 Submitting recharge: packageId=$packageId, operator=$operator, phone=$phoneNumber, amount=$amount');
 
       final response = await http.post(
         Uri.parse('$baseUrl/mobile-recharge/recharges/'),
@@ -152,32 +174,54 @@ class MobileRechargeService {
     try {
       final token = await AuthService.getValidToken();
       if (token == null) {
+        print('❌ Recharge history: No auth token');
         throw Exception('Not authenticated');
       }
 
+      final uri = Uri.parse('$baseUrl/mobile-recharge/recharges/?page=$page');
+      print('📱 Fetching recharge history: $uri');
+
       final response = await http.get(
-        Uri.parse('$baseUrl/mobile-recharge/recharges/?page=$page'),
+        uri,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
 
+      print('📱 Recharge history response status: ${response.statusCode}');
+      print('📱 Recharge history response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('📱 Recharge history data type: ${data.runtimeType}');
+        
+        // Handle both paginated and non-paginated responses
+        List<dynamic> results;
+        if (data is List) {
+          results = data;
+        } else if (data is Map && data['results'] != null) {
+          results = data['results'];
+        } else {
+          results = [];
+        }
+        
+        print('📱 Total recharge records found: ${results.length}');
+        
         return {
           'success': true,
-          'results': data['results'] ?? data,
-          'count': data['count'] ?? 0,
+          'results': results,
+          'count': data is Map ? (data['count'] ?? results.length) : results.length,
         };
       } else {
-        throw Exception('Failed to load history');
+        print('❌ API Error: Status ${response.statusCode}, Body: ${response.body}');
+        throw Exception('Failed to load history: ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Error fetching history: $e');
+      print('❌ Error fetching recharge history: $e');
       return {
         'success': false,
-        'message': 'Failed to load history',
+        'message': 'Failed to load history: $e',
         'results': [],
       };
     }
