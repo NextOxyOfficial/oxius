@@ -715,11 +715,18 @@ class GetClassifiedPosts(generics.ListAPIView):
             .order_by("-created_at")
         )
 
-        title = self.request.query_params.get("title", None)
+        # Support both 'search' and 'title' parameters for backward compatibility
+        search_query = self.request.query_params.get("search") or self.request.query_params.get("title")
+        
+        # Filter by category if provided
+        category_id = self.request.query_params.get("category")
+        if category_id:
+            queryset = queryset.filter(category__id=category_id)
 
-        if title:
+        # Apply search filter
+        if search_query:
             queryset = queryset.filter(
-                Q(title__icontains=title) | Q(instructions__icontains=title)
+                Q(title__icontains=search_query) | Q(instructions__icontains=search_query)
             )
 
         return queryset

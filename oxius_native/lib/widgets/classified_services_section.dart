@@ -106,7 +106,9 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   void _onSearch(String q) {
-    _searchQuery = q;
+    setState(() {
+      _searchQuery = q;
+    });
     _loadPosts();
   }
 
