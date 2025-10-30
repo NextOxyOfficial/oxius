@@ -971,13 +971,12 @@ class _SaleListScreenState extends State<SaleListScreen> {
   Widget _buildPostCard(SalePost post) {
     final bool hasImage = post.images != null && post.images!.isNotEmpty;
     
-    // Get the image URL using AppConfig's standard method
+    // Get the image URL - use directly like sale_detail_screen.dart does
     String getImageUrl() {
       if (!hasImage) return '';
       final imageUrl = post.images![0].image;
-      final absoluteUrl = AppConfig.getAbsoluteUrl(imageUrl);
-      print('🖼️ Sale image URL: $imageUrl → $absoluteUrl');
-      return absoluteUrl;
+      print('🖼️ Sale List - Image URL: $imageUrl');
+      return imageUrl; // Use directly - backend returns absolute URLs
     }
 
     return GestureDetector(
@@ -1311,28 +1310,12 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 final listing = _recentListings[index];
                 final bool hasImage = listing.images != null && listing.images!.isNotEmpty;
 
-                // Helper function to fix image URLs for production (same as main cards)
-                String fixImageUrl(String imageUrl) {
-                  print('🔍 Original recent sale image URL: $imageUrl');
-                  if (imageUrl.isEmpty) return '';
-                  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-                    return imageUrl;
-                  }
-                  
-                  // Use AppConfig to get the correct base URL (localhost in debug, production in release)
-                  final baseUrl = AppConfig.mediaBaseUrl;
-                  print('📱 Recent sale image: Making absolute URL from "$imageUrl" using base: $baseUrl');
-                  
-                  // Handle Django media URLs
-                  if (imageUrl.startsWith('/media/') || imageUrl.startsWith('media/')) {
-                    final finalUrl = '$baseUrl${imageUrl.startsWith('/') ? imageUrl : '/$imageUrl'}';
-                    print('🖼️ Recent sale image: Media URL result: $finalUrl');
-                    return finalUrl;
-                  }
-                  if (imageUrl.startsWith('/')) {
-                    return '$baseUrl$imageUrl';
-                  }
-                  return '$baseUrl/$imageUrl';
+                // Get image URL - use directly like sale_detail_screen.dart does
+                String getImageUrl() {
+                  if (!hasImage) return '';
+                  final imageUrl = listing.images![0].image;
+                  print('🖼️ Recent Sale - Image URL: $imageUrl');
+                  return imageUrl; // Use directly - backend returns absolute URLs
                 }
 
                 return GestureDetector(
@@ -1368,7 +1351,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                             children: [
                               hasImage
                                   ? CachedNetworkImage(
-                                      imageUrl: fixImageUrl(listing.images![0].image),
+                                      imageUrl: getImageUrl(),
                                       height: 110,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
