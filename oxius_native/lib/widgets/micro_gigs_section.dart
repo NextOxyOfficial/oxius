@@ -55,12 +55,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
 
   void _onUserStateChanged() {
     if (!mounted) return;
-    setState(() {
-      // Reset filter to 'all' if user logs out and was viewing 'completed'
-      if (!_userStateService.isAuthenticated && _filterStatus == 'completed') {
-        _filterStatus = 'all';
-      }
-    });
+    // Filter state will be handled automatically in _buildStatusFilter
+    setState(() {});
   }
 
   Future<void> _loadData() async {
@@ -643,17 +639,25 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   Widget _buildStatusFilter() {
     // Use UserStateService for reactive authentication state
     final isLoggedIn = _userStateService.isAuthenticated;
-    
+
+    // Build items list based on current state
+    final List<DropdownMenuItem<String>> items = [
+      const DropdownMenuItem(value: 'all', child: Text('All')),
+      const DropdownMenuItem(value: 'available', child: Text('Available')),
+    ];
+
+    // Add completed option for logged-in users
+    if (isLoggedIn) {
+      items.add(const DropdownMenuItem(value: 'completed', child: Text('Completed')));
+    }
+
+    // Reset filter if user logged out and was viewing completed gigs
+    final currentValue = isLoggedIn || _filterStatus != 'completed' ? _filterStatus : 'all';
+
     return DropdownButton<String>(
-      value: _filterStatus,
+      value: currentValue,
       underline: const SizedBox(),
-      items: [
-        const DropdownMenuItem(value: 'all', child: Text('All')),
-        const DropdownMenuItem(value: 'available', child: Text('Available')),
-        // Only show Completed filter for logged-in users
-        if (isLoggedIn)
-          const DropdownMenuItem(value: 'completed', child: Text('Completed')),
-      ],
+      items: items,
       onChanged: (value) {
         if (value != null) _filterByStatus(value);
       },
