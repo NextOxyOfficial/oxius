@@ -76,6 +76,7 @@ class SalePostListSerializer(serializers.ModelSerializer):
     child_category_name = serializers.CharField(
         source="child_category.name", read_only=True, allow_null=True
     )
+    images = serializers.SerializerMethodField()
     main_image = serializers.SerializerMethodField()
     image_count = serializers.SerializerMethodField()
     user_name = serializers.SerializerMethodField()
@@ -99,10 +100,34 @@ class SalePostListSerializer(serializers.ModelSerializer):
             "status",
             "view_count",
             "created_at",
+            "images",
             "main_image",
             "image_count",
             "user_name",
         ]
+
+    def get_images(self, obj):
+        """Return array of images with full URLs"""
+        images = obj.images.all().order_by('order')
+        request = self.context.get("request")
+        result = []
+        
+        for img in images:
+            # Get the image URL - this will be relative path like /media/...
+            if img.image:
+                image_url = img.image.url
+                # Build absolute URL only if we have a request context
+                # and the URL is not already absolute
+                if request and not image_url.startswith(('http://', 'https://')):
+                    image_url = request.build_absolute_uri(image_url)
+                
+                result.append({
+                    'id': str(img.id),
+                    'image': image_url,
+                    'order': img.order
+                })
+        
+        return result
 
     def get_main_image(self, obj):
         main_image = obj.images.filter(is_main=True).first()

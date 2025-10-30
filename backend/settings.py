@@ -266,8 +266,7 @@ WHITENOISE_MANIFEST_STRICT = False
 # This enables compression and caching
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-MEDIA_URL = "https://adsyclub.com/media/"
-# MEDIA_URL = 'http://127.0.0.1:8000//media/'
+MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Increase max upload size to 50MB (default is around 2.5MB)
