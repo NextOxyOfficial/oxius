@@ -389,11 +389,11 @@ class _EshopSectionState extends State<EshopSection> {
         final cardWidth = (availableWidth - spacingTotal) / crossAxisCount;
         
         // Ensure minimum and maximum card widths
-        final constrainedCardWidth = cardWidth.clamp(140.0, isLargeScreen ? 200.0 : 180.0);
+        final constrainedCardWidth = cardWidth.clamp(143.0, isLargeScreen ? 200.0 : 180.0);
         
         // Calculate card height based on content
         final imageHeight = constrainedCardWidth; // Square aspect ratio
-        final detailsMinHeight = isSmallScreen ? 160.0 : isLargeScreen ? 200.0 : 180.0;
+        final detailsMinHeight = isSmallScreen ? 143.0 : isLargeScreen ? 153.0 : 148.0;
         final cardHeight = imageHeight + detailsMinHeight;
         
         Widget buildRow(List<Map<String, dynamic>> data) {
@@ -407,8 +407,7 @@ class _EshopSectionState extends State<EshopSection> {
               itemBuilder: (context, idx) {
                 final product = data[idx];
                 final id = (product['id'] ?? idx).toString();
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
+                return SizedBox(
                   width: constrainedCardWidth,
                   child: _EshopProductCard(
                     product: product,
@@ -429,7 +428,7 @@ class _EshopSectionState extends State<EshopSection> {
         return Column(
           children: [
             if (row1.isNotEmpty) buildRow(row1),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             if (row2.isNotEmpty) buildRow(row2),
           ],
         );
@@ -717,7 +716,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
 
               // Details
               Padding(
-                padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
