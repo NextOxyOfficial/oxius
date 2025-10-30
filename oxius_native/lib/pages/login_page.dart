@@ -658,13 +658,7 @@ class _LoginPageState extends State<LoginPage> {
             Center(
               child: TextButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Registration feature coming soon!'),
-                      backgroundColor: Colors.purple.shade600,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
+                  Navigator.pushNamed(context, '/register');
                 },
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

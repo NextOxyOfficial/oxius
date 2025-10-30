@@ -644,6 +644,29 @@ class AuthService {
     }
   }
 
+  // Register new user
+  static Future<Map<String, dynamic>?> register(Map<String, dynamic> formData) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/auth/register/'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(formData),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final result = jsonDecode(response.body);
+        return result;
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['error'] ?? errorData['message'] ?? 'Registration failed');
+      }
+    } catch (e) {
+      throw Exception(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
   // Reset password
   static Future<Map<String, dynamic>> resetPassword({
     required String token,
