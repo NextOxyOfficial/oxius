@@ -120,26 +120,29 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
       ),
       curve: Curves.easeInOut,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+        margin: const EdgeInsets.fromLTRB(8, 0, 8, 4),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF34D399).withOpacity(0.1)),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF34D399).withOpacity(0.15), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, -2),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Container(
-            color: Colors.white.withOpacity(0.9),
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            color: Colors.white,
+            padding: EdgeInsets.symmetric(
+              vertical: MediaQuery.of(context).size.height * 0.008,
+              horizontal: 4,
+            ),
             child: SafeArea(
-              bottom: false, // Disable bottom padding to prevent extra white space
+              top: false,
               child: _userStateService.isAuthenticated
                   ? _buildLoggedInNavigation(context)
                   : _buildGuestNavigation(context),
@@ -248,57 +251,69 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
     int notificationCount = 0,
     bool useFavicon = false,
   }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        child: Stack(
-          children: [
-            if (useFavicon)
-              Image.asset(
-                'assets/images/favicon.png',
-                width: 28,
-                height: 28,
-                errorBuilder: (context, error, stackTrace) {
-                  return Icon(
-                    icon,
-                    size: 28,
-                    color: const Color(0xFF34D399),
-                  );
-                },
-              )
-            else
-              Icon(
-                icon,
-                size: 28,
-                color: const Color(0xFF34D399),
-              ),
-            if (hasNotification && notificationCount > 0)
-              Positioned(
-                right: -2,
-                top: -2,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    notificationCount > 99 ? '99+' : notificationCount.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+    final screenWidth = MediaQuery.of(context).size.width;
+    final iconSize = (screenWidth * 0.065).clamp(24.0, 28.0);
+    
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            vertical: MediaQuery.of(context).size.height * 0.012,
+            horizontal: 4,
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              if (useFavicon)
+                Image.asset(
+                  'assets/images/favicon.png',
+                  width: iconSize,
+                  height: iconSize,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(
+                      icon,
+                      size: iconSize,
+                      color: isActive ? const Color(0xFF10B981) : const Color(0xFF34D399),
+                    );
+                  },
+                )
+              else
+                Icon(
+                  icon,
+                  size: iconSize,
+                  color: isActive ? const Color(0xFF10B981) : const Color(0xFF34D399),
+                ),
+              if (hasNotification && notificationCount > 0)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
-                    textAlign: TextAlign.center,
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      notificationCount > 99 ? '99+' : notificationCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
