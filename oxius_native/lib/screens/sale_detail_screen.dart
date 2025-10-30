@@ -1218,7 +1218,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: const Text(
-                          'Similar Listings You May Like',
+                          'Similar Listings',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
