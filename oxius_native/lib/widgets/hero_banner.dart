@@ -287,9 +287,9 @@ class _HeroBannerState extends State<HeroBanner> {
           ),
           // Grid area
           Padding(
-            padding: const EdgeInsets.only(top: 10, bottom: 12),
+            padding: const EdgeInsets.only(top: 4, bottom: 8),
             child: _buildMobileServicesGrid(
-              margin: EdgeInsets.symmetric(horizontal: 0),
+              margin: EdgeInsets.zero,
             ),
           ),
         ],
@@ -463,15 +463,15 @@ class _HeroBannerState extends State<HeroBanner> {
 
   Widget _buildMobileServicesGrid({EdgeInsets? margin}) {
     return Padding(
-      padding: margin ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: margin ?? const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4, // 4 services per row like in Vue.js
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 0.9, // Slightly taller than square
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 0.92, // Slightly taller than square
         ),
         itemCount: mobileServices.length,
         itemBuilder: (context, index) => _buildMobileServiceButton(mobileServices[index]),

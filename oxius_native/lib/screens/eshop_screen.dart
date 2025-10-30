@@ -876,7 +876,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.58,
+                  childAspectRatio: 0.60,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
                 ),
