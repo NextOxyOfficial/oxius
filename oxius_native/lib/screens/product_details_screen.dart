@@ -842,16 +842,81 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                             fontWeight: FontWeight.w600,
                             color: Colors.grey.shade900,
                           ),
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 5),
-                        // Badges Row - Pro/Free and Verified/Unverified
+                        const SizedBox(height: 6),
+                        // Visit Store Button and Badges in same row
                         Row(
                           children: [
+                            // Visit Store Button
+                            InkWell(
+                              onTap: () {
+                                // Navigate to store
+                                final storeUsername = ownerDetails is Map 
+                                    ? (ownerDetails['store_username']?.toString() ?? ownerDetails['username']?.toString())
+                                    : null;
+                                
+                                print('Visit Store button pressed');
+                                print('Store Username: $storeUsername');
+                                
+                                if (storeUsername != null && storeUsername.isNotEmpty) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => VendorStoreScreen(
+                                        storeUsername: storeUsername,
+                                        storeName: storeName,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Store username not available',
+                                        style: GoogleFonts.roboto(fontSize: 13),
+                                      ),
+                                      backgroundColor: Colors.orange.shade700,
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(5),
+                                  border: Border.all(
+                                    color: const Color(0xFF10B981),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Visit Store',
+                                      style: GoogleFonts.roboto(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF10B981),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    const Icon(
+                                      Icons.chevron_right,
+                                      size: 12,
+                                      color: Color(0xFF10B981),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
                             // Pro/Free Badge
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                               decoration: BoxDecoration(
                                 color: isPro ? const Color(0xFFFFA000) : Colors.grey.shade600,
                                 borderRadius: BorderRadius.circular(4),
@@ -860,12 +925,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   if (isPro)
-                                    const Icon(Icons.star, size: 10, color: Colors.white),
-                                  if (isPro) const SizedBox(width: 3),
+                                    const Icon(Icons.star, size: 9, color: Colors.white),
+                                  if (isPro) const SizedBox(width: 2),
                                   Text(
                                     isPro ? 'Pro' : 'Free',
                                     style: GoogleFonts.roboto(
-                                      fontSize: 9,
+                                      fontSize: 8,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                     ),
@@ -873,7 +938,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 5),
+                            const SizedBox(width: 4),
                             // Verified/Unverified Badge
                             GestureDetector(
                               onTap: () {
@@ -928,7 +993,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                 );
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: isVerified ? const Color(0xFF3B82F6) : const Color(0xFFFB923C),
                                   borderRadius: BorderRadius.circular(4),
@@ -938,14 +1003,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                   children: [
                                     Icon(
                                       isVerified ? Icons.verified : Icons.info_outline,
-                                      size: 10,
+                                      size: 9,
                                       color: Colors.white,
                                     ),
-                                    const SizedBox(width: 3),
+                                    const SizedBox(width: 2),
                                     Text(
                                       isVerified ? 'Verified' : 'Unverified',
                                       style: GoogleFonts.roboto(
-                                        fontSize: 9,
+                                        fontSize: 8,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.white,
                                       ),
@@ -957,61 +1022,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                           ],
                         ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Visit Store Button
-                  TextButton.icon(
-                    onPressed: () {
-                      // Navigate to store
-                      final storeUsername = ownerDetails is Map 
-                          ? (ownerDetails['store_username']?.toString() ?? ownerDetails['username']?.toString())
-                          : null;
-                      
-                      print('Visit Store button pressed');
-                      print('Store Username: $storeUsername');
-                      
-                      if (storeUsername != null && storeUsername.isNotEmpty) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => VendorStoreScreen(
-                              storeUsername: storeUsername,
-                              storeName: storeName,
-                            ),
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Store username not available',
-                              style: GoogleFonts.roboto(fontSize: 13),
-                            ),
-                            backgroundColor: Colors.orange.shade700,
-                          ),
-                        );
-                      }
-                    },
-                    icon: Icon(
-                      Icons.storefront_outlined,
-                      size: 16,
-                      color: Colors.grey.shade700,
-                    ),
-                    label: Text(
-                      'Visit Store',
-                      style: GoogleFonts.roboto(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                    style: TextButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      backgroundColor: Colors.grey.shade50,
                     ),
                   ),
                 ],
@@ -1615,19 +1625,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   }
 
   Widget _buildSimilarProducts() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 0,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(12),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1644,9 +1643,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             controller: _similarProductsScrollController,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.60,
+              childAspectRatio: 0.59,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
@@ -1750,59 +1750,63 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           ],
         ),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFFEC4899),  // Pink
-                      Color(0xFFF43F5E),  // Rose
-                      Color(0xFFEF4444),  // Red
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFEC4899).withOpacity(0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFFEC4899),  // Pink
+                        Color(0xFFF43F5E),  // Rose
+                        Color(0xFFEF4444),  // Red
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.store,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'More from $storeName',
-                  style: GoogleFonts.roboto(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade900,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFEC4899).withOpacity(0.4),
+                        blurRadius: 12,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.store,
+                    color: Colors.white,
+                    size: 20,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'More from $storeName',
+                    style: GoogleFonts.roboto(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 272,
+            height: 273,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               itemCount: _storeProducts.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              separatorBuilder: (_, __) => const SizedBox(width: 4),
               itemBuilder: (context, index) {
                 return SizedBox(
                   width: 160,
