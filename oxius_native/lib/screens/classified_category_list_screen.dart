@@ -186,6 +186,15 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     _showLocationSelector();
   }
 
+  Future<void> _handleRefresh() async {
+    // Refresh all data
+    await Future.wait([
+      _loadCategoryDetails(),
+      _filterSearch(page: 1),
+      _fetchNearbyAds(),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -241,10 +250,14 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                       valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
                     ),
                   )
-                : SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                : RefreshIndicator(
+                    color: const Color(0xFF10B981),
+                    onRefresh: _handleRefresh,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                         // Search results
                         if (_posts.isNotEmpty) ...[
                           _buildPostsList(_posts),
@@ -327,7 +340,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                         const SizedBox(height: 80),
                       ],
                     ),
-                  ),
+                      ),
+                    ),
           ),
         ],
       ),
