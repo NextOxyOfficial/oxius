@@ -821,7 +821,7 @@ class _PostCardState extends State<PostCard> {
           // Add Comment Input
           PostCommentInput(
             onSubmit: _addComment,
-            userAvatar: null, // TODO: Get current user avatar
+            userAvatar: AuthService.currentUser?.profilePicture,
             postId: _post.id.toString(),
             postAuthorId: _post.user.uuid ?? _post.user.id.toString(),
             postAuthorName: _post.user.name,

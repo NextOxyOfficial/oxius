@@ -4,6 +4,7 @@ import '../../services/auth_service.dart';
 import '../../services/user_search_service.dart';
 import '../../models/user_model.dart' as UserModel;
 import 'diamond_gift_bottom_sheet.dart';
+import '../../config/app_config.dart';
 
 class PostCommentInput extends StatefulWidget {
   final Function(String) onSubmit;
@@ -165,29 +166,34 @@ class _PostCommentInputState extends State<PostCommentInput> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: widget.userAvatar != null
-                  ? Image.network(
-                      widget.userAvatar!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade100,
-                          child: Icon(
-                            Icons.person,
-                            color: Colors.grey.shade400,
-                            size: 18,
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      color: Colors.grey.shade100,
-                      child: Icon(
-                        Icons.person,
-                        color: Colors.grey.shade400,
-                        size: 18,
-                      ),
-                    ),
+              child: () {
+                final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar);
+                
+                if (avatarUrl.isNotEmpty) {
+                  return Image.network(
+                    avatarUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade100,
+                        child: Icon(
+                          Icons.person,
+                          color: Colors.grey.shade400,
+                          size: 18,
+                        ),
+                      );
+                    },
+                  );
+                }
+                return Container(
+                  color: Colors.grey.shade100,
+                  child: Icon(
+                    Icons.person,
+                    color: Colors.grey.shade400,
+                    size: 18,
+                  ),
+                );
+              }(),
             ),
           ),
           const SizedBox(width: 8),
@@ -308,23 +314,28 @@ class _PostCommentInputState extends State<PostCommentInput> {
                                     color: Colors.grey.shade100,
                                   ),
                                   child: ClipOval(
-                                    child: data['photo'] != null
-                                        ? Image.network(
-                                            data['photo'],
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) {
-                                              return Icon(
-                                                Icons.person,
-                                                color: Colors.grey.shade400,
-                                                size: 18,
-                                              );
-                                            },
-                                          )
-                                        : Icon(
-                                            Icons.person,
-                                            color: Colors.grey.shade400,
-                                            size: 18,
-                                          ),
+                                    child: () {
+                                      final avatarUrl = AppConfig.getAbsoluteUrl(data['photo']);
+                                      
+                                      if (avatarUrl.isNotEmpty) {
+                                        return Image.network(
+                                          avatarUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return Icon(
+                                              Icons.person,
+                                              color: Colors.grey.shade400,
+                                              size: 18,
+                                            );
+                                          },
+                                        );
+                                      }
+                                      return Icon(
+                                        Icons.person,
+                                        color: Colors.grey.shade400,
+                                        size: 18,
+                                      );
+                                    }(),
                                   ),
                                 ),
                                 const SizedBox(width: 10),

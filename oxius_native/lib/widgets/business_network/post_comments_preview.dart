@@ -7,6 +7,7 @@ import '../../services/auth_service.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/mention_parser.dart';
 import '../../screens/business_network/profile_screen.dart';
+import '../../config/app_config.dart';
 
 class PostCommentsPreview extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -565,31 +566,37 @@ class _CommentItemState extends State<_CommentItem> {
                 ),
               ),
               child: ClipOval(
-                child: widget.comment.user.image != null || widget.comment.user.avatar != null
-                    ? Image.network(
-                        widget.comment.user.image ?? widget.comment.user.avatar!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey.shade100,
-                            child: Icon(
-                              Icons.person,
-                              color: Colors.grey.shade400,
-                              size: avatarSize * 0.6,
-                            ),
-                          );
-                        },
-                      )
-                    : Container(
-                        color: Colors.grey.shade100,
-                        child: Icon(
-                          Icons.person,
-                          color: Colors.grey.shade400,
-                          size: avatarSize * 0.6,
-                        ),
-                      ),
-                ),
+                child: () {
+                  final rawAvatarUrl = widget.comment.user.image ?? widget.comment.user.avatar;
+                  final avatarUrl = AppConfig.getAbsoluteUrl(rawAvatarUrl);
+                  
+                  if (avatarUrl.isNotEmpty) {
+                    return Image.network(
+                      avatarUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey.shade100,
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.grey.shade400,
+                            size: avatarSize * 0.6,
+                          ),
+                        );
+                      },
+                    );
+                  }
+                  return Container(
+                    color: Colors.grey.shade100,
+                    child: Icon(
+                      Icons.person,
+                      color: Colors.grey.shade400,
+                      size: avatarSize * 0.6,
+                    ),
+                  );
+                }(),
               ),
+            ),
             ),
           ),
           const SizedBox(width: 8),

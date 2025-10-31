@@ -299,12 +299,18 @@ class BusinessNetworkUser {
       parsedId = _parseId(idValue);
     }
     
+    // Handle all possible profile picture field names from backend
+    // Priority: image > avatar > profile_picture
+    final imageValue = json['image'];
+    final avatarValue = json['avatar'];
+    final profilePictureValue = json['profile_picture'];
+    
     return BusinessNetworkUser(
       id: parsedId,
       uuid: uuidString,
       name: displayName,
-      avatar: json['avatar'] ?? json['profile_picture'],
-      image: json['image'],
+      avatar: avatarValue ?? profilePictureValue,
+      image: imageValue,
       isVerified: json['is_verified'] ?? json['kyc'] ?? false,
       bio: json['bio'],
       username: json['username'],

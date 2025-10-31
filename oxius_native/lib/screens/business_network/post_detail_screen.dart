@@ -468,29 +468,35 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             ],
                           ),
                           child: ClipOval(
-                            child: _post.user.image != null || _post.user.avatar != null
-                                ? Image.network(
-                                    _post.user.image ?? _post.user.avatar!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        color: Colors.grey.shade100,
-                                        child: Icon(
-                                          Icons.person,
-                                          color: Colors.grey.shade400,
-                                          size: 20,
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : Container(
-                                    color: Colors.grey.shade100,
-                                    child: Icon(
-                                      Icons.person,
-                                      color: Colors.grey.shade400,
-                                      size: 20,
-                                    ),
-                                  ),
+                            child: () {
+                              final rawAvatarUrl = _post.user.image ?? _post.user.avatar;
+                              final avatarUrl = AppConfig.getAbsoluteUrl(rawAvatarUrl);
+                              
+                              if (avatarUrl.isNotEmpty) {
+                                return Image.network(
+                                  avatarUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey.shade100,
+                                      child: Icon(
+                                        Icons.person,
+                                        color: Colors.grey.shade400,
+                                        size: 20,
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
+                              return Container(
+                                color: Colors.grey.shade100,
+                                child: Icon(
+                                  Icons.person,
+                                  color: Colors.grey.shade400,
+                                  size: 20,
+                                ),
+                              );
+                            }(),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -670,6 +676,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     _handleCommentAdded(comment);
                   }
                 },
+                userAvatar: AuthService.currentUser?.profilePicture,
                 postId: _post.id.toString(),
                 postAuthorId: _post.user.uuid ?? _post.user.id.toString(),
                 postAuthorName: _post.user.name,
@@ -1007,29 +1014,35 @@ class _CommentItem extends StatelessWidget {
                 ),
               ),
               child: ClipOval(
-                child: comment.user.image != null || comment.user.avatar != null
-                    ? Image.network(
-                        comment.user.image ?? comment.user.avatar!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey.shade100,
-                            child: Icon(
-                              Icons.person,
-                              color: Colors.grey.shade400,
-                              size: avatarSize * 0.6,
-                            ),
-                          );
-                        },
-                      )
-                    : Container(
-                        color: Colors.grey.shade100,
-                        child: Icon(
-                          Icons.person,
-                          color: Colors.grey.shade400,
-                          size: avatarSize * 0.6,
-                        ),
-                      ),
+                child: () {
+                  final rawAvatarUrl = comment.user.image ?? comment.user.avatar;
+                  final avatarUrl = AppConfig.getAbsoluteUrl(rawAvatarUrl);
+                  
+                  if (avatarUrl.isNotEmpty) {
+                    return Image.network(
+                      avatarUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey.shade100,
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.grey.shade400,
+                            size: avatarSize * 0.6,
+                          ),
+                        );
+                      },
+                    );
+                  }
+                  return Container(
+                    color: Colors.grey.shade100,
+                    child: Icon(
+                      Icons.person,
+                      color: Colors.grey.shade400,
+                      size: avatarSize * 0.6,
+                    ),
+                  );
+                }(),
               ),
             ),
           ),
