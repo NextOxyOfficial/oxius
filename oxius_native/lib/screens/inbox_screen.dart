@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'adsy_connect_screen.dart';
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
@@ -18,6 +19,7 @@ class _InboxScreenState extends State<InboxScreen>
   String _updatesFilter = 'all';
   int _newMessageCount = 0;
   int _newTicketCount = 0;
+  int _newChatCount = 0;
   bool _isLoadingUpdates = true;
   bool _isLoadingTickets = true;
   
@@ -28,12 +30,19 @@ class _InboxScreenState extends State<InboxScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       setState(() {
-        _activeTab = _tabController.index == 0 ? 'updates' : 'support';
+        if (_tabController.index == 0) {
+          _activeTab = 'chat';
+        } else if (_tabController.index == 1) {
+          _activeTab = 'updates';
+        } else {
+          _activeTab = 'support';
+        }
       });
     });
+    _activeTab = 'chat'; // Default to chat tab
     _loadInboxData();
   }
 
@@ -82,6 +91,7 @@ class _InboxScreenState extends State<InboxScreen>
     }
   }
 
+
   Future<void> _loadTickets() async {
     setState(() => _isLoadingTickets = true);
     
@@ -129,9 +139,13 @@ class _InboxScreenState extends State<InboxScreen>
 
   // Helper methods
   int get updatesCount => _updates.where((u) => !u['isRead']).length;
+  int get chatsCount => _newChatCount; // From AdsyConnectScreen
   int get supportTicketsCount => _tickets.where((t) => !t['isRead']).length;
-  bool get hasUnreadMessages =>
-      _activeTab == 'updates' ? updatesCount > 0 : supportTicketsCount > 0;
+  bool get hasUnreadMessages {
+    if (_activeTab == 'updates') return updatesCount > 0;
+    if (_activeTab == 'chat') return chatsCount > 0;
+    return supportTicketsCount > 0;
+  }
 
   List<Map<String, dynamic>> get filteredUpdates {
     return _updates.where((update) {
@@ -152,7 +166,11 @@ class _InboxScreenState extends State<InboxScreen>
   void _setActiveTab(String tab) {
     setState(() {
       _activeTab = tab;
-      _tabController.animateTo(tab == 'updates' ? 0 : 1);
+      int index = 0;
+      if (tab == 'chat') index = 0;
+      else if (tab == 'updates') index = 1;
+      else if (tab == 'support') index = 2;
+      _tabController.animateTo(index);
     });
   }
 
@@ -212,168 +230,147 @@ class _InboxScreenState extends State<InboxScreen>
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.inbox,
-                size: 16,
-                color: Color(0xFF10B981),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                const Color(0xFF3B82F6).withOpacity(0.02),
+              ],
+            ),
+            border: Border(
+              bottom: BorderSide(
+                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                width: 1,
               ),
             ),
-            const SizedBox(width: 8),
-            const Text(
-              'Message Center',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              child: Row(
+                children: [
+                  // Back Button
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF3B82F6), size: 20),
+                      onPressed: () => Navigator.pop(context),
+                      padding: const EdgeInsets.all(8),
+                      constraints: const BoxConstraints(),
+                    ),
+                  ),
+                  // Icon Badge
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF3B82F6).withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.forum_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Title Section
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Flexible(
+                              child: Text(
+                                'Message Center',
+                                style: TextStyle(
+                                  color: Color(0xFF1F2937),
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.3,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            if (updatesCount + chatsCount + supportTicketsCount > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFEF4444), Color(0xFFF87171)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  (updatesCount + chatsCount + supportTicketsCount).toString(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.circle,
+                              size: 6,
+                              color: const Color(0xFF10B981),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                'Chats, Notifications & Support',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: -0.1,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
-        centerTitle: true,
       ),
       body: Column(
         children: [
-          // Header Section
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF10B981).withOpacity(0.1),
-                  const Color(0xFF3B82F6).withOpacity(0.1),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
-            ),
-            child: Row(
-              children: [
-                // Icon
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.inbox,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Text
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Message Center',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Notifications & Tickets',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Message count badge
-                if (_updates.length + _tickets.length > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${_updates.length + _tickets.length}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-
-          // Action Buttons
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _openNewTicketModal,
-                    icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Open Ticket'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: hasUnreadMessages ? _markAllAsRead : null,
-                    icon: const Icon(Icons.check_circle, size: 16),
-                    label: const Text('Mark Read'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF10B981),
-                      side: const BorderSide(color: Color(0xFF10B981)),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
           // Tab Bar
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
+            margin: const EdgeInsets.symmetric(horizontal: 0),
             decoration: const BoxDecoration(
               border: Border(
                 bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
@@ -381,34 +378,39 @@ class _InboxScreenState extends State<InboxScreen>
             ),
             child: TabBar(
               controller: _tabController,
-              indicatorColor: const Color(0xFF059669),
-              labelColor: const Color(0xFF059669),
+              indicatorColor: const Color(0xFF3B82F6),
+              labelColor: const Color(0xFF3B82F6),
               unselectedLabelColor: const Color(0xFF6B7280),
+              labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: -0.2),
+              unselectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: -0.2),
+              tabAlignment: TabAlignment.fill,
+              isScrollable: false,
               tabs: [
                 Tab(
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.notifications, size: 18),
-                      const SizedBox(width: 8),
-                      const Text('Updates'),
-                      if (updatesCount > 0) ...[
-                        const SizedBox(width: 8),
+                      const Icon(Icons.chat_bubble_rounded, size: 14),
+                      const SizedBox(width: 4),
+                      const Text('AdsyConnect'),
+                      if (chatsCount > 0) ...[
+                        const SizedBox(width: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
+                            horizontal: 4,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFEF4444),
-                            borderRadius: BorderRadius.circular(10),
+                            color: const Color(0xFF3B82F6),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            updatesCount.toString(),
+                            chatsCount.toString(),
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -418,28 +420,61 @@ class _InboxScreenState extends State<InboxScreen>
                 ),
                 Tab(
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.support_agent, size: 18),
-                      const SizedBox(width: 8),
-                      const Text('Support'),
-                      if (supportTicketsCount > 0) ...[
-                        const SizedBox(width: 8),
+                      const Icon(Icons.notifications_rounded, size: 14),
+                      const SizedBox(width: 4),
+                      const Text('Updates'),
+                      if (updatesCount > 0) ...[
+                        const SizedBox(width: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
+                            horizontal: 4,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFEF4444),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            updatesCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.support_agent_rounded, size: 14),
+                      const SizedBox(width: 4),
+                      const Text('Support'),
+                      if (supportTicketsCount > 0) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
                             supportTicketsCount.toString(),
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -451,55 +486,166 @@ class _InboxScreenState extends State<InboxScreen>
             ),
           ),
 
-          // Filter Chips
-          Container(
-            height: 60,
-            margin: const EdgeInsets.symmetric(
-              horizontal: 4,
-              vertical: 12,
-            ),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+          // Filters and Actions
+          if (_activeTab == 'updates' || _activeTab == 'support')
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
               child: Row(
                 children: [
+                  // Dropdown Filter
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _activeTab == 'support' ? _ticketStatusFilter : _updatesFilter,
+                          icon: const Icon(Icons.arrow_drop_down_rounded, size: 20),
+                          isExpanded: true,
+                          isDense: true,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF374151),
+                          ),
+                          items: _activeTab == 'support'
+                              ? [
+                                  const DropdownMenuItem(value: 'all', child: Text('All Tickets')),
+                                  const DropdownMenuItem(value: 'open', child: Text('Open')),
+                                  const DropdownMenuItem(value: 'in_progress', child: Text('In Progress')),
+                                  const DropdownMenuItem(value: 'resolved', child: Text('Resolved')),
+                                  const DropdownMenuItem(value: 'closed', child: Text('Closed')),
+                                ]
+                              : [
+                                  const DropdownMenuItem(value: 'all', child: Text('All Updates')),
+                                  const DropdownMenuItem(value: 'unread', child: Text('Unread')),
+                                  const DropdownMenuItem(value: 'read', child: Text('Read')),
+                                  const DropdownMenuItem(value: 'system', child: Text('System')),
+                                  const DropdownMenuItem(value: 'verification', child: Text('Verification')),
+                                ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              if (_activeTab == 'support') {
+                                _setTicketStatusFilter(value);
+                              } else {
+                                _setUpdatesFilter(value);
+                              }
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Tab Actions
+                  if (_activeTab == 'updates') ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 1,
+                      child: SizedBox(
+                        height: 40,
+                        child: OutlinedButton.icon(
+                          onPressed: hasUnreadMessages ? _markAllAsRead : null,
+                          icon: const Icon(Icons.done_all_rounded, size: 16),
+                          label: const Text('Mark Read'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF10B981),
+                            side: const BorderSide(color: Color(0xFF10B981)),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  // Support Tab Actions
                   if (_activeTab == 'support') ...[
-                    _buildFilterChip('All Tickets', _ticketStatusFilter == 'all',
-                        () => _setTicketStatusFilter('all')),
-                    _buildFilterChip('Open', _ticketStatusFilter == 'open',
-                        () => _setTicketStatusFilter('open')),
-                    _buildFilterChip(
-                        'In Progress',
-                        _ticketStatusFilter == 'in_progress',
-                        () => _setTicketStatusFilter('in_progress')),
-                    _buildFilterChip('Resolved', _ticketStatusFilter == 'resolved',
-                        () => _setTicketStatusFilter('resolved')),
-                    _buildFilterChip('Closed', _ticketStatusFilter == 'closed',
-                        () => _setTicketStatusFilter('closed')),
-                  ] else ...[
-                    _buildFilterChip('All Updates', _updatesFilter == 'all',
-                        () => _setUpdatesFilter('all')),
-                    _buildFilterChip('Unread', _updatesFilter == 'unread',
-                        () => _setUpdatesFilter('unread')),
-                    _buildFilterChip('Read', _updatesFilter == 'read',
-                        () => _setUpdatesFilter('read')),
-                    _buildFilterChip('System', _updatesFilter == 'system',
-                        () => _setUpdatesFilter('system')),
-                    _buildFilterChip('Verification', _updatesFilter == 'verification',
-                        () => _setUpdatesFilter('verification')),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 1,
+                      child: SizedBox(
+                        height: 40,
+                        child: ElevatedButton.icon(
+                          onPressed: _openNewTicketModal,
+                          icon: const Icon(Icons.add_rounded, size: 16),
+                          label: const Text('Open'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      flex: 1,
+                      child: SizedBox(
+                        height: 40,
+                        child: OutlinedButton.icon(
+                          onPressed: hasUnreadMessages ? _markAllAsRead : null,
+                          icon: const Icon(Icons.done_all_rounded, size: 16),
+                          label: const Text('Mark'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF10B981),
+                            side: const BorderSide(color: Color(0xFF10B981)),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ],
               ),
             ),
-          ),
 
           // Content
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
+                const AdsyConnectScreen(),
                 _buildUpdatesList(),
                 _buildTicketsList(),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickBadge(IconData icon, int count, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 3),
+          Text(
+            count.toString(),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: color,
             ),
           ),
         ],
@@ -584,156 +730,247 @@ class _InboxScreenState extends State<InboxScreen>
   }
 
   Widget _buildUpdateItem(Map<String, dynamic> update) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: update['isRead'] ? Colors.white : const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: update['isRead'] ? const Color(0xFFE5E7EB) : const Color(0xFF059669),
-          width: update['isRead'] ? 1 : 2,
-        ),
-      ),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: update['isRead'] 
-              ? const Color(0xFFF3F4F6) 
-              : const Color(0xFF059669),
-          child: Icon(
-            update['type'] == 'system' ? Icons.settings : Icons.verified_user,
-            color: update['isRead'] ? const Color(0xFF6B7280) : Colors.white,
-            size: 20,
+    final bool isUnread = !update['isRead'];
+    
+    return InkWell(
+      onTap: () {
+        setState(() {
+          update['isRead'] = true;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: BoxDecoration(
+          color: isUnread ? const Color(0xFFF0FDF4).withOpacity(0.5) : Colors.white,
+          border: Border(
+            bottom: BorderSide(
+              color: const Color(0xFFE5E7EB).withOpacity(0.4),
+              width: 0.5,
+            ),
           ),
         ),
-        title: Text(
-          update['title'],
-          style: TextStyle(
-            fontWeight: update['isRead'] ? FontWeight.w500 : FontWeight.w600,
-            color: const Color(0xFF1F2937),
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            const SizedBox(height: 4),
-            Text(
-              update['message'],
-              style: const TextStyle(
-                color: Color(0xFF6B7280),
-                fontSize: 14,
+            // Icon
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isUnread 
+                    ? const Color(0xFF059669).withOpacity(0.1)
+                    : const Color(0xFFF3F4F6),
+                border: Border.all(
+                  color: isUnread ? const Color(0xFF059669).withOpacity(0.25) : Colors.transparent,
+                  width: 1.5,
+                ),
+              ),
+              child: Icon(
+                update['type'] == 'system' ? Icons.settings_rounded : Icons.verified_user_rounded,
+                color: isUnread ? const Color(0xFF059669) : const Color(0xFF6B7280),
+                size: 18,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              _formatTimestamp(update['timestamp']),
-              style: const TextStyle(
-                color: Color(0xFF9CA3AF),
-                fontSize: 12,
+            const SizedBox(width: 10),
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          update['title'],
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
+                            color: const Color(0xFF1F2937),
+                            letterSpacing: -0.2,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatTimestamp(update['timestamp']),
+                        style: TextStyle(
+                          fontSize: 9,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    update['message'],
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF6B7280),
+                      letterSpacing: -0.1,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
+            const SizedBox(width: 6),
+            // Unread indicator
+            if (isUnread)
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF059669),
+                  shape: BoxShape.circle,
+                ),
+              ),
           ],
         ),
-        onTap: () {
-          setState(() {
-            update['isRead'] = true;
-          });
-        },
       ),
     );
   }
 
   Widget _buildTicketItem(Map<String, dynamic> ticket) {
+    final bool isUnread = !ticket['isRead'];
     Color statusColor;
+    String statusLabel;
+    
     switch (ticket['status']) {
       case 'open':
         statusColor = const Color(0xFFF59E0B);
+        statusLabel = 'OPEN';
         break;
       case 'in_progress':
         statusColor = const Color(0xFF3B82F6);
+        statusLabel = 'IN PROGRESS';
         break;
       case 'resolved':
         statusColor = const Color(0xFF10B981);
+        statusLabel = 'RESOLVED';
         break;
       case 'closed':
         statusColor = const Color(0xFF6B7280);
+        statusLabel = 'CLOSED';
         break;
       default:
         statusColor = const Color(0xFF6B7280);
+        statusLabel = 'UNKNOWN';
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: ticket['isRead'] ? Colors.white : const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: ticket['isRead'] ? const Color(0xFFE5E7EB) : const Color(0xFF059669),
-          width: ticket['isRead'] ? 1 : 2,
-        ),
-      ),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: statusColor.withOpacity(0.1),
-          child: Icon(
-            Icons.support_agent,
-            color: statusColor,
-            size: 20,
+    return InkWell(
+      onTap: () {
+        setState(() {
+          ticket['isRead'] = true;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: BoxDecoration(
+          color: isUnread ? const Color(0xFFF0FDF4).withOpacity(0.5) : Colors.white,
+          border: Border(
+            bottom: BorderSide(
+              color: const Color(0xFFE5E7EB).withOpacity(0.4),
+              width: 0.5,
+            ),
           ),
         ),
-        title: Row(
+        child: Row(
           children: [
-            Expanded(
-              child: Text(
-                ticket['title'],
-                style: TextStyle(
-                  fontWeight: ticket['isRead'] ? FontWeight.w500 : FontWeight.w600,
-                  color: const Color(0xFF1F2937),
-                ),
-              ),
-            ),
+            // Icon
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
+                shape: BoxShape.circle,
                 color: statusColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                ticket['status'].toString().toUpperCase(),
-                style: TextStyle(
-                  color: statusColor,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
+                border: Border.all(
+                  color: statusColor.withOpacity(0.25),
+                  width: 1.5,
                 ),
               ),
-            ),
-          ],
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(
-              ticket['message'],
-              style: const TextStyle(
-                color: Color(0xFF6B7280),
-                fontSize: 14,
+              child: Icon(
+                Icons.support_agent_rounded,
+                color: statusColor,
+                size: 18,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              _formatTimestamp(ticket['timestamp']),
-              style: const TextStyle(
-                color: Color(0xFF9CA3AF),
-                fontSize: 12,
+            const SizedBox(width: 10),
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          ticket['title'],
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
+                            color: const Color(0xFF1F2937),
+                            letterSpacing: -0.2,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          statusLabel,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    ticket['message'],
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF6B7280),
+                      letterSpacing: -0.1,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _formatTimestamp(ticket['timestamp']),
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                ],
               ),
             ),
+            const SizedBox(width: 6),
+            // Unread indicator
+            if (isUnread)
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF059669),
+                  shape: BoxShape.circle,
+                ),
+              ),
           ],
         ),
-        onTap: () {
-          setState(() {
-            ticket['isRead'] = true;
-          });
-        },
       ),
     );
   }
@@ -775,4 +1012,5 @@ class _InboxScreenState extends State<InboxScreen>
       return 'Just now';
     }
   }
+
 }
