@@ -329,17 +329,32 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
   }
   
   Widget _buildDropdown() {
-    return Positioned(
-      width: MediaQuery.of(context).size.width - 24,
-      child: CompositedTransformFollower(
-        link: _layerLink,
-        showWhenUnlinked: false,
-        offset: const Offset(0, 62),
-        child: Material(
-          elevation: 8,
-          borderRadius: BorderRadius.circular(12),
-          shadowColor: Colors.black.withOpacity(0.08),
-          child: Container(
+    return Stack(
+      children: [
+        // Transparent overlay to detect taps outside and close dropdown
+        Positioned.fill(
+          child: GestureDetector(
+            onTap: () {
+              _removeOverlay();
+              _focusNode.unfocus();
+              setState(() => _showDropdown = false);
+            },
+            behavior: HitTestBehavior.translucent,
+            child: Container(color: Colors.transparent),
+          ),
+        ),
+        // Dropdown content
+        Positioned(
+          width: MediaQuery.of(context).size.width - 24,
+          child: CompositedTransformFollower(
+            link: _layerLink,
+            showWhenUnlinked: false,
+            offset: const Offset(0, 62),
+            child: Material(
+              elevation: 8,
+              borderRadius: BorderRadius.circular(12),
+              shadowColor: Colors.black.withOpacity(0.08),
+              child: Container(
             constraints: const BoxConstraints(maxHeight: 420),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -539,9 +554,11 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                       ],
                     ),
                   ),
+              ),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
   
@@ -551,6 +568,18 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
         _removeOverlay();
         _focusNode.unfocus();
         setState(() => _showDropdown = false);
+        
+        // Navigate to category detail screen
+        Navigator.pushNamed(
+          context,
+          '/classified-category',
+          arguments: {
+            'categoryId': category.id,
+            'categoryTitle': category.title,
+          },
+        );
+        
+        // Also call the callback if provided
         if (widget.onCategoryTap != null) {
           widget.onCategoryTap!(category);
         }
@@ -635,7 +664,10 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
         Navigator.pushNamed(
           context,
           '/classified-post-details',
-          arguments: post['id'],
+          arguments: {
+            'postId': post['id']?.toString() ?? '',
+            'postSlug': post['slug']?.toString() ?? '',
+          },
         );
       },
       child: Container(

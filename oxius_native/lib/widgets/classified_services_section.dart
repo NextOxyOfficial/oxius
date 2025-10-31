@@ -384,7 +384,10 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                 Navigator.pushNamed(
                   context,
                   '/classified-post-details',
-                  arguments: p['id'],
+                  arguments: {
+                    'postId': p['id']?.toString() ?? '',
+                    'postSlug': p['slug']?.toString() ?? '',
+                  },
                 );
               },
               child: Container(

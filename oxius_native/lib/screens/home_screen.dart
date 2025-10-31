@@ -428,9 +428,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
+        ),
           
-          // User Dropdown Menu Overlay
-          if (_isDropdownOpen)
+        // User Dropdown Menu Overlay
+        if (_isDropdownOpen)
             Positioned.fill(
               child: GestureDetector(
                 onTap: () {
