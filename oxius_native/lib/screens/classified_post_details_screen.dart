@@ -466,172 +466,272 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Text(
-            _post!.title,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.2,
-            ),
+        title: Text(
+          _post!.title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.3,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
-        backgroundColor: const Color(0xFF10B981),
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1F2937),
         elevation: 0,
         centerTitle: false,
+        surfaceTintColor: Colors.transparent,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: Colors.grey.shade200,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_rounded, size: 22),
+            icon: const Icon(Icons.ios_share_rounded, size: 22),
             onPressed: _showShareDialog,
             tooltip: 'Share',
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.grey.shade100,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 12),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image Gallery at Top (only if images uploaded)
+            // Image Gallery at Top (only if images exist)
             if (_post!.medias != null && _post!.medias!.any((m) => m.image != null))
               _buildImageGallery(),
             
-            // Content Section
+            if (_post!.medias != null && _post!.medias!.any((m) => m.image != null))
+              const SizedBox(height: 8),
+            
+            // Main Content Card
             Container(
-              color: Colors.white,
+              margin: const EdgeInsets.fromLTRB(4, 0, 4, 0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Price and Quick Info Bar
-                  _buildPriceBar(),
-                  
-                  const Divider(height: 1),
-                  
-                  // Title and Basic Info
+                  // Price and Title Section
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Location
-                        Row(
-                          children: [
-                            const Icon(Icons.location_on_rounded, size: 15, color: Color(0xFF6B7280)),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                [_post!.upazila, _post!.city, _post!.state]
-                                    .where((e) => e != null && e.isNotEmpty)
-                                    .join(', '),
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFF6B7280),
-                                  letterSpacing: -0.1,
-                                ),
-                              ),
-                            ),
-                          ],
+                        // Price
+                        Text(
+                          _post!.displayPrice,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF10B981),
+                            letterSpacing: -0.5,
+                            height: 1.2,
+                          ),
                         ),
                         
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
                         
-                        // Views, ID, and Report
-                        Row(
+                        // Title
+                        Text(
+                          _post!.title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF111827),
+                            letterSpacing: -0.3,
+                            height: 1.3,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 12),
+                        
+                        // Meta info row
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
                           children: [
+                            // Location
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF3F4F6),
-                                borderRadius: BorderRadius.circular(4),
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.visibility_rounded, size: 12, color: Color(0xFF6B7280)),
-                                  const SizedBox(width: 3),
+                                  Icon(Icons.location_on_rounded, size: 14, color: Colors.grey.shade600),
+                                  const SizedBox(width: 4),
                                   Text(
-                                    '${_post!.viewsCount} views',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: Color(0xFF6B7280),
+                                    [_post!.city, _post!.state]
+                                        .where((e) => e != null && e.isNotEmpty)
+                                        .join(', '),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade700,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            // Views
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF3F4F6),
-                                borderRadius: BorderRadius.circular(4),
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Text(
-                                'ID: ${_getNumericServiceId()}',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF6B7280),
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.visibility_rounded, size: 14, color: Colors.grey.shade600),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${_post!.viewsCount}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade700,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const Spacer(),
-                            InkWell(
-                              onTap: _showReportDialog,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFEE2E2),
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(color: const Color(0xFFFCA5A5)),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.flag_outlined, size: 12, color: Color(0xFFDC2626)),
-                                    const SizedBox(width: 3),
-                                    const Text(
-                                      'Report',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Color(0xFFDC2626),
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                            // Time
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.schedule_rounded, size: 14, color: Colors.grey.shade600),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _post!.getRelativeTime(),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade700,
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
+                        
+                        const SizedBox(height: 12),
+                        
+                        // Report button
+                        InkWell(
+                          onTap: _showReportDialog,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFFFECACA)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.flag_outlined, size: 14, color: Color(0xFFDC2626)),
+                                const SizedBox(width: 6),
+                                const Text(
+                                  'Report this listing',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFFDC2626),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
+                  
+                  // Description Section (inside main card)
+                  if (_post!.instructions != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      height: 1,
+                      color: Colors.grey.shade200,
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Description',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF111827),
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Html(
+                            data: _post!.instructions!,
+                            style: {
+                              "body": Style(
+                                margin: Margins.zero,
+                                padding: HtmlPaddings.zero,
+                                fontSize: FontSize(14),
+                                lineHeight: const LineHeight(1.6),
+                                color: const Color(0xFF374151),
+                              ),
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
             
-            const Divider(height: 1, thickness: 1),
-            
-            // Description Section
-            if (_post!.instructions != null) ...[
-              _buildDescriptionCard(),
-              const Divider(height: 1, thickness: 1),
-            ],
+            const SizedBox(height: 8),
             
             // Provider Card
             _buildProviderCard(),
             
-            const Divider(height: 1, thickness: 1),
-            
             // Safety Tips
             _buildSafetyTipsCard(),
             
-            const SizedBox(height: 70), // Bottom padding for contact bar
+            const SizedBox(height: 80), // Bottom padding for contact bar
           ],
         ),
       ),
@@ -859,8 +959,19 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
   Widget _buildDescriptionCard() {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      margin: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -869,8 +980,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1F2937),
-              letterSpacing: -0.2,
+              color: Color(0xFF111827),
+              letterSpacing: -0.3,
             ),
           ),
           const SizedBox(height: 10),
@@ -880,8 +991,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               "body": Style(
                 margin: Margins.zero,
                 padding: HtmlPaddings.zero,
-                fontSize: FontSize(13),
-                lineHeight: const LineHeight(1.5),
+                fontSize: FontSize(14),
+                lineHeight: const LineHeight(1.6),
                 color: const Color(0xFF374151),
               ),
             },
@@ -903,7 +1014,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      padding: const EdgeInsets.all(12),
       child: Row(
         children: [
           Expanded(
@@ -924,10 +1035,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: OutlinedButton.icon(
+            child: OutlinedButton(
               onPressed: _openChatWithSeller,
-              icon: const Icon(Icons.message_rounded, size: 18),
-              label: const Text('Chat', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFF10B981),
                 side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
@@ -935,6 +1044,25 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/chat_icon.png',
+                    width: 18,
+                    height: 18,
+                    color: const Color(0xFF10B981),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Chat',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -946,22 +1074,38 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
   Widget _buildSafetyTipsCard() {
     return Container(
-      color: const Color(0xFFFFF3CD),
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      margin: const EdgeInsets.fromLTRB(4, 0, 4, 0),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: Color(0xFFF59E0B)),
-              SizedBox(width: 8),
-              Text(
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.shield_outlined,
+                  color: Color(0xFFF59E0B),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Text(
                 'Safety Tips',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF92400E),
-                  letterSpacing: -0.1,
+                  letterSpacing: -0.2,
                 ),
               ),
             ],
@@ -1009,34 +1153,49 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     
     if (user == null) {
       return Container(
-        color: Colors.white,
+        margin: const EdgeInsets.fromLTRB(4, 0, 4, 8),
         padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: const Text('Provider information not available'),
       );
     }
     
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      margin: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Provider',
+            'Seller Information',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1F2937),
-              letterSpacing: -0.2,
+              color: Color(0xFF111827),
+              letterSpacing: -0.3,
             ),
           ),
           const SizedBox(height: 12),
           
-          // Profile row
+          // Profile header with name and posted date
           Row(
             children: [
               CircleAvatar(
-                radius: 28,
+                radius: 24,
                 backgroundColor: const Color(0xFF10B981).withOpacity(0.1),
                 backgroundImage: user.profilePicture != null
                     ? CachedNetworkImageProvider(user.profilePicture!)
@@ -1045,14 +1204,14 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                     ? Text(
                         user.displayName[0].toUpperCase(),
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF10B981),
                         ),
                       )
                     : null,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1060,151 +1219,104 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                     Text(
                       user.displayName,
                       style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1F2937),
-                        letterSpacing: -0.1,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFF6B7280)),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            [_post!.upazila, _post!.city, _post!.state]
-                                .where((e) => e != null && e.isNotEmpty)
-                                .join(', '),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF6B7280),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       'Posted ${_post!.getRelativeTime()}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF9CA3AF),
+                        color: Colors.grey.shade600,
                       ),
                     ),
                   ],
                 ),
               ),
+              // Facebook icon only (no background)
+              if (user.faceLink != null)
+                IconButton(
+                  icon: const Icon(Icons.facebook, size: 24),
+                  onPressed: () => launchUrl(Uri.parse(user.faceLink!)),
+                  color: const Color(0xFF1877F2),
+                  padding: const EdgeInsets.all(4),
+                  constraints: const BoxConstraints(),
+                ),
             ],
           ),
           
           const SizedBox(height: 12),
           
-          // About
-          if (user.about != null) ...[
-            Html(
-              data: user.about!,
-              style: {
-                "body": Style(
-                  margin: Margins.zero,
-                  padding: HtmlPaddings.zero,
-                  fontSize: FontSize(13),
+          // Contact details in compact rows
+          Column(
+            children: [
+              // Email
+              if (user.email != null)
+                _buildCompactContactRow(
+                  Icons.email_outlined,
+                  user.email!,
+                  const Color(0xFF6B7280),
                 ),
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-          
-          // Contact info
-          Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (user.email != null) ...[
-                    _buildContactRow(Icons.email, user.email!),
-                    const SizedBox(height: 8),
-                  ],
-                  if (user.phone != null) ...[
-                    _buildContactRow(
-                      Icons.phone,
+              // Phone with show/hide
+              if (user.phone != null) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.phone_outlined, size: 16, color: Colors.grey.shade600),
+                    const SizedBox(width: 8),
+                    Text(
                       _showPhone ? user.phone! : user.maskedPhone,
-                      trailing: IconButton(
-                        icon: Icon(
-                          _showPhone ? Icons.visibility_off : Icons.visibility,
-                          size: 18,
-                        ),
-                        onPressed: () {
-                          setState(() => _showPhone = !_showPhone);
-                        },
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF374151),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(width: 6),
+                    InkWell(
+                      onTap: () => setState(() => _showPhone = !_showPhone),
+                      child: Icon(
+                        _showPhone ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        size: 16,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
                   ],
-                  if (user.createdAt != null)
-                    _buildContactRow(
-                      Icons.calendar_today,
-                      'Member since ${user.createdAt!.year}',
-                    ),
-                ],
-              ),
-          ),
-          
-          // Social links
-          if (user.faceLink != null || user.instagramLink != null || user.whatsappLink != null) ...[
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 8,
-                children: [
-                  if (user.faceLink != null)
-                    IconButton(
-                      icon: const Icon(Icons.facebook),
-                      onPressed: () => launchUrl(Uri.parse(user.faceLink!)),
-                      color: const Color(0xFF1877F2),
-                    ),
-                  if (user.instagramLink != null)
-                    IconButton(
-                      icon: const Icon(Icons.camera_alt),
-                      onPressed: () => launchUrl(Uri.parse(user.instagramLink!)),
-                      color: const Color(0xFFE4405F),
-                    ),
-                  if (user.whatsappLink != null)
-                    IconButton(
-                      icon: const Icon(Icons.message),
-                      onPressed: () => launchUrl(Uri.parse(user.whatsappLink!)),
-                      color: const Color(0xFF25D366),
-                    ),
-                ],
-              ),
-            ],
-            
-          const SizedBox(height: 16),
-          
-          // Contact button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _contactProvider,
-              icon: const Icon(Icons.phone_rounded, size: 18),
-              label: const Text('Contact Provider', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-            ),
+              ],
+              // Member since
+              if (user.createdAt != null) ...[
+                const SizedBox(height: 8),
+                _buildCompactContactRow(
+                  Icons.calendar_today_outlined,
+                  'Member since ${user.createdAt!.year}',
+                  const Color(0xFF6B7280),
+                ),
+              ],
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCompactContactRow(IconData icon, String text, Color iconColor) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: iconColor),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xFF374151),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
