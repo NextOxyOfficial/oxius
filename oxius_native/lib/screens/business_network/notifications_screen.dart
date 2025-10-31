@@ -289,9 +289,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         onSearchTap: () {
           // TODO: Implement search
         },
-        onQRCodeTap: () {
-          // TODO: Show QR code modal
-        },
         onProfileTap: () {
           final user = AuthService.currentUser;
           if (user != null) {

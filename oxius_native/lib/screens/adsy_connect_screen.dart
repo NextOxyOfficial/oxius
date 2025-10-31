@@ -232,35 +232,57 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _refreshChats,
-      color: const Color(0xFF3B82F6),
-      child: NotificationListener<ScrollNotification>(
-        onNotification: (ScrollNotification scrollInfo) {
-          if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
-            _loadMoreChats();
-          }
-          return false;
-        },
-        child: ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-          itemCount: _chatConversations.length + (_hasMore ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index == _chatConversations.length) {
-              return const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                  ),
+    return Stack(
+      children: [
+        RefreshIndicator(
+          onRefresh: _refreshChats,
+          color: const Color(0xFF3B82F6),
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (ScrollNotification scrollInfo) {
+              if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+                _loadMoreChats();
+              }
+              return false;
+            },
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              itemCount: _chatConversations.length + (_hasMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == _chatConversations.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                      ),
+                    ),
+                  );
+                }
+                final chat = _chatConversations[index];
+                return _buildChatItem(chat);
+              },
+            ),
+          ),
+        ),
+        // Floating Action Button for New Chat
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: FloatingActionButton(
+            onPressed: () {
+              // TODO: Navigate to user search/select screen to start new chat
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Search for users in Business Network to start chatting'),
+                  backgroundColor: Color(0xFF3B82F6),
                 ),
               );
-            }
-            final chat = _chatConversations[index];
-            return _buildChatItem(chat);
-          },
+            },
+            backgroundColor: const Color(0xFF3B82F6),
+            child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+          ),
         ),
-      ),
+      ],
     );
   }
 

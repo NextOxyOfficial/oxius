@@ -209,7 +209,6 @@ class _MindForceScreenState extends State<MindForceScreen> {
           }
         },
         onSearchTap: () {},
-        onQRCodeTap: () {},
         onProfileTap: () {
           final user = AuthService.currentUser;
           if (user != null) {

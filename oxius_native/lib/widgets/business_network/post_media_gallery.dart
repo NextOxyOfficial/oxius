@@ -41,15 +41,34 @@ class PostMediaGallery extends StatelessWidget {
   Widget _buildSingleImage(BuildContext context, int index) {
     return GestureDetector(
       onTap: () => onMediaTap(index),
-      child: AspectRatio(
-        aspectRatio: 16 / 9,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxHeight: 500,
+          minHeight: 200,
+        ),
         child: Image.network(
           media[index].image,
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
+          width: double.infinity,
           errorBuilder: (context, error, stackTrace) {
             return Container(
+              height: 300,
               color: Colors.grey.shade200,
               child: const Icon(Icons.image, size: 48, color: Colors.grey),
+            );
+          },
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              height: 300,
+              color: Colors.grey.shade100,
+              child: Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                      : null,
+                ),
+              ),
             );
           },
         ),
@@ -58,113 +77,141 @@ class PostMediaGallery extends StatelessWidget {
   }
 
   Widget _buildTwoImages(BuildContext context) {
-    return SizedBox(
-      height: 200,
-      child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => onMediaTap(0),
-              child: Image.network(
-                media[0].image,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.image, size: 48, color: Colors.grey),
-                  );
-                },
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxHeight: 350,
+        minHeight: 200,
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () => onMediaTap(0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(0),
+                  child: Image.network(
+                    media[0].image,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.image, size: 48, color: Colors.grey),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 2),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => onMediaTap(1),
-              child: Image.network(
-                media[1].image,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.image, size: 48, color: Colors.grey),
-                  );
-                },
+            const SizedBox(width: 3),
+            Expanded(
+              child: GestureDetector(
+                onTap: () => onMediaTap(1),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(0),
+                  child: Image.network(
+                    media[1].image,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.image, size: 48, color: Colors.grey),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildThreeImages(BuildContext context) {
-    return SizedBox(
-      height: 250,
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: GestureDetector(
-              onTap: () => onMediaTap(0),
-              child: Image.network(
-                media[0].image,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey.shade200,
-                    child: const Icon(Icons.image, size: 48, color: Colors.grey),
-                  );
-                },
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxHeight: 350,
+        minHeight: 200,
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(
+              flex: 2,
+              child: GestureDetector(
+                onTap: () => onMediaTap(0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(0),
+                  child: Image.network(
+                    media[0].image,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey.shade200,
+                        child: const Icon(Icons.image, size: 48, color: Colors.grey),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 2),
-          Expanded(
-            child: Column(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => onMediaTap(1),
-                    child: Image.network(
-                      media[1].image,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.image, size: 24, color: Colors.grey),
-                        );
-                      },
+            const SizedBox(width: 3),
+            Expanded(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => onMediaTap(1),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(0),
+                        child: Image.network(
+                          media[1].image,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.image, size: 24, color: Colors.grey),
+                            );
+                          },
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => onMediaTap(2),
-                    child: Image.network(
-                      media[2].image,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.image, size: 24, color: Colors.grey),
-                        );
-                      },
+                  const SizedBox(height: 3),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => onMediaTap(2),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(0),
+                        child: Image.network(
+                          media[2].image,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.image, size: 24, color: Colors.grey),
+                            );
+                          },
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildFourImages(BuildContext context) {
-    return SizedBox(
-      height: 250,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxHeight: 350,
+        minHeight: 200,
+      ),
       child: Column(
         children: [
           Expanded(
@@ -185,7 +232,7 @@ class PostMediaGallery extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 2),
+                const SizedBox(width: 3),
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onMediaTap(1),
@@ -204,7 +251,7 @@ class PostMediaGallery extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 3),
           Expanded(
             child: Row(
               children: [
@@ -223,7 +270,7 @@ class PostMediaGallery extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 2),
+                const SizedBox(width: 3),
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onMediaTap(3),
@@ -248,8 +295,11 @@ class PostMediaGallery extends StatelessWidget {
   }
 
   Widget _buildFiveOrMoreImages(BuildContext context) {
-    return SizedBox(
-      height: 250,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxHeight: 350,
+        minHeight: 200,
+      ),
       child: Column(
         children: [
           Expanded(
@@ -270,7 +320,7 @@ class PostMediaGallery extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 2),
+                const SizedBox(width: 3),
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onMediaTap(1),
@@ -289,7 +339,7 @@ class PostMediaGallery extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 3),
           Expanded(
             child: Row(
               children: [
@@ -308,7 +358,7 @@ class PostMediaGallery extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 2),
+                const SizedBox(width: 3),
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onMediaTap(3),

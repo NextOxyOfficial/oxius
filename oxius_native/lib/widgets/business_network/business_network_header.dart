@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../services/business_network_service.dart';
-import 'adsypay_qr_modal.dart';
 import '../../screens/business_network/search_screen.dart';
 
 class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onMenuTap;
   final VoidCallback? onSearchTap;
-  final VoidCallback? onQRCodeTap;
   final VoidCallback? onProfileTap;
   
   const BusinessNetworkHeader({
     super.key,
     this.onMenuTap,
     this.onSearchTap,
-    this.onQRCodeTap,
     this.onProfileTap,
   });
 
@@ -237,32 +234,26 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
         
         // User Section
         if (user != null) ...[
-          // QR Code Button
+          // Message Center Button
           IconButton(
             onPressed: () {
-              // Show AdsyPay QR modal
-              showDialog(
-                context: context,
-                builder: (context) => AdsyPayQrModal(
-                  qrData: 'adsypay://pay/${user.id}',
-                  title: '${user.firstName ?? user.username ?? "User"}\'s Payment QR',
-                ),
-              );
+              // Navigate to AdsyConnect (Message Center)
+              Navigator.pushNamed(context, '/adsy-connect');
             },
             icon: Container(
               width: 36,
               height: 36,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.green.shade50,
+                color: const Color(0xFF3B82F6).withOpacity(0.1),
               ),
-              child: Icon(
-                Icons.qr_code_scanner,
+              child: const Icon(
+                Icons.chat_bubble_outline,
                 size: 20,
-                color: Colors.green.shade600,
+                color: Color(0xFF3B82F6),
               ),
             ),
-            tooltip: 'QR Code',
+            tooltip: 'Messages',
           ),
           
           // User Profile Button

@@ -5,6 +5,7 @@ import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/adsyconnect_service.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
@@ -13,6 +14,7 @@ import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/diamond_purchase_bottom_sheet.dart';
 import 'create_post_screen.dart';
 import 'notifications_screen.dart';
+import '../adsy_connect_chat_interface.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -249,6 +251,65 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
+  Future<void> _openChatWithUser() async {
+    if (_userData == null) return;
+    
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Get or create chatroom with the profile user
+      final chatroom = await AdsyConnectService.getOrCreateChatRoom(widget.userId);
+      
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
+      // Open chat bottom sheet
+      if (mounted) {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.9,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (_, controller) => Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: AdsyConnectChatInterface(
+                chatroomId: chatroom['id'].toString(),
+                userId: widget.userId,
+                userName: _userData!['name'] ?? 'User',
+                userAvatar: _userData!['image'],
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (mounted) Navigator.pop(context);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to open chat: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _handleProfilePictureUpload() async {
     try {
       // Show options: Camera or Gallery
@@ -376,9 +437,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         },
         onSearchTap: () {
           // TODO: Implement search
-        },
-        onQRCodeTap: () {
-          // TODO: Show QR code modal
         },
         onProfileTap: () {
           // Already on profile page
@@ -660,14 +718,15 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           
           const SizedBox(height: 14),
           
-          // QR Code and Follow Button (for viewing other profiles)
+          // QR Code, Chat and Follow Button (for viewing other profiles)
           if (!isOwnProfile)
             AuthService.currentUser != null
-                ? // Logged in: Show both buttons in a row
+                ? // Logged in: Show all buttons in a row
                 Row(
                     children: [
                       // QR Code Button
                       Expanded(
+                        flex: 2,
                         child: OutlinedButton.icon(
                           onPressed: () {
                             if (_userData != null) {
@@ -694,9 +753,23 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
+                      // Chat Icon Button
+                      OutlinedButton(
+                        onPressed: () => _openChatWithUser(),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        child: const Icon(Icons.chat_bubble_outline, size: 18),
+                      ),
+                      const SizedBox(width: 8),
                       // Follow Button
                       Expanded(
+                        flex: 2,
                         child: ElevatedButton(
                     onPressed: _followLoading ? null : _toggleFollow,
                     style: ElevatedButton.styleFrom(

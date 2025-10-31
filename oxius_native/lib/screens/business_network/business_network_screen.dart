@@ -216,9 +216,6 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
             ),
           );
         },
-        onQRCodeTap: () {
-          // TODO: Show QR code modal
-        },
         onProfileTap: () {
           final currentUser = AuthService.currentUser;
           if (currentUser != null) {
