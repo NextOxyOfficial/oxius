@@ -915,7 +915,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   Widget _buildShareDialog() {
     final sellerId = widget.userId ?? '';
     final sellerName = _seller?['name'] ?? 'Seller';
-    final shareUrl = 'https://oxius.com/seller/$sellerId';
+    final shareUrl = 'https://adsyclub.com/seller/$sellerId';
     
     return GestureDetector(
       onTap: () => setState(() => _showShareDialog = false),

@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../services/translation_service.dart';
 import '../services/classified_category_service.dart';
 import '../services/api_service.dart';
+import '../config/app_config.dart';
 import 'classified_categories_grid.dart';
 
 class ClassifiedSearchBar extends StatefulWidget {
@@ -571,7 +572,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                     ? Image.network(
                         category.image!.startsWith('http')
                             ? category.image!
-                            : 'https://adsyclub.com${category.image}',
+                            : '${AppConfig.mediaBaseUrl}${category.image}',
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Image.asset(
@@ -711,7 +712,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
     if (imageUrl != null && imageUrl.isNotEmpty) {
       // Convert to absolute URL if needed
       if (!imageUrl.startsWith('http')) {
-        imageUrl = 'https://adsyclub.com$imageUrl';
+        imageUrl = '${AppConfig.mediaBaseUrl}$imageUrl';
       }
       
       return Image.network(

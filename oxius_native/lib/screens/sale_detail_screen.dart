@@ -1512,7 +1512,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
 
   Widget _buildShareDialog() {
     final post = _post!;
-    final shareUrl = 'https://oxius.com/sale/${post.slug}';
+    final shareUrl = 'https://adsyclub.com/sale/${post.slug}';
     
     return GestureDetector(
       onTap: () => setState(() => _showShareDialog = false),

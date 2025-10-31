@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/translation_service.dart';
 import '../services/api_service.dart';
 import '../services/classified_category_service.dart';
+import '../config/app_config.dart';
 import 'classified_search_bar.dart';
 import 'classified_categories_grid.dart';
 import 'ads_scroll.dart'; // Import the new ads scroll widget
@@ -506,7 +507,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     }
     
     if (imageUrl != null && !imageUrl.startsWith('http')) {
-      imageUrl = 'https://adsyclub.com$imageUrl';
+      imageUrl = '${AppConfig.mediaBaseUrl}$imageUrl';
     }
     
     return imageUrl;
