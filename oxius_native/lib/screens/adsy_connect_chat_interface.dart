@@ -1780,19 +1780,50 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       return _buildRecordingUI();
     }
 
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: const Color(0xFFE5E7EB).withOpacity(0.5),
-            width: 1,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Upload Progress Indicator
+        if (_isUploadingAttachment)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: const Color(0xFF3B82F6).withOpacity(0.1),
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Compressing and uploading...',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF3B82F6),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
-      child: SafeArea(
-        child: Row(
+        // Message Input Container
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(
+                color: const Color(0xFFE5E7EB).withOpacity(0.5),
+                width: 1,
+              ),
+            ),
+          ),
+          child: SafeArea(
+            child: Row(
           children: [
             // Attachment button
             Container(
@@ -1882,6 +1913,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           ],
         ),
       ),
+        ),
+      ],
     );
   }
 
