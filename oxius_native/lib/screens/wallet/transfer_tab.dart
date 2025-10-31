@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
 import '../../services/auth_service.dart';
@@ -218,6 +219,22 @@ class _TransferTabState extends State<TransferTab> {
     );
   }
 
+  Future<void> _scanQRCode() async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const QRScannerScreen(),
+      ),
+    );
+
+    if (result != null && result.isNotEmpty) {
+      setState(() {
+        _contactController.text = result;
+      });
+      _validateContact();
+    }
+  }
+
   Future<void> _handleTransfer() async {
     _validateContact();
     _validateAmount();
@@ -290,16 +307,7 @@ class _TransferTabState extends State<TransferTab> {
               prefixIcon: const Icon(Icons.person_outline, size: 20),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.qr_code_scanner, size: 20),
-                onPressed: () {
-                  // TODO: Implement QR code scanner to scan recipient's payment QR
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Scan recipient QR code - Coming soon'),
-                      duration: Duration(seconds: 2),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
-                },
+                onPressed: _scanQRCode,
                 tooltip: 'Scan Recipient QR Code',
               ),
               border: OutlineInputBorder(
@@ -392,5 +400,175 @@ class _TransferTabState extends State<TransferTab> {
         ],
       ),
     );
+  }
+}
+
+class QRScannerScreen extends StatefulWidget {
+  const QRScannerScreen({super.key});
+
+  @override
+  State<QRScannerScreen> createState() => _QRScannerScreenState();
+}
+
+class _QRScannerScreenState extends State<QRScannerScreen> {
+  final MobileScannerController controller = MobileScannerController();
+  bool _isScanned = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: const Text('Scan QR Code'),
+        backgroundColor: const Color(0xFF10B981),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.flash_on),
+            onPressed: () => controller.toggleTorch(),
+            tooltip: 'Toggle Flash',
+          ),
+          IconButton(
+            icon: const Icon(Icons.flip_camera_ios),
+            onPressed: () => controller.switchCamera(),
+            tooltip: 'Switch Camera',
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Camera Scanner
+          MobileScanner(
+            controller: controller,
+            onDetect: (capture) {
+              if (_isScanned) return;
+              
+              final List<Barcode> barcodes = capture.barcodes;
+              for (final barcode in barcodes) {
+                if (barcode.rawValue != null && barcode.rawValue!.isNotEmpty) {
+                  setState(() => _isScanned = true);
+                  
+                  // Extract user ID from QR code (format: adsypay://pay/{userId})
+                  String scannedValue = barcode.rawValue!;
+                  if (scannedValue.startsWith('adsypay://pay/')) {
+                    scannedValue = scannedValue.replaceFirst('adsypay://pay/', '');
+                  }
+                  
+                  Navigator.pop(context, scannedValue);
+                  break;
+                }
+              }
+            },
+          ),
+          
+          // Scan Frame Overlay
+          Center(
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: const Color(0xFF10B981),
+                  width: 3,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Stack(
+                children: [
+                  // Corner decorations
+                  Positioned(
+                    top: -2,
+                    left: -2,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -2,
+                    left: -2,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -2,
+                    right: -2,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        borderRadius: BorderRadius.only(
+                          bottomRight: Radius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Instructions
+          Positioned(
+            bottom: 80,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.symmetric(horizontal: 32),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'Position the QR code within the frame',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 }
