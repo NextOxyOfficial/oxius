@@ -195,7 +195,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   List<Map<String, dynamic>> _parseMessages(List<dynamic> messages) {
-    return messages.map((msg) {
+    final parsedMessages = messages.map((msg) {
       final sender = msg['sender'] ?? {};
       final receiver = msg['receiver'] ?? {};
       final senderId = sender['id']?.toString() ?? '';
@@ -218,6 +218,35 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         'isDeleted': msg['is_deleted'] ?? false,
       };
     }).toList();
+    
+    // Add smart timestamp display logic
+    return _addSmartTimestamps(parsedMessages);
+  }
+  
+  List<Map<String, dynamic>> _addSmartTimestamps(List<Map<String, dynamic>> messages) {
+    if (messages.isEmpty) return messages;
+    
+    for (int i = 0; i < messages.length; i++) {
+      bool showTimestamp = false;
+      
+      // Always show timestamp for first message
+      if (i == 0) {
+        showTimestamp = true;
+      } else {
+        final currentTime = messages[i]['timestamp'] as DateTime;
+        final previousTime = messages[i - 1]['timestamp'] as DateTime;
+        final difference = currentTime.difference(previousTime);
+        
+        // Show timestamp if gap is 3+ minutes
+        if (difference.inMinutes >= 3) {
+          showTimestamp = true;
+        }
+      }
+      
+      messages[i]['showTimestamp'] = showTimestamp;
+    }
+    
+    return messages;
   }
 
   Future<void> _markMessagesAsRead() async {
@@ -1469,53 +1498,74 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                               ),
                             ],
                     ),
-                    child: message['type'] == 'voice'
-                        ? _buildVoiceMessageContent(message, isMe)
-                        : message['type'] == 'image'
-                            ? _buildImageContent(message)
-                            : message['type'] == 'video'
-                                ? _buildVideoContent(message, isMe)
-                                : message['type'] == 'document'
-                                    ? _buildDocumentContent(message, isMe)
-                                    : Text(
-                                        message['message'],
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w400,
-                                          color: isMe ? Colors.white : const Color(0xFF1F2937),
-                                          letterSpacing: -0.1,
-                                        ),
-                                      ),
+                    child: message['isDeleted'] == true
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.block_rounded,
+                                size: 14,
+                                color: isMe ? Colors.white70 : Colors.grey.shade500,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Message removed',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontStyle: FontStyle.italic,
+                                  color: isMe ? Colors.white70 : Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          )
+                        : message['type'] == 'voice'
+                            ? _buildVoiceMessageContent(message, isMe)
+                            : message['type'] == 'image'
+                                ? _buildImageContent(message)
+                                : message['type'] == 'video'
+                                    ? _buildVideoContent(message, isMe)
+                                    : message['type'] == 'document'
+                                        ? _buildDocumentContent(message, isMe)
+                                        : Text(
+                                            message['message'],
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w400,
+                                              color: isMe ? Colors.white : const Color(0xFF1F2937),
+                                              letterSpacing: -0.1,
+                                            ),
+                                          ),
                   ),
                 ),
                 const SizedBox(height: 2),
-                // Time and read status
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (message['timeDisplay'] != null)
-                      Text(
-                        message['timeDisplay'],
-                        style: TextStyle(
-                          fontSize: 9,
-                          color: Colors.grey.shade400,
+                // Time and read status (only show if showTimestamp is true)
+                if (message['showTimestamp'] == true)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (message['timeDisplay'] != null)
+                        Text(
+                          message['timeDisplay'],
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: Colors.grey.shade400,
+                          ),
                         ),
-                      ),
-                    // Show read/unread status for sent messages
-                    if (isMe) ...[
-                      const SizedBox(width: 4),
-                      Icon(
-                        message['isRead'] == true 
-                            ? Icons.done_all_rounded 
-                            : Icons.done_rounded,
-                        size: 12,
-                        color: message['isRead'] == true 
-                            ? const Color(0xFF3B82F6) 
-                            : Colors.grey.shade400,
-                      ),
+                      // Show read/unread status for sent messages
+                      if (isMe) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                          message['isRead'] == true 
+                              ? Icons.done_all_rounded 
+                              : Icons.done_rounded,
+                          size: 12,
+                          color: message['isRead'] == true 
+                              ? const Color(0xFF3B82F6) 
+                              : Colors.grey.shade400,
+                        ),
+                      ],
                     ],
-                  ],
-                ),
+                  ),
               ],
             ),
           ),

@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q, Max
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 from .models import (
     ChatRoom, Message, MessageReport, 
     BlockedUser, TypingStatus, OnlineStatus
@@ -14,6 +15,8 @@ from .serializers import (
     MessageReportSerializer, BlockedUserSerializer, 
     OnlineStatusSerializer, TypingStatusSerializer
 )
+
+User = get_user_model()
 
 
 class ChatRoomViewSet(viewsets.ModelViewSet):
@@ -38,36 +41,81 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def get_or_create(self, request):
         """Get or create a chat room with another user"""
+        # Debug logging (don't access request.body after request.data!)
+        print(f"🔵 Request data: {request.data}")
+        print(f"🔵 Content type: {request.content_type}")
+        
         other_user_id = request.data.get('user_id')
         
+        print(f"🔵 Extracted user_id: {other_user_id} (type: {type(other_user_id)})")
+        
         if not other_user_id:
+            print("🔴 Error: user_id is required")
             return Response(
                 {'error': 'user_id is required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # Validate UUID format
+        import uuid as uuid_lib
+        try:
+            # Try to parse as UUID to validate format
+            uuid_obj = uuid_lib.UUID(str(other_user_id))
+            print(f"🔵 Validated UUID: {uuid_obj}")
+        except (ValueError, TypeError, AttributeError) as e:
+            print(f"🔴 Error validating UUID: {e}")
+            return Response(
+                {'error': 'Invalid user_id format (must be valid UUID)'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         # Check if user is trying to chat with themselves
         if str(other_user_id) == str(request.user.id):
+            print(f"🔴 Error: User trying to chat with themselves (user_id: {other_user_id})")
             return Response(
                 {'error': 'Cannot create chat with yourself'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Get or create chat room
-        chatroom = ChatRoom.objects.filter(
-            Q(user1=request.user, user2_id=other_user_id) |
-            Q(user1_id=other_user_id, user2=request.user)
-        ).first()
-        
-        if not chatroom:
-            # Create new chat room
-            chatroom = ChatRoom.objects.create(
-                user1=request.user,
-                user2_id=other_user_id
+        # Check if other user exists (UUID lookup)
+        try:
+            other_user = User.objects.get(id=other_user_id)
+            print(f"🔵 Found user: {other_user.username} (ID: {other_user.id})")
+        except User.DoesNotExist:
+            print(f"🔴 Error: User not found (UUID: {other_user_id})")
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
             )
         
-        serializer = self.get_serializer(chatroom)
-        return Response(serializer.data)
+        # Get or create chat room (ensure no duplicates)
+        try:
+            chatroom = ChatRoom.objects.filter(
+                Q(user1=request.user, user2=other_user) |
+                Q(user1=other_user, user2=request.user)
+            ).first()
+            
+            if not chatroom:
+                print(f"🔵 Creating new chatroom between {request.user.username} and {other_user.username}")
+                # Create new chat room
+                chatroom = ChatRoom.objects.create(
+                    user1=request.user,
+                    user2=other_user
+                )
+            else:
+                print(f"🔵 Found existing chatroom: {chatroom.id}")
+            
+            serializer = self.get_serializer(chatroom)
+            print(f"🔵 Returning serialized data: {serializer.data}")
+            return Response(serializer.data)
+        except Exception as e:
+            print(f"🔴 Error creating/fetching chatroom: {e}")
+            import traceback
+            traceback.print_exc()
+            return Response(
+                {'error': f'Failed to create chatroom: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
     @action(detail=True, methods=['post'])
     def mark_as_read(self, request, pk=None):

@@ -61,124 +61,51 @@ class UserSearchView(generics.ListAPIView):
         if not normalized_query:  # If query was just a # symbol
             return User.objects.none()
 
-        # Enhanced user search with better prioritization
-
-        # 1. Exact username matches (highest priority)
-        exact_username_match = User.objects.filter(
-            username__iexact=normalized_query
-        ).exclude(is_superuser=True)
-
-        # 2. Full name exact matches (first + last name combined)
-        # Split the query into parts to check against first and last name combinations
+        # Use a single query with annotations for scoring/priority
+        from django.db.models import Case, When, Value, IntegerField
+        from django.db.models.functions import Lower
+        
+        # Split query into parts for multi-word searches
         name_parts = normalized_query.split()
-        full_name_query = Q()
-
-        # Exact full name match
-        full_name_query |= Q(first_name__iexact=normalized_query) | Q(
-            last_name__iexact=normalized_query
-        )
-
-        # Handle when the search query consists of multiple words (first and last name)
+        
+        # Build a comprehensive search query
+        search_query = Q()
+        
+        # Search in username, first_name, last_name, email
+        search_query |= Q(username__icontains=normalized_query)
+        search_query |= Q(first_name__icontains=normalized_query)
+        search_query |= Q(last_name__icontains=normalized_query)
+        
+        # For multi-word queries, search in name parts
         if len(name_parts) > 1:
-            # Check for the complete query in both first_name and last_name fields
-            full_name_query |= Q(first_name__icontains=normalized_query) | Q(
-                last_name__icontains=normalized_query
-            )
-
-            # Try matching full name exactly in format "first last"
-            # This helps when searching for "Md Alimul Islam"
-            first_name_contains = Q()
-            last_name_contains = Q()
-
-            # Try different combinations of the name parts
-            for i in range(1, len(name_parts)):
-                first_part = " ".join(name_parts[:i])
-                last_part = " ".join(name_parts[i:])
-
-                # Match where first part is first_name and second part is last_name
-                full_name_query |= Q(first_name__iexact=first_part) & Q(
-                    last_name__iexact=last_part
-                )
-
-                # Also check for partial matches within first and last name
-                full_name_query |= Q(first_name__icontains=first_part) & Q(
-                    last_name__icontains=last_part
-                )
-
-                # Individual name part matching
-                for part in name_parts:
-                    first_name_contains |= Q(first_name__icontains=part)
-                    last_name_contains |= Q(last_name__icontains=part)
-
-            # Add individual name part matches as a lower priority
-            full_name_query |= first_name_contains & last_name_contains
-
-        full_name_matches = User.objects.filter(full_name_query).exclude(
-            is_superuser=True
-        )
-
-        # 3. Username starts with query
-        username_starts_with = (
-            User.objects.filter(username__istartswith=normalized_query)
-            .exclude(
-                username__iexact=normalized_query  # Exclude exact matches to avoid duplicates
-            )
-            .exclude(is_superuser=True)
-        )
-
-        # 4. First or last name starts with query
-        name_starts_with = (
-            User.objects.filter(
-                Q(first_name__istartswith=normalized_query)
-                | Q(last_name__istartswith=normalized_query)
-            )
-            .exclude(
-                Q(first_name__iexact=normalized_query)
-                | Q(last_name__iexact=normalized_query)
-            )
-            .exclude(is_superuser=True)
-        )
-
-        # 5. Contains matches for username or name (lowest priority)
-        partial_matches = (
-            User.objects.filter(
-                Q(username__icontains=normalized_query)
-                | Q(first_name__icontains=normalized_query)
-                | Q(last_name__icontains=normalized_query)
-                | Q(email__icontains=normalized_query)
-            )
-            .exclude(
-                # Exclude all previous matches to avoid duplicates
-                Q(username__iexact=normalized_query)
-                | Q(username__istartswith=normalized_query)
-                | Q(first_name__iexact=normalized_query)
-                | Q(first_name__istartswith=normalized_query)
-                | Q(last_name__iexact=normalized_query)
-                | Q(last_name__istartswith=normalized_query)
-                | Q(
-                    id__in=[user.id for user in list(full_name_matches)]
-                )  # Exclude full name matches
-            )
-            .exclude(is_superuser=True)
-        )
-
-        # Combine all matches with priority ordering
-        # Collect all user IDs in order of priority
-        seen_ids = set()
-        ordered_user_ids = []
+            for part in name_parts:
+                if len(part) > 2:  # Only search parts longer than 2 chars
+                    search_query |= Q(first_name__icontains=part)
+                    search_query |= Q(last_name__icontains=part)
         
-        for queryset in [exact_username_match, full_name_matches, username_starts_with, name_starts_with, partial_matches]:
-            for user in queryset:
-                if user.id not in seen_ids:
-                    seen_ids.add(user.id)
-                    ordered_user_ids.append(user.id)
+        # Get all matching users (excluding superusers)
+        users = User.objects.filter(search_query).exclude(is_superuser=True)
         
-        # Return as queryset with preserved order and no duplicates
-        # Use Case/When to maintain the priority order
-        from django.db.models import Case, When
-        preserved_order = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ordered_user_ids)])
+        # Add priority scoring for ordering
+        users = users.annotate(
+            priority=Case(
+                # Priority 1: Exact username match
+                When(username__iexact=normalized_query, then=Value(1)),
+                # Priority 2: Exact first or last name match
+                When(Q(first_name__iexact=normalized_query) | Q(last_name__iexact=normalized_query), then=Value(2)),
+                # Priority 3: Username starts with query
+                When(username__istartswith=normalized_query, then=Value(3)),
+                # Priority 4: First or last name starts with query
+                When(Q(first_name__istartswith=normalized_query) | Q(last_name__istartswith=normalized_query), then=Value(4)),
+                # Priority 5: Contains in username
+                When(username__icontains=normalized_query, then=Value(5)),
+                # Priority 6: Contains in name
+                default=Value(6),
+                output_field=IntegerField(),
+            )
+        ).order_by('priority', 'first_name', 'last_name').distinct()
         
-        return User.objects.filter(id__in=ordered_user_ids).order_by(preserved_order)
+        return users
 
 
 # @api_view(['GET'])
