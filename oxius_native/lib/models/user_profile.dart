@@ -21,6 +21,8 @@ class UserProfile {
   final String? country;
   final double balance;
   final int diamondBalance;
+  final bool isPro;
+  final bool isVerified;
 
   UserProfile({
     this.id,
@@ -45,6 +47,8 @@ class UserProfile {
     this.country,
     this.balance = 0.0,
     this.diamondBalance = 0,
+    this.isPro = false,
+    this.isVerified = false,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -71,6 +75,8 @@ class UserProfile {
       country: json['country'],
       balance: double.tryParse(json['balance']?.toString() ?? '0') ?? 0.0,
       diamondBalance: int.tryParse(json['diamond_balance']?.toString() ?? '0') ?? 0,
+      isPro: json['is_pro'] ?? false,
+      isVerified: json['kyc'] ?? false,
     );
   }
 
@@ -98,6 +104,8 @@ class UserProfile {
       if (country != null) 'country': country,
       'balance': balance,
       'diamond_balance': diamondBalance,
+      'is_pro': isPro,
+      'is_verified': isVerified,
       'name': '${firstName ?? ''} ${lastName ?? ''}'.trim(),
     };
   }
@@ -125,6 +133,8 @@ class UserProfile {
     String? country,
     double? balance,
     int? diamondBalance,
+    bool? isPro,
+    bool? isVerified,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -149,6 +159,8 @@ class UserProfile {
       country: country ?? this.country,
       balance: balance ?? this.balance,
       diamondBalance: diamondBalance ?? this.diamondBalance,
+      isPro: isPro ?? this.isPro,
+      isVerified: isVerified ?? this.isVerified,
     );
   }
 }

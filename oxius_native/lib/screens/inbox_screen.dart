@@ -286,10 +286,18 @@ class _InboxScreenState extends State<InboxScreen>
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.forum_rounded,
+                    child: Image.asset(
+                      'assets/images/chat_icon.png',
+                      width: 20,
+                      height: 20,
                       color: Colors.white,
-                      size: 20,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.forum_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -303,7 +311,7 @@ class _InboxScreenState extends State<InboxScreen>
                           children: [
                             const Flexible(
                               child: Text(
-                                'Message Center',
+                                'AdsyConnect',
                                 style: TextStyle(
                                   color: Color(0xFF1F2937),
                                   fontSize: 17,
@@ -391,7 +399,14 @@ class _InboxScreenState extends State<InboxScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.chat_bubble_rounded, size: 14),
+                      Image.asset(
+                        'assets/images/chat_icon.png',
+                        width: 12,
+                        height: 12,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.chat_bubble_rounded, size: 12);
+                        },
+                      ),
                       const SizedBox(width: 4),
                       const Text('AdsyConnect'),
                       if (chatsCount > 0) ...[

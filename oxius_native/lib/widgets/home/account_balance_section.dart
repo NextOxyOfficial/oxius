@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
 import '../../services/wallet_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/translation_service.dart';
+import '../../services/adsyconnect_service.dart';
 import '../../models/wallet_models.dart';
 import '../../screens/wallet/wallet_screen.dart';
 import '../../screens/microgig/pending_tasks_screen.dart';
@@ -19,6 +21,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
   WalletBalance? _balance;
   bool _isLoading = true;
   DateTime? _lastRefresh;
+  int _unreadMessageCount = 0;
+  Timer? _messageCountTimer;
 
   String t(String key) => _translationService.translate(key);
 
@@ -26,6 +30,51 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
   void initState() {
     super.initState();
     loadBalance();
+    _startMessageCountPolling();
+  }
+
+  void _startMessageCountPolling() {
+    // Only start polling if user is authenticated
+    if (!AuthService.isAuthenticated) {
+      return;
+    }
+    
+    _fetchUnreadMessageCount();
+    _messageCountTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted && AuthService.isAuthenticated) {
+        _fetchUnreadMessageCount();
+      } else if (!AuthService.isAuthenticated) {
+        // Stop polling if user logs out
+        timer.cancel();
+      }
+    });
+  }
+
+  Future<void> _fetchUnreadMessageCount() async {
+    // Don't fetch if user is not authenticated
+    if (!AuthService.isAuthenticated) {
+      if (mounted) {
+        setState(() {
+          _unreadMessageCount = 0;
+        });
+      }
+      return;
+    }
+    
+    try {
+      final chatRooms = await AdsyConnectService.getChatRooms(page: 1);
+      int totalUnread = 0;
+      for (var room in chatRooms) {
+        totalUnread += (room['unread_count'] as int?) ?? 0;
+      }
+      if (mounted) {
+        setState(() {
+          _unreadMessageCount = totalUnread;
+        });
+      }
+    } catch (e) {
+      print('Error fetching unread count: $e');
+    }
   }
 
   @override
@@ -59,6 +108,12 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
   // Public method to manually refresh - can be called from outside
   void refresh() {
     loadBalance();
+  }
+
+  @override
+  void dispose() {
+    _messageCountTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -657,14 +712,16 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
           );
         },
       ),
-      _buildActionButton(
+      _buildActionButtonWithImage(
         context: context,
-        icon: Icons.mark_email_unread_outlined,
+        imagePath: 'assets/images/chat_icon.png',
         label: t('inbox'),
         color: const Color(0xFF3B82F6),
         isSmallMobile: isSmallMobile,
-        onTap: () {
-          Navigator.pushNamed(context, '/inbox');
+        badgeCount: _unreadMessageCount,
+        onTap: () async {
+          await Navigator.pushNamed(context, '/inbox');
+          _fetchUnreadMessageCount();
         },
       ),
       _buildActionButton(
@@ -698,13 +755,14 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildActionButtonWithImage({
     required BuildContext context,
-    required IconData icon,
+    required String imagePath,
     required String label,
     required Color color,
     required VoidCallback onTap,
     bool isSmallMobile = false,
+    int badgeCount = 0,
   }) {
     return InkWell(
       onTap: onTap,
@@ -717,7 +775,133 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
         ),
         child: Column(
           children: [
-            Icon(icon, color: color, size: isSmallMobile ? 18 : 20),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Image.asset(
+                  imagePath,
+                  width: isSmallMobile ? 16 : 18,
+                  height: isSmallMobile ? 16 : 18,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(
+                      Icons.forum_outlined,
+                      color: color,
+                      size: isSmallMobile ? 16 : 18,
+                    );
+                  },
+                ),
+                if (badgeCount > 0)
+                  Positioned(
+                    right: -6,
+                    top: -4,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: badgeCount > 9 ? 3 : 4,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 1,
+                        ),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 14,
+                        minHeight: 14,
+                      ),
+                      child: Text(
+                        badgeCount > 99 ? '99+' : badgeCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w700,
+                          height: 1.2,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            SizedBox(height: isSmallMobile ? 2 : 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: isSmallMobile ? 10 : 11,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+    bool isSmallMobile = false,
+    int badgeCount = 0,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: isSmallMobile ? 8 : 10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(icon, color: color, size: isSmallMobile ? 18 : 20),
+                if (badgeCount > 0)
+                  Positioned(
+                    right: -6,
+                    top: -4,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: badgeCount > 9 ? 3 : 4,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 1,
+                        ),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 14,
+                        minHeight: 14,
+                      ),
+                      child: Text(
+                        badgeCount > 99 ? '99+' : badgeCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w700,
+                          height: 1.2,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             SizedBox(height: isSmallMobile ? 2 : 4),
             Text(
               label,

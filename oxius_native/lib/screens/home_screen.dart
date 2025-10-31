@@ -26,6 +26,9 @@ import 'eshop_screen.dart';
 import 'news_screen.dart';
 import 'verification_screen.dart';
 import '../widgets/business_network/adsypay_qr_modal.dart';
+import '../services/adsyconnect_service.dart';
+import 'dart:async';
+import 'package:app_badge_plus/app_badge_plus.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -43,6 +46,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isDropdownOpen = false; // Track dropdown menu state
   List<ClassifiedPost>? _recentPosts;
   bool _isLoadingPosts = false;
+  int _unreadMessageCount = 0;
+  Timer? _messageCountTimer;
 
   // Header animation
   bool _isHeaderVisible = true;
@@ -72,6 +77,83 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
     _fetchRecentPosts();
+    _startMessageCountPolling();
+  }
+
+  void _startMessageCountPolling() {
+    // Only start polling if user is authenticated
+    if (!AuthService.isAuthenticated) {
+      return;
+    }
+    
+    // Initial load
+    _fetchUnreadMessageCount();
+    
+    // Poll every 10 seconds
+    _messageCountTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted && !_disposed && AuthService.isAuthenticated) {
+        _fetchUnreadMessageCount();
+      } else if (!AuthService.isAuthenticated) {
+        // Stop polling if user logs out
+        timer.cancel();
+      }
+    });
+  }
+
+  Future<void> _fetchUnreadMessageCount() async {
+    // Don't fetch if user is not authenticated
+    if (!AuthService.isAuthenticated) {
+      if (mounted && !_disposed) {
+        setState(() {
+          _unreadMessageCount = 0;
+        });
+        // Remove app badge when not authenticated
+        _updateAppBadge(0);
+      }
+      return;
+    }
+    
+    try {
+      final chatRooms = await AdsyConnectService.getChatRooms(page: 1);
+      
+      int totalUnread = 0;
+      for (var room in chatRooms) {
+        totalUnread += (room['unread_count'] as int?) ?? 0;
+      }
+      
+      if (mounted && !_disposed) {
+        setState(() {
+          _unreadMessageCount = totalUnread;
+        });
+        // Update app badge with unread count
+        _updateAppBadge(totalUnread);
+      }
+    } catch (e) {
+      print('Error fetching unread count: $e');
+    }
+  }
+
+  Future<void> _updateAppBadge(int count) async {
+    try {
+      // Check if app badge is supported on this device
+      bool isSupported = await AppBadgePlus.isSupported();
+      
+      if (isSupported) {
+        if (count > 0) {
+          // Update badge with count
+          await AppBadgePlus.updateBadge(count);
+          print('📱 App badge updated: $count');
+        } else {
+          // Remove badge when count is 0
+          await AppBadgePlus.updateBadge(0);
+          print('📱 App badge removed');
+        }
+      } else {
+        print('📱 App badge not supported on this device');
+      }
+    } catch (e) {
+      print('Error updating app badge: $e');
+    }
   }
 
   Future<void> _fetchRecentPosts() async {
@@ -138,10 +220,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _disposed = true;
-    _scrollController.removeListener(_onScroll);
-    // Dispose scroll service before disposing the controller
-    _scrollService.dispose();
+    _messageCountTimer?.cancel();
     _scrollController.dispose();
+    _scrollService.dispose();
     super.dispose();
   }
 
@@ -1612,25 +1693,76 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Inbox button
+        // Inbox button with badge
         GestureDetector(
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            await Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const InboxScreen()),
             );
+            // Refresh count when returning from inbox
+            _fetchUnreadMessageCount();
           },
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.mark_email_unread_outlined,
-              color: Color(0xFF3B82F6),
-              size: 24,
-            ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Image.asset(
+                    'assets/images/chat_icon.png',
+                    width: 20,
+                    height: 20,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.forum_outlined,
+                        color: Color(0xFF3B82F6),
+                        size: 20,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              // Unread count badge
+              if (_unreadMessageCount > 0)
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: _unreadMessageCount > 9 ? 5 : 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Color(0xFFEF4444),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 1.5,
+                      ),
+                    ),
+                    constraints: BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      _unreadMessageCount > 99 ? '99+' : _unreadMessageCount.toString(),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
         

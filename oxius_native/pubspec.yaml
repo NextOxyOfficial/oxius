@@ -72,6 +72,9 @@ dependencies:
   record: ^5.0.4
   permission_handler: ^11.0.1
   path: ^1.8.3
+  
+  # App Badge (notification count on app icon)
+  app_badge_plus: ^1.1.4
 
 dev_dependencies:
   flutter_test:

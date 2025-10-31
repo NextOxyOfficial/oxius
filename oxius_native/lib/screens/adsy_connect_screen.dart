@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'adsy_connect_chat_interface.dart';
 import '../services/adsyconnect_service.dart';
 
@@ -14,11 +15,55 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   List<Map<String, dynamic>> _chatConversations = [];
   int _currentPage = 1;
   bool _hasMore = true;
+  Timer? _pollingTimer;
 
   @override
   void initState() {
     super.initState();
     _loadChats();
+    _startRealTimePolling();
+  }
+
+  void _startRealTimePolling() {
+    // Poll for new messages every 5 seconds
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (mounted) {
+        _refreshChatsInBackground();
+      }
+    });
+  }
+
+  Future<void> _refreshChatsInBackground() async {
+    try {
+      final chatRooms = await AdsyConnectService.getChatRooms(page: 1);
+      
+      if (mounted) {
+        setState(() {
+          // Only update the first page to refresh unread counts
+          final newChats = _parseChatRooms(chatRooms);
+          
+          // Update existing chats with new data
+          for (var newChat in newChats) {
+            final index = _chatConversations.indexWhere((c) => c['id'] == newChat['id']);
+            if (index != -1) {
+              _chatConversations[index] = newChat;
+            } else {
+              // New chat arrived, add it to the top
+              _chatConversations.insert(0, newChat);
+            }
+          }
+        });
+      }
+    } catch (e) {
+      print('🔴 Error refreshing chats in background: $e');
+      // Silent fail - don't show error to user
+    }
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadChats({bool loadMore = false}) async {
