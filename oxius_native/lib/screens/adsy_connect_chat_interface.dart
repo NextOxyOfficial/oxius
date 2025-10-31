@@ -115,8 +115,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
             _lastMessageId = newMessages.last['id'];
           });
           _scrollToBottom();
-          // Mark new messages as read immediately
-          _markMessagesAsRead();
+          // Don't auto-mark as read during polling
+          // Messages are only marked as read when user opens/views the chat
         }
         
         // Auto-scroll to bottom if user is near bottom
@@ -479,97 +479,146 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   void _deleteMessage(Map<String, dynamic> message) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Container(
+          width: 280,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.delete_outline_rounded,
+                  color: Color(0xFFEF4444),
+                  size: 24,
+                ),
               ),
-              child: const Icon(Icons.delete_rounded, color: Color(0xFFEF4444), size: 20),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Delete Message',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
-        content: const Text(
-          'Are you sure you want to delete this message? This action cannot be undone.',
-          style: TextStyle(fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              try {
-                // Call backend to soft delete the message
-                final deletedMessage = await AdsyConnectService.deleteMessage(message['id']);
-                print('✅ Deleted message response: $deletedMessage');
-                
-                // Update the message in the list immediately
-                if (mounted) {
-                  setState(() {
-                    final index = _messages.indexWhere((m) => m['id'].toString() == message['id'].toString());
-                    print('🔍 Found message at index: $index');
-                    
-                    if (index != -1) {
-                      // Parse the deleted message data from backend
-                      final isDeletedFlag = deletedMessage['is_deleted'] ?? true;
-                      print('🚫 isDeleted flag: $isDeletedFlag');
-                      
-                      // Update the message to show as deleted
-                      _messages[index] = {
-                        ..._messages[index],
-                        'isDeleted': true,
-                        'message': 'Message removed',
-                        'type': 'text', // Force to text type to show the removed message
-                      };
-                      
-                      print('✅ Updated message: ${_messages[index]}');
-                      
-                      // Force rebuild with updated timestamps
-                      _messages = List.from(_addSmartTimestamps(_messages));
-                    }
-                  });
-                  
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Message deleted'),
-                        backgroundColor: Color(0xFFEF4444),
-                        duration: Duration(seconds: 2),
+              const SizedBox(height: 16),
+              // Title
+              const Text(
+                'Delete Message?',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1F2937),
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Message
+              Text(
+                'This message will be removed for everyone.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                    );
-                  }
-                }
-              } catch (e) {
-                print('🔴 Error deleting message: $e');
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Failed to delete message: $e'),
-                      backgroundColor: const Color(0xFFEF4444),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
                     ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('Delete'),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        try {
+                          // Call backend to soft delete the message
+                          final deletedMessage = await AdsyConnectService.deleteMessage(message['id']);
+                          
+                          // Update the message in the list immediately
+                          if (mounted) {
+                            setState(() {
+                              final index = _messages.indexWhere((m) => m['id'].toString() == message['id'].toString());
+                              
+                              if (index != -1) {
+                                // Update the message to show as deleted
+                                _messages[index] = {
+                                  ..._messages[index],
+                                  'isDeleted': true,
+                                  'message': 'Message removed',
+                                  'type': 'text',
+                                };
+                                
+                                // Force rebuild with updated timestamps
+                                _messages = List.from(_addSmartTimestamps(_messages));
+                              }
+                            });
+                            
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Message deleted'),
+                                  backgroundColor: Color(0xFFEF4444),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to delete: $e'),
+                                backgroundColor: const Color(0xFFEF4444),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFEF4444),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1497,7 +1546,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
               crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onLongPress: isMe ? () => _showMessageOptions(message) : null,
+                  onLongPress: isMe && message['isDeleted'] != true 
+                      ? () => _showMessageOptions(message) 
+                      : null,
                   child: Container(
                     padding: message['type'] == 'image' || message['type'] == 'video'
                         ? EdgeInsets.zero
