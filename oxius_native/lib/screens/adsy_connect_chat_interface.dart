@@ -9,6 +9,7 @@ import 'dart:async';
 import 'dart:io';
 
 class AdsyConnectChatInterface extends StatefulWidget {
+  final String chatroomId;
   final String userId;
   final String userName;
   final String? userAvatar;
@@ -17,6 +18,7 @@ class AdsyConnectChatInterface extends StatefulWidget {
 
   const AdsyConnectChatInterface({
     super.key,
+    required this.chatroomId,
     required this.userId,
     required this.userName,
     this.userAvatar,

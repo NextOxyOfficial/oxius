@@ -8,7 +8,7 @@ class AdsyConnectService {
 
   // Get headers with auth token
   static Future<Map<String, String>> _getHeaders() async {
-    final token = await AuthService.getAccessToken();
+    final token = AuthService.accessToken;
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
@@ -118,7 +118,7 @@ class AdsyConnectService {
     int? voiceDuration,
   }) async {
     try {
-      final token = await AuthService.getAccessToken();
+      final token = AuthService.accessToken;
       final request = http.MultipartRequest(
         'POST',
         Uri.parse('$baseUrl/messages/'),

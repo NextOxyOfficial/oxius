@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'adsy_connect_chat_interface.dart';
+import '../services/adsyconnect_service.dart';
 
 class AdsyConnectScreen extends StatefulWidget {
   const AdsyConnectScreen({super.key});
@@ -11,6 +12,8 @@ class AdsyConnectScreen extends StatefulWidget {
 class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   bool _isLoadingChats = true;
   List<Map<String, dynamic>> _chatConversations = [];
+  int _currentPage = 1;
+  bool _hasMore = true;
 
   @override
   void initState() {
@@ -18,69 +21,115 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     _loadChats();
   }
 
-  Future<void> _loadChats() async {
-    setState(() => _isLoadingChats = true);
+  Future<void> _loadChats({bool loadMore = false}) async {
+    if (!loadMore) {
+      setState(() {
+        _isLoadingChats = true;
+        _currentPage = 1;
+      });
+    }
     
     try {
-      // TODO: Replace with actual chat API endpoint when available
-      // For now, using mock data structure
-      await Future.delayed(const Duration(milliseconds: 500));
+      final chatRooms = await AdsyConnectService.getChatRooms(page: _currentPage);
       
       if (mounted) {
         setState(() {
-          // Mock chat conversations - will be replaced with real API
-          _chatConversations = [
-            {
-              'id': '1',
-              'userId': '123',
-              'userName': 'John Doe',
-              'userAvatar': null,
-              'profession': 'Software Engineer',
-              'lastMessage': 'Hey, is the product still available?',
-              'timestamp': DateTime.now().subtract(const Duration(minutes: 5)),
-              'unreadCount': 2,
-              'isOnline': true,
-              'isTyping': true,
-            },
-            {
-              'id': '2',
-              'userId': '456',
-              'userName': 'Sarah Smith',
-              'userAvatar': null,
-              'profession': 'Marketing Manager',
-              'lastMessage': 'Thanks for the quick response!',
-              'timestamp': DateTime.now().subtract(const Duration(hours: 2)),
-              'unreadCount': 0,
-              'isOnline': false,
-              'isTyping': false,
-            },
-            {
-              'id': '3',
-              'userId': '789',
-              'userName': 'Mike Johnson',
-              'userAvatar': null,
-              'profession': 'Business Owner',
-              'lastMessage': 'Can we schedule a meeting?',
-              'timestamp': DateTime.now().subtract(const Duration(days: 1)),
-              'unreadCount': 1,
-              'isOnline': true,
-              'isTyping': false,
-            },
-          ];
+          if (loadMore) {
+            _chatConversations.addAll(_parseChatRooms(chatRooms));
+          } else {
+            _chatConversations = _parseChatRooms(chatRooms);
+          }
           _isLoadingChats = false;
+          _hasMore = chatRooms.length >= 20;
+          if (loadMore) _currentPage++;
         });
       }
     } catch (e) {
       print('Error loading chats: $e');
       if (mounted) {
-        setState(() => _isLoadingChats = false);
+        setState(() {
+          _isLoadingChats = false;
+          _chatConversations = [];
+        });
       }
+    }
+  }
+
+  List<Map<String, dynamic>> _parseChatRooms(List<dynamic> chatRooms) {
+    return chatRooms.map((room) {
+      final otherUser = room['other_user'] ?? {};
+      final lastMessage = room['last_message'];
+      
+      return {
+        'id': room['id'],
+        'userId': otherUser['id']?.toString() ?? '',
+        'userName': _getFullName(otherUser),
+        'userAvatar': otherUser['avatar'],
+        'profession': otherUser['profession'] ?? '',
+        'lastMessage': lastMessage?['content'] ?? room['last_message_preview'] ?? '',
+        'timestamp': lastMessage?['created_at'] != null 
+            ? DateTime.parse(lastMessage['created_at'])
+            : DateTime.parse(room['last_message_at'] ?? DateTime.now().toIso8601String()),
+        'unreadCount': room['unread_count'] ?? 0,
+        'isOnline': otherUser['is_online'] ?? false,
+        'isTyping': false,
+        'isVerified': otherUser['is_verified'] ?? false,
+      };
+    }).toList();
+  }
+
+  String _getFullName(Map<String, dynamic> user) {
+    final firstName = user['first_name'] ?? '';
+    final lastName = user['last_name'] ?? '';
+    final username = user['username'] ?? 'User';
+    
+    if (firstName.isNotEmpty && lastName.isNotEmpty) {
+      return '$firstName $lastName';
+    } else if (firstName.isNotEmpty) {
+      return firstName;
+    } else if (lastName.isNotEmpty) {
+      return lastName;
+    }
+    return username;
+  }
+
+  Future<void> _refreshChats() async {
+    await _loadChats();
+  }
+
+  void _loadMoreChats() {
+    if (!_isLoadingChats && _hasMore) {
+      _loadChats(loadMore: true);
+    }
+  }
+
+  void _openChat(Map<String, dynamic> chat) async {
+    try {
+      await AdsyConnectService.markChatroomAsRead(chat['id']);
+    } catch (e) {
+      print('Error marking chatroom as read: $e');
+    }
+
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AdsyConnectChatInterface(
+            chatroomId: chat['id'],
+            userId: chat['userId'],
+            userName: chat['userName'],
+            userAvatar: chat['userAvatar'],
+            profession: chat['profession'],
+            isOnline: chat['isOnline'],
+          ),
+        ),
+      ).then((_) => _refreshChats());
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoadingChats) {
+    if (_isLoadingChats && _chatConversations.isEmpty) {
       return const Center(
         child: CircularProgressIndicator(
           color: Color(0xFF3B82F6),
@@ -130,13 +179,35 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      itemCount: _chatConversations.length,
-      itemBuilder: (context, index) {
-        final chat = _chatConversations[index];
-        return _buildChatItem(chat);
-      },
+    return RefreshIndicator(
+      onRefresh: _refreshChats,
+      color: const Color(0xFF3B82F6),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification scrollInfo) {
+          if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+            _loadMoreChats();
+          }
+          return false;
+        },
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          itemCount: _chatConversations.length + (_hasMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == _chatConversations.length) {
+              return const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  ),
+                ),
+              );
+            }
+            final chat = _chatConversations[index];
+            return _buildChatItem(chat);
+          },
+        ),
+      ),
     );
   }
 
@@ -146,20 +217,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     final bool isTyping = chat['isTyping'] ?? false;
 
     return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AdsyConnectChatInterface(
-              userId: chat['userId'],
-              userName: chat['userName'],
-              userAvatar: chat['userAvatar'],
-              profession: chat['profession'],
-              isOnline: isOnline,
-            ),
-          ),
-        );
-      },
+      onTap: () => _openChat(chat),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
