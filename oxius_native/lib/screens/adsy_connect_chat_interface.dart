@@ -45,14 +45,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   int _currentPage = 1;
   bool _hasMoreMessages = true;
   Timer? _recordTimer;
+  Timer? _messagePollingTimer;
   String? _recordingPath;
   List<Map<String, dynamic>> _messages = [];
+  String? _lastMessageId;
 
   @override
   void initState() {
     super.initState();
     _loadMessages();
     _messageController.addListener(_onTypingChanged);
+    _startMessagePolling();
   }
 
   @override
@@ -62,6 +65,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     _messageFocusNode.dispose();
     _audioRecorder.dispose();
     _recordTimer?.cancel();
+    _messagePollingTimer?.cancel();
     super.dispose();
   }
 
@@ -69,6 +73,61 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     final isCurrentlyTyping = _messageController.text.isNotEmpty;
     if (isCurrentlyTyping != _isTyping) {
       setState(() => _isTyping = isCurrentlyTyping);
+    }
+  }
+
+  void _startMessagePolling() {
+    // Poll for new messages every 3 seconds
+    _messagePollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (mounted && !_isLoadingMessages) {
+        _checkForNewMessages();
+      }
+    });
+  }
+
+  Future<void> _checkForNewMessages() async {
+    try {
+      final messages = await AdsyConnectService.getMessages(
+        widget.chatroomId,
+        page: 1,
+      );
+      
+      if (messages.isEmpty) return;
+      
+      final parsedMessages = _parseMessages(messages);
+      if (parsedMessages.isEmpty) return;
+      
+      // Get the latest message ID from server
+      final latestServerMessageId = parsedMessages.last['id'];
+      
+      // If we have no messages yet, or if there's a new message
+      if (_lastMessageId == null || latestServerMessageId != _lastMessageId) {
+        // Find new messages that we don't have yet
+        final newMessages = parsedMessages.where((msg) {
+          return !_messages.any((existing) => existing['id'] == msg['id']);
+        }).toList();
+        
+        if (newMessages.isNotEmpty && mounted) {
+          setState(() {
+            _messages.addAll(newMessages);
+            _lastMessageId = latestServerMessageId;
+          });
+          
+          // Auto-scroll to bottom if user is near bottom
+          if (_scrollController.hasClients) {
+            final maxScroll = _scrollController.position.maxScrollExtent;
+            final currentScroll = _scrollController.position.pixels;
+            final isNearBottom = maxScroll - currentScroll < 100;
+            
+            if (isNearBottom) {
+              _scrollToBottom();
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Silently fail for polling errors to avoid spamming user
+      print('🔴 Error polling messages: $e');
     }
   }
 
@@ -91,11 +150,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       print('🟢 Loaded ${messages.length} messages');
       
       if (mounted) {
+        final parsedMessages = _parseMessages(messages);
         setState(() {
           if (loadMore) {
-            _messages.insertAll(0, _parseMessages(messages));
+            _messages.insertAll(0, parsedMessages);
           } else {
-            _messages = _parseMessages(messages);
+            _messages = parsedMessages;
+            // Set last message ID for polling
+            if (parsedMessages.isNotEmpty) {
+              _lastMessageId = parsedMessages.last['id'];
+            }
           }
           _isLoadingMessages = false;
           _hasMoreMessages = messages.length >= 20;
@@ -130,14 +194,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       return {
         'id': msg['id']?.toString() ?? '',
         'senderId': senderId,
-        'message': msg['content']?.toString() ?? '',
+        'message': msg['display_content']?.toString() ?? msg['content']?.toString() ?? '',
         'timestamp': msg['created_at'] != null 
             ? DateTime.parse(msg['created_at']) 
             : DateTime.now(),
+        'timeDisplay': msg['time_display']?.toString(),
         'isMe': !isMe, // Invert because we're the receiver if sender is not us
         'type': msg['message_type']?.toString() ?? 'text',
         'mediaUrl': msg['media_file']?.toString(),
         'isRead': msg['is_read'] ?? false,
+        'isDeleted': msg['is_deleted'] ?? false,
       };
     }).toList();
   }
@@ -200,14 +266,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     return {
       'id': msg['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
       'senderId': 'me',
-      'message': msg['content']?.toString() ?? '',
+      'message': msg['display_content']?.toString() ?? msg['content']?.toString() ?? '',
       'timestamp': msg['created_at'] != null 
           ? DateTime.parse(msg['created_at']) 
           : DateTime.now(),
+      'timeDisplay': msg['time_display']?.toString(),
       'isMe': true,
       'type': msg['message_type']?.toString() ?? 'text',
       'mediaUrl': msg['media_file']?.toString(),
       'isRead': msg['is_read'] ?? false,
+      'isDeleted': msg['is_deleted'] ?? false,
     };
   }
 
@@ -539,7 +607,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       );
       
       if (image != null) {
-        _sendMediaMessage(image.path, 'image');
+        if (kIsWeb) {
+          // Web: Read as bytes
+          final bytes = await image.readAsBytes();
+          _sendMediaMessageWeb(bytes, 'image', fileName: image.name);
+        } else {
+          // Mobile: Use path
+          _sendMediaMessage(image.path, 'image');
+        }
       }
     } catch (e) {
       print('Error picking image: $e');
@@ -562,7 +637,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       );
       
       if (image != null) {
-        _sendMediaMessage(image.path, 'image');
+        if (kIsWeb) {
+          // Web: Read as bytes
+          final bytes = await image.readAsBytes();
+          _sendMediaMessageWeb(bytes, 'image', fileName: image.name);
+        } else {
+          // Mobile: Use path
+          _sendMediaMessage(image.path, 'image');
+        }
       }
     } catch (e) {
       print('Error taking photo: $e');
@@ -646,7 +728,44 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         chatroomId: widget.chatroomId,
         receiverId: widget.userId,
         messageType: type,
-        mediaFile: File(filePath),
+        mediaFilePath: filePath,
+        fileName: fileName,
+      );
+      
+      print('🟢 Media message sent: ${sentMessage['id']}');
+      
+      if (mounted) {
+        setState(() {
+          _messages.add(_parseSingleMessage(sentMessage));
+          _isSendingMessage = false;
+        });
+        _scrollToBottom();
+      }
+    } catch (e) {
+      print('🔴 Error sending media: $e');
+      if (mounted) {
+        setState(() => _isSendingMessage = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send $type: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _sendMediaMessageWeb(List<int> bytes, String type, {String? fileName}) async {
+    setState(() => _isSendingMessage = true);
+
+    try {
+      print('🔵 Sending $type message from web: ${bytes.length} bytes');
+      
+      final sentMessage = await AdsyConnectService.sendMediaMessage(
+        chatroomId: widget.chatroomId,
+        receiverId: widget.userId,
+        messageType: type,
+        mediaBytes: bytes,
         fileName: fileName,
       );
       
@@ -1003,6 +1122,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   widget.userName,
@@ -1014,7 +1134,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (widget.profession != null)
+                // Only show profession if it exists and is not empty
+                if (widget.profession != null && widget.profession!.isNotEmpty)
                   Text(
                     widget.profession!,
                     style: TextStyle(
@@ -1273,13 +1394,15 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  _formatMessageTime(message['timestamp']),
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: Colors.grey.shade400,
+                // Only show time if timeDisplay is not null (smart time from backend)
+                if (message['timeDisplay'] != null)
+                  Text(
+                    message['timeDisplay'],
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Colors.grey.shade400,
+                    ),
                   ),
-                ),
               ],
             ),
           ),

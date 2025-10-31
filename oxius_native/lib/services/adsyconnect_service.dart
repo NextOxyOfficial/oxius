@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' if (dart.library.html) 'dart:html' as io;
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'auth_service.dart';
 import 'api_service.dart';
 
@@ -151,16 +152,23 @@ class AdsyConnectService {
   }
 
   // Send media message (image, video, document, voice)
+  // Accepts either file path (mobile) or bytes (web)
   static Future<Map<String, dynamic>> sendMediaMessage({
     required String chatroomId,
     required String receiverId,
     required String messageType,
-    required File mediaFile,
+    String? mediaFilePath,
+    List<int>? mediaBytes,
     String? fileName,
     int? voiceDuration,
   }) async {
     try {
       final token = AuthService.accessToken;
+      
+      if (mediaFilePath == null && mediaBytes == null) {
+        throw Exception('Either mediaFilePath or mediaBytes must be provided');
+      }
+      
       final request = http.MultipartRequest(
         'POST',
         Uri.parse('$baseUrl/messages/'),
@@ -179,13 +187,26 @@ class AdsyConnectService {
         request.fields['voice_duration'] = voiceDuration.toString();
       }
 
-      // Add file
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'media_file',
-          mediaFile.path,
-        ),
-      );
+      // Add file - handle both web (bytes) and mobile (path)
+      if (kIsWeb && mediaBytes != null) {
+        // Web: Use bytes
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'media_file',
+            mediaBytes,
+            filename: fileName ?? 'upload.${_getFileExtension(messageType)}',
+          ),
+        );
+      } else if (mediaFilePath != null) {
+        // Mobile: Use file path
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'media_file',
+            mediaFilePath,
+            filename: fileName,
+          ),
+        );
+      }
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -193,11 +214,26 @@ class AdsyConnectService {
       if (response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to send media: ${response.statusCode}');
+        throw Exception('Failed to send media: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       print('Error sending media: $e');
       rethrow;
+    }
+  }
+
+  static String _getFileExtension(String messageType) {
+    switch (messageType) {
+      case 'image':
+        return 'jpg';
+      case 'video':
+        return 'mp4';
+      case 'voice':
+        return 'm4a';
+      case 'document':
+        return 'pdf';
+      default:
+        return 'bin';
     }
   }
 

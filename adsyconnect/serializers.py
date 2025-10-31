@@ -39,14 +39,16 @@ class MessageSerializer(serializers.ModelSerializer):
     receiver = UserBasicSerializer(read_only=True)
     media_url = serializers.SerializerMethodField()
     thumbnail_url = serializers.SerializerMethodField()
+    display_content = serializers.SerializerMethodField()
+    time_display = serializers.SerializerMethodField()
     
     class Meta:
         model = Message
         fields = [
             'id', 'chatroom', 'sender', 'receiver', 'message_type', 
-            'content', 'media_url', 'thumbnail_url', 'file_name', 
-            'file_size', 'voice_duration', 'is_read', 'read_at', 
-            'is_deleted', 'created_at', 'updated_at'
+            'content', 'display_content', 'media_url', 'thumbnail_url', 
+            'file_name', 'file_size', 'voice_duration', 'is_read', 'read_at', 
+            'is_deleted', 'created_at', 'updated_at', 'time_display'
         ]
         read_only_fields = ['id', 'sender', 'receiver', 'created_at', 
                            'updated_at', 'read_at']
@@ -64,6 +66,14 @@ class MessageSerializer(serializers.ModelSerializer):
             if request:
                 return request.build_absolute_uri(obj.media_thumbnail.url)
         return None
+    
+    def get_display_content(self, obj):
+        """Return 'Message removed' for deleted messages"""
+        return obj.get_display_content()
+    
+    def get_time_display(self, obj):
+        """Return smart time display or None if within same minute"""
+        return obj.get_time_display()
 
 
 class MessageCreateSerializer(serializers.ModelSerializer):

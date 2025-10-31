@@ -359,17 +359,20 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 1),
-                  Text(
-                    chat['profession'] ?? 'Professional',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade500,
-                      letterSpacing: -0.1,
+                  // Only show profession if it exists and is not empty
+                  if (chat['profession'] != null && chat['profession'].toString().isNotEmpty) ...[
+                    const SizedBox(height: 1),
+                    Text(
+                      chat['profession'],
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade500,
+                        letterSpacing: -0.1,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  ],
                   const SizedBox(height: 2),
                   Text(
                     chat['lastMessage'],

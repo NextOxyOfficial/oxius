@@ -155,6 +155,42 @@ class Message(models.Model):
         elif self.message_type == 'document':
             return f"📄 {self.file_name or 'Document'}"
         return "Message"
+    
+    def get_display_content(self):
+        """Get display content for deleted messages"""
+        if self.is_deleted:
+            return "Message removed"
+        return self.content
+    
+    def get_time_display(self):
+        """Get smart time display - hide if within same minute"""
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        now = timezone.now()
+        diff = now - self.created_at
+        
+        # If less than 1 minute, don't show time
+        if diff < timedelta(minutes=1):
+            return None
+        
+        # If less than 1 hour, show minutes
+        if diff < timedelta(hours=1):
+            minutes = int(diff.total_seconds() / 60)
+            return f"{minutes}m ago"
+        
+        # If less than 24 hours, show hours
+        if diff < timedelta(hours=24):
+            hours = int(diff.total_seconds() / 3600)
+            return f"{hours}h ago"
+        
+        # If less than 7 days, show days
+        if diff < timedelta(days=7):
+            days = diff.days
+            return f"{days}d ago"
+        
+        # Otherwise show date
+        return self.created_at.strftime("%b %d")
 
 
 class MessageReport(models.Model):
