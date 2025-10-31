@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../services/business_network_service.dart';
+import '../../services/api_service.dart';
 import '../../screens/business_network/search_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onMenuTap;
@@ -24,11 +27,13 @@ class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidge
 
 class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
   String? _businessNetworkLogoUrl;
+  int _totalNotificationCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadBusinessNetworkLogo();
+    _loadNotificationCount();
   }
 
   Future<void> _loadBusinessNetworkLogo() async {
@@ -37,6 +42,47 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
       setState(() {
         _businessNetworkLogoUrl = logoUrl;
       });
+    }
+  }
+
+  Future<void> _loadNotificationCount() async {
+    if (!AuthService.isAuthenticated) return;
+    
+    try {
+      final headers = await ApiService.getHeaders();
+      
+      // Load notifications count
+      final notificationsResponse = await http.get(
+        Uri.parse(ApiService.getApiUrl('notifications/')),
+        headers: headers,
+      );
+      
+      // Load support tickets count
+      final ticketsResponse = await http.get(
+        Uri.parse(ApiService.getApiUrl('support/tickets/')),
+        headers: headers,
+      );
+      
+      int unreadNotifications = 0;
+      int unreadTickets = 0;
+      
+      if (notificationsResponse.statusCode == 200) {
+        final data = json.decode(notificationsResponse.body) as List;
+        unreadNotifications = data.where((item) => !(item['is_read'] ?? false)).length;
+      }
+      
+      if (ticketsResponse.statusCode == 200) {
+        final data = json.decode(ticketsResponse.body) as List;
+        unreadTickets = data.where((item) => !(item['is_read'] ?? false)).length;
+      }
+      
+      if (mounted) {
+        setState(() {
+          _totalNotificationCount = unreadNotifications + unreadTickets;
+        });
+      }
+    } catch (e) {
+      print('Error loading notification count: $e');
     }
   }
 
@@ -234,35 +280,71 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
         
         // User Section
         if (user != null) ...[
-          // Message Center Button
-          IconButton(
-            onPressed: () {
-              // Navigate to AdsyConnect (Message Center)
-              Navigator.pushNamed(context, '/adsy-connect');
-            },
-            icon: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Image.asset(
-                  'assets/images/chat_icon.png',
-                  width: 20,
-                  height: 20,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(
-                      Icons.chat_bubble_outline,
-                      size: 20,
-                      color: Color(0xFF3B82F6),
-                    );
-                  },
+          // Inbox Button with Notification Badge
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                onPressed: () {
+                  // Navigate to Inbox
+                  Navigator.pushNamed(context, '/inbox');
+                },
+                icon: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Image.asset(
+                      'assets/images/chat_icon.png',
+                      width: 20,
+                      height: 20,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.chat_bubble_outline,
+                          size: 20,
+                          color: Color(0xFF3B82F6),
+                        );
+                      },
+                    ),
+                  ),
                 ),
+                tooltip: 'Inbox',
               ),
-            ),
-            tooltip: 'Messages',
+              // Notification Badge
+              if (_totalNotificationCount > 0)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Center(
+                      child: Text(
+                        _totalNotificationCount > 99 ? '99+' : _totalNotificationCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          height: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
           
           // User Profile Button
