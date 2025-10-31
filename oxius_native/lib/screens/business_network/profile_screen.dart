@@ -288,8 +288,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               child: AdsyConnectChatInterface(
                 chatroomId: chatroom['id'].toString(),
                 userId: widget.userId,
-                userName: _userData!['name'] ?? 'User',
-                userAvatar: _userData!['image'],
+                userName: _userData!['first_name'] != null && _userData!['last_name'] != null
+                    ? '${_userData!['first_name']} ${_userData!['last_name']}'
+                    : _userData!['username'] ?? 'User',
+                userAvatar: _userData!['profile_picture'],
+                profession: _userData!['profession'],
+                isOnline: false,
               ),
             ),
           ),
