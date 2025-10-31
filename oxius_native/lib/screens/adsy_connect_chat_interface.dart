@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'dart:io';
 import '../services/adsyconnect_service.dart';
+import '../utils/image_compressor.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -40,6 +41,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   bool _isTyping = false;
   bool _isLoadingMessages = true;
   bool _isSendingMessage = false;
+  bool _isUploadingAttachment = false;
   bool _isRecording = false;
   int _recordDuration = 0;
   int _currentPage = 1;
@@ -210,12 +212,26 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
-      Future.delayed(const Duration(milliseconds: 100), () {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+      // Use addPostFrameCallback to ensure ListView is fully built
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients && mounted) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    } else {
+      // If controller not ready, try again after a delay
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (mounted && _scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
       });
     }
   }
@@ -603,21 +619,35 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     try {
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 80,
       );
       
       if (image != null) {
+        setState(() => _isUploadingAttachment = true);
+        
         if (kIsWeb) {
           // Web: Read as bytes
           final bytes = await image.readAsBytes();
           _sendMediaMessageWeb(bytes, 'image', fileName: image.name);
         } else {
-          // Mobile: Use path
-          _sendMediaMessage(image.path, 'image');
+          // Mobile: Compress and send
+          final compressedBase64 = await ImageCompressor.compressToBase64(
+            image,
+            targetSize: 200 * 1024, // 200KB
+            initialQuality: 80,
+            maxDimension: 1920,
+            verbose: true,
+          );
+          
+          if (compressedBase64 != null) {
+            _sendMediaMessage(image.path, 'image');
+          } else {
+            throw Exception('Image compression failed');
+          }
         }
       }
     } catch (e) {
       print('Error picking image: $e');
+      setState(() => _isUploadingAttachment = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -633,21 +663,35 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     try {
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.camera,
-        imageQuality: 80,
       );
       
       if (image != null) {
+        setState(() => _isUploadingAttachment = true);
+        
         if (kIsWeb) {
           // Web: Read as bytes
           final bytes = await image.readAsBytes();
           _sendMediaMessageWeb(bytes, 'image', fileName: image.name);
         } else {
-          // Mobile: Use path
-          _sendMediaMessage(image.path, 'image');
+          // Mobile: Compress and send
+          final compressedBase64 = await ImageCompressor.compressToBase64(
+            image,
+            targetSize: 200 * 1024, // 200KB
+            initialQuality: 80,
+            maxDimension: 1920,
+            verbose: true,
+          );
+          
+          if (compressedBase64 != null) {
+            _sendMediaMessage(image.path, 'image');
+          } else {
+            throw Exception('Image compression failed');
+          }
         }
       }
     } catch (e) {
       print('Error taking photo: $e');
+      setState(() => _isUploadingAttachment = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -719,7 +763,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   Future<void> _sendMediaMessage(String filePath, String type, {String? fileName}) async {
-    setState(() => _isSendingMessage = true);
+    setState(() {
+      _isSendingMessage = true;
+      _isUploadingAttachment = true;
+    });
 
     try {
       print('🔵 Sending $type message: $filePath');
@@ -738,13 +785,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         setState(() {
           _messages.add(_parseSingleMessage(sentMessage));
           _isSendingMessage = false;
+          _isUploadingAttachment = false;
         });
         _scrollToBottom();
       }
     } catch (e) {
       print('🔴 Error sending media: $e');
       if (mounted) {
-        setState(() => _isSendingMessage = false);
+        setState(() {
+          _isSendingMessage = false;
+          _isUploadingAttachment = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to send $type: $e'),
@@ -756,7 +807,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   Future<void> _sendMediaMessageWeb(List<int> bytes, String type, {String? fileName}) async {
-    setState(() => _isSendingMessage = true);
+    setState(() {
+      _isSendingMessage = true;
+      _isUploadingAttachment = true;
+    });
 
     try {
       print('🔵 Sending $type message from web: ${bytes.length} bytes');
@@ -775,13 +829,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         setState(() {
           _messages.add(_parseSingleMessage(sentMessage));
           _isSendingMessage = false;
+          _isUploadingAttachment = false;
         });
         _scrollToBottom();
       }
     } catch (e) {
       print('🔴 Error sending media: $e');
       if (mounted) {
-        setState(() => _isSendingMessage = false);
+        setState(() {
+          _isSendingMessage = false;
+          _isUploadingAttachment = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to send $type: $e'),
