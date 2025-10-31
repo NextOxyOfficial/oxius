@@ -183,25 +183,33 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                               borderRadius: BorderRadius.circular(8),
                               child: Image.network(
                                 _businessNetworkLogoUrl!,
-                                width: 48,
-                                height: 48,
+                                width: 110,
+                                height: 110,
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
-                                  return _buildFallbackLogo();
+                                  return const Text(
+                                    'Business Network',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.black87,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  );
                                 },
                                 loadingBuilder: (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
                                   return Container(
-                                    width: 48,
-                                    height: 48,
+                                    width: 72,
+                                    height: 72,
                                     decoration: BoxDecoration(
                                       color: Colors.grey.shade100,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Center(
                                       child: SizedBox(
-                                        width: 16,
-                                        height: 16,
+                                        width: 36,
+                                        height: 28,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
                                           valueColor: AlwaysStoppedAnimation<Color>(
@@ -214,8 +222,16 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                                 },
                               ),
                             )
-                          : _buildFallbackLogo(),
-                      const SizedBox(width: 8),
+                          : const Text(
+                              'Business Network',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                      const SizedBox(width: 16),
                       if (!isMobile)
                         const Text(
                           'Business Network',
@@ -563,25 +579,4 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
   }
 
 
-  Widget _buildFallbackLogo() {
-    return Container(
-      width: 48,
-      height: 48,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.blue.shade500,
-            Colors.indigo.shade600,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Icon(
-        Icons.business_center,
-        size: 20,
-        color: Colors.white,
-      ),
-    );
-  }
 }
