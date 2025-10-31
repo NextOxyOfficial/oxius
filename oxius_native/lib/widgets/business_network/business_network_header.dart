@@ -326,8 +326,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
           ),
         ],
       ],
-          ),
-        );
+    );
   }
 
 

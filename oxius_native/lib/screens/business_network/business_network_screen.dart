@@ -283,6 +283,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   }
 
   void _handleNavTap(int index) {
+    final isLoggedIn = AuthService.isAuthenticated;
+    
     switch (index) {
       case 0:
         // Recent - already on this screen, refresh
@@ -290,33 +292,44 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         _refreshPosts();
         break;
       case 1:
-        // Notifications
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const NotificationsScreen(),
-          ),
-        ).then((_) {
-          // Reset index when coming back
-          if (mounted) setState(() => _currentNavIndex = 0);
-        });
-        break;
-      case 3:
-        // Profile
-        final currentUser = AuthService.currentUser;
-        if (currentUser != null) {
+        if (isLoggedIn) {
+          // Notifications (for logged-in users)
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProfileScreen(userId: currentUser.id),
+              builder: (context) => const NotificationsScreen(),
             ),
           ).then((_) {
             // Reset index when coming back
             if (mounted) setState(() => _currentNavIndex = 0);
           });
         } else {
-          // Navigate to login if not authenticated
-          Navigator.pushNamed(context, '/login');
+          // Login (for logged-out users)
+          Navigator.pushNamed(context, '/login').then((_) {
+            // Reset index when coming back
+            if (mounted) setState(() => _currentNavIndex = 0);
+          });
+        }
+        break;
+      case 3:
+        if (isLoggedIn) {
+          // Profile (for logged-in users)
+          final currentUser = AuthService.currentUser;
+          if (currentUser != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProfileScreen(userId: currentUser.id),
+              ),
+            ).then((_) {
+              // Reset index when coming back
+              if (mounted) setState(() => _currentNavIndex = 0);
+            });
+          }
+        } else {
+          // Earn (for logged-out users) - could navigate to earn page or show info
+          // For now, just reset index
+          setState(() => _currentNavIndex = 0);
         }
         break;
       case 4:
