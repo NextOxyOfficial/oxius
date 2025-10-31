@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "global_popup",  # Global popup system
     "support",  # Support ticket system
     "reviews",  # Reviews system
+    "adsyconnect",  # AdsyConnect chat system
     "django_filters",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",

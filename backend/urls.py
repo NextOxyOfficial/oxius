@@ -45,6 +45,8 @@ urlpatterns = urlpatterns + [
     path("api/elearning/", include("elearning.urls")),  # eLearning system URLs
     # global_popup system URLs
     path("api/global-popup/", include("global_popup.urls")),
+    # AdsyConnect chat system URLs
+    path("api/adsyconnect/", include("adsyconnect.urls")),
     # for frontend
     path("", index, name="index"),
     path("<str:param>", index, name="index2"),
