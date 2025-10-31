@@ -203,10 +203,18 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                   color: const Color(0xFF3B82F6).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.chat_bubble_outline_rounded,
-                  size: 48,
-                  color: Color(0xFF3B82F6),
+                child: Image.asset(
+                  'assets/images/chat_icon.png',
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(
+                      Icons.chat_bubble_outline_rounded,
+                      size: 48,
+                      color: Color(0xFF3B82F6),
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 16),
@@ -279,7 +287,16 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               );
             },
             backgroundColor: const Color(0xFF3B82F6),
-            child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+            child: Image.asset(
+              'assets/images/chat_icon.png',
+              width: 24,
+              height: 24,
+              color: Colors.white,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.chat_bubble_outline, color: Colors.white);
+              },
+            ),
           ),
         ),
       ],

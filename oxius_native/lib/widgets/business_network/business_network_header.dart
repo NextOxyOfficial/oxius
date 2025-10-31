@@ -245,12 +245,21 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
               height: 36,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
               ),
-              child: const Icon(
-                Icons.chat_bubble_outline,
-                size: 20,
-                color: Color(0xFF3B82F6),
+              child: Center(
+                child: Image.asset(
+                  'assets/images/chat_icon.png',
+                  width: 20,
+                  height: 20,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(
+                      Icons.chat_bubble_outline,
+                      size: 20,
+                      color: Color(0xFF3B82F6),
+                    );
+                  },
+                ),
               ),
             ),
             tooltip: 'Messages',

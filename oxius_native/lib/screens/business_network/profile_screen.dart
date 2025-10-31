@@ -764,7 +764,15 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                           ),
                           side: BorderSide(color: Colors.grey.shade300),
                         ),
-                        child: const Icon(Icons.chat_bubble_outline, size: 18),
+                        child: Image.asset(
+                          'assets/images/chat_icon.png',
+                          width: 18,
+                          height: 18,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.chat_bubble_outline, size: 18);
+                          },
+                        ),
                       ),
                       const SizedBox(width: 8),
                       // Follow Button
