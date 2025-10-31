@@ -6,6 +6,9 @@ import 'package:share_plus/share_plus.dart';
 import '../models/sale_post.dart';
 import '../services/sale_post_service.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
+import '../services/adsyconnect_service.dart';
+import 'adsy_connect_chat_interface.dart';
 
 /// Sale Post Detail Screen - View full post details with image gallery and all features
 class SaleDetailScreen extends StatefulWidget {
@@ -1478,11 +1481,21 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           if (user?.phone != null) const SizedBox(width: 8),
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Implement chat functionality
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Chat feature coming soon!')),
-                );
+              onPressed: () async {
+                if (!AuthService.isAuthenticated) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please login to chat with seller'),
+                      backgroundColor: Color(0xFFEF4444),
+                    ),
+                  );
+                  return;
+                }
+                
+                final user = _post?.user;
+                if (user != null) {
+                  await _openChatWithSeller(user);
+                }
               },
               icon: const Icon(Icons.chat_bubble_outline),
               label: const Text('Chat'),
@@ -1752,11 +1765,67 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     return RadioListTile<String>(
       title: Text(label, style: const TextStyle(fontSize: 13)),
       value: value,
-      groupValue: _reportReason,
-      onChanged: (val) => setState(() => _reportReason = val ?? ''),
-      activeColor: const Color(0xFF10B981),
-      contentPadding: EdgeInsets.zero,
+      groupValue: null,
       dense: true,
     );
+  }
+
+  Future<void> _openChatWithSeller(SaleUser user) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF10B981)),
+        ),
+      );
+
+      // Get or create chatroom
+      final chatroom = await AdsyConnectService.getOrCreateChatRoom(user.id.toString());
+      
+      // Close loading dialog
+      if (mounted) Navigator.pop(context);
+
+      // Open chat bottom sheet
+      if (mounted) {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.9,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (_, controller) => Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: AdsyConnectChatInterface(
+                chatroomId: chatroom['id'].toString(),
+                userId: user.id.toString(),
+                userName: user.displayName,
+                userAvatar: user.profilePicture,
+                profession: null,
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (mounted) Navigator.pop(context);
+      
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to open chat: ${e.toString()}'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+    }
   }
 }

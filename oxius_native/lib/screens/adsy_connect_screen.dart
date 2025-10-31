@@ -423,8 +423,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     chat['lastMessage'],
                     style: TextStyle(
                       fontSize: 11,
-                      fontWeight: hasUnread ? FontWeight.w500 : FontWeight.w400,
-                      color: hasUnread ? const Color(0xFF374151) : const Color(0xFF9CA3AF),
+                      fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w400,
+                      color: hasUnread ? const Color(0xFF1F2937) : const Color(0xFF9CA3AF),
                       letterSpacing: -0.1,
                     ),
                     maxLines: 1,
