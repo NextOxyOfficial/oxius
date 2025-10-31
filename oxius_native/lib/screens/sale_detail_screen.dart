@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/sale_post.dart';
 import '../services/sale_post_service.dart';
 import '../services/api_service.dart';
@@ -246,8 +247,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image Gallery
-          if (hasImages) _buildImageGallery(images) else _buildNoImagePlaceholder(),
+          // Image Gallery (only show if images exist)
+          if (hasImages) _buildImageGallery(images),
 
           // Product Info Card with Financing Banner
           _buildProductInfoCard(),
@@ -510,8 +511,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             childAspectRatio: 2.5,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 12,
+            crossAxisSpacing: 6,
+            mainAxisSpacing: 8,
             children: [
               _buildInfoGridItem(Icons.tag_rounded, 'Category', post.categoryName ?? 'N/A'),
               _buildInfoGridItem(Icons.layers_rounded, 'Sub-Category', post.subcategoryName ?? 'N/A'),
@@ -602,15 +603,16 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF6B7280),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF374151),
                 ),
               ),
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 10,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                   color: Color(0xFF1F2937),
                 ),
                 maxLines: 2,
@@ -1462,18 +1464,33 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
         children: [
           if (user?.phone != null)
             Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  // TODO: Implement call functionality
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Call: ${user!.phone}')),
-                  );
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final post = _post;
+                  if (post?.user?.phone != null) {
+                    final phoneUrl = 'tel:${post!.user!.phone}';
+                    try {
+                      await launchUrl(Uri.parse(phoneUrl), mode: LaunchMode.externalApplication);
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Could not open phone dialer')),
+                        );
+                      }
+                    }
+                  } else {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Phone number not available')),
+                      );
+                    }
+                  }
                 },
-                icon: const Icon(Icons.phone),
-                label: const Text('Call'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF10B981),
-                  side: const BorderSide(color: Color(0xFF10B981)),
+                icon: const Icon(Icons.phone_rounded, size: 18),
+                label: const Text('Call', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
               ),
@@ -1492,8 +1509,20 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                   await _openChatWithSeller(user);
                 }
               },
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text('Chat'),
+              icon: Image.asset(
+                'assets/images/chat_icon.png',
+                width: 18,
+                height: 18,
+                color: Colors.white,
+              ),
+              label: const Text(
+                'Chat',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 padding: const EdgeInsets.symmetric(vertical: 14),

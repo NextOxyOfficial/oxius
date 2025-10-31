@@ -713,6 +713,11 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                                 lineHeight: const LineHeight(1.6),
                                 color: const Color(0xFF374151),
                               ),
+                              "p": Style(
+                                margin: Margins.zero,
+                                padding: HtmlPaddings.zero,
+                                display: Display.inline,
+                              ),
                             },
                           ),
                         ],
