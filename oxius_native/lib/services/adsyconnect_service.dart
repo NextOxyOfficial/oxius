@@ -270,19 +270,6 @@ class AdsyConnectService {
     }
   }
 
-  // Mark all messages in chatroom as read
-  static Future<void> markChatroomAsRead(String chatroomId) async {
-    try {
-      final headers = await _getHeaders();
-      await http.post(
-        Uri.parse('$baseUrl/chatrooms/$chatroomId/mark_as_read/'),
-        headers: headers,
-      );
-    } catch (e) {
-      print('Error marking chatroom as read: $e');
-    }
-  }
-
   // Delete message
   static Future<void> deleteMessage(String messageId) async {
     try {

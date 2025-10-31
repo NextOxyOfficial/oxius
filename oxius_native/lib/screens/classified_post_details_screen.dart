@@ -7,6 +7,7 @@ import 'package:flutter_html/flutter_html.dart';
 import '../models/classified_post.dart';
 import '../services/classified_post_service.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../config/app_config.dart';
 import 'adsy_connect_chat_interface.dart';
@@ -66,6 +67,22 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
   }
 
   Future<void> _openChatWithSeller() async {
+    // Check authentication first
+    if (!AuthService.isAuthenticated) {
+      _showLoginRequiredDialog();
+      return;
+    }
+
+    if (_post?.user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Seller information not available'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+
     print('🔵 Chat button tapped!');
     print('🔵 Post data: ${_post?.id}');
     print('🔵 User ID: ${_post?.user?.id}');
@@ -159,11 +176,16 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
         Navigator.pop(context);
       }
       
-      if (mounted) {
+      // Check if it's an authentication error
+      if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+        if (mounted) {
+          _showLoginRequiredDialog();
+        }
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to open chat: $e'),
-            backgroundColor: const Color(0xFFEF4444),
+          const SnackBar(
+            content: Text('Failed to open chat. Please try again.'),
+            backgroundColor: Color(0xFFEF4444),
           ),
         );
       }
@@ -1202,6 +1224,94 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
         ),
         if (trailing != null) trailing,
       ],
+    );
+  }
+
+  void _showLoginRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.chat_bubble_outline,
+                color: Color(0xFF10B981),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Login Required',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'You need to be logged in to chat with the seller.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF6B7280),
+                height: 1.5,
+              ),
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Please login or create an account to continue.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF6B7280),
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(
+                color: Color(0xFF6B7280),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/login');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Login',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

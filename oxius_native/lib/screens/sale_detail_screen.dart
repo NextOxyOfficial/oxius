@@ -1812,12 +1812,16 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       // Close loading dialog if still open
       if (mounted) Navigator.pop(context);
       
-      // Show error message
-      if (mounted) {
+      // Check if it's an authentication error
+      if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+        if (mounted) {
+          _showLoginRequiredDialog();
+        }
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to open chat: ${e.toString()}'),
-            backgroundColor: const Color(0xFFEF4444),
+          const SnackBar(
+            content: Text('Failed to open chat. Please try again.'),
+            backgroundColor: Color(0xFFEF4444),
           ),
         );
       }
