@@ -2,9 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'api_service.dart';
 
 class AdsyConnectService {
-  static const String baseUrl = 'https://adsyclub.com/api/adsyconnect';
+  static String get baseUrl => '${ApiService.baseUrl}/adsyconnect';
 
   // Get headers with auth token
   static Future<Map<String, String>> _getHeaders() async {
@@ -19,19 +20,26 @@ class AdsyConnectService {
   static Future<Map<String, dynamic>> getOrCreateChatRoom(String userId) async {
     try {
       final headers = await _getHeaders();
+      print('🔵 API URL: $baseUrl/chatrooms/get_or_create/');
+      print('🔵 Headers: $headers');
+      print('🔵 Body: ${jsonEncode({'user_id': userId})}');
+      
       final response = await http.post(
         Uri.parse('$baseUrl/chatrooms/get_or_create/'),
         headers: headers,
         body: jsonEncode({'user_id': userId}),
       );
 
+      print('🔵 Response status: ${response.statusCode}');
+      print('🔵 Response body: ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to get or create chat room: ${response.statusCode}');
+        throw Exception('Failed to get or create chat room: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('Error getting or creating chat room: $e');
+      print('🔴 Error getting or creating chat room: $e');
       rethrow;
     }
   }

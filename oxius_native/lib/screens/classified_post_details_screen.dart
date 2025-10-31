@@ -7,7 +7,9 @@ import 'package:flutter_html/flutter_html.dart';
 import '../models/classified_post.dart';
 import '../services/classified_post_service.dart';
 import '../services/api_service.dart';
+import '../services/adsyconnect_service.dart';
 import '../config/app_config.dart';
+import 'adsy_connect_chat_interface.dart';
 
 class ClassifiedPostDetailsScreen extends StatefulWidget {
   final String postId;
@@ -61,6 +63,128 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
         );
       }
     }
+  }
+
+  Future<void> _openChatWithSeller() async {
+    print('🔵 Chat button tapped!');
+    print('🔵 Post data: ${_post?.id}');
+    print('🔵 User ID: ${_post?.user?.id}');
+    
+    if (_post?.user?.id == null) {
+      print('🔴 Seller information not available');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Seller information not available'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+
+    print('🔵 Opening chat with seller ID: ${_post!.user!.id}');
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+      ),
+    );
+
+    try {
+      print('🔵 Creating/getting chat room...');
+      // Get or create chat room with the seller
+      final chatroom = await AdsyConnectService.getOrCreateChatRoom(
+        _post!.user!.id.toString(),
+      );
+
+      print('🟢 Chat room created: ${chatroom['id']}');
+
+      // Close loading indicator
+      if (mounted) Navigator.pop(context);
+
+      // Show chat interface in bottom sheet
+      if (mounted) {
+        print('🔵 Opening bottom sheet...');
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.9,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (context, scrollController) => Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                children: [
+                  // Handle bar
+                  Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  // Chat interface
+                  Expanded(
+                    child: AdsyConnectChatInterface(
+                      chatroomId: chatroom['id'].toString(),
+                      userId: _post!.user!.id.toString(),
+                      userName: _getSellerName(),
+                      userAvatar: _post!.user!.profilePicture,
+                      profession: 'Seller',
+                      isOnline: false,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+        print('🟢 Bottom sheet opened successfully!');
+      }
+    } catch (e, stackTrace) {
+      print('🔴 Error opening chat: $e');
+      print('🔴 Stack trace: $stackTrace');
+      
+      // Close loading indicator if still showing
+      if (mounted) {
+        Navigator.pop(context);
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to open chat: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+    }
+  }
+
+  String _getSellerName() {
+    if (_post?.user == null) return 'Seller';
+    
+    final firstName = _post!.user!.firstName ?? '';
+    final lastName = _post!.user!.lastName ?? '';
+    final username = _post!.user!.username ?? 'Seller';
+    
+    if (firstName.isNotEmpty && lastName.isNotEmpty) {
+      return '$firstName $lastName';
+    } else if (firstName.isNotEmpty) {
+      return firstName;
+    } else if (lastName.isNotEmpty) {
+      return lastName;
+    }
+    return username;
   }
 
   String _getNumericServiceId() {
@@ -779,17 +903,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
           const SizedBox(width: 8),
           Expanded(
             child: OutlinedButton.icon(
-              onPressed: () {
-                if (_post!.user?.whatsappLink != null) {
-                  launchUrl(Uri.parse(_post!.user!.whatsappLink!));
-                } else if (_post!.user?.phone != null) {
-                  launchUrl(Uri.parse('https://wa.me/${_post!.user!.phone}'));
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('WhatsApp not available')),
-                  );
-                }
-              },
+              onPressed: _openChatWithSeller,
               icon: const Icon(Icons.message_rounded, size: 18),
               label: const Text('Chat', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
               style: OutlinedButton.styleFrom(

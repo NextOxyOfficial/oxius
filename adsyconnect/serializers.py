@@ -16,13 +16,14 @@ class UserBasicSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'avatar', 
-                  'is_online', 'profession', 'is_verified']
+                  'is_online', 'profession']
     
     def get_avatar(self, obj):
-        if hasattr(obj, 'profile') and obj.profile.profile_picture:
+        if hasattr(obj, 'image') and obj.image:
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(obj.profile.profile_picture.url)
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
         return None
     
     def get_is_online(self, obj):
