@@ -183,8 +183,8 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                               borderRadius: BorderRadius.circular(8),
                               child: Image.network(
                                 _businessNetworkLogoUrl!,
-                                width: 42,
-                                height: 42,
+                                width: 48,
+                                height: 48,
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
                                   return _buildFallbackLogo();
@@ -192,8 +192,8 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                                 loadingBuilder: (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
                                   return Container(
-                                    width: 42,
-                                    height: 42,
+                                    width: 48,
+                                    height: 48,
                                     decoration: BoxDecoration(
                                       color: Colors.grey.shade100,
                                       borderRadius: BorderRadius.circular(8),
@@ -235,7 +235,6 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
               // Search Button
               IconButton(
                 onPressed: () {
-                  print('Search button tapped - opening SearchScreen');
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -258,7 +257,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
               colors: [Colors.blue.shade500, Colors.indigo.shade600],
             ),
             onTap: () {
-              // Navigate to AdsyClub
+              Navigator.pushNamed(context, '/eshop');
             },
           ),
         ],
@@ -273,7 +272,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
               colors: [Colors.amber.shade500, Colors.orange.shade600],
             ),
             onTap: () {
-              // Navigate to AdsyNews
+              Navigator.pushNamed(context, '/news');
             },
           ),
         ],
@@ -566,9 +565,9 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
 
   Widget _buildFallbackLogo() {
     return Container(
-      width: 42,
-      height: 42,
-      padding: const EdgeInsets.all(6),
+      width: 48,
+      height: 48,
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -580,7 +579,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
       ),
       child: const Icon(
         Icons.business_center,
-        size: 18,
+        size: 20,
         color: Colors.white,
       ),
     );

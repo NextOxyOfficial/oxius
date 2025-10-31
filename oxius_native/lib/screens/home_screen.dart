@@ -185,6 +185,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _handleRefresh() async {
+    print('🔄 HomeScreen: Pull to refresh triggered');
+    
+    // Refresh recent posts
+    await _fetchRecentPosts();
+    
+    // Refresh unread message count if authenticated
+    if (AuthService.isAuthenticated) {
+      await _fetchUnreadMessageCount();
+    }
+    
+    print('✅ HomeScreen: Refresh completed');
+  }
+
   void _onScroll() {
     if (_disposed || !mounted) return;
 
@@ -288,10 +302,15 @@ class _HomeScreenState extends State<HomeScreen> {
           drawer: const MobileDrawer(),
           body: Stack(
         children: [
-          // Scrollable content area
-          SingleChildScrollView(
-            controller: _scrollController,
-            child: Column(
+          // Scrollable content area with pull-to-refresh
+          RefreshIndicator(
+            onRefresh: _handleRefresh,
+            color: const Color(0xFF3B82F6),
+            backgroundColor: Colors.white,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
                 children: [
                   // Add spacing for header
                   SizedBox(height: MediaQuery.of(context).padding.top + 56 + 8),
@@ -370,6 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+          ),
           
           // Animated Header positioned at top
           Positioned(
