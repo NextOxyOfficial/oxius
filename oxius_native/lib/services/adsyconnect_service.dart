@@ -48,19 +48,36 @@ class AdsyConnectService {
   static Future<List<dynamic>> getChatRooms({int page = 1}) async {
     try {
       final headers = await _getHeaders();
+      print('🔵 Fetching chat rooms from: $baseUrl/chatrooms/?page=$page');
+      
       final response = await http.get(
         Uri.parse('$baseUrl/chatrooms/?page=$page'),
         headers: headers,
       );
 
+      print('🔵 Chat rooms response status: ${response.statusCode}');
+      print('🔵 Chat rooms response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['results'] ?? [];
+        
+        // Check if it's a paginated response with 'results' key
+        if (data is Map && data.containsKey('results')) {
+          return List<dynamic>.from(data['results'] ?? []);
+        }
+        
+        // Otherwise assume it's a direct list
+        if (data is List) {
+          return data;
+        }
+        
+        // If neither, return empty list
+        return [];
       } else {
-        throw Exception('Failed to load chat rooms: ${response.statusCode}');
+        throw Exception('Failed to load chat rooms: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('Error loading chat rooms: $e');
+      print('🔴 Error loading chat rooms: $e');
       rethrow;
     }
   }
@@ -69,19 +86,36 @@ class AdsyConnectService {
   static Future<List<dynamic>> getMessages(String chatroomId, {int page = 1}) async {
     try {
       final headers = await _getHeaders();
+      print('🔵 Fetching messages from: $baseUrl/messages/?chatroom=$chatroomId&page=$page');
+      
       final response = await http.get(
         Uri.parse('$baseUrl/messages/?chatroom=$chatroomId&page=$page'),
         headers: headers,
       );
 
+      print('🔵 Messages response status: ${response.statusCode}');
+      print('🔵 Messages response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return data['results'] ?? [];
+        
+        // Check if it's a paginated response with 'results' key
+        if (data is Map && data.containsKey('results')) {
+          return List<dynamic>.from(data['results'] ?? []);
+        }
+        
+        // Otherwise assume it's a direct list
+        if (data is List) {
+          return data;
+        }
+        
+        // If neither, return empty list
+        return [];
       } else {
-        throw Exception('Failed to load messages: ${response.statusCode}');
+        throw Exception('Failed to load messages: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('Error loading messages: $e');
+      print('🔴 Error loading messages: $e');
       rethrow;
     }
   }

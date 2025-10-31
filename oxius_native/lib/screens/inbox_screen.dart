@@ -690,16 +690,30 @@ class _InboxScreenState extends State<InboxScreen>
     final updates = filteredUpdates;
     
     if (updates.isEmpty) {
-      return _buildEmptyState('No updates found');
+      return RefreshIndicator(
+        onRefresh: _loadUpdates,
+        color: const Color(0xFF059669),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: _buildEmptyState('No updates found'),
+          ),
+        ),
+      );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      itemCount: updates.length,
-      itemBuilder: (context, index) {
-        final update = updates[index];
-        return _buildUpdateItem(update);
-      },
+    return RefreshIndicator(
+      onRefresh: _loadUpdates,
+      color: const Color(0xFF059669),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        itemCount: updates.length,
+        itemBuilder: (context, index) {
+          final update = updates[index];
+          return _buildUpdateItem(update);
+        },
+      ),
     );
   }
 
@@ -716,16 +730,30 @@ class _InboxScreenState extends State<InboxScreen>
     final tickets = filteredTickets;
     
     if (tickets.isEmpty) {
-      return _buildEmptyState('No tickets found');
+      return RefreshIndicator(
+        onRefresh: _loadTickets,
+        color: const Color(0xFF3B82F6),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: _buildEmptyState('No tickets found'),
+          ),
+        ),
+      );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      itemCount: tickets.length,
-      itemBuilder: (context, index) {
-        final ticket = tickets[index];
-        return _buildTicketItem(ticket);
-      },
+    return RefreshIndicator(
+      onRefresh: _loadTickets,
+      color: const Color(0xFF3B82F6),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        itemCount: tickets.length,
+        itemBuilder: (context, index) {
+          final ticket = tickets[index];
+          return _buildTicketItem(ticket);
+        },
+      ),
     );
   }
 

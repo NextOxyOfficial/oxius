@@ -30,7 +30,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     }
     
     try {
+      print('🔵 Loading chat rooms, page: $_currentPage');
       final chatRooms = await AdsyConnectService.getChatRooms(page: _currentPage);
+      print('🟢 Loaded ${chatRooms.length} chat rooms');
       
       if (mounted) {
         setState(() {
@@ -45,12 +47,18 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         });
       }
     } catch (e) {
-      print('Error loading chats: $e');
+      print('🔴 Error loading chats: $e');
       if (mounted) {
         setState(() {
           _isLoadingChats = false;
           _chatConversations = [];
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load chats: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
       }
     }
   }

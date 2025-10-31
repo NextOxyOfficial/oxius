@@ -26,6 +26,7 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
     search_fields = ['user1__username', 'user2__username']
     ordering_fields = ['last_message_at', 'created_at']
     ordering = ['-last_message_at']
+    pagination_class = None  # Disable pagination to return direct list
     
     def get_queryset(self):
         """Get chat rooms for current user"""
@@ -133,6 +134,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at']
     ordering = ['created_at']
+    pagination_class = None  # Disable pagination for messages to return direct list
     
     def get_serializer_class(self):
         if self.action == 'create':
@@ -154,15 +156,21 @@ class MessageViewSet(viewsets.ModelViewSet):
         
         return queryset
     
-    def perform_create(self, serializer):
-        """Create a new message"""
-        message = serializer.save(sender=self.request.user)
+    def create(self, request, *args, **kwargs):
+        """Create a new message and return full serialization"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        message = serializer.save(sender=request.user)
         
         # Update chatroom's last message
         chatroom = message.chatroom
         chatroom.last_message_at = message.created_at
         chatroom.last_message_preview = message.get_preview()
         chatroom.save()
+        
+        # Return full message serialization with all fields
+        output_serializer = MessageSerializer(message, context={'request': request})
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
     
     @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):

@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'dart:io';
+import '../services/adsyconnect_service.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -38,8 +39,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   final ImagePicker _imagePicker = ImagePicker();
   bool _isTyping = false;
   bool _isLoadingMessages = true;
+  bool _isSendingMessage = false;
   bool _isRecording = false;
   int _recordDuration = 0;
+  int _currentPage = 1;
+  bool _hasMoreMessages = true;
   Timer? _recordTimer;
   String? _recordingPath;
   List<Map<String, dynamic>> _messages = [];
@@ -68,63 +72,74 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     }
   }
 
-  Future<void> _loadMessages() async {
-    setState(() => _isLoadingMessages = true);
+  Future<void> _loadMessages({bool loadMore = false}) async {
+    if (!loadMore) {
+      setState(() {
+        _isLoadingMessages = true;
+        _currentPage = 1;
+      });
+    }
     
     try {
-      // TODO: Replace with actual chat API endpoint
-      await Future.delayed(const Duration(milliseconds: 500));
+      print('🔵 Loading messages for chatroom: ${widget.chatroomId}, page: $_currentPage');
+      
+      final messages = await AdsyConnectService.getMessages(
+        widget.chatroomId,
+        page: _currentPage,
+      );
+      
+      print('🟢 Loaded ${messages.length} messages');
       
       if (mounted) {
         setState(() {
-          // Mock messages
-          _messages = [
-            {
-              'id': '1',
-              'senderId': widget.userId,
-              'message': 'Hey! How are you?',
-              'timestamp': DateTime.now().subtract(const Duration(hours: 2)),
-              'isMe': false,
-            },
-            {
-              'id': '2',
-              'senderId': 'me',
-              'message': 'Hi! I\'m good, thanks! How about you?',
-              'timestamp': DateTime.now().subtract(const Duration(hours: 2, minutes: 5)),
-              'isMe': true,
-            },
-            {
-              'id': '3',
-              'senderId': widget.userId,
-              'message': 'I\'m doing great! I saw your post about the product. Is it still available?',
-              'timestamp': DateTime.now().subtract(const Duration(hours: 1)),
-              'isMe': false,
-            },
-            {
-              'id': '4',
-              'senderId': 'me',
-              'message': 'Yes, it\'s still available! Would you like more details?',
-              'timestamp': DateTime.now().subtract(const Duration(minutes: 30)),
-              'isMe': true,
-            },
-            {
-              'id': '5',
-              'senderId': widget.userId,
-              'message': 'That would be great! Can you tell me about the condition and price?',
-              'timestamp': DateTime.now().subtract(const Duration(minutes: 5)),
-              'isMe': false,
-            },
-          ];
+          if (loadMore) {
+            _messages.insertAll(0, _parseMessages(messages));
+          } else {
+            _messages = _parseMessages(messages);
+          }
           _isLoadingMessages = false;
+          _hasMoreMessages = messages.length >= 20;
+          if (loadMore) _currentPage++;
         });
-        _scrollToBottom();
+        
+        if (!loadMore) {
+          _scrollToBottom();
+        }
       }
     } catch (e) {
-      print('Error loading messages: $e');
+      print('🔴 Error loading messages: $e');
       if (mounted) {
         setState(() => _isLoadingMessages = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load messages: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
       }
     }
+  }
+
+  List<Map<String, dynamic>> _parseMessages(List<dynamic> messages) {
+    return messages.map((msg) {
+      final sender = msg['sender'] ?? {};
+      final receiver = msg['receiver'] ?? {};
+      final senderId = sender['id']?.toString() ?? '';
+      final isMe = senderId == widget.userId;
+      
+      return {
+        'id': msg['id']?.toString() ?? '',
+        'senderId': senderId,
+        'message': msg['content']?.toString() ?? '',
+        'timestamp': msg['created_at'] != null 
+            ? DateTime.parse(msg['created_at']) 
+            : DateTime.now(),
+        'isMe': !isMe, // Invert because we're the receiver if sender is not us
+        'type': msg['message_type']?.toString() ?? 'text',
+        'mediaUrl': msg['media_file']?.toString(),
+        'isRead': msg['is_read'] ?? false,
+      };
+    }).toList();
   }
 
   void _scrollToBottom() {
@@ -139,26 +154,61 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     }
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
 
-    final newMessage = {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+    final messageText = _messageController.text.trim();
+    _messageController.clear();
+    
+    setState(() => _isSendingMessage = true);
+
+    try {
+      print('🔵 Sending message: $messageText');
+      
+      final sentMessage = await AdsyConnectService.sendTextMessage(
+        chatroomId: widget.chatroomId,
+        receiverId: widget.userId,
+        content: messageText,
+      );
+      
+      print('🟢 Message sent: ${sentMessage['id']}');
+      
+      if (mounted) {
+        setState(() {
+          _messages.add(_parseSingleMessage(sentMessage));
+          _isSendingMessage = false;
+        });
+        _scrollToBottom();
+      }
+    } catch (e) {
+      print('🔴 Error sending message: $e');
+      if (mounted) {
+        setState(() => _isSendingMessage = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send message: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+        // Restore the message text
+        _messageController.text = messageText;
+      }
+    }
+  }
+
+  Map<String, dynamic> _parseSingleMessage(Map<String, dynamic> msg) {
+    return {
+      'id': msg['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
       'senderId': 'me',
-      'message': _messageController.text.trim(),
-      'timestamp': DateTime.now(),
+      'message': msg['content']?.toString() ?? '',
+      'timestamp': msg['created_at'] != null 
+          ? DateTime.parse(msg['created_at']) 
+          : DateTime.now(),
       'isMe': true,
-      'type': 'text',
+      'type': msg['message_type']?.toString() ?? 'text',
+      'mediaUrl': msg['media_file']?.toString(),
+      'isRead': msg['is_read'] ?? false,
     };
-
-    setState(() {
-      _messages.add(newMessage);
-      _messageController.clear();
-    });
-
-    _scrollToBottom();
-
-    // TODO: Send message to backend API
   }
 
   Future<void> _startRecording() async {
@@ -312,18 +362,31 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
             child: Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              setState(() {
-                _messages.removeWhere((m) => m['id'] == message['id']);
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Message deleted'),
-                  backgroundColor: Color(0xFFEF4444),
-                ),
-              );
-              // TODO: Delete message from backend API
+              try {
+                await AdsyConnectService.deleteMessage(message['id']);
+                setState(() {
+                  _messages.removeWhere((m) => m['id'] == message['id']);
+                });
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Message deleted'),
+                      backgroundColor: Color(0xFFEF4444),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to delete message: $e'),
+                      backgroundColor: const Color(0xFFEF4444),
+                    ),
+                  );
+                }
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
@@ -573,25 +636,41 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     }
   }
 
-  void _sendMediaMessage(String filePath, String type, {String? fileName}) {
-    final newMessage = {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'senderId': 'me',
-      'message': type == 'image' ? 'Photo' : type == 'video' ? 'Video' : fileName ?? 'Document',
-      'filePath': filePath,
-      'fileName': fileName,
-      'timestamp': DateTime.now(),
-      'isMe': true,
-      'type': type,
-    };
+  Future<void> _sendMediaMessage(String filePath, String type, {String? fileName}) async {
+    setState(() => _isSendingMessage = true);
 
-    setState(() {
-      _messages.add(newMessage);
-    });
-
-    _scrollToBottom();
-
-    // TODO: Upload media to backend API
+    try {
+      print('🔵 Sending $type message: $filePath');
+      
+      final sentMessage = await AdsyConnectService.sendMediaMessage(
+        chatroomId: widget.chatroomId,
+        receiverId: widget.userId,
+        messageType: type,
+        mediaFile: File(filePath),
+        fileName: fileName,
+      );
+      
+      print('🟢 Media message sent: ${sentMessage['id']}');
+      
+      if (mounted) {
+        setState(() {
+          _messages.add(_parseSingleMessage(sentMessage));
+          _isSendingMessage = false;
+        });
+        _scrollToBottom();
+      }
+    } catch (e) {
+      print('🔴 Error sending media: $e');
+      if (mounted) {
+        setState(() => _isSendingMessage = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send $type: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+    }
   }
 
   void _handleMenuAction(String action) {
