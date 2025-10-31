@@ -1452,15 +1452,33 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                // Only show time if timeDisplay is not null (smart time from backend)
-                if (message['timeDisplay'] != null)
-                  Text(
-                    message['timeDisplay'],
-                    style: TextStyle(
-                      fontSize: 9,
-                      color: Colors.grey.shade400,
-                    ),
-                  ),
+                // Time and read status
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (message['timeDisplay'] != null)
+                      Text(
+                        message['timeDisplay'],
+                        style: TextStyle(
+                          fontSize: 9,
+                          color: Colors.grey.shade400,
+                        ),
+                      ),
+                    // Show read/unread status for sent messages
+                    if (isMe) ...[
+                      const SizedBox(width: 4),
+                      Icon(
+                        message['isRead'] == true 
+                            ? Icons.done_all_rounded 
+                            : Icons.done_rounded,
+                        size: 12,
+                        color: message['isRead'] == true 
+                            ? const Color(0xFF3B82F6) 
+                            : Colors.grey.shade400,
+                      ),
+                    ],
+                  ],
+                ),
               ],
             ),
           ),
@@ -1515,7 +1533,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   Widget _buildImageContent(Map<String, dynamic> message) {
-    final filePath = message['filePath'] as String?;
+    // Try mediaUrl first (from backend), then filePath (local)
+    final filePath = (message['mediaUrl'] as String?) ?? (message['filePath'] as String?);
     
     if (filePath == null || filePath.isEmpty) {
       return Container(
@@ -1536,18 +1555,21 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       );
     }
     
+    // Check if it's a URL or local file path
+    final isUrl = filePath.startsWith('http://') || filePath.startsWith('https://');
+    
     return GestureDetector(
       onTap: () => _viewImage(filePath),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
-        child: kIsWeb
+        child: isUrl
             ? Image.network(
                 filePath,
                 width: 180,
                 height: 120,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  print('Error loading image: $error');
+                  print('Error loading image from URL: $error');
                   return Container(
                     width: 180,
                     height: 120,
@@ -1572,7 +1594,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                 height: 120,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  print('Error loading image: $error');
+                  print('Error loading image from file: $error');
                   return Container(
                     width: 180,
                     height: 120,
@@ -1596,6 +1618,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   void _viewImage(String filePath) {
+    final isUrl = filePath.startsWith('http://') || filePath.startsWith('https://');
+    
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -1603,7 +1627,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         child: Stack(
           children: [
             Center(
-              child: kIsWeb
+              child: isUrl
                   ? Image.network(filePath, fit: BoxFit.contain)
                   : Image.file(File(filePath), fit: BoxFit.contain),
             ),
@@ -1800,7 +1824,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                 ),
                 const SizedBox(width: 12),
                 const Text(
-                  'Compressing and uploading...',
+                  'Uploading...',
                   style: TextStyle(
                     fontSize: 13,
                     color: Color(0xFF3B82F6),
