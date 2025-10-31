@@ -6,6 +6,7 @@ import '../../services/mindforce_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/image_compressor.dart';
+import '../../config/app_config.dart';
 
 class MindForceDetailScreen extends StatefulWidget {
   final String problemId;
@@ -221,11 +222,13 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
     }
   }
 
+  bool get isOwner {
+    final user = AuthService.currentUser;
+    return user != null && _problem != null && user.id == _problem!.userDetails.id;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final user = AuthService.currentUser;
-    final isOwner = user != null && _problem != null && user.id == _problem!.userDetails.id;
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -239,6 +242,17 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
           'Problem Details',
           style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
         ),
+        actions: [
+          if (isOwner && _problem!.status != 'solved')
+            TextButton.icon(
+              onPressed: _markAsSolved,
+              icon: const Icon(Icons.check_circle, size: 18, color: Colors.green),
+              label: const Text(
+                'Mark as Solved',
+                style: TextStyle(color: Colors.green, fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+            ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -262,17 +276,15 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                               const SizedBox(height: 16),
                               _buildMediaGallery(),
                             ],
-                            const SizedBox(height: 16),
-                            _buildProblemStats(isOwner),
                             const SizedBox(height: 24),
                             _buildCommentsSection(),
                           ],
                         ),
                       ),
                     ),
-                    if (user != null && _problem!.status != 'solved')
+                    if (AuthService.currentUser != null && _problem!.status != 'solved')
                       _buildCommentInput()
-                    else if (user == null && _problem!.status != 'solved')
+                    else if (AuthService.currentUser == null && _problem!.status != 'solved')
                       _buildLoginPrompt()
                     else if (_problem!.status == 'solved')
                       _buildSolvedMessage(),
@@ -292,13 +304,17 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
             border: Border.all(color: Colors.grey.shade300, width: 2),
           ),
           child: ClipOval(
-            child: _problem!.userDetails.image != null
-                ? Image.network(
-                    _problem!.userDetails.image!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => _buildAvatarFallback(),
-                  )
-                : _buildAvatarFallback(),
+            child: () {
+              final avatarUrl = AppConfig.getAbsoluteUrl(_problem!.userDetails.image);
+              if (avatarUrl.isNotEmpty) {
+                return Image.network(
+                  avatarUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => _buildAvatarFallback(),
+                );
+              }
+              return _buildAvatarFallback();
+            }(),
           ),
         ),
         const SizedBox(width: 12),
@@ -306,17 +322,58 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                _problem!.userDetails.name,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
               Row(
                 children: [
+                  Flexible(
+                    child: Text(
+                      _problem!.userDetails.name,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (_problem!.userDetails.kyc) ...[
+                    const SizedBox(width: 4),
+                    const Icon(Icons.verified, size: 16, color: Color(0xFF3B82F6)),
+                  ],
+                  if (_problem!.userDetails.isPro) ...[
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'PRO',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.chat_bubble_outline, size: 14, color: Colors.grey.shade600),
+                  const SizedBox(width: 4),
+                  Text('${_comments.length} Advices', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                  const SizedBox(width: 12),
+                  Icon(Icons.visibility, size: 14, color: Colors.grey.shade600),
+                  const SizedBox(width: 4),
+                  Text('${_problem!.views}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                  const SizedBox(width: 12),
                   Icon(Icons.access_time, size: 14, color: Colors.grey.shade600),
                   const SizedBox(width: 4),
                   Text(
                     TimeUtils.formatTimeAgo(_problem!.createdAt),
-                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
                 ],
               ),
@@ -445,10 +502,11 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
           ),
           itemCount: _problem!.media.length,
           itemBuilder: (context, index) {
+            final imageUrl = AppConfig.getAbsoluteUrl(_problem!.media[index].image);
             return ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                _problem!.media[index].image,
+                imageUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: Colors.grey.shade200,
@@ -459,43 +517,6 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildProblemStats(bool isOwner) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.grey.shade200),
-          bottom: BorderSide(color: Colors.grey.shade200),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.chat_bubble_outline, size: 18, color: Colors.grey.shade600),
-          const SizedBox(width: 6),
-          Text('${_comments.length} Advices', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
-          const SizedBox(width: 16),
-          Icon(Icons.visibility, size: 18, color: Colors.grey.shade600),
-          const SizedBox(width: 6),
-          Text('${_problem!.views}', style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
-          const Spacer(),
-          if (isOwner && _problem!.status != 'solved')
-            ElevatedButton.icon(
-              onPressed: _markAsSolved,
-              icon: const Icon(Icons.check_circle, size: 18),
-              label: const Text('Mark as Solved'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-            ),
-        ],
-      ),
     );
   }
 
@@ -545,9 +566,6 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
   }
 
   Widget _buildCommentItem(MindForceComment comment) {
-    final user = AuthService.currentUser;
-    final isOwner = user != null && _problem != null && user.id == _problem!.userDetails.id;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -569,19 +587,23 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                   border: Border.all(color: Colors.grey.shade300),
                 ),
                 child: ClipOval(
-                  child: comment.userDetails.image != null
-                      ? Image.network(
-                          comment.userDetails.image!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey.shade200,
-                            child: Icon(Icons.person, color: Colors.grey.shade400),
-                          ),
-                        )
-                      : Container(
+                  child: () {
+                    final avatarUrl = AppConfig.getAbsoluteUrl(comment.userDetails.image);
+                    if (avatarUrl.isNotEmpty) {
+                      return Image.network(
+                        avatarUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
                           color: Colors.grey.shade200,
                           child: Icon(Icons.person, color: Colors.grey.shade400),
                         ),
+                      );
+                    }
+                    return Container(
+                      color: Colors.grey.shade200,
+                      child: Icon(Icons.person, color: Colors.grey.shade400),
+                    );
+                  }(),
                 ),
               ),
               const SizedBox(width: 12),
@@ -591,7 +613,38 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(comment.userDetails.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                        Flexible(
+                          child: Text(
+                            comment.userDetails.name, 
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (comment.userDetails.kyc) ...[
+                          const SizedBox(width: 4),
+                          const Icon(Icons.verified, size: 14, color: Color(0xFF3B82F6)),
+                        ],
+                        if (comment.userDetails.isPro) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                              ),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: const Text(
+                              'PRO',
+                              style: TextStyle(
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
                         if (comment.isSolved) ...[
                           const SizedBox(width: 8),
                           Container(
@@ -636,10 +689,11 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
               spacing: 8,
               runSpacing: 8,
               children: comment.images.map((image) {
+                final imageUrl = AppConfig.getAbsoluteUrl(image);
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
-                    image,
+                    imageUrl,
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,

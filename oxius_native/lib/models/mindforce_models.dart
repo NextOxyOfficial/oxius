@@ -106,24 +106,49 @@ class MindForceUser {
   });
 
   factory MindForceUser.fromJson(Map<String, dynamic> json) {
-    // Try multiple field combinations for the user's name
-    String userName = 'Unknown User';
+    // Debug: print raw JSON to see what the backend sends
+    print('=== MindForceUser JSON ===');
+    print('Keys available: ${json.keys.toList()}');
+    print('Full JSON: $json');
     
-    if (json['name'] != null && json['name'].toString().isNotEmpty) {
-      userName = json['name'];
-    } else if (json['full_name'] != null && json['full_name'].toString().isNotEmpty) {
-      userName = json['full_name'];
+    // Get user ID first as fallback
+    final userId = json['id']?.toString() ?? '0';
+    
+    // Try multiple field combinations for the user's name
+    String userName = '';
+    
+    // Check all possible name field variations
+    if (json['name'] != null && json['name'].toString().trim().isNotEmpty && json['name'].toString().trim() != 'null') {
+      userName = json['name'].toString().trim();
+    } else if (json['full_name'] != null && json['full_name'].toString().trim().isNotEmpty && json['full_name'].toString().trim() != 'null') {
+      userName = json['full_name'].toString().trim();
+    } else if (json['fullname'] != null && json['fullname'].toString().trim().isNotEmpty && json['fullname'].toString().trim() != 'null') {
+      userName = json['fullname'].toString().trim();
+    } else if (json['display_name'] != null && json['display_name'].toString().trim().isNotEmpty && json['display_name'].toString().trim() != 'null') {
+      userName = json['display_name'].toString().trim();
     } else if (json['first_name'] != null || json['last_name'] != null) {
-      final firstName = json['first_name'] ?? '';
-      final lastName = json['last_name'] ?? '';
+      final firstName = (json['first_name'] ?? '').toString().trim();
+      final lastName = (json['last_name'] ?? '').toString().trim();
       userName = '$firstName $lastName'.trim();
-      if (userName.isEmpty) userName = 'Unknown User';
-    } else if (json['username'] != null && json['username'].toString().isNotEmpty) {
-      userName = json['username'];
+    } else if (json['username'] != null && json['username'].toString().trim().isNotEmpty && json['username'].toString().trim() != 'null') {
+      userName = json['username'].toString().trim();
+    } else if (json['user_name'] != null && json['user_name'].toString().trim().isNotEmpty && json['user_name'].toString().trim() != 'null') {
+      userName = json['user_name'].toString().trim();
+    } else if (json['email'] != null && json['email'].toString().trim().isNotEmpty && json['email'].toString().trim() != 'null') {
+      // Use email as last resort before user ID
+      userName = json['email'].toString().split('@')[0].trim();
     }
     
+    // If still empty, use User ID instead of "Unknown User"
+    if (userName.isEmpty || userName == 'null') {
+      userName = 'User $userId';
+    }
+    
+    print('Final userName: $userName');
+    print('Final image: ${json['image'] ?? json['avatar'] ?? json['profile_picture']}');
+    
     return MindForceUser(
-      id: json['id']?.toString() ?? '0',
+      id: userId,
       name: userName,
       image: json['image'] ?? json['avatar'] ?? json['profile_picture'],
       username: json['username'],

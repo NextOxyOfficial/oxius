@@ -182,7 +182,18 @@ class MindForceService {
       );
 
       if (response.statusCode == 200) {
+        print('=== MindForce Comments Response ===');
+        print('Status: ${response.statusCode}');
+        print('Body: ${response.body}');
+        
         final List<dynamic> data = json.decode(response.body);
+        print('Number of comments: ${data.length}');
+        
+        if (data.isNotEmpty) {
+          print('First comment raw JSON:');
+          print(data[0]);
+        }
+        
         return data.map((item) => MindForceComment.fromJson(item)).toList();
       }
 
