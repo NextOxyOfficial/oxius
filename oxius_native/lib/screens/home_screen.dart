@@ -386,46 +386,45 @@ class _HomeScreenState extends State<HomeScreen> {
                   const AppFooter(
                     showMobileNav: false,
                   ),
-                ],
-              ),
+              ],
             ),
           ),
-          
-          // Animated Header positioned at top
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              transform: Matrix4.translationValues(
-                0,
-                _isHeaderVisible ? 0 : -100, // Slide up by 100px when hidden
-                0,
-              ),
-              curve: Curves.easeInOut,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.95),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Colors.grey.shade200.withOpacity(0.5),
-                      width: 0.5,
-                    ),
+        ),
+        
+        // Animated Header positioned at top
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            transform: Matrix4.translationValues(
+              0,
+              _isHeaderVisible ? 0 : -100, // Slide up by 100px when hidden
+              0,
+            ),
+            curve: Curves.easeInOut,
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.95),
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.grey.shade200.withOpacity(0.5),
+                    width: 0.5,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      offset: const Offset(0, 1),
-                      blurRadius: 3,
-                    ),
-                  ],
                 ),
-                child: SafeArea(
-                  bottom: false,
-                  child: _buildFixedHeader(context),
-                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    offset: const Offset(0, 1),
+                    blurRadius: 3,
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: _buildFixedHeader(context),
               ),
             ),
           ),
