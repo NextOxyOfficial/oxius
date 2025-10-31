@@ -163,16 +163,22 @@ class UserSearchView(generics.ListAPIView):
         )
 
         # Combine all matches with priority ordering
-        combined_results = (
-            list(exact_username_match)
-            + list(full_name_matches)
-            + list(username_starts_with)
-            + list(name_starts_with)
-            + list(partial_matches)
-        )
-
-        # Return combined and deduplicated results
-        return combined_results
+        # Collect all user IDs in order of priority
+        seen_ids = set()
+        ordered_user_ids = []
+        
+        for queryset in [exact_username_match, full_name_matches, username_starts_with, name_starts_with, partial_matches]:
+            for user in queryset:
+                if user.id not in seen_ids:
+                    seen_ids.add(user.id)
+                    ordered_user_ids.append(user.id)
+        
+        # Return as queryset with preserved order and no duplicates
+        # Use Case/When to maintain the priority order
+        from django.db.models import Case, When
+        preserved_order = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ordered_user_ids)])
+        
+        return User.objects.filter(id__in=ordered_user_ids).order_by(preserved_order)
 
 
 # @api_view(['GET'])

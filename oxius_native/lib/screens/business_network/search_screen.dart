@@ -186,12 +186,15 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _loadPeopleResults(String query) async {
     try {
       final token = await AuthService.getToken();
-      if (token == null) return;
-
-      final headers = {
-        'Authorization': 'Bearer $token',
+      
+      final headers = <String, String>{
         'Content-Type': 'application/json',
       };
+      
+      // Add authorization header only if user is logged in
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
 
       final normalizedQuery = query.startsWith('#') ? query.substring(1) : query;
 
