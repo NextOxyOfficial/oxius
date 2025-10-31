@@ -1169,9 +1169,6 @@ class _NewChatModalState extends State<_NewChatModal> {
 
   Future<void> _openChatWithUser(Map<String, dynamic> user) async {
     try {
-      print('🔵 Opening chat with user: $user');
-      print('🔵 User ID: ${user['id']} (type: ${user['id'].runtimeType})');
-      
       // Show loading
       showDialog(
         context: context,

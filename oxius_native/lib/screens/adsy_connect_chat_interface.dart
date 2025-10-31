@@ -511,19 +511,48 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
             onPressed: () async {
               Navigator.pop(context);
               try {
-                await AdsyConnectService.deleteMessage(message['id']);
-                setState(() {
-                  _messages.removeWhere((m) => m['id'] == message['id']);
-                });
+                // Call backend to soft delete the message
+                final deletedMessage = await AdsyConnectService.deleteMessage(message['id']);
+                print('✅ Deleted message response: $deletedMessage');
+                
+                // Update the message in the list immediately
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Message deleted'),
-                      backgroundColor: Color(0xFFEF4444),
-                    ),
-                  );
+                  setState(() {
+                    final index = _messages.indexWhere((m) => m['id'].toString() == message['id'].toString());
+                    print('🔍 Found message at index: $index');
+                    
+                    if (index != -1) {
+                      // Parse the deleted message data from backend
+                      final isDeletedFlag = deletedMessage['is_deleted'] ?? true;
+                      print('🚫 isDeleted flag: $isDeletedFlag');
+                      
+                      // Update the message to show as deleted
+                      _messages[index] = {
+                        ..._messages[index],
+                        'isDeleted': true,
+                        'message': 'Message removed',
+                        'type': 'text', // Force to text type to show the removed message
+                      };
+                      
+                      print('✅ Updated message: ${_messages[index]}');
+                      
+                      // Force rebuild with updated timestamps
+                      _messages = List.from(_addSmartTimestamps(_messages));
+                    }
+                  });
+                  
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Message deleted'),
+                        backgroundColor: Color(0xFFEF4444),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
                 }
               } catch (e) {
+                print('🔴 Error deleting message: $e');
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

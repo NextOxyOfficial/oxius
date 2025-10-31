@@ -21,18 +21,11 @@ class AdsyConnectService {
   static Future<Map<String, dynamic>> getOrCreateChatRoom(String userId) async {
     try {
       final headers = await _getHeaders();
-      print('🔵 API URL: $baseUrl/chatrooms/get_or_create/');
-      print('🔵 Headers: $headers');
-      print('🔵 Body: ${jsonEncode({'user_id': userId})}');
-      
       final response = await http.post(
         Uri.parse('$baseUrl/chatrooms/get_or_create/'),
         headers: headers,
         body: jsonEncode({'user_id': userId}),
       );
-
-      print('🔵 Response status: ${response.statusCode}');
-      print('🔵 Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return jsonDecode(response.body);
@@ -40,7 +33,7 @@ class AdsyConnectService {
         throw Exception('Failed to get or create chat room: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('🔴 Error getting or creating chat room: $e');
+      print('Error getting or creating chat room: $e');
       rethrow;
     }
   }
@@ -270,8 +263,8 @@ class AdsyConnectService {
     }
   }
 
-  // Delete message
-  static Future<void> deleteMessage(String messageId) async {
+  // Delete message (soft delete - returns updated message data)
+  static Future<Map<String, dynamic>> deleteMessage(String messageId) async {
     try {
       final headers = await _getHeaders();
       final response = await http.delete(
@@ -279,7 +272,10 @@ class AdsyConnectService {
         headers: headers,
       );
 
-      if (response.statusCode != 204) {
+      if (response.statusCode == 200) {
+        // Backend returns the updated message with is_deleted=true
+        return jsonDecode(response.body);
+      } else {
         throw Exception('Failed to delete message: ${response.statusCode}');
       }
     } catch (e) {
