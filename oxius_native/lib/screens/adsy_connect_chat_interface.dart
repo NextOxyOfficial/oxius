@@ -203,7 +203,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         'timeDisplay': msg['time_display']?.toString(),
         'isMe': !isMe, // Invert because we're the receiver if sender is not us
         'type': msg['message_type']?.toString() ?? 'text',
-        'mediaUrl': msg['media_file']?.toString(),
+        'mediaUrl': msg['media_url']?.toString(), // Backend returns media_url, not media_file
+        'thumbnailUrl': msg['thumbnail_url']?.toString(),
+        'fileName': msg['file_name']?.toString(),
         'isRead': msg['is_read'] ?? false,
         'isDeleted': msg['is_deleted'] ?? false,
       };
@@ -289,7 +291,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       'timeDisplay': msg['time_display']?.toString(),
       'isMe': true,
       'type': msg['message_type']?.toString() ?? 'text',
-      'mediaUrl': msg['media_file']?.toString(),
+      'mediaUrl': msg['media_url']?.toString(), // Backend returns media_url, not media_file
+      'thumbnailUrl': msg['thumbnail_url']?.toString(),
+      'fileName': msg['file_name']?.toString(),
       'isRead': msg['is_read'] ?? false,
       'isDeleted': msg['is_deleted'] ?? false,
     };
@@ -780,6 +784,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       );
       
       print('🟢 Media message sent: ${sentMessage['id']}');
+      print('🟢 Media URL: ${sentMessage['media_url']}');
+      print('🟢 Full response: $sentMessage');
       
       if (mounted) {
         setState(() {
@@ -823,7 +829,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         fileName: fileName,
       );
       
-      print('🟢 Media message sent: ${sentMessage['id']}');
+      print('🟢 Media message sent (web): ${sentMessage['id']}');
+      print('🟢 Media URL (web): ${sentMessage['media_url']}');
+      print('🟢 Full response (web): $sentMessage');
       
       if (mounted) {
         setState(() {
