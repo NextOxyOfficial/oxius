@@ -452,7 +452,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             
             // Location Section
             _buildSection(
-              title: 'Location',
+              title: 'Delivery to',
               icon: Icons.location_on_outlined,
               children: [
                 _buildLocationFields(),

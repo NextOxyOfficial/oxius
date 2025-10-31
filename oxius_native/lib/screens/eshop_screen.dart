@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../services/eshop_service.dart';
 import '../services/translation_service.dart';
 import '../services/user_state_service.dart';
@@ -26,14 +27,19 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   bool _isSearching = false;
   bool _isLoadingMore = false;
   bool _hasMoreResults = true;
+  bool _showSuggestions = false;
   
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _searchResults = [];
   List<String> _recentSearches = [];
+  List<String> _searchSuggestions = [];
   List<String> _trendingSearches = ['Electronics', 'Fashion', 'Home & Garden', 'Sports'];
   
   String? _eshopLogoUrl;
+  String _lastSearchQuery = '';
   int _currentPage = 1;
+  Timer? _debounceTimer;
+  Timer? _saveSearchTimer;
   late AnimationController _searchAnimationController;
   late Animation<double> _searchAnimation;
 
@@ -211,6 +217,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
+    _saveSearchTimer?.cancel();
     _searchController.dispose();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
@@ -327,34 +335,144 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     FocusScope.of(context).unfocus();
   }
 
-  Future<void> _performSearch(String query) async {
-    if (query.trim().isEmpty) {
+  void _onSearchChanged(String query) {
+    // Cancel previous timers
+    _debounceTimer?.cancel();
+    _saveSearchTimer?.cancel();
+    
+    // Update suggestions immediately for better UX
+    if (query.trim().isNotEmpty) {
+      _updateSearchSuggestions(query);
+    } else {
       setState(() {
+        _showSuggestions = false;
+        _searchSuggestions.clear();
         _searchResults.clear();
         _isSearching = false;
       });
       return;
     }
+    
+    // Debounce search by 800ms - wait for user to finish typing
+    _debounceTimer = Timer(const Duration(milliseconds: 800), () {
+      if (query.trim().isNotEmpty && query.trim().length >= 3) {
+        _performSearch(query);
+      }
+    });
+  }
+  
+  void _updateSearchSuggestions(String query) {
+    final suggestions = <String>[];
+    final lowerQuery = query.toLowerCase();
+    
+    // Add matching recent searches
+    for (var search in _recentSearches) {
+      if (search.toLowerCase().contains(lowerQuery) && suggestions.length < 5) {
+        suggestions.add(search);
+      }
+    }
+    
+    // Add matching trending searches
+    for (var trend in _trendingSearches) {
+      if (trend.toLowerCase().contains(lowerQuery) && 
+          !suggestions.contains(trend) && 
+          suggestions.length < 5) {
+        suggestions.add(trend);
+      }
+    }
+    
+    setState(() {
+      _searchSuggestions = suggestions;
+      _showSuggestions = suggestions.isNotEmpty;
+    });
+  }
 
-    setState(() => _isSearching = true);
+  Future<void> _performSearch(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _searchResults.clear();
+        _isSearching = false;
+        _showSuggestions = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+      _showSuggestions = false;
+    });
     
     try {
       final results = await EshopService.searchProducts(query);
-      setState(() {
-        _searchResults = results;
-        _isSearching = false;
-        _hasMoreResults = results.length >= 20;
-      });
       
-      // Reload search history from backend to get updated list
-      _loadSearchHistory();
-    } catch (e) {
-      setState(() => _isSearching = false);
       if (mounted) {
+        setState(() {
+          _searchResults = results;
+          _isSearching = false;
+          _hasMoreResults = results.length >= 20;
+          _lastSearchQuery = query;
+        });
+        
+        // Save search keyword after 15 seconds of viewing results
+        // This ensures user actually looked at results and found them useful
+        // Only save if query is meaningful (3+ characters) and has results
+        _saveSearchTimer?.cancel();
+        if (results.isNotEmpty && query.trim().length >= 3) {
+          _saveSearchTimer = Timer(const Duration(seconds: 15), () {
+            // Only save if user is still on the same search and not already in recent searches
+            if (_lastSearchQuery == query && mounted && !_recentSearches.contains(query.trim())) {
+              _saveSearchKeyword(query);
+            }
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSearching = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Search error: $e')),
+          SnackBar(
+            content: Text('Search error: $e'),
+            backgroundColor: Colors.red.shade400,
+            duration: const Duration(seconds: 2),
+          ),
         );
       }
+    }
+  }
+  
+  Future<void> _saveSearchKeyword(String query) async {
+    try {
+      print('Saving search keyword: "$query"');
+      await EshopService.saveSearchHistory(query);
+      
+      // Reload search history to show the new keyword
+      await _loadSearchHistory();
+      
+      // Show subtle feedback that keyword was saved
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.bookmark_added, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Text('"$query" saved to recent searches'),
+              ],
+            ),
+            backgroundColor: const Color(0xFF10B981),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      }
+      
+      print('Search keyword saved and history reloaded. Recent searches: $_recentSearches');
+    } catch (e) {
+      print('Error saving search keyword: $e');
     }
   }
 
@@ -499,18 +617,31 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                     child: TextField(
                       controller: _searchController,
                       autofocus: true,
-                      onChanged: _performSearch,
+                      onChanged: _onSearchChanged,
+                      onSubmitted: (value) {
+                        if (value.trim().isNotEmpty && value.trim().length >= 3) {
+                          _debounceTimer?.cancel();
+                          _performSearch(value);
+                        }
+                      },
                       textAlignVertical: TextAlignVertical.center,
                       style: const TextStyle(fontSize: 14, color: Color(0xFF374151)),
                       decoration: InputDecoration(
-                        hintText: 'Search products...',
-                        hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                        hintText: 'Search products (min 3 chars)...',
+                        hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
                         prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF10B981), size: 20),
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
                                 onPressed: () {
+                                  _debounceTimer?.cancel();
+                                  _saveSearchTimer?.cancel();
                                   _searchController.clear();
-                                  _performSearch('');
+                                  setState(() {
+                                    _searchResults.clear();
+                                    _searchSuggestions.clear();
+                                    _showSuggestions = false;
+                                    _isSearching = false;
+                                  });
                                 },
                                 icon: const Icon(Icons.close_rounded, color: Color(0xFF9CA3AF), size: 18),
                                 padding: const EdgeInsets.all(8),
@@ -601,134 +732,125 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   Widget _buildSearchDefault() {
     print('EshopScreen: Building search default. Recent searches: ${_recentSearches.length}, Display products: ${_searchResults.length}, isSearching: $_isSearching');
     
-    return Column(
-      children: [
-        // Top section with searches
-        SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Recent Searches
-              if (_recentSearches.isNotEmpty) ...[
-                Row(
-                  children: [
-                    Icon(Icons.access_time, color: Colors.grey.shade500, size: 20),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Recent Searches',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+    if (_isSearching) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF10B981),
+        ),
+      );
+    }
+    
+    // Single scrollable view with searches and products together
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(4, 16, 4, 80),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Recent Searches
+          if (_recentSearches.isNotEmpty) ...[
+            Row(
+              children: [
+                Icon(Icons.access_time, color: Colors.grey.shade500, size: 20),
+                const SizedBox(width: 8),
+                const Text(
+                  'Recent Searches',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _recentSearches.take(5).map((search) {
-                    return InkWell(
-                      onTap: () {
-                        _searchController.text = search;
-                        _performSearch(search);
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.search, size: 14, color: Colors.grey.shade400),
-                            const SizedBox(width: 4),
-                            Text(
-                              search,
-                              style: TextStyle(
-                                color: Colors.grey.shade700,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 24),
               ],
-              
-              // Trending Searches
-              Row(
-                children: [
-                  Icon(Icons.trending_up, color: Colors.orange.shade500, size: 20),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Trending Searches',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _recentSearches.take(5).map((search) {
+                return InkWell(
+                  onTap: () {
+                    _searchController.text = search;
+                    _performSearch(search);
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.search, size: 14, color: Colors.grey.shade400),
+                        const SizedBox(width: 4),
+                        Text(
+                          search,
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _trendingSearches.map((trend) {
-                  return InkWell(
-                    onTap: () {
-                      _searchController.text = trend;
-                      _performSearch(trend);
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        trend,
-                        style: const TextStyle(
-                          color: Color(0xFF10B981),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
-        
-        // Products section
-        if (_isSearching)
-          const Expanded(
-            child: Center(
-              child: CircularProgressIndicator(),
+                );
+              }).toList(),
             ),
-          )
-        else if (_searchResults.isNotEmpty)
-          Expanded(child: _buildSearchResults())
-        else
-          const Expanded(
-            child: Center(
-              child: Text(
-                'No products to display',
-                style: TextStyle(color: Colors.grey),
+            const SizedBox(height: 16),
+          ] else
+            const SizedBox(height: 8),
+          
+          // Products section (if available)
+          if (_searchResults.isNotEmpty) ...[
+            Row(
+              children: [
+                Icon(Icons.inventory_2_rounded, size: 20, color: Colors.grey.shade600),
+                const SizedBox(width: 8),
+                Text(
+                  'Suggested Products',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.60,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
+              itemCount: _searchResults.length,
+              itemBuilder: (context, index) {
+                return ProductCard(
+                  product: _searchResults[index],
+                  isLoading: false,
+                  onBuyNow: () => _navigateToCheckout(_searchResults[index]),
+                );
+              },
+            ),
+          ] else
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Text(
+                  'Start typing to search products',
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -772,7 +894,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       padding: const EdgeInsets.fromLTRB(4, 8, 4, 80),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.62,
+        childAspectRatio: 0.60,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
       ),

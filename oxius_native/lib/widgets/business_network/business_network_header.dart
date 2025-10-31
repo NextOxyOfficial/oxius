@@ -26,7 +26,6 @@ class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidge
 }
 
 class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
-  bool _showUserMenu = false;
   String? _businessNetworkLogoUrl;
 
   @override
@@ -55,18 +54,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 640;
 
-    return Stack(
-      children: [
-        GestureDetector(
-          onTap: () {
-            // Close dropdown when tapping outside
-            if (_showUserMenu) {
-              setState(() {
-                _showUserMenu = false;
-              });
-            }
-          },
-          child: AppBar(
+    return AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
         automaticallyImplyLeading: false,
@@ -152,8 +140,8 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                               borderRadius: BorderRadius.circular(8),
                               child: Image.network(
                                 _businessNetworkLogoUrl!,
-                                width: 32,
-                                height: 32,
+                                width: 42,
+                                height: 42,
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
                                   return _buildFallbackLogo();
@@ -161,8 +149,8 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                                 loadingBuilder: (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
                                   return Container(
-                                    width: 32,
-                                    height: 32,
+                                    width: 42,
+                                    height: 42,
                                     decoration: BoxDecoration(
                                       color: Colors.grey.shade100,
                                       borderRadius: BorderRadius.circular(8),
@@ -282,18 +270,10 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
             padding: const EdgeInsets.only(right: 12),
             child: InkWell(
               onTap: () {
-                if (isMobile) {
-                  widget.onProfileTap?.call();
-                } else {
-                  setState(() {
-                    _showUserMenu = !_showUserMenu;
-                  });
-                }
+                widget.onProfileTap?.call();
               },
               borderRadius: BorderRadius.circular(20),
-              child: isMobile
-                  ? _buildMobileUserAvatar(user)
-                  : _buildDesktopUserButton(user),
+              child: _buildMobileUserAvatar(user),
             ),
           ),
         ] else ...[
@@ -347,271 +327,9 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
         ],
       ],
           ),
-        ),
-        // Show dropdown menu
-        if (_showUserMenu && user != null)
-          _buildUserDropdown(context, user),
-      ],
-    );
+        );
   }
 
-  Widget _buildUserDropdown(BuildContext context, dynamic user) {
-    return Positioned(
-      top: 60,
-      right: 8,
-      child: Material(
-        elevation: 8,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: 280,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // User Info Section
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue.shade50, Colors.indigo.shade50],
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundImage: user.image != null
-                          ? NetworkImage(user.image)
-                          : null,
-                      child: user.image == null
-                          ? Icon(Icons.person, color: Colors.grey.shade400)
-                          : null,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user.firstName ?? user.username ?? 'User',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            user.email ?? '',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.grey.shade600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Navigation Grid
-              Container(
-                padding: const EdgeInsets.all(12),
-                child: GridView.count(
-                  shrinkWrap: true,
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: 1.1,
-                  children: [
-                    _buildNavItem(context, 'Business Network', Icons.network_check, const Color(0xFFEA580C), '/business-network'),
-                    _buildNavItem(context, 'Adsy News', Icons.newspaper, const Color(0xFF9333EA), '/adsy-news'),
-                    _buildNavItem(context, 'Ad Services', Icons.campaign, const Color(0xFF059669), '/classified', badge: 'FREE'),
-                    _buildNavItem(context, 'eShop Manager', Icons.shopping_bag, const Color(0xFF2563EB), '/shop-manager', badge: 'PRO'),
-                    _buildNavItem(context, 'Adsy Pay', Icons.payments, const Color(0xFF059669), '/deposit-withdraw'),
-                    _buildNavItem(context, 'Mobile Recharge', Icons.phone_android, const Color(0xFFEA580C), '/mobile-recharge'),
-                  ],
-                ),
-              ),
-
-              // Settings & Logout
-              Container(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: Colors.grey.shade100, width: 1),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildActionButton(context, 'Settings', Icons.settings, '/settings'),
-                        _buildActionButton(context, 'Verification', Icons.upload_file, '/upload-center'),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildActionButton(context, 'Inbox', Icons.mark_email_unread_outlined, '/inbox'),
-                        _buildActionButton(context, 'My Gigs', Icons.list_rounded, '/my-gigs'),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildActionButton(context, 'Post A Gig', Icons.add_circle_outline, '/post-a-gig'),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    GestureDetector(
-                      onTap: () async {
-                        setState(() {
-                          _showUserMenu = false;
-                        });
-                        await AuthService.logout();
-                        if (context.mounted) {
-                          Navigator.pushReplacementNamed(context, '/login');
-                        }
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.red.shade50,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.logout, size: 14, color: Colors.red.shade600),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Logout',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.red.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(BuildContext context, String label, IconData icon, Color color, String route, {String? badge}) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _showUserMenu = false;
-        });
-        Navigator.pushNamed(context, route);
-      },
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withOpacity(0.2), width: 1),
-        ),
-        child: Stack(
-          children: [
-            if (badge != null)
-              Positioned(
-                top: -2,
-                right: -2,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: badge == 'PRO' ? const Color(0xFF6366F1) : Colors.grey.shade500,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    badge,
-                    style: const TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-              ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-                    child: Icon(icon, size: 12, color: Colors.white),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    label,
-                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton(BuildContext context, String label, IconData icon, String route) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _showUserMenu = false;
-        });
-        Navigator.pushNamed(context, route);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-              child: Icon(icon, size: 12, color: Colors.grey.shade600),
-            ),
-            const SizedBox(width: 4),
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.black87)),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildNavButton({
     required String label,
@@ -764,113 +482,11 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
     );
   }
 
-  Widget _buildDesktopUserButton(dynamic user) {
-    final isPro = user.isPro ?? false;
-    final isVerified = user.isVerified ?? false;
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Pro Badge
-          if (isPro)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.indigo.shade500, Colors.blue.shade600],
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.shield, size: 12, color: Colors.white),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'Pro',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          
-          if (isPro) const SizedBox(width: 6),
-          
-          // Verified Icon
-          if (isVerified) ...[
-            const Icon(
-              Icons.verified,
-              size: 16,
-              color: Color(0xFF3B82F6),
-            ),
-            const SizedBox(width: 4),
-          ],
-          
-          // Avatar
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: ClipOval(
-              child: user.profilePicture != null
-                  ? Image.network(
-                      user.profilePicture!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: Icon(
-                            Icons.person,
-                            size: 16,
-                            color: Colors.grey.shade400,
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      color: Colors.grey.shade200,
-                      child: Icon(
-                        Icons.person,
-                        size: 16,
-                        color: Colors.grey.shade400,
-                      ),
-                    ),
-            ),
-          ),
-          
-          const SizedBox(width: 6),
-          
-          // Dropdown Icon
-          Icon(
-            _showUserMenu ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-            size: 16,
-            color: Colors.grey.shade600,
-          ),
-          
-          const SizedBox(width: 4),
-        ],
-      ),
-    );
-  }
 
   Widget _buildFallbackLogo() {
     return Container(
-      width: 32,
-      height: 32,
+      width: 42,
+      height: 42,
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
         gradient: LinearGradient(

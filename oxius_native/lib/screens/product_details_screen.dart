@@ -362,8 +362,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                 onPressed: () async {
                   final product = _productDetails ?? widget.product;
                   final title = product['name'] ?? product['title'] ?? 'Product';
-                  final productId = product['id'];
-                  final shareText = 'Check out this product: $title\n\nView on AdsyClub: https://oxius.vercel.app/eshop/product/$productId';
+                  final productSlug = product['slug'] ?? product['id'];
+                  final shareText = 'Check out this product: $title\n\nView on AdsyClub: https://adsyclub.com/products/$productSlug';
                   
                   try {
                     // Using share_plus package
@@ -1801,7 +1801,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           ),
           const SizedBox(height: 16),
           SizedBox(
-            height: 273,
+            height: 275,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 4),

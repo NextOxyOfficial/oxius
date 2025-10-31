@@ -506,7 +506,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     }
     
     if (imageUrl != null && !imageUrl.startsWith('http')) {
-      imageUrl = 'https://oxius.vercel.app$imageUrl';
+      imageUrl = 'https://adsyclub.com$imageUrl';
     }
     
     return imageUrl;
