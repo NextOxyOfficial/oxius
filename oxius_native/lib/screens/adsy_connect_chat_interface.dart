@@ -109,18 +109,24 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           return !_messages.any((existing) => existing['id'] == msg['id']);
         }).toList();
         
-        if (newMessages.isNotEmpty && mounted) {
+        if (newMessages.isNotEmpty) {
           setState(() {
             _messages.addAll(newMessages);
-            _lastMessageId = latestServerMessageId;
+            _lastMessageId = newMessages.last['id'];
           });
+          _scrollToBottom();
+          // Mark new messages as read immediately
+          _markMessagesAsRead();
+        }
+        
+        // Auto-scroll to bottom if user is near bottom
+        if (_scrollController.hasClients) {
+          final maxScroll = _scrollController.position.maxScrollExtent;
+          final currentScroll = _scrollController.position.pixels;
+          final isNearBottom = maxScroll - currentScroll < 100;
           
-          // Auto-scroll to bottom if user is near bottom
-          if (_scrollController.hasClients) {
-            final maxScroll = _scrollController.position.maxScrollExtent;
-            final currentScroll = _scrollController.position.pixels;
-            final isNearBottom = maxScroll - currentScroll < 100;
-            
+          if (isNearBottom) {
+            _scrollToBottom();
             if (isNearBottom) {
               _scrollToBottom();
             }
@@ -170,6 +176,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         
         if (!loadMore) {
           _scrollToBottom();
+          // Mark messages as read when opening chat
+          _markMessagesAsRead();
         }
       }
     } catch (e) {
@@ -210,6 +218,27 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         'isDeleted': msg['is_deleted'] ?? false,
       };
     }).toList();
+  }
+
+  Future<void> _markMessagesAsRead() async {
+    try {
+      // Call API to mark messages as read
+      await AdsyConnectService.markChatroomAsRead(widget.chatroomId);
+      
+      // Update local state immediately - mark all received messages as read
+      if (mounted) {
+        setState(() {
+          for (var message in _messages) {
+            if (message['isMe'] == true && message['isRead'] == false) {
+              message['isRead'] = true;
+            }
+          }
+        });
+      }
+    } catch (e) {
+      print('🔴 Error marking messages as read: $e');
+      // Don't show error to user - this is a background operation
+    }
   }
 
   void _scrollToBottom() {

@@ -121,6 +121,26 @@ class AdsyConnectService {
     }
   }
 
+  // Mark all messages in chatroom as read
+  static Future<void> markChatroomAsRead(String chatroomId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$baseUrl/chatrooms/$chatroomId/mark_as_read/'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        print('🟢 Messages marked as read for chatroom: $chatroomId');
+      } else {
+        print('⚠️ Failed to mark messages as read: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('🔴 Error marking messages as read: $e');
+      // Don't rethrow - this is a non-critical operation
+    }
+  }
+
   // Send text message
   static Future<Map<String, dynamic>> sendTextMessage({
     required String chatroomId,
