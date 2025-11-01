@@ -134,14 +134,16 @@ class ChatRoomSerializer(serializers.ModelSerializer):
         return 0
     
     def get_last_message(self, obj):
-        last_msg = obj.messages.filter(is_deleted=False).order_by('-created_at').first()
+        # Include deleted messages so frontend can show "Message removed"
+        last_msg = obj.messages.order_by('-created_at').first()
         if last_msg:
             return {
                 'id': str(last_msg.id),
                 'content': last_msg.get_preview(),
                 'message_type': last_msg.message_type,
                 'created_at': last_msg.created_at,
-                'is_me': last_msg.sender == self.context.get('request').user
+                'is_me': last_msg.sender == self.context.get('request').user,
+                'is_deleted': last_msg.is_deleted  # Include deleted status
             }
         return None
 
