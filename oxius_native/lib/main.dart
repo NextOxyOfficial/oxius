@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'config/app_config.dart';
 import 'screens/home_screen.dart';
 import 'screens/inbox_screen.dart';
@@ -33,7 +34,10 @@ import 'services/translation_service.dart';
 import 'models/cart_item.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  
+  // Preserve splash screen
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   
   // Set status bar to white with dark icons
   SystemChrome.setSystemUIOverlayStyle(
@@ -65,6 +69,12 @@ void main() async {
   } else {
     print('No existing session found');
   }
+  
+  // Keep splash screen for 1500ms
+  await Future.delayed(const Duration(milliseconds: 1500));
+  
+  // Remove splash screen
+  FlutterNativeSplash.remove();
   
   runApp(MyApp(userState: userState));
 }
