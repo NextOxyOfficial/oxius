@@ -197,46 +197,32 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         title: Text(
           'Gig Details',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.roboto(
             fontWeight: FontWeight.w600,
-            fontSize: 18,
+            fontSize: 16,
+            letterSpacing: -0.2,
           ),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
-        foregroundColor: Colors.white,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.green.shade700,
-                Colors.green.shade600,
-                Colors.teal.shade500,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+        foregroundColor: const Color(0xFF1F2937),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, size: 22),
+          onPressed: () => Navigator.pop(context),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: Colors.grey.shade200,
+            height: 1,
           ),
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.green.shade50,
-              Colors.white,
-              Colors.blue.shade50,
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: _buildBody(),
-      ),
+      body: _buildBody(),
     );
   }
 
@@ -352,21 +338,24 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 64), 
-          _buildHeader(),
-          const SizedBox(height: 12),
-          _buildInstructions(),
-          if (_gig!['medias'] != null && (_gig!['medias'] as List).isNotEmpty)
-            _buildReferenceMedia(),
-          if (_gig!['action_link'] != null && _gig!['action_link'].toString().isNotEmpty)
-            _buildActionLink(),
-          const SizedBox(height: 12),
-          _buildUploadSection(),
-          const SizedBox(height: 24),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 8),
+            _buildHeader(),
+            const SizedBox(height: 4),
+            _buildInstructions(),
+            if (_gig!['medias'] != null && (_gig!['medias'] as List).isNotEmpty)
+              _buildReferenceMedia(),
+            if (_gig!['action_link'] != null && _gig!['action_link'].toString().isNotEmpty)
+              _buildActionLink(),
+            const SizedBox(height: 4),
+            _buildUploadSection(),
+            const SizedBox(height: 12),
+          ],
+        ),
       ),
     );
   }
@@ -376,151 +365,128 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     final price = _gig!['price'] ?? 0;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.green.shade600,
-            Colors.green.shade700,
-            Colors.teal.shade600,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.transparent,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Icon(
+                  Icons.work_outline_rounded,
+                  size: 16,
+                  color: Color(0xFF10B981),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.roboto(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1F2937),
+                    height: 1.3,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
             ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.work_outline,
-                    size: 20,
-                    color: Colors.white,
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withOpacity(0.3),
+                    width: 1,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      height: 1.3,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.monetization_on_rounded,
+                      color: Color(0xFF10B981),
+                      size: 14,
                     ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Earn: ',
+                      style: GoogleFonts.roboto(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF6B7280),
                       ),
-                    ],
+                    ),
+                    Text(
+                      '৳$price',
+                      style: GoogleFonts.roboto(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF10B981),
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 6),
+              if (_hasSubmitted)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: Colors.orange.shade200,
+                      width: 1,
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.monetization_on,
-                        color: Colors.amber.shade600,
-                        size: 18,
+                        Icons.check_circle_rounded,
+                        color: Colors.orange.shade700,
+                        size: 12,
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       Text(
-                        'Earn: ',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
+                        'Submitted',
+                        style: GoogleFonts.roboto(
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                      Text(
-                        '৳$price',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.green.shade700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-                const SizedBox(width: 8),
-                if (_hasSubmitted)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.orange.shade300,
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.check_circle,
                           color: Colors.orange.shade700,
-                          size: 16,
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Submitted',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.orange.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-              ],
-            ),
-          ],
-        ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -529,16 +495,16 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     final instructions = _gig!['instructions'] ?? '';
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -548,38 +514,37 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue.shade400, Colors.blue.shade600],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFF3B82F6).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
-                  Icons.description,
-                  color: Colors.white,
-                  size: 16,
+                  Icons.description_outlined,
+                  color: Color(0xFF3B82F6),
+                  size: 14,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Text(
                 'Instructions',
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
+                style: GoogleFonts.roboto(
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade800,
+                  color: const Color(0xFF1F2937),
+                  letterSpacing: -0.1,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(16),
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: Colors.blue.shade100,
+                color: Colors.grey.shade200,
                 width: 1,
               ),
             ),
@@ -587,9 +552,9 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               data: instructions,
               style: {
                 "body": Style(
-                  fontSize: FontSize(14),
+                  fontSize: FontSize(13),
                   textAlign: TextAlign.justify,
-                  color: Colors.grey.shade800,
+                  color: const Color(0xFF374151),
                   lineHeight: const LineHeight(1.5),
                 ),
               },
@@ -604,16 +569,16 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     final medias = _gig!['medias'] as List;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.purple.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -623,34 +588,33 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.purple.shade400, Colors.purple.shade600],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
-                  Icons.photo_library,
-                  color: Colors.white,
-                  size: 16,
+                  Icons.photo_library_outlined,
+                  color: Color(0xFF8B5CF6),
+                  size: 14,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Text(
                 'Reference Media',
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
+                style: GoogleFonts.roboto(
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade800,
+                  color: const Color(0xFF1F2937),
+                  letterSpacing: -0.1,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Wrap(
-            spacing: 10,
-            runSpacing: 10,
+            spacing: 8,
+            runSpacing: 8,
             children: medias.map((media) {
               if (media['image'] != null) {
                 return GestureDetector(
@@ -660,55 +624,30 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   child: Hero(
                     tag: media['image'],
                     child: Container(
-                      width: 80,
-                      height: 80,
+                      width: 70,
+                      height: 70,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.purple.shade100,
-                            Colors.blue.shade100,
-                          ],
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.grey.shade200,
+                          width: 1,
                         ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.purple.withOpacity(0.15),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Image.network(
-                              media['image'],
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Icon(
-                                    Icons.broken_image,
-                                    size: 40,
-                                    color: Colors.grey.shade400,
-                                  ),
-                                );
-                              },
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.transparent,
-                                    Colors.black.withOpacity(0.3),
-                                  ],
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                ),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          media['image'],
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                                size: 28,
+                                color: Colors.grey.shade400,
                               ),
-                            ),
-                          ],
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -720,25 +659,20 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                     // TODO: Open video viewer
                   },
                   child: Container(
-                    width: 80,
-                    height: 80,
+                    width: 70,
+                    height: 70,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.red.shade400, Colors.pink.shade400],
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.red.shade200,
+                        width: 1,
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
                     ),
-                    child: const Icon(
-                      Icons.play_circle_filled,
-                      size: 36,
-                      color: Colors.white,
+                    child: Icon(
+                      Icons.play_circle_filled_rounded,
+                      size: 32,
+                      color: Colors.red.shade400,
                     ),
                   ),
                 );
@@ -755,84 +689,67 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     final actionLink = _gig!['action_link'];
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       child: GestureDetector(
         onTap: () {
           // TODO: Open URL in browser
         },
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.orange.shade400,
-                Colors.deepOrange.shade500,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+            color: const Color(0xFFFEF3C7),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: const Color(0xFFFBBF24),
+              width: 1,
             ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.orange.withOpacity(0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
           ),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFFFBBF24),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
-                  Icons.link,
+                  Icons.link_rounded,
                   color: Colors.white,
-                  size: 18,
+                  size: 14,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Action URL',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
+                      style: GoogleFonts.roboto(
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white.withOpacity(0.9),
+                        color: const Color(0xFF92400E),
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       actionLink,
                       style: GoogleFonts.roboto(
-                        fontSize: 12,
-                        color: Colors.white,
+                        fontSize: 11,
+                        color: const Color(0xFF78350F),
                         fontWeight: FontWeight.w500,
                       ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.open_in_new,
-                  color: Colors.orange.shade600,
-                  size: 16,
-                ),
+              const SizedBox(width: 6),
+              Icon(
+                Icons.open_in_new_rounded,
+                color: const Color(0xFFFBBF24),
+                size: 14,
               ),
             ],
           ),
@@ -843,514 +760,417 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
   Widget _buildUploadSection() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.white,
-            Colors.blue.shade50.withOpacity(0.3),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.12),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
         ],
-        border: Border.all(
-          color: Colors.blue.shade100,
-          width: 1.5,
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.blue.shade600,
-                  Colors.cyan.shade500,
-                ],
-              ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(22),
-                topRight: Radius.circular(22),
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.cloud_upload,
-                    color: Colors.white,
-                    size: 18,
-                  ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  'Upload Your Work',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
+                child: const Icon(
+                  Icons.cloud_upload_outlined,
+                  color: Color(0xFF10B981),
+                  size: 14,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Upload Your Work',
+                style: GoogleFonts.roboto(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1F2937),
+                  letterSpacing: -0.1,
+                ),
+              ),
+            ],
           ),
-          
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Submit Details
-                Row(
-                  children: [
-                    Icon(Icons.edit_note, color: Colors.blue.shade600, size: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Submit Details *',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                  ],
+          const SizedBox(height: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Submit Details
+              Text(
+                'Submit Details *',
+                style: GoogleFonts.roboto(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF374151),
                 ),
-                const SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+              ),
+              const SizedBox(height: 6),
+              TextField(
+                controller: _submitDetailsController,
+                maxLines: 4,
+                style: GoogleFonts.roboto(fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Describe how you completed this task...',
+                  hintStyle: GoogleFonts.roboto(
+                    color: Colors.grey.shade400,
+                    fontSize: 12,
                   ),
-                  child: TextField(
-                    controller: _submitDetailsController,
-                    maxLines: 4,
-                    style: GoogleFonts.roboto(fontSize: 13),
-                    decoration: InputDecoration(
-                      hintText: 'Describe how you completed this task...',
-                      hintStyle: GoogleFonts.roboto(
-                        color: Colors.grey.shade400,
-                        fontSize: 13,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.blue.shade200),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.blue.shade100),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.blue.shade400, width: 2),
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.all(12),
-                      errorText: _showValidationErrors && _submitDetailsController.text.trim().isEmpty
-                          ? 'Please enter your work details'
-                          : null,
-                    ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFFF9FAFB),
+                  contentPadding: const EdgeInsets.all(10),
+                  errorText: _showValidationErrors && _submitDetailsController.text.trim().isEmpty
+                      ? 'Please enter your work details'
+                      : null,
+                  errorStyle: GoogleFonts.roboto(fontSize: 11),
                 ),
-                const SizedBox(height: 20),
+              ),
+              const SizedBox(height: 12),
           
-                // Upload Images
-                Row(
-                  children: [
-                    Icon(Icons.photo_camera, color: Colors.blue.shade600, size: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Upload Proof Images',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade800,
-                      ),
-                    ),
-                  ],
+              // Upload Images
+              Text(
+                'Upload Proof Images',
+                style: GoogleFonts.roboto(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF374151),
                 ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    ..._selectedImages.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final image = entry.value;
-                      
-                      return Stack(
-                        children: [
-                          Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.blue.shade100,
-                                  Colors.cyan.shade100,
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.blue.withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  ..._selectedImages.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final image = entry.value;
+                    
+                    return Stack(
+                      children: [
+                        Container(
+                          width: 70,
+                          height: 70,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.grey.shade300,
+                              width: 1,
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.file(
-                                image,
-                                fit: BoxFit.cover,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.file(
+                              image,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 2,
+                          right: 2,
+                          child: GestureDetector(
+                            onTap: () => _removeImage(index),
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade500,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.close_rounded,
+                                size: 12,
+                                color: Colors.white,
                               ),
                             ),
                           ),
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: GestureDetector(
-                              onTap: () => _removeImage(index),
-                              child: Container(
-                                padding: const EdgeInsets.all(5),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Colors.red.shade400, Colors.red.shade600],
-                                  ),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.red.withOpacity(0.4),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.close,
-                                  size: 14,
-                                  color: Colors.white,
-                                ),
-                              ),
+                        ),
+                      ],
+                    );
+                  }),
+                  
+                  // Add Image Button
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF10B981),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.add_photo_alternate_outlined,
+                            size: 24,
+                            color: Color(0xFF10B981),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Add',
+                            style: GoogleFonts.roboto(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF10B981),
                             ),
                           ),
                         ],
-                      );
-                    }),
-                    
-                    // Add Image Button
-                    GestureDetector(
-                      onTap: _pickImage,
-                      child: Container(
-                        width: 90,
-                        height: 90,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.blue.shade50,
-                              Colors.cyan.shade50,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.blue.shade200,
-                            width: 1.5,
-                            style: BorderStyle.solid,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+                
+              // Terms and Conditions
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.orange.shade200,
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Terms Checkbox
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Transform.scale(
+                          scale: 0.9,
+                          child: Checkbox(
+                            value: _acceptedTerms,
+                            onChanged: (value) => setState(() => _acceptedTerms = value ?? false),
+                            activeColor: const Color(0xFF10B981),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3),
+                            ),
                           ),
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.add_photo_alternate,
-                              size: 28,
-                              color: Colors.blue.shade400,
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Wrap(
+                              children: [
+                                Text(
+                                  'I accept ',
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 11,
+                                    color: const Color(0xFF374151),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const TermsAndConditionsScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'Terms & Condition',
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 11,
+                                      color: const Color(0xFF3B82F6),
+                                      fontWeight: FontWeight.w600,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  ', ',
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 11,
+                                    color: const Color(0xFF374151),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const PrivacyPolicyScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'Privacy Policy',
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 11,
+                                      color: const Color(0xFF3B82F6),
+                                      fontWeight: FontWeight.w600,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '.',
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 11,
+                                    color: const Color(0xFF374151),
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 3),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_showValidationErrors && !_acceptedTerms)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 32, top: 2),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline_rounded, size: 12, color: Colors.red.shade700),
+                            const SizedBox(width: 3),
                             Text(
-                              'Add Photo',
-                              style: GoogleFonts.poppins(
+                              'Please accept Terms & Conditions',
+                              style: GoogleFonts.roboto(
                                 fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue.shade600,
+                                color: Colors.red.shade700,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
+                    
+                    const SizedBox(height: 4),
+                    
+                    // Fraud Warning Checkbox
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Transform.scale(
+                          scale: 0.9,
+                          child: Checkbox(
+                            value: _acceptedCondition,
+                            onChanged: (value) => setState(() => _acceptedCondition = value ?? false),
+                            activeColor: const Color(0xFF10B981),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Text(
+                              'I am aware that fake and fraud submission may lead to account ban!',
+                              style: GoogleFonts.roboto(
+                                fontSize: 11,
+                                color: Colors.red.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    if (_showValidationErrors && !_acceptedCondition)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 32, top: 2),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline_rounded, size: 12, color: Colors.red.shade700),
+                            const SizedBox(width: 3),
+                            Text(
+                              'Please acknowledge the warning',
+                              style: GoogleFonts.roboto(
+                                fontSize: 10,
+                                color: Colors.red.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
-                const SizedBox(height: 20),
+              ),
+              const SizedBox(height: 12),
                 
-                // Terms and Conditions
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.orange.shade200,
-                      width: 1,
+              // Submit Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: (_isSubmitting || _hasSubmitted) ? null : _submitGig,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _hasSubmitted 
+                        ? Colors.grey.shade400 
+                        : const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
+                    elevation: 0,
+                    disabledBackgroundColor: Colors.grey.shade400,
+                    disabledForegroundColor: Colors.white,
                   ),
-                  child: Column(
-                    children: [
-                      // Terms Checkbox
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Transform.scale(
-                            scale: 1.1,
-                            child: Checkbox(
-                              value: _acceptedTerms,
-                              onChanged: (value) => setState(() => _acceptedTerms = value ?? false),
-                              activeColor: Colors.green.shade600,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _hasSubmitted ? Icons.check_circle_rounded : Icons.check_circle_rounded,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _hasSubmitted ? 'Already Submitted' : 'Submit Work',
+                              style: GoogleFonts.roboto(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.1,
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Wrap(
-                                children: [
-                                  Text(
-                                    'I accept ',
-                                    style: GoogleFonts.roboto(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade800,
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => const TermsAndConditionsScreen(),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      'Terms & Condition',
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 13,
-                                        color: Colors.blue.shade700,
-                                        fontWeight: FontWeight.w600,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    ', ',
-                                    style: GoogleFonts.roboto(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade800,
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => const PrivacyPolicyScreen(),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      'Privacy Policy',
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 13,
-                                        color: Colors.blue.shade700,
-                                        fontWeight: FontWeight.w600,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    '.',
-                                    style: GoogleFonts.roboto(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade800,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (_showValidationErrors && !_acceptedTerms)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 40, top: 3),
-                          child: Row(
-                            children: [
-                              Icon(Icons.error_outline, size: 14, color: Colors.red.shade700),
-                              const SizedBox(width: 3),
-                              Text(
-                                'Please accept Terms & Conditions',
-                                style: GoogleFonts.roboto(
-                                  fontSize: 11,
-                                  color: Colors.red.shade700,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
-                      
-                      const SizedBox(height: 6),
-                      
-                      // Fraud Warning Checkbox
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Transform.scale(
-                            scale: 1.1,
-                            child: Checkbox(
-                              value: _acceptedCondition,
-                              onChanged: (value) => setState(() => _acceptedCondition = value ?? false),
-                              activeColor: Colors.green.shade600,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Text(
-                                'I am aware that fake and fraud submission may lead to account ban!',
-                                style: GoogleFonts.roboto(
-                                  fontSize: 13,
-                                  color: Colors.red.shade700,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (_showValidationErrors && !_acceptedCondition)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 40, top: 3),
-                          child: Row(
-                            children: [
-                              Icon(Icons.error_outline, size: 14, color: Colors.red.shade700),
-                              const SizedBox(width: 3),
-                              Text(
-                                'Please acknowledge the warning',
-                                style: GoogleFonts.roboto(
-                                  fontSize: 11,
-                                  color: Colors.red.shade700,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
                 ),
-                const SizedBox(height: 20),
-                
-                // Submit Button
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    gradient: LinearGradient(
-                      colors: _hasSubmitted
-                          ? [Colors.grey.shade400, Colors.grey.shade500]
-                          : [Colors.green.shade600, Colors.green.shade700],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _hasSubmitted 
-                            ? Colors.grey.withOpacity(0.4)
-                            : Colors.green.withOpacity(0.4),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ElevatedButton(
-                    onPressed: (_isSubmitting || _hasSubmitted) ? null : _submitGig,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      foregroundColor: Colors.white,
-                      shadowColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      disabledBackgroundColor: Colors.transparent,
-                      disabledForegroundColor: Colors.white,
-                    ),
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(5),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.3),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Icon(
-                                  _hasSubmitted ? Icons.check_circle : Icons.check_circle,
-                                  size: 18,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                _hasSubmitted ? 'Already Submitted' : 'Submit Work',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),

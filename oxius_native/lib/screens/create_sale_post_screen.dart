@@ -388,18 +388,22 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       appBar: AppBar(
         title: const Text(
           'Create Sale Post',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+            color: Color(0xFF1F2937),
+          ),
         ),
         backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF111827),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, size: 22),
+          icon: const Icon(Icons.arrow_back_rounded, size: 22, color: Color(0xFF1F2937)),
           onPressed: () => Navigator.pop(context),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: Colors.grey.shade200),
+          child: Container(height: 1, color: const Color(0xFFE5E7EB)),
         ),
       ),
       body: Form(
@@ -407,6 +411,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         child: ListView(
           padding: const EdgeInsets.all(4),
           children: [
+            const SizedBox(height: 4),
             // Basic Details Section
             _buildSection(
               title: 'Basic Details',
@@ -424,12 +429,12 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               ],
             ),
             
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             
             // Pricing & Condition Section
             _buildSection(
               title: 'Pricing & Condition',
-              icon: Icons.attach_money,
+              icon: Icons.attach_money_rounded,
               children: [
                 _buildConditionSelection(),
                 const SizedBox(height: 8),
@@ -437,7 +442,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               ],
             ),
             
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             
             // Upload Photos Section
             _buildSection(
@@ -448,7 +453,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               ],
             ),
             
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             
             // Location Section
             _buildSection(
@@ -461,7 +466,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               ],
             ),
             
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             
             // Contact Information Section
             _buildSection(

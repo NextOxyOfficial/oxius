@@ -367,40 +367,50 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF10B981),
+        backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
           _isEditMode ? 'Edit Post' : 'Create New Post',
           style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
+            color: Color(0xFF1F2937),
+            fontSize: 16,
             fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
           onPressed: () => Navigator.of(context).pop(),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: const Color(0xFFE5E7EB),
+            height: 1,
+          ),
         ),
       ),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                strokeWidth: 2,
               ),
             )
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.all(4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    const SizedBox(height: 4),
                     // Category Selector
                     _buildCategorySelector(),
                     
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 4),
                     
                     // Title Field
                     _buildTextField(
@@ -411,7 +421,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                       maxLength: 100,
                     ),
                     
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 4),
                     
                     // Description Field
                     _buildTextField(
@@ -422,32 +432,32 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                       maxLength: 5000,
                     ),
                     
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 4),
                     
                     // Price Section
                     _buildPriceSection(),
                     
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 4),
                     
                     // Location Selector
                     _buildLocationSelector(),
                     
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 4),
                     
                     // Image Upload Section
                     _buildImageUploadSection(),
                     
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 4),
                     
                     // Privacy Checkbox
                     _buildPrivacyCheckbox(),
                     
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     
                     // Submit Button
                     _buildSubmitButton(),
                     
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                   ],
                 ),
               ),
@@ -456,68 +466,77 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
   }
 
   Widget _buildCategorySelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-              'Category',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF374151),
-              ),
-            ),
-            const Text(
-              ' *',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFD1D5DB)),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
-          child: DropdownButtonFormField<String>(
-            value: _selectedCategoryId,
-            decoration: const InputDecoration(
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              border: InputBorder.none,
-              hintText: 'Select a category',
-              hintStyle: TextStyle(fontSize: 13, color: Color(0xFF9CA3AF)),
-            ),
-            icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF6B7280), size: 20),
-            dropdownColor: Colors.white,
-            items: _categories.map((category) {
-              return DropdownMenuItem<String>(
-                value: category.id,
-                child: Text(
-                  category.title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF111827),
-                  ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text(
+                'Category',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF374151),
                 ),
-              );
-            }).toList(),
-            onChanged: (value) => setState(() => _selectedCategoryId = value),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please select a category';
-              }
-              return null;
-            },
+              ),
+              const Text(
+                ' *',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 6),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: DropdownButtonFormField<String>(
+              value: _selectedCategoryId,
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                border: InputBorder.none,
+                hintText: 'Select a category',
+                hintStyle: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+              ),
+              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF6B7280), size: 18),
+              dropdownColor: Colors.white,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF111827)),
+              items: _categories.map((category) {
+                return DropdownMenuItem<String>(
+                  value: category.id,
+                  child: Text(category.title),
+                );
+              }).toList(),
+              onChanged: (value) => setState(() => _selectedCategoryId = value),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please select a category';
+                }
+                return null;
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -530,74 +549,88 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     int? maxLength,
     TextInputType? keyboardType,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF374151),
-              ),
-            ),
-            if (required)
-              const Text(
-                ' *',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 13,
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
+                  color: Color(0xFF374151),
                 ),
               ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        TextFormField(
-          controller: controller,
-          maxLines: maxLines,
-          maxLength: maxLength,
-          keyboardType: keyboardType,
-          style: const TextStyle(fontSize: 13),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(
-              color: Color(0xFF9CA3AF),
-              fontSize: 13,
-            ),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.5),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            counterStyle: const TextStyle(fontSize: 11),
+              if (required)
+                const Text(
+                  ' *',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
           ),
-          validator: required
-              ? (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'This field is required';
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: controller,
+            maxLines: maxLines,
+            maxLength: maxLength,
+            keyboardType: keyboardType,
+            style: const TextStyle(fontSize: 13),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: const TextStyle(
+                color: Color(0xFF9CA3AF),
+                fontSize: 12,
+              ),
+              filled: true,
+              fillColor: const Color(0xFFF9FAFB),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Colors.red),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              counterStyle: const TextStyle(fontSize: 10),
+            ),
+            validator: required
+                ? (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'This field is required';
+                    }
+                    return null;
                   }
-                  return null;
-                }
-              : null,
-        ),
-      ],
+                : null,
+          ),
+        ],
+      ),
     );
   }
 

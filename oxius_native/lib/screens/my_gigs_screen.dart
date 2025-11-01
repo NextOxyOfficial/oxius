@@ -61,12 +61,19 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   }
   
   void _applyFilter() {
+    print('🔍 Applying filter: $_selectedFilter');
+    print('📊 Total gigs: ${_userGigs.length}');
+    
+    List<Map<String, dynamic>> filtered;
+    
     if (_selectedFilter == 'all') {
-      _filteredGigs = List.from(_userGigs);
+      filtered = List.from(_userGigs);
     } else {
-      _filteredGigs = _userGigs.where((gig) {
+      filtered = _userGigs.where((gig) {
         final gigStatus = gig['gig_status'] ?? '';
         final isActive = gig['active_gig'] ?? false;
+        
+        print('Gig: ${gig['title']}, Status: $gigStatus, Active: $isActive');
         
         switch (_selectedFilter) {
           case 'live':
@@ -84,6 +91,9 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         }
       }).toList();
     }
+    
+    print('✅ Filtered gigs: ${filtered.length}');
+    _filteredGigs = filtered;
   }
   
   Future<void> _handleGigAction(String gigId, String action, bool value) async {
@@ -532,6 +542,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   
   @override
   Widget build(BuildContext context) {
+    print('🔨 Building MyGigsScreen - Filter: $_selectedFilter, Filtered: ${_filteredGigs.length}, Total: ${_userGigs.length}');
     final bool isMobile = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
@@ -687,9 +698,36 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                     ],
                     onChanged: (String? newValue) {
                       if (newValue != null) {
+                        print('🔄 Dropdown changed to: $newValue');
                         setState(() {
                           _selectedFilter = newValue;
-                          _applyFilter();
+                          
+                          // Apply filter inline to ensure state update
+                          if (_selectedFilter == 'all') {
+                            _filteredGigs = List.from(_userGigs);
+                          } else {
+                            _filteredGigs = _userGigs.where((gig) {
+                              final gigStatus = gig['gig_status'] ?? '';
+                              final isActive = gig['active_gig'] ?? false;
+                              
+                              switch (_selectedFilter) {
+                                case 'live':
+                                  return gigStatus == 'approved' && isActive;
+                                case 'paused':
+                                  return gigStatus == 'approved' && !isActive;
+                                case 'pending':
+                                  return gigStatus == 'pending';
+                                case 'completed':
+                                  return gigStatus == 'completed';
+                                case 'rejected':
+                                  return gigStatus == 'rejected';
+                                default:
+                                  return true;
+                              }
+                            }).toList();
+                          }
+                          
+                          print('✅ Filter applied. Showing ${_filteredGigs.length} gigs');
                         });
                       }
                     },
@@ -731,6 +769,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
             )
           else
             ListView.separated(
+              key: ValueKey('gigs_list_${_selectedFilter}_${_filteredGigs.length}'),
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _filteredGigs.length,

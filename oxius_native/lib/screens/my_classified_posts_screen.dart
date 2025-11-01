@@ -180,18 +180,19 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF10B981),
+        backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           'My Posts',
           style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
+            color: Color(0xFF1F2937),
+            fontSize: 16,
             fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
@@ -207,21 +208,28 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                 _loadPosts();
               }
             },
-            icon: const Icon(Icons.add, color: Colors.white, size: 20),
+            icon: const Icon(Icons.add_rounded, color: Color(0xFF10B981), size: 18),
             label: const Text(
-              'Create Post',
+              'Create',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
+                color: Color(0xFF10B981),
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: const Color(0xFFE5E7EB),
+            height: 1,
+          ),
+        ),
       ),
       body: _isLoading
           ? const Center(
@@ -235,23 +243,23 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                   children: [
                     // Stats Bar
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       color: Colors.white,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Total Posts: ${_posts.length}',
+                            'Total: ${_posts.length}',
                             style: const TextStyle(
-                              fontSize: 14,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF111827),
+                              color: Color(0xFF374151),
                             ),
                           ),
                           Text(
                             'Page $_currentPage of $_totalPages',
                             style: const TextStyle(
-                              fontSize: 13,
+                              fontSize: 11,
                               color: Color(0xFF6B7280),
                             ),
                           ),
@@ -265,7 +273,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                         onRefresh: _loadPosts,
                         color: const Color(0xFF10B981),
                         child: ListView.builder(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(4),
                           itemCount: _paginatedPosts.length,
                           itemBuilder: (context, index) {
                             return _buildPostCard(_paginatedPosts[index]);
@@ -338,15 +346,15 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
 
   Widget _buildPostCard(ClassifiedPost post) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -357,7 +365,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
             onTap: () => _handleAction(post, 'view'),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -365,8 +373,8 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      width: 90,
-                      height: 90,
+                      width: 70,
+                      height: 70,
                       color: const Color(0xFFF3F4F6),
                       child: post.medias != null && post.medias!.isNotEmpty
                           ? CachedNetworkImage(
@@ -386,7 +394,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                     ),
                   ),
                   
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   
                   // Details
                   Expanded(
@@ -397,16 +405,17 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                         Text(
                           post.title,
                           style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF111827),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1F2937),
                             height: 1.3,
+                            letterSpacing: -0.1,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 4),
                         
                         // Price and Status Badge Row
                         Row(
@@ -417,9 +426,10 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                             Text(
                               post.displayPrice,
                               style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFF10B981),
+                                letterSpacing: -0.2,
                               ),
                             ),
                             
@@ -428,21 +438,21 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                           ],
                         ),
                         
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 4),
                         
                         // Date
                         Row(
                           children: [
                             const Icon(
-                              Icons.access_time,
-                              size: 13,
+                              Icons.access_time_rounded,
+                              size: 11,
                               color: Color(0xFF6B7280),
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: 3),
                             Text(
                               post.getRelativeTime(),
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 10,
                                 color: Color(0xFF6B7280),
                               ),
                             ),
@@ -454,63 +464,47 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                 ],
               ),
             ),
-          ),
-          
-          // Action Buttons
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
-            ),
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                // View Button
-                Expanded(
-                  child: _buildActionButton(
-                    icon: Icons.visibility_outlined,
-                    label: 'View',
-                    onTap: () => _handleAction(post, 'view'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                
-                // Edit Button
-                if (post.serviceStatus.toLowerCase() != 'completed')
-                  Expanded(
-                    child: _buildActionButton(
-                      icon: Icons.edit_outlined,
-                      label: 'Edit',
-                      onTap: () => _handleAction(post, 'edit'),
-                    ),
-                  ),
-                const SizedBox(width: 8),
-                
-                // Pause/Activate Button
-                if (post.serviceStatus.toLowerCase() != 'completed')
-                  Expanded(
-                    child: _buildActionButton(
-                      icon: post.activeService ? Icons.pause_circle_outline : Icons.play_circle_outline,
-                      label: post.activeService ? 'Pause' : 'Activate',
-                      onTap: () => _handleAction(post, post.activeService ? 'pause' : 'activate'),
-                      color: post.activeService ? Colors.orange : const Color(0xFF10B981),
-                    ),
-                  ),
-                const SizedBox(width: 8),
-                
-                // Complete Button
-                if (post.serviceStatus.toLowerCase() != 'completed')
-                  Expanded(
-                    child: _buildActionButton(
-                      icon: Icons.check_circle_outline,
-                      label: 'Complete',
-                      onTap: () => _handleAction(post, 'complete'),
-                      color: Colors.blue,
-                    ),
-                  ),
-              ],
-            ),
-          ),
+                        
+                        const SizedBox(height: 6),
+                        
+                        // Action Buttons Row
+                        Row(
+                          children: [
+                            _buildActionButton(
+                              icon: Icons.visibility_outlined,
+                              label: 'View',
+                              onTap: () => _handleAction(post, 'view'),
+                            ),
+                            const SizedBox(width: 12),
+                            
+                            if (post.serviceStatus.toLowerCase() != 'completed')
+                              _buildActionButton(
+                                icon: Icons.edit_outlined,
+                                label: 'Edit',
+                                onTap: () => _handleAction(post, 'edit'),
+                              ),
+                            if (post.serviceStatus.toLowerCase() != 'completed')
+                              const SizedBox(width: 12),
+                            
+                            if (post.serviceStatus.toLowerCase() != 'completed')
+                              _buildActionButton(
+                                icon: post.activeService ? Icons.pause_circle_outline : Icons.play_circle_outline,
+                                label: post.activeService ? 'Pause' : 'Activate',
+                                onTap: () => _handleAction(post, post.activeService ? 'pause' : 'activate'),
+                                color: post.activeService ? Colors.orange : const Color(0xFF10B981),
+                              ),
+                            if (post.serviceStatus.toLowerCase() != 'completed')
+                              const SizedBox(width: 12),
+                            
+                            if (post.serviceStatus.toLowerCase() != 'completed')
+                              _buildActionButton(
+                                icon: Icons.check_circle_outline,
+                                label: 'Complete',
+                                onTap: () => _handleAction(post, 'complete'),
+                                color: Colors.blue,
+                              ),
+                          ],
+                        ),
         ],
       ),
     );
@@ -538,7 +532,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
     }
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: badgeColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(4),
@@ -547,8 +541,8 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
       child: Text(
         badgeText,
         style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
           color: badgeColor,
         ),
       ),
@@ -564,16 +558,13 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(color: color.withOpacity(0.3)),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Column(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(height: 2),
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 4),
             Text(
               label,
               style: TextStyle(
@@ -590,7 +581,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
 
   Widget _buildPagination() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -603,21 +594,21 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF10B981),
               side: const BorderSide(color: Color(0xFFE5E7EB)),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
               ),
             ),
-            child: const Text('Previous'),
+            child: const Text('Previous', style: TextStyle(fontSize: 12)),
           ),
           
           // Page Numbers
           Text(
             'Page $_currentPage of $_totalPages',
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF111827),
+              color: Color(0xFF374151),
             ),
           ),
           
@@ -629,12 +620,12 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF10B981),
               side: const BorderSide(color: Color(0xFFE5E7EB)),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(6),
               ),
             ),
-            child: const Text('Next'),
+            child: const Text('Next', style: TextStyle(fontSize: 12)),
           ),
         ],
       ),
