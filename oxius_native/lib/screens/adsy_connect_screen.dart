@@ -109,26 +109,36 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   }
 
   List<Map<String, dynamic>> _parseChatRooms(List<dynamic> chatRooms) {
-    return chatRooms.map((room) {
-      final otherUser = room['other_user'] ?? {};
-      final lastMessage = room['last_message'];
-      
-      return {
-        'id': room['id'],
-        'userId': otherUser['id']?.toString() ?? '',
-        'userName': _getFullName(otherUser),
-        'userAvatar': otherUser['avatar'],
-        'profession': otherUser['profession'] ?? '',
-        'lastMessage': lastMessage?['content'] ?? room['last_message_preview'] ?? '',
-        'timestamp': lastMessage?['created_at'] != null 
-            ? DateTime.parse(lastMessage['created_at'])
-            : DateTime.parse(room['last_message_at'] ?? DateTime.now().toIso8601String()),
-        'unreadCount': room['unread_count'] ?? 0,
-        'isOnline': otherUser['is_online'] ?? false,
-        'isTyping': false,
-        'isVerified': otherUser['is_verified'] ?? false,
-      };
-    }).toList();
+    return chatRooms
+        .where((room) {
+          // Filter out chats with no messages
+          final lastMessage = room['last_message'];
+          final lastMessagePreview = room['last_message_preview'];
+          
+          // Only include chats that have at least one message
+          return (lastMessage != null && lastMessage['content'] != null && lastMessage['content'].toString().isNotEmpty) ||
+                 (lastMessagePreview != null && lastMessagePreview.toString().isNotEmpty);
+        })
+        .map((room) {
+          final otherUser = room['other_user'] ?? {};
+          final lastMessage = room['last_message'];
+          
+          return {
+            'id': room['id'],
+            'userId': otherUser['id']?.toString() ?? '',
+            'userName': _getFullName(otherUser),
+            'userAvatar': otherUser['avatar'],
+            'profession': otherUser['profession'] ?? '',
+            'lastMessage': lastMessage?['content'] ?? room['last_message_preview'] ?? '',
+            'timestamp': lastMessage?['created_at'] != null 
+                ? DateTime.parse(lastMessage['created_at'])
+                : DateTime.parse(room['last_message_at'] ?? DateTime.now().toIso8601String()),
+            'unreadCount': room['unread_count'] ?? 0,
+            'isOnline': otherUser['is_online'] ?? false,
+            'isTyping': false,
+            'isVerified': otherUser['is_verified'] ?? false,
+          };
+        }).toList();
   }
 
   String _getFullName(Map<String, dynamic> user) {
