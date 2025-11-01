@@ -240,15 +240,42 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     setState(() => _isLoadingStoreProducts = true);
     
     try {
-      // Fetch products from the same store/owner
-      final products = await EshopService.fetchEshopProducts(page: 1, pageSize: 10);
+      // Get store username from owner_details
+      final ownerDetails = widget.product['owner_details'];
+      String? storeUsername;
+      
+      if (ownerDetails is Map<String, dynamic>) {
+        storeUsername = ownerDetails['username']?.toString();
+      }
+      
+      if (storeUsername == null || storeUsername.isEmpty) {
+        print('Error: No store username found in product owner_details');
+        setState(() {
+          _storeProducts = [];
+          _isLoadingStoreProducts = false;
+        });
+        return;
+      }
+      
+      // Fetch products from the same store
+      final products = await EshopService.fetchStoreProducts(
+        storeUsername: storeUsername,
+        page: 1,
+        pageSize: 10,
+      );
       
       setState(() {
         // Filter out current product
-        _storeProducts = products.where((p) => p['id'] != widget.product['id']).take(6).toList();
+        final filteredProducts = products.where((p) => p['id'] != widget.product['id']).toList();
+        
+        // Only show section if store has at least 2 products (excluding current)
+        _storeProducts = filteredProducts.length >= 1 ? filteredProducts.take(6).toList() : [];
       });
     } catch (e) {
       print('Error loading store products: $e');
+      setState(() {
+        _storeProducts = [];
+      });
     } finally {
       setState(() => _isLoadingStoreProducts = false);
     }
@@ -1646,9 +1673,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             padding: EdgeInsets.zero,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.59,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+              childAspectRatio: 0.57,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
             ),
             itemCount: _similarProducts.length + (_isLoadingMoreSimilarProducts ? 2 : 0),
             itemBuilder: (context, index) {
@@ -1804,12 +1831,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             height: 275,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 0),
               itemCount: _storeProducts.length,
               separatorBuilder: (_, __) => const SizedBox(width: 4),
               itemBuilder: (context, index) {
                 return SizedBox(
-                  width: 160,
+                  width: 150,
                   child: ProductCard(
                     product: _storeProducts[index],
                     isLoading: false,

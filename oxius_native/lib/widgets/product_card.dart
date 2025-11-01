@@ -391,12 +391,16 @@ class _ProductCardState extends State<ProductCard> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(Icons.shopping_cart_outlined, size: iconSize),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Buy Now',
-                                    style: GoogleFonts.roboto(
-                                      fontSize: textSize,
-                                      fontWeight: FontWeight.w600,
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      'Buy Now',
+                                      style: GoogleFonts.roboto(
+                                        fontSize: textSize,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
                                 ],

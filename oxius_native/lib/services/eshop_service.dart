@@ -516,6 +516,63 @@ class EshopService {
     }
   }
 
+  // Fetch products from a specific store by username
+  static Future<List<Map<String, dynamic>>> fetchStoreProducts({
+    required String storeUsername,
+    int page = 1,
+    int pageSize = 12,
+  }) async {
+    try {
+      final Map<String, String> queryParams = {
+        'page': page.toString(),
+        'page_size': pageSize.toString(),
+      };
+
+      final uri = Uri.parse('$baseUrl/store/$storeUsername/products/').replace(queryParameters: queryParams);
+      print('EshopService: Fetching store products from: $uri');
+      
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      print('EshopService: Store products response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        List<Map<String, dynamic>> _normalize(List list) {
+          return List<Map<String, dynamic>>.from(list.map((e) {
+            final m = Map<String, dynamic>.from(e);
+            return _transformProduct(m);
+          }));
+        }
+
+        if (data is Map && data['results'] is List) {
+          final products = _normalize(data['results']);
+          print('EshopService: Successfully fetched ${products.length} products from store $storeUsername');
+          return products;
+        } else if (data is List) {
+          final products = _normalize(data);
+          print('EshopService: Successfully fetched ${products.length} products from store $storeUsername (direct array)');
+          return products;
+        }
+      }
+      
+      print('EshopService: Failed to fetch store products. Status: ${response.statusCode}');
+      print('EshopService: Response body: ${response.body}');
+      
+      return [];
+    } catch (e, stackTrace) {
+      print('EshopService: Error fetching store products: $e');
+      print('EshopService: Stack trace: $stackTrace');
+      return [];
+    }
+  }
+
   // Get eShop logo (different from main logo)
   static Future<String?> getEshopLogo() async {
     try {
