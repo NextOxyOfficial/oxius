@@ -571,8 +571,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                           // Dynamic eShop Logo only
                           _eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty
                             ? SizedBox(
-                                width: 50,
-                                height: 26,
+                                width: 110,
+                                height: 46,
                                 child: Image.network(
                                   _eshopLogoUrl!,
                                   fit: BoxFit.contain,
@@ -999,7 +999,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 padding: EdgeInsets.zero,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.60,
+                  childAspectRatio: 0.57,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
                 ),
