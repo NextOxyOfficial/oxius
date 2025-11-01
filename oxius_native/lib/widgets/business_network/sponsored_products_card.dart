@@ -12,27 +12,17 @@ class SponsoredProductsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 768;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+    final isSmallScreen = screenWidth < 360;
     final displayProducts = isMobile ? products.take(2).toList() : products.take(3).toList();
 
     if (displayProducts.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -74,7 +64,8 @@ class SponsoredProductsCard extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: isMobile ? 2 : 3,
-              childAspectRatio: 0.61,
+              // Responsive aspect ratio: increased to prevent overflow
+              childAspectRatio: isSmallScreen ? 0.52 : isMobile ? 0.56 : 0.58,
               crossAxisSpacing: 4,
               mainAxisSpacing: 4,
             ),

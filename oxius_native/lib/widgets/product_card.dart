@@ -220,12 +220,12 @@ class _ProductCardState extends State<ProductCard> {
             ),
 
               // Details - Reduced padding for more compact layout
-              Flexible(
+              Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 3),
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 6),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: MainAxisSize.max,
                     children: [
                     // Wrap product info in InkWell (price, title, store)
                     InkWell(
@@ -356,12 +356,12 @@ class _ProductCardState extends State<ProductCard> {
                     ),
                     // End of product info InkWell
 
+                    // Push button to bottom
+                    const Spacer(),
+
                     // Full Width Buy Now Button
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: SizedBox(
+                    SizedBox(
                         width: double.infinity,
-                        height: buttonHeight,
                         child: ElevatedButton(
                         onPressed: widget.isLoading ? null : widget.onBuyNow,
                         style: ElevatedButton.styleFrom(
@@ -371,7 +371,11 @@ class _ProductCardState extends State<ProductCard> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 6 : 8),
+                          padding: EdgeInsets.symmetric(
+                            vertical: isSmallScreen ? 8 : 10,
+                            horizontal: 8,
+                          ),
+                          minimumSize: Size(double.infinity, buttonHeight),
                         ),
                         child: widget.isLoading
                             ? SizedBox(
@@ -398,12 +402,11 @@ class _ProductCardState extends State<ProductCard> {
                                 ],
                               ),
                       ),
-                    ),
-                    ), // End Buy Now Button Padding
+                    ), // End Buy Now Button
                   ], // End Column children (details column)
                 ), // End Column
               ), // End Padding
-            ), // End Flexible
+            ), // End Expanded
           ], // End Column children (main column)
         ), // End Column
       ), // End Container
