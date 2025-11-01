@@ -458,12 +458,6 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
                         
                         const SizedBox(height: 6),
                         
@@ -505,6 +499,13 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                               ),
                           ],
                         ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
