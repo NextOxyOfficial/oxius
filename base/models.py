@@ -700,6 +700,7 @@ class Balance(models.Model):
             self.to_user.save()
             self.completed = True
             self.approved = True
+            self.bank_status = "completed"  # Mark as completed for instant transfer
 
             # Create notifications for both sender and receiver
             try:
@@ -759,6 +760,7 @@ class Balance(models.Model):
             self.user.balance += self.payable_amount
             self.completed = True
             self.approved = True
+            self.bank_status = "completed"  # Mark as completed for instant deposit
             self.user.save()
 
             # Create notification for successful deposit

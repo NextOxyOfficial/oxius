@@ -228,10 +228,62 @@ class _TransferTabState extends State<TransferTab> {
     );
 
     if (result != null && result.isNotEmpty) {
-      setState(() {
-        _contactController.text = result;
-      });
-      _validateContact();
+      // If result is a user ID (from QR code), fetch user's email
+      // Backend expects email or phone, not user ID
+      if (int.tryParse(result) != null) {
+        // It's a user ID, fetch user details
+        setState(() => _isLoading = true);
+        try {
+          final userData = await WalletService.getUserById(result);
+          if (userData != null) {
+            // Prefer email, fallback to phone
+            final contact = userData['email'] ?? userData['phone'];
+            if (contact != null && contact.toString().isNotEmpty) {
+              setState(() {
+                _contactController.text = contact.toString();
+                _isLoading = false;
+              });
+              _validateContact();
+            } else {
+              setState(() => _isLoading = false);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('User has no email or phone number'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          } else {
+            setState(() => _isLoading = false);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('User not found. Please try again.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        } catch (e) {
+          setState(() => _isLoading = false);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } else {
+        // It's already an email or phone
+        setState(() {
+          _contactController.text = result;
+        });
+        _validateContact();
+      }
     }
   }
 

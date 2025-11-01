@@ -3,7 +3,7 @@ import json
 import random
 import re
 import uuid
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from random import shuffle
 
 import requests
@@ -372,12 +372,13 @@ class PersonRetrieveView(generics.RetrieveAPIView):
             # Email lookup
             filter_kwargs = {"email": lookup_value}
             lookup_type = "email"
-        elif str(lookup_value).isdigit() and len(str(lookup_value)) >= 10:
-            # Phone lookup - assuming phone numbers are at least 10 digits
+        elif str(lookup_value).replace("+", "").replace("-", "").replace(" ", "").isdigit():
+            # Phone lookup - check if it's a phone number (with or without +, -, spaces)
+            # This handles formats like: +8801711111004, 8801711111004, +880-171-111-1004, etc.
             filter_kwargs = {"phone": lookup_value}
             lookup_type = "phone"
         else:
-            # ID lookup
+            # ID lookup (UUID or integer)
             filter_kwargs = {"id": lookup_value}
             lookup_type = "ID"
 
@@ -1173,82 +1174,136 @@ class UserBalance(generics.ListCreateAPIView):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def postBalance(request):
-    # Add the user ID (pk) to the incoming data
+    """
+    Handle balance operations: deposit, withdraw, transfer
+    """
     data = request.data.copy()
     data["user"] = request.user.id
-    print(data)
-    to_user = None
-    data["payable_amount"] = Decimal(data["payable_amount"]).quantize(
-        # Check minimum deposit amount for deposit transactions
-        Decimal("0.01")
-    )
-    if data.get("transaction_type", "").lower() == "deposit":
-        if data["payable_amount"] < Decimal("100.00"):
+    transaction_type = data.get("transaction_type", "").lower()
+    
+    # Validate and parse amount
+    try:
+        data["payable_amount"] = Decimal(str(data.get("payable_amount", 0))).quantize(Decimal("0.01"))
+    except (ValueError, TypeError, InvalidOperation):
+        return Response(
+            {"error": "Invalid amount format"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    
+    amount = data["payable_amount"]
+    
+    # === TRANSFER VALIDATION ===
+    if transaction_type == "transfer":
+        # 1. Check contact field
+        contact = data.get("contact", "").strip()
+        if not contact:
             return Response(
-                {"error": "Minimum deposit amount is ৳100.00"},
+                {"error": "Contact (email or phone) is required for transfer"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-    # Check minimum withdrawal amount for withdrawal transactions
-    if data.get("transaction_type", "").lower() == "withdraw":
-        if data["payable_amount"] < Decimal("200.00"):
-            return Response(
-                {"error": "Minimum withdrawal amount is ৳200.00"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-    # Check minimum transfer amount for transfer transactions
-    if data.get("transaction_type", "").lower() == "transfer":
-        if data["payable_amount"] < Decimal("50.00"):
+        
+        # 2. Check minimum transfer amount
+        if amount < Decimal("50.00"):
             return Response(
                 {"error": "Minimum transfer amount is ৳50.00"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-    # Map 'selected' to 'payment_method' for withdraw/deposit
-    if "selected" in data:
-        data["payment_method"] = data["selected"]
-        del data["selected"]
-        print(f"Mapped payment_method: {data.get('payment_method')}")
-    
-    # Map 'payment_number' to 'card_number' for withdraw
-    if "payment_number" in data and data.get("transaction_type", "").lower() == "withdraw":
-        data["card_number"] = data["payment_number"]
-        print(f"Mapped card_number: {data.get('card_number')}")
-
-    # Check if 'merchant_invoice_no' exists in the data
-    if "merchant_invoice_no" in data:
-        # Check if Balance with the given merchant_invoice_no exists
-        if Balance.objects.filter(
-            merchant_invoice_no=data["merchant_invoice_no"]
-        ).exists():
+        
+        # 3. Check maximum transfer amount
+        if amount > Decimal("25000.00"):
             return Response(
-                {"error": "Balance with this merchant invoice number already exists."},
+                {"error": "Maximum single transfer limit is ৳25,000.00"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-    # else:
-    #     # Return an error if 'merchant_invoice_no' is missing
-    #     return Response(
-    #         {"error": "The 'merchant_invoice_no' field is required."},
-    #         status=status.HTTP_400_BAD_REQUEST
-    #     )      # Proceed with the operations if 'merchant_invoice_no' is valid
-    if "contact" in data and data["contact"]:
-        to_user = User.objects.get(Q(email=data["contact"]) | Q(phone=data["contact"]))
+        
+        # 4. Check sender balance
+        if request.user.balance < amount:
+            return Response(
+                {"error": "Insufficient balance"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        # 5. Check self-transfer
+        if contact == request.user.email or contact == request.user.phone:
+            return Response(
+                {"error": "You cannot transfer money to yourself"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        # 6. Find recipient user
+        try:
+            to_user = User.objects.get(Q(email=contact) | Q(phone=contact))
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Recipient user not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except User.MultipleObjectsReturned:
+            return Response(
+                {"error": "Multiple users found with this contact"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        # Remove contact from data (not a model field)
         del data["contact"]
-
-    print(f"Final data before serialization: {data}")
+        
+        # Set payment method for transfer
+        data["payment_method"] = "p2p"
+    
+    # === DEPOSIT VALIDATION ===
+    elif transaction_type == "deposit":
+        if amount < Decimal("100.00"):
+            return Response(
+                {"error": "Minimum deposit amount is ৳100.00"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    
+    # === WITHDRAW VALIDATION ===
+    elif transaction_type == "withdraw":
+        if amount < Decimal("200.00"):
+            return Response(
+                {"error": "Minimum withdrawal amount is ৳200.00"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        # Check balance
+        if request.user.balance < amount:
+            return Response(
+                {"error": "Insufficient balance"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        # Map 'selected' to 'payment_method'
+        if "selected" in data:
+            data["payment_method"] = data["selected"]
+            del data["selected"]
+        
+        # Map 'payment_number' to 'card_number'
+        if "payment_number" in data:
+            data["card_number"] = data["payment_number"]
+    
+    # Check duplicate merchant invoice
+    if "merchant_invoice_no" in data and data["merchant_invoice_no"]:
+        if Balance.objects.filter(merchant_invoice_no=data["merchant_invoice_no"]).exists():
+            return Response(
+                {"error": "Transaction with this invoice number already exists"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+    
+    # Serialize and save
     serializer = BalanceSerializer(data=data)
-
+    
     if serializer.is_valid():
-        # Save the new Balance instance
-        new_b = serializer.save(user=request.user)
-        if to_user:
-            new_b.to_user = to_user
-            new_b.save()
-
+        # Create transaction
+        transaction = serializer.save(user=request.user)
+        
+        # Set recipient for transfer
+        if transaction_type == "transfer" and 'to_user' in locals():
+            transaction.to_user = to_user
+            transaction.save()  # This triggers the Balance.save() method which handles the transfer
+        
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # Print errors if validation fails
-    print(serializer.errors)
+    
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

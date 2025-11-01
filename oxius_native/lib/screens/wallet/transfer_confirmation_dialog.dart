@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
-import '../../services/business_network_service.dart';
+import '../../services/api_service.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class TransferConfirmationDialog extends StatefulWidget {
   final String contact;
@@ -42,17 +44,57 @@ class _TransferConfirmationDialogState
 
   Future<void> _fetchRecipientName() async {
     try {
-      final user = await BusinessNetworkService.getUserByContact(widget.contact);
-      if (mounted) {
-        setState(() {
-          _recipientName = user?.name ?? widget.contact;
-          _isLoadingRecipient = false;
-        });
+      print('🔍 Fetching recipient for contact: ${widget.contact}');
+      
+      // Use the proper /user/{contact}/ endpoint
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse('${ApiService.baseUrl}/user/${widget.contact}/'),
+        headers: headers,
+      );
+
+      print('📡 Response status: ${response.statusCode}');
+      print('📦 Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (mounted) {
+          setState(() {
+            // Try to get full name, fallback to name field
+            final firstName = (data['first_name'] ?? '').toString().trim();
+            final lastName = (data['last_name'] ?? '').toString().trim();
+            final name = (data['name'] ?? '').toString().trim();
+            
+            String displayName = '';
+            
+            // Priority: first_name + last_name > name > contact
+            if (firstName.isNotEmpty || lastName.isNotEmpty) {
+              displayName = '$firstName $lastName'.trim();
+            } else if (name.isNotEmpty) {
+              displayName = name;
+            }
+            
+            _recipientName = displayName.isNotEmpty ? displayName : null;
+            _isLoadingRecipient = false;
+            
+            print('✅ Recipient name set to: $_recipientName');
+          });
+        }
+      } else {
+        print('❌ User not found: ${response.statusCode}');
+        // User not found, keep name as null
+        if (mounted) {
+          setState(() {
+            _recipientName = null;
+            _isLoadingRecipient = false;
+          });
+        }
       }
     } catch (e) {
+      print('❌ Error fetching recipient: $e');
       if (mounted) {
         setState(() {
-          _recipientName = widget.contact;
+          _recipientName = null;
           _isLoadingRecipient = false;
         });
       }
@@ -428,7 +470,8 @@ class _TransferConfirmationDialogState
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (_recipientName != null && _recipientName != widget.contact)
+                        // Show recipient name if available
+                        if (_recipientName != null && _recipientName!.isNotEmpty)
                           Text(
                             _recipientName!,
                             style: const TextStyle(
@@ -438,15 +481,16 @@ class _TransferConfirmationDialogState
                               letterSpacing: -0.2,
                             ),
                           ),
-                        if (_recipientName != null && _recipientName != widget.contact)
+                        if (_recipientName != null && _recipientName!.isNotEmpty)
                           const SizedBox(height: 4),
+                        // Always show contact (email/phone)
                         Text(
                           widget.contact,
                           style: TextStyle(
-                            fontSize: _recipientName != null && _recipientName != widget.contact ? 12 : 15,
-                            fontWeight: _recipientName != null && _recipientName != widget.contact ? FontWeight.w400 : FontWeight.w600,
-                            color: _recipientName != null && _recipientName != widget.contact ? Colors.grey[600] : const Color(0xFF1F2937),
-                            letterSpacing: _recipientName != null && _recipientName != widget.contact ? 0 : -0.2,
+                            fontSize: _recipientName != null && _recipientName!.isNotEmpty ? 12 : 15,
+                            fontWeight: _recipientName != null && _recipientName!.isNotEmpty ? FontWeight.w400 : FontWeight.w600,
+                            color: _recipientName != null && _recipientName!.isNotEmpty ? Colors.grey[600] : const Color(0xFF1F2937),
+                            letterSpacing: _recipientName != null && _recipientName!.isNotEmpty ? 0 : -0.2,
                           ),
                         ),
                       ],

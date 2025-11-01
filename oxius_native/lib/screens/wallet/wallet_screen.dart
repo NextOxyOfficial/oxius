@@ -61,6 +61,10 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Future<void> _loadBalance() async {
     setState(() => _isLoadingBalance = true);
+    
+    // Always refresh user data first to get latest balance
+    await AuthService.refreshUserData();
+    
     final balance = await WalletService.getBalance();
     if (mounted) {
       setState(() {
@@ -83,6 +87,14 @@ class _WalletScreenState extends State<WalletScreen> {
         _isLoadingTransactions = false;
       });
     }
+  }
+
+  Future<void> _refreshAll() async {
+    // Refresh both balance and transactions
+    await Future.wait([
+      _loadBalance(),
+      _loadTransactions(),
+    ]);
   }
 
   @override
@@ -115,9 +127,13 @@ class _WalletScreenState extends State<WalletScreen> {
         foregroundColor: Colors.black,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
+      body: RefreshIndicator(
+        onRefresh: _refreshAll,
+        color: const Color(0xFF10B981),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
             // Balance Cards Section - Using Homepage Component
             AccountBalanceSection(key: _balanceKey),
 
@@ -265,7 +281,8 @@ class _WalletScreenState extends State<WalletScreen> {
                   ],
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );

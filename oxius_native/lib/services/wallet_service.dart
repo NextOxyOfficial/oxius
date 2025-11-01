@@ -63,6 +63,20 @@ class WalletService {
                 : (pendingValue as num).toDouble();
             }
           }
+        } else {
+          // No transactions exist - refresh user data and get balance from currentUser
+          // This handles users added via scripts who have no transaction history
+          await AuthService.refreshUserData();
+          final refreshedUser = AuthService.currentUser;
+          
+          if (refreshedUser != null) {
+            if (refreshedUser.balance != null) {
+              actualBalance = refreshedUser.balance!;
+            }
+            if (refreshedUser.pendingBalance != null) {
+              pendingBalance = refreshedUser.pendingBalance!;
+            }
+          }
         }
         
         // Collect pending transactions for display (not for balance calculation)
@@ -304,6 +318,33 @@ class WalletService {
   /// Calculate total withdrawal amount including charges
   static double calculateWithdrawalTotal(double amount) {
     return amount + (amount * withdrawalChargePercent / 100);
+  }
+
+  /// Get user details by ID (for QR code transfers)
+  static Future<Map<String, dynamic>?> getUserById(String userId) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/user/$userId/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('User not found');
+      }
+    } catch (e) {
+      print('Error getting user by ID: $e');
+      rethrow;
+    }
   }
 
   /// Get available payment methods
