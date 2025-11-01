@@ -15,6 +15,7 @@ class Transaction {
   final String? recipientPhone;
   final DateTime createdAt;
   final String? note;
+  final String? description; // Product name or transaction description
 
   Transaction({
     required this.id,
@@ -33,6 +34,7 @@ class Transaction {
     this.recipientPhone,
     required this.createdAt,
     this.note,
+    this.description,
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
@@ -60,15 +62,30 @@ class Transaction {
     }
     
     // Parse amount - backend may return as string or number
-    // Prioritize payable_amount for withdraw/deposit transactions
+    // For order_payment and some other transactions, amount might be in 'amount' field
+    // For withdraw/deposit, it's usually in 'payable_amount'
     double amount = 0.0;
-    final amountValue = json['payable_amount'] ?? json['amount'];
-    if (amountValue != null) {
-      amount = amountValue is String 
-        ? double.parse(amountValue) 
-        : (amountValue as num).toDouble();
-      // Use absolute value to always show positive amounts
-      amount = amount.abs();
+    
+    // Try payable_amount first
+    final payableAmountValue = json['payable_amount'];
+    if (payableAmountValue != null) {
+      final payableAmount = payableAmountValue is String 
+        ? double.parse(payableAmountValue) 
+        : (payableAmountValue as num).toDouble();
+      if (payableAmount != 0.0) {
+        amount = payableAmount.abs();
+      }
+    }
+    
+    // If payable_amount is 0 or null, try amount field
+    if (amount == 0.0) {
+      final amountValue = json['amount'];
+      if (amountValue != null) {
+        amount = amountValue is String 
+          ? double.parse(amountValue) 
+          : (amountValue as num).toDouble();
+        amount = amount.abs();
+      }
     }
     
     return Transaction(
@@ -87,7 +104,8 @@ class Transaction {
       recipientName: recipientName,
       recipientPhone: toUserDetails?['phone'],
       createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-      note: json['note'] ?? json['description'],
+      note: json['note'],
+      description: json['description'],
     );
   }
 

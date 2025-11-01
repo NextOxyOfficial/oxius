@@ -230,6 +230,7 @@ class WalletService {
   static Future<List<Transaction>> getTransactions({
     String? type, // deposit, withdraw, transfer
     String? status, // completed, pending, rejected
+    int page = 1,
   }) async {
     try {
       final token = await AuthService.getValidToken();
@@ -244,7 +245,7 @@ class WalletService {
 
       // Use the same endpoint as getBalance to get user's transactions
       final response = await http.get(
-        Uri.parse('$baseUrl/user-balance/${user.email}/'),
+        Uri.parse('$baseUrl/user-balance/${user.email}/?page=$page'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -288,7 +289,7 @@ class WalletService {
   }
 
   /// Get received transfers
-  static Future<List<Transaction>> getReceivedTransfers() async {
+  static Future<List<Transaction>> getReceivedTransfers({int page = 1}) async {
     try {
       final token = await AuthService.getValidToken();
       if (token == null) {
@@ -296,7 +297,7 @@ class WalletService {
       }
 
       final response = await http.get(
-        Uri.parse('$baseUrl/received-transfers/'),
+        Uri.parse('$baseUrl/received-transfers/?page=$page'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',

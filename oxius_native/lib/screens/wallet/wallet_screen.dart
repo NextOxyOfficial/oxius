@@ -26,6 +26,16 @@ class _WalletScreenState extends State<WalletScreen> {
   List<Transaction> _sentTransactions = [];
   List<Transaction> _receivedTransactions = [];
   bool _isLoadingTransactions = true;
+  
+  // Pagination
+  int _sentPage = 1;
+  int _receivedPage = 1;
+  bool _hasMoreSent = true;
+  bool _hasMoreReceived = true;
+  bool _isLoadingMoreSent = false;
+  bool _isLoadingMoreReceived = false;
+  final ScrollController _transactionScrollController = ScrollController();
+  
   final UserStateService _userState = UserStateService();
   final TranslationService _translationService = TranslationService();
   final GlobalKey<AccountBalanceSectionState> _balanceKey = GlobalKey();
@@ -38,6 +48,26 @@ class _WalletScreenState extends State<WalletScreen> {
     _checkAuthentication();
     _loadBalance();
     _loadTransactions();
+    
+    // Add scroll listener for pagination
+    _transactionScrollController.addListener(_onTransactionScroll);
+  }
+  
+  void _onTransactionScroll() {
+    if (_transactionScrollController.position.pixels >= 
+        _transactionScrollController.position.maxScrollExtent - 200) {
+      if (_transactionTab == 'sent' && !_isLoadingMoreSent && _hasMoreSent) {
+        _loadMoreSentTransactions();
+      } else if (_transactionTab == 'received' && !_isLoadingMoreReceived && _hasMoreReceived) {
+        _loadMoreReceivedTransactions();
+      }
+    }
+  }
+  
+  @override
+  void dispose() {
+    _transactionScrollController.dispose();
+    super.dispose();
   }
 
   void _checkAuthentication() {
@@ -77,14 +107,62 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Future<void> _loadTransactions() async {
-    setState(() => _isLoadingTransactions = true);
-    final sent = await WalletService.getTransactions();
-    final received = await WalletService.getReceivedTransfers();
+    setState(() {
+      _isLoadingTransactions = true;
+      _sentPage = 1;
+      _receivedPage = 1;
+      _sentTransactions = [];
+      _receivedTransactions = [];
+    });
+    
+    final sent = await WalletService.getTransactions(page: _sentPage);
+    final received = await WalletService.getReceivedTransfers(page: _receivedPage);
+    
     if (mounted) {
       setState(() {
         _sentTransactions = sent;
         _receivedTransactions = received;
+        _hasMoreSent = sent.length >= 10; // Assume 10 items per page
+        _hasMoreReceived = received.length >= 10;
         _isLoadingTransactions = false;
+      });
+    }
+  }
+  
+  Future<void> _loadMoreSentTransactions() async {
+    if (_isLoadingMoreSent || !_hasMoreSent) return;
+    
+    setState(() {
+      _isLoadingMoreSent = true;
+      _sentPage++;
+    });
+    
+    final moreSent = await WalletService.getTransactions(page: _sentPage);
+    
+    if (mounted) {
+      setState(() {
+        _sentTransactions.addAll(moreSent);
+        _hasMoreSent = moreSent.length >= 10;
+        _isLoadingMoreSent = false;
+      });
+    }
+  }
+  
+  Future<void> _loadMoreReceivedTransactions() async {
+    if (_isLoadingMoreReceived || !_hasMoreReceived) return;
+    
+    setState(() {
+      _isLoadingMoreReceived = true;
+      _receivedPage++;
+    });
+    
+    final moreReceived = await WalletService.getReceivedTransfers(page: _receivedPage);
+    
+    if (mounted) {
+      setState(() {
+        _receivedTransactions.addAll(moreReceived);
+        _hasMoreReceived = moreReceived.length >= 10;
+        _isLoadingMoreReceived = false;
       });
     }
   }
@@ -214,46 +292,47 @@ class _WalletScreenState extends State<WalletScreen> {
 
             // Transaction History Section (Always show)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(6),
+                          padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
                             color: const Color(0xFF10B981).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: const Icon(
-                            Icons.history,
-                            size: 16,
+                            Icons.history_rounded,
+                            size: 14,
                             color: Color(0xFF10B981),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         Text(
                           t('transaction_history'),
                           style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
                             color: Color(0xFF1E293B),
+                            letterSpacing: -0.2,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
                     // Transaction Type Toggle
                     Container(
-                      padding: const EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: Colors.grey.shade200),
                       ),
                       child: Row(
@@ -267,7 +346,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
 
                     // Transaction List
                     _isLoadingTransactions
@@ -463,18 +542,19 @@ class _WalletScreenState extends State<WalletScreen> {
     return GestureDetector(
       onTap: () => setState(() => _transactionTab = value),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF10B981) : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(5),
         ),
         child: Text(
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.white : Colors.grey[700],
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: isSelected ? Colors.white : Colors.grey[600],
+            letterSpacing: -0.1,
           ),
         ),
       ),
@@ -487,16 +567,17 @@ class _WalletScreenState extends State<WalletScreen> {
     if (transactions.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              Icon(Icons.receipt_long, size: 48, color: Colors.grey[300]),
-              const SizedBox(height: 12),
+              Icon(Icons.receipt_long, size: 40, color: Colors.grey[300]),
+              const SizedBox(height: 8),
               Text(
                 'No ${_transactionTab} transactions',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -505,12 +586,64 @@ class _WalletScreenState extends State<WalletScreen> {
       );
     }
 
-    return ListView.separated(
+    final isLoadingMore = _transactionTab == 'sent' ? _isLoadingMoreSent : _isLoadingMoreReceived;
+    
+    return ListView.builder(
+      controller: _transactionScrollController,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: transactions.length > 10 ? 10 : transactions.length,
-      separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey.shade200),
+      itemCount: transactions.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        // Show loading skeleton at bottom
+        if (index == transactions.length) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200, width: 1),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 150,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        
         final txn = transactions[index];
         final color = _getTransactionColor(txn.transactionType);
         final icon = _getTransactionIcon(txn.transactionType);
@@ -518,21 +651,33 @@ class _WalletScreenState extends State<WalletScreen> {
         return InkWell(
           onTap: () => _showTransactionDetails(txn),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-            color: Colors.white,
+            margin: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
             child: Row(
               children: [
                 // Icon
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(icon, color: color, size: 20),
+                  child: Icon(icon, color: color, size: 18),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 // Details
                 Expanded(
                   child: Column(
@@ -540,51 +685,79 @@ class _WalletScreenState extends State<WalletScreen> {
                     children: [
                       Row(
                         children: [
-                          Expanded(
-                            child: Text(
-                              _getTransactionTypeName(txn.transactionType),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                              ),
+                          Text(
+                            _getTransactionTypeName(txn.transactionType),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                              letterSpacing: -0.1,
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 4),
                           _buildStatusBadge(txn.displayStatus),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       if (txn.senderName != null && _transactionTab == 'received')
-                        Text(
-                          'From: ${txn.senderName}',
-                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Text(
+                            'From: ${txn.senderName}',
+                            style: TextStyle(fontSize: 10, color: Colors.grey[600], letterSpacing: -0.1),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       if (txn.recipientName != null && _transactionTab == 'sent')
-                        Text(
-                          'To: ${txn.recipientName}',
-                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Text(
+                            'To: ${txn.recipientName}',
+                            style: TextStyle(fontSize: 10, color: Colors.grey[600], letterSpacing: -0.1),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      if (txn.paymentMethod != null)
-                        Text(
-                          txn.paymentMethod!,
-                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                        ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} ${txn.createdAt.hour}:${txn.createdAt.minute.toString().padLeft(2, '0')}',
-                        style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                      Row(
+                        children: [
+                          Icon(Icons.access_time, size: 9, color: Colors.grey[400]),
+                          const SizedBox(width: 3),
+                          Text(
+                            '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} ${txn.createdAt.hour}:${txn.createdAt.minute.toString().padLeft(2, '0')}',
+                            style: TextStyle(fontSize: 9, color: Colors.grey[500], letterSpacing: -0.1),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 // Amount
-                Text(
-                  '৳${txn.amount.toStringAsFixed(2)}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '৳${txn.amount.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: color,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    if (txn.paymentMethod != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          _formatPaymentMethod(txn.paymentMethod!),
+                          style: TextStyle(
+                            fontSize: 8,
+                            color: Colors.grey[500],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
@@ -598,32 +771,39 @@ class _WalletScreenState extends State<WalletScreen> {
     if (status.isEmpty) return const SizedBox.shrink();
     
     Color statusColor;
+    String displayStatus;
+    
     switch (status.toLowerCase()) {
       case 'completed':
         statusColor = const Color(0xFF10B981);
+        displayStatus = 'Completed';
         break;
       case 'pending':
-        statusColor = Colors.orange;
+        statusColor = const Color(0xFFF59E0B);
+        displayStatus = 'Pending';
         break;
       case 'rejected':
         statusColor = const Color(0xFFEF4444);
+        displayStatus = 'Rejected';
         break;
       default:
         statusColor = Colors.grey;
+        displayStatus = status;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
+        color: statusColor.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        status,
+        displayStatus,
         style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w600,
+          fontSize: 8,
+          fontWeight: FontWeight.w700,
           color: statusColor,
+          letterSpacing: -0.1,
         ),
       ),
     );
@@ -742,6 +922,10 @@ class _WalletScreenState extends State<WalletScreen> {
             // Recipient (from to_user_details)
             if (txn.recipientName != null && txn.recipientName!.isNotEmpty)
               _buildDetailRow('To', txn.recipientName!),
+            // Product Name (for order_payment)
+            if (txn.transactionType.toLowerCase() == 'order_payment' && 
+                txn.description != null && txn.description!.isNotEmpty)
+              _buildDetailRow('Product', txn.description!),
             // Note/Description - Always show
             _buildDetailRow('Description', _getNoteDisplay(txn)),
             const SizedBox(height: 20),
