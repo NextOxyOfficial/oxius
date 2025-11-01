@@ -537,11 +537,13 @@ class _CommentItemState extends State<_CommentItem> {
   Widget build(BuildContext context) {
     final avatarSize = widget.isReply ? 28.0 : 32.0;
     
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return GestureDetector(
+      onLongPress: _canEditDelete ? _showEditDeleteOptions : null,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // User Avatar (clickable) - wrapped in Padding to align with text baseline
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -646,8 +648,7 @@ class _CommentItemState extends State<_CommentItem> {
                               ],
                             ],
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          maxLines: null,
                         ),
                       ),
                     ),
@@ -661,94 +662,6 @@ class _CommentItemState extends State<_CommentItem> {
                         fontWeight: FontWeight.w400,
                       ),
                     ),
-                    const Spacer(),
-                    // Three-dot menu for edit/delete (far right)
-                    if (_canEditDelete)
-                      IconButton(
-                        onPressed: () {
-                          showModalBottomSheet(
-                            context: context,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                            ),
-                            builder: (context) => Container(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Edit option
-                                  ListTile(
-                                    leading: const Icon(Icons.edit, color: Color(0xFF3B82F6)),
-                                    title: const Text('Edit Comment'),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      // Update edit controller with current comment content
-                                      final plainContent = widget.comment.content.replaceAllMapped(
-                                        RegExp(r'@([^@]+?)  '),
-                                        (match) => '@${match.group(1)} ',
-                                      );
-                                      _editController.text = plainContent;
-                                      setState(() => _isEditing = true);
-                                    },
-                                  ),
-                                  const Divider(height: 1),
-                                  // Delete option
-                                  ListTile(
-                                    leading: const Icon(Icons.delete, color: Colors.red),
-                                    title: const Text('Delete Comment', style: TextStyle(color: Colors.red)),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      final confirm = await showDialog<bool>(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          title: const Text('Delete Comment'),
-                                          content: const Text('Are you sure you want to delete this comment?'),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(context, false),
-                                              child: const Text('Cancel'),
-                                            ),
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(context, true),
-                                              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                      if (confirm == true) {
-                                        final success = await BusinessNetworkService.deleteComment(widget.comment.id);
-                                        if (!mounted) return;
-                                        
-                                        if (success) {
-                                          widget.onCommentDeleted?.call();
-                                          if (mounted && context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text('Comment deleted')),
-                                            );
-                                          }
-                                        } else {
-                                          if (mounted && context.mounted) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(content: Text('Failed to delete comment'), backgroundColor: Colors.red),
-                                            );
-                                          }
-                                        }
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                        icon: Icon(
-                          Icons.more_horiz,
-                          color: Colors.grey.shade600,
-                          size: 18,
-                        ),
-                        padding: const EdgeInsets.all(4),
-                        constraints: const BoxConstraints(),
-                      ),
                   ],
                 ),
                 // Comment text or gift comment
@@ -984,6 +897,83 @@ class _CommentItemState extends State<_CommentItem> {
             ),
           ),
         ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditDeleteOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Edit option
+            ListTile(
+              leading: const Icon(Icons.edit, color: Color(0xFF3B82F6)),
+              title: const Text('Edit Comment'),
+              onTap: () {
+                Navigator.pop(context);
+                final plainContent = widget.comment.content.replaceAllMapped(
+                  RegExp(r'@([^@]+?)  '),
+                  (match) => '@${match.group(1)} ',
+                );
+                _editController.text = plainContent;
+                setState(() => _isEditing = true);
+              },
+            ),
+            const Divider(height: 1),
+            // Delete option
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Delete Comment', style: TextStyle(color: Colors.red)),
+              onTap: () async {
+                Navigator.pop(context);
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete Comment'),
+                    content: const Text('Are you sure you want to delete this comment?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  final success = await BusinessNetworkService.deleteComment(widget.comment.id);
+                  if (!mounted) return;
+                  
+                  if (success) {
+                    widget.onCommentDeleted?.call();
+                    if (mounted && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Comment deleted')),
+                      );
+                    }
+                  } else {
+                    if (mounted && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Failed to delete comment'), backgroundColor: Colors.red),
+                      );
+                    }
+                  }
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
