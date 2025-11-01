@@ -117,16 +117,15 @@ flutter_launcher_icons:
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/images/app_icon.png"
   min_sdk_android: 21
+  # Add padding to prevent icon from being cut off
+  adaptive_icon_padding: 50
+  remove_alpha_ios: true
 
-# Flutter Native Splash Configuration
+# Flutter Native Splash Configuration  
 flutter_native_splash:
   color: "#FFFFFF"
-  image: assets/images/splash_screen.png
+  # Don't use image property - we'll handle it manually
   android: true
   ios: false
   web: false
-  android_12:
-    image: assets/images/splash_screen.png
-    color: "#FFFFFF"
-  android_gravity: center
   fullscreen: true
