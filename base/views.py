@@ -242,22 +242,35 @@ def update_user(request, email):
     )
 
 
-# @api_view(['GET', 'POST'])
-# def update_user(request):
-#     """
-#     List all code snippets, or create a new snippet.
-#     """
-#     if request.method == 'GET':
-#         snippets = Snippet.objects.all()
-#         serializer = SnippetSerializer(snippets, many=True)
-#         return Response(serializer.data)
-
-#     elif request.method == 'POST':
-#         serializer = SnippetSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def update_profile_picture(request):
+    """Update user profile picture"""
+    try:
+        user = request.user
+        
+        if 'image' not in request.FILES:
+            return Response(
+                {"message": "No image file provided"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Update user image
+        user.image = request.FILES['image']
+        user.save()
+        
+        # Return updated user data
+        serializer = UserSerializer(user)
+        return Response(
+            {"message": "Profile picture updated successfully", "data": serializer.data},
+            status=status.HTTP_200_OK
+        )
+    except Exception as e:
+        print(f"Error updating profile picture: {str(e)}")
+        return Response(
+            {"message": "Failed to update profile picture", "error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @api_view(["GET"])

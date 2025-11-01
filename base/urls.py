@@ -38,6 +38,7 @@ urlpatterns = [
         name="person-delete-image",
     ),
     path("persons/update/<str:email>/", update_user, name="update_user"),
+    path("user/profile/update/", update_profile_picture, name="update_profile_picture"),
     path(
         "user/<str:identifier>/",
         get_user_with_identifier,
