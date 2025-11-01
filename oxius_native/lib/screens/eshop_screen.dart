@@ -571,8 +571,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                           // Dynamic eShop Logo only
                           _eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty
                             ? SizedBox(
-                                width: 50,
-                                height: 26,
+                                width: 110,
+                                height: 46,
                                 child: Image.network(
                                   _eshopLogoUrl!,
                                   fit: BoxFit.contain,
