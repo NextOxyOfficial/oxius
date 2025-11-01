@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/user_suggestions_service.dart';
+import '../../config/app_config.dart';
 import '../../screens/business_network/profile_screen.dart';
 
 class UserSuggestionsCard extends StatefulWidget {
@@ -308,17 +309,32 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 4,
       crossAxisSpacing: 4,
-      childAspectRatio: isMobile ? 0.99 : 0.60,
+      // Reduced aspect ratio to provide more vertical space for content
+      childAspectRatio: isMobile ? 0.70 : 0.58,
       children: _displayedSuggestions.map((user) => _buildUserCard(user, isMobile)).toList(),
     );
+  }
+
+  String _getImageUrl(String? imageUrl) {
+    // Use AppConfig.getAbsoluteUrl() which correctly uses mediaBaseUrl
+    // This avoids /api/media/ issue and uses correct /media/ path
+    return AppConfig.getAbsoluteUrl(imageUrl);
   }
 
   Widget _buildUserCard(Map<String, dynamic> user, bool isMobile) {
     final userId = (user['id'] ?? '').toString();
     final isFollowing = _followingStates[userId] ?? false;
     final isPending = _followingPending[userId] ?? false;
-    final imageUrl = user['image']?.toString();
+    final rawImageUrl = user['image']?.toString();
+    final imageUrl = _getImageUrl(rawImageUrl);
     final mutualConnections = int.tryParse((user['mutual_connections'] ?? 0).toString()) ?? 0;
+    
+    // Debug logging
+    if (rawImageUrl != null && rawImageUrl.isNotEmpty) {
+      print('📸 User: ${user['first_name']} ${user['last_name']}');
+      print('🔗 Raw URL: $rawImageUrl');
+      print('🌐 Absolute URL: $imageUrl');
+    }
 
     return Material(
       color: Colors.transparent,
@@ -334,7 +350,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
         },
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
@@ -348,44 +364,40 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
             ],
           ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
             children: [
-              // Profile image with border
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blue.shade100, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.1),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: (imageUrl != null && imageUrl.isNotEmpty)
-                      ? Image.network(
-                          imageUrl,
-                          width: isMobile ? 90 : 136,
-                          height: isMobile ? 90 : 136,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return _buildPlaceholderImage(isMobile);
-                          },
-                        )
-                      : _buildPlaceholderImage(isMobile),
-                ),
+              // Profile image - full width
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                child: imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        width: double.infinity,
+                        height: isMobile ? 110 : 150,
+                        fit: BoxFit.cover,
+                        headers: const {
+                          'User-Agent': 'Mozilla/5.0 (compatible; Flutter/3.0)',
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return _buildPlaceholderImage(isMobile);
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          print('❌ Image load error for: $imageUrl');
+                          print('❌ Error: $error');
+                          return _buildPlaceholderImage(isMobile);
+                        },
+                      )
+                    : _buildPlaceholderImage(isMobile),
               ),
 
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
 
               // User name
               Text(
                 _getUserDisplayName(user),
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF1F2937),
                   letterSpacing: 0.2,
@@ -395,44 +407,42 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                 textAlign: TextAlign.center,
               ),
 
-              // Mutual connections (always show space to maintain consistent height)
-              SizedBox(
-                height: 18,
-                child: mutualConnections > 0
-                    ? Container(
-                        margin: const EdgeInsets.only(top: 2),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '$mutualConnections mutual',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.blue.shade700,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      )
-                    : const SizedBox(),
-              ),
+              // Mutual connections
+              if (mutualConnections > 0) ...[
+                const SizedBox(height: 3),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '$mutualConnections mutual',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue.shade700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
 
-              const SizedBox(height: 2),
+              // Push button to bottom
+              const Spacer(),
 
-              // Follow button with gradient
+              // Follow button
               SizedBox(
                 width: double.infinity,
-                height: isMobile ? 30 : 34,
+                height: isMobile ? 28 : 32,
                 child: ElevatedButton(
                   onPressed: isPending ? null : () => _toggleFollow(user),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isFollowing ? Colors.white : Colors.blue.shade600,
                     foregroundColor: isFollowing ? Colors.blue.shade700 : Colors.white,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                       side: isFollowing
@@ -455,9 +465,9 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                       : Text(
                           isFollowing ? 'Following' : 'Follow',
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            letterSpacing: 0.3,
+                            letterSpacing: 0.2,
                           ),
                         ),
                 ),
@@ -471,8 +481,8 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
 
   Widget _buildPlaceholderImage(bool isMobile) {
     return Container(
-      width: isMobile ? 90 : 136,
-      height: isMobile ? 90 : 136,
+      width: double.infinity,
+      height: isMobile ? 110 : 150,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -482,11 +492,11 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
             Colors.blue.shade50,
           ],
         ),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       ),
       child: Icon(
         Icons.person_rounded,
-        size: isMobile ? 40 : 64,
+        size: isMobile ? 48 : 64,
         color: Colors.blue.shade300,
       ),
     );
