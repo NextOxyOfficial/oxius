@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../services/business_network_service.dart';
 import '../../services/api_service.dart';
+import '../../services/adsyconnect_service.dart';
 import '../../screens/business_network/search_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
 
 class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onMenuTap;
@@ -28,12 +30,20 @@ class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidge
 class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
   String? _businessNetworkLogoUrl;
   int _totalNotificationCount = 0;
+  Timer? _notificationTimer;
 
   @override
   void initState() {
     super.initState();
     _loadBusinessNetworkLogo();
     _loadNotificationCount();
+    
+    // Poll for notification updates every 10 seconds
+    _notificationTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted && AuthService.isAuthenticated) {
+        _loadNotificationCount();
+      }
+    });
   }
 
   Future<void> _loadBusinessNetworkLogo() async {
@@ -46,39 +56,27 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
   }
 
   Future<void> _loadNotificationCount() async {
-    if (!AuthService.isAuthenticated) return;
+    if (!AuthService.isAuthenticated) {
+      if (mounted) {
+        setState(() {
+          _totalNotificationCount = 0;
+        });
+      }
+      return;
+    }
     
     try {
-      final headers = await ApiService.getHeaders();
+      // Get unread message count from chat rooms (like home screen)
+      final chatRooms = await AdsyConnectService.getChatRooms(page: 1);
       
-      // Load notifications count
-      final notificationsResponse = await http.get(
-        Uri.parse(ApiService.getApiUrl('notifications/')),
-        headers: headers,
-      );
-      
-      // Load support tickets count
-      final ticketsResponse = await http.get(
-        Uri.parse(ApiService.getApiUrl('support/tickets/')),
-        headers: headers,
-      );
-      
-      int unreadNotifications = 0;
-      int unreadTickets = 0;
-      
-      if (notificationsResponse.statusCode == 200) {
-        final data = json.decode(notificationsResponse.body) as List;
-        unreadNotifications = data.where((item) => !(item['is_read'] ?? false)).length;
-      }
-      
-      if (ticketsResponse.statusCode == 200) {
-        final data = json.decode(ticketsResponse.body) as List;
-        unreadTickets = data.where((item) => !(item['is_read'] ?? false)).length;
+      int totalUnread = 0;
+      for (var room in chatRooms) {
+        totalUnread += (room['unread_count'] as int?) ?? 0;
       }
       
       if (mounted) {
         setState(() {
-          _totalNotificationCount = unreadNotifications + unreadTickets;
+          _totalNotificationCount = totalUnread;
         });
       }
     } catch (e) {
@@ -88,6 +86,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
 
   @override
   void dispose() {
+    _notificationTimer?.cancel();
     super.dispose();
   }
 
