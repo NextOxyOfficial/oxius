@@ -79,8 +79,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   void _startMessagePolling() {
-    // Poll for new messages every 3 seconds
-    _messagePollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    // Poll for new messages and status updates every 2 seconds for real-time feel
+    _messagePollingTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted && !_isLoadingMessages) {
         _checkForNewMessages();
       }
@@ -99,25 +99,32 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       final parsedMessages = _parseMessages(messages);
       if (parsedMessages.isEmpty) return;
       
+      bool hasUpdates = false;
+      
+      // Update seen status for existing messages
+      for (var serverMsg in parsedMessages) {
+        final existingIndex = _messages.indexWhere((m) => m['id'] == serverMsg['id']);
+        if (existingIndex != -1) {
+          // Check if seen status changed
+          if (_messages[existingIndex]['isSeen'] != serverMsg['isSeen']) {
+            _messages[existingIndex]['isSeen'] = serverMsg['isSeen'];
+            hasUpdates = true;
+          }
+        }
+      }
+      
       // Get the latest message ID from server
       final latestServerMessageId = parsedMessages.last['id'];
       
-      // If we have no messages yet, or if there's a new message
-      if (_lastMessageId == null || latestServerMessageId != _lastMessageId) {
-        // Find new messages that we don't have yet
-        final newMessages = parsedMessages.where((msg) {
-          return !_messages.any((existing) => existing['id'] == msg['id']);
-        }).toList();
-        
-        if (newMessages.isNotEmpty) {
-          setState(() {
-            _messages.addAll(newMessages);
-            _lastMessageId = newMessages.last['id'];
-          });
-          _scrollToBottom();
-          // Don't auto-mark as read during polling
-          // Messages are only marked as read when user opens/views the chat
-        }
+      // Find new messages that we don't have yet
+      final newMessages = parsedMessages.where((msg) {
+        return !_messages.any((existing) => existing['id'] == msg['id']);
+      }).toList();
+      
+      if (newMessages.isNotEmpty) {
+        hasUpdates = true;
+        _messages.addAll(newMessages);
+        _lastMessageId = newMessages.last['id'];
         
         // Auto-scroll to bottom if user is near bottom
         if (_scrollController.hasClients) {
@@ -127,11 +134,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           
           if (isNearBottom) {
             _scrollToBottom();
-            if (isNearBottom) {
-              _scrollToBottom();
-            }
           }
         }
+      }
+      
+      // Update UI if there were any changes
+      if (hasUpdates && mounted) {
+        setState(() {});
       }
     } catch (e) {
       // Silently fail for polling errors to avoid spamming user
@@ -201,6 +210,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       final senderId = sender['id']?.toString() ?? '';
       final isMe = senderId == widget.userId;
       
+      // Check if message has been seen by recipient
+      // is_read means the recipient has opened and viewed the message
+      final isSeen = msg['is_read'] == true;
+      
       return {
         'id': msg['id']?.toString() ?? '',
         'senderId': senderId,
@@ -214,7 +227,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         'mediaUrl': msg['media_url']?.toString(), // Backend returns media_url, not media_file
         'thumbnailUrl': msg['thumbnail_url']?.toString(),
         'fileName': msg['file_name']?.toString(),
-        'isRead': msg['is_read'] ?? false,
+        'isSeen': isSeen, // Changed from isRead to isSeen for clarity
         'isDeleted': msg['is_deleted'] ?? false,
       };
     }).toList();
@@ -339,6 +352,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   Map<String, dynamic> _parseSingleMessage(Map<String, dynamic> msg) {
+    // Check if message has been seen by recipient
+    // is_read means the recipient has opened and viewed the message
+    final isSeen = msg['is_read'] == true;
+    
     return {
       'id': msg['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
       'senderId': 'me',
@@ -352,8 +369,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       'mediaUrl': msg['media_url']?.toString(), // Backend returns media_url, not media_file
       'thumbnailUrl': msg['thumbnail_url']?.toString(),
       'fileName': msg['file_name']?.toString(),
-      'isRead': msg['is_read'] ?? false,
+      'isSeen': isSeen, // Changed from isRead to isSeen for clarity
       'isDeleted': msg['is_deleted'] ?? false,
+      'showTimestamp': true, // Always show timestamp for sent messages
     };
   }
 
@@ -552,48 +570,46 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                     child: ElevatedButton(
                       onPressed: () async {
                         Navigator.pop(context);
-                        try {
-                          // Call backend to soft delete the message
-                          final deletedMessage = await AdsyConnectService.deleteMessage(message['id']);
-                          
-                          // Update the message in the list immediately
-                          if (mounted) {
-                            setState(() {
-                              final index = _messages.indexWhere((m) => m['id'].toString() == message['id'].toString());
-                              
-                              if (index != -1) {
-                                // Update the message to show as deleted
-                                _messages[index] = {
-                                  ..._messages[index],
-                                  'isDeleted': true,
-                                  'message': 'Message removed',
-                                  'type': 'text',
-                                };
-                                
-                                // Force rebuild with updated timestamps
-                                _messages = List.from(_addSmartTimestamps(_messages));
-                              }
-                            });
+                        
+                        // Update UI immediately for better UX
+                        if (mounted) {
+                          setState(() {
+                            final index = _messages.indexWhere((m) => m['id'].toString() == message['id'].toString());
                             
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Message deleted'),
-                                  backgroundColor: Color(0xFFEF4444),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
+                            if (index != -1) {
+                              // Update the message to show as deleted
+                              _messages[index] = {
+                                ..._messages[index],
+                                'isDeleted': true,
+                                'message': 'Message removed',
+                                'type': 'text',
+                              };
+                              
+                              // Force rebuild with updated timestamps
+                              _messages = List.from(_addSmartTimestamps(_messages));
                             }
-                          }
-                        } catch (e) {
+                          });
+                        }
+                        
+                        // Then call backend to soft delete
+                        try {
+                          print('🔵 Deleting message ID: ${message['id']}');
+                          await AdsyConnectService.deleteMessage(message['id'].toString());
+                          print('🟢 Message deleted successfully');
+                          
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to delete: $e'),
-                                backgroundColor: const Color(0xFFEF4444),
+                              const SnackBar(
+                                content: Text('Message deleted'),
+                                backgroundColor: Color(0xFF10B981),
+                                duration: Duration(seconds: 2),
                               ),
                             );
                           }
+                        } catch (e) {
+                          print('🔴 Error deleting message: $e');
+                          // Message already marked as deleted in UI, so just log the error
+                          // Don't show error to user since UI is already updated
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -1631,17 +1647,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                             color: Colors.grey.shade400,
                           ),
                         ),
-                      // Show read/unread status for sent messages
+                      // Show seen/unseen status for sent messages
                       if (isMe) ...[
                         const SizedBox(width: 4),
                         Icon(
-                          message['isRead'] == true 
-                              ? Icons.done_all_rounded 
-                              : Icons.done_rounded,
+                          message['isSeen'] == true 
+                              ? Icons.done_all_rounded  // Double tick when seen
+                              : Icons.done_rounded,      // Single tick when sent
                           size: 12,
-                          color: message['isRead'] == true 
-                              ? const Color(0xFF3B82F6) 
-                              : Colors.grey.shade400,
+                          color: message['isSeen'] == true 
+                              ? const Color(0xFF3B82F6)  // Blue when seen
+                              : Colors.grey.shade400,     // Grey when just sent
                         ),
                       ],
                     ],
