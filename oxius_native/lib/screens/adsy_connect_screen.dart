@@ -115,13 +115,22 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           final lastMessage = room['last_message'];
           final lastMessagePreview = room['last_message_preview'];
           
-          // Only include chats that have at least one message
-          return (lastMessage != null && lastMessage['content'] != null && lastMessage['content'].toString().isNotEmpty) ||
+          // Include chats that have:
+          // 1. A last message (even if deleted)
+          // 2. OR a last message preview
+          return (lastMessage != null) ||
                  (lastMessagePreview != null && lastMessagePreview.toString().isNotEmpty);
         })
         .map((room) {
           final otherUser = room['other_user'] ?? {};
           final lastMessage = room['last_message'];
+          
+          // Check if last message is deleted
+          final isDeleted = lastMessage?['is_deleted'] == true;
+          final messageContent = lastMessage?['content'] ?? room['last_message_preview'] ?? '';
+          
+          // Show "Message removed" if deleted, otherwise show content
+          final displayMessage = isDeleted ? 'Message removed' : messageContent;
           
           return {
             'id': room['id'],
@@ -129,7 +138,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
             'userName': _getFullName(otherUser),
             'userAvatar': otherUser['avatar'],
             'profession': otherUser['profession'] ?? '',
-            'lastMessage': lastMessage?['content'] ?? room['last_message_preview'] ?? '',
+            'lastMessage': displayMessage,
             'timestamp': lastMessage?['created_at'] != null 
                 ? DateTime.parse(lastMessage['created_at'])
                 : DateTime.parse(room['last_message_at'] ?? DateTime.now().toIso8601String()),
