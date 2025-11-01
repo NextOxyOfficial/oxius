@@ -999,7 +999,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 padding: EdgeInsets.zero,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.60,
+                  childAspectRatio: 0.57,
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
                 ),

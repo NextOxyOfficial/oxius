@@ -124,8 +124,13 @@ flutter_launcher_icons:
 # Flutter Native Splash Configuration  
 flutter_native_splash:
   color: "#FFFFFF"
-  # Don't use image property - we'll handle it manually
+  image: assets/images/splash_screen.png
   android: true
   ios: false
   web: false
   fullscreen: true
+  android_12:
+    image: assets/images/splash_screen.png
+    color: "#FFFFFF"
+  # Use fill to make image cover screen
+  android_gravity: fill
