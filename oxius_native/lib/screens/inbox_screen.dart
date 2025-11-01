@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
+import '../config/app_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
@@ -1103,6 +1104,15 @@ class _NewChatModalState extends State<_NewChatModal> {
     super.dispose();
   }
 
+  String? _getUserImageUrl(Map<String, dynamic> user) {
+    // Check for image field (backend returns this)
+    final imageUrl = user['image']?.toString() ?? user['profile_picture']?.toString();
+    if (imageUrl == null || imageUrl.isEmpty) return null;
+    
+    // Convert to absolute URL using AppConfig
+    return AppConfig.getAbsoluteUrl(imageUrl);
+  }
+
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     
@@ -1402,10 +1412,10 @@ class _NewChatModalState extends State<_NewChatModal> {
                                   CircleAvatar(
                                     radius: 22,
                                     backgroundColor: const Color(0xFF3B82F6).withOpacity(0.1),
-                                    backgroundImage: user['profile_picture'] != null && user['profile_picture'].toString().isNotEmpty
-                                        ? NetworkImage(user['profile_picture'])
+                                    backgroundImage: _getUserImageUrl(user) != null
+                                        ? NetworkImage(_getUserImageUrl(user)!)
                                         : null,
-                                    child: user['profile_picture'] == null || user['profile_picture'].toString().isEmpty
+                                    child: _getUserImageUrl(user) == null
                                         ? Text(
                                             userInitial,
                                             style: const TextStyle(
