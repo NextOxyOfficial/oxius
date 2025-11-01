@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
+import '../services/support_ticket_service.dart';
+import '../models/support_ticket_models.dart';
 import '../config/app_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'adsy_connect_screen.dart';
 import 'adsy_connect_chat_interface.dart';
+import 'support/create_ticket_screen.dart';
+import 'support/ticket_detail_screen.dart';
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
@@ -28,9 +32,21 @@ class _InboxScreenState extends State<InboxScreen>
   bool _isLoadingUpdates = true;
   bool _isLoadingTickets = true;
   
+  // Pagination
+  int _updatesPage = 1;
+  int _ticketsPage = 1;
+  bool _hasMoreUpdates = true;
+  bool _hasMoreTickets = true;
+  bool _isLoadingMoreUpdates = false;
+  bool _isLoadingMoreTickets = false;
+  
   // Real data from backend
   List<Map<String, dynamic>> _updates = [];
   List<Map<String, dynamic>> _tickets = [];
+  
+  // Scroll controllers
+  final ScrollController _updatesScrollController = ScrollController();
+  final ScrollController _ticketsScrollController = ScrollController();
 
   @override
   void initState() {
@@ -48,7 +64,30 @@ class _InboxScreenState extends State<InboxScreen>
       });
     });
     _activeTab = 'chat'; // Default to chat tab
+    
+    // Add scroll listeners for pagination
+    _updatesScrollController.addListener(_onUpdatesScroll);
+    _ticketsScrollController.addListener(_onTicketsScroll);
+    
     _loadInboxData();
+  }
+  
+  void _onUpdatesScroll() {
+    if (_updatesScrollController.position.pixels >= 
+        _updatesScrollController.position.maxScrollExtent - 200) {
+      if (!_isLoadingMoreUpdates && _hasMoreUpdates) {
+        _loadMoreUpdates();
+      }
+    }
+  }
+  
+  void _onTicketsScroll() {
+    if (_ticketsScrollController.position.pixels >= 
+        _ticketsScrollController.position.maxScrollExtent - 200) {
+      if (!_isLoadingMoreTickets && _hasMoreTickets) {
+        _loadMoreTickets();
+      }
+    }
   }
 
   Future<void> _loadInboxData() async {
@@ -59,27 +98,43 @@ class _InboxScreenState extends State<InboxScreen>
   }
 
   Future<void> _loadUpdates() async {
-    setState(() => _isLoadingUpdates = true);
+    setState(() {
+      _isLoadingUpdates = true;
+      _updatesPage = 1;
+      _updates = [];
+    });
     
     try {
       final headers = await ApiService.getHeaders();
       final response = await http.get(
-        Uri.parse(ApiService.getApiUrl('notifications/')),
+        Uri.parse(ApiService.getApiUrl('admin-notice/?page=$_updatesPage')),
         headers: headers,
       );
       
+      print('=== Load Updates (AdminNotice) Page $_updatesPage ===');
+      print('Status: ${response.statusCode}');
+      
       if (response.statusCode == 200) {
-        final data = json.decode(response.body) as List;
+        final data = json.decode(response.body);
+        final List<dynamic> notifications = data is List ? data : (data['results'] ?? []);
+        final int? count = data is Map ? data['count'] : null;
+        final String? next = data is Map ? data['next'] : null;
+        
         if (mounted) {
           setState(() {
-            _updates = data.map((item) => {
-              'id': item['id'],
-              'title': item['title'] ?? 'Notification',
-              'message': item['message'] ?? '',
-              'isRead': item['is_read'] ?? false,
-              'timestamp': DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
-              'type': item['type'] ?? 'system',
+            _updates = notifications.map((item) {
+              return {
+                'id': item['id'],
+                'title': item['title'] ?? 'System Notification',
+                'message': item['message'] ?? '',
+                'isRead': item['is_read'] ?? false,
+                'timestamp': DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
+                'type': item['notification_type'] ?? 'system',
+                'amount': item['amount'],
+                'referenceId': item['reference_id'],
+              };
             }).toList();
+            _hasMoreUpdates = next != null;
             _isLoadingUpdates = false;
           });
         }
@@ -95,31 +150,96 @@ class _InboxScreenState extends State<InboxScreen>
       }
     }
   }
-
-
-  Future<void> _loadTickets() async {
-    setState(() => _isLoadingTickets = true);
+  
+  Future<void> _loadMoreUpdates() async {
+    if (_isLoadingMoreUpdates || !_hasMoreUpdates) return;
+    
+    setState(() {
+      _isLoadingMoreUpdates = true;
+      _updatesPage++;
+    });
     
     try {
       final headers = await ApiService.getHeaders();
       final response = await http.get(
-        Uri.parse(ApiService.getApiUrl('support-tickets/')),
+        Uri.parse(ApiService.getApiUrl('admin-notice/?page=$_updatesPage')),
         headers: headers,
       );
       
+      print('=== Load More Updates Page $_updatesPage ===');
+      print('Status: ${response.statusCode}');
+      
       if (response.statusCode == 200) {
-        final data = json.decode(response.body) as List;
+        final data = json.decode(response.body);
+        final List<dynamic> notifications = data is List ? data : (data['results'] ?? []);
+        final String? next = data is Map ? data['next'] : null;
+        
         if (mounted) {
           setState(() {
-            _tickets = data.map((item) => {
+            _updates.addAll(notifications.map((item) {
+              return {
+                'id': item['id'],
+                'title': item['title'] ?? 'System Notification',
+                'message': item['message'] ?? '',
+                'isRead': item['is_read'] ?? false,
+                'timestamp': DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
+                'type': item['notification_type'] ?? 'system',
+                'amount': item['amount'],
+                'referenceId': item['reference_id'],
+              };
+            }).toList());
+            _hasMoreUpdates = next != null;
+            _isLoadingMoreUpdates = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() => _isLoadingMoreUpdates = false);
+        }
+      }
+    } catch (e) {
+      print('Error loading more updates: $e');
+      if (mounted) {
+        setState(() => _isLoadingMoreUpdates = false);
+      }
+    }
+  }
+
+
+  Future<void> _loadTickets() async {
+    setState(() {
+      _isLoadingTickets = true;
+      _ticketsPage = 1;
+      _tickets = [];
+    });
+    
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse(ApiService.getApiUrl('tickets/?page=$_ticketsPage')),
+        headers: headers,
+      );
+      
+      print('=== Load Tickets Page $_ticketsPage ===');
+      print('Status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> ticketsJson = data is List ? data : (data['results'] ?? []);
+        final String? next = data is Map ? data['next'] : null;
+        
+        if (mounted) {
+          setState(() {
+            _tickets = ticketsJson.map((item) => {
               'id': item['id'],
               'title': item['title'] ?? 'Support Ticket',
               'message': item['message'] ?? '',
               'status': item['status'] ?? 'open',
-              'isRead': item['is_read'] ?? false,
+              'isRead': !(item['is_unread'] ?? true),
               'timestamp': DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
-              'priority': item['priority'] ?? 'medium',
+              'replyCount': item['reply_count'] ?? 0,
             }).toList();
+            _hasMoreTickets = next != null;
             _isLoadingTickets = false;
           });
         }
@@ -135,10 +255,63 @@ class _InboxScreenState extends State<InboxScreen>
       }
     }
   }
+  
+  Future<void> _loadMoreTickets() async {
+    if (_isLoadingMoreTickets || !_hasMoreTickets) return;
+    
+    setState(() {
+      _isLoadingMoreTickets = true;
+      _ticketsPage++;
+    });
+    
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse(ApiService.getApiUrl('tickets/?page=$_ticketsPage')),
+        headers: headers,
+      );
+      
+      print('=== Load More Tickets Page $_ticketsPage ===');
+      print('Status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> ticketsJson = data is List ? data : (data['results'] ?? []);
+        final String? next = data is Map ? data['next'] : null;
+        
+        if (mounted) {
+          setState(() {
+            _tickets.addAll(ticketsJson.map((item) => {
+              'id': item['id'],
+              'title': item['title'] ?? 'Support Ticket',
+              'message': item['message'] ?? '',
+              'status': item['status'] ?? 'open',
+              'isRead': !(item['is_unread'] ?? true),
+              'timestamp': DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
+              'replyCount': item['reply_count'] ?? 0,
+            }).toList());
+            _hasMoreTickets = next != null;
+            _isLoadingMoreTickets = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() => _isLoadingMoreTickets = false);
+        }
+      }
+    } catch (e) {
+      print('Error loading more tickets: $e');
+      if (mounted) {
+        setState(() => _isLoadingMoreTickets = false);
+      }
+    }
+  }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _updatesScrollController.dispose();
+    _ticketsScrollController.dispose();
     super.dispose();
   }
 
@@ -191,35 +364,81 @@ class _InboxScreenState extends State<InboxScreen>
     });
   }
 
-  void _openNewTicketModal() {
-    // Implement ticket creation modal
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create Support Ticket'),
-        content: const Text('Feature coming soon!'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
+  Future<void> _openNewTicketModal() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CreateTicketScreen(),
       ),
     );
+
+    // Reload tickets if a new ticket was created
+    if (result == true) {
+      _loadTickets();
+    }
   }
 
-  void _markAllAsRead() {
-    setState(() {
-      if (_activeTab == 'updates') {
-        for (var update in _updates) {
-          update['isRead'] = true;
+  Future<void> _markAllAsRead() async {
+    if (_activeTab == 'updates') {
+      // Mark all unread updates as read
+      final unreadUpdates = _updates.where((u) => !u['isRead']).toList();
+      
+      if (unreadUpdates.isEmpty) return;
+      
+      // Show loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Marking all as read...'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      
+      try {
+        final headers = await ApiService.getHeaders();
+        
+        // Mark each unread update as read
+        for (var update in unreadUpdates) {
+          await http.post(
+            Uri.parse(ApiService.getApiUrl('admin-notice/${update['id']}/mark-read/')),
+            headers: headers,
+          );
         }
-      } else {
+        
+        // Update UI
+        if (mounted) {
+          setState(() {
+            for (var update in _updates) {
+              update['isRead'] = true;
+            }
+          });
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('All updates marked as read'),
+              backgroundColor: Color(0xFF10B981),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        print('Error marking updates as read: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to mark all as read'),
+              backgroundColor: Color(0xFFEF4444),
+            ),
+          );
+        }
+      }
+    } else {
+      // For tickets, just update locally (tickets auto-mark as read when opened)
+      setState(() {
         for (var ticket in _tickets) {
           ticket['isRead'] = true;
         }
-      }
-    });
+      });
+    }
   }
 
   void _clearNotifications() {
@@ -312,40 +531,15 @@ class _InboxScreenState extends State<InboxScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            const Flexible(
-                              child: Text(
-                                'AdsyConnect',
-                                style: TextStyle(
-                                  color: Color(0xFF1F2937),
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.3,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            if (updatesCount + chatsCount + supportTicketsCount > 0)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFEF4444), Color(0xFFF87171)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  (updatesCount + chatsCount + supportTicketsCount).toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                          ],
+                        const Text(
+                          'AdsyConnect',
+                          style: TextStyle(
+                            color: Color(0xFF1F2937),
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 3),
                         Row(
@@ -543,10 +737,15 @@ class _InboxScreenState extends State<InboxScreen>
                                 ]
                               : [
                                   const DropdownMenuItem(value: 'all', child: Text('All Updates')),
-                                  const DropdownMenuItem(value: 'unread', child: Text('Unread')),
-                                  const DropdownMenuItem(value: 'read', child: Text('Read')),
-                                  const DropdownMenuItem(value: 'system', child: Text('System')),
-                                  const DropdownMenuItem(value: 'verification', child: Text('Verification')),
+                                  const DropdownMenuItem(value: 'order_received', child: Text('Orders')),
+                                  const DropdownMenuItem(value: 'withdraw_successful', child: Text('Withdrawals')),
+                                  const DropdownMenuItem(value: 'mobile_recharge_successful', child: Text('Recharges')),
+                                  const DropdownMenuItem(value: 'pro_subscribed', child: Text('Pro')),
+                                  const DropdownMenuItem(value: 'pro_expiring', child: Text('Expiring')),
+                                  const DropdownMenuItem(value: 'gig_posted', child: Text('Gigs')),
+                                  const DropdownMenuItem(value: 'transfer_sent', child: Text('Transfers Sent')),
+                                  const DropdownMenuItem(value: 'transfer_received', child: Text('Transfers Received')),
+                                  const DropdownMenuItem(value: 'deposit_successful', child: Text('Deposits')),
                                 ],
                           onChanged: (value) {
                             if (value != null) {
@@ -593,29 +792,10 @@ class _InboxScreenState extends State<InboxScreen>
                         child: ElevatedButton.icon(
                           onPressed: _openNewTicketModal,
                           icon: const Icon(Icons.add_rounded, size: 16),
-                          label: const Text('Open'),
+                          label: const Text('New Ticket'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      flex: 1,
-                      child: SizedBox(
-                        height: 40,
-                        child: OutlinedButton.icon(
-                          onPressed: hasUnreadMessages ? _markAllAsRead : null,
-                          icon: const Icon(Icons.done_all_rounded, size: 16),
-                          label: const Text('Mark'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF10B981),
-                            side: const BorderSide(color: Color(0xFF10B981)),
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -725,30 +905,79 @@ class _InboxScreenState extends State<InboxScreen>
     final updates = filteredUpdates;
     
     if (updates.isEmpty) {
-      return RefreshIndicator(
-        onRefresh: _loadUpdates,
-        color: const Color(0xFF059669),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.6,
-            child: _buildEmptyState('No updates found'),
-          ),
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.notifications_outlined,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No updates yet',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
         ),
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadUpdates,
-      color: const Color(0xFF059669),
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        itemCount: updates.length,
-        itemBuilder: (context, index) {
-          final update = updates[index];
-          return _buildUpdateItem(update);
-        },
-      ),
+    return ListView.builder(
+      controller: _updatesScrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      itemCount: updates.length + (_isLoadingMoreUpdates ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == updates.length) {
+          // Loading skeleton at bottom
+          return Container(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        width: 200,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        final update = updates[index];
+        return _buildUpdateItem(update);
+      },
     );
   }
 
@@ -782,9 +1011,53 @@ class _InboxScreenState extends State<InboxScreen>
       onRefresh: _loadTickets,
       color: const Color(0xFF3B82F6),
       child: ListView.builder(
+        controller: _ticketsScrollController,
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        itemCount: tickets.length,
+        itemCount: tickets.length + (_isLoadingMoreTickets ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index == tickets.length) {
+            // Loading skeleton at bottom
+            return Container(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          width: 200,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
           final ticket = tickets[index];
           return _buildTicketItem(ticket);
         },
@@ -924,10 +1197,23 @@ class _InboxScreenState extends State<InboxScreen>
     }
 
     return InkWell(
-      onTap: () {
+      onTap: () async {
         setState(() {
           ticket['isRead'] = true;
         });
+        
+        // Navigate to ticket detail screen
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TicketDetailScreen(
+              ticketId: ticket['id'].toString(),
+            ),
+          ),
+        );
+        
+        // Reload tickets after returning from detail screen
+        _loadTickets();
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -997,6 +1283,16 @@ class _InboxScreenState extends State<InboxScreen>
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Ticket #${ticket['id']}',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF3B82F6),
+                      letterSpacing: -0.1,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
