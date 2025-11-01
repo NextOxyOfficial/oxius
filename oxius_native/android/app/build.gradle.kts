@@ -42,3 +42,8 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // Required for image_cropper UCrop activity
+    implementation("androidx.appcompat:appcompat:1.6.1")
+}

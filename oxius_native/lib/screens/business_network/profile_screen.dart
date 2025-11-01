@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'dart:io';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
@@ -356,12 +357,39 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
         source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
+        maxWidth: 2048,
+        maxHeight: 2048,
+        imageQuality: 90,
       );
 
       if (image == null) return;
+
+      // Crop the image
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // Square crop
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Profile Photo',
+            toolbarColor: const Color(0xFF3B82F6),
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
+            hideBottomControls: false,
+            showCropGrid: true,
+          ),
+          IOSUiSettings(
+            title: 'Crop Profile Photo',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
+        ],
+      );
+
+      if (croppedFile == null) return;
+
+      // Convert CroppedFile to XFile
+      final croppedXFile = XFile(croppedFile.path);
 
       // Show loading
       if (mounted) {
@@ -374,7 +402,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       }
 
       // Upload to server (pass XFile directly for cross-platform support)
-      final success = await BusinessNetworkService.uploadProfilePicture(image);
+      final success = await BusinessNetworkService.uploadProfilePicture(croppedXFile);
       
       if (mounted) {
         // Hide loading snackbar
@@ -644,6 +672,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     child: _userData?['image'] != null
                         ? Image.network(
                             _userData!['image'],
+                            width: double.infinity,
+                            height: double.infinity,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
