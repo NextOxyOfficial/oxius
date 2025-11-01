@@ -309,8 +309,8 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 4,
       crossAxisSpacing: 4,
-      // Reduced aspect ratio to provide more vertical space for content
-      childAspectRatio: isMobile ? 0.70 : 0.58,
+      // Increased aspect ratio to reduce card height
+      childAspectRatio: isMobile ? 0.75 : 0.62,
       children: _displayedSuggestions.map((user) => _buildUserCard(user, isMobile)).toList(),
     );
   }
@@ -350,7 +350,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
         },
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
@@ -364,7 +364,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
             ],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.max,
+            mainAxisSize: MainAxisSize.min,
             children: [
               // Profile image - full width
               ClipRRect(
@@ -373,7 +373,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                     ? Image.network(
                         imageUrl,
                         width: double.infinity,
-                        height: isMobile ? 110 : 150,
+                        height: isMobile ? 130 : 170,
                         fit: BoxFit.cover,
                         headers: const {
                           'User-Agent': 'Mozilla/5.0 (compatible; Flutter/3.0)',
@@ -391,7 +391,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                     : _buildPlaceholderImage(isMobile),
               ),
 
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
 
               // User name
               Text(
@@ -406,6 +406,22 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
               ),
+
+              // Profession
+              if (user['profession'] != null && user['profession'].toString().isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  user['profession'].toString(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
 
               // Mutual connections
               if (mutualConnections > 0) ...[
@@ -429,8 +445,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                 ),
               ],
 
-              // Push button to bottom
-              const Spacer(),
+              const SizedBox(height: 8),
 
               // Follow button
               SizedBox(
@@ -482,7 +497,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
   Widget _buildPlaceholderImage(bool isMobile) {
     return Container(
       width: double.infinity,
-      height: isMobile ? 110 : 150,
+      height: isMobile ? 130 : 170,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
