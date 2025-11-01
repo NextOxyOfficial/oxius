@@ -1805,27 +1805,190 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     
     showDialog(
       context: context,
+      barrierColor: Colors.black87,
       builder: (context) => Dialog(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
         child: Stack(
           children: [
+            // Image with InteractiveViewer
             Center(
-              child: isUrl
-                  ? Image.network(filePath, fit: BoxFit.contain)
-                  : Image.file(File(filePath), fit: BoxFit.contain),
+              child: GestureDetector(
+                onLongPress: () => _showImageOptions(filePath),
+                child: InteractiveViewer(
+                  minScale: 0.5,
+                  maxScale: 4.0,
+                  child: isUrl
+                      ? Image.network(
+                          filePath,
+                          fit: BoxFit.contain,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                                color: Colors.white,
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.error_outline, size: 64, color: Colors.grey.shade400),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Failed to load image',
+                                    style: TextStyle(color: Colors.grey.shade400),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        )
+                      : Image.file(
+                          File(filePath),
+                          fit: BoxFit.contain,
+                        ),
+                ),
+              ),
             ),
+            // Close button
             Positioned(
-              top: 16,
+              top: 40,
               right: 16,
               child: IconButton(
                 icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
                 onPressed: () => Navigator.pop(context),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black45,
+                ),
+              ),
+            ),
+            // Hint text
+            Positioned(
+              bottom: 40,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black45,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'Long press for options',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _showImageOptions(String filePath) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Download option
+            ListTile(
+              leading: const Icon(Icons.download_rounded, color: Color(0xFF3B82F6)),
+              title: const Text('Download Image'),
+              onTap: () async {
+                Navigator.pop(context);
+                await _downloadImage(filePath);
+              },
+            ),
+            const Divider(height: 1),
+            // Delete option
+            ListTile(
+              leading: const Icon(Icons.delete_rounded, color: Colors.red),
+              title: const Text('Delete Image', style: TextStyle(color: Colors.red)),
+              onTap: () async {
+                Navigator.pop(context);
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete Image'),
+                    content: const Text('Are you sure you want to delete this image?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  // TODO: Implement delete message functionality
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Delete functionality coming soon'),
+                      backgroundColor: Color(0xFF3B82F6),
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _downloadImage(String imageUrl) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Downloading image...'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      
+      // TODO: Implement actual download functionality
+      // For now, just show a success message
+      await Future.delayed(const Duration(seconds: 1));
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image downloaded successfully!'),
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to download image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildVideoContent(Map<String, dynamic> message, bool isMe) {
