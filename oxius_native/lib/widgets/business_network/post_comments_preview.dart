@@ -524,21 +524,40 @@ class _CommentItemState extends State<_CommentItem> {
   bool get _canEditDelete {
     if (_currentUserId == null) return false;
     
-    // Compare with UUID if available (String comparison)
-    if (widget.comment.user.uuid != null) {
-      return widget.comment.user.uuid == _currentUserId;
+    // Try multiple comparison methods to ensure compatibility
+    final commentUserId = widget.comment.user.id.toString();
+    final commentUserUuid = widget.comment.user.uuid;
+    
+    // Compare with UUID first if available
+    if (commentUserUuid != null && commentUserUuid.isNotEmpty) {
+      if (commentUserUuid == _currentUserId) return true;
     }
     
-    // Otherwise compare with ID (convert to string for comparison)
-    return widget.comment.user.id.toString() == _currentUserId;
+    // Compare with ID (both as strings)
+    if (commentUserId == _currentUserId) return true;
+    
+    // Also try comparing with ID as integer if currentUserId is numeric
+    if (int.tryParse(_currentUserId!) != null && 
+        int.tryParse(commentUserId) != null) {
+      return int.parse(_currentUserId!) == int.parse(commentUserId);
+    }
+    
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     final avatarSize = widget.isReply ? 28.0 : 32.0;
     
-    return GestureDetector(
-      onLongPress: _canEditDelete ? _showEditDeleteOptions : null,
+    return InkWell(
+      onLongPress: _canEditDelete ? () {
+        print('=== Long Press Detected ===');
+        print('Can edit/delete: $_canEditDelete');
+        print('Current user ID: $_currentUserId');
+        print('Comment user ID: ${widget.comment.user.id}');
+        _showEditDeleteOptions();
+      } : null,
+      borderRadius: BorderRadius.circular(8),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Row(

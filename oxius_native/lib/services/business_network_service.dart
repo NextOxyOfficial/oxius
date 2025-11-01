@@ -617,10 +617,10 @@ class BusinessNetworkService {
         });
       }
       
-      print('Sending request to: ${ApiService.baseUrl}/api/user/profile/update/');
+      print('Sending request to: ${ApiService.baseUrl}/user/profile/update/');
       
       final response = await dio.patch(
-        '${ApiService.baseUrl}/api/user/profile/update/',
+        '${ApiService.baseUrl}/user/profile/update/',
         data: formData,
         options: Options(
           headers: headers,

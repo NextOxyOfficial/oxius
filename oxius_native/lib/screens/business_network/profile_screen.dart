@@ -357,39 +357,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
         source: source,
-        maxWidth: 2048,
-        maxHeight: 2048,
-        imageQuality: 90,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
       );
 
       if (image == null) return;
-
-      // Crop the image
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: image.path,
-        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // Square crop
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Crop Profile Photo',
-            toolbarColor: const Color(0xFF3B82F6),
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.square,
-            lockAspectRatio: true,
-            hideBottomControls: false,
-            showCropGrid: true,
-          ),
-          IOSUiSettings(
-            title: 'Crop Profile Photo',
-            aspectRatioLockEnabled: true,
-            resetAspectRatioEnabled: false,
-          ),
-        ],
-      );
-
-      if (croppedFile == null) return;
-
-      // Convert CroppedFile to XFile
-      final croppedXFile = XFile(croppedFile.path);
 
       // Show loading
       if (mounted) {
@@ -402,7 +375,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       }
 
       // Upload to server (pass XFile directly for cross-platform support)
-      final success = await BusinessNetworkService.uploadProfilePicture(croppedXFile);
+      final success = await BusinessNetworkService.uploadProfilePicture(image);
       
       if (mounted) {
         // Hide loading snackbar
