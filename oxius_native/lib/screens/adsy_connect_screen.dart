@@ -127,10 +127,17 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           
           // Check if last message is deleted
           final isDeleted = lastMessage?['is_deleted'] == true;
-          final messageContent = lastMessage?['content'] ?? room['last_message_preview'] ?? '';
+          final messageContent = lastMessage?['content']?.toString() ?? room['last_message_preview']?.toString() ?? '';
           
-          // Show "Message removed" if deleted, otherwise show content
-          final displayMessage = isDeleted ? 'Message removed' : messageContent;
+          // Show "Message removed" if deleted OR if content says "Message deleted"
+          String displayMessage;
+          if (isDeleted || messageContent == 'Message deleted') {
+            displayMessage = 'Message removed';
+          } else if (messageContent.isEmpty) {
+            displayMessage = 'No messages yet';
+          } else {
+            displayMessage = messageContent;
+          }
           
           return {
             'id': room['id'],
