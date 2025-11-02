@@ -111,7 +111,9 @@ flutter:
 # Flutter Launcher Icons Configuration
 flutter_launcher_icons:
   android: true
-  ios: false
-  image_path: "assets/images/favicon.png"
+  ios: true
+  image_path: "C:/Users/Alimul/Desktop/App/icon.jpg"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/favicon.png"
+  adaptive_icon_foreground: "C:/Users/Alimul/Desktop/App/icon.jpg"
+  # Remove alpha channel for adaptive icon
+  remove_alpha_ios: true
