@@ -90,6 +90,8 @@ class MobileRechargeService {
         throw Exception('Not authenticated');
       }
 
+      print('📱 Fetching operators from: $baseUrl/mobile-recharge/operators/');
+
       final response = await http.get(
         Uri.parse('$baseUrl/mobile-recharge/operators/'),
         headers: {
@@ -98,13 +100,44 @@ class MobileRechargeService {
         },
       );
 
+      print('📱 Operators response status: ${response.statusCode}');
+      print('📱 Operators response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        List<dynamic> operators;
+        
         if (data is List) {
-          return List<Map<String, dynamic>>.from(data);
+          operators = data;
         } else if (data['results'] != null) {
-          return List<Map<String, dynamic>>.from(data['results']);
+          operators = data['results'];
+        } else {
+          operators = [];
         }
+
+        print('📱 Total operators found: ${operators.length}');
+        
+        // Process operators to ensure icon URLs are absolute
+        final processedOperators = operators.map((op) {
+          final operator = Map<String, dynamic>.from(op);
+          
+          // Convert icon URL to absolute if it's relative
+          if (operator['icon'] != null && operator['icon'].toString().isNotEmpty) {
+            final iconUrl = operator['icon'].toString();
+            if (!iconUrl.startsWith('http')) {
+              // Remove leading slash if present
+              final cleanPath = iconUrl.startsWith('/') ? iconUrl.substring(1) : iconUrl;
+              operator['icon'] = '$baseUrl/$cleanPath';
+              print('📱 Converted operator icon: ${operator['name']} -> ${operator['icon']}');
+            }
+          }
+          
+          return operator;
+        }).toList();
+
+        print('📱 Processed operators: ${processedOperators.map((o) => '${o['name']} (${o['icon']})').join(', ')}');
+        
+        return List<Map<String, dynamic>>.from(processedOperators);
       }
       return [];
     } catch (e) {

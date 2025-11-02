@@ -370,11 +370,13 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
             spacing: 6,
             runSpacing: 6,
             children: _operators.map((operator) {
-              final isSelected = _selectedOperator == (operator['id'] ?? operator['code']);
+              // Convert ID to string for comparison (backend returns int, 'all' is string)
+              final operatorId = operator['id']?.toString() ?? operator['code']?.toString() ?? '';
+              final isSelected = _selectedOperator == operatorId;
               final operatorName = operator['name'] as String;
               return InkWell(
                 onTap: () {
-                  final selectedOpId = (operator['id'] ?? operator['code']) as String;
+                  final selectedOpId = operator['id']?.toString() ?? operator['code']?.toString() ?? '';
                   print('👆 Selected operator: ${operator['name']} (ID: $selectedOpId)');
                   setState(() => _selectedOperator = selectedOpId);
                   _loadPackages();
@@ -390,32 +392,51 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 20,
-                        height: 20,
+                        width: 24,
+                        height: 24,
                         decoration: BoxDecoration(
                           color: isSelected 
                               ? Colors.white.withOpacity(0.2) 
-                              : _getOperatorColor(operatorName).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        child: operator['icon'] != null
+                        padding: const EdgeInsets.all(4),
+                        child: operator['icon'] != null && operator['icon'].toString().isNotEmpty
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(3),
                                 child: Image.network(
                                   operator['icon'],
-                                  width: 20,
-                                  height: 20,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => Icon(
-                                    _getOperatorIcon(operatorName),
-                                    size: 12,
-                                    color: isSelected ? Colors.white : _getOperatorColor(operatorName),
-                                  ),
+                                  width: 16,
+                                  height: 16,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    print('❌ Failed to load operator icon: ${operator['icon']}');
+                                    return Icon(
+                                      _getOperatorIcon(operatorName),
+                                      size: 14,
+                                      color: isSelected ? Colors.white : _getOperatorColor(operatorName),
+                                    );
+                                  },
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Center(
+                                      child: SizedBox(
+                                        width: 12,
+                                        height: 12,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 1.5,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                            isSelected ? Colors.white : const Color(0xFF10B981),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               )
                             : Icon(
                                 _getOperatorIcon(operatorName),
-                                size: 12,
+                                size: 14,
                                 color: isSelected ? Colors.white : _getOperatorColor(operatorName),
                               ),
                       ),
