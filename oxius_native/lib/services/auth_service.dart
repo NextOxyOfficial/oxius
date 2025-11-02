@@ -21,6 +21,10 @@ class User {
   final int diamondBalance;
   final bool isPro;
   final bool isVerified;
+  final String? address;
+  final String? phone;
+  final String? city;
+  final String? zip;
 
   User({
     required this.id,
@@ -40,6 +44,10 @@ class User {
     this.diamondBalance = 0,
     this.isPro = false,
     this.isVerified = false,
+    this.address,
+    this.phone,
+    this.city,
+    this.zip,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -85,6 +93,10 @@ class User {
           : int.tryParse(json['diamond_balance']?.toString() ?? '0') ?? 0,
       isPro: json['is_pro'] == true,
       isVerified: json['kyc'] == true || json['is_verified'] == true,
+      address: json['address'],
+      phone: json['phone'],
+      city: json['city'],
+      zip: json['zip'],
     );
   }
 
@@ -107,6 +119,10 @@ class User {
       'diamond_balance': diamondBalance,
       'is_pro': isPro,
       'kyc': isVerified,
+      'address': address,
+      'phone': phone,
+      'city': city,
+      'zip': zip,
     };
   }
 

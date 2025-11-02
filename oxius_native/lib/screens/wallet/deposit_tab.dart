@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/wallet_models.dart';
@@ -69,18 +70,23 @@ class _DepositTabState extends State<DepositTab> {
       final response = await WalletService.createDeposit(request);
 
       if (response != null && response['checkout_url'] != null) {
+        // Extract order ID from response or generate it
+        final orderId = response['order_id']?.toString() ?? 
+                       response['merchant_invoice_no']?.toString() ??
+                       DateTime.now().millisecondsSinceEpoch.toString();
+        
         // Launch payment gateway
         final url = Uri.parse(response['checkout_url']);
         if (await canLaunchUrl(url)) {
           await launchUrl(url, mode: LaunchMode.externalApplication);
           
           if (mounted) {
-            // Show success message
+            // Show message and start polling
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Redirecting to payment gateway...'),
+                content: Text('Complete payment in browser. We\'ll update your balance automatically.'),
                 backgroundColor: Color(0xFF10B981),
-                duration: Duration(seconds: 2),
+                duration: Duration(seconds: 4),
               ),
             );
             
@@ -88,8 +94,8 @@ class _DepositTabState extends State<DepositTab> {
             _amountController.clear();
             setState(() => _acceptedTerms = false);
             
-            // Refresh balance after some delay
-            Future.delayed(const Duration(seconds: 3), widget.onDepositSuccess);
+            // Start polling for payment status
+            _startPaymentStatusPolling(orderId);
           }
         } else {
           throw Exception('Could not launch payment gateway');
@@ -110,6 +116,77 @@ class _DepositTabState extends State<DepositTab> {
         setState(() => _isLoading = false);
       }
     }
+  }
+
+  void _startPaymentStatusPolling(String orderId) {
+    print('📱 Starting payment status polling for order: $orderId');
+    int pollCount = 0;
+    const maxPolls = 60; // Poll for 5 minutes (60 * 5 seconds)
+    
+    Timer.periodic(const Duration(seconds: 5), (timer) async {
+      pollCount++;
+      
+      try {
+        print('📱 Polling attempt $pollCount/$maxPolls');
+        
+        final result = await WalletService.verifyPayment(orderId);
+        
+        if (result != null && result['shurjopay_message'] == 'Success') {
+          timer.cancel();
+          print('✅ Payment verified successfully!');
+          
+          // Add balance to account
+          await WalletService.addBalanceAfterPayment(result);
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('🎉 Payment successful! Your balance has been updated.'),
+                backgroundColor: Color(0xFF10B981),
+                duration: Duration(seconds: 4),
+              ),
+            );
+            
+            // Refresh balance
+            widget.onDepositSuccess();
+          }
+        } else if (result != null && result['shurjopay_message'] != null && 
+                   result['shurjopay_message'] != 'Success') {
+          // Payment failed
+          timer.cancel();
+          print('❌ Payment failed: ${result['shurjopay_message']}');
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Payment failed: ${result['shurjopay_message']}'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          }
+        }
+        
+        // Stop polling after max attempts
+        if (pollCount >= maxPolls) {
+          timer.cancel();
+          print('⏱️ Polling timeout reached');
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Payment status check timed out. Please check your balance or contact support.'),
+                backgroundColor: Colors.orange,
+                duration: Duration(seconds: 5),
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        print('⚠️ Polling error (will retry): $e');
+        // Continue polling on error
+      }
+    });
   }
 
   @override

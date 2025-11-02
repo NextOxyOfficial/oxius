@@ -103,7 +103,7 @@ class WalletService {
     }
   }
 
-  /// Create a deposit request (initiates payment gateway)
+  /// Create a deposit request (initiates Surjopay payment gateway)
   static Future<Map<String, dynamic>?> createDeposit(DepositRequest request) async {
     try {
       final token = await AuthService.getValidToken();
@@ -119,27 +119,68 @@ class WalletService {
         throw Exception('Please accept terms and conditions');
       }
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/add-user-balance/'),
+      // Get current user data for payment gateway
+      final user = AuthService.currentUser;
+      if (user == null) {
+        throw Exception('User not found');
+      }
+
+      // Validate required user profile fields
+      final firstName = user.firstName ?? 'User';
+      final lastName = user.lastName ?? '';
+      final address = user.address ?? 'N/A';
+      final phone = user.phone ?? 'N/A';
+      final city = user.city ?? 'N/A';
+      final zip = user.zip ?? '0000';
+
+      // Generate unique order ID
+      final uniqueOrderId = '${DateTime.now().millisecondsSinceEpoch}-${(DateTime.now().microsecond % 1000)}';
+
+      // Build payment URL with all required parameters (matching Vue implementation)
+      final queryParams = {
+        'amount': request.amount.toString(),
+        'order_id': uniqueOrderId,
+        'currency': 'BDT',
+        'customer_name': '$firstName $lastName',
+        'customer_address': address,
+        'customer_phone': phone,
+        'customer_city': city,
+        'customer_post_code': zip,
+      };
+
+      final uri = Uri.parse('$baseUrl/pay/').replace(queryParameters: queryParams);
+
+      print('📱 Initiating Surjopay deposit: ${request.amount} BDT');
+      print('📱 Payment URL: $uri');
+
+      final response = await http.get(
+        uri,
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-        body: json.encode({
-          ...request.toJson(),
-          'transaction_type': 'deposit',
-        }),
       );
+
+      print('📱 Payment response status: ${response.statusCode}');
+      print('📱 Payment response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
-        return data; // Contains checkout_url for payment gateway
+        
+        if (data['checkout_url'] != null) {
+          print('✅ Surjopay checkout URL received: ${data['checkout_url']}');
+          return data; // Contains checkout_url for Surjopay gateway
+        } else {
+          print('❌ No checkout_url in response');
+          throw Exception('Failed to get payment URL. Please check your profile information.');
+        }
       } else {
         final error = json.decode(response.body);
-        throw Exception(error['message'] ?? 'Failed to create deposit');
+        print('❌ Payment gateway error: $error');
+        throw Exception(error['message'] ?? error['error'] ?? 'Failed to initiate payment');
       }
     } catch (e) {
-      print('Error creating deposit: $e');
+      print('❌ Error creating deposit: $e');
       rethrow;
     }
   }
@@ -362,5 +403,94 @@ class WalletService {
         icon: 'images/bkash.png',
       ),
     ];
+  }
+
+  /// Verify payment with Surjopay (called after payment gateway redirects back)
+  static Future<Map<String, dynamic>?> verifyPayment(String orderId) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      print('📱 Verifying payment for order: $orderId');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/verify-pay/?sp_order_id=$orderId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('📱 Verification response status: ${response.statusCode}');
+      print('📱 Verification response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data;
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error['error'] ?? 'Payment verification failed');
+      }
+    } catch (e) {
+      print('❌ Error verifying payment: $e');
+      rethrow;
+    }
+  }
+
+  /// Add balance after successful payment verification
+  static Future<Map<String, dynamic>?> addBalanceAfterPayment(
+    Map<String, dynamic> paymentDetails,
+  ) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      print('📱 Adding balance after payment verification');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/add-user-balance/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'bank_status': paymentDetails['bank_status']?.toString().toLowerCase(),
+          'transaction_type': 'Deposit',
+          'payment_method': paymentDetails['payment_method'],
+          'amount': paymentDetails['amount'],
+          'payable_amount': paymentDetails['payable_amount'],
+          'received_amount': paymentDetails['received_amount'],
+          'merchant_invoice_no': paymentDetails['merchant_invoice_no'],
+          'shurjopay_order_id': paymentDetails['shurjopay_order_id'],
+          'payment_confirmed_at': paymentDetails['payment_confirmed_at'],
+        }),
+      );
+
+      print('📱 Add balance response status: ${response.statusCode}');
+      print('📱 Add balance response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = json.decode(response.body);
+        
+        // Refresh user data to get updated balance
+        await AuthService.refreshUserData();
+        
+        return {
+          'success': true,
+          'message': 'Payment successful!',
+          'data': data,
+        };
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error['error'] ?? 'Failed to add balance');
+      }
+    } catch (e) {
+      print('❌ Error adding balance: $e');
+      rethrow;
+    }
   }
 }
