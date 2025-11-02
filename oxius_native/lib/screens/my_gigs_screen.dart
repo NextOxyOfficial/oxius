@@ -60,6 +60,23 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     }
   }
   
+  // Helper method to safely get gig status as string
+  // Ensures consistent string evaluation in both debug and release builds
+  String _getGigStatus(Map<String, dynamic> gig) {
+    final status = gig['gig_status'];
+    if (status == null) return '';
+    return status.toString().toLowerCase().trim();
+  }
+  
+  // Helper method to safely check if gig is active
+  // Handles various boolean representations from backend
+  bool _isGigActive(Map<String, dynamic> gig) {
+    final active = gig['active_gig'];
+    if (active == null) return false;
+    // Handle boolean, int, and string representations
+    return active == true || active == 1 || active == '1' || active == 'true' || active == 'True';
+  }
+  
   void _applyFilter() {
     print('🔍 Applying filter: $_selectedFilter');
     print('📊 Total gigs: ${_userGigs.length}');
@@ -70,8 +87,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       filtered = List.from(_userGigs);
     } else {
       filtered = _userGigs.where((gig) {
-        final gigStatus = gig['gig_status'] ?? '';
-        final isActive = gig['active_gig'] ?? false;
+        final gigStatus = _getGigStatus(gig);
+        final isActive = _isGigActive(gig);
         
         print('Gig: ${gig['title']}, Status: $gigStatus, Active: $isActive');
         
@@ -432,7 +449,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       final gigDetails = await _gigsService.getGigDetails(gig['id'].toString());
       
       if (mounted && gigDetails != null) {
-        final isRejected = gigDetails['gig_status'] == 'rejected';
+        final isRejected = _getGigStatus(gigDetails) == 'rejected';
         final rejectionReason = gigDetails['rejection_reason'] ?? '';
         
         showDialog(
@@ -447,7 +464,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                   children: [
                     if (gigDetails['category_details'] != null && gigDetails['category_details']['title'] != null)
                       _buildDetailRow('Category', gigDetails['category_details']['title']),
-                    _buildDetailRow('Status', _getStatusText(gigDetails['gig_status'], gigDetails['active_gig'])),
+                    _buildDetailRow('Status', _getStatusText(_getGigStatus(gigDetails), _isGigActive(gigDetails))),
                     _buildDetailRow('Price', '৳${gigDetails['price']}'),
                     _buildDetailRow('Progress', '${gigDetails['filled_quantity']}/${gigDetails['required_quantity']}'),
                     _buildDetailRow('Balance', '৳${gigDetails['balance']}'),
@@ -707,8 +724,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                             _filteredGigs = List.from(_userGigs);
                           } else {
                             _filteredGigs = _userGigs.where((gig) {
-                              final gigStatus = gig['gig_status'] ?? '';
-                              final isActive = gig['active_gig'] ?? false;
+                              final gigStatus = _getGigStatus(gig);
+                              final isActive = _isGigActive(gig);
                               
                               switch (_selectedFilter) {
                                 case 'live':
@@ -786,8 +803,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   
   Widget _buildGigCard(Map<String, dynamic> gig, bool isMobile) {
     final categoryDetails = gig['category_details'];
-    final gigStatus = gig['gig_status'] ?? '';
-    final isActive = gig['active_gig'] ?? false;
+    final gigStatus = _getGigStatus(gig);
+    final isActive = _isGigActive(gig);
     final isCompleted = gigStatus == 'completed';
     
     return Container(
@@ -963,7 +980,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   
   Widget _buildGigActions(Map<String, dynamic> gig, bool isActive, bool isCompleted, bool isMobile) {
     final gigId = gig['id']?.toString() ?? '';
-    final gigStatus = gig['gig_status'] ?? '';
+    final gigStatus = _getGigStatus(gig);
     final isRejected = gigStatus == 'rejected';
     final isPending = gigStatus == 'pending';
     final isApproved = gigStatus == 'approved';

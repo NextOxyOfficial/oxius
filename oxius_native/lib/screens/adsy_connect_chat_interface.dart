@@ -228,7 +228,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         'thumbnailUrl': msg['thumbnail_url']?.toString(),
         'fileName': msg['file_name']?.toString(),
         'isSeen': isSeen, // Changed from isRead to isSeen for clarity
-        'isDeleted': msg['is_deleted'] ?? false,
+        'isDeleted': (msg['is_deleted'] == true || msg['is_deleted'] == 1 || msg['is_deleted'] == '1' || msg['is_deleted'] == 'true'),
       };
     }).toList();
     
@@ -370,7 +370,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       'thumbnailUrl': msg['thumbnail_url']?.toString(),
       'fileName': msg['file_name']?.toString(),
       'isSeen': isSeen, // Changed from isRead to isSeen for clarity
-      'isDeleted': msg['is_deleted'] ?? false,
+      'isDeleted': (msg['is_deleted'] == true || msg['is_deleted'] == 1 || msg['is_deleted'] == '1' || msg['is_deleted'] == 'true'),
       'showTimestamp': true, // Always show timestamp for sent messages
     };
   }
@@ -488,6 +488,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     final minutes = seconds ~/ 60;
     final remainingSeconds = seconds % 60;
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  // Helper method to safely check if message is deleted
+  // This ensures consistent boolean evaluation in both debug and release builds
+  bool _isMessageDeleted(Map<String, dynamic> message) {
+    final isDeleted = message['isDeleted'];
+    return isDeleted == true || isDeleted == 1 || isDeleted == '1' || isDeleted == 'true';
   }
 
   void _showMessageOptions(Map<String, dynamic> message) {
@@ -1562,7 +1569,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
               crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onLongPress: isMe && message['isDeleted'] != true 
+                  onLongPress: isMe && !_isMessageDeleted(message) 
                       ? () => _showMessageOptions(message) 
                       : null,
                   child: Container(
@@ -1594,7 +1601,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                               ),
                             ],
                     ),
-                    child: message['isDeleted'] == true
+                    child: _isMessageDeleted(message)
                         ? Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
