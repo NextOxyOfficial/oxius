@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../services/eshop_service.dart';
+import '../services/api_service.dart';
 import '../widgets/product_card.dart';
 import '../models/cart_item.dart';
 import 'vendor_store_screen.dart';
@@ -237,19 +240,40 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   }
 
   Future<void> _loadStoreProducts() async {
+    print('===== LOADING STORE PRODUCTS =====');
+    print('Product ID: ${widget.product['id']}');
+    print('Product Title: ${widget.product['title']}');
+    
     setState(() => _isLoadingStoreProducts = true);
     
     try {
       // Get store username from owner_details
       final ownerDetails = widget.product['owner_details'];
+      print('Owner Details Type: ${ownerDetails.runtimeType}');
+      print('Owner Details Content: $ownerDetails');
+      
       String? storeUsername;
       
       if (ownerDetails is Map<String, dynamic>) {
-        storeUsername = ownerDetails['username']?.toString();
+        // Check multiple possible username fields
+        final storeUsernameField = ownerDetails['store_username']?.toString();
+        final usernameField = ownerDetails['username']?.toString();
+        final userIdField = ownerDetails['user_id']?.toString();
+        final idField = ownerDetails['id']?.toString();
+        
+        print('Available owner fields:');
+        print('  store_username: $storeUsernameField');
+        print('  username: $usernameField');
+        print('  user_id: $userIdField');
+        print('  id: $idField');
+        print('  All keys: ${ownerDetails.keys.toList()}');
+        
+        storeUsername = storeUsernameField ?? usernameField ?? userIdField ?? idField;
       }
       
       if (storeUsername == null || storeUsername.isEmpty) {
-        print('Error: No store username found in product owner_details');
+        print('❌ ERROR: No store username/ID found in product owner_details');
+        print('Owner details full structure: $ownerDetails');
         setState(() {
           _storeProducts = [];
           _isLoadingStoreProducts = false;
@@ -257,19 +281,96 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         return;
       }
       
-      // Fetch products from the same store
-      final products = await EshopService.fetchStoreProducts(
-        storeUsername: storeUsername,
-        page: 1,
-        pageSize: 10,
-      );
+      print('✅ Using store identifier: $storeUsername');
+      
+      // Try multiple endpoints like VendorStoreScreen does
+      final endpoints = [
+        '${ApiService.baseUrl}/store/$storeUsername/products/?page=1&page_size=10',
+        '${ApiService.baseUrl}/products/?owner__username=$storeUsername&page=1&page_size=10',
+        '${ApiService.baseUrl}/products/?owner__store_username=$storeUsername&page=1&page_size=10',
+      ];
+      
+      List<Map<String, dynamic>> products = [];
+      bool foundProducts = false;
+      
+      for (final endpoint in endpoints) {
+        try {
+          print('🔍 Trying endpoint: $endpoint');
+          
+          final uri = Uri.parse(endpoint);
+          final response = await http.get(
+            uri,
+            headers: {'Content-Type': 'application/json'},
+          ).timeout(const Duration(seconds: 10));
+          
+          print('📦 Response status: ${response.statusCode}');
+          
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            
+            // Parse response
+            List<dynamic> rawProducts = [];
+            if (data is List) {
+              rawProducts = data;
+            } else if (data is Map) {
+              rawProducts = data['results'] ?? data['products'] ?? [];
+            }
+            
+            print('📦 Products found: ${rawProducts.length}');
+            
+            if (rawProducts.isNotEmpty) {
+              // Transform products
+              products = rawProducts.map((p) {
+                if (p is Map) {
+                  return Map<String, dynamic>.from(p);
+                }
+                return <String, dynamic>{};
+              }).toList();
+              
+              foundProducts = true;
+              print('✅ Success! Using endpoint: $endpoint');
+              break;
+            } else {
+              print('⚠️ Endpoint returned 0 products, trying next...');
+            }
+          } else {
+            print('⚠️ Endpoint returned ${response.statusCode}, trying next...');
+          }
+        } catch (e) {
+          print('❌ Error with endpoint $endpoint: $e');
+        }
+      }
+      
+      if (!foundProducts) {
+        print('⚠️ WARNING: No products found after trying all endpoints for: $storeUsername');
+      }
       
       setState(() {
         // Filter out current product
-        final filteredProducts = products.where((p) => p['id'] != widget.product['id']).toList();
+        final currentProductId = widget.product['id'];
+        print('Current product ID to exclude: $currentProductId');
         
-        // Only show section if store has at least 2 products (excluding current)
-        _storeProducts = filteredProducts.length >= 1 ? filteredProducts.take(6).toList() : [];
+        final filteredProducts = products.where((p) {
+          final productId = p['id'];
+          final shouldInclude = productId != currentProductId;
+          if (!shouldInclude) {
+            print('Excluding current product: $productId');
+          }
+          return shouldInclude;
+        }).toList();
+        
+        print('📊 Statistics:');
+        print('  Total from API: ${products.length}');
+        print('  After filtering current: ${filteredProducts.length}');
+        
+        // Show products (up to 6)
+        _storeProducts = filteredProducts.take(6).toList();
+        
+        print('✅ Final products to display: ${_storeProducts.length}');
+        
+        if (_storeProducts.isNotEmpty) {
+          print('Product titles: ${_storeProducts.map((p) => p['title']).take(3).join(', ')}...');
+        }
       });
     } catch (e) {
       print('Error loading store products: $e');
@@ -551,8 +652,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
 
                 const SizedBox(height: 4),
 
-                // More from Store
-                if (_storeProducts.isNotEmpty) _buildStoreProducts(product),
+                // More from Store (always show, handles loading/empty states)
+                _buildStoreProducts(product),
 
                 const SizedBox(height: 4),
 
@@ -1829,33 +1930,49 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           const SizedBox(height: 16),
           SizedBox(
             height: 275,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 0),
-              itemCount: _storeProducts.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 4),
-              itemBuilder: (context, index) {
-                return SizedBox(
-                  width: 150,
-                  child: ProductCard(
-                    product: _storeProducts[index],
-                    isLoading: false,
-                    onBuyNow: () => _handleBuyNowForProduct(_storeProducts[index]),
-                    onTap: () {
-                      // Navigate to product details
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetailsScreen(
-                            product: _storeProducts[index],
+            child: _isLoadingStoreProducts
+                ? Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.pink.shade400),
+                    ),
+                  )
+                : _storeProducts.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No other products from this store',
+                          style: GoogleFonts.roboto(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
                           ),
                         ),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
+                      )
+                    : ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        itemCount: _storeProducts.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 4),
+                        itemBuilder: (context, index) {
+                          return SizedBox(
+                            width: 150,
+                            child: ProductCard(
+                              product: _storeProducts[index],
+                              isLoading: false,
+                              onBuyNow: () => _handleBuyNowForProduct(_storeProducts[index]),
+                              onTap: () {
+                                // Navigate to product details
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProductDetailsScreen(
+                                      product: _storeProducts[index],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),
