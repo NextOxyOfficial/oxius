@@ -24,6 +24,13 @@ import 'screens/wallet/wallet_screen.dart';
 import 'screens/mobile_recharge/mobile_recharge_screen.dart';
 import 'screens/eshop_screen.dart';
 import 'screens/eshop_manager_screen.dart';
+import 'screens/news_screen.dart';
+import 'screens/about_screen.dart';
+import 'screens/faq_screen.dart';
+import 'screens/contact_us_screen.dart';
+import 'screens/refer_friend_screen.dart';
+import 'screens/terms_and_conditions_screen.dart';
+import 'screens/privacy_policy_screen.dart';
 import 'pages/login_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/register_page.dart';
@@ -143,6 +150,13 @@ class MyApp extends StatelessWidget {
             '/upgrade-to-pro': (context) => const UpgradeToProScreen(),
             '/eshop': (context) => const EshopScreen(),
             '/shop-manager': (context) => const EshopManagerScreen(),
+            '/adsy-news': (context) => const NewsScreen(),
+            '/about': (context) => const AboutScreen(),
+            '/faq': (context) => const FaqScreen(),
+            '/contact-us': (context) => const ContactUsScreen(),
+            '/refer-a-friend': (context) => const ReferFriendScreen(),
+            '/terms-and-conditions': (context) => const TermsAndConditionsScreen(),
+            '/privacy-policy': (context) => const PrivacyPolicyScreen(),
           },
           onGenerateRoute: (settings) {
             if (settings.name == '/classified-category') {
