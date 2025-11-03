@@ -1,0 +1,10 @@
+# Android Release Signing Configuration
+# Copy this file to key.properties and update with your actual values
+#
+# IMPORTANT: Never commit key.properties to version control!
+# This file is already in .gitignore
+
+storePassword=oxius2024
+keyPassword=oxius2024
+keyAlias=upload
+storeFile=app/upload-keystore.jks
