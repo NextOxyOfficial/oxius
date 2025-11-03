@@ -59,9 +59,18 @@ class AboutScreen extends StatelessWidget {
                 color: const Color(0xFF1F2937),
               ),
             ),
+            const SizedBox(height: 4),
+            Text(
+              'Social Business Network',
+              style: GoogleFonts.roboto(
+                fontSize: 13,
+                color: const Color(0xFF10B981),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 12),
             Text(
-              'AdsyClub is your comprehensive platform for earning money, connecting with society, and finding the services you need. We provide a marketplace for buying and selling, professional networking, micro-gigs, e-learning, and much more.',
+              'Adsy Club is a social business network dedicated to connecting individuals and businesses through an innovative platform. Our mission is to create a vibrant ecosystem where you can earn money, build meaningful connections, and find the services you need—all in one place.',
               style: GoogleFonts.roboto(
                 fontSize: 14,
                 height: 1.6,
@@ -70,30 +79,82 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             
-            // Features
+            // What We Offer
             _buildSection(
-              'Our Services',
+              'What We Offer',
               [
-                'Buy & Sell Marketplace',
-                'Business Network',
-                'Micro-Gigs',
-                'E-Learning Platform',
-                'eShop',
-                'Mobile Recharge',
-                'AdsyPay Wallet',
+                'Classified Advertisements - Post and browse ads across multiple categories',
+                'Business Networking - Connect with professionals and establish partnerships',
+                'Mobile Recharge - Easily recharge mobile credits through our platform',
+                'Earning Opportunities - Multiple ways to generate income',
               ],
             ),
             const SizedBox(height: 24),
             
-            // Mission
+            // Our Vision
             _buildSection(
-              'Our Mission',
+              'Our Vision',
               [
-                'Empower individuals to earn and grow',
-                'Connect communities through business networking',
-                'Provide accessible services for everyone',
-                'Create opportunities for entrepreneurship',
+                'Empower Bangladeshis to take control of their economic future',
+                'Bridge the gap between businesses and customers',
+                'Foster a sense of community and innovative business practices',
+                'Be at the forefront of Bangladesh\'s digital transformation',
               ],
+            ),
+            const SizedBox(height: 24),
+            
+            // Commitment to Safety
+            _buildSection(
+              'Commitment to Safety',
+              [
+                'Verification processes for businesses and users',
+                'Secure payment processing through trusted partners',
+                'Content moderation to maintain quality standards',
+                'Privacy controls that put you in charge of your data',
+                'Regular security audits and updates',
+              ],
+            ),
+            const SizedBox(height: 24),
+            
+            // Our Future
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Our Future',
+                    style: GoogleFonts.roboto(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'As Adsy Club continues to grow, we aim to enhance our services further by incorporating advanced features and technologies. Our future goals include improving user experience through personalized recommendations, expanding our reach across Bangladesh, and continually enhancing the opportunities for our users to connect and prosper.',
+                    style: GoogleFonts.roboto(
+                      fontSize: 14,
+                      height: 1.6,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'We\'re committed to evolving alongside Bangladesh\'s digital transformation and playing a key role in creating a more connected and prosperous business ecosystem.',
+                    style: GoogleFonts.roboto(
+                      fontSize: 14,
+                      height: 1.6,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             
@@ -118,7 +179,6 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _buildContactItem(Icons.email_outlined, 'support@adsyclub.com'),
-                  _buildContactItem(Icons.phone_outlined, '+880 1XXX-XXXXXX'),
                   _buildContactItem(Icons.language_rounded, 'www.adsyclub.com'),
                 ],
               ),
