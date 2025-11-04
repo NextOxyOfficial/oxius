@@ -548,8 +548,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [Colors.pink.shade400, Colors.orange.shade500],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
         ),
         child: SafeArea(
@@ -613,7 +613,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
           // Back Button
@@ -1175,7 +1175,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
               ),
             ),
           ),
-        
+ r       
         // Bottom spacing to prevent overflow
         const SizedBox(height: 80),
       ],
