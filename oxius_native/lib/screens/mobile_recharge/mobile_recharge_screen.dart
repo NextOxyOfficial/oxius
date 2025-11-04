@@ -67,6 +67,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     print('🔄 Loading packages for operator: $_selectedOperator, type: $_activeFilter');
     
     // Don't send filter if "all" is selected
+    // Backend expects operator as integer ID, not string
     final operatorFilter = _selectedOperator == 'all' ? null : _selectedOperator;
     final typeFilter = _activeFilter == 'all' ? null : _activeFilter;
     
@@ -93,8 +94,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
         print('📦 Filtered packages: ${_filteredPackages.length}');
         
         if (packages.isEmpty) {
-          print('⚠️ WARNING: No packages found in database!');
-          print('⚠️ Please add packages in Django admin: /admin/mobile_recharge/package/');
+          print('⚠️ WARNING: No packages found for operator=$operatorFilter, type=$typeFilter');
+          print('⚠️ Check if packages exist in Django admin: /admin/mobile_recharge/package/');
         }
       } else {
         print('❌ Failed to load packages: ${result['message']}');
@@ -149,26 +150,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
   }
   
   List<Map<String, dynamic>> get _filteredPackages {
-    final filtered = _packages.where((pack) {
-      // Filter by operator
-      final packageOperator = pack['operator'];
-      final shouldFilterByOperator = _selectedOperator != 'all' && packageOperator != _selectedOperator;
-      
-      if (shouldFilterByOperator) {
-        return false;
-      }
-      
-      // Filter by type
-      if (_activeFilter != 'all' && pack['type'] != _activeFilter) {
-        return false;
-      }
-      
-      return true;
-    }).toList();
-    
-    print('🔍 Filtering: operator=$_selectedOperator, type=$_activeFilter, result=${filtered.length} packages');
-    
-    return filtered;
+    // Server-side filtering is already applied in _loadPackages()
+    // No need for additional client-side filtering since backend handles it
+    // Just return all packages from the API response
+    return _packages;
   }
   
   @override
