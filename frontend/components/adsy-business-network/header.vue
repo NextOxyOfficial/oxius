@@ -48,11 +48,17 @@
               <NuxtImg
                 v-if="logo[0]?.image"
                 :src="logo[0].image"
-                alt="Adsy Logo"
+                alt="Adsy Business Network Logo"
                 width="150"
                 height="50"
                 class="h-8 sm:h-10 w-auto object-contain"
                 loading="eager"
+              />
+              <img
+                v-else
+                src="/static/frontend/images/logo.png"
+                alt="AdsyClub Logo"
+                class="h-8 sm:h-10 w-auto object-contain"
               />
               <div
                 class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 hover:opacity-100 -translate-x-full hover:translate-x-full transition-all duration-1000 ease-in-out"
@@ -290,8 +296,14 @@ const badgeCount = ref(0);
 const isScrolled = ref(false);
 
 async function getLogo() {
-  const { data } = await get("/bn-logo/");
-  logo.value = data;
+  try {
+    const { data } = await get("/bn-logo/");
+    logo.value = data;
+    console.log('BN Logo loaded:', data);
+  } catch (error) {
+    console.warn('Failed to load BN logo, using fallback:', error);
+    logo.value = [];
+  }
 }
 
 await getLogo();

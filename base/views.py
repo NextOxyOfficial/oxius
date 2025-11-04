@@ -3723,13 +3723,23 @@ def referred_users(request):
 
 
 class BNLogoView(generics.ListAPIView):
+    """
+    View to retrieve all banners.
+    """
+
     queryset = BNLogo.objects.all().order_by("-created_at")
     serializer_class = BNLogoSerializer
+    pagination_class = None  # Disable pagination to return array directly
 
 
 class NewsLogoView(generics.ListAPIView):
+    """
+    View to retrieve all news logos.
+    """
+
     queryset = NewsLogo.objects.all().order_by("-created_at")
     serializer_class = NewsLogoSerializer
+    pagination_class = None  # Disable pagination to return array directly
 
 
 @api_view(["GET"])

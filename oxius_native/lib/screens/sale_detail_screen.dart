@@ -631,6 +631,23 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     }).join(' ');
   }
 
+  String _stripHtmlTags(String htmlText) {
+    // Remove all HTML tags
+    String text = htmlText.replaceAll(RegExp(r'<[^>]*>'), '');
+    // Decode HTML entities
+    text = text
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&apos;', "'");
+    // Remove extra whitespace
+    text = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return text;
+  }
+
   Widget _buildFinancingBanner(double price) {
     return Container(
       decoration: BoxDecoration(
@@ -793,7 +810,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            post.description!.replaceAll(RegExp(r'<p>|</p>'), '').trim(),
+            _stripHtmlTags(post.description!),
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade600,

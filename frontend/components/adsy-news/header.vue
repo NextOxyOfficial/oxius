@@ -16,6 +16,12 @@
               height="40"
               class="h-7 sm:h-9 w-auto object-cover"
             />
+            <img
+              v-else
+              src="/static/frontend/images/logo.png"
+              alt="AdsyClub Logo"
+              class="h-7 sm:h-9 w-auto object-contain"
+            />
           </NuxtLink>
 
           <!-- Desktop Nav Categories - Middle section -->
@@ -321,8 +327,14 @@ watch(() => useRoute().path, () => {
 });
 
 async function getLogo() {
-  const { data } = await get("/news-logo/");
-  logo.value = data;
+  try {
+    const { data } = await get("/news-logo/");
+    logo.value = data;
+    console.log('News Logo loaded:', data);
+  } catch (error) {
+    console.warn('Failed to load News logo, using fallback:', error);
+    logo.value = [];
+  }
 }
 await getLogo();
 
