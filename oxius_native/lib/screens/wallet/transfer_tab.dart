@@ -44,7 +44,7 @@ class _TransferTabState extends State<TransferTab> {
     setState(() {
       final contact = _contactController.text.trim();
       if (contact.isEmpty) {
-        _contactError = 'Please enter email or phone number';
+        _contactError = 'Please enter user ID, email or phone number';
       } else {
         _contactError = null;
       }
@@ -351,11 +351,11 @@ class _TransferTabState extends State<TransferTab> {
           // Contact Input
           TextField(
             controller: _contactController,
-            keyboardType: TextInputType.emailAddress,
+            keyboardType: TextInputType.text,
             onChanged: (value) => _validateContact(),
             decoration: InputDecoration(
-              labelText: 'Recipient Email or Phone',
-              hintText: 'Enter email or phone number',
+              labelText: 'Recipient ID, Email or Phone',
+              hintText: 'Enter user ID, email or phone','
               prefixIcon: const Icon(Icons.person_outline, size: 20),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.qr_code_scanner, size: 20),
