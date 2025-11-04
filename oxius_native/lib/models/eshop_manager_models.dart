@@ -48,7 +48,7 @@ class StoreDetails {
 }
 
 class ShopProduct {
-  final int id;
+  final String id;
   final String name;
   final String? description;
   final double price;
@@ -57,11 +57,11 @@ class ShopProduct {
   final String? image;
   final List<ProductImage>? imageDetails;
   final String? featuredImage;
-  final int? categoryId;
+  final String? categoryId;
   final String? categoryName;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  final int sellerId;
+  final String sellerId;
   final String? sellerName;
 
   ShopProduct({
@@ -83,21 +83,56 @@ class ShopProduct {
   });
 
   factory ShopProduct.fromJson(Map<String, dynamic> json) {
+    // Convert backend fields to match our model
+    String status = 'active';
+    if (json['is_active'] != null) {
+      status = json['is_active'] == true ? 'active' : 'inactive';
+    } else if (json['status'] != null) {
+      status = json['status'];
+    }
+    
+    // Handle quantity field (backend uses 'quantity', we use 'stock')
+    int stock = json['stock'] ?? json['quantity'] ?? 0;
+    
+    // Handle price fields (backend uses 'regular_price' and 'sale_price')
+    double price = 0.0;
+    if (json['sale_price'] != null && json['sale_price'] > 0) {
+      price = (json['sale_price'] is String) 
+          ? double.parse(json['sale_price']) 
+          : (json['sale_price'] as num).toDouble();
+    } else if (json['regular_price'] != null) {
+      price = (json['regular_price'] is String) 
+          ? double.parse(json['regular_price']) 
+          : (json['regular_price'] as num).toDouble();
+    } else if (json['price'] != null) {
+      price = (json['price'] is String) 
+          ? double.parse(json['price']) 
+          : (json['price'] as num).toDouble();
+    }
+    
     return ShopProduct(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '',
       name: json['name'] ?? '',
-      description: json['description'],
-      price: (json['price'] ?? 0).toDouble(),
-      stock: json['stock'] ?? 0,
-      status: json['status'] ?? 'active',
-      image: json['image'],
+      description: json['description'] ?? json['short_description'],
+      price: price,
+      stock: stock,
+      status: status,
+      image: json['image'] is List && (json['image'] as List).isNotEmpty
+          ? json['image'][0]['image']
+          : json['image'],
       imageDetails: json['image_details'] != null
           ? (json['image_details'] as List)
               .map((img) => ProductImage.fromJson(img))
               .toList()
-          : null,
+          : json['image'] is List
+              ? (json['image'] as List)
+                  .map((img) => ProductImage.fromJson(img))
+                  .toList()
+              : null,
       featuredImage: json['featured_image'],
-      categoryId: json['category'],
+      categoryId: json['category'] is List && (json['category'] as List).isNotEmpty
+          ? (json['category'][0] is Map ? json['category'][0]['id']?.toString() : json['category'][0]?.toString())
+          : json['category']?.toString(),
       categoryName: json['category_name'],
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
@@ -105,8 +140,8 @@ class ShopProduct {
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'])
           : null,
-      sellerId: json['seller'] ?? 0,
-      sellerName: json['seller_name'],
+      sellerId: (json['seller'] ?? json['owner'] ?? json['owner_id'])?.toString() ?? '',
+      sellerName: json['seller_name'] ?? json['owner_details']?['username'],
     );
   }
 

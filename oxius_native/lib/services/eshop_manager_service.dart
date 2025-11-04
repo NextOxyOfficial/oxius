@@ -38,13 +38,15 @@ class EshopManagerService {
 
   /// Purchase product slots
   static Future<Map<String, dynamic>> purchaseProductSlots({
-    required int packageId,
+    required dynamic packageId,
     required int slotCount,
     required double cost,
   }) async {
     try {
       final token = await AuthService.getValidToken();
       if (token == null) throw Exception('Not authenticated');
+
+      print('📦 Purchasing slots - Package ID: $packageId, Slots: $slotCount, Cost: $cost');
 
       final response = await http.post(
         Uri.parse('$baseUrl/purchase-product-slots/'),
@@ -53,7 +55,7 @@ class EshopManagerService {
           'Content-Type': 'application/json',
         },
         body: json.encode({
-          'package_id': packageId,
+          'package_id': packageId.toString(),
           'slot_count': slotCount,
           'cost': cost,
         }),
@@ -69,11 +71,20 @@ class EshopManagerService {
           'data': data,
         };
       } else {
-        final error = json.decode(response.body);
-        return {
-          'success': false,
-          'message': error['message'] ?? 'Purchase failed',
-        };
+        final errorBody = response.body;
+        print('❌ Purchase failed with body: $errorBody');
+        try {
+          final error = json.decode(errorBody);
+          return {
+            'success': false,
+            'message': error['error'] ?? error['message'] ?? error['detail'] ?? 'Purchase failed',
+          };
+        } catch (e) {
+          return {
+            'success': false,
+            'message': errorBody.isNotEmpty ? errorBody : 'Purchase failed',
+          };
+        }
       }
     } catch (e) {
       print('❌ Error purchasing slots: $e');
@@ -192,37 +203,55 @@ class EshopManagerService {
   static Future<List<ShopProduct>> getMyProducts() async {
     try {
       final token = await AuthService.getValidToken();
-      if (token == null) throw Exception('Not authenticated');
+      if (token == null) {
+        print('❌ No token for products');
+        return [];
+      }
 
+      print('🔍 Fetching products...');
       final response = await http.get(
         Uri.parse('$baseUrl/my-products/'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
         },
       );
 
-      print('📦 My products response: ${response.statusCode}');
+      print('✅ Products response: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('📦 Data type: ${data.runtimeType}');
         
         List<dynamic> productsList;
         if (data is Map && data['results'] != null) {
           productsList = data['results'];
+          print('📦 Found ${productsList.length} products (paginated)');
         } else if (data is List) {
           productsList = data;
+          print('📦 Found ${productsList.length} products (list)');
         } else {
-          productsList = [];
+          print('❌ Unexpected data structure');
+          return [];
         }
 
-        return productsList.map((json) => ShopProduct.fromJson(json)).toList();
+        final products = productsList.map((item) {
+          try {
+            return ShopProduct.fromJson(item);
+          } catch (e) {
+            print('❌ Error parsing product: $e');
+            return null;
+          }
+        }).whereType<ShopProduct>().toList();
+        
+        print('✅ Parsed ${products.length} products successfully');
+        return products;
       }
+      
+      print('❌ Bad response: ${response.statusCode}');
       return [];
     } catch (e) {
-      print('❌ Error fetching products: $e');
+      print('❌ Exception: $e');
       return [];
     }
   }
@@ -410,12 +439,12 @@ class EshopManagerService {
 
   /// Update a product
   static Future<Map<String, dynamic>> updateProduct({
-    required int productId,
+    required String productId,
     String? name,
     double? price,
     int? stock,
     String? description,
-    int? categoryId,
+    String? categoryId,
     String? image,
     String? status,
   }) async {
@@ -466,7 +495,7 @@ class EshopManagerService {
   }
 
   /// Delete a product
-  static Future<bool> deleteProduct(int productId) async {
+  static Future<bool> deleteProduct(String productId) async {
     try {
       final token = await AuthService.getValidToken();
       if (token == null) throw Exception('Not authenticated');

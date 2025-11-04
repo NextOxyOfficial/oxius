@@ -110,8 +110,19 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
     await _loadData();
   }
 
-  void _handleStoreUpdated() {
-    _loadStoreDetails();
+  Future<void> _handleStoreUpdated() async {
+    // Refresh user data to get updated product limit
+    await AuthService.refreshUserData();
+    
+    final user = AuthService.currentUser;
+    if (mounted && user != null) {
+      setState(() {
+        _productLimit = user.productLimit ?? 10;
+      });
+    }
+    
+    // Also refresh store details
+    await _loadStoreDetails();
   }
 
   void _handleProductAdded() {

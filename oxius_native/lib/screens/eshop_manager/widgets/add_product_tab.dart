@@ -183,7 +183,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
   bool _isLoadingCategories = true;
   
   List<Map<String, dynamic>> _categories = [];
-  List<int> _selectedCategories = [];
+  List<String> _selectedCategories = [];
   List<String> _keywords = [];
   List<String> _images = [];
   final ImagePicker _picker = ImagePicker();
@@ -199,10 +199,6 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
       final categories = await EshopManagerService.getCategories();
       print('📦 Loaded ${categories.length} categories');
       
-      // Debug: Print each category
-      for (var cat in categories) {
-        print('📦 Category: ${cat['name']} (ID: ${cat['id']}, Type: ${cat['id'].runtimeType})');
-      }
       
       if (mounted) {
         setState(() {
@@ -284,14 +280,12 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
   }
 
   void _showCategorySelector() {
-    print('📦 Opening category selector with ${_categories.length} categories');
-    print('📦 Currently selected: $_selectedCategories');
     
     showDialog(
       context: context,
       builder: (BuildContext context) {
         // Create a local copy of selected categories for the dialog
-        List<int> localSelected = List.from(_selectedCategories);
+        List<String> localSelected = List.from(_selectedCategories);
         
         return StatefulBuilder(
           builder: (context, setDialogState) {
@@ -336,10 +330,8 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                         itemCount: _categories.length,
                         itemBuilder: (context, index) {
                           final cat = _categories[index];
-                          // Convert id to int if it's a string
-                          final catId = cat['id'] is String 
-                              ? int.tryParse(cat['id']) ?? cat['id']
-                              : cat['id'];
+                          // Get category ID as string
+                          final catId = cat['id'].toString();
                           final isSelected = localSelected.contains(catId);
                           
                           return CheckboxListTile(
@@ -349,19 +341,15 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                             ),
                             value: isSelected,
                             onChanged: (bool? checked) {
-                              print('📦 Checkbox changed: ${cat['name']} = $checked');
                               setDialogState(() {
                                 if (checked == true) {
                                   if (!localSelected.contains(catId)) {
                                     localSelected.add(catId);
-                                    print('📦 Added category: $catId');
                                   }
                                 } else {
                                   localSelected.remove(catId);
-                                  print('📦 Removed category: $catId');
                                 }
                               });
-                              print('📦 Local selected now: $localSelected');
                             },
                             activeColor: const Color(0xFF10B981),
                             controlAffinity: ListTileControlAffinity.leading,
@@ -386,7 +374,6 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                     setState(() {
                       _selectedCategories = List.from(localSelected);
                     });
-                    print('📦 Final selected categories: $_selectedCategories');
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
@@ -435,11 +422,6 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
 
     setState(() => _isSubmitting = true);
 
-    print('📦 Starting product submission...');
-    print('📦 Selected categories: $_selectedCategories');
-    print('📦 Keywords: $_keywords');
-    print('📦 Images count: ${_images.length}');
-    print('📦 Delivery method: $_deliveryMethod');
 
     // Build product data matching Vue structure
     final Map<String, dynamic> productData = {
@@ -498,12 +480,125 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? 'Failed to add product'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+        // Extract error details
+        String errorMessage = result['message'] ?? 'Failed to add product';
+        final errors = result['errors'];
+        
+        // Check if it's a product limit error
+        if (errors is Map && errors['error'] == 'Product limit reached') {
+          // Show dialog for product limit reached
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF3C7),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.warning_amber_rounded,
+                        color: Color(0xFFD97706),
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Product Limit Reached',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      errors['message'] ?? 'You have reached your product limit.',
+                      style: const TextStyle(fontSize: 14, height: 1.5),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFBBF7D0)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            size: 20,
+                            color: Color(0xFF10B981),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Current: ${errors['current_count']} / ${errors['limit']} products',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF065F46),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(color: Color(0xFF6B7280)),
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context); // Close dialog
+                      Navigator.pop(context); // Close add product sheet
+                      // The parent screen should show buy slots option
+                    },
+                    icon: const Icon(Icons.add_shopping_cart, size: 18),
+                    label: const Text('Buy More Slots'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          // Show validation errors
+          if (errors is Map) {
+            final errorList = errors.entries.map((e) => '${e.key}: ${e.value}').join('\n');
+            errorMessage = errorList.isNotEmpty ? errorList : errorMessage;
+          }
+          
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: const Color(0xFFEF4444),
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
       }
     }
   }
@@ -628,10 +723,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                         runSpacing: 6,
                         children: _selectedCategories.map((catId) {
                           final cat = _categories.firstWhere(
-                            (c) {
-                              final cId = c['id'] is String ? int.tryParse(c['id']) ?? c['id'] : c['id'];
-                              return cId == catId;
-                            },
+                            (c) => c['id'].toString() == catId,
                             orElse: () => {'id': catId, 'name': 'Unknown'},
                           );
                           return Chip(

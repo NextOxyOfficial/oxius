@@ -65,9 +65,11 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
   Future<void> _purchaseSlots() async {
     if (_selectedPackage == null) return;
 
-    final price = (_selectedPackage!['price'] is int) 
-        ? (_selectedPackage!['price'] as int).toDouble() 
-        : _selectedPackage!['price'] as double;
+    final price = _selectedPackage!['price'] is String
+        ? double.parse(_selectedPackage!['price'])
+        : (_selectedPackage!['price'] is int) 
+            ? (_selectedPackage!['price'] as int).toDouble() 
+            : _selectedPackage!['price'] as double;
 
     if (_userBalance < price) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -289,13 +291,17 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                             // Packages
                             ..._packages.map((pkg) {
                               final isSelected = _selectedPackage?['id'] == pkg['id'];
-                              final price = (pkg['price'] is int) 
-                                  ? (pkg['price'] as int).toDouble() 
-                                  : pkg['price'] as double;
+                              final price = pkg['price'] is String
+                                  ? double.parse(pkg['price'])
+                                  : (pkg['price'] is int) 
+                                      ? (pkg['price'] as int).toDouble() 
+                                      : pkg['price'] as double;
                               final originalPrice = pkg['original_price'] != null
-                                  ? ((pkg['original_price'] is int) 
-                                      ? (pkg['original_price'] as int).toDouble() 
-                                      : pkg['original_price'] as double)
+                                  ? (pkg['original_price'] is String
+                                      ? double.parse(pkg['original_price'])
+                                      : (pkg['original_price'] is int) 
+                                          ? (pkg['original_price'] as int).toDouble() 
+                                          : pkg['original_price'] as double)
                                   : null;
                               final hasDiscount = originalPrice != null && originalPrice > price;
                               final discount = hasDiscount 
@@ -435,9 +441,11 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                             }).toList(),
                             // Warning
                             if (_selectedPackage != null &&
-                                _userBalance < ((_selectedPackage!['price'] is int) 
-                                    ? (_selectedPackage!['price'] as int).toDouble() 
-                                    : _selectedPackage!['price'] as double)) ...[
+                                _userBalance < (_selectedPackage!['price'] is String
+                                    ? double.parse(_selectedPackage!['price'])
+                                    : (_selectedPackage!['price'] is int) 
+                                        ? (_selectedPackage!['price'] as int).toDouble() 
+                                        : _selectedPackage!['price'] as double)) ...[
                               const SizedBox(height: 8),
                               Container(
                                 padding: const EdgeInsets.all(10),
@@ -492,9 +500,11 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                     child: ElevatedButton(
                       onPressed: _isPurchasing ||
                               _selectedPackage == null ||
-                              _userBalance < ((_selectedPackage!['price'] is int) 
-                                  ? (_selectedPackage!['price'] as int).toDouble() 
-                                  : _selectedPackage!['price'] as double)
+                              _userBalance < (_selectedPackage!['price'] is String
+                                  ? double.parse(_selectedPackage!['price'])
+                                  : (_selectedPackage!['price'] is int) 
+                                      ? (_selectedPackage!['price'] as int).toDouble() 
+                                      : _selectedPackage!['price'] as double)
                           ? null
                           : _purchaseSlots,
                       style: ElevatedButton.styleFrom(
