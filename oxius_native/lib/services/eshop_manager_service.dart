@@ -496,15 +496,28 @@ class EshopManagerService {
 
       final Map<String, dynamic> body = {};
       if (name != null) body['name'] = name;
-      if (price != null) body['price'] = price;
-      if (stock != null) body['stock'] = stock;
+      if (price != null) body['sale_price'] = price; // Backend uses sale_price
+      if (stock != null) body['quantity'] = stock; // Backend uses quantity
       if (description != null) body['description'] = description;
       if (categoryId != null) body['category'] = categoryId;
       if (image != null) body['image'] = image;
-      if (status != null) body['status'] = status;
+      
+      // Convert status to is_active boolean
+      if (status != null) {
+        if (status == 'active') {
+          body['is_active'] = true;
+        } else if (status == 'inactive') {
+          body['is_active'] = false;
+        }
+        // 'out-of-stock' means quantity = 0, handled separately
+      }
+
+      print('📦 Updating product ID: $productId');
+      print('📦 Update body: $body');
+      print('📦 Endpoint: $baseUrl/products/$productId/');
 
       final response = await http.patch(
-        Uri.parse('$baseUrl/my-products/$productId/'),
+        Uri.parse('$baseUrl/products/$productId/'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -513,6 +526,7 @@ class EshopManagerService {
       );
 
       print('📦 Update product response: ${response.statusCode}');
+      print('📦 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -521,11 +535,19 @@ class EshopManagerService {
           'data': data,
         };
       } else {
-        final error = json.decode(response.body);
-        return {
-          'success': false,
-          'message': error['message'] ?? 'Failed to update product',
-        };
+        try {
+          final error = json.decode(response.body);
+          return {
+            'success': false,
+            'message': error['message'] ?? error['detail'] ?? 'Failed to update product',
+            'errors': error,
+          };
+        } catch (e) {
+          return {
+            'success': false,
+            'message': 'Failed to update product: ${response.statusCode}',
+          };
+        }
       }
     } catch (e) {
       print('❌ Error updating product: $e');

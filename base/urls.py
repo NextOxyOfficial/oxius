@@ -179,6 +179,11 @@ urlpatterns = [
         name="store-products",
     ),
     path("products/", ProductListCreateView.as_view(), name="product-list-create"),
+    path(
+        "products/<uuid:id>/",
+        ProductByIdView.as_view(),
+        name="product-by-id",
+    ),
     re_path(
         r"^products/(?P<slug>[\w\-\u0980-\u09FF]+)/$",
         ProductDetailView.as_view(),

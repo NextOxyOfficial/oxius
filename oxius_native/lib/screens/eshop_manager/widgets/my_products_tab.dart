@@ -282,6 +282,12 @@ class _MyProductsTabState extends State<MyProductsTab> {
 
                                       setState(() => _isProcessing = true);
 
+                                      print('📝 Updating product: ${product.id}');
+                                      print('📝 New status: $selectedStatus');
+                                      print('📝 New name: ${nameController.text.trim()}');
+                                      print('📝 New price: ${priceController.text}');
+                                      print('📝 New stock: ${stockController.text}');
+
                                       final result = await EshopManagerService.updateProduct(
                                         productId: product.id,
                                         name: nameController.text.trim(),
@@ -291,12 +297,43 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                         status: selectedStatus,
                                       );
 
+                                      print('📝 Update result: ${result['success']}');
+                                      print('📝 Update message: ${result['message']}');
+
                                       setState(() => _isProcessing = false);
 
                                       if (result['success'] == true) {
-                                        Navigator.pop(context);
-                                        _showSnackBar('Product updated successfully');
-                                        widget.onProductUpdated();
+                                        if (mounted) {
+                                          Navigator.pop(context);
+                                          _showSnackBar('Product updated successfully');
+                                          // Update local state immediately
+                                          setState(() {
+                                            final index = widget.products.indexWhere((p) => p.id == product.id);
+                                            if (index != -1) {
+                                              // Update the product in the list
+                                              widget.products[index] = ShopProduct(
+                                                id: product.id,
+                                                name: nameController.text.trim(),
+                                                description: descController.text.trim(),
+                                                price: double.tryParse(priceController.text) ?? product.price,
+                                                stock: int.tryParse(stockController.text) ?? product.stock,
+                                                status: selectedStatus,
+                                                image: product.image,
+                                                imageDetails: product.imageDetails,
+                                                featuredImage: product.featuredImage,
+                                                categoryId: product.categoryId,
+                                                categoryName: product.categoryName,
+                                                createdAt: product.createdAt,
+                                                updatedAt: DateTime.now(),
+                                                sellerId: product.sellerId,
+                                                sellerName: product.sellerName,
+                                                views: product.views,
+                                              );
+                                            }
+                                          });
+                                          // Also refresh from backend
+                                          widget.onProductUpdated();
+                                        }
                                       } else {
                                         _showSnackBar(result['message'] ?? 'Failed to update', isError: true);
                                       }

@@ -2349,6 +2349,47 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             )
 
 
+class ProductByIdView(generics.RetrieveUpdateDestroyAPIView):
+    """Product detail view that uses ID instead of slug for mobile app"""
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = "id"
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Only allow users to update their own products"""
+        return Product.objects.filter(owner=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            partial = kwargs.pop("partial", True)  # Allow partial updates
+            instance = self.get_object()
+
+            # Update the main product data
+            serializer = self.get_serializer(
+                instance, data=request.data, partial=partial
+            )
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            return Response(serializer.data)
+
+        except Exception as e:
+            print(f"Update error: {str(e)}")
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        """Only allow users to delete their own products"""
+        if self.request.user == instance.owner or self.request.user.is_staff:
+            instance.delete()
+        else:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You don't have permission to delete this product.")
+
+
 # Featured Products
 
 
