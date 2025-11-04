@@ -69,21 +69,23 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Handle category filter from navigation arguments only once
-    if (!_hasHandledNavigationArgs) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      if (args != null && args['categoryId'] != null) {
-        final categoryId = args['categoryId'].toString();
+    // Handle category filter from navigation arguments
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null && args['categoryId'] != null) {
+      final categoryId = args['categoryId'].toString();
+      // Only update if category changed
+      if (_selectedCategoryId != categoryId || !_hasHandledNavigationArgs) {
         setState(() {
           _selectedCategoryId = categoryId;
           _selectedCategoryName = null; // Will be set when categories load
           _hasHandledNavigationArgs = true;
         });
-        // Find category name after categories are loaded
+        // Find category name and reload products
         _findCategoryName(categoryId);
-      } else {
-        _hasHandledNavigationArgs = true;
+        _loadInitialData();
       }
+    } else if (!_hasHandledNavigationArgs) {
+      _hasHandledNavigationArgs = true;
     }
   }
 
@@ -616,10 +618,13 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          // Back Button
+          // Back Button - Always go to homepage
           IconButton(
             icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              // Navigate to homepage, clearing the stack
+              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+            },
           ),
           
           // Title or Search Field

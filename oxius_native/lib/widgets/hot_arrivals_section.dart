@@ -245,11 +245,27 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
         onTap: () {
           // Navigate to eShop page with category filter
           if (arrival['id'] != null) {
-            Navigator.pushNamed(
-              context,
-              '/eshop',
-              arguments: {'categoryId': arrival['id'].toString()},
-            );
+            // Check if we're already on eShop screen
+            final currentRoute = ModalRoute.of(context)?.settings.name;
+            if (currentRoute == '/eshop') {
+              // Already on eShop, just pop to trigger filter update
+              Navigator.pop(context);
+              // Wait a frame then push with new category
+              Future.delayed(Duration.zero, () {
+                Navigator.pushReplacementNamed(
+                  context,
+                  '/eshop',
+                  arguments: {'categoryId': arrival['id'].toString()},
+                );
+              });
+            } else {
+              // Not on eShop, use pushReplacementNamed to avoid stacking
+              Navigator.pushReplacementNamed(
+                context,
+                '/eshop',
+                arguments: {'categoryId': arrival['id'].toString()},
+              );
+            }
           }
         },
         borderRadius: BorderRadius.circular(10),
