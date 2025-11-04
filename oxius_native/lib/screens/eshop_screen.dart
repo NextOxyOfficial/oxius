@@ -1175,7 +1175,6 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
               ),
             ),
           ),
- r       
         // Bottom spacing to prevent overflow
         const SizedBox(height: 80),
       ],
