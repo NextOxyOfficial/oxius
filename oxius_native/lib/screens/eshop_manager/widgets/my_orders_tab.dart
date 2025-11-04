@@ -29,7 +29,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
   int get _processingCount => widget.orders.where((o) => o.orderStatus == 'processing').length;
   int get _deliveredCount => widget.orders.where((o) => o.orderStatus == 'delivered').length;
 
-  Future<void> _updateOrderStatus(int orderId, String newStatus) async {
+  Future<void> _updateOrderStatus(String orderId, String newStatus) async {
     setState(() => _isUpdating = true);
 
     final result = await EshopManagerService.updateOrderStatus(

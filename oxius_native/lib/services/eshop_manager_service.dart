@@ -199,18 +199,18 @@ class EshopManagerService {
     }
   }
 
-  /// Get seller's products
-  static Future<List<ShopProduct>> getMyProducts() async {
+  /// Get seller's products with pagination
+  static Future<Map<String, dynamic>> getMyProducts({int page = 1}) async {
     try {
       final token = await AuthService.getValidToken();
       if (token == null) {
         print('❌ No token for products');
-        return [];
+        return {'products': [], 'hasMore': false, 'total': 0};
       }
 
-      print('🔍 Fetching products...');
+      print('🔍 Fetching products (page $page)...');
       final response = await http.get(
-        Uri.parse('$baseUrl/my-products/'),
+        Uri.parse('$baseUrl/my-products/?page=$page'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -224,20 +224,26 @@ class EshopManagerService {
         print('📦 Data type: ${data.runtimeType}');
         
         List<dynamic> productsList;
+        bool hasMore = false;
+        int total = 0;
+        
         if (data is Map && data['results'] != null) {
           productsList = data['results'];
-          print('📦 Found ${productsList.length} products (paginated)');
+          hasMore = data['next'] != null;
+          total = data['count'] ?? 0;
+          print('📦 Found ${productsList.length} products on page $page (total: $total, hasMore: $hasMore)');
         } else if (data is List) {
           productsList = data;
           print('📦 Found ${productsList.length} products (list)');
         } else {
           print('❌ Unexpected data structure');
-          return [];
+          return {'products': [], 'hasMore': false, 'total': 0};
         }
 
         final products = productsList.map((item) {
           try {
-            return ShopProduct.fromJson(item);
+            final product = ShopProduct.fromJson(item);
+            return product;
           } catch (e) {
             print('❌ Error parsing product: $e');
             return null;
@@ -245,14 +251,18 @@ class EshopManagerService {
         }).whereType<ShopProduct>().toList();
         
         print('✅ Parsed ${products.length} products successfully');
-        return products;
+        return {
+          'products': products,
+          'hasMore': hasMore,
+          'total': total,
+        };
       }
       
       print('❌ Bad response: ${response.statusCode}');
-      return [];
+      return {'products': [], 'hasMore': false, 'total': 0};
     } catch (e) {
       print('❌ Exception: $e');
-      return [];
+      return {'products': [], 'hasMore': false, 'total': 0};
     }
   }
 
@@ -260,8 +270,13 @@ class EshopManagerService {
   static Future<List<ShopOrder>> getSellerOrders() async {
     try {
       final token = await AuthService.getValidToken();
-      if (token == null) throw Exception('Not authenticated');
+      if (token == null) {
+        print('❌ No token for seller orders');
+        throw Exception('Not authenticated');
+      }
 
+      print('📦 Fetching seller orders from: $baseUrl/seller-orders/');
+      
       final response = await http.get(
         Uri.parse('$baseUrl/seller-orders/'),
         headers: {
@@ -271,24 +286,51 @@ class EshopManagerService {
       );
 
       print('📦 Seller orders response: ${response.statusCode}');
+      print('📦 Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('📦 Data type: ${data.runtimeType}');
         
         List<dynamic> ordersList;
         if (data is Map && data['results'] != null) {
           ordersList = data['results'];
+          print('📦 Found ${ordersList.length} orders in paginated response');
+          if (data['count'] != null) {
+            print('📦 Total orders count: ${data['count']}');
+          }
         } else if (data is List) {
           ordersList = data;
+          print('📦 Found ${ordersList.length} orders in list response');
         } else {
+          print('❌ Unexpected data structure: $data');
           ordersList = [];
         }
 
-        return ordersList.map((json) => ShopOrder.fromJson(json)).toList();
+        if (ordersList.isNotEmpty) {
+          print('📦 First order raw data: ${ordersList.first}');
+        }
+
+        final orders = ordersList.map((json) {
+          try {
+            return ShopOrder.fromJson(json);
+          } catch (e) {
+            print('❌ Error parsing order: $e');
+            print('❌ Order data: $json');
+            return null;
+          }
+        }).whereType<ShopOrder>().toList();
+        
+        print('✅ Parsed ${orders.length} orders successfully');
+        return orders;
+      } else {
+        print('❌ Bad response: ${response.statusCode}');
+        print('❌ Response body: ${response.body}');
       }
       return [];
-    } catch (e) {
+    } catch (e, stackTrace) {
       print('❌ Error fetching orders: $e');
+      print('❌ Stack trace: $stackTrace');
       return [];
     }
   }
@@ -519,7 +561,7 @@ class EshopManagerService {
 
   /// Update order status
   static Future<Map<String, dynamic>> updateOrderStatus({
-    required int orderId,
+    required String orderId,
     required String status,
   }) async {
     try {

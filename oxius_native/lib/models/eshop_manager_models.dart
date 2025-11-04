@@ -63,6 +63,7 @@ class ShopProduct {
   final DateTime? updatedAt;
   final String sellerId;
   final String? sellerName;
+  final int views;
 
   ShopProduct({
     required this.id,
@@ -80,6 +81,7 @@ class ShopProduct {
     this.updatedAt,
     required this.sellerId,
     this.sellerName,
+    this.views = 0,
   });
 
   factory ShopProduct.fromJson(Map<String, dynamic> json) {
@@ -96,18 +98,37 @@ class ShopProduct {
     
     // Handle price fields (backend uses 'regular_price' and 'sale_price')
     double price = 0.0;
-    if (json['sale_price'] != null && json['sale_price'] > 0) {
-      price = (json['sale_price'] is String) 
-          ? double.parse(json['sale_price']) 
-          : (json['sale_price'] as num).toDouble();
-    } else if (json['regular_price'] != null) {
-      price = (json['regular_price'] is String) 
-          ? double.parse(json['regular_price']) 
-          : (json['regular_price'] as num).toDouble();
-    } else if (json['price'] != null) {
-      price = (json['price'] is String) 
-          ? double.parse(json['price']) 
-          : (json['price'] as num).toDouble();
+    
+    // Helper function to safely parse price
+    double? parsePrice(dynamic value) {
+      if (value == null) return null;
+      if (value is String) {
+        try {
+          return double.parse(value);
+        } catch (e) {
+          return null;
+        }
+      }
+      if (value is num) return value.toDouble();
+      return null;
+    }
+    
+    // Try sale_price first
+    double? salePrice = parsePrice(json['sale_price']);
+    if (salePrice != null && salePrice > 0) {
+      price = salePrice;
+    } else {
+      // Try regular_price
+      double? regularPrice = parsePrice(json['regular_price']);
+      if (regularPrice != null) {
+        price = regularPrice;
+      } else {
+        // Try generic price field
+        double? genericPrice = parsePrice(json['price']);
+        if (genericPrice != null) {
+          price = genericPrice;
+        }
+      }
     }
     
     return ShopProduct(
@@ -117,9 +138,9 @@ class ShopProduct {
       price: price,
       stock: stock,
       status: status,
-      image: json['image'] is List && (json['image'] as List).isNotEmpty
-          ? json['image'][0]['image']
-          : json['image'],
+      image: json['image_details'] != null && (json['image_details'] as List).isNotEmpty
+          ? json['image_details'][0]['image']
+          : null,
       imageDetails: json['image_details'] != null
           ? (json['image_details'] as List)
               .map((img) => ProductImage.fromJson(img))
@@ -142,6 +163,7 @@ class ShopProduct {
           : null,
       sellerId: (json['seller'] ?? json['owner'] ?? json['owner_id'])?.toString() ?? '',
       sellerName: json['seller_name'] ?? json['owner_details']?['username'],
+      views: json['views'] ?? 0,
     );
   }
 
@@ -160,7 +182,7 @@ class ShopProduct {
 }
 
 class ProductImage {
-  final int id;
+  final String id;
   final String image;
   final bool isPrimary;
 
@@ -172,7 +194,7 @@ class ProductImage {
 
   factory ProductImage.fromJson(Map<String, dynamic> json) {
     return ProductImage(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? '',
       image: json['image'] ?? '',
       isPrimary: json['is_primary'] ?? false,
     );
@@ -180,7 +202,8 @@ class ProductImage {
 }
 
 class ShopOrder {
-  final int id;
+  final String id; // Changed from int to String to handle UUID
+  final String? orderNumber;
   final String orderStatus; // pending, processing, delivered, cancelled
   final double total;
   final String? paymentMethod;
@@ -194,6 +217,7 @@ class ShopOrder {
 
   ShopOrder({
     required this.id,
+    this.orderNumber,
     required this.orderStatus,
     required this.total,
     this.paymentMethod,
@@ -207,23 +231,27 @@ class ShopOrder {
   });
 
   factory ShopOrder.fromJson(Map<String, dynamic> json) {
-    // Handle id as either int or array
-    int orderId;
-    if (json['id'] is List) {
-      orderId = (json['id'] as List).isNotEmpty ? json['id'][0] : 0;
-    } else {
-      orderId = json['id'] ?? 0;
-    }
+    print('📦 Parsing order JSON: $json');
+    
+    // Handle id as String (UUID)
+    String orderId = json['id']?.toString() ?? '';
+    
+    // Extract customer info from different possible fields
+    String? customerName = json['customer_name'] ?? json['name'];
+    String? customerEmail = json['customer_email'] ?? json['email'];
+    String? customerPhone = json['customer_phone'] ?? json['phone'];
+    String? shippingAddress = json['shipping_address'] ?? json['address'];
 
     return ShopOrder(
       id: orderId,
+      orderNumber: json['order_number'],
       orderStatus: json['order_status'] ?? 'pending',
-      total: (json['total'] ?? 0).toDouble(),
+      total: _parseDouble(json['total']),
       paymentMethod: json['payment_method'],
-      shippingAddress: json['shipping_address'],
-      customerName: json['customer_name'],
-      customerEmail: json['customer_email'],
-      customerPhone: json['customer_phone'],
+      shippingAddress: shippingAddress,
+      customerName: customerName,
+      customerEmail: customerEmail,
+      customerPhone: customerPhone,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
@@ -236,6 +264,20 @@ class ShopOrder {
               .toList()
           : null,
     );
+  }
+  
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      try {
+        return double.parse(value);
+      } catch (e) {
+        return 0.0;
+      }
+    }
+    return 0.0;
   }
 }
 

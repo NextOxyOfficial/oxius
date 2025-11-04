@@ -10,6 +10,7 @@ class StoreDetailsCard extends StatefulWidget {
   final List<ShopProduct> products;
   final List<ShopOrder> orders;
   final int productLimit;
+  final int totalProducts;
   final VoidCallback onStoreUpdated;
 
   const StoreDetailsCard({
@@ -18,6 +19,7 @@ class StoreDetailsCard extends StatefulWidget {
     required this.products,
     required this.orders,
     required this.productLimit,
+    required this.totalProducts,
     required this.onStoreUpdated,
   });
 
@@ -134,7 +136,9 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
 
   @override
   Widget build(BuildContext context) {
-    final remainingSlots = widget.productLimit - widget.products.length;
+    // Use totalProducts from backend if available, otherwise use loaded products count
+    final actualProductCount = widget.totalProducts > 0 ? widget.totalProducts : widget.products.length;
+    final remainingSlots = widget.productLimit - actualProductCount;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -510,7 +514,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                   ),
                 ),
                 Text(
-                  '${widget.products.length}/${widget.productLimit}',
+                  '$actualProductCount/${widget.productLimit}',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -530,7 +534,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                         isScrollControlled: true,
                         backgroundColor: Colors.transparent,
                         builder: (context) => BuySlotsBottomSheet(
-                          currentProductCount: widget.products.length,
+                          currentProductCount: actualProductCount,
                           productLimit: widget.productLimit,
                           onPurchaseSuccess: widget.onStoreUpdated,
                         ),

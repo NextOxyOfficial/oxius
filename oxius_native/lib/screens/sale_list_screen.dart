@@ -36,10 +36,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
   
   List<SalePost> _posts = [];
   List<SaleCategory> _categories = [];
-  bool _isLoading = false;
+  bool _isLoading = false; // Start as false, will be set to true when fetching
   bool _isLoadingMore = false;
-  int _currentPage = 1;
+  bool _isListView = true; // Toggle between grid and list view - default to list
   int _totalCount = 0;
+  bool _initialLoadComplete = false;
   
   // Filters
   String? _selectedCategoryId;
@@ -262,13 +263,12 @@ class _SaleListScreenState extends State<SaleListScreen> {
   }
 
   Future<void> _fetchPosts({bool refresh = false}) async {
-    if (_isLoading) return;
+    if (_isLoading) return; // Prevent concurrent fetches
 
     setState(() {
       _isLoading = true;
       if (refresh) {
-        _currentPage = 1;
-        _posts.clear();
+        _posts = [];
       }
     });
 
@@ -284,7 +284,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
         area: _selectedArea,
         minPrice: _minPrice,
         maxPrice: _maxPrice,
-        page: _currentPage,
+        page: 1,
         pageSize: 10,
       );
 
@@ -297,12 +297,16 @@ class _SaleListScreenState extends State<SaleListScreen> {
           }
           _totalCount = response.count;
           _isLoading = false;
+          _initialLoadComplete = true;
         });
       }
     } catch (e) {
-      print('Error fetching posts: $e');
+      print('❌ Error fetching posts: $e');
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _initialLoadComplete = true;
+        });
       }
     }
   }
@@ -312,7 +316,6 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
     setState(() {
       _isLoadingMore = true;
-      _currentPage++;
     });
 
     await _fetchPosts();
@@ -641,7 +644,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
           const SizedBox(width: 4),
         ],
       ),
-      body: _isLoading && _posts.isEmpty
+      body: _isLoading && !_initialLoadComplete
           ? const SaleSkeletonLoader(itemCount: 6)
           : RefreshIndicator(
               color: const Color(0xFF10B981),
@@ -868,57 +871,91 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   ],
                 ),
               ),
-              InkWell(
-                onTap: () {},
-                borderRadius: BorderRadius.circular(6),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: PopupMenuButton<String>(
-                initialValue: _sortBy,
-                offset: const Offset(0, 40),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.sort_rounded, size: 15, color: Colors.grey.shade700),
-                    const SizedBox(width: 5),
-                    Text(
-                      _getSortLabel(_sortBy),
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
+                    InkWell(
+                      onTap: () => setState(() => _isListView = false),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: !_isListView ? const Color(0xFF10B981) : Colors.transparent,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(6),
+                            bottomLeft: Radius.circular(6),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.grid_view_rounded,
+                          size: 16,
+                          color: !_isListView ? Colors.white : Colors.grey.shade700,
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 3),
-                    Icon(Icons.arrow_drop_down_rounded, size: 16, color: Colors.grey.shade600),
+                    Container(width: 1, height: 20, color: Colors.grey.shade300),
+                    InkWell(
+                      onTap: () => setState(() => _isListView = true),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _isListView ? const Color(0xFF10B981) : Colors.transparent,
+                          borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(6),
+                            bottomRight: Radius.circular(6),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.view_list_rounded,
+                          size: 16,
+                          color: _isListView ? Colors.white : Colors.grey.shade700,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
+              ),
+              const SizedBox(width: 8),
+              PopupMenuButton<String>(
+                initialValue: _sortBy,
                 onSelected: (value) {
                   setState(() => _sortBy = value);
                   _applyFilters();
                 },
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'newest',
-                    child: Text('Newest First', style: TextStyle(fontSize: 13)),
+                offset: const Offset(0, 40),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.grey.shade300),
                   ),
-                  const PopupMenuItem(
-                    value: 'price_low',
-                    child: Text('Price: Low to High', style: TextStyle(fontSize: 13)),
-                  ),
-                  const PopupMenuItem(
-                    value: 'price_high',
-                    child: Text('Price: High to Low', style: TextStyle(fontSize: 13)),
-                  ),
-                  const PopupMenuItem(
-                    value: 'most_viewed',
-                    child: Text('Most Viewed', style: TextStyle(fontSize: 13)),
-                  ),
-                ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.sort_rounded, size: 15, color: Colors.grey.shade700),
+                      const SizedBox(width: 4),
+                      Text(
+                        _sortBy == 'newest' ? 'Newest' : _sortBy == 'oldest' ? 'Oldest' : _sortBy == 'price_low' ? 'Price: Low' : 'Price: High',
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(Icons.arrow_drop_down_rounded, size: 16, color: Colors.grey.shade700),
+                    ],
                   ),
                 ),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: 'newest', child: Text('Newest First', style: TextStyle(fontSize: 13))),
+                  const PopupMenuItem(value: 'oldest', child: Text('Oldest First', style: TextStyle(fontSize: 13))),
+                  const PopupMenuItem(value: 'price_low', child: Text('Price: Low to High', style: TextStyle(fontSize: 13))),
+                  const PopupMenuItem(value: 'price_high', child: Text('Price: High to Low', style: TextStyle(fontSize: 13))),
+                ],
               ),
             ],
           ),
@@ -942,19 +979,27 @@ class _SaleListScreenState extends State<SaleListScreen> {
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF1F2937), letterSpacing: -0.2),
             ),
           ),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
-              childAspectRatio: 0.68,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-            ),
-            itemCount: _posts.length,
-            itemBuilder: (context, index) => _buildPostCard(_posts[index]),
-          ),
+          _isListView
+              ? ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  itemCount: _posts.length,
+                  itemBuilder: (context, index) => _buildListItem(_posts[index]),
+                )
+              : GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                    childAspectRatio: 0.68,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: _posts.length,
+                  itemBuilder: (context, index) => _buildPostCard(_posts[index]),
+                ),
           if (_isLoadingMore)
             const SaleSkeletonLoader(itemCount: 4),
           // See More Button
@@ -1011,6 +1056,203 @@ class _SaleListScreenState extends State<SaleListScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildListItem(SalePost post) {
+    final bool hasImage = post.images != null && post.images!.isNotEmpty;
+    
+    String getImageUrl() {
+      if (!hasImage) return '';
+      final imageUrl = post.images![0].image;
+      return imageUrl;
+    }
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/sale/detail',
+          arguments: {'slug': post.slug, 'id': post.id},
+        );
+      },
+      child: Container(
+        height: 120, // Fixed height to prevent blank page
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(10),
+                bottomLeft: Radius.circular(10),
+              ),
+              child: SizedBox(
+                width: 120,
+                height: 120,
+                child: hasImage
+                    ? CachedNetworkImage(
+                        imageUrl: getImageUrl(),
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey.shade100,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF10B981),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey.shade100,
+                          child: Icon(
+                            Icons.image_not_supported_rounded,
+                            color: Colors.grey.shade400,
+                            size: 40,
+                          ),
+                        ),
+                      )
+                    : Container(
+                        color: Colors.grey.shade100,
+                        child: Icon(
+                          Icons.image_outlined,
+                          color: Colors.grey.shade400,
+                          size: 40,
+                        ),
+                      ),
+              ),
+            ),
+            
+            // Content
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Top section (Title + Badge + Location)
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Title
+                          Text(
+                            post.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF111827),
+                              height: 1.2,
+                              letterSpacing: -0.1,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          
+                          // Condition Badge
+                          if (post.condition != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              margin: const EdgeInsets.only(bottom: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: const Color(0xFF10B981).withOpacity(0.3),
+                                ),
+                              ),
+                              child: Text(
+                                post.condition!.toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF10B981),
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ),
+                          
+                          // Location
+                          if (_formatLocation(post).isNotEmpty)
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.location_on_rounded,
+                                  size: 11,
+                                  color: Colors.grey.shade500,
+                                ),
+                                const SizedBox(width: 3),
+                                Expanded(
+                                  child: Text(
+                                    _formatLocation(post),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                    
+                    // Bottom section (Price and Date)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            _formatPrice(post.price),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF10B981),
+                              letterSpacing: -0.3,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (post.createdAt != null) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            _formatDate(post.createdAt),
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: Colors.grey.shade500,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

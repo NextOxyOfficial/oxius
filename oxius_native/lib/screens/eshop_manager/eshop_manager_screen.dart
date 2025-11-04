@@ -29,12 +29,30 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
   List<ShopProduct> _products = [];
   List<ShopOrder> _orders = [];
   int _productLimit = 10;
+  int _currentPage = 1;
+  bool _hasMoreProducts = false;
+  int _totalProducts = 0;
   
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_onTabChanged);
     _checkUserStatus();
+  }
+  
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) {
+      print('📦 Tab changed to index: ${_tabController.index}');
+      // Refresh data when switching to Orders or Products tab
+      if (_tabController.index == 0) {
+        print('📦 Refreshing orders on tab switch');
+        _loadOrders();
+      } else if (_tabController.index == 1) {
+        print('📦 Refreshing products on tab switch');
+        _loadProducts();
+      }
+    }
   }
 
   @override
@@ -92,17 +110,42 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
     }
   }
 
-  Future<void> _loadProducts() async {
-    final products = await EshopManagerService.getMyProducts();
+  Future<void> _loadProducts({bool loadMore = false}) async {
+    final page = loadMore ? _currentPage + 1 : 1;
+    print('📦 Loading products - page: $page, loadMore: $loadMore');
+    
+    final result = await EshopManagerService.getMyProducts(page: page);
+    
+    print('📦 Products loaded: ${(result['products'] as List).length}, total: ${result['total']}, hasMore: ${result['hasMore']}');
+    
     if (mounted) {
-      setState(() => _products = products);
+      setState(() {
+        if (loadMore) {
+          _products.addAll(result['products'] as List<ShopProduct>);
+          _currentPage = page;
+        } else {
+          _products = result['products'] as List<ShopProduct>;
+          _currentPage = 1;
+        }
+        _hasMoreProducts = result['hasMore'] as bool;
+        _totalProducts = result['total'] as int;
+      });
+      print('📦 State updated - _products.length: ${_products.length}, _totalProducts: $_totalProducts');
     }
   }
 
   Future<void> _loadOrders() async {
+    print('📦 Loading seller orders...');
     final orders = await EshopManagerService.getSellerOrders();
+    print('📦 Orders loaded: ${orders.length}');
+    
+    if (orders.isNotEmpty) {
+      print('📦 First order: ID=${orders.first.id}, Status=${orders.first.orderStatus}, Total=${orders.first.total}');
+    }
+    
     if (mounted) {
       setState(() => _orders = orders);
+      print('📦 State updated - _orders.length: ${_orders.length}');
     }
   }
 
@@ -126,15 +169,18 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
   }
 
   void _handleProductAdded() {
+    print('📦 Product added - refreshing products list');
     _loadProducts();
     _tabController.animateTo(1); // Switch to Products tab
   }
 
   void _handleProductUpdated() {
+    print('📦 Product updated - refreshing products list');
     _loadProducts();
   }
 
   void _handleProductDeleted() {
+    print('📦 Product deleted - refreshing products list');
     _loadProducts();
   }
 
@@ -578,6 +624,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                   products: _products,
                   orders: _orders,
                   productLimit: _productLimit,
+                  totalProducts: _totalProducts,
                   onStoreUpdated: _handleStoreUpdated,
                 ),
               
@@ -610,7 +657,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                         ),
                         Tab(
                           icon: const Icon(Icons.inventory_2_rounded, size: 20),
-                          text: 'Products (${_products.length})',
+                          text: 'Products (${_totalProducts > 0 ? _totalProducts : _products.length})',
                         ),
                         Tab(
                           icon: Icon(
@@ -624,7 +671,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                       ],
                     ),
                     SizedBox(
-                      height: MediaQuery.of(context).size.height - 300,
+                      height: MediaQuery.of(context).size.height - 250,
                       child: TabBarView(
                         controller: _tabController,
                         children: [
@@ -638,6 +685,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                             onRefresh: _loadProducts,
                             onProductUpdated: _handleProductUpdated,
                             onProductDeleted: _handleProductDeleted,
+                            hasMore: _hasMoreProducts,
+                            onLoadMore: () => _loadProducts(loadMore: true),
                           ),
                           AddProductTab(
                             products: _products,
