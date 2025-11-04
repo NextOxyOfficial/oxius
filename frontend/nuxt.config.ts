@@ -172,10 +172,12 @@ export default defineNuxtConfig({
   },
   image: {
     dir: "/static/frontend/",
-    domains: ["adsyclub.com"],
+    domains: ["adsyclub.com", "www.adsyclub.com"],
     alias: {
       media: "/media",
     },
+    // Use custom provider to handle media URLs without IPX optimization
+    provider: 'customProvider',
     providers: {
       customProvider: {
         name: "customProvider",
@@ -184,6 +186,10 @@ export default defineNuxtConfig({
           baseURL: process.env.NODE_ENV === "production" ? "https://adsyclub.com" : "http://127.0.0.1:8000",
         },
       },
+    },
+    // Disable IPX image optimization to prevent 404 errors
+    ipx: {
+      maxAge: 60 * 60 * 24 * 365,
     },
   },
   pages: true, // Enable file-based routing
