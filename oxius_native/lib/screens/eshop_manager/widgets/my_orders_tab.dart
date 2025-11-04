@@ -273,52 +273,33 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Customer Info
-                if (order.customerName != null) ...[
-                  Row(
-                    children: [
+                // Customer Name and Date in same row
+                Row(
+                  children: [
+                    if (order.customerName != null) ...[
                       const Icon(Icons.person_rounded, size: 14, color: Color(0xFF6B7280)),
                       const SizedBox(width: 6),
-                      Text(
-                        order.customerName!,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF111827),
+                      Expanded(
+                        child: Text(
+                          order.customerName!,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF111827),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 6),
-                ],
-
-                // Date
-                Row(
-                  children: [
-                    const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF6B7280)),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFF9CA3AF)),
+                    const SizedBox(width: 4),
                     Text(
                       _formatDate(order.createdAt),
                       style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-
-                // Total
-                Row(
-                  children: [
-                    const Icon(Icons.attach_money_rounded, size: 14, color: Color(0xFF6B7280)),
-                    const SizedBox(width: 6),
-                    Text(
-                      '৳${order.total.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF10B981),
+                        fontSize: 10,
+                        color: Color(0xFF9CA3AF),
                       ),
                     ),
                   ],
@@ -327,17 +308,6 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                 // Items
                 if (order.items != null && order.items!.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  const Divider(height: 1),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${order.items!.length} item${order.items!.length > 1 ? 's' : ''}',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
                   ...order.items!.take(2).map((item) => Padding(
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Row(
@@ -366,12 +336,15 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
                         ),
                       )),
                   if (order.items!.length > 2)
-                    Text(
-                      '+${order.items!.length - 2} more',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF9CA3AF),
-                        fontStyle: FontStyle.italic,
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Text(
+                        '+${order.items!.length - 2} more',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF9CA3AF),
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                     ),
                 ],
@@ -379,50 +352,60 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
             ),
           ),
 
-          // Actions
-          if (order.orderStatus != 'delivered' && order.orderStatus != 'cancelled')
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10),
-                ),
-              ),
-              child: Row(
-                children: [
-                  if (order.orderStatus == 'pending')
-                    Expanded(
-                      child: _buildActionButton(
-                        'Accept',
-                        Icons.check_circle_rounded,
-                        const Color(0xFF10B981),
-                        () => _updateOrderStatus(order.id, 'processing'),
-                      ),
-                    ),
-                  if (order.orderStatus == 'pending') const SizedBox(width: 8),
-                  if (order.orderStatus == 'processing')
-                    Expanded(
-                      child: _buildActionButton(
-                        'Mark Delivered',
-                        Icons.local_shipping_rounded,
-                        const Color(0xFF3B82F6),
-                        () => _updateOrderStatus(order.id, 'delivered'),
-                      ),
-                    ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildActionButton(
-                      'Cancel',
-                      Icons.cancel_rounded,
-                      const Color(0xFFEF4444),
-                      () => _showCancelDialog(order),
-                    ),
-                  ),
-                ],
+          // Total and Change Status in same row
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(10),
+                bottomRight: Radius.circular(10),
               ),
             ),
+            child: Row(
+              children: [
+                // Total Amount
+                const Icon(Icons.attach_money_rounded, size: 16, color: Color(0xFF10B981)),
+                const SizedBox(width: 4),
+                Text(
+                  '৳${order.total.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
+                const Spacer(),
+                // Change Status Button (Compact)
+                InkWell(
+                  onTap: () => _showStatusSelector(order),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.swap_horiz_rounded, size: 16, color: Colors.white),
+                        SizedBox(width: 4),
+                        Text(
+                          'Change Status',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -503,6 +486,231 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
           borderRadius: BorderRadius.circular(6),
         ),
         elevation: 0,
+      ),
+    );
+  }
+
+  void _showStatusSelector(ShopOrder order) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade200),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.swap_horiz_rounded,
+                      color: Color(0xFF10B981),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Change Order Status',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF111827),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Order #${order.orderNumber ?? order.id.substring(0, 8)}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                    color: const Color(0xFF6B7280),
+                  ),
+                ],
+              ),
+            ),
+
+            // Status Options
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildStatusOption(
+                    context,
+                    order,
+                    'pending',
+                    'Pending',
+                    'Order is awaiting acceptance',
+                    Icons.schedule_rounded,
+                    const Color(0xFFF59E0B),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildStatusOption(
+                    context,
+                    order,
+                    'processing',
+                    'Processing',
+                    'Order is being prepared',
+                    Icons.autorenew_rounded,
+                    const Color(0xFF3B82F6),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildStatusOption(
+                    context,
+                    order,
+                    'delivered',
+                    'Delivered',
+                    'Order has been delivered',
+                    Icons.check_circle_rounded,
+                    const Color(0xFF10B981),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildStatusOption(
+                    context,
+                    order,
+                    'cancelled',
+                    'Cancelled',
+                    'Order has been cancelled',
+                    Icons.cancel_rounded,
+                    const Color(0xFFEF4444),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusOption(
+    BuildContext context,
+    ShopOrder order,
+    String statusValue,
+    String statusLabel,
+    String description,
+    IconData icon,
+    Color color,
+  ) {
+    final isCurrentStatus = order.orderStatus == statusValue;
+
+    return InkWell(
+      onTap: isCurrentStatus
+          ? null
+          : () {
+              Navigator.pop(context);
+              _updateOrderStatus(order.id, statusValue);
+            },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isCurrentStatus ? color.withOpacity(0.1) : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isCurrentStatus ? color : Colors.grey.shade200,
+            width: isCurrentStatus ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        statusLabel,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isCurrentStatus ? color : const Color(0xFF111827),
+                        ),
+                      ),
+                      if (isCurrentStatus) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'Current',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!isCurrentStatus)
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: Colors.grey.shade400,
+              ),
+          ],
+        ),
       ),
     );
   }
