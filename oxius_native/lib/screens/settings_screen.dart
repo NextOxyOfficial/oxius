@@ -717,6 +717,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _saveProfile() async {
     if (_userProfile == null) return;
     
+    // Don't proceed if already processing
+    if (_isProcessing) {
+      _showSnackBar('Please wait, processing...', isError: false);
+      return;
+    }
+    
     setState(() => _isProcessing = true);
     
     try {
@@ -737,18 +743,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'about': _aboutController.text.trim(),
       };
 
+      print('📝 Saving profile data: $profileData');
+
       final result = await SettingsService.updateProfile(_userProfile!.email, profileData);
+
+      print('✅ Profile save result: ${result['success']}');
 
       if (result['success'] == true) {
         _showSnackBar('Profile updated successfully');
+        
+        // Update local user data
+        await AuthService.refreshUserData();
+        
+        // Reload profile
         await _loadUserProfile();
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to update profile', isError: true);
+        final errorMsg = result['message'] ?? 'Failed to update profile';
+        print('❌ Profile save failed: $errorMsg');
+        _showSnackBar(errorMsg, isError: true);
       }
-    } catch (e) {
-      _showSnackBar('Failed to update profile', isError: true);
+    } catch (e, stackTrace) {
+      print('❌ Profile save error: $e');
+      print('Stack trace: $stackTrace');
+      _showSnackBar('Failed to update profile: ${e.toString()}', isError: true);
     } finally {
-      setState(() => _isProcessing = false);
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
     }
   }
 
@@ -2240,6 +2261,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _pickProfileImage() async {
     if (_userProfile == null) return;
 
+    // Don't proceed if already processing
+    if (_isProcessing) return;
+
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     
@@ -2322,6 +2346,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _pickBannerImage() async {
     if (_userProfile == null) return;
+
+    // Don't proceed if already processing
+    if (_isProcessing) return;
 
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);

@@ -93,67 +93,105 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
     final user = AuthService.currentUser;
     if (user?.storeUsername == null) return;
 
+    // Load data with error handling for each future
     await Future.wait([
-      _loadStoreDetails(),
-      _loadProducts(),
-      _loadOrders(),
+      _loadStoreDetails().catchError((e) {
+        print('❌ Error loading store details: $e');
+      }),
+      _loadProducts().catchError((e) {
+        print('❌ Error loading products: $e');
+      }),
+      _loadOrders().catchError((e) {
+        print('❌ Error loading orders: $e');
+      }),
     ]);
   }
 
   Future<void> _loadStoreDetails() async {
-    final user = AuthService.currentUser;
-    if (user?.storeUsername == null) return;
+    try {
+      final user = AuthService.currentUser;
+      if (user?.storeUsername == null) return;
 
-    final store = await EshopManagerService.getStoreDetails(user!.storeUsername!);
-    if (mounted) {
-      setState(() => _storeDetails = store);
+      final store = await EshopManagerService.getStoreDetails(user!.storeUsername!);
+      if (mounted) {
+        setState(() => _storeDetails = store);
+      }
+    } catch (e) {
+      print('❌ Error loading store details: $e');
+      // Don't rethrow - let other loads continue
     }
   }
 
   Future<void> _loadProducts({bool loadMore = false}) async {
-    final page = loadMore ? _currentPage + 1 : 1;
-    print('📦 Loading products - page: $page, loadMore: $loadMore');
-    
-    final result = await EshopManagerService.getMyProducts(page: page);
-    
-    print('📦 Products loaded: ${(result['products'] as List).length}, total: ${result['total']}, hasMore: ${result['hasMore']}');
-    
-    if (mounted) {
-      setState(() {
-        if (loadMore) {
-          _products.addAll(result['products'] as List<ShopProduct>);
-          _currentPage = page;
-        } else {
-          _products = result['products'] as List<ShopProduct>;
-          _currentPage = 1;
-        }
-        _hasMoreProducts = result['hasMore'] as bool;
-        _totalProducts = result['total'] as int;
-      });
-      print('📦 State updated - _products.length: ${_products.length}, _totalProducts: $_totalProducts');
+    try {
+      final page = loadMore ? _currentPage + 1 : 1;
+      print('📦 Loading products - page: $page, loadMore: $loadMore');
+      
+      final result = await EshopManagerService.getMyProducts(page: page);
+      
+      print('📦 Products loaded: ${(result['products'] as List).length}, total: ${result['total']}, hasMore: ${result['hasMore']}');
+      
+      if (mounted) {
+        setState(() {
+          if (loadMore) {
+            _products.addAll(result['products'] as List<ShopProduct>);
+            _currentPage = page;
+          } else {
+            _products = result['products'] as List<ShopProduct>;
+            _currentPage = 1;
+          }
+          _hasMoreProducts = result['hasMore'] as bool;
+          _totalProducts = result['total'] as int;
+        });
+        print('📦 State updated - _products.length: ${_products.length}, _totalProducts: $_totalProducts');
+      }
+    } catch (e) {
+      print('❌ Error loading products: $e');
+      // Don't rethrow - let other loads continue
     }
   }
 
   Future<void> _loadOrders() async {
-    print('📦 Loading seller orders...');
-    print('📦 Current user: ${AuthService.currentUser?.email}');
-    final orders = await EshopManagerService.getSellerOrders();
-    print('📦 Orders loaded: ${orders.length}');
-    
-    if (orders.isEmpty) {
-      print('⚠️ No orders returned from API');
-    } else {
-      print('📦 First order: ID=${orders.first.id}, Status=${orders.first.orderStatus}, Total=${orders.first.total}');
-    }
-    
-    if (mounted) {
-      setState(() => _orders = orders);
-      print('📦 State updated - _orders.length: ${_orders.length}');
+    try {
+      print('📦 Loading seller orders...');
+      print('📦 Current user: ${AuthService.currentUser?.email}');
+      final orders = await EshopManagerService.getSellerOrders();
+      print('📦 Orders loaded: ${orders.length}');
+      
+      if (orders.isEmpty) {
+        print('⚠️ No orders returned from API');
+      } else {
+        print('📦 First order: ID=${orders.first.id}, Status=${orders.first.orderStatus}, Total=${orders.first.total}');
+      }
+      
+      if (mounted) {
+        setState(() => _orders = orders);
+        print('📦 State updated - _orders.length: ${_orders.length}');
+      }
+    } catch (e) {
+      print('❌ Error loading orders: $e');
+      // Don't rethrow - let other loads continue
     }
   }
 
   Future<void> _refreshData() async {
-    await _loadData();
+    print('🔄 Pull to refresh triggered');
+    try {
+      await _loadData();
+      print('✅ Refresh completed successfully');
+    } catch (e) {
+      print('❌ Refresh error: $e');
+      // Show error message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to refresh: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _handleStoreUpdated() async {
