@@ -46,8 +46,8 @@
           >
             <div class="relative">
               <NuxtImg
-                v-if="logo[0]?.image"
-                :src="logo[0].image"
+                v-if="logo?.image"
+                :src="logo.image"
                 alt="Adsy Business Network Logo"
                 width="150"
                 height="50"
@@ -302,7 +302,7 @@ async function getLogo() {
     console.log('BN Logo loaded:', data);
   } catch (error) {
     console.warn('Failed to load BN logo, using fallback:', error);
-    logo.value = [];
+    logo.value = {};
   }
 }
 

@@ -3729,24 +3729,34 @@ def referred_users(request):
     )
 
 
-class BNLogoView(generics.ListAPIView):
+@api_view(["GET"])
+def getBNLogo(request):
     """
-    View to retrieve all banners.
+    Get the most recent Business Network logo (single object like main logo)
     """
+    try:
+        bn_logo = BNLogo.objects.order_by("-created_at").first()
+        if bn_logo:
+            serializer = BNLogoSerializer(bn_logo)
+            return Response(serializer.data)
+        return Response({"image": None}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    queryset = BNLogo.objects.all().order_by("-created_at")
-    serializer_class = BNLogoSerializer
-    pagination_class = None  # Disable pagination to return array directly
 
-
-class NewsLogoView(generics.ListAPIView):
+@api_view(["GET"])
+def getNewsLogo(request):
     """
-    View to retrieve all news logos.
+    Get the most recent AdsyNews logo (single object like main logo)
     """
-
-    queryset = NewsLogo.objects.all().order_by("-created_at")
-    serializer_class = NewsLogoSerializer
-    pagination_class = None  # Disable pagination to return array directly
+    try:
+        news_logo = NewsLogo.objects.order_by("-created_at").first()
+        if news_logo:
+            serializer = NewsLogoSerializer(news_logo)
+            return Response(serializer.data)
+        return Response({"image": None}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["GET"])

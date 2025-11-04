@@ -9,8 +9,8 @@
           <!-- Logo - Now in the same row with increased size -->
           <NuxtLink to="/adsy-news" class="flex-shrink-0 mr-3">
             <NuxtImg
-              v-if="logo[0]?.image"
-              :src="logo[0].image"
+              v-if="logo?.image"
+              :src="logo.image"
               alt="Adsy News Logo"
               width="120"
               height="40"
@@ -333,7 +333,7 @@ async function getLogo() {
     console.log('News Logo loaded:', data);
   } catch (error) {
     console.warn('Failed to load News logo, using fallback:', error);
-    logo.value = [];
+    logo.value = {};
   }
 }
 await getLogo();

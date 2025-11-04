@@ -265,8 +265,8 @@ urlpatterns = [
         platform_referral_stats,
         name="platform-referral-stats",
     ),
-    path("bn-logo/", BNLogoView.as_view(), name="bn-logo"),
-    path("news-logo/", NewsLogoView.as_view(), name="news-logo"),
+    path("bn-logo/", getBNLogo, name="bn-logo"),
+    path("news-logo/", getNewsLogo, name="news-logo"),
     # Diamond API endpoints
     path(
         "diamonds/packages/",
