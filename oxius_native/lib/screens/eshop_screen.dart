@@ -38,6 +38,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   List<Map<String, dynamic>> _allCategories = [];
   String? _selectedCategoryId;
   String? _selectedCategoryName;
+  bool _hasHandledNavigationArgs = false;
   
   String? _eshopLogoUrl;
   String _lastSearchQuery = '';
@@ -68,17 +69,20 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Handle category filter from navigation arguments
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    if (args != null && args['categoryId'] != null) {
-      final categoryId = args['categoryId'].toString();
-      if (_selectedCategoryId != categoryId) {
+    // Handle category filter from navigation arguments only once
+    if (!_hasHandledNavigationArgs) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null && args['categoryId'] != null) {
+        final categoryId = args['categoryId'].toString();
         setState(() {
           _selectedCategoryId = categoryId;
           _selectedCategoryName = null; // Will be set when categories load
+          _hasHandledNavigationArgs = true;
         });
         // Find category name after categories are loaded
         _findCategoryName(categoryId);
+      } else {
+        _hasHandledNavigationArgs = true;
       }
     }
   }
