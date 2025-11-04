@@ -209,13 +209,13 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
           
           // Scrollable Cards
           SizedBox(
-            height: 140,
+            height: 120,
             child: ListView.separated(
               controller: _scrollController,
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 6),
               itemCount: _hotArrivals.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 8),
+              separatorBuilder: (context, index) => const SizedBox(width: 4),
               itemBuilder: (context, index) {
                 final arrival = _hotArrivals[index];
                 return _buildArrivalCard(arrival);
@@ -249,7 +249,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
         },
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          width: 105,
+          width: 80,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
@@ -270,7 +270,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
             children: [
               // Image with dynamic badge
               Container(
-                height: 90,
+                height: 70,
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
                   color: const Color(0xFFF9FAFB),

@@ -159,13 +159,13 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                 
                 // Scrollable Cards
                 SizedBox(
-                  height: 110,
+                  height: 95,
                   child: ListView.separated(
                     controller: _scrollController,
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     itemCount: _specialDeals.length,
-                    separatorBuilder: (context, index) => const SizedBox(width: 8),
+                    separatorBuilder: (context, index) => const SizedBox(width: 6),
                     itemBuilder: (context, index) {
                       final deal = _specialDeals[index];
                       return _buildDealCard(deal);
@@ -216,8 +216,8 @@ class _HotDealsSectionState extends State<HotDealsSection> {
       child: IntrinsicWidth(
         child: Container(
           constraints: const BoxConstraints(
-            minWidth: 75,
-            maxWidth: 110,
+            minWidth: 65,
+            maxWidth: 85,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.9),
@@ -231,7 +231,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
             children: [
               // Image with badge
               Container(
-                height: 65,
+                height: 55,
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                   gradient: LinearGradient(
