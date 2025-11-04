@@ -28,12 +28,15 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   bool _isLoadingMore = false;
   bool _hasMoreResults = true;
   bool _showSuggestions = false;
+  bool _showCategoryFilter = false;
   
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _searchResults = [];
   List<String> _recentSearches = [];
   List<String> _searchSuggestions = [];
   List<String> _trendingSearches = ['Electronics', 'Fashion', 'Home & Garden', 'Sports'];
+  List<String> _categories = [];
+  String? _selectedCategory;
   
   String? _eshopLogoUrl;
   String _lastSearchQuery = '';
@@ -236,6 +239,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       // Load initial products to display (reduced from 20 to 12 for faster load)
       final products = await EshopService.fetchEshopProducts(page: 1, pageSize: 12);
       
+      // Extract unique categories from products
+      _extractCategories(products);
+      
       setState(() {
         _products = products;
         _isLoading = false;
@@ -249,6 +255,59 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         );
       }
     }
+  }
+
+  void _extractCategories(List<Map<String, dynamic>>? products) {
+    if (products == null || products.isEmpty) {
+      setState(() {
+        _categories = [];
+      });
+      return;
+    }
+    
+    final Set<String> categorySet = {};
+    
+    for (var product in products) {
+      try {
+        final categoryDetails = product['category_details'];
+        if (categoryDetails is List) {
+          for (var category in categoryDetails) {
+            if (category is Map && category['name'] != null) {
+              categorySet.add(category['name'].toString());
+            }
+          }
+        }
+      } catch (e) {
+        print('Error extracting category from product: $e');
+      }
+    }
+    
+    if (mounted) {
+      setState(() {
+        _categories = categorySet.toList()..sort();
+      });
+    }
+  }
+
+  void _filterByCategory(String? category) {
+    setState(() {
+      _selectedCategory = category;
+      _showCategoryFilter = false;
+    });
+  }
+
+  List<Map<String, dynamic>> get _filteredProducts {
+    if (_selectedCategory == null) return _products;
+    
+    return _products.where((product) {
+      final categoryDetails = product['category_details'];
+      if (categoryDetails is List) {
+        return categoryDetails.any((cat) => 
+          cat is Map && cat['name']?.toString() == _selectedCategory
+        );
+      }
+      return false;
+    }).toList();
   }
 
   Future<void> _loadMoreProducts() async {
@@ -985,6 +1044,58 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
             ],
           ),
         ),
+        // Category Filter
+        if (_categories != null && _categories.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            child: Row(
+              children: [
+                Icon(Icons.filter_list, size: 20, color: Colors.grey.shade700),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        // All Products chip
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: FilterChip(
+                            label: const Text('All Products'),
+                            selected: _selectedCategory == null,
+                            onSelected: (_) => _filterByCategory(null),
+                            selectedColor: const Color(0xFF10B981),
+                            checkmarkColor: Colors.white,
+                            labelStyle: TextStyle(
+                              color: _selectedCategory == null ? Colors.white : Colors.grey.shade700,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        // Category chips
+                        ..._categories.map((category) => Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: FilterChip(
+                            label: Text(category),
+                            selected: _selectedCategory == category,
+                            onSelected: (_) => _filterByCategory(category),
+                            selectedColor: const Color(0xFF10B981),
+                            checkmarkColor: Colors.white,
+                            labelStyle: TextStyle(
+                              color: _selectedCategory == category ? Colors.white : Colors.grey.shade700,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        )),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: LayoutBuilder(
@@ -992,6 +1103,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
               const spacing = 8.0;
               final availableWidth = constraints.maxWidth;
               final idealWidth = (availableWidth - spacing) / 2;
+              final displayProducts = _filteredProducts;
               
               return GridView.builder(
                 shrinkWrap: true,
@@ -1003,12 +1115,12 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
                 ),
-                itemCount: _products.length,
+                itemCount: displayProducts.length,
                 itemBuilder: (context, index) {
                   return ProductCard(
-                    product: _products[index],
+                    product: displayProducts[index],
                     isLoading: false,
-                    onBuyNow: () => _navigateToCheckout(_products[index]),
+                    onBuyNow: () => _navigateToCheckout(displayProducts[index]),
                     // onTap removed to use default navigation from ProductCard
                   );
                 },

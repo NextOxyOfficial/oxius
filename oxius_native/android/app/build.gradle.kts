@@ -62,6 +62,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Disable native debug symbol stripping to avoid build issues
+            ndk {
+                debugSymbolLevel = "NONE"
+            }
         }
     }
 }

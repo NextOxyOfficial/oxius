@@ -413,7 +413,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
               Column(
                 children: [
                   Text(
-                    '© 2024 ADSYCLUB. All rights reserved.',
+                    '© 2025 AdsyClub. All rights reserved.',
                     style: GoogleFonts.roboto(
                       fontSize: 10,
                       color: Colors.grey.shade600,
