@@ -25,6 +25,9 @@ class User {
   final String? phone;
   final String? city;
   final String? zip;
+  final String? storeUsername;
+  final String? storeName;
+  final int? productLimit;
 
   User({
     required this.id,
@@ -48,6 +51,9 @@ class User {
     this.phone,
     this.city,
     this.zip,
+    this.storeUsername,
+    this.storeName,
+    this.productLimit,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -97,6 +103,9 @@ class User {
       phone: json['phone'],
       city: json['city'],
       zip: json['zip'],
+      storeUsername: json['store_username'],
+      storeName: json['store_name'],
+      productLimit: json['product_limit'],
     );
   }
 

@@ -1,0 +1,650 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../services/auth_service.dart';
+import '../../services/eshop_manager_service.dart';
+import '../../models/eshop_manager_models.dart';
+import '../../services/translation_service.dart';
+import 'widgets/store_details_card.dart';
+import 'widgets/my_orders_tab.dart';
+import 'widgets/my_products_tab.dart';
+import 'widgets/add_product_tab.dart';
+
+class EshopManagerScreen extends StatefulWidget {
+  const EshopManagerScreen({super.key});
+
+  @override
+  State<EshopManagerScreen> createState() => _EshopManagerScreenState();
+}
+
+class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTickerProviderStateMixin {
+  final TranslationService _translationService = TranslationService();
+  String t(String key) => _translationService.translate(key);
+
+  late TabController _tabController;
+  bool _isLoading = true;
+  bool _isPro = false;
+  bool _hasStore = false;
+  
+  StoreDetails? _storeDetails;
+  List<ShopProduct> _products = [];
+  List<ShopOrder> _orders = [];
+  int _productLimit = 10;
+  
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _checkUserStatus();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _checkUserStatus() async {
+    setState(() => _isLoading = true);
+    
+    final user = AuthService.currentUser;
+    if (user == null) {
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+
+    print('🏪 User isPro: ${user.isPro}');
+    print('🏪 User storeUsername: ${user.storeUsername}');
+    print('🏪 User storeName: ${user.storeName}');
+    print('🏪 User productLimit: ${user.productLimit}');
+
+    _isPro = user.isPro ?? false;
+    _hasStore = user.storeUsername != null && user.storeUsername!.isNotEmpty;
+    _productLimit = user.productLimit ?? 10;
+
+    print('🏪 Computed _isPro: $_isPro');
+    print('🏪 Computed _hasStore: $_hasStore');
+
+    if (_isPro && _hasStore) {
+      await _loadData();
+    }
+
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _loadData() async {
+    final user = AuthService.currentUser;
+    if (user?.storeUsername == null) return;
+
+    await Future.wait([
+      _loadStoreDetails(),
+      _loadProducts(),
+      _loadOrders(),
+    ]);
+  }
+
+  Future<void> _loadStoreDetails() async {
+    final user = AuthService.currentUser;
+    if (user?.storeUsername == null) return;
+
+    final store = await EshopManagerService.getStoreDetails(user!.storeUsername!);
+    if (mounted) {
+      setState(() => _storeDetails = store);
+    }
+  }
+
+  Future<void> _loadProducts() async {
+    final products = await EshopManagerService.getMyProducts();
+    if (mounted) {
+      setState(() => _products = products);
+    }
+  }
+
+  Future<void> _loadOrders() async {
+    final orders = await EshopManagerService.getSellerOrders();
+    if (mounted) {
+      setState(() => _orders = orders);
+    }
+  }
+
+  Future<void> _refreshData() async {
+    await _loadData();
+  }
+
+  void _handleStoreUpdated() {
+    _loadStoreDetails();
+  }
+
+  void _handleProductAdded() {
+    _loadProducts();
+    _tabController.animateTo(1); // Switch to Products tab
+  }
+
+  void _handleProductUpdated() {
+    _loadProducts();
+  }
+
+  void _handleProductDeleted() {
+    _loadProducts();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 768;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFB),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, size: 22),
+          onPressed: () => Navigator.pop(context),
+          color: const Color(0xFF374151),
+        ),
+        title: const Text(
+          'Shop Manager',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF111827),
+            letterSpacing: -0.2,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: Colors.grey.shade200,
+          ),
+        ),
+      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF10B981),
+              ),
+            )
+          : !_isPro
+              ? _buildUpgradePrompt()
+              : !_hasStore
+                  ? _buildCreateStorePrompt()
+                  : _buildManagerContent(isMobile),
+    );
+  }
+
+  Widget _buildUpgradePrompt() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth >= 768;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 700),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFFF8FAFC),
+                Colors.grey.shade100,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: isDesktop
+              ? Row(
+                  children: [
+                    // Left premium badge section
+                    Container(
+                      width: 140,
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.blue.shade600, Colors.purple.shade700],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          bottomLeft: Radius.circular(12),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.workspace_premium_rounded,
+                              size: 40,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'PREMIUM ACCESS',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.blue.shade100,
+                              letterSpacing: 0.5,
+                              height: 1.3,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Right content section
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Premium Access Required',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF111827),
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Upgrade to Pro to access the Shop Manager and start selling your products.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
+                                height: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/upgrade-to-pro');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF10B981),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Upgrade to Pro',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    SizedBox(width: 6),
+                                    Icon(Icons.arrow_forward_rounded, size: 16),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Top premium badge section
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.blue.shade600, Colors.purple.shade700],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.workspace_premium_rounded,
+                              size: 40,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'PREMIUM ACCESS',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.blue.shade100,
+                              letterSpacing: 0.5,
+                              height: 1.3,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Bottom content section
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                      const Text(
+                        'Premium Access Required',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF111827),
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Upgrade to Pro to access the Shop Manager and start selling your products.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/upgrade-to-pro');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Upgrade to Pro',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(width: 6),
+                              Icon(Icons.arrow_forward_rounded, size: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreateStorePrompt() {
+    // If user already has products, they likely have a store - bypass to manager
+    if (_products.isNotEmpty || _orders.isNotEmpty) {
+      return _buildManagerContent(MediaQuery.of(context).size.width < 768);
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.store_rounded,
+                  size: 48,
+                  color: Color(0xFF10B981),
+                ),
+              ),
+              const SizedBox(height: 20),
+              
+              // Title
+              const Text(
+                'Create Your Store',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.3,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              
+              // Description
+              Text(
+                'Set up your online store to start selling products and managing orders.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              
+              // Check Status Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    setState(() => _isLoading = true);
+                    await Future.wait([
+                      _loadProducts(),
+                      _loadOrders(),
+                    ]);
+                    setState(() {
+                      _isLoading = false;
+                      _hasStore = _products.isNotEmpty || _orders.isNotEmpty;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.refresh_rounded, size: 18),
+                      SizedBox(width: 8),
+                      Text(
+                        'Check Store Status',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildManagerContent(bool isMobile) {
+    final user = AuthService.currentUser;
+    final remainingSlots = _productLimit - _products.length;
+
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      color: const Color(0xFF10B981),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Store Details Card
+              if (_storeDetails != null)
+                StoreDetailsCard(
+                  storeDetails: _storeDetails!,
+                  products: _products,
+                  orders: _orders,
+                  productLimit: _productLimit,
+                  onStoreUpdated: _handleStoreUpdated,
+                ),
+              
+              const SizedBox(height: 12),
+
+              // Tabs
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Column(
+                  children: [
+                    TabBar(
+                      controller: _tabController,
+                      indicatorColor: const Color(0xFF10B981),
+                      indicatorWeight: 3,
+                      labelColor: const Color(0xFF10B981),
+                      unselectedLabelColor: const Color(0xFF6B7280),
+                      labelStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.1,
+                      ),
+                      tabs: [
+                        Tab(
+                          icon: const Icon(Icons.shopping_bag_rounded, size: 20),
+                          text: 'Orders (${_orders.length})',
+                        ),
+                        Tab(
+                          icon: const Icon(Icons.inventory_2_rounded, size: 20),
+                          text: 'Products (${_products.length})',
+                        ),
+                        Tab(
+                          icon: Icon(
+                            remainingSlots > 0
+                                ? Icons.add_circle_rounded
+                                : Icons.lock_rounded,
+                            size: 20,
+                          ),
+                          text: 'Add Product',
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height - 300,
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          MyOrdersTab(
+                            orders: _orders,
+                            onRefresh: _loadOrders,
+                          ),
+                          MyProductsTab(
+                            products: _products,
+                            productLimit: _productLimit,
+                            onRefresh: _loadProducts,
+                            onProductUpdated: _handleProductUpdated,
+                            onProductDeleted: _handleProductDeleted,
+                          ),
+                          AddProductTab(
+                            products: _products,
+                            productLimit: _productLimit,
+                            onProductAdded: _handleProductAdded,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 80),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

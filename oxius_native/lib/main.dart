@@ -23,7 +23,7 @@ import 'screens/checkout_screen.dart';
 import 'screens/wallet/wallet_screen.dart';
 import 'screens/mobile_recharge/mobile_recharge_screen.dart';
 import 'screens/eshop_screen.dart';
-import 'screens/eshop_manager_screen.dart';
+import 'screens/eshop_manager/eshop_manager_screen.dart';
 import 'screens/news_screen.dart';
 import 'screens/about_screen.dart';
 import 'screens/faq_screen.dart';
@@ -213,6 +213,10 @@ class MyApp extends StatelessWidget {
             } else if (settings.name == '/create-sale-post') {
               return MaterialPageRoute(
                 builder: (context) => const CreateSalePostScreen(),
+              );
+            } else if (settings.name == '/eshop-manager') {
+              return MaterialPageRoute(
+                builder: (context) => const EshopManagerScreen(),
               );
             } else if (settings.name == '/seller-profile') {
               final args = settings.arguments as Map<String, dynamic>?;

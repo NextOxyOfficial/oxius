@@ -1,0 +1,533 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'api_service.dart';
+import 'auth_service.dart';
+import '../models/eshop_manager_models.dart';
+
+class EshopManagerService {
+  static String get baseUrl => ApiService.baseUrl;
+
+  /// Get product slot packages
+  static Future<List<Map<String, dynamic>>> getProductSlotPackages() async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/product-slot-packages/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('📦 Product slot packages response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          return List<Map<String, dynamic>>.from(data);
+        }
+      }
+      return [];
+    } catch (e) {
+      print('❌ Error fetching product slot packages: $e');
+      return [];
+    }
+  }
+
+  /// Purchase product slots
+  static Future<Map<String, dynamic>> purchaseProductSlots({
+    required int packageId,
+    required int slotCount,
+    required double cost,
+  }) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/purchase-product-slots/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'package_id': packageId,
+          'slot_count': slotCount,
+          'cost': cost,
+        }),
+      );
+
+      print('📦 Purchase slots response: ${response.statusCode}');
+      print('📦 Response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'data': data,
+        };
+      } else {
+        final error = json.decode(response.body);
+        return {
+          'success': false,
+          'message': error['message'] ?? 'Purchase failed',
+        };
+      }
+    } catch (e) {
+      print('❌ Error purchasing slots: $e');
+      return {
+        'success': false,
+        'message': 'Failed to purchase slots: $e',
+      };
+    }
+  }
+
+  /// Get product categories
+  static Future<List<Map<String, dynamic>>> getCategories() async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/product-categories/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('📦 Categories response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          return List<Map<String, dynamic>>.from(data);
+        }
+      }
+      return [];
+    } catch (e) {
+      print('❌ Error fetching categories: $e');
+      return [];
+    }
+  }
+
+  /// Get store details by username
+  static Future<StoreDetails?> getStoreDetails(String storeUsername) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/store/$storeUsername/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('📦 Store details response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return StoreDetails.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      print('❌ Error fetching store details: $e');
+      return null;
+    }
+  }
+
+  /// Update store information
+  static Future<Map<String, dynamic>> updateStoreInfo({
+    required String storeUsername,
+    required String storeName,
+    String? storeAddress,
+    String? storeDescription,
+  }) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.patch(
+        Uri.parse('$baseUrl/store/$storeUsername/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'store_name': storeName,
+          'store_address': storeAddress ?? '',
+          'store_description': storeDescription ?? '',
+        }),
+      );
+
+      print('📦 Update store response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'data': data,
+        };
+      } else {
+        final error = json.decode(response.body);
+        return {
+          'success': false,
+          'message': error['store_name']?[0] ?? error['message'] ?? 'Update failed',
+        };
+      }
+    } catch (e) {
+      print('❌ Error updating store: $e');
+      return {
+        'success': false,
+        'message': 'Failed to update store: $e',
+      };
+    }
+  }
+
+  /// Get seller's products
+  static Future<List<ShopProduct>> getMyProducts() async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/my-products/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+      );
+
+      print('📦 My products response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        List<dynamic> productsList;
+        if (data is Map && data['results'] != null) {
+          productsList = data['results'];
+        } else if (data is List) {
+          productsList = data;
+        } else {
+          productsList = [];
+        }
+
+        return productsList.map((json) => ShopProduct.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('❌ Error fetching products: $e');
+      return [];
+    }
+  }
+
+  /// Get seller's orders
+  static Future<List<ShopOrder>> getSellerOrders() async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/seller-orders/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('📦 Seller orders response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        List<dynamic> ordersList;
+        if (data is Map && data['results'] != null) {
+          ordersList = data['results'];
+        } else if (data is List) {
+          ordersList = data;
+        } else {
+          ordersList = [];
+        }
+
+        return ordersList.map((json) => ShopOrder.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('❌ Error fetching orders: $e');
+      return [];
+    }
+  }
+
+  /// Get order statistics
+  static Future<OrderStats?> getOrderStats() async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/seller-orders/stats/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('📦 Order stats response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return OrderStats.fromJson(data);
+      }
+      return null;
+    } catch (e) {
+      print('❌ Error fetching order stats: $e');
+      return null;
+    }
+  }
+
+  /// Create a new product with raw data (matching Vue structure)
+  static Future<Map<String, dynamic>> createProductRaw(Map<String, dynamic> productData) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      print('📦 Creating product with data: $productData');
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/products/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(productData),
+      );
+
+      print('📦 Create product response: ${response.statusCode}');
+      print('📦 Response body: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'data': data,
+        };
+      } else {
+        final error = json.decode(response.body);
+        print('❌ Error response: $error');
+        return {
+          'success': false,
+          'message': error.toString(),
+          'errors': error,
+        };
+      }
+    } catch (e) {
+      print('❌ Error creating product: $e');
+      return {
+        'success': false,
+        'message': 'Failed to create product: $e',
+      };
+    }
+  }
+
+  /// Create a new product
+  static Future<Map<String, dynamic>> createProduct({
+    required String name,
+    required double regularPrice,
+    required int quantity,
+    String? description,
+    String? shortDescription,
+    List<int>? category,
+    String? keywords,
+    List<String>? images,
+    double? salePrice,
+    double? weight,
+    bool isFreeDelivery = false,
+    double deliveryFeeInsideDhaka = 0,
+    double deliveryFeeOutsideDhaka = 0,
+  }) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final Map<String, dynamic> productData = {
+        'name': name,
+        'regular_price': regularPrice,
+        'quantity': quantity,
+        'description': description,
+        'short_description': shortDescription,
+        'category': category,
+        'keywords': keywords,
+        'images': images,
+        'sale_price': salePrice,
+        'weight': weight,
+        'is_free_delivery': isFreeDelivery,
+        'delivery_fee_inside_dhaka': deliveryFeeInsideDhaka,
+        'delivery_fee_outside_dhaka': deliveryFeeOutsideDhaka,
+      };
+
+      // Remove null values
+      productData.removeWhere((key, value) => value == null);
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/products/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(productData),
+      );
+
+      print('📦 Create product response: ${response.statusCode}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'data': data,
+        };
+      } else {
+        final error = json.decode(response.body);
+        return {
+          'success': false,
+          'message': error['message'] ?? 'Failed to create product',
+          'errors': error,
+        };
+      }
+    } catch (e) {
+      print('❌ Error creating product: $e');
+      return {
+        'success': false,
+        'message': 'Failed to create product: $e',
+      };
+    }
+  }
+
+  /// Update a product
+  static Future<Map<String, dynamic>> updateProduct({
+    required int productId,
+    String? name,
+    double? price,
+    int? stock,
+    String? description,
+    int? categoryId,
+    String? image,
+    String? status,
+  }) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final Map<String, dynamic> body = {};
+      if (name != null) body['name'] = name;
+      if (price != null) body['price'] = price;
+      if (stock != null) body['stock'] = stock;
+      if (description != null) body['description'] = description;
+      if (categoryId != null) body['category'] = categoryId;
+      if (image != null) body['image'] = image;
+      if (status != null) body['status'] = status;
+
+      final response = await http.patch(
+        Uri.parse('$baseUrl/my-products/$productId/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(body),
+      );
+
+      print('📦 Update product response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'data': data,
+        };
+      } else {
+        final error = json.decode(response.body);
+        return {
+          'success': false,
+          'message': error['message'] ?? 'Failed to update product',
+        };
+      }
+    } catch (e) {
+      print('❌ Error updating product: $e');
+      return {
+        'success': false,
+        'message': 'Failed to update product: $e',
+      };
+    }
+  }
+
+  /// Delete a product
+  static Future<bool> deleteProduct(int productId) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/my-products/$productId/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('📦 Delete product response: ${response.statusCode}');
+
+      return response.statusCode == 204 || response.statusCode == 200;
+    } catch (e) {
+      print('❌ Error deleting product: $e');
+      return false;
+    }
+  }
+
+  /// Update order status
+  static Future<Map<String, dynamic>> updateOrderStatus({
+    required int orderId,
+    required String status,
+  }) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.patch(
+        Uri.parse('$baseUrl/seller-orders/$orderId/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'order_status': status,
+        }),
+      );
+
+      print('📦 Update order status response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'data': data,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Failed to update order status',
+        };
+      }
+    } catch (e) {
+      print('❌ Error updating order status: $e');
+      return {
+        'success': false,
+        'message': 'Failed to update order status: $e',
+      };
+    }
+  }
+}
