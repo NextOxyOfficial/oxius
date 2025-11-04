@@ -1366,3 +1366,24 @@ class SearchHistory(models.Model):
     def __str__(self):
         user_info = self.user.username if self.user else 'Anonymous'
         return f"{user_info} searched: {self.query}"
+
+
+class FCMToken(models.Model):
+    """Model to store FCM tokens for push notifications"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fcm_tokens')
+    token = models.CharField(max_length=255, unique=True)
+    device_type = models.CharField(max_length=20, default='android')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'fcm_tokens'
+        ordering = ['-updated_at']
+        indexes = [
+            models.Index(fields=['user', 'is_active']),
+            models.Index(fields=['token']),
+        ]
+
+    def __str__(self):
+        return f'{self.user.email} - {self.device_type}'

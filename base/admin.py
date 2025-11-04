@@ -5,6 +5,8 @@ from django.urls import reverse
 from django.utils.html import format_html
 
 from .models import *
+# Import notification admin panel
+from .notification_admin import *
 
 
 # Proxy model for Store management

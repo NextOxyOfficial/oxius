@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'auth_service.dart';
 import 'api_service.dart';
+import 'active_chat_tracker.dart';
 
 class AdsyConnectService {
   static String get baseUrl => '${ApiService.baseUrl}/adsyconnect';
@@ -141,7 +142,15 @@ class AdsyConnectService {
     required String content,
   }) async {
     try {
+      // Get headers with active chat ID to prevent unnecessary notifications
       final headers = await _getHeaders();
+      
+      // Add active chat ID if available (imported at top of file)
+      final activeChatId = ActiveChatTracker.activeChatId;
+      if (activeChatId != null) {
+        headers['X-Active-Chat-ID'] = activeChatId;
+      }
+      
       final response = await http.post(
         Uri.parse('$baseUrl/messages/'),
         headers: headers,

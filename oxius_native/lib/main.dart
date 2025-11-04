@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'config/app_config.dart';
+import 'services/fcm_service.dart';
 import 'screens/home_screen.dart';
 import 'screens/inbox_screen.dart';
 import 'screens/my_gigs_screen.dart';
 import 'screens/post_gig_screen.dart';
 import 'screens/business_network/business_network_screen.dart';
+import 'screens/mindforce_screen.dart';
 import 'screens/business_network/mindforce_screen.dart';
 import 'screens/classified_category_list_screen.dart';
 import 'screens/classified_post_details_screen.dart';
@@ -56,6 +59,12 @@ void main() async {
   // Print app configuration (shows which environment is active)
   AppConfig.printConfig();
   
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
+  // Initialize FCM
+  await FCMService.initialize();
+  
   // Initialize translation service
   print('Initializing translation service...');
   final translationService = TranslationService();
@@ -90,6 +99,7 @@ class MyApp extends StatelessWidget {
         if (userState.isInitializing) {
           return MaterialApp(
             title: 'AdsyClub Native',
+            navigatorKey: FCMService.navigatorKey,
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
@@ -116,6 +126,7 @@ class MyApp extends StatelessWidget {
         return Portal(
           child: MaterialApp(
             title: 'AdsyClub Native',
+            navigatorKey: FCMService.navigatorKey,
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),

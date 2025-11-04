@@ -1,0 +1,165 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 40px auto; padding: 20px;">
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px; margin-bottom: 30px; color: white;">
+        <h1 style="margin: 0; font-size: 28px;">📤 Send Push Notification</h1>
+        <p style="margin: 10px 0 0 0; opacity: 0.9;">Compose and send notifications to your users</p>
+    </div>
+
+    <!-- Form -->
+    <form method="post" style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        {% csrf_token %}
+        
+        <!-- Recipient Type -->
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">
+                👥 Send To:
+            </label>
+            <select name="recipient_type" id="recipient_type" required 
+                    style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 14px;"
+                    onchange="toggleUserEmail()">
+                <option value="all">All Users ({{ total_tokens }} devices)</option>
+                <option value="active">Active Users (Last 7 days)</option>
+                <option value="specific">Specific User</option>
+            </select>
+        </div>
+
+        <!-- Specific User Email (hidden by default) -->
+        <div id="user_email_field" style="margin-bottom: 25px; display: none;">
+            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">
+                📧 User Email:
+            </label>
+            <input type="email" name="user_email" 
+                   style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 14px;"
+                   placeholder="user@example.com">
+        </div>
+
+        <!-- Notification Title -->
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">
+                📝 Title: <span style="color: #EF4444;">*</span>
+            </label>
+            <input type="text" name="title" required 
+                   style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 14px;"
+                   placeholder="e.g., New Feature Available!"
+                   maxlength="100">
+            <small style="color: #6B7280; display: block; margin-top: 5px;">Maximum 100 characters</small>
+        </div>
+
+        <!-- Notification Body -->
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">
+                💬 Message: <span style="color: #EF4444;">*</span>
+            </label>
+            <textarea name="body" required rows="4"
+                      style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 14px; resize: vertical;"
+                      placeholder="e.g., Check out our new eShop feature with amazing deals!"
+                      maxlength="500"></textarea>
+            <small style="color: #6B7280; display: block; margin-top: 5px;">Maximum 500 characters</small>
+        </div>
+
+        <!-- Notification Type -->
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #374151;">
+                🎯 Action Type:
+            </label>
+            <select name="data_type" 
+                    style="width: 100%; padding: 12px; border: 2px solid #E5E7EB; border-radius: 8px; font-size: 14px;">
+                <option value="general">General (No specific action)</option>
+                <option value="message">Open Messages</option>
+                <option value="wallet">Open Wallet</option>
+                <option value="order">Open Orders</option>
+                <option value="eshop">Open eShop</option>
+            </select>
+            <small style="color: #6B7280; display: block; margin-top: 5px;">What happens when user taps the notification</small>
+        </div>
+
+        <!-- Quick Templates -->
+        <div style="margin-bottom: 25px; padding: 15px; background: #F9FAFB; border-radius: 8px; border: 1px solid #E5E7EB;">
+            <label style="display: block; font-weight: 600; margin-bottom: 10px; color: #374151;">
+                ⚡ Quick Templates:
+            </label>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                <button type="button" onclick="useTemplate('New Feature', 'Check out our latest feature!')" 
+                        style="padding: 10px; background: white; border: 1px solid #D1D5DB; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                    🎉 New Feature
+                </button>
+                <button type="button" onclick="useTemplate('Special Offer', 'Limited time offer! Don\\'t miss out!')" 
+                        style="padding: 10px; background: white; border: 1px solid #D1D5DB; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                    🎁 Special Offer
+                </button>
+                <button type="button" onclick="useTemplate('System Update', 'App has been updated with improvements')" 
+                        style="padding: 10px; background: white; border: 1px solid #D1D5DB; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                    🔄 System Update
+                </button>
+                <button type="button" onclick="useTemplate('Reminder', 'You have pending items to review')" 
+                        style="padding: 10px; background: white; border: 1px solid #D1D5DB; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                    ⏰ Reminder
+                </button>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div style="margin-bottom: 25px; padding: 20px; background: #F3F4F6; border-radius: 8px; border-left: 4px solid #667eea;">
+            <label style="display: block; font-weight: 600; margin-bottom: 10px; color: #374151;">
+                👁️ Preview:
+            </label>
+            <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <img src="{% static 'admin/img/icon-yes.svg' %}" style="width: 24px; height: 24px; margin-right: 10px;">
+                    <strong id="preview_title" style="color: #1F2937;">Your notification title</strong>
+                </div>
+                <div id="preview_body" style="color: #6B7280; font-size: 14px;">Your notification message</div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div style="display: flex; gap: 15px; justify-content: flex-end;">
+            <a href="{% url 'admin:base_fcmtoken_changelist' %}" 
+               style="padding: 12px 30px; background: #F3F4F6; color: #374151; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                Cancel
+            </a>
+            <button type="submit" 
+                    style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                📤 Send Notification
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleUserEmail() {
+    const recipientType = document.getElementById('recipient_type').value;
+    const userEmailField = document.getElementById('user_email_field');
+    
+    if (recipientType === 'specific') {
+        userEmailField.style.display = 'block';
+        document.querySelector('input[name="user_email"]').required = true;
+    } else {
+        userEmailField.style.display = 'none';
+        document.querySelector('input[name="user_email"]').required = false;
+    }
+}
+
+function useTemplate(title, body) {
+    document.querySelector('input[name="title"]').value = title;
+    document.querySelector('textarea[name="body"]').value = body;
+    updatePreview();
+}
+
+// Live preview
+document.querySelector('input[name="title"]').addEventListener('input', updatePreview);
+document.querySelector('textarea[name="body"]').addEventListener('input', updatePreview);
+
+function updatePreview() {
+    const title = document.querySelector('input[name="title"]').value || 'Your notification title';
+    const body = document.querySelector('textarea[name="body"]').value || 'Your notification message';
+    
+    document.getElementById('preview_title').textContent = title;
+    document.getElementById('preview_body').textContent = body;
+}
+</script>
+{% endblock %}

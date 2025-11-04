@@ -190,6 +190,36 @@ class MessageViewSet(viewsets.ModelViewSet):
         chatroom.last_message_preview = message.get_preview()
         chatroom.save()
         
+        # Send push notification to receiver (only if not in active chat)
+        try:
+            from base.fcm_service import send_message_notification
+            
+            # Check if receiver is currently in this chat
+            # Client should send 'active_chat_id' in headers when viewing a chat
+            receiver_active_chat = request.META.get('HTTP_X_ACTIVE_CHAT_ID')
+            
+            # Only send notification if:
+            # 1. Receiver is not in the same chat, OR
+            # 2. No active chat info provided (means app might be closed)
+            should_notify = (
+                not receiver_active_chat or 
+                str(chatroom.id) != receiver_active_chat
+            )
+            
+            if should_notify:
+                sender_name = request.user.get_full_name() or request.user.username or request.user.email
+                send_message_notification(
+                    recipient_user=message.receiver,
+                    sender_name=sender_name,
+                    message_text=message.get_preview(),
+                    chat_id=str(chatroom.id)
+                )
+                print(f'✅ Notification sent to {message.receiver.email}')
+            else:
+                print(f'⏭️ Skipped notification - user in active chat')
+        except Exception as e:
+            print(f'❌ Error sending notification: {e}')
+        
         # Return full message serialization with all fields
         output_serializer = MessageSerializer(message, context={'request': request})
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)

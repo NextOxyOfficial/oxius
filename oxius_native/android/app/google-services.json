@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "866607241594",
+    "project_id": "adsyclub",
+    "storage_bucket": "adsyclub.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:866607241594:android:d0be49d7002eaa42a79ec3",
+        "android_client_info": {
+          "package_name": "com.oxius.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8VY8UHWTyqJ0VQjRPJfipovo8PxjMUiM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

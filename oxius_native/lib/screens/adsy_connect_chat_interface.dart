@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'dart:io';
 import '../services/adsyconnect_service.dart';
+import '../services/active_chat_tracker.dart';
 import '../utils/image_compressor.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
@@ -55,6 +56,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   @override
   void initState() {
     super.initState();
+    // Set this chat as active to prevent push notifications
+    ActiveChatTracker.setActiveChat(widget.chatroomId);
     _loadMessages();
     _messageController.addListener(_onTypingChanged);
     _startMessagePolling();
@@ -62,6 +65,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
 
   @override
   void dispose() {
+    // Clear active chat when leaving
+    ActiveChatTracker.clearActiveChat();
     _messageController.dispose();
     _scrollController.dispose();
     _messageFocusNode.dispose();

@@ -129,6 +129,7 @@ urlpatterns = [
         "purchase-product-slots/", purchase_product_slots, name="purchase-product-slots"
     ),
     path("add-user-balance/", postBalance),
+    path("save-fcm-token/", save_fcm_token, name="save-fcm-token"),
     path("get-user-nid/", get_nid),
     path("add-user-nid/", add_nid),
     path("update-user-nid/", update_nid),

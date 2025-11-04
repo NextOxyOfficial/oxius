@@ -4666,3 +4666,40 @@ def clear_search_history(request):
         SearchHistory.objects.filter(user=user, search_type='product').delete()
         return Response({'message': 'Search history cleared'}, status=status.HTTP_200_OK)
     return Response({'error': 'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_fcm_token(request):
+    """Save or update user's FCM token for push notifications"""
+    from .models import FCMToken
+    
+    fcm_token = request.data.get('fcm_token')
+    device_type = request.data.get('device_type', 'android')
+    
+    if not fcm_token:
+        return Response(
+            {'error': 'FCM token is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        # Create or update token
+        token_obj, created = FCMToken.objects.update_or_create(
+            user=request.user,
+            token=fcm_token,
+            defaults={
+                'is_active': True,
+                'device_type': device_type
+            }
+        )
+        
+        return Response({
+            'message': 'FCM token saved successfully',
+            'created': created
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
