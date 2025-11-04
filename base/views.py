@@ -1212,7 +1212,7 @@ def postBalance(request):
         contact = data.get("contact", "").strip()
         if not contact:
             return Response(
-                {"error": "Contact (email or phone) is required for transfer"},
+                {"error": "Contact (user ID, email or phone) is required for transfer"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
@@ -1238,15 +1238,16 @@ def postBalance(request):
             )
         
         # 5. Check self-transfer
-        if contact == request.user.email or contact == request.user.phone:
+        if contact == str(request.user.id) or contact == request.user.email or contact == request.user.phone:
             return Response(
                 {"error": "You cannot transfer money to yourself"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
-        # 6. Find recipient user
+        # 6. Find recipient user (by ID, email, or phone)
         try:
-            to_user = User.objects.get(Q(email=contact) | Q(phone=contact))
+            # Try to find user by ID, email, or phone
+            to_user = User.objects.get(Q(id=contact) | Q(email=contact) | Q(phone=contact))
         except User.DoesNotExist:
             return Response(
                 {"error": "Recipient user not found"},

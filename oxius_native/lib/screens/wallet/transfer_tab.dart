@@ -355,7 +355,7 @@ class _TransferTabState extends State<TransferTab> {
             onChanged: (value) => _validateContact(),
             decoration: InputDecoration(
               labelText: 'Recipient ID, Email or Phone',
-              hintText: 'Enter user ID, email or phone','
+              hintText: 'Enter user ID, email or phone',
               prefixIcon: const Icon(Icons.person_outline, size: 20),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.qr_code_scanner, size: 20),
