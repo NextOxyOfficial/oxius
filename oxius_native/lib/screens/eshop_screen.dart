@@ -73,13 +73,31 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     if (args != null && args['categoryId'] != null) {
       final categoryId = args['categoryId'].toString();
       if (_selectedCategoryId != categoryId) {
-        // Find category name from loaded categories
-        final category = _allCategories.firstWhere(
-          (cat) => cat['id'].toString() == categoryId,
-          orElse: () => {},
-        );
         setState(() {
           _selectedCategoryId = categoryId;
+          _selectedCategoryName = null; // Will be set when categories load
+        });
+        // Find category name after categories are loaded
+        _findCategoryName(categoryId);
+      }
+    }
+  }
+
+  Future<void> _findCategoryName(String categoryId) async {
+    // Wait for categories to load if not loaded yet
+    int attempts = 0;
+    while (_allCategories.isEmpty && attempts < 10) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      attempts++;
+    }
+    
+    if (_allCategories.isNotEmpty) {
+      final category = _allCategories.firstWhere(
+        (cat) => cat['id'].toString() == categoryId,
+        orElse: () => {},
+      );
+      if (mounted && category.isNotEmpty) {
+        setState(() {
           _selectedCategoryName = category['name']?.toString();
         });
       }
@@ -522,224 +540,259 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      body: Stack(
-        children: [
-          // Main Content
-          Column(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.pink.shade400, Colors.orange.shade500],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Stack(
             children: [
-              // Header
-              _buildHeader(),
+              Column(
+                children: [
+                  // Custom Header with gradient background
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.pink.shade400, Colors.orange.shade500],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                    ),
+                    child: _buildHeader(),
+                  ),
+                  
+                  // Content with rounded top
+                  Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24),
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24),
+                        ),
+                        child: _isSearchActive 
+                            ? _buildSearchOverlay()
+                            : _buildMainContent(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               
-              // Content
-              Expanded(
-                child: _isSearchActive 
-                    ? _buildSearchOverlay()
-                    : _buildMainContent(),
+              // Mobile Sticky Navigation at bottom
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: MobileStickyNav(
+                  currentRoute: 'eShop',
+                  scrollController: _scrollController,
+                ),
               ),
             ],
           ),
-          
-          // Category Sidebar Overlay - Removed since category filtering is not needed
-          
-          // Mobile Sticky Navigation at bottom
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: MobileStickyNav(
-              currentRoute: 'eShop',
-              scrollController: _scrollController,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildHeader() {
-    return AppBar(
-      title: _isSearchActive
-          ? TextField(
-              controller: _searchController,
-              autofocus: true,
-              onChanged: _onSearchChanged,
-              onSubmitted: (value) {
-                if (value.trim().isNotEmpty && value.trim().length >= 3) {
-                  _debounceTimer?.cancel();
-                  _performSearch(value);
-                }
-              },
-              style: const TextStyle(fontSize: 15, color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'Search products...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
-                border: InputBorder.none,
-                isDense: true,
-              ),
-            )
-          : GestureDetector(
-              onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (_eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty)
-                    Image.network(
-                      _eshopLogoUrl!,
-                      height: 32,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const Text(
-                        'eShop',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                    )
-                  else
-                    const Text(
-                      'eShop',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-      backgroundColor: const Color(0xFF8B5CF6), // Purple color for eShop
-      foregroundColor: Colors.white,
-      elevation: 0,
-      centerTitle: false,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, size: 22),
-        onPressed: () => Navigator.pop(context),
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(
-            _isSearchActive ? Icons.close_rounded : Icons.search_rounded,
-            size: 22,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      child: Row(
+        children: [
+          // Back Button
+          IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+            onPressed: () => Navigator.pop(context),
           ),
-          onPressed: () {
-            setState(() {
-              _isSearchActive = !_isSearchActive;
-              if (!_isSearchActive) {
-                _searchController.clear();
-                _searchResults.clear();
-                _searchSuggestions.clear();
-                _showSuggestions = false;
-                _isSearching = false;
-              }
-            });
-          },
-          tooltip: _isSearchActive ? 'Close Search' : 'Search',
-        ),
-        if (!_isSearchActive)
-          PopupMenuButton<String>(
-            offset: const Offset(0, 40),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+          
+          // Title or Search Field
+          Expanded(
+            child: _isSearchActive
+                ? TextField(
+                    controller: _searchController,
+                    autofocus: true,
+                    onChanged: _onSearchChanged,
+                    onSubmitted: (value) {
+                      if (value.trim().isNotEmpty && value.trim().length >= 3) {
+                        _debounceTimer?.cancel();
+                        _performSearch(value);
+                      }
+                    },
+                    style: const TextStyle(fontSize: 15, color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Search products...',
+                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                      border: InputBorder.none,
+                      isDense: true,
+                    ),
+                  )
+                : GestureDetector(
+                    onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
+                    child: _eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty
+                        ? Image.network(
+                            _eshopLogoUrl!,
+                            height: 32,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => const Text(
+                              'eShop',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                        : const Text(
+                            'eShop',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
+          ),
+          
+          // Search Icon
+          IconButton(
             icon: Icon(
-              _selectedCategoryId != null ? Icons.filter_alt : Icons.filter_list_rounded,
+              _isSearchActive ? Icons.close_rounded : Icons.search_rounded,
+              color: Colors.white,
               size: 22,
             ),
-            tooltip: 'Filter by Category',
-            itemBuilder: (context) {
-              return [
-                // All Categories option
-                PopupMenuItem<String>(
-                  value: null,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.apps_rounded,
-                        size: 18,
-                        color: _selectedCategoryId == null 
-                            ? const Color(0xFF8B5CF6) 
-                            : const Color(0xFF6B7280),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'All Products',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      const Spacer(),
-                      if (_selectedCategoryId == null)
-                        const Icon(
-                          Icons.check_rounded,
-                          size: 18,
-                          color: Color(0xFF8B5CF6),
-                        ),
-                    ],
-                  ),
-                ),
-                const PopupMenuDivider(),
-                // Category options
-                ..._allCategories.map((category) {
-                  final categoryId = category['id'].toString();
-                  final categoryName = category['name']?.toString() ?? 'Unknown';
-                  final isSelected = _selectedCategoryId == categoryId;
-                  
-                  return PopupMenuItem<String>(
-                    value: categoryId,
+            onPressed: () {
+              setState(() {
+                _isSearchActive = !_isSearchActive;
+                if (!_isSearchActive) {
+                  _searchController.clear();
+                  _searchResults.clear();
+                  _searchSuggestions.clear();
+                  _showSuggestions = false;
+                  _isSearching = false;
+                }
+              });
+            },
+            tooltip: _isSearchActive ? 'Close Search' : 'Search',
+          ),
+          
+          // Filter Icon
+          if (!_isSearchActive)
+            PopupMenuButton<String>(
+              offset: const Offset(0, 40),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              icon: Icon(
+                _selectedCategoryId != null ? Icons.filter_alt : Icons.filter_list_rounded,
+                color: Colors.white,
+                size: 22,
+              ),
+              tooltip: 'Filter by Category',
+              itemBuilder: (context) {
+                return [
+                  // All Categories option
+                  PopupMenuItem<String>(
+                    value: null,
                     child: Row(
                       children: [
                         Icon(
-                          Icons.category_rounded,
+                          Icons.apps_rounded,
                           size: 18,
-                          color: isSelected 
-                              ? const Color(0xFF8B5CF6) 
+                          color: _selectedCategoryId == null 
+                              ? Colors.pink.shade400 
                               : const Color(0xFF6B7280),
                         ),
                         const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            categoryName,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                        const Text(
+                          'All Products',
+                          style: TextStyle(fontSize: 14),
                         ),
-                        if (isSelected)
-                          const Icon(
+                        const Spacer(),
+                        if (_selectedCategoryId == null)
+                          Icon(
                             Icons.check_rounded,
                             size: 18,
-                            color: Color(0xFF8B5CF6),
+                            color: Colors.pink.shade400,
                           ),
                       ],
                     ),
+                  ),
+                  const PopupMenuDivider(),
+                  // Category options
+                  ..._allCategories.map((category) {
+                    final categoryId = category['id'].toString();
+                    final categoryName = category['name']?.toString() ?? 'Unknown';
+                    final isSelected = _selectedCategoryId == categoryId;
+                    
+                    return PopupMenuItem<String>(
+                      value: categoryId,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.category_rounded,
+                            size: 18,
+                            color: isSelected 
+                                ? Colors.pink.shade400 
+                                : const Color(0xFF6B7280),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              categoryName,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isSelected)
+                            Icon(
+                              Icons.check_rounded,
+                              size: 18,
+                              color: Colors.pink.shade400,
+                            ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ];
+              },
+              onSelected: (value) {
+                if (value == null) {
+                  setState(() {
+                    _selectedCategoryId = null;
+                    _selectedCategoryName = null;
+                  });
+                } else {
+                  final category = _allCategories.firstWhere(
+                    (cat) => cat['id'].toString() == value,
+                    orElse: () => {},
                   );
-                }).toList(),
-              ];
-            },
-            onSelected: (value) {
-              if (value == null) {
-                setState(() {
-                  _selectedCategoryId = null;
-                  _selectedCategoryName = null;
-                });
-              } else {
-                final category = _allCategories.firstWhere(
-                  (cat) => cat['id'].toString() == value,
-                  orElse: () => {},
-                );
-                setState(() {
-                  _selectedCategoryId = value;
-                  _selectedCategoryName = category['name']?.toString();
-                });
-              }
-              _loadInitialData();
-            },
-          ),
-        const SizedBox(width: 4),
-      ],
+                  setState(() {
+                    _selectedCategoryId = value;
+                    _selectedCategoryName = category['name']?.toString();
+                  });
+                }
+                _loadInitialData();
+              },
+            ),
+        ],
+      ),
     );
   }
 
