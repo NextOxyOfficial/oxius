@@ -9,6 +9,8 @@ from .models import (
     BusinessNetworkMediaComment,
     BusinessNetworkNotification
 )
+from base.fcm_service import send_fcm_notification
+from base.models import FCMToken
 
 @receiver(post_save, sender=BusinessNetworkFollowerModel)
 def create_follow_notification(sender, instance, created, **kwargs):
@@ -20,6 +22,20 @@ def create_follow_notification(sender, instance, created, **kwargs):
             type='follow',
             read=False
         )
+        
+        # Send FCM push notification
+        tokens = FCMToken.objects.filter(user=instance.following, is_active=True)
+        for token in tokens:
+            send_fcm_notification(
+                fcm_token=token.token,
+                title='New Follower',
+                body=f'{instance.follower.get_full_name() or instance.follower.email} started following you',
+                data={
+                    'type': 'follow',
+                    'user_id': str(instance.follower.id),
+                    'click_action': 'FLUTTER_NOTIFICATION_CLICK'
+                }
+            )
 
 
 @receiver(post_save, sender=BusinessNetworkPostLike)
@@ -39,6 +55,21 @@ def create_post_like_notification(sender, instance, created, **kwargs):
             read=False,
             content=content
         )
+        
+        # Send FCM push notification
+        tokens = FCMToken.objects.filter(user=instance.post.author, is_active=True)
+        for token in tokens:
+            send_fcm_notification(
+                fcm_token=token.token,
+                title='Post Liked',
+                body=f'{instance.user.get_full_name() or instance.user.email} liked your post',
+                data={
+                    'type': 'like_post',
+                    'post_id': str(instance.post.id),
+                    'user_id': str(instance.user.id),
+                    'click_action': 'FLUTTER_NOTIFICATION_CLICK'
+                }
+            )
 
 
 @receiver(post_save, sender=BusinessNetworkPostComment)
@@ -54,6 +85,23 @@ def create_post_comment_notification(sender, instance, created, **kwargs):
             read=False,
             content=instance.content[:100]
         )
+        
+        # Send FCM push notification
+        tokens = FCMToken.objects.filter(user=instance.post.author, is_active=True)
+        comment_preview = instance.content[:50] + '...' if len(instance.content) > 50 else instance.content
+        for token in tokens:
+            send_fcm_notification(
+                fcm_token=token.token,
+                title='New Comment',
+                body=f'{instance.author.get_full_name() or instance.author.email}: {comment_preview}',
+                data={
+                    'type': 'comment',
+                    'post_id': str(instance.post.id),
+                    'comment_id': str(instance.id),
+                    'user_id': str(instance.author.id),
+                    'click_action': 'FLUTTER_NOTIFICATION_CLICK'
+                }
+            )
 
 
 @receiver(post_save, sender=BusinessNetworkMediaLike)
