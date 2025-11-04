@@ -527,12 +527,13 @@ class GetClassifiedCategoriesAll(generics.ListCreateAPIView):
     queryset = ClassifiedCategory.objects.all().order_by("title")
     serializer_class = ClassifiedServicesSerializer
     permission_classes = [AllowAny]
+    pagination_class = None  # Disable pagination for Vue compatibility
 
 
 class GetMicroGigs(generics.ListCreateAPIView):
     serializer_class = MicroGigPostSerializer
     permission_classes = [AllowAny]
-    pagination_class = StandardResultsSetPagination
+    pagination_class = None  # Disable pagination for Vue compatibility
 
     def get_queryset(self):
         queryset = MicroGigPost.objects.exclude(
@@ -1332,24 +1333,28 @@ class GetMicroGigCategory(generics.ListAPIView):
     queryset = MicroGigCategory.objects.all()
     serializer_class = MicroGigCategorySerializer
     permission_classes = [AllowAny]
+    pagination_class = None  # Disable pagination for Vue compatibility
 
 
 class GetTargetNetwork(generics.ListAPIView):
     queryset = TargetNetwork.objects.all()
     serializer_class = TargetNetworkSerializer
     permission_classes = [AllowAny]
+    pagination_class = None  # Disable pagination for Vue compatibility
 
 
 class GetTargetDevice(generics.ListAPIView):
     queryset = TargetDevice.objects.all()
     serializer_class = TargetDeviceSerializer
     permission_classes = [AllowAny]
+    pagination_class = None  # Disable pagination for Vue compatibility
 
 
 class GetTargetCountry(generics.ListAPIView):
     queryset = TargetCountry.objects.all()
     serializer_class = TargetCountrySerializer
     permission_classes = [AllowAny]
+    pagination_class = None  # Disable pagination for Vue compatibility
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -3617,6 +3622,7 @@ class BannerImageListView(generics.ListAPIView):
 
     queryset = BannerImage.objects.all()
     serializer_class = BannerImageSerializer
+    pagination_class = None  # Disable pagination for Vue compatibility
 
 
 class ShopBannerImageListView(generics.ListAPIView):
@@ -3626,6 +3632,7 @@ class ShopBannerImageListView(generics.ListAPIView):
 
     queryset = ShopBannerImage.objects.all()
     serializer_class = ShopBannerImageSerializer
+    pagination_class = None  # Disable pagination for Vue compatibility
 
 
 @api_view(["POST"])
@@ -3761,12 +3768,14 @@ def product_order_count(request, product_id):
 class DiamondPackageListView(generics.ListAPIView):
     queryset = DiamondPackages.objects.all()
     serializer_class = DiamondPackagesSerializer
+    pagination_class = None  # Disable pagination for Vue compatibility
 
 
 class ProductSlotPackageListView(generics.ListAPIView):
     queryset = ProductSlotPackage.objects.all()
     serializer_class = ProductSlotPackageSerializer
     permission_classes = [AllowAny]
+    pagination_class = None  # Disable pagination for Vue compatibility
 
 
 class DiamondTransactionListView(generics.ListAPIView):
