@@ -182,14 +182,18 @@ class ClassifiedServicesSerializer(serializers.ModelSerializer):
         read_only_fields = ["slug"]
     
     def get_image(self, obj):
-        if obj.image:
-            request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.image.url)
-            # Fallback to absolute URL in production
-            if not settings.DEBUG:
-                return f"https://adsyclub.com{obj.image.url}"
-            return obj.image.url
+        if obj.image and obj.image.name:
+            try:
+                request = self.context.get("request")
+                if request:
+                    return request.build_absolute_uri(obj.image.url)
+                # Fallback to absolute URL in production
+                if not settings.DEBUG:
+                    return f"https://adsyclub.com{obj.image.url}"
+                return obj.image.url
+            except Exception as e:
+                print(f"Error getting image URL for {obj.title}: {e}")
+                return None
         return None
 
 

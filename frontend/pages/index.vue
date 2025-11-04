@@ -137,8 +137,9 @@
                 class="p-2.5 border border-emerald-200 hover:border-emerald-400 flex gap-2 items-center rounded-lg bg-emerald-50/80 hover:bg-emerald-50 shadow-sm hover:shadow transition-all duration-300"
                 :to="`/classified-categories/${service.slug}`"
               >
-                <NuxtImg
+                <img
                   :src="service?.image"
+                  :alt="service.title"
                   :title="service.title"
                   class="size-5 object-contain"
                 />
@@ -173,15 +174,17 @@
                 <div
                   class="flex-shrink-0 size-8 bg-slate-100 rounded-full flex items-center justify-center overflow-hidden"
                 >
-                  <NuxtImg
+                  <img
                     v-if="service?.medias[0]?.image"
                     :src="service?.medias[0]?.image"
+                    :alt="service.title"
                     :title="service.title"
                     class="size-8 object-contain"
                   />
-                  <NuxtImg
+                  <img
                     v-else
                     :src="service?.category_details?.image"
+                    :alt="service.title"
                     :title="service.title"
                     class="size-6 object-contain"
                   />
@@ -283,11 +286,12 @@
               {{ $t("mobile_recharge") }}
             </h2>
             <div class="flex justify-center gap-2">
-              <NuxtImg
+              <img
                 v-for="operator in operators"
                 :key="operator.id"
                 :src="operator.icon"
-                :title="operator.title"
+                :alt="operator.name"
+                :title="operator.name"
                 class="size-6 transition-transform duration-200"
                 :style="`transition-delay: ${operator.id * 50}ms`"
               />
