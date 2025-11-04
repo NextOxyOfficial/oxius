@@ -174,7 +174,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
     setState(() => _checkSubmit = true);
 
     // Check NID verification first
-    final currentUser = _userService.user;
+    final currentUser = _userService.currentUser;
     if (currentUser == null || !currentUser.isVerified) {
       _showNIDVerificationDialog();
       return;
