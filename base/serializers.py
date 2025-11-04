@@ -178,7 +178,7 @@ class ClassifiedServicesSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ClassifiedCategory
-        fields = "__all__"
+        fields = ['id', 'user', 'title', 'slug', 'business_type', 'image', 'is_featured', 'search_keywords', 'created_at', 'updated_at']
         read_only_fields = ["slug"]
     
     def get_image(self, obj):
@@ -423,7 +423,7 @@ class ProductMediaSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ProductMedia
-        fields = "__all__"
+        fields = ['id', 'image']
     
     def get_image(self, obj):
         if obj.image:
