@@ -174,10 +174,23 @@ class UserSerializerGet(serializers.ModelSerializer):
 
 
 class ClassifiedServicesSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    
     class Meta:
         model = ClassifiedCategory
         fields = "__all__"
         read_only_fields = ["slug"]
+    
+    def get_image(self, obj):
+        if obj.image:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            # Fallback to absolute URL in production
+            if not settings.DEBUG:
+                return f"https://adsyclub.com{obj.image.url}"
+            return obj.image.url
+        return None
 
 
 class MicroGigCategorySerializer(serializers.ModelSerializer):
@@ -406,9 +419,22 @@ class ReceivedTransferSerializer(serializers.ModelSerializer):
 
 
 class ProductMediaSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    
     class Meta:
         model = ProductMedia
         fields = "__all__"
+    
+    def get_image(self, obj):
+        if obj.image:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            # Fallback to absolute URL in production
+            if not settings.DEBUG:
+                return f"https://adsyclub.com{obj.image.url}"
+            return obj.image.url
+        return None
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
