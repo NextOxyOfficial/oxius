@@ -75,8 +75,9 @@
             :class="[getContainerAnimation(service.id)]"
           >
             <!-- Service image with animations (preserved) -->
-            <NuxtImg
+            <img
               :src="service?.image"
+              :alt="service.title"
               :title="service.title"
               class="size-9 z-10"
               :class="getIconAnimation(service.id)"
