@@ -165,7 +165,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     itemCount: _specialDeals.length,
-                    separatorBuilder: (context, index) => const SizedBox(width: 6),
+                    separatorBuilder: (context, index) => const SizedBox(width: 4),
                     itemBuilder: (context, index) {
                       final deal = _specialDeals[index];
                       return _buildDealCard(deal);
@@ -209,8 +209,13 @@ class _HotDealsSectionState extends State<HotDealsSection> {
     
     return GestureDetector(
       onTap: () {
-        if (widget.onCategorySelected != null && deal['id'] != null) {
-          widget.onCategorySelected!(deal['id'].toString());
+        // Navigate to eShop page with category filter
+        if (deal['id'] != null) {
+          Navigator.pushNamed(
+            context,
+            '/eshop',
+            arguments: {'categoryId': deal['id'].toString()},
+          );
         }
       },
       child: IntrinsicWidth(

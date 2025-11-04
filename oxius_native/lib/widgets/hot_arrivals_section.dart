@@ -243,8 +243,13 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          if (widget.onCategorySelected != null && arrival['id'] != null) {
-            widget.onCategorySelected!(arrival['id'].toString());
+          // Navigate to eShop page with category filter
+          if (arrival['id'] != null) {
+            Navigator.pushNamed(
+              context,
+              '/eshop',
+              arguments: {'categoryId': arrival['id'].toString()},
+            );
           }
         },
         borderRadius: BorderRadius.circular(10),

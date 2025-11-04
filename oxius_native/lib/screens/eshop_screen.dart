@@ -35,8 +35,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   List<String> _recentSearches = [];
   List<String> _searchSuggestions = [];
   List<String> _trendingSearches = ['Electronics', 'Fashion', 'Home & Garden', 'Sports'];
-  List<String> _categories = [];
-  String? _selectedCategory;
+  List<Map<String, dynamic>> _allCategories = [];
+  String? _selectedCategoryId;
+  String? _selectedCategoryName;
   
   String? _eshopLogoUrl;
   String _lastSearchQuery = '';
@@ -58,9 +59,31 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       curve: Curves.easeInOut,
     );
     _scrollController.addListener(_onScroll);
+    _loadCategories();
     _loadInitialData();
     _loadSearchHistory();
     _loadEshopLogo();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Handle category filter from navigation arguments
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null && args['categoryId'] != null) {
+      final categoryId = args['categoryId'].toString();
+      if (_selectedCategoryId != categoryId) {
+        // Find category name from loaded categories
+        final category = _allCategories.firstWhere(
+          (cat) => cat['id'].toString() == categoryId,
+          orElse: () => {},
+        );
+        setState(() {
+          _selectedCategoryId = categoryId;
+          _selectedCategoryName = category['name']?.toString();
+        });
+      }
+    }
   }
 
   Future<void> _loadEshopLogo() async {
@@ -229,6 +252,19 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     super.dispose();
   }
 
+  Future<void> _loadCategories() async {
+    try {
+      final categories = await EshopService.fetchProductCategories();
+      if (mounted) {
+        setState(() {
+          _allCategories = categories;
+        });
+      }
+    } catch (e) {
+      print('Error loading categories: $e');
+    }
+  }
+
   Future<void> _loadInitialData() async {
     try {
       setState(() {
@@ -237,10 +273,11 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       });
       
       // Load initial products to display (reduced from 20 to 12 for faster load)
-      final products = await EshopService.fetchEshopProducts(page: 1, pageSize: 12);
-      
-      // Extract unique categories from products
-      _extractCategories(products);
+      final products = await EshopService.fetchEshopProducts(
+        page: 1, 
+        pageSize: 12,
+        categoryId: _selectedCategoryId,
+      );
       
       setState(() {
         _products = products;
@@ -255,59 +292,6 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         );
       }
     }
-  }
-
-  void _extractCategories(List<Map<String, dynamic>>? products) {
-    if (products == null || products.isEmpty) {
-      setState(() {
-        _categories = [];
-      });
-      return;
-    }
-    
-    final Set<String> categorySet = {};
-    
-    for (var product in products) {
-      try {
-        final categoryDetails = product['category_details'];
-        if (categoryDetails is List) {
-          for (var category in categoryDetails) {
-            if (category is Map && category['name'] != null) {
-              categorySet.add(category['name'].toString());
-            }
-          }
-        }
-      } catch (e) {
-        print('Error extracting category from product: $e');
-      }
-    }
-    
-    if (mounted) {
-      setState(() {
-        _categories = categorySet.toList()..sort();
-      });
-    }
-  }
-
-  void _filterByCategory(String? category) {
-    setState(() {
-      _selectedCategory = category;
-      _showCategoryFilter = false;
-    });
-  }
-
-  List<Map<String, dynamic>> get _filteredProducts {
-    if (_selectedCategory == null) return _products;
-    
-    return _products.where((product) {
-      final categoryDetails = product['category_details'];
-      if (categoryDetails is List) {
-        return categoryDetails.any((cat) => 
-          cat is Map && cat['name']?.toString() == _selectedCategory
-        );
-      }
-      return false;
-    }).toList();
   }
 
   Future<void> _loadMoreProducts() async {
@@ -574,173 +558,191 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   }
 
   Widget _buildHeader() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = screenWidth < 768;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isMobile 
-            ? const Color(0xFFE2E8F0).withOpacity(0.7) 
-            : Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(8),
-          bottomRight: Radius.circular(8),
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: (screenWidth * 0.015).clamp(4.0, 12.0),
-            vertical: isMobile ? 4 : 10,
-          ),
-          child: Row(
-            children: [
-              // Back Button
-              _isSearchActive
-                  ? IconButton(
-                      onPressed: _deactivateSearch,
-                      icon: const Icon(Icons.arrow_back_rounded, size: 22),
-                      padding: const EdgeInsets.all(6),
-                      constraints: const BoxConstraints(),
+    return AppBar(
+      title: _isSearchActive
+          ? TextField(
+              controller: _searchController,
+              autofocus: true,
+              onChanged: _onSearchChanged,
+              onSubmitted: (value) {
+                if (value.trim().isNotEmpty && value.trim().length >= 3) {
+                  _debounceTimer?.cancel();
+                  _performSearch(value);
+                }
+              },
+              style: const TextStyle(fontSize: 15, color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Search products...',
+                hintStyle: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                border: InputBorder.none,
+                isDense: true,
+              ),
+            )
+          : GestureDetector(
+              onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty)
+                    Image.network(
+                      _eshopLogoUrl!,
+                      height: 32,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Text(
+                        'eShop',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
                     )
-                  : IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back_rounded, size: 22),
-                      padding: const EdgeInsets.all(6),
-                      constraints: const BoxConstraints(),
-                    ),
-              
-              const SizedBox(width: 2),
-              
-              // Logo or Search Input
-              if (!_isSearchActive) ...[
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: 
-                          // Dynamic eShop Logo only
-                          _eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty
-                            ? SizedBox(
-                                width: 110,
-                                height: 46,
-                                child: Image.network(
-                                  _eshopLogoUrl!,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) => _buildFallbackLogo(),
-                                ),
-                              )
-                            : _buildFallbackLogo(),
-                    ),
-                  ),
-                ),
-                
-                // Search Button
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _activateSearch,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.search_rounded,
-                        size: 20,
-                        color: Color(0xFF6B7280),
+                  else
+                    const Text(
+                      'eShop',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.2,
                       ),
                     ),
-                  ),
-                ),
-              ] else
-                // Search Input (when active)
-                Expanded(
-                  child: Container(
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF9FAFB),
-                      borderRadius: BorderRadius.circular(19),
-                      border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      autofocus: true,
-                      onChanged: _onSearchChanged,
-                      onSubmitted: (value) {
-                        if (value.trim().isNotEmpty && value.trim().length >= 3) {
-                          _debounceTimer?.cancel();
-                          _performSearch(value);
-                        }
-                      },
-                      textAlignVertical: TextAlignVertical.center,
-                      style: const TextStyle(fontSize: 14, color: Color(0xFF374151)),
-                      decoration: InputDecoration(
-                        hintText: 'Search products (min 3 chars)...',
-                        hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
-                        prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF10B981), size: 20),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                onPressed: () {
-                                  _debounceTimer?.cancel();
-                                  _saveSearchTimer?.cancel();
-                                  _searchController.clear();
-                                  setState(() {
-                                    _searchResults.clear();
-                                    _searchSuggestions.clear();
-                                    _showSuggestions = false;
-                                    _isSearching = false;
-                                  });
-                                },
-                                icon: const Icon(Icons.close_rounded, color: Color(0xFF9CA3AF), size: 18),
-                                padding: const EdgeInsets.all(8),
-                                constraints: const BoxConstraints(),
-                              )
-                            : null,
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                        isDense: true,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
+                ],
+              ),
+            ),
+      backgroundColor: const Color(0xFF8B5CF6), // Purple color for eShop
+      foregroundColor: Colors.white,
+      elevation: 0,
+      centerTitle: false,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_rounded, size: 22),
+        onPressed: () => Navigator.pop(context),
       ),
+      actions: [
+        IconButton(
+          icon: Icon(
+            _isSearchActive ? Icons.close_rounded : Icons.search_rounded,
+            size: 22,
+          ),
+          onPressed: () {
+            setState(() {
+              _isSearchActive = !_isSearchActive;
+              if (!_isSearchActive) {
+                _searchController.clear();
+                _searchResults.clear();
+                _searchSuggestions.clear();
+                _showSuggestions = false;
+                _isSearching = false;
+              }
+            });
+          },
+          tooltip: _isSearchActive ? 'Close Search' : 'Search',
+        ),
+        if (!_isSearchActive)
+          PopupMenuButton<String>(
+            offset: const Offset(0, 40),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            icon: Icon(
+              _selectedCategoryId != null ? Icons.filter_alt : Icons.filter_list_rounded,
+              size: 22,
+            ),
+            tooltip: 'Filter by Category',
+            itemBuilder: (context) {
+              return [
+                // All Categories option
+                PopupMenuItem<String>(
+                  value: null,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.apps_rounded,
+                        size: 18,
+                        color: _selectedCategoryId == null 
+                            ? const Color(0xFF8B5CF6) 
+                            : const Color(0xFF6B7280),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'All Products',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      const Spacer(),
+                      if (_selectedCategoryId == null)
+                        const Icon(
+                          Icons.check_rounded,
+                          size: 18,
+                          color: Color(0xFF8B5CF6),
+                        ),
+                    ],
+                  ),
+                ),
+                const PopupMenuDivider(),
+                // Category options
+                ..._allCategories.map((category) {
+                  final categoryId = category['id'].toString();
+                  final categoryName = category['name']?.toString() ?? 'Unknown';
+                  final isSelected = _selectedCategoryId == categoryId;
+                  
+                  return PopupMenuItem<String>(
+                    value: categoryId,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.category_rounded,
+                          size: 18,
+                          color: isSelected 
+                              ? const Color(0xFF8B5CF6) 
+                              : const Color(0xFF6B7280),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            categoryName,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isSelected)
+                          const Icon(
+                            Icons.check_rounded,
+                            size: 18,
+                            color: Color(0xFF8B5CF6),
+                          ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ];
+            },
+            onSelected: (value) {
+              if (value == null) {
+                setState(() {
+                  _selectedCategoryId = null;
+                  _selectedCategoryName = null;
+                });
+              } else {
+                final category = _allCategories.firstWhere(
+                  (cat) => cat['id'].toString() == value,
+                  orElse: () => {},
+                );
+                setState(() {
+                  _selectedCategoryId = value;
+                  _selectedCategoryName = category['name']?.toString();
+                });
+              }
+              _loadInitialData();
+            },
+          ),
+        const SizedBox(width: 4),
+      ],
     );
   }
 
-  Widget _buildFallbackLogo() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF10B981), Color(0xFF059669)],
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Text(
-        'eShop',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-          fontSize: 16,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
 
   Widget _buildSearchOverlay() {
     return Container(
@@ -1033,7 +1035,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
               Icon(Icons.inventory_2_rounded, size: 20, color: Colors.grey.shade600),
               const SizedBox(width: 8),
               Text(
-                'All Products',
+                _selectedCategoryName ?? 'All Products',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -1044,58 +1046,6 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
             ],
           ),
         ),
-        // Category Filter
-        if (_categories != null && _categories.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            child: Row(
-              children: [
-                Icon(Icons.filter_list, size: 20, color: Colors.grey.shade700),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        // All Products chip
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: FilterChip(
-                            label: const Text('All Products'),
-                            selected: _selectedCategory == null,
-                            onSelected: (_) => _filterByCategory(null),
-                            selectedColor: const Color(0xFF10B981),
-                            checkmarkColor: Colors.white,
-                            labelStyle: TextStyle(
-                              color: _selectedCategory == null ? Colors.white : Colors.grey.shade700,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        // Category chips
-                        ..._categories.map((category) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: FilterChip(
-                            label: Text(category),
-                            selected: _selectedCategory == category,
-                            onSelected: (_) => _filterByCategory(category),
-                            selectedColor: const Color(0xFF10B981),
-                            checkmarkColor: Colors.white,
-                            labelStyle: TextStyle(
-                              color: _selectedCategory == category ? Colors.white : Colors.grey.shade700,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        )),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: LayoutBuilder(
@@ -1103,7 +1053,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
               const spacing = 8.0;
               final availableWidth = constraints.maxWidth;
               final idealWidth = (availableWidth - spacing) / 2;
-              final displayProducts = _filteredProducts;
+              final displayProducts = _products;
               
               return GridView.builder(
                 shrinkWrap: true,
