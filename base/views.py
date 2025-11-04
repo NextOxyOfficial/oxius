@@ -3199,10 +3199,13 @@ class SellerOrdersView(generics.ListAPIView):
         """
         Return orders that contain at least one product owned by the current user with filtering
         """
+        print(f"📦 SellerOrdersView - User: {self.request.user.email}")
+        
         # Get IDs of products owned by the current user
         user_product_ids = Product.objects.filter(owner=self.request.user).values_list(
             "id", flat=True
         )
+        print(f"📦 User has {len(user_product_ids)} products")
 
         # Find order items that contain these products
         order_ids = (
@@ -3210,9 +3213,11 @@ class SellerOrdersView(generics.ListAPIView):
             .values_list("order_id", flat=True)
             .distinct()
         )
+        print(f"📦 Found {len(order_ids)} orders with user's products")
 
         # Get the base queryset
         queryset = Order.objects.filter(id__in=order_ids).order_by("-created_at")
+        print(f"📦 Returning {queryset.count()} orders")
 
         # Filter by status
         status_filter = self.request.query_params.get("status", None)
@@ -3228,6 +3233,49 @@ class SellerOrdersView(generics.ListAPIView):
                 | Q(email__icontains=search)
             )
         return queryset
+
+
+class SellerOrderUpdateView(generics.UpdateAPIView):
+    """View for updating order status by sellers"""
+    
+    serializer_class = SellerOrderSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "id"
+    
+    def get_queryset(self):
+        """Only allow sellers to update orders containing their products"""
+        user_product_ids = Product.objects.filter(owner=self.request.user).values_list("id", flat=True)
+        order_ids = OrderItem.objects.filter(product_id__in=user_product_ids).values_list("order_id", flat=True).distinct()
+        return Order.objects.filter(id__in=order_ids)
+    
+    def update(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            new_status = request.data.get('order_status')
+            
+            if new_status:
+                instance.order_status = new_status
+                instance.save()
+                
+                print(f"✅ Order {instance.order_number} status updated to {new_status} by {request.user.email}")
+                
+                return Response({
+                    'success': True,
+                    'message': f'Order status updated to {new_status}',
+                    'data': SellerOrderSerializer(instance, context={'request': request}).data
+                })
+            else:
+                return Response({
+                    'success': False,
+                    'message': 'order_status is required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Exception as e:
+            print(f"❌ Error updating order: {str(e)}")
+            return Response({
+                'success': False,
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SellerOrderStatsView(APIView):

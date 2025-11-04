@@ -229,6 +229,11 @@ urlpatterns = [
     ),
     path("seller-orders/", SellerOrdersView.as_view(), name="seller-orders"),
     path(
+        "seller-orders/<uuid:id>/",
+        SellerOrderUpdateView.as_view(),
+        name="seller-order-update",
+    ),
+    path(
         "seller-orders/stats/",
         SellerOrderStatsView.as_view(),
         name="seller-order-stats",

@@ -32,6 +32,8 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
   Future<void> _updateOrderStatus(String orderId, String newStatus) async {
     setState(() => _isUpdating = true);
 
+    print('📦 Updating order $orderId to status: $newStatus');
+
     final result = await EshopManagerService.updateOrderStatus(
       orderId: orderId,
       status: newStatus,
@@ -40,10 +42,48 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
     setState(() => _isUpdating = false);
 
     if (result['success'] == true) {
-      _showSnackBar('Order status updated to $newStatus');
+      // Update local state immediately for instant feedback
+      setState(() {
+        final index = widget.orders.indexWhere((o) => o.id == orderId);
+        if (index != -1) {
+          final order = widget.orders[index];
+          widget.orders[index] = ShopOrder(
+            id: order.id,
+            orderNumber: order.orderNumber,
+            orderStatus: newStatus, // Updated status
+            total: order.total,
+            paymentMethod: order.paymentMethod,
+            shippingAddress: order.shippingAddress,
+            customerName: order.customerName,
+            customerEmail: order.customerEmail,
+            customerPhone: order.customerPhone,
+            createdAt: order.createdAt,
+            updatedAt: DateTime.now(),
+            items: order.items,
+          );
+        }
+      });
+      
+      _showSnackBar('Order status updated to ${_getStatusLabel(newStatus)}');
+      // Also refresh from backend to ensure consistency
       widget.onRefresh();
     } else {
       _showSnackBar('Failed to update order status', isError: true);
+    }
+  }
+
+  String _getStatusLabel(String status) {
+    switch (status) {
+      case 'pending':
+        return 'Pending';
+      case 'processing':
+        return 'Processing';
+      case 'delivered':
+        return 'Delivered';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return status;
     }
   }
 
@@ -214,7 +254,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
             child: Row(
               children: [
                 Text(
-                  'Order #${order.id}',
+                  'Order #${order.orderNumber ?? order.id.substring(0, 8)}',
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -483,7 +523,7 @@ class _MyOrdersTabState extends State<MyOrdersTab> {
           ],
         ),
         content: Text(
-          'Are you sure you want to cancel order #${order.id}?',
+          'Are you sure you want to cancel order #${order.orderNumber ?? order.id.substring(0, 8)}?',
           style: const TextStyle(fontSize: 13),
         ),
         actions: [

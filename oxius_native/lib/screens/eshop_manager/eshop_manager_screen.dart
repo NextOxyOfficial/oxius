@@ -136,10 +136,13 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
 
   Future<void> _loadOrders() async {
     print('📦 Loading seller orders...');
+    print('📦 Current user: ${AuthService.currentUser?.email}');
     final orders = await EshopManagerService.getSellerOrders();
     print('📦 Orders loaded: ${orders.length}');
     
-    if (orders.isNotEmpty) {
+    if (orders.isEmpty) {
+      print('⚠️ No orders returned from API');
+    } else {
       print('📦 First order: ID=${orders.first.id}, Status=${orders.first.orderStatus}, Total=${orders.first.total}');
     }
     

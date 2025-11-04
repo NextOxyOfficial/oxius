@@ -282,8 +282,8 @@ class ShopOrder {
 }
 
 class OrderItem {
-  final int id;
-  final int productId;
+  final String id; // Changed from int to String for UUID
+  final String productId; // Changed from int to String for UUID
   final String productName;
   final int quantity;
   final double price;
@@ -299,13 +299,21 @@ class OrderItem {
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
+    // Extract product name from product_details if available
+    String productName = '';
+    if (json['product_details'] != null && json['product_details']['name'] != null) {
+      productName = json['product_details']['name'];
+    } else if (json['product_name'] != null) {
+      productName = json['product_name'];
+    }
+
     return OrderItem(
-      id: json['id'] ?? 0,
-      productId: json['product_id'] ?? json['product'] ?? 0,
-      productName: json['product_name'] ?? '',
+      id: json['id']?.toString() ?? '',
+      productId: (json['product_id'] ?? json['product'])?.toString() ?? '',
+      productName: productName,
       quantity: json['quantity'] ?? 0,
-      price: (json['price'] ?? 0).toDouble(),
-      subtotal: (json['subtotal'] ?? 0).toDouble(),
+      price: ShopOrder._parseDouble(json['price']),
+      subtotal: json['subtotal'] != null ? ShopOrder._parseDouble(json['subtotal']) : ShopOrder._parseDouble(json['price']) * (json['quantity'] ?? 0),
     );
   }
 }
