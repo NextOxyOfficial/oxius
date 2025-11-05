@@ -72,6 +72,12 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         _isLoadingChats = true;
         _currentPage = 1;
       });
+    } else {
+      // Prevent multiple simultaneous loads
+      if (_isLoadingChats) return;
+      setState(() {
+        _isLoadingChats = true;
+      });
     }
     
     try {
@@ -80,15 +86,27 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       print('🟢 Loaded ${chatRooms.length} chat rooms');
       
       if (mounted) {
+        final newChats = _parseChatRooms(chatRooms);
+        
         setState(() {
           if (loadMore) {
-            _chatConversations.addAll(_parseChatRooms(chatRooms));
+            // Get existing chat IDs to prevent duplicates
+            final existingIds = _chatConversations.map((c) => c['id']).toSet();
+            
+            // Only add chats that don't already exist
+            final uniqueNewChats = newChats.where((chat) => !existingIds.contains(chat['id'])).toList();
+            
+            print('📊 Adding ${uniqueNewChats.length} unique chats (filtered ${newChats.length - uniqueNewChats.length} duplicates)');
+            _chatConversations.addAll(uniqueNewChats);
+            
+            // Increment page for next load
+            _currentPage++;
           } else {
-            _chatConversations = _parseChatRooms(chatRooms);
+            _chatConversations = newChats;
           }
+          
           _isLoadingChats = false;
           _hasMore = chatRooms.length >= 20;
-          if (loadMore) _currentPage++;
         });
       }
     } catch (e) {
@@ -96,7 +114,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       if (mounted) {
         setState(() {
           _isLoadingChats = false;
-          _chatConversations = [];
+          if (!loadMore) {
+            _chatConversations = [];
+          }
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

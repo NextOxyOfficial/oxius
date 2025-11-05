@@ -1241,15 +1241,38 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                   ],
                 ),
               ),
-              // Facebook icon only (no background)
-              if (user.faceLink != null)
-                IconButton(
-                  icon: const Icon(Icons.facebook, size: 24),
-                  onPressed: () => launchUrl(Uri.parse(user.faceLink!)),
-                  color: const Color(0xFF1877F2),
-                  padding: const EdgeInsets.all(4),
-                  constraints: const BoxConstraints(),
+              // AdsyClub profile icon with logo
+              InkWell(
+                onTap: () {
+                  // Navigate to business network profile
+                  Navigator.pushNamed(
+                    context,
+                    '/business-network/profile',
+                    arguments: {'userId': user.id},
+                  );
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Image.asset(
+                    'assets/images/favicon.png',
+                    width: 24,
+                    height: 24,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback to icon if favicon not found
+                      return const Icon(
+                        Icons.person_rounded,
+                        size: 24,
+                        color: Color(0xFF10B981),
+                      );
+                    },
+                  ),
                 ),
+              ),
             ],
           ),
           

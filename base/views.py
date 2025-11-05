@@ -1247,10 +1247,25 @@ def postBalance(request):
         # 6. Find recipient user (by ID, email, or phone)
         try:
             # Try to find user by ID, email, or phone
-            to_user = User.objects.get(Q(id=contact) | Q(email=contact) | Q(phone=contact))
+            # Build query dynamically to handle UUID validation
+            query = Q(email=contact) | Q(phone=contact)
+            
+            # Try to parse as UUID for ID lookup
+            try:
+                import uuid
+                uuid_contact = uuid.UUID(contact)
+                query |= Q(id=uuid_contact)
+            except (ValueError, AttributeError):
+                # Not a valid UUID, skip ID lookup
+                pass
+            
+            to_user = User.objects.get(query)
+            
+            print(f'✅ Found recipient user: {to_user.email} (ID: {to_user.id})')
+            
         except User.DoesNotExist:
             return Response(
-                {"error": "Recipient user not found"},
+                {"error": f"Recipient user not found with contact: {contact}"},
                 status=status.HTTP_404_NOT_FOUND,
             )
         except User.MultipleObjectsReturned:
