@@ -257,10 +257,10 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const Icon(Icons.info_outline, color: Colors.white, size: 20),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Press back again to exit',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    t('press_back_to_exit'),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -363,11 +363,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             const Icon(Icons.info_outline, size: 40, color: Colors.grey),
                             const SizedBox(height: 8),
                             Text(
-                              'No recent posts available',
+                              t('no_recent_posts'),
                               style: TextStyle(color: Colors.grey.shade600),
                             ),
                             Text(
-                              'Posts loaded: ${_recentPosts?.length ?? 0}',
+                              '${t('posts_loaded')}: ${_recentPosts?.length ?? 0}',
                               style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                             ),
                           ],
@@ -407,20 +407,11 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.95),
-                border: Border(
-                  bottom: BorderSide(
-                    color: Colors.grey.shade200.withOpacity(0.5),
-                    width: 0.5,
-                  ),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    offset: const Offset(0, 1),
-                    blurRadius: 3,
-                  ),
-                ],
               ),
               child: SafeArea(
                 bottom: false,
@@ -543,13 +534,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, t('business_network'), Icons.public_outlined, 
+                        child: _buildNavLink(context, 'business_network', Icons.public_outlined, 
                           const Color(0xFFF97316), false, null),
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, t('adsy_news'), Icons.newspaper_outlined, 
+                        child: _buildNavLink(context, 'adsy_news', Icons.newspaper_outlined, 
                           const Color(0xFF8B5CF6), false, null),
                       ),
                     ],
@@ -559,13 +550,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, t('ad'), Icons.campaign_outlined, 
+                        child: _buildNavLink(context, 'ad', Icons.campaign_outlined, 
                           const Color(0xFF10B981), true, t('free')),
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'Shop Manager', Icons.shopping_bag_outlined, 
+                        child: _buildNavLink(context, 'shop_manager', Icons.shopping_bag_outlined, 
                           const Color(0xFF3B82F6), true, t('pro')),
                       ),
                     ],
@@ -575,13 +566,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'AdsyPay', Icons.account_balance_wallet_outlined, 
+                        child: _buildNavLink(context, 'adsypay', Icons.account_balance_wallet_outlined, 
                           const Color(0xFF10B981), false, null),
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, t('mobile_recharge'), Icons.phone_android, 
+                        child: _buildNavLink(context, 'mobile_recharge', Icons.phone_android, 
                           const Color(0xFFF97316), false, null),
                       ),
                     ],
@@ -726,7 +717,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 44,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFEDE9FE), Color(0xFFDDD6FE)],
+                          colors: [Color(0xFF818CF8), Color(0xFF6366F1)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -995,35 +986,60 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Widget _buildNavLink(BuildContext context, String label, IconData icon, 
+  Widget _buildNavLink(BuildContext context, String key, IconData icon, 
       Color color, bool hasBadge, String? badgeText) {
     return InkWell(
       onTap: () {
+        print('🔵 Navigation tapped: $key');
         setState(() {
           _isDropdownOpen = false;
         });
         
-        // Handle navigation based on label
-        if (label == 'AdsyPay' || label == t('deposit_withdraw')) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const WalletScreen(),
-            ),
-          );
-        } else if (label == t('eshop') || label == 'eShop Manager' || label == 'Shop Manager') {
-          Navigator.pushNamed(context, '/shop-manager');
-        } else if (label == t('ad')) {
-          // Navigate to My Classified Posts
-          Navigator.pushNamed(context, '/my-classified-posts');
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Navigate to $label'),
-              backgroundColor: color,
-              duration: const Duration(seconds: 1),
-            ),
-          );
+        // Handle navigation based on key
+        switch (key) {
+          case 'adsypay':
+          case 'deposit_withdraw':
+            print('✅ Navigating to WalletScreen');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const WalletScreen(),
+              ),
+            );
+            break;
+          case 'shop_manager':
+          case 'eshop':
+            print('✅ Navigating to /shop-manager');
+            Navigator.pushNamed(context, '/shop-manager');
+            break;
+          case 'ad':
+            print('✅ Navigating to /my-classified-posts');
+            Navigator.pushNamed(context, '/my-classified-posts');
+            break;
+          case 'business_network':
+            print('✅ Navigating to /business-network');
+            Navigator.pushNamed(context, '/business-network');
+            break;
+          case 'adsy_news':
+            print('✅ Navigating to NewsScreen');
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NewsScreen()),
+            );
+            break;
+          case 'mobile_recharge':
+            print('✅ Navigating to /mobile-recharge');
+            Navigator.pushNamed(context, '/mobile-recharge');
+            break;
+          default:
+            print('❌ Unknown navigation key: $key');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${t('navigate_to')} ${t(key)}'),
+                backgroundColor: color,
+                duration: const Duration(seconds: 1),
+              ),
+            );
         }
       },
       borderRadius: BorderRadius.circular(16),
@@ -1065,7 +1081,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 8),
                 Flexible(
                   child: Text(
-                    label,
+                    t(key),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -1623,9 +1639,9 @@ class _HomeScreenState extends State<HomeScreen> {
               // Menu Button
               Builder(
                 builder: (context) => IconButton(
-                  icon: Icon(
-                    Icons.menu,
-                    color: Colors.grey.shade700,
+                  icon: const Icon(
+                    Icons.menu_rounded,
+                    color: Colors.white,
                     size: 24,
                   ),
                   onPressed: () => Scaffold.of(context).openDrawer(),
@@ -1665,12 +1681,12 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 28,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
-            return Text(
+            return const Text(
               'AdsyClub',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF10B981),
+                color: Colors.white,
               ),
             );
           },
@@ -1694,14 +1710,13 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                border: Border.all(color: Colors.grey.shade200),
+                color: Colors.white.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.person,
-                color: Colors.grey.shade600,
-                size: 20,
+              child: const Icon(
+                Icons.person_outline_rounded,
+                color: Colors.white,
+                size: 22,
               ),
             ),
           ),

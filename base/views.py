@@ -2624,8 +2624,9 @@ class AllProductsListView(generics.ListAPIView):
         if category and category != "undefined" and category.strip():
             try:
                 # Validate that category is a valid UUID before using it
-                uuid.UUID(str(category))
-                queryset = queryset.filter(category__id=category)
+                category_uuid = uuid.UUID(str(category))
+                # For ManyToMany, filter products that have this category
+                queryset = queryset.filter(category__id=category_uuid)
             except (ValueError, AttributeError):
                 # Invalid UUID format, try slug filter instead
                 queryset = queryset.filter(category__slug=category)

@@ -38,7 +38,6 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   List<Map<String, dynamic>> _allCategories = [];
   String? _selectedCategoryId;
   String? _selectedCategoryName;
-  bool _hasHandledNavigationArgs = false;
   
   String? _eshopLogoUrl;
   String _lastSearchQuery = '';
@@ -73,19 +72,16 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null && args['categoryId'] != null) {
       final categoryId = args['categoryId'].toString();
-      // Only update if category changed
-      if (_selectedCategoryId != categoryId || !_hasHandledNavigationArgs) {
+      // Always update if category changed, regardless of previous handling
+      if (_selectedCategoryId != categoryId) {
         setState(() {
           _selectedCategoryId = categoryId;
           _selectedCategoryName = null; // Will be set when categories load
-          _hasHandledNavigationArgs = true;
         });
         // Find category name and reload products
         _findCategoryName(categoryId);
         _loadInitialData();
       }
-    } else if (!_hasHandledNavigationArgs) {
-      _hasHandledNavigationArgs = true;
     }
   }
 
@@ -295,20 +291,22 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         _isLoading = true;
         _currentPage = 1;
       });
-      
-      // Load initial products to display (reduced from 20 to 12 for faster load)
+
+      print('🔄 Loading products for category: $_selectedCategoryId (${_selectedCategoryName ?? "All"})');
       final products = await EshopService.fetchEshopProducts(
         page: 1, 
         pageSize: 12,
         categoryId: _selectedCategoryId,
       );
       
+      print('✅ Loaded ${products.length} products');
       setState(() {
         _products = products;
         _isLoading = false;
         _hasMoreResults = products.length == 12;
       });
     } catch (e) {
+      print('❌ Error loading products: $e');
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -321,12 +319,18 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   Future<void> _loadMoreProducts() async {
     if (_isLoadingMore || !_hasMoreResults) return;
     
+    print('📄 Loading more products - Page: ${_currentPage + 1}, Category: $_selectedCategoryId');
     setState(() => _isLoadingMore = true);
     
     try {
       final nextPage = _currentPage + 1;
-      final products = await EshopService.fetchEshopProducts(page: nextPage, pageSize: 12);
+      final products = await EshopService.fetchEshopProducts(
+        page: nextPage, 
+        pageSize: 12,
+        categoryId: _selectedCategoryId, // Pass category filter
+      );
       
+      print('✅ Loaded ${products.length} more products');
       setState(() {
         _products.addAll(products);
         _currentPage = nextPage;
@@ -335,7 +339,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       });
     } catch (e) {
       setState(() => _isLoadingMore = false);
-      print('Error loading more products: $e');
+      print('❌ Error loading more products: $e');
     }
   }
 
@@ -653,7 +657,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                     child: _eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty
                         ? Image.network(
                             _eshopLogoUrl!,
-                            height: 32,
+                            height: 34,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) => const Text(
                               'eShop',

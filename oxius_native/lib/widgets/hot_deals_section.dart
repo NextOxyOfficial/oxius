@@ -211,22 +211,24 @@ class _HotDealsSectionState extends State<HotDealsSection> {
       onTap: () {
         // Navigate to eShop page with category filter
         if (deal['id'] != null) {
+          print('🔥 Hot deal tapped - ID: ${deal['id']}, Name: ${deal['name']}');
+          
           // Check if we're already on eShop screen
           final currentRoute = ModalRoute.of(context)?.settings.name;
+          print('📍 Current route: $currentRoute');
+          
           if (currentRoute == '/eshop') {
-            // Already on eShop, just pop to trigger filter update
-            Navigator.pop(context);
-            // Wait a frame then push with new category
-            Future.delayed(Duration.zero, () {
-              Navigator.pushReplacementNamed(
-                context,
-                '/eshop',
-                arguments: {'categoryId': deal['id'].toString()},
-              );
-            });
-          } else {
-            // Not on eShop, use pushReplacementNamed to avoid stacking
+            // Already on eShop, push replacement to same route with new args
+            print('✅ Already on eShop, pushing replacement with new category');
             Navigator.pushReplacementNamed(
+              context,
+              '/eshop',
+              arguments: {'categoryId': deal['id'].toString()},
+            );
+          } else {
+            // Not on eShop, navigate normally
+            print('✅ Not on eShop, navigating to eShop with category');
+            Navigator.pushNamed(
               context,
               '/eshop',
               arguments: {'categoryId': deal['id'].toString()},

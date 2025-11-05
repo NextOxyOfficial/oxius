@@ -47,110 +47,108 @@ class _ElearningScreenState extends State<ElearningScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'E-Learning',
-          style: TextStyle(
-            color: Color(0xFF1F2937),
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
         ),
-        iconTheme: const IconThemeData(color: Color(0xFF1F2937)),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Compact Hero Header
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue.shade600, Colors.indigo.shade700],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 12 : 16,
-                vertical: isMobile ? 12 : 16,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.school,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'E-Learning Platform',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Learn at your own pace',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.blue.shade100,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Custom Header with gradient background
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
                   ),
-                  // Progress Indicator Pills - Compact
-                  if (!isMobile)
-                    Container(
-                      margin: const EdgeInsets.only(top: 10),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _buildProgressStep(1, 'Batch', _selectedBatch != null),
-                          _buildProgressArrow(),
-                          _buildProgressStep(2, 'Division', _selectedDivision != null),
-                          _buildProgressArrow(),
-                          _buildProgressStep(3, 'Subject', _selectedSubject != null),
-                          _buildProgressArrow(),
-                          _buildProgressStep(4, 'Videos', _selectedSubject != null),
-                        ],
-                      ),
+                ),
+                child: _buildHeader(),
+              ),
+              
+              // Content with rounded top
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
                     ),
-                ],
-              ),
-            ),
-
-            // Content Section - Compact
-            Container(
-              constraints: const BoxConstraints(maxWidth: 1280),
-              padding: EdgeInsets.symmetric(
-                horizontal: isMobile ? 8 : 16,
-                vertical: 12,
-              ),
-              child: Column(
-                children: [
+                  ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        // Compact Hero Section
+                        Container(
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 12 : 16,
+                            vertical: isMobile ? 12 : 16,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(
+                                      Icons.school_rounded,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'E-Learning Platform',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1F2937),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Learn anytime, anywhere',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Color(0xFF6B7280),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        // Content Section
+                        Container(
+                          constraints: const BoxConstraints(maxWidth: 1280),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isMobile ? 8 : 16,
+                            vertical: 12,
+                          ),
+                          child: Column(
+                            children: [
                   // Batch Selector
                   BatchSelector(
                     selectedBatch: _selectedBatch,
@@ -228,12 +226,56 @@ class _ElearningScreenState extends State<ElearningScreen> {
                       ),
                     ),
 
-                  const SizedBox(height: 40), // Reduced bottom padding
-                ],
+                              const SizedBox(height: 40), // Reduced bottom padding
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        children: [
+          // Back Button
+          IconButton(
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          
+          // Title
+          const Expanded(
+            child: Text(
+              'eLearning',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
               ),
             ),
-          ],
-        ),
+          ),
+          
+          // Info Icon
+          IconButton(
+            icon: const Icon(Icons.info_outline_rounded, color: Colors.white, size: 22),
+            onPressed: () {
+              // Show info dialog
+            },
+            tooltip: 'Information',
+          ),
+        ],
       ),
     );
   }
