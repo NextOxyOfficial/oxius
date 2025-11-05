@@ -430,7 +430,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                               child: Text(
                                 chat['userName'],
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 15,
                                   fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w600,
                                   color: const Color(0xFF1F2937),
                                   letterSpacing: -0.2,
@@ -463,7 +463,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       Text(
                         _formatTimestamp(chat['timestamp']),
                         style: TextStyle(
-                          fontSize: 9,
+                          fontSize: 11,
                           color: Colors.grey.shade400,
                         ),
                       ),
@@ -475,7 +475,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     Text(
                       chat['profession'],
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.grey.shade500,
                         letterSpacing: -0.1,
@@ -487,7 +487,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                   Text(
                     chat['lastMessage'],
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 13,
                       fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w400,
                       color: hasUnread ? const Color(0xFF1F2937) : const Color(0xFF9CA3AF),
                       letterSpacing: -0.1,

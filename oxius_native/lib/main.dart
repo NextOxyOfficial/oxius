@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'config/app_config.dart';
 import 'services/fcm_service.dart';
 import 'screens/home_screen.dart';
@@ -11,6 +12,8 @@ import 'screens/my_gigs_screen.dart';
 import 'screens/post_gig_screen.dart';
 import 'screens/business_network/business_network_screen.dart';
 import 'screens/business_network/mindforce_screen.dart';
+import 'screens/business_network/profile_screen.dart';
+import 'screens/notification_permission_gate.dart';
 import 'screens/classified_category_list_screen.dart';
 import 'screens/classified_post_details_screen.dart';
 import 'screens/classified_post_form_screen.dart';
@@ -59,7 +62,9 @@ void main() async {
   AppConfig.printConfig();
   
   // Initialize Firebase
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   // Initialize FCM
   await FCMService.initialize();
@@ -142,7 +147,9 @@ class MyApp extends StatelessWidget {
             // Use initialRoute instead of home to avoid conflict
             initialRoute: '/',
             routes: {
-            '/': (context) => const HomeScreen(),
+            '/': (context) => const NotificationPermissionGate(
+              child: HomeScreen(),
+            ),
             '/login': (context) => const LoginPageRedesigned(),
             '/register': (context) => const RegisterPage(),
             '/reset-password': (context) => const ResetPasswordPage(),
@@ -233,6 +240,13 @@ class MyApp extends StatelessWidget {
               return MaterialPageRoute(
                 builder: (context) => SellerProfileScreen(
                   userId: args?['userId'],
+                ),
+              );
+            } else if (settings.name == '/business-network/profile') {
+              final args = settings.arguments as Map<String, dynamic>?;
+              return MaterialPageRoute(
+                builder: (context) => ProfileScreen(
+                  userId: args?['userId'] ?? '',
                 ),
               );
             } else if (settings.name == '/checkout') {

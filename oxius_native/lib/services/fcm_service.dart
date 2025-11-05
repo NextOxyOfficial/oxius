@@ -27,20 +27,25 @@ class FCMService {
       print('🔥 Initializing FCM Service...');
       print('=' * 60);
 
-      // Request notification permissions
+      // Request notification permissions with more aggressive settings
       NotificationSettings settings = await _firebaseMessaging.requestPermission(
         alert: true,
         badge: true,
         sound: true,
         provisional: false,
+        criticalAlert: true,  // Request critical alert permission (iOS)
+        announcement: true,   // Request announcement permission (iOS)
       );
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         print('✅ Notification permission granted');
+      } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+        print('⚠️ Notification permission granted (provisional)');
       } else {
         print('❌ Notification permission denied');
+        print('   Status: ${settings.authorizationStatus}');
         print('   Please enable notifications in device settings');
-        return;
+        // Continue anyway - user might enable later
       }
 
       // Initialize local notifications

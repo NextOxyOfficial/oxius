@@ -1283,102 +1283,113 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
         onPressed: () => Navigator.pop(context),
       ),
-      title: Row(
-        children: [
-          // Avatar
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFF3B82F6).withOpacity(0.1),
-                      const Color(0xFF6366F1).withOpacity(0.1),
-                    ],
+      title: GestureDetector(
+        onTap: () {
+          // Navigate to business network profile
+          Navigator.pushNamed(
+            context,
+            '/business-network/profile',
+            arguments: {'userId': widget.userId},
+          );
+        },
+        child: Row(
+          children: [
+            // User Avatar with online indicator
+            Stack(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFF3B82F6).withOpacity(0.1),
+                        const Color(0xFF6366F1).withOpacity(0.1),
+                      ],
+                    ),
                   ),
-                ),
-                child: widget.userAvatar != null
-                    ? ClipOval(
-                        child: Image.network(
-                          widget.userAvatar!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Center(
-                              child: Text(
-                                widget.userName[0].toUpperCase(),
-                                style: const TextStyle(
-                                  color: Color(0xFF3B82F6),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
+                  child: widget.userAvatar != null
+                      ? ClipOval(
+                          child: Image.network(
+                            widget.userAvatar!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(
+                                child: Text(
+                                  widget.userName[0].toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Color(0xFF3B82F6),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      )
-                    : Center(
-                        child: Text(
-                          widget.userName[0].toUpperCase(),
-                          style: const TextStyle(
-                            color: Color(0xFF3B82F6),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                              );
+                            },
+                          ),
+                        )
+                      : Center(
+                          child: Text(
+                            widget.userName[0].toUpperCase(),
+                            style: const TextStyle(
+                              color: Color(0xFF3B82F6),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
+                ),
+                if (widget.isOnline)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
                       ),
-              ),
-              if (widget.isOnline)
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
                     ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(width: 10),
-          // User Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  widget.userName,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1F2937),
-                    letterSpacing: -0.2,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                // Only show profession if it exists and is not empty
-                if (widget.profession != null && widget.profession!.isNotEmpty)
-                  Text(
-                    widget.profession!,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade600,
-                    ),
-                    overflow: TextOverflow.ellipsis,
                   ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(width: 10),
+            // User Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    widget.userName,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1F2937),
+                      letterSpacing: -0.2,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // Only show profession if it exists and is not empty
+                  if (widget.profession != null && widget.profession!.isNotEmpty)
+                    Text(
+                      widget.profession!,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
       actions: [
         PopupMenuButton<String>(
@@ -1619,7 +1630,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                               Text(
                                 'Message removed',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 15,
                                   fontStyle: FontStyle.italic,
                                   color: isMe ? Colors.white70 : Colors.grey.shade500,
                                 ),
@@ -1637,7 +1648,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                                         : Text(
                                             message['message'],
                                             style: TextStyle(
-                                              fontSize: 13,
+                                              fontSize: 15,
                                               fontWeight: FontWeight.w400,
                                               color: isMe ? Colors.white : const Color(0xFF1F2937),
                                               letterSpacing: -0.1,
