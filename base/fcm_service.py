@@ -4,14 +4,31 @@ import os
 from django.conf import settings
 
 # Initialize Firebase Admin SDK
+FIREBASE_INITIALIZED = False
+FIREBASE_ERROR = None
+
 try:
     cred_path = os.path.join(settings.BASE_DIR, 'firebase-adminsdk.json')
-    if not firebase_admin._apps:
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred)
-        print('✅ Firebase Admin SDK initialized')
+    
+    # Check if file exists
+    if not os.path.exists(cred_path):
+        FIREBASE_ERROR = f'Firebase credentials file not found at: {cred_path}'
+        print(f'❌ {FIREBASE_ERROR}')
+    else:
+        if not firebase_admin._apps:
+            cred = credentials.Certificate(cred_path)
+            firebase_admin.initialize_app(cred)
+            FIREBASE_INITIALIZED = True
+            print(f'✅ Firebase Admin SDK initialized successfully')
+            print(f'   Credentials file: {cred_path}')
+        else:
+            FIREBASE_INITIALIZED = True
+            print('✅ Firebase Admin SDK already initialized')
 except Exception as e:
+    FIREBASE_ERROR = str(e)
     print(f'❌ Error initializing Firebase Admin SDK: {e}')
+    import traceback
+    traceback.print_exc()
 
 
 def send_fcm_notification(fcm_token, title, body, data=None):
@@ -27,7 +44,19 @@ def send_fcm_notification(fcm_token, title, body, data=None):
     Returns:
         bool: True if successful, False otherwise
     """
+    # Check if Firebase is initialized
+    if not FIREBASE_INITIALIZED:
+        print(f'❌ Cannot send notification: Firebase Admin SDK not initialized')
+        if FIREBASE_ERROR:
+            print(f'   Error: {FIREBASE_ERROR}')
+        return False
+    
     try:
+        # Validate token
+        if not fcm_token or not isinstance(fcm_token, str):
+            print(f'❌ Invalid FCM token: {fcm_token}')
+            return False
+        
         message = messaging.Message(
             notification=messaging.Notification(
                 title=title,
@@ -48,8 +77,18 @@ def send_fcm_notification(fcm_token, title, body, data=None):
         response = messaging.send(message)
         print(f'✅ Notification sent successfully: {response}')
         return True
+    except messaging.UnregisteredError:
+        print(f'❌ Token is invalid or unregistered: {fcm_token[:50]}...')
+        return False
+    except messaging.SenderIdMismatchError:
+        print(f'❌ Token does not match Firebase project: {fcm_token[:50]}...')
+        return False
     except Exception as e:
         print(f'❌ Error sending notification: {e}')
+        print(f'   Token: {fcm_token[:50]}...')
+        print(f'   Title: {title}')
+        import traceback
+        traceback.print_exc()
         return False
 
 
@@ -66,13 +105,22 @@ def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
     Returns:
         BatchResponse: Response object with success/failure counts
     """
+    # Check if Firebase is initialized
+    if not FIREBASE_INITIALIZED:
+        print(f'❌ Cannot send notification: Firebase Admin SDK not initialized')
+        if FIREBASE_ERROR:
+            print(f'   Error: {FIREBASE_ERROR}')
+        return None
+    
     try:
         # Filter out None and empty tokens
-        valid_tokens = [token for token in fcm_tokens if token]
+        valid_tokens = [token for token in fcm_tokens if token and isinstance(token, str)]
         
         if not valid_tokens:
             print('⚠️ No valid FCM tokens provided')
             return None
+        
+        print(f'📤 Sending multicast to {len(valid_tokens)} tokens')
         
         message = messaging.MulticastMessage(
             notification=messaging.Notification(
@@ -95,9 +143,17 @@ def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
         print(f'✅ Sent {response.success_count} notifications')
         if response.failure_count > 0:
             print(f'⚠️ Failed to send {response.failure_count} notifications')
+            # Log first few failures for debugging
+            for idx, resp in enumerate(response.responses[:3]):
+                if not resp.success:
+                    print(f'   Failure {idx+1}: {resp.exception}')
         return response
     except Exception as e:
         print(f'❌ Error sending multicast notification: {e}')
+        print(f'   Title: {title}')
+        print(f'   Token count: {len(fcm_tokens)}')
+        import traceback
+        traceback.print_exc()
         return None
 
 

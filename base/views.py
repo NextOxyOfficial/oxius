@@ -4674,14 +4674,22 @@ def save_fcm_token(request):
     """Save or update user's FCM token for push notifications"""
     from .models import FCMToken
     
+    print(f'\n📱 FCM Token Registration Request')
+    print(f'   User: {request.user.email}')
+    print(f'   Request data: {request.data}')
+    
     fcm_token = request.data.get('fcm_token')
     device_type = request.data.get('device_type', 'android')
     
     if not fcm_token:
+        print(f'   ❌ No FCM token provided')
         return Response(
             {'error': 'FCM token is required'},
             status=status.HTTP_400_BAD_REQUEST
         )
+    
+    print(f'   Token: {fcm_token[:50]}...')
+    print(f'   Device: {device_type}')
     
     try:
         # Create or update token
@@ -4694,11 +4702,17 @@ def save_fcm_token(request):
             }
         )
         
+        action = 'created' if created else 'updated'
+        print(f'   ✅ FCM token {action} successfully')
+        
         return Response({
             'message': 'FCM token saved successfully',
             'created': created
         }, status=status.HTTP_200_OK)
     except Exception as e:
+        print(f'   ❌ Error: {e}')
+        import traceback
+        traceback.print_exc()
         return Response(
             {'error': str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR

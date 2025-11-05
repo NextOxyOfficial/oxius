@@ -32,8 +32,20 @@ class NotificationAdminPanel(admin.ModelAdmin):
             body = request.POST.get('body')
             data_type = request.POST.get('data_type', 'general')
             
+            # Validate inputs
+            if not title or not body:
+                messages.error(request, '❌ Title and message are required')
+                return HttpResponseRedirect('../')
+            
             # Get recipients
             recipient_type = request.POST.get('recipient_type')
+            
+            # Log the attempt
+            print(f'\n📤 Attempting to send notification:')
+            print(f'   Title: {title}')
+            print(f'   Body: {body}')
+            print(f'   Recipient Type: {recipient_type}')
+            print(f'   Data Type: {data_type}')
             
             try:
                 if recipient_type == 'all':
@@ -41,7 +53,10 @@ class NotificationAdminPanel(admin.ModelAdmin):
                     tokens = FCMToken.objects.filter(is_active=True).values_list('token', flat=True)
                     token_list = list(tokens)
                     
+                    print(f'   Found {len(token_list)} active tokens')
+                    
                     if token_list:
+                        print(f'   Sending to all users...')
                         response = send_fcm_notification_multicast(
                             fcm_tokens=token_list,
                             title=title,
@@ -49,23 +64,32 @@ class NotificationAdminPanel(admin.ModelAdmin):
                             data={'type': data_type, 'click_action': 'FLUTTER_NOTIFICATION_CLICK'}
                         )
                         if response:
+                            print(f'   ✅ Success: {response.success_count}, Failed: {response.failure_count}')
                             messages.success(request, f'✅ Notification sent to {response.success_count} users')
                             if response.failure_count > 0:
                                 messages.warning(request, f'⚠️ Failed to send to {response.failure_count} users')
                         else:
-                            messages.error(request, '❌ Failed to send notifications')
+                            print(f'   ❌ Response was None - check Firebase Admin SDK initialization')
+                            messages.error(request, '❌ Failed to send notifications - check server logs')
                     else:
+                        print(f'   ⚠️ No active tokens found')
                         messages.warning(request, '⚠️ No active tokens found')
                 
                 elif recipient_type == 'specific':
                     # Send to specific user
                     user_email = request.POST.get('user_email')
+                    print(f'   Target user: {user_email}')
+                    
                     try:
                         user = User.objects.get(email=user_email)
                         tokens = FCMToken.objects.filter(user=user, is_active=True).values_list('token', flat=True)
+                        token_list = list(tokens)
+                        
+                        print(f'   Found {len(token_list)} tokens for user {user.email}')
                         
                         success_count = 0
-                        for token in tokens:
+                        for token in token_list:
+                            print(f'   Sending to token: {token[:50]}...')
                             if send_fcm_notification(
                                 fcm_token=token,
                                 title=title,
@@ -74,11 +98,14 @@ class NotificationAdminPanel(admin.ModelAdmin):
                             ):
                                 success_count += 1
                         
+                        print(f'   Success count: {success_count}/{len(token_list)}')
+                        
                         if success_count > 0:
-                            messages.success(request, f'✅ Notification sent to {user.email}')
+                            messages.success(request, f'✅ Notification sent to {user.email} ({success_count} device(s))')
                         else:
-                            messages.error(request, f'❌ Failed to send notification to {user.email}')
+                            messages.error(request, f'❌ Failed to send notification to {user.email} - check server logs')
                     except User.DoesNotExist:
+                        print(f'   ❌ User not found: {user_email}')
                         messages.error(request, f'❌ User not found: {user_email}')
                 
                 elif recipient_type == 'active':
@@ -111,6 +138,10 @@ class NotificationAdminPanel(admin.ModelAdmin):
                 return HttpResponseRedirect('../')
                 
             except Exception as e:
+                import traceback
+                error_details = traceback.format_exc()
+                print(f'\n❌ ERROR sending notification:')
+                print(error_details)
                 messages.error(request, f'❌ Error: {str(e)}')
                 return HttpResponseRedirect('../')
         

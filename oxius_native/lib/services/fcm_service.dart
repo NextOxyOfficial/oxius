@@ -25,6 +25,7 @@ class FCMService {
   static Future<void> initialize() async {
     try {
       print('🔥 Initializing FCM Service...');
+      print('=' * 60);
 
       // Request notification permissions
       NotificationSettings settings = await _firebaseMessaging.requestPermission(
@@ -38,6 +39,7 @@ class FCMService {
         print('✅ Notification permission granted');
       } else {
         print('❌ Notification permission denied');
+        print('   Please enable notifications in device settings');
         return;
       }
 
@@ -46,11 +48,18 @@ class FCMService {
 
       // Get FCM token
       _fcmToken = await _firebaseMessaging.getToken();
-      print('📱 FCM Token: $_fcmToken');
+      print('\n📱 FCM TOKEN (COPY THIS FOR TESTING):');
+      print('=' * 60);
+      print(_fcmToken);
+      print('=' * 60);
+      print('');
 
       // Send token to backend
       if (_fcmToken != null) {
+        print('📤 Sending FCM token to backend...');
         await _sendTokenToBackend(_fcmToken!);
+      } else {
+        print('❌ Failed to get FCM token');
       }
 
       // Listen for token refresh
@@ -211,28 +220,38 @@ class FCMService {
   /// Send FCM token to backend
   static Future<void> _sendTokenToBackend(String token) async {
     try {
+      print('   Checking authentication...');
       final authToken = await AuthService.getValidToken();
       if (authToken == null) {
-        print('⚠️ No auth token, skipping FCM token upload');
+        print('   ⚠️ No auth token, skipping FCM token upload');
+        print('   💡 User needs to login first');
         return;
       }
 
+      print('   ✅ User is authenticated');
+      print('   📡 Sending to: ${ApiService.baseUrl}/save-fcm-token/');
+      
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/save-fcm-token/'),
         headers: {
           'Authorization': 'Bearer $authToken',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({'fcm_token': token}),
+        body: jsonEncode({'fcm_token': token, 'device_type': 'android'}),
       );
 
+      print('   Response status: ${response.statusCode}');
+      print('   Response body: ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('✅ FCM token sent to backend');
+        print('   ✅ FCM token sent to backend successfully!');
       } else {
-        print('❌ Failed to send FCM token: ${response.statusCode}');
+        print('   ❌ Failed to send FCM token: ${response.statusCode}');
+        print('   Response: ${response.body}');
       }
     } catch (e) {
-      print('❌ Error sending FCM token: $e');
+      print('   ❌ Error sending FCM token: $e');
+      print('   💡 Check if backend server is running');
     }
   }
 
