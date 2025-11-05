@@ -498,7 +498,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDropdownContent(BuildContext context) {
     final userState = UserStateService();
     final user = userState.currentUser;
-    final isPro = user?.userType == 'pro' || user?.isSuperuser == true;
+    final isPro = user?.isPro == true || user?.isSuperuser == true;
     
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -703,12 +703,7 @@ class _HomeScreenState extends State<HomeScreen> {
             InkWell(
               onTap: () {
                 setState(() => _isDropdownOpen = false);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(t('upgrade_pro')),
-                    backgroundColor: const Color(0xFF6366F1),
-                  ),
-                );
+                Navigator.pushNamed(context, '/upgrade-pro');
               },
               child: Container(
                 padding: const EdgeInsets.all(14), // p-3.5
@@ -783,7 +778,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                    // Toggle Switch
+                    // Toggle Switch - OFF state (free user)
                     Container(
                       width: 48,
                       height: 26,
@@ -891,12 +886,8 @@ class _HomeScreenState extends State<HomeScreen> {
             InkWell(
               onTap: () {
                 setState(() => _isDropdownOpen = false);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Manage Subscription'),
-                    backgroundColor: Color(0xFF6366F1),
-                  ),
-                );
+                // Navigate to settings or show subscription details
+                Navigator.pushNamed(context, '/settings');
               },
               child: Container(
                 padding: const EdgeInsets.all(14), // p-3.5
