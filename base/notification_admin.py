@@ -70,7 +70,15 @@ class NotificationAdminPanel(admin.ModelAdmin):
                                 messages.warning(request, f'⚠️ Failed to send to {response.failure_count} users')
                         else:
                             print(f'   ❌ Response was None - check Firebase Admin SDK initialization')
-                            messages.error(request, '❌ Failed to send notifications - check server logs')
+                            # Check Firebase initialization status
+                            from .fcm_service import FIREBASE_INITIALIZED, FIREBASE_ERROR
+                            if not FIREBASE_INITIALIZED:
+                                error_msg = f'❌ Firebase Admin SDK not initialized'
+                                if FIREBASE_ERROR:
+                                    error_msg += f': {FIREBASE_ERROR}'
+                                messages.error(request, error_msg)
+                            else:
+                                messages.error(request, '❌ Failed to send notifications - check server logs')
                     else:
                         print(f'   ⚠️ No active tokens found')
                         messages.warning(request, '⚠️ No active tokens found')
