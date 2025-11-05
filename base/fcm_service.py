@@ -122,32 +122,50 @@ def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
         
         print(f'📤 Sending multicast to {len(valid_tokens)} tokens')
         
-        message = messaging.MulticastMessage(
-            notification=messaging.Notification(
-                title=title,
-                body=body,
-            ),
-            data=data or {},
-            tokens=valid_tokens,
-            android=messaging.AndroidConfig(
-                priority='high',
-                notification=messaging.AndroidNotification(
-                    sound='default',
-                    channel_id='oxius_messages',
-                    color='#10B981',
+        # Create individual messages for each token
+        messages = []
+        for token in valid_tokens:
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title=title,
+                    body=body,
                 ),
-            ),
-        )
+                data=data or {},
+                token=token,
+                android=messaging.AndroidConfig(
+                    priority='high',
+                    notification=messaging.AndroidNotification(
+                        sound='default',
+                        channel_id='oxius_messages',
+                        color='#10B981',
+                    ),
+                ),
+            )
+            messages.append(message)
         
-        response = messaging.send_multicast(message)
-        print(f'✅ Sent {response.success_count} notifications')
-        if response.failure_count > 0:
-            print(f'⚠️ Failed to send {response.failure_count} notifications')
+        # Use send_each_for_multicast (new API in firebase-admin 7.x)
+        response = messaging.send_each(messages)
+        
+        # Count successes and failures
+        success_count = sum(1 for r in response.responses if r.success)
+        failure_count = len(response.responses) - success_count
+        
+        print(f'✅ Sent {success_count} notifications')
+        if failure_count > 0:
+            print(f'⚠️ Failed to send {failure_count} notifications')
             # Log first few failures for debugging
             for idx, resp in enumerate(response.responses[:3]):
                 if not resp.success:
                     print(f'   Failure {idx+1}: {resp.exception}')
-        return response
+        
+        # Create a compatible response object
+        class CompatibleResponse:
+            def __init__(self, responses):
+                self.responses = responses
+                self.success_count = sum(1 for r in responses if r.success)
+                self.failure_count = len(responses) - self.success_count
+        
+        return CompatibleResponse(response.responses)
     except Exception as e:
         print(f'❌ Error sending multicast notification: {e}')
         print(f'   Title: {title}')
