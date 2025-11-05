@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'adsy_connect_chat_interface.dart';
 import '../services/adsyconnect_service.dart';
+import '../widgets/chat_list_skeleton.dart';
 
 class AdsyConnectScreen extends StatefulWidget {
   const AdsyConnectScreen({super.key});
@@ -12,6 +13,7 @@ class AdsyConnectScreen extends StatefulWidget {
 
 class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   bool _isLoadingChats = true;
+  bool _isLoadingMore = false;
   List<Map<String, dynamic>> _chatConversations = [];
   int _currentPage = 1;
   bool _hasMore = true;
@@ -74,9 +76,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       });
     } else {
       // Prevent multiple simultaneous loads
-      if (_isLoadingChats) return;
+      if (_isLoadingMore || !_hasMore) return;
       setState(() {
-        _isLoadingChats = true;
+        _isLoadingMore = true;
       });
     }
     
@@ -106,6 +108,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           }
           
           _isLoadingChats = false;
+          _isLoadingMore = false;
           _hasMore = chatRooms.length >= 20;
         });
       }
@@ -114,6 +117,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       if (mounted) {
         setState(() {
           _isLoadingChats = false;
+          _isLoadingMore = false;
           if (!loadMore) {
             _chatConversations = [];
           }
@@ -300,17 +304,59 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
             },
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              itemCount: _chatConversations.length + (_hasMore ? 1 : 0),
+              itemCount: _chatConversations.length + 1,
               itemBuilder: (context, index) {
                 if (index == _chatConversations.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  // Show loading skeleton or end message
+                  if (_isLoadingMore) {
+                    return const ChatListSkeleton(itemCount: 3);
+                  } else if (!_hasMore && _chatConversations.isNotEmpty) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3B82F6).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check_circle_rounded,
+                              color: Color(0xFF3B82F6),
+                              size: 28,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'All chats loaded',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF6B7280),
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'You\'re all caught up!',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  );
+                    );
+                  }
+                  return const SizedBox.shrink();
                 }
                 final chat = _chatConversations[index];
                 return _buildChatItem(chat);

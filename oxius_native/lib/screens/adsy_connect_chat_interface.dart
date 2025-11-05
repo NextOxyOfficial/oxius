@@ -10,6 +10,7 @@ import 'dart:io';
 import '../services/adsyconnect_service.dart';
 import '../services/active_chat_tracker.dart';
 import '../utils/image_compressor.dart';
+import '../widgets/chat_video_player.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -2062,64 +2063,31 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   Widget _buildVideoContent(Map<String, dynamic> message, bool isMe) {
-    return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Video playback coming soon'),
-            backgroundColor: Color(0xFF3B82F6),
-          ),
-        );
-      },
-      child: Container(
-        width: 180,
-        height: 120,
+    // Try mediaUrl first (from backend), then filePath (local)
+    final videoUrl = (message['mediaUrl'] as String?) ?? (message['filePath'] as String?);
+    
+    if (videoUrl == null || videoUrl.isEmpty) {
+      return Container(
+        width: 280,
+        height: 180,
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade300, width: 1),
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Stack(
-          alignment: Alignment.center,
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.play_circle_outline_rounded,
-              size: 48,
-              color: isMe ? const Color(0xFF3B82F6) : const Color(0xFF3B82F6),
-            ),
-            Positioned(
-              bottom: 6,
-              left: 6,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.videocam_rounded,
-                      size: 10,
-                      color: Colors.white,
-                    ),
-                    SizedBox(width: 3),
-                    Text(
-                      'Video',
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            Icon(Icons.videocam_off_rounded, size: 48, color: Colors.grey),
+            SizedBox(height: 8),
+            Text('Video unavailable', style: TextStyle(fontSize: 12, color: Colors.grey)),
           ],
         ),
-      ),
+      );
+    }
+    
+    return ChatVideoPlayer(
+      videoUrl: videoUrl,
+      isMe: isMe,
     );
   }
 
