@@ -134,6 +134,7 @@ class EshopService {
   static Future<List<Map<String, dynamic>>> fetchEshopProducts({
     String? query,
     String? categoryId,
+    String? categorySlug,
     int page = 1,
     int pageSize = 12,
   }) async {
@@ -147,7 +148,10 @@ class EshopService {
         queryParams['search'] = query;
       }
       
-      if (categoryId != null && categoryId.isNotEmpty) {
+      // Prefer category_slug over category ID (matches Vue implementation)
+      if (categorySlug != null && categorySlug.isNotEmpty) {
+        queryParams['category_slug'] = categorySlug;
+      } else if (categoryId != null && categoryId.isNotEmpty) {
         queryParams['category'] = categoryId;
       }
 

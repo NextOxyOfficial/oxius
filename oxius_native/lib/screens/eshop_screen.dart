@@ -38,6 +38,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   List<Map<String, dynamic>> _allCategories = [];
   String? _selectedCategoryId;
   String? _selectedCategoryName;
+  String? _selectedCategorySlug;
   
   String? _eshopLogoUrl;
   String _lastSearchQuery = '';
@@ -77,15 +78,16 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         setState(() {
           _selectedCategoryId = categoryId;
           _selectedCategoryName = null; // Will be set when categories load
+          _selectedCategorySlug = null; // Will be set when categories load
         });
-        // Find category name and reload products
-        _findCategoryName(categoryId);
+        // Find category name and slug, then reload products
+        _findCategoryDetails(categoryId);
         _loadInitialData();
       }
     }
   }
 
-  Future<void> _findCategoryName(String categoryId) async {
+  Future<void> _findCategoryDetails(String categoryId) async {
     // Wait for categories to load if not loaded yet
     int attempts = 0;
     while (_allCategories.isEmpty && attempts < 10) {
@@ -101,7 +103,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       if (mounted && category.isNotEmpty) {
         setState(() {
           _selectedCategoryName = category['name']?.toString();
+          _selectedCategorySlug = category['slug']?.toString();
         });
+        print('🏷️ Category selected: ${_selectedCategoryName} (slug: $_selectedCategorySlug)');
       }
     }
   }
@@ -292,11 +296,12 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         _currentPage = 1;
       });
 
-      print('🔄 Loading products for category: $_selectedCategoryId (${_selectedCategoryName ?? "All"})');
+      print('🔄 Loading products for category: $_selectedCategoryId (${_selectedCategoryName ?? "All"}, slug: $_selectedCategorySlug)');
       final products = await EshopService.fetchEshopProducts(
         page: 1, 
         pageSize: 12,
         categoryId: _selectedCategoryId,
+        categorySlug: _selectedCategorySlug,
       );
       
       print('✅ Loaded ${products.length} products');
@@ -319,7 +324,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   Future<void> _loadMoreProducts() async {
     if (_isLoadingMore || !_hasMoreResults) return;
     
-    print('📄 Loading more products - Page: ${_currentPage + 1}, Category: $_selectedCategoryId');
+    print('📄 Loading more products - Page: ${_currentPage + 1}, Category: $_selectedCategoryId (slug: $_selectedCategorySlug)');
     setState(() => _isLoadingMore = true);
     
     try {
@@ -327,7 +332,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       final products = await EshopService.fetchEshopProducts(
         page: nextPage, 
         pageSize: 12,
-        categoryId: _selectedCategoryId, // Pass category filter
+        categoryId: _selectedCategoryId,
+        categorySlug: _selectedCategorySlug, // Pass category slug for filtering
       );
       
       print('✅ Loaded ${products.length} more products');
@@ -790,6 +796,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                   setState(() {
                     _selectedCategoryId = null;
                     _selectedCategoryName = null;
+                    _selectedCategorySlug = null;
                   });
                 } else {
                   final category = _allCategories.firstWhere(
@@ -799,7 +806,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                   setState(() {
                     _selectedCategoryId = value;
                     _selectedCategoryName = category['name']?.toString();
+                    _selectedCategorySlug = category['slug']?.toString();
                   });
+                  print('🏷️ Category selected from dropdown: ${_selectedCategoryName} (slug: $_selectedCategorySlug)');
                 }
                 _loadInitialData();
               },
