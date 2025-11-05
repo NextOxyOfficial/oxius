@@ -10,6 +10,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../config/app_config.dart';
+import '../widgets/skeleton_loader.dart';
 import 'adsy_connect_chat_interface.dart';
 
 class ClassifiedPostDetailsScreen extends StatefulWidget {
@@ -451,7 +452,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
           backgroundColor: const Color(0xFF10B981),
           foregroundColor: Colors.white,
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: SkeletonLoader.detailPage(),
       );
     }
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/notification_models.dart';
+import '../../models/business_network_models.dart';
 import '../../services/notification_service.dart';
+import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
@@ -181,10 +183,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case NotificationType.mention:
         // Navigate to post detail
         if (notification.targetId != null) {
-          Navigator.pushNamed(
-            context,
-            '/business-network/post/${notification.targetId}',
-          );
+          final postId = int.tryParse(notification.targetId.toString());
+          if (postId != null) {
+            _navigateToPost(postId);
+          }
         }
         break;
         
@@ -192,36 +194,171 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case NotificationType.reply:
         // Navigate to post detail using parent_id
         if (notification.parentId != null) {
-          Navigator.pushNamed(
-            context,
-            '/business-network/post/${notification.parentId}',
-          );
+          final postId = int.tryParse(notification.parentId.toString());
+          if (postId != null) {
+            _navigateToPost(postId);
+          }
         }
         break;
         
       case NotificationType.solution:
-        // Navigate to MindForce post
+        // Navigate to MindForce post detail
         if (notification.targetId != null) {
-          Navigator.pushNamed(
-            context,
-            '/business-network/mindforce/${notification.targetId}',
-          );
+          final postId = int.tryParse(notification.targetId.toString());
+          if (postId != null) {
+            _navigateToPost(postId);
+          }
         }
         break;
         
       case NotificationType.giftDiamonds:
         // Navigate to post detail for gift diamonds
         if (notification.targetId != null) {
-          Navigator.pushNamed(
-            context,
-            '/business-network/post/${notification.targetId}',
-          );
+          final postId = int.tryParse(notification.targetId.toString());
+          if (postId != null) {
+            _navigateToPost(postId);
+          }
         }
         break;
         
       default:
         // Default to business network home
         Navigator.pushNamed(context, '/business-network');
+    }
+  }
+
+  Future<void> _navigateToPost(int postId) async {
+    try {
+      // Show skeleton loader
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            margin: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Skeleton header
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 12,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            height: 10,
+                            width: 100,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // Skeleton content lines
+                Container(
+                  height: 10,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  height: 10,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  height: 10,
+                  width: 150,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      // Fetch the post
+      final post = await BusinessNetworkService.getPost(postId);
+      
+      // Close loading indicator
+      if (mounted) {
+        Navigator.pop(context);
+        
+        // Check if post was fetched successfully
+        if (post != null) {
+          // Navigate to post detail
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PostDetailScreen(post: post),
+            ),
+          );
+        } else {
+          // Show error if post is null
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Post not found'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('Error fetching post: $e');
+      
+      // Close loading indicator
+      if (mounted) {
+        Navigator.pop(context);
+        
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load post: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -396,34 +533,82 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [const Color(0xFF3B82F6).withOpacity(0.1), const Color(0xFF6366F1).withOpacity(0.1)],
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 8, // Show 8 skeleton items
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Avatar skeleton
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  shape: BoxShape.circle,
+                ),
               ),
-              shape: BoxShape.circle,
-            ),
-            child: const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-              strokeWidth: 3,
-            ),
+              const SizedBox(width: 12),
+              // Content skeleton
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Name line
+                    Container(
+                      height: 14,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Content line 1
+                    Container(
+                      height: 12,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    // Content line 2 (shorter)
+                    Container(
+                      height: 12,
+                      width: MediaQuery.of(context).size.width * 0.6,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Time line
+                    Container(
+                      height: 10,
+                      width: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Loading notifications...',
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

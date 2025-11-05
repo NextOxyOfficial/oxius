@@ -6,7 +6,7 @@ import '../../services/notification_service.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
-import '../../widgets/mindforce/problem_card.dart';
+import '../../widgets/skeleton_loader.dart';
 import '../business_network/profile_screen.dart';
 import '../business_network/notifications_screen.dart';
 import '../business_network/create_post_screen.dart';
@@ -346,7 +346,7 @@ class _MindForceScreenState extends State<MindForceScreen> {
             child: Container(
               color: const Color(0xFFF8F9FA),
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? SkeletonLoader.listView(itemCount: 6, showAvatar: true)
                   : _buildProblemsList(),
             ),
           ),

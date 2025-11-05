@@ -233,11 +233,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoadingChats && _chatConversations.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF3B82F6),
-        ),
-      );
+      return const ChatListSkeleton();
     }
 
     if (_chatConversations.isEmpty) {

@@ -11,6 +11,7 @@ import '../services/adsyconnect_service.dart';
 import '../services/active_chat_tracker.dart';
 import '../utils/image_compressor.dart';
 import '../widgets/chat_video_player.dart';
+import '../widgets/skeleton_loader.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -1263,10 +1264,45 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           // Messages List
           Expanded(
             child: _isLoadingMessages
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF3B82F6),
-                    ),
+                ? ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: 8,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          mainAxisAlignment: index % 2 == 0 
+                              ? MainAxisAlignment.start 
+                              : MainAxisAlignment.end,
+                          children: [
+                            Container(
+                              constraints: BoxConstraints(
+                                maxWidth: MediaQuery.of(context).size.width * 0.7,
+                              ),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SkeletonLoader.box(
+                                    width: 150,
+                                    height: 12,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  SkeletonLoader.box(
+                                    width: 100,
+                                    height: 12,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   )
                 : _messages.isEmpty
                     ? _buildEmptyState()

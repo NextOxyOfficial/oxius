@@ -7,6 +7,7 @@ import '../../services/auth_service.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/image_compressor.dart';
 import '../../config/app_config.dart';
+import '../../widgets/skeleton_loader.dart';
 
 class MindForceDetailScreen extends StatefulWidget {
   final String problemId;
@@ -255,7 +256,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? SkeletonLoader.detailPage()
           : _problem == null
               ? const Center(child: Text('Problem not found'))
               : Column(
@@ -263,20 +264,31 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                     Expanded(
                       child: SingleChildScrollView(
                         controller: _scrollController,
-                        padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildProblemHeader(),
-                            const SizedBox(height: 16),
-                            _buildProblemBadges(),
-                            const SizedBox(height: 16),
-                            _buildProblemContent(),
-                            if (_problem!.media.isNotEmpty) ...[
-                              const SizedBox(height: 16),
-                              _buildMediaGallery(),
-                            ],
-                            const SizedBox(height: 24),
+                            // Compact Header Card
+                            _buildCompactHeader(),
+                            
+                            // Problem Content
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              color: Colors.white,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildProblemContent(),
+                                  if (_problem!.media.isNotEmpty) ...[
+                                    const SizedBox(height: 16),
+                                    _buildMediaGallery(),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            
+                            const SizedBox(height: 8),
+                            
+                            // Comments Section
                             _buildCommentsSection(),
                           ],
                         ),
@@ -293,94 +305,208 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
     );
   }
 
-  Widget _buildProblemHeader() {
-    return Row(
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.grey.shade300, width: 2),
-          ),
-          child: ClipOval(
-            child: () {
-              final avatarUrl = AppConfig.getAbsoluteUrl(_problem!.userDetails.image);
-              if (avatarUrl.isNotEmpty) {
-                return Image.network(
-                  avatarUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => _buildAvatarFallback(),
-                );
-              }
-              return _buildAvatarFallback();
-            }(),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildCompactHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // User Info Row
+          Row(
             children: [
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      _problem!.userDetails.name,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (_problem!.userDetails.kyc) ...[
-                    const SizedBox(width: 4),
-                    const Icon(Icons.verified, size: 16, color: Color(0xFF3B82F6)),
-                  ],
-                  if (_problem!.userDetails.isPro) ...[
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                        ),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        'PRO',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: ClipOval(
+                  child: () {
+                    final avatarUrl = AppConfig.getAbsoluteUrl(_problem!.userDetails.image);
+                    if (avatarUrl.isNotEmpty) {
+                      return Image.network(
+                        avatarUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => _buildAvatarFallback(),
+                      );
+                    }
+                    return _buildAvatarFallback();
+                  }(),
+                ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            _problem!.userDetails.name,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1F2937),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (_problem!.userDetails.kyc) ...[
+                          const SizedBox(width: 4),
+                          const Icon(Icons.verified, size: 14, color: Color(0xFF3B82F6)),
+                        ],
+                        if (_problem!.userDetails.isPro) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF7f00ff), Color(0xFFe100ff)],
+                              ),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: const Text(
+                              'PRO',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      TimeUtils.formatTimeAgo(_problem!.createdAt),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Title
+          Text(
+            _problem!.title,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF111827),
+              height: 1.3,
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Badges Row
+          Row(
+            children: [
+              if (_problem!.category != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade50,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.category, size: 12, color: Colors.purple.shade700),
+                      const SizedBox(width: 4),
+                      Text(
+                        _problem!.category!.name,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.purple.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: _problem!.paymentOption == 'paid' 
+                      ? Colors.green.shade50 
+                      : Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _problem!.paymentOption == 'paid' 
+                          ? Icons.payments 
+                          : Icons.volunteer_activism,
+                      size: 12,
+                      color: _problem!.paymentOption == 'paid' 
+                          ? Colors.green.shade700 
+                          : Colors.blue.shade700,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _problem!.paymentOption == 'paid' && _problem!.paymentAmount != null
+                          ? '৳${_problem!.paymentAmount!.toStringAsFixed(0)}'
+                          : 'Free',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _problem!.paymentOption == 'paid' 
+                            ? Colors.green.shade700 
+                            : Colors.blue.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              // Stats
               Row(
                 children: [
-                  Icon(Icons.chat_bubble_outline, size: 14, color: Colors.grey.shade600),
-                  const SizedBox(width: 4),
-                  Text('${_comments.length} Advices', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                  const SizedBox(width: 12),
-                  Icon(Icons.visibility, size: 14, color: Colors.grey.shade600),
-                  const SizedBox(width: 4),
-                  Text('${_problem!.views}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                  const SizedBox(width: 12),
-                  Icon(Icons.access_time, size: 14, color: Colors.grey.shade600),
+                  Icon(Icons.visibility, size: 14, color: Colors.grey.shade500),
                   const SizedBox(width: 4),
                   Text(
-                    TimeUtils.formatTimeAgo(_problem!.createdAt),
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    '${_problem!.views}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Icon(Icons.chat_bubble_outline, size: 14, color: Colors.grey.shade500),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${_comments.length}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
