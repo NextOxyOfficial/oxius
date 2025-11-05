@@ -204,11 +204,64 @@ class FCMService {
     print('🔔 Navigating based on notification type: $type');
     print('   Data: $data');
 
-    if (type == 'message') {
+    // Business Network Notifications
+    if (type == 'follow') {
+      // Navigate to user profile
+      final userId = data['actor_id']?.toString() ?? data['user_id']?.toString();
+      if (userId != null) {
+        print('   → Navigating to profile: $userId');
+        Navigator.pushNamed(
+          context,
+          '/business-network/profile/$userId',
+        );
+      }
+    } else if (type == 'like_post' || type == 'comment' || type == 'mention') {
+      // Navigate to post detail
+      final postId = data['target_id']?.toString() ?? data['post_id']?.toString();
+      if (postId != null) {
+        print('   → Navigating to post: $postId');
+        Navigator.pushNamed(
+          context,
+          '/business-network/post/$postId',
+        );
+      }
+    } else if (type == 'like_comment' || type == 'reply') {
+      // Navigate to post detail using parent_id
+      final postId = data['parent_id']?.toString() ?? data['post_id']?.toString();
+      if (postId != null) {
+        print('   → Navigating to post: $postId');
+        Navigator.pushNamed(
+          context,
+          '/business-network/post/$postId',
+        );
+      }
+    } else if (type == 'solution') {
+      // Navigate to MindForce post
+      final postId = data['target_id']?.toString() ?? data['problem_id']?.toString();
+      if (postId != null) {
+        print('   → Navigating to MindForce problem: $postId');
+        Navigator.pushNamed(
+          context,
+          '/business-network/mindforce/$postId',
+        );
+      }
+    } else if (type == 'gift_diamonds') {
+      // Navigate to post detail
+      final postId = data['target_id']?.toString() ?? data['post_id']?.toString();
+      if (postId != null) {
+        print('   → Navigating to post: $postId');
+        Navigator.pushNamed(
+          context,
+          '/business-network/post/$postId',
+        );
+      }
+    }
+    // AdsyConnect Messages
+    else if (type == 'message' || type == 'chat_message') {
       // Navigate to chat screen
-      final chatId = data['chat_id']?.toString();
-      final senderId = data['sender_id']?.toString();
-      final senderName = data['sender_name']?.toString();
+      final chatId = data['chat_id']?.toString() ?? data['chatroom_id']?.toString();
+      final senderId = data['sender_id']?.toString() ?? data['user_id']?.toString();
+      final senderName = data['sender_name']?.toString() ?? data['user_name']?.toString();
       
       if (chatId != null) {
         print('   → Navigating to chat: $chatId');
@@ -225,8 +278,9 @@ class FCMService {
         print('   ⚠️ Chat ID is null, navigating to messages list');
         Navigator.pushNamed(context, '/messages');
       }
-    } else if (type == 'support_ticket') {
-      // Navigate to support ticket detail
+    }
+    // Support Tickets
+    else if (type == 'support_ticket' || type == 'ticket') {
       final ticketId = data['ticket_id']?.toString();
       
       if (ticketId != null) {
@@ -240,8 +294,9 @@ class FCMService {
         print('   ⚠️ Ticket ID is null, navigating to support list');
         Navigator.pushNamed(context, '/support');
       }
-    } else if (type == 'order') {
-      // Navigate to orders
+    }
+    // Orders
+    else if (type == 'order' || type == 'order_received' || type == 'order_status') {
       final orderId = data['order_id']?.toString();
       
       if (orderId != null) {
@@ -255,18 +310,33 @@ class FCMService {
         print('   → Navigating to orders list');
         Navigator.pushNamed(context, '/orders');
       }
-    } else if (type == 'wallet') {
-      // Navigate to wallet
+    }
+    // Wallet/Transactions
+    else if (type == 'wallet' || type == 'withdraw_successful' || type == 'mobile_recharge_successful' || type == 'deposit') {
       print('   → Navigating to wallet');
       Navigator.pushNamed(context, '/deposit-withdraw');
-    } else if (type == 'general') {
-      // General notification - go to home or notifications page
-      print('   → General notification, navigating to home');
-      Navigator.pushNamed(context, '/');
-    } else {
+    }
+    // Classified Posts
+    else if (type == 'classified_post' || type == 'classified') {
+      final postId = data['post_id']?.toString() ?? data['classified_id']?.toString();
+      if (postId != null) {
+        print('   → Navigating to classified post: $postId');
+        Navigator.pushNamed(
+          context,
+          '/classified-post/$postId',
+        );
+      }
+    }
+    // General/Admin Notices
+    else if (type == 'general' || type == 'admin_notice' || type == 'system') {
+      print('   → General notification, navigating to inbox');
+      Navigator.pushNamed(context, '/inbox');
+    }
+    // Default
+    else {
       print('   ⚠️ Unknown notification type: $type');
-      // Default to home
-      Navigator.pushNamed(context, '/');
+      // Default to business network
+      Navigator.pushNamed(context, '/business-network');
     }
   }
 
