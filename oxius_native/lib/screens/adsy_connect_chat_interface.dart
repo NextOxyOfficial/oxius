@@ -1242,9 +1242,22 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: false,
       appBar: _buildAppBar(),
-      body: Column(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFFF0F9FF),
+              const Color(0xFFFAF5FF),
+              const Color(0xFFFDF2F8),
+            ],
+          ),
+        ),
+        child: Column(
         children: [
           // Messages List
           Expanded(
@@ -1272,15 +1285,29 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           _buildMessageInput(),
         ],
       ),
+      ),
     );
   }
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF3B82F6).withOpacity(0.95),
+              const Color(0xFF6366F1).withOpacity(0.95),
+              const Color(0xFF8B5CF6).withOpacity(0.95),
+            ],
+          ),
+        ),
+      ),
+      backgroundColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
+        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
         onPressed: () => Navigator.pop(context),
       ),
       title: GestureDetector(
@@ -1294,64 +1321,84 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         },
         child: Row(
           children: [
-            // User Avatar with online indicator
+            // User Avatar with online indicator and glow
             Stack(
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 42,
+                  height: 42,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        const Color(0xFF3B82F6).withOpacity(0.1),
-                        const Color(0xFF6366F1).withOpacity(0.1),
-                      ],
-                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.3),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
                   ),
-                  child: widget.userAvatar != null
-                      ? ClipOval(
-                          child: Image.network(
-                            widget.userAvatar!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Center(
-                                child: Text(
-                                  widget.userName[0].toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Color(0xFF3B82F6),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withOpacity(0.2),
+                          Colors.white.withOpacity(0.1),
+                        ],
+                      ),
+                    ),
+                    child: widget.userAvatar != null
+                        ? ClipOval(
+                            child: Image.network(
+                              widget.userAvatar!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Center(
+                                  child: Text(
+                                    widget.userName[0].toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                        )
-                      : Center(
-                          child: Text(
-                            widget.userName[0].toUpperCase(),
-                            style: const TextStyle(
-                              color: Color(0xFF3B82F6),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                                );
+                              },
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              widget.userName[0].toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
-                        ),
+                  ),
                 ),
                 if (widget.isOnline)
                   Positioned(
-                    bottom: 0,
-                    right: 0,
+                    bottom: 2,
+                    right: 2,
                     child: Container(
-                      width: 10,
-                      height: 10,
+                      width: 12,
+                      height: 12,
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                        border: Border.all(color: Colors.white, width: 2.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withOpacity(0.5),
+                            blurRadius: 6,
+                            spreadRadius: 1,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -1367,10 +1414,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                   Text(
                     widget.userName,
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1F2937),
-                      letterSpacing: -0.2,
+                      color: Colors.white,
+                      letterSpacing: -0.3,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black26,
+                          offset: Offset(0, 1),
+                          blurRadius: 2,
+                        ),
+                      ],
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1379,9 +1433,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                     Text(
                       widget.profession!,
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade600,
+                        color: Colors.white.withOpacity(0.9),
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -1393,7 +1447,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       ),
       actions: [
         PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF6B7280), size: 20),
+          icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 20),
           offset: const Offset(0, 50),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -1472,13 +1526,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           onSelected: (value) => _handleMenuAction(value),
         ),
       ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(
-          height: 1,
-          color: const Color(0xFFE5E7EB),
-        ),
-      ),
     );
   }
 
