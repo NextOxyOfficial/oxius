@@ -407,11 +407,14 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    offset: const Offset(0, 2),
+                    blurRadius: 8,
+                  ),
+                ],
               ),
               child: SafeArea(
                 bottom: false,
@@ -1630,7 +1633,7 @@ class _HomeScreenState extends State<HomeScreen> {
     
     return Container(
       height: 56,
-      padding: EdgeInsets.only(left: 4, right: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListenableBuilder(
         listenable: userState,
         builder: (context, _) {
@@ -1638,18 +1641,27 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               // Menu Button
               Builder(
-                builder: (context) => IconButton(
-                  icon: const Icon(
-                    Icons.menu_rounded,
-                    color: Colors.white,
-                    size: 24,
+                builder: (context) => Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                  tooltip: 'Menu',
-                  padding: EdgeInsets.all(8),
-                  constraints: BoxConstraints(),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.menu_rounded,
+                      color: Color(0xFF1F2937),
+                      size: 22,
+                    ),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                    tooltip: 'Menu',
+                    padding: EdgeInsets.zero,
+                  ),
                 ),
               ),
+              
+              const SizedBox(width: 12),
               
               // Logo
               _buildDynamicLogo(context),
@@ -1686,7 +1698,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Color(0xFF1F2937),
               ),
             );
           },
@@ -1710,7 +1722,7 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: const Color(0xFF3B82F6),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
