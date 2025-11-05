@@ -175,12 +175,13 @@ def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
         return None
 
 
-def send_message_notification(recipient_user, sender_name, message_text, chat_id):
+def send_message_notification(recipient_user, sender_user, sender_name, message_text, chat_id):
     """
     Send notification when user receives a new message
     
     Args:
         recipient_user: User object who will receive the notification
+        sender_user: User object who sent the message
         sender_name (str): Name of the message sender
         message_text (str): The message content
         chat_id (str): ID of the chat
@@ -189,7 +190,7 @@ def send_message_notification(recipient_user, sender_name, message_text, chat_id
     
     print(f'📨 send_message_notification called')
     print(f'   Recipient: {recipient_user.email}')
-    print(f'   Sender: {sender_name}')
+    print(f'   Sender: {sender_name} (ID: {sender_user.id})')
     print(f'   Chat ID: {chat_id}')
     
     # Get user's active FCM tokens
@@ -219,6 +220,7 @@ def send_message_notification(recipient_user, sender_name, message_text, chat_id
             data={
                 'type': 'message',
                 'sender_name': sender_name,
+                'sender_id': str(sender_user.id),
                 'chat_id': str(chat_id),
                 'click_action': 'FLUTTER_NOTIFICATION_CLICK',
             }

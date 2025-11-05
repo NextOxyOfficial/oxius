@@ -190,30 +190,78 @@ class FCMService {
   /// Navigate based on notification data
   static void _navigateBasedOnData(Map<String, dynamic> data) {
     final context = navigatorKey.currentContext;
-    if (context == null) return;
+    if (context == null) {
+      print('⚠️ Navigator context is null, cannot navigate');
+      return;
+    }
 
     final type = data['type']?.toString();
-    final chatId = data['chat_id']?.toString();
-    final senderId = data['sender_id']?.toString();
-    final senderName = data['sender_name']?.toString();
+    print('🔔 Navigating based on notification type: $type');
+    print('   Data: $data');
 
-    if (type == 'message' && chatId != null) {
+    if (type == 'message') {
       // Navigate to chat screen
-      Navigator.pushNamed(
-        context,
-        '/chat',
-        arguments: {
-          'chatId': chatId,
-          'userId': senderId,
-          'userName': senderName,
-        },
-      );
+      final chatId = data['chat_id']?.toString();
+      final senderId = data['sender_id']?.toString();
+      final senderName = data['sender_name']?.toString();
+      
+      if (chatId != null) {
+        print('   → Navigating to chat: $chatId');
+        Navigator.pushNamed(
+          context,
+          '/chat',
+          arguments: {
+            'chatId': chatId,
+            'userId': senderId,
+            'userName': senderName,
+          },
+        );
+      } else {
+        print('   ⚠️ Chat ID is null, navigating to messages list');
+        Navigator.pushNamed(context, '/messages');
+      }
+    } else if (type == 'support_ticket') {
+      // Navigate to support ticket detail
+      final ticketId = data['ticket_id']?.toString();
+      
+      if (ticketId != null) {
+        print('   → Navigating to support ticket: $ticketId');
+        Navigator.pushNamed(
+          context,
+          '/support-ticket-detail',
+          arguments: {'ticketId': ticketId},
+        );
+      } else {
+        print('   ⚠️ Ticket ID is null, navigating to support list');
+        Navigator.pushNamed(context, '/support');
+      }
     } else if (type == 'order') {
       // Navigate to orders
-      Navigator.pushNamed(context, '/orders');
+      final orderId = data['order_id']?.toString();
+      
+      if (orderId != null) {
+        print('   → Navigating to order detail: $orderId');
+        Navigator.pushNamed(
+          context,
+          '/order-detail',
+          arguments: {'orderId': orderId},
+        );
+      } else {
+        print('   → Navigating to orders list');
+        Navigator.pushNamed(context, '/orders');
+      }
     } else if (type == 'wallet') {
       // Navigate to wallet
+      print('   → Navigating to wallet');
       Navigator.pushNamed(context, '/deposit-withdraw');
+    } else if (type == 'general') {
+      // General notification - go to home or notifications page
+      print('   → General notification, navigating to home');
+      Navigator.pushNamed(context, '/');
+    } else {
+      print('   ⚠️ Unknown notification type: $type');
+      // Default to home
+      Navigator.pushNamed(context, '/');
     }
   }
 

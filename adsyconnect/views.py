@@ -211,6 +211,7 @@ class MessageViewSet(viewsets.ModelViewSet):
                 print(f'📤 Attempting to send chat notification to {message.receiver.email}')
                 send_message_notification(
                     recipient_user=message.receiver,
+                    sender_user=request.user,
                     sender_name=sender_name,
                     message_text=message.get_preview(),
                     chat_id=str(chatroom.id)
