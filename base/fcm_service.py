@@ -187,22 +187,32 @@ def send_message_notification(recipient_user, sender_name, message_text, chat_id
     """
     from .models import FCMToken
     
+    print(f'📨 send_message_notification called')
+    print(f'   Recipient: {recipient_user.email}')
+    print(f'   Sender: {sender_name}')
+    print(f'   Chat ID: {chat_id}')
+    
     # Get user's active FCM tokens
     fcm_tokens = FCMToken.objects.filter(
         user=recipient_user,
         is_active=True
     ).values_list('token', flat=True)
     
+    token_count = len(fcm_tokens)
+    print(f'   Found {token_count} active FCM tokens')
+    
     if not fcm_tokens:
-        print(f'⚠️ No FCM tokens found for user: {recipient_user.email}')
+        print(f'   ⚠️ No FCM tokens found for user: {recipient_user.email}')
         return
     
     # Truncate long messages
     truncated_message = message_text[:100] + '...' if len(message_text) > 100 else message_text
     
     # Send notification to each token
+    success_count = 0
     for token in fcm_tokens:
-        send_fcm_notification(
+        print(f'   Sending to token: {token[:50]}...')
+        result = send_fcm_notification(
             fcm_token=token,
             title=f'New message from {sender_name}',
             body=truncated_message,
@@ -213,6 +223,10 @@ def send_message_notification(recipient_user, sender_name, message_text, chat_id
                 'click_action': 'FLUTTER_NOTIFICATION_CLICK',
             }
         )
+        if result:
+            success_count += 1
+    
+    print(f'   ✅ Successfully sent {success_count}/{token_count} notifications')
 
 
 def send_order_notification(user, order_id, title, body):

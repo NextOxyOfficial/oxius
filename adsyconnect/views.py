@@ -208,17 +208,20 @@ class MessageViewSet(viewsets.ModelViewSet):
             
             if should_notify:
                 sender_name = request.user.get_full_name() or request.user.username or request.user.email
+                print(f'📤 Attempting to send chat notification to {message.receiver.email}')
                 send_message_notification(
                     recipient_user=message.receiver,
                     sender_name=sender_name,
                     message_text=message.get_preview(),
                     chat_id=str(chatroom.id)
                 )
-                print(f'✅ Notification sent to {message.receiver.email}')
+                print(f'✅ Chat notification sent to {message.receiver.email}')
             else:
                 print(f'⏭️ Skipped notification - user in active chat')
         except Exception as e:
-            print(f'❌ Error sending notification: {e}')
+            print(f'❌ Error sending chat notification: {e}')
+            import traceback
+            traceback.print_exc()
         
         # Return full message serialization with all fields
         output_serializer = MessageSerializer(message, context={'request': request})

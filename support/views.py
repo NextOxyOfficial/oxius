@@ -93,7 +93,48 @@ class TicketReplyCreateView(generics.CreateAPIView):
             ticket.status = "in_progress"
             ticket.save()
 
-        serializer.save(ticket=ticket, user=user, is_from_admin=is_admin)
+        reply = serializer.save(ticket=ticket, user=user, is_from_admin=is_admin)
+        
+        # Send push notification
+        try:
+            from base.fcm_service import send_fcm_notification
+            from base.models import FCMToken
+            
+            # Determine who should receive the notification
+            if is_admin:
+                # Admin replied, notify the ticket owner
+                recipient = ticket.user
+                title = f'Support Ticket #{ticket.id} - New Reply'
+                body = f'Admin replied to your ticket: {ticket.subject}'
+            else:
+                # User replied, notify admins (optional - you can skip this)
+                # For now, we'll skip notifying admins
+                return
+            
+            # Get recipient's FCM tokens
+            tokens = FCMToken.objects.filter(user=recipient, is_active=True).values_list('token', flat=True)
+            
+            for token in tokens:
+                send_fcm_notification(
+                    fcm_token=token,
+                    title=title,
+                    body=body,
+                    data={
+                        'type': 'support_ticket',
+                        'ticket_id': str(ticket.id),
+                        'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+                    }
+                )
+            
+            if tokens:
+                print(f'✅ Support ticket notification sent to {recipient.email}')
+            else:
+                print(f'⚠️ No FCM tokens found for user: {recipient.email}')
+                
+        except Exception as e:
+            print(f'❌ Error sending support ticket notification: {e}')
+            import traceback
+            traceback.print_exc()
 
 
 class UpdateTicketStatusView(APIView):
