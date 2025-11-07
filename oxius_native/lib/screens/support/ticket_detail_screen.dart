@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import '../../models/support_ticket_models.dart';
 import '../../services/support_ticket_service.dart';
 import 'package:intl/intl.dart';
@@ -529,13 +530,25 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                       color: const Color(0xFFE5E7EB),
                     ),
                   ),
-                  child: Text(
-                    message,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF374151),
-                      height: 1.5,
-                    ),
+                  child: Html(
+                    data: message,
+                    style: {
+                      "body": Style(
+                        margin: Margins.zero,
+                        padding: HtmlPaddings.zero,
+                        fontSize: FontSize(13),
+                        color: const Color(0xFF374151),
+                        lineHeight: const LineHeight(1.5),
+                      ),
+                      "p": Style(
+                        margin: Margins.zero,
+                        padding: HtmlPaddings.zero,
+                      ),
+                      "div": Style(
+                        margin: Margins.zero,
+                        padding: HtmlPaddings.zero,
+                      ),
+                    },
                   ),
                 ),
               ],

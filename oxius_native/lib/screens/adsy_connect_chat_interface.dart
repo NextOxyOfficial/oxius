@@ -5,8 +5,10 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 import '../services/adsyconnect_service.dart';
 import '../services/active_chat_tracker.dart';
 import '../utils/image_compressor.dart';
@@ -40,6 +42,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   final ScrollController _scrollController = ScrollController();
   final FocusNode _messageFocusNode = FocusNode();
   final AudioRecorder _audioRecorder = AudioRecorder();
+  final AudioPlayer _audioPlayer = AudioPlayer();
   final ImagePicker _imagePicker = ImagePicker();
   bool _isTyping = false;
   bool _isLoadingMessages = true;
@@ -54,6 +57,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   String? _recordingPath;
   List<Map<String, dynamic>> _messages = [];
   String? _lastMessageId;
+  List<XFile> _selectedImages = [];
+  List<String> _compressedImages = [];
+  String? _playingVoiceMessageId;
+  Duration _voicePosition = Duration.zero;
+  Duration _voiceDuration = Duration.zero;
 
   @override
   void initState() {
@@ -73,9 +81,76 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     _scrollController.dispose();
     _messageFocusNode.dispose();
     _audioRecorder.dispose();
+    _audioPlayer.dispose();
     _recordTimer?.cancel();
     _messagePollingTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _playVoiceMessage(String messageId, String? mediaUrl) async {
+    if (mediaUrl == null || mediaUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Voice message not available'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+
+    try {
+      // If already playing this message, pause it
+      if (_playingVoiceMessageId == messageId) {
+        if (_audioPlayer.playing) {
+          await _audioPlayer.pause();
+        } else {
+          await _audioPlayer.play();
+        }
+        return;
+      }
+
+      // Stop any currently playing message and load new one
+      await _audioPlayer.stop();
+      setState(() => _playingVoiceMessageId = messageId);
+
+      // Set audio source and play
+      await _audioPlayer.setUrl(mediaUrl);
+      await _audioPlayer.play();
+
+      // Listen to player state changes
+      _audioPlayer.playerStateStream.listen((state) {
+        if (mounted) {
+          if (state.processingState == ProcessingState.completed) {
+            setState(() => _playingVoiceMessageId = null);
+          }
+        }
+      });
+
+      // Listen to position changes
+      _audioPlayer.positionStream.listen((position) {
+        if (mounted) {
+          setState(() => _voicePosition = position);
+        }
+      });
+
+      // Listen to duration changes
+      _audioPlayer.durationStream.listen((duration) {
+        if (mounted && duration != null) {
+          setState(() => _voiceDuration = duration);
+        }
+      });
+    } catch (e) {
+      print('Error playing voice message: $e');
+      setState(() => _playingVoiceMessageId = null);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to play voice message: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
+    }
   }
 
   void _onTypingChanged() {
@@ -444,37 +519,57 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       final path = await _audioRecorder.stop();
       _recordTimer?.cancel();
 
-      if (path != null) {
-        // Send voice message
-        final newMessage = {
-          'id': DateTime.now().millisecondsSinceEpoch.toString(),
-          'senderId': 'me',
-          'message': 'Voice message',
-          'voicePath': path,
-          'voiceDuration': _recordDuration,
-          'timestamp': DateTime.now(),
-          'isMe': true,
-          'type': 'voice',
-        };
-
+      if (path != null && _recordDuration > 0) {
         setState(() {
-          _messages.add(newMessage);
           _isRecording = false;
-          _recordDuration = 0;
+          _isSendingMessage = true;
         });
 
-        _scrollToBottom();
-
-        // TODO: Upload voice message to backend API
+        // Send voice message to backend
+        try {
+          print('🔵 Sending voice message: $path, duration: $_recordDuration seconds');
+          
+          final sentMessage = await AdsyConnectService.sendMediaMessage(
+            chatroomId: widget.chatroomId,
+            receiverId: widget.userId,
+            messageType: 'voice',
+            mediaFilePath: path,
+            voiceDuration: _recordDuration,
+          );
+          
+          print('🟢 Voice message sent: ${sentMessage['id']}');
+          
+          if (mounted) {
+            setState(() {
+              _messages.add(_parseSingleMessage(sentMessage));
+              _isSendingMessage = false;
+              _recordDuration = 0;
+            });
+            _scrollToBottom();
+          }
+        } catch (e) {
+          print('🔴 Error sending voice message: $e');
+          if (mounted) {
+            setState(() {
+              _isSendingMessage = false;
+              _recordDuration = 0;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to send voice message: $e'),
+                backgroundColor: const Color(0xFFEF4444),
+              ),
+            );
+          }
+        }
       }
     } catch (e) {
       print('Error stopping recording: $e');
+      setState(() {
+        _isRecording = false;
+        _recordDuration = 0;
+      });
     }
-
-    setState(() {
-      _isRecording = false;
-      _recordDuration = 0;
-    });
   }
 
   void _cancelRecording() async {
@@ -787,19 +882,27 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
 
   Future<void> _pickImageFromGallery() async {
     try {
-      final XFile? image = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-      );
+      final List<XFile> images = await _imagePicker.pickMultiImage();
       
-      if (image != null) {
+      if (images.isNotEmpty) {
+        // Check if adding these images exceeds the limit
+        if (_selectedImages.length + images.length > 8) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Maximum 8 photos allowed'),
+                backgroundColor: Color(0xFFEF4444),
+              ),
+            );
+          }
+          return;
+        }
+        
         setState(() => _isUploadingAttachment = true);
         
-        if (kIsWeb) {
-          // Web: Read as bytes
-          final bytes = await image.readAsBytes();
-          _sendMediaMessageWeb(bytes, 'image', fileName: image.name);
-        } else {
-          // Mobile: Compress and send
+        // Compress all images
+        List<String> compressed = [];
+        for (var image in images) {
           final compressedBase64 = await ImageCompressor.compressToBase64(
             image,
             targetSize: 200 * 1024, // 200KB
@@ -809,19 +912,23 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           );
           
           if (compressedBase64 != null) {
-            _sendMediaMessage(image.path, 'image');
-          } else {
-            throw Exception('Image compression failed');
+            compressed.add(compressedBase64);
           }
         }
+        
+        setState(() {
+          _selectedImages.addAll(images);
+          _compressedImages.addAll(compressed);
+          _isUploadingAttachment = false;
+        });
       }
     } catch (e) {
-      print('Error picking image: $e');
+      print('Error picking images: $e');
       setState(() => _isUploadingAttachment = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to pick image: ${e.toString()}'),
+            content: Text('Failed to pick images: ${e.toString()}'),
             backgroundColor: const Color(0xFFEF4444),
           ),
         );
@@ -831,6 +938,19 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
 
   Future<void> _pickImageFromCamera() async {
     try {
+      // Check if limit reached
+      if (_selectedImages.length >= 8) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Maximum 8 photos allowed'),
+              backgroundColor: Color(0xFFEF4444),
+            ),
+          );
+        }
+        return;
+      }
+      
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.camera,
       );
@@ -838,26 +958,26 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       if (image != null) {
         setState(() => _isUploadingAttachment = true);
         
-        if (kIsWeb) {
-          // Web: Read as bytes
-          final bytes = await image.readAsBytes();
-          _sendMediaMessageWeb(bytes, 'image', fileName: image.name);
+        // Compress image
+        final compressedBase64 = await ImageCompressor.compressToBase64(
+          image,
+          targetSize: 200 * 1024, // 200KB
+          initialQuality: 80,
+          maxDimension: 1920,
+          verbose: true,
+        );
+        
+        if (compressedBase64 != null) {
+          setState(() {
+            _selectedImages.add(image);
+            _compressedImages.add(compressedBase64);
+            _isUploadingAttachment = false;
+          });
         } else {
-          // Mobile: Compress and send
-          final compressedBase64 = await ImageCompressor.compressToBase64(
-            image,
-            targetSize: 200 * 1024, // 200KB
-            initialQuality: 80,
-            maxDimension: 1920,
-            verbose: true,
-          );
-          
-          if (compressedBase64 != null) {
-            _sendMediaMessage(image.path, 'image');
-          } else {
-            throw Exception('Image compression failed');
-          }
+          throw Exception('Image compression failed');
         }
+      } else {
+        setState(() => _isUploadingAttachment = false);
       }
     } catch (e) {
       print('Error taking photo: $e');
@@ -889,6 +1009,56 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           const SnackBar(
             content: Text('Failed to pick video'),
             backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+      }
+    }
+  }
+
+  void _removeSelectedImage(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+      _compressedImages.removeAt(index);
+    });
+  }
+
+  Future<void> _sendSelectedImages() async {
+    if (_selectedImages.isEmpty) return;
+
+    setState(() => _isSendingMessage = true);
+
+    try {
+      // Send all images
+      for (int i = 0; i < _compressedImages.length; i++) {
+        await _sendMediaMessage(_selectedImages[i].path, 'image');
+        // Small delay between sends to avoid overwhelming the server
+        if (i < _compressedImages.length - 1) {
+          await Future.delayed(const Duration(milliseconds: 300));
+        }
+      }
+
+      // Clear selected images after sending
+      setState(() {
+        _selectedImages.clear();
+        _compressedImages.clear();
+        _isSendingMessage = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${_compressedImages.length} photos sent successfully'),
+            backgroundColor: const Color(0xFF10B981),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isSendingMessage = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send photos: $e'),
+            backgroundColor: const Color(0xFFEF4444),
           ),
         );
       }
@@ -1034,10 +1204,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           arguments: {'userId': widget.userId},
         );
         break;
-      case 'transfer_money':
-        // TODO: Open transfer money dialog/screen
-        _showTransferMoneyDialog();
-        break;
       case 'block':
         // TODO: Show block confirmation
         _showBlockConfirmation();
@@ -1047,69 +1213,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         _showReportDialog();
         break;
     }
-  }
-
-  void _showTransferMoneyDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF10B981), size: 20),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Transfer Money',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Send money to ${widget.userName}',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Amount',
-                prefixText: '\$ ',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Process transfer
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('Transfer'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showBlockConfirmation() {
@@ -1508,24 +1611,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
               ),
             ),
             PopupMenuItem(
-              value: 'transfer_money',
-              child: Row(
-                children: [
-                  const Icon(Icons.account_balance_wallet_rounded, size: 18, color: Color(0xFF10B981)),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Transfer Money',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const PopupMenuDivider(),
-            PopupMenuItem(
               value: 'block',
               child: Row(
                 children: [
@@ -1779,46 +1864,63 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
 
   Widget _buildVoiceMessageContent(Map<String, dynamic> message, bool isMe) {
     final duration = message['voiceDuration'] as int? ?? 0;
+    final messageId = message['id']?.toString() ?? '';
+    final mediaUrl = message['mediaUrl'] as String?;
+    final isPlaying = _playingVoiceMessageId == messageId;
     
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          Icons.play_arrow_rounded,
-          size: 24,
-          color: isMe ? Colors.white : const Color(0xFF3B82F6),
-        ),
-        const SizedBox(width: 8),
-        // Waveform visualization
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: List.generate(
-                15,
-                (index) => Container(
-                  width: 2,
-                  height: (index % 3 + 1) * 4.0,
-                  margin: const EdgeInsets.symmetric(horizontal: 1),
-                  decoration: BoxDecoration(
-                    color: isMe ? Colors.white.withOpacity(0.7) : const Color(0xFF3B82F6).withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(1),
+    return GestureDetector(
+      onTap: () => _playVoiceMessage(messageId, mediaUrl),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: isMe 
+                  ? Colors.white.withOpacity(0.2) 
+                  : const Color(0xFF3B82F6).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              size: 20,
+              color: isMe ? Colors.white : const Color(0xFF3B82F6),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Waveform visualization
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: List.generate(
+                  15,
+                  (index) => Container(
+                    width: 2,
+                    height: (index % 3 + 1) * 4.0,
+                    margin: const EdgeInsets.symmetric(horizontal: 1),
+                    decoration: BoxDecoration(
+                      color: isMe ? Colors.white.withOpacity(0.7) : const Color(0xFF3B82F6).withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(1),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _formatDuration(duration),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: isMe ? Colors.white.withOpacity(0.9) : const Color(0xFF6B7280),
+              const SizedBox(height: 4),
+              Text(
+                isPlaying && _voiceDuration.inSeconds > 0
+                    ? '${_voicePosition.inMinutes}:${(_voicePosition.inSeconds % 60).toString().padLeft(2, '0')} / ${_voiceDuration.inMinutes}:${(_voiceDuration.inSeconds % 60).toString().padLeft(2, '0')}'
+                    : _formatDuration(duration),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: isMe ? Colors.white.withOpacity(0.9) : const Color(0xFF6B7280),
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -2227,6 +2329,84 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Selected Images Preview
+        if (_selectedImages.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.all(8),
+            color: Colors.grey.shade50,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${_selectedImages.length}/8 photos selected',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF3B82F6),
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: _sendSelectedImages,
+                      icon: const Icon(Icons.send_rounded, size: 16),
+                      label: const Text('Send All'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF3B82F6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 80,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _selectedImages.length,
+                    itemBuilder: (context, index) {
+                      return Stack(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.memory(
+                                base64Decode(_compressedImages[index].split(',').last),
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 4,
+                            right: 12,
+                            child: GestureDetector(
+                              onTap: () => _removeSelectedImage(index),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.close,
+                                  size: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
         // Upload Progress Indicator
         if (_isUploadingAttachment)
           Container(
@@ -2244,7 +2424,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                 ),
                 const SizedBox(width: 12),
                 const Text(
-                  'Uploading...',
+                  'Compressing images...',
                   style: TextStyle(
                     fontSize: 13,
                     color: Color(0xFF3B82F6),
