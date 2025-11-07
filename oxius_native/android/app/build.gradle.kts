@@ -57,13 +57,9 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
-            // Enable code shrinking, obfuscation, and optimization
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            // Temporarily disable minification to avoid symbol stripping issues
+            isMinifyEnabled = false
+            isShrinkResources = false
             // Disable native debug symbol stripping to avoid build issues
             ndk {
                 debugSymbolLevel = "NONE"
