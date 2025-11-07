@@ -201,7 +201,7 @@ class MindForceComment {
   final bool isSolved;
   final String createdAt;
   final MindForceUser userDetails;
-  final List<String> images;
+  final List<MindForceMedia> media;
 
   MindForceComment({
     required this.id,
@@ -209,7 +209,7 @@ class MindForceComment {
     required this.isSolved,
     required this.createdAt,
     required this.userDetails,
-    this.images = const [],
+    this.media = const [],
   });
 
   factory MindForceComment.fromJson(Map<String, dynamic> json) {
@@ -218,9 +218,9 @@ class MindForceComment {
       content: json['content'] ?? '',
       isSolved: json['is_solved'] ?? false,
       createdAt: json['created_at'] ?? '',
-      userDetails: MindForceUser.fromJson(json['user_details'] ?? {}),
-      images: json['images'] != null
-          ? List<String>.from(json['images'])
+      userDetails: MindForceUser.fromJson(json['author_details'] ?? {}),
+      media: json['media'] != null
+          ? (json['media'] as List).map((m) => MindForceMedia.fromJson(m)).toList()
           : [],
     );
   }
@@ -231,7 +231,7 @@ class MindForceComment {
     bool? isSolved,
     String? createdAt,
     MindForceUser? userDetails,
-    List<String>? images,
+    List<MindForceMedia>? media,
   }) {
     return MindForceComment(
       id: id ?? this.id,
@@ -239,7 +239,7 @@ class MindForceComment {
       isSolved: isSolved ?? this.isSolved,
       createdAt: createdAt ?? this.createdAt,
       userDetails: userDetails ?? this.userDetails,
-      images: images ?? this.images,
+      media: media ?? this.media,
     );
   }
 }

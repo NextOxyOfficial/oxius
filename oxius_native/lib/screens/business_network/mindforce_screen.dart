@@ -11,7 +11,7 @@ import '../business_network/profile_screen.dart';
 import '../business_network/notifications_screen.dart';
 import '../business_network/create_post_screen.dart';
 import 'create_problem_screen.dart';
-import 'mindforce_detail_screen.dart';
+import '../../widgets/mindforce/problem_detail_bottom_sheet.dart';
 
 class MindForceScreen extends StatefulWidget {
   const MindForceScreen({super.key});
@@ -451,12 +451,12 @@ class _MindForceScreenState extends State<MindForceScreen> {
       color: Colors.white,
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MindForceDetailScreen(
-                problemId: problem.id,
-              ),
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => ProblemDetailBottomSheet(
+              problemId: problem.id,
             ),
           );
         },
