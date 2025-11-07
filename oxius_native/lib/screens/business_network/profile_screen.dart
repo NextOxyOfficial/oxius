@@ -13,6 +13,7 @@ import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/diamond_purchase_bottom_sheet.dart';
+import '../../widgets/business_network/gold_sponsors_slider.dart';
 import 'create_post_screen.dart';
 import 'notifications_screen.dart';
 import '../adsy_connect_chat_interface.dart';
@@ -461,6 +462,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       children: [
                         // Profile Header
                         _buildProfileHeader(isOwnProfile),
+                        
+                        const SizedBox(height: 16),
+                        
+                        // Gold Sponsors Slider
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: GoldSponsorsSlider(),
+                        ),
                         
                         const SizedBox(height: 16),
                         

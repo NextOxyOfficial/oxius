@@ -6,6 +6,7 @@ import '../../models/business_network_models.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/business_network/post_card.dart';
+import '../../widgets/business_network/gold_sponsors_slider.dart';
 import 'profile_screen.dart';
 import 'post_detail_screen.dart';
 
@@ -478,6 +479,12 @@ class _SearchScreenState extends State<SearchScreen> {
       return ListView(
         padding: EdgeInsets.zero,
         children: [
+          // Gold Sponsors Slider
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            child: GoldSponsorsSlider(),
+          ),
+          
           if (_people.isNotEmpty) ...[
             _buildSectionHeader('People', _people.length),
             ..._people.map((person) => _buildPersonItem(person)),
