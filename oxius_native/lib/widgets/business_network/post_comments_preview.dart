@@ -172,6 +172,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
             const SizedBox(height: 6),
             _CommentItem(
               comment: highestGiftComment!,
+              post: widget.post,
               onReply: widget.onReplySubmit != null ? () {
                 setState(() {
                   _replyingTo = highestGiftComment;
@@ -193,6 +194,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
               }
               return giftReplies.map((reply) => _CommentItem(
                 comment: reply,
+                post: widget.post,
                 isReply: true,
                 onCommentDeleted: () => _handleCommentDeleted(reply.id),
                 onCommentUpdated: _handleCommentUpdated,
@@ -241,6 +243,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
               // Parent comment
               _CommentItem(
                 comment: comment,
+                post: widget.post,
                 onReply: widget.onReplySubmit != null ? () {
                   setState(() {
                     _replyingTo = comment;
@@ -282,6 +285,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                   padding: const EdgeInsets.only(left: 8),
                   child: _CommentItem(
                     comment: reply,
+                    post: widget.post,
                     onReply: null, // Don't allow replying to replies for now
                     isReply: true,
                     onCommentDeleted: () => _handleCommentDeleted(reply.id),
@@ -450,11 +454,13 @@ class _CommentItem extends StatefulWidget {
   final bool isReply;
   final Function(BusinessNetworkComment)? onCommentUpdated;
   final VoidCallback? onCommentDeleted;
+  final BusinessNetworkPost? post;
 
   const _CommentItem({
     required this.comment,
     this.onReply,
     this.isReply = false,
+    this.post,
     this.onCommentUpdated,
     this.onCommentDeleted,
   });
@@ -521,10 +527,9 @@ class _CommentItemState extends State<_CommentItem> {
     super.dispose();
   }
 
-  bool get _canEditDelete {
+  bool get _isCommentAuthor {
     if (_currentUserId == null) return false;
     
-    // Try multiple comparison methods to ensure compatibility
     final commentUserId = widget.comment.user.id.toString();
     final commentUserUuid = widget.comment.user.uuid;
     
@@ -539,10 +544,37 @@ class _CommentItemState extends State<_CommentItem> {
     // Also try comparing with ID as integer if currentUserId is numeric
     if (int.tryParse(_currentUserId!) != null && 
         int.tryParse(commentUserId) != null) {
-      return int.parse(_currentUserId!) == int.parse(commentUserId);
+      if (int.parse(_currentUserId!) == int.parse(commentUserId)) return true;
     }
     
     return false;
+  }
+
+  bool get _isPostOwner {
+    if (_currentUserId == null || widget.post == null) return false;
+    
+    final postAuthorId = widget.post!.user.id.toString();
+    final postAuthorUuid = widget.post!.user.uuid;
+    
+    // Compare with UUID first if available
+    if (postAuthorUuid != null && postAuthorUuid.isNotEmpty) {
+      if (postAuthorUuid == _currentUserId) return true;
+    }
+    
+    // Compare with ID (both as strings)
+    if (postAuthorId == _currentUserId) return true;
+    
+    // Also try comparing with ID as integer
+    if (int.tryParse(_currentUserId!) != null && 
+        int.tryParse(postAuthorId) != null) {
+      if (int.parse(_currentUserId!) == int.parse(postAuthorId)) return true;
+    }
+    
+    return false;
+  }
+
+  bool get _canEditDelete {
+    return _isCommentAuthor || _isPostOwner;
   }
 
   @override
@@ -932,22 +964,24 @@ class _CommentItemState extends State<_CommentItem> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Edit option
-            ListTile(
-              leading: const Icon(Icons.edit, color: Color(0xFF3B82F6)),
-              title: const Text('Edit Comment'),
-              onTap: () {
-                Navigator.pop(context);
-                final plainContent = widget.comment.content.replaceAllMapped(
-                  RegExp(r'@([^@]+?)  '),
-                  (match) => '@${match.group(1)} ',
-                );
-                _editController.text = plainContent;
-                setState(() => _isEditing = true);
-              },
-            ),
-            const Divider(height: 1),
-            // Delete option
+            // Edit option (only for comment author)
+            if (_isCommentAuthor) ...[
+              ListTile(
+                leading: const Icon(Icons.edit, color: Color(0xFF3B82F6)),
+                title: const Text('Edit Comment'),
+                onTap: () {
+                  Navigator.pop(context);
+                  final plainContent = widget.comment.content.replaceAllMapped(
+                    RegExp(r'@([^@]+?)  '),
+                    (match) => '@${match.group(1)} ',
+                  );
+                  _editController.text = plainContent;
+                  setState(() => _isEditing = true);
+                },
+              ),
+              const Divider(height: 1),
+            ],
+            // Delete option (for both comment author and post owner)
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
               title: const Text('Delete Comment', style: TextStyle(color: Colors.red)),

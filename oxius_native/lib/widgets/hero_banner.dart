@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../services/api_service.dart';
 import '../services/translation_service.dart';
+import '../services/notification_service.dart';
+import '../services/user_state_service.dart';
 import '../config/app_config.dart';
 import '../screens/eshop_screen.dart';
 import '../screens/elearning_screen.dart';
@@ -21,6 +23,8 @@ class _HeroBannerState extends State<HeroBanner> {
   List<dynamic> bannerImages = [];
   bool isLoading = true;
   final TranslationService _translationService = TranslationService();
+  final UserStateService _userStateService = UserStateService();
+  int _unreadNotificationCount = 0;
 
   // Build absolute URL for static assets
   String _absStatic(String path) {
@@ -65,7 +69,7 @@ class _HeroBannerState extends State<HeroBanner> {
     },
     {
       'icon': Icons.sell,
-      'image': 'assets/images/donate.png',
+      'image': 'assets/images/sign.png',
       'label': _translationService.t('sale_listing', fallback: 'Buy & Sell'),
       'color': const Color(0xFF4F46E5), // Indigo
       'bgColor': const Color(0xFFF0F9FF),
@@ -134,11 +138,48 @@ class _HeroBannerState extends State<HeroBanner> {
     });
     _loadBannerImages();
     _startHeroTimer();
+    
+    // Listen to user state changes
+    _userStateService.addListener(_onUserStateChanged);
+    
+    // Load notification count if authenticated
+    if (_userStateService.isAuthenticated) {
+      _loadUnreadNotificationCount();
+    }
   }
 
   void _onTranslationsChanged() {
     if (!mounted) return;
     setState(() {});
+  }
+
+  void _onUserStateChanged() {
+    if (mounted) {
+      setState(() {});
+      // Refresh notification count when user state changes
+      if (_userStateService.isAuthenticated) {
+        _loadUnreadNotificationCount();
+      } else {
+        setState(() {
+          _unreadNotificationCount = 0;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadUnreadNotificationCount() async {
+    try {
+      final result = await NotificationService.getNotifications(page: 1);
+      final count = result['unreadCount'] ?? 0;
+      
+      if (mounted) {
+        setState(() {
+          _unreadNotificationCount = count;
+        });
+      }
+    } catch (e) {
+      print('❌ Hero Banner: Error loading notification count: $e');
+    }
   }
 
   // Load banner images from API
@@ -184,6 +225,7 @@ class _HeroBannerState extends State<HeroBanner> {
     _heroTimer?.cancel();
     _heroController.dispose();
     _translationService.removeListener(_onTranslationsChanged);
+    _userStateService.removeListener(_onUserStateChanged);
     super.dispose();
   }
 
@@ -481,6 +523,10 @@ class _HeroBannerState extends State<HeroBanner> {
 
   Widget _buildMobileServiceButton(Map<String, dynamic> service) {
     final bool isComingSoon = service['isComingSoon'] ?? false;
+    // Check if this is the Business Network service to add notification count
+    final isBusinessNetwork = service['label'] == _translationService.t('business_network', fallback: 'Business Network') || 
+        service['label'] == 'Business Network';
+    
     return _ServiceTile(
       icon: service['icon'] as IconData?,
       imageAsset: service['image'] as String?,
@@ -489,6 +535,7 @@ class _HeroBannerState extends State<HeroBanner> {
       bgColor: service['bgColor'] as Color,
       comingSoonLabel: _translationService.t('coming_soon', fallback: 'Coming Soon'),
       isComingSoon: isComingSoon,
+      notificationCount: isBusinessNetwork ? _unreadNotificationCount : 0,
       onTap: isComingSoon
           ? null
           : () {
@@ -556,6 +603,7 @@ class _ServiceTile extends StatefulWidget {
   final String comingSoonLabel;
   final bool isComingSoon;
   final VoidCallback? onTap;
+  final int notificationCount;
 
   const _ServiceTile({
     this.icon,
@@ -566,6 +614,7 @@ class _ServiceTile extends StatefulWidget {
     required this.comingSoonLabel,
     required this.isComingSoon,
     this.onTap,
+    this.notificationCount = 0,
   });
 
   @override
@@ -714,6 +763,43 @@ class _ServiceTileState extends State<_ServiceTile> with SingleTickerProviderSta
                           fontWeight: FontWeight.w700,
                           height: 1.0,
                         ),
+                      ),
+                    ),
+                  ),
+                // Notification badge
+                if (widget.notificationCount > 0)
+                  Positioned(
+                    top: -4,
+                    right: -4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFEF4444).withOpacity(0.4),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      child: Text(
+                        widget.notificationCount > 99 ? '99+' : widget.notificationCount.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          height: 1.0,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),

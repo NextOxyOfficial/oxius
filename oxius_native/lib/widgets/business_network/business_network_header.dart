@@ -312,13 +312,13 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                   child: Center(
                     child: Image.asset(
                       'assets/images/chat_icon.png',
-                      width: 22,
-                      height: 22,
+                      width: 24,
+                      height: 24,
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         return const Icon(
                           Icons.chat_bubble_outline,
-                          size: 22,
+                          size: 24,
                           color: Color(0xFF3B82F6),
                         );
                       },

@@ -1753,14 +1753,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Center(
                   child: Image.asset(
                     'assets/images/chat_icon.png',
-                    width: 22,
-                    height: 22,
+                    width: 24,
+                    height: 24,
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
                       return Icon(
                         Icons.forum_outlined,
                         color: Color(0xFF3B82F6),
-                        size: 22,
+                        size: 24,
                       );
                     },
                   ),
