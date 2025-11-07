@@ -1,6 +1,7 @@
 from cities_light.models import City, Country, Region
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken

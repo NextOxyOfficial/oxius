@@ -1,3 +1,98 @@
+class MicroGigUser {
+  final int id;
+  final String name;
+  final String? image;
+
+  MicroGigUser({
+    required this.id,
+    required this.name,
+    this.image,
+  });
+
+  factory MicroGigUser.fromJson(Map<String, dynamic> json) {
+    return MicroGigUser(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      image: json['image'],
+    );
+  }
+}
+
+class MicroGigCategory {
+  final int id;
+  final String title;
+  final String? image;
+
+  MicroGigCategory({
+    required this.id,
+    required this.title,
+    this.image,
+  });
+
+  factory MicroGigCategory.fromJson(Map<String, dynamic> json) {
+    return MicroGigCategory(
+      id: json['id'] ?? 0,
+      title: json['title'] ?? '',
+      image: json['image'],
+    );
+  }
+}
+
+class MicroGig {
+  final int id;
+  final String slug;
+  final String title;
+  final double price;
+  final int requiredQuantity;
+  final int filledQuantity;
+  final DateTime createdAt;
+  final bool activeGig;
+  final String gigStatus;
+  final MicroGigUser? user;
+  final MicroGigCategory? categoryDetails;
+
+  MicroGig({
+    required this.id,
+    required this.slug,
+    required this.title,
+    required this.price,
+    required this.requiredQuantity,
+    required this.filledQuantity,
+    required this.createdAt,
+    this.activeGig = true,
+    this.gigStatus = 'approved',
+    this.user,
+    this.categoryDetails,
+  });
+
+  factory MicroGig.fromJson(Map<String, dynamic> json) {
+    double parsePrice(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return (value as num).toDouble();
+    }
+
+    return MicroGig(
+      id: json['id'] ?? 0,
+      slug: json['slug'] ?? '',
+      title: json['title'] ?? '',
+      price: parsePrice(json['price']),
+      requiredQuantity: json['required_quantity'] ?? 0,
+      filledQuantity: json['filled_quantity'] ?? 0,
+      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+      activeGig: json['active_gig'] ?? true,
+      gigStatus: json['gig_status'] ?? 'approved',
+      user: json['user'] != null ? MicroGigUser.fromJson(json['user']) : null,
+      categoryDetails: json['category_details'] != null 
+          ? MicroGigCategory.fromJson(json['category_details']) 
+          : null,
+    );
+  }
+
+  bool get isAvailable => filledQuantity < requiredQuantity;
+  int get remainingSlots => requiredQuantity - filledQuantity;
+}
+
 class MicroGigTask {
   final int id;
   final String? gigTitle;

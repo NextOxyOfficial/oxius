@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -691,8 +692,20 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: GestureDetector(
-        onTap: () {
-          // TODO: Open URL in browser
+        onTap: () async {
+          final url = Uri.parse(actionLink);
+          if (await canLaunchUrl(url)) {
+            await launchUrl(url, mode: LaunchMode.externalApplication);
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Could not open URL'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
         },
         child: Container(
           padding: const EdgeInsets.all(10),

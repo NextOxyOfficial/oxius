@@ -522,7 +522,7 @@ class _HeroBannerState extends State<HeroBanner> {
                 Navigator.pushNamed(context, '/sale');
               } else if (service['label'] == _translationService.t('earn_money', fallback: 'Earn Money') || 
                   service['label'] == 'Earn Money') {
-                Navigator.pushNamed(context, '/my-gigs');
+                Navigator.pushNamed(context, '/micro-gigs');
               } else if (service['label'] == _translationService.t('mindforce', fallback: 'MindForce') || 
                   service['label'] == 'MindForce') {
                 Navigator.pushNamed(context, '/mindforce');
