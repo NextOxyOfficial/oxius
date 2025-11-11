@@ -555,18 +555,33 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.pink.shade400, Colors.orange.shade500],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
+    return WillPopScope(
+      onWillPop: () async {
+        // If category filter is active, clear it first
+        if (_selectedCategoryId != null) {
+          setState(() {
+            _selectedCategoryId = null;
+            _selectedCategoryName = null;
+            _selectedCategorySlug = null;
+          });
+          _loadInitialData();
+          return false; // Don't pop the route
+        }
+        // Otherwise, allow normal back navigation
+        return true;
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.pink.shade400, Colors.orange.shade500],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Stack(
-            children: [
+          child: SafeArea(
+            child: Stack(
+              children: [
               Column(
                 children: [
                   // Custom Header with gradient background
@@ -628,12 +643,22 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          // Back Button - Always go to homepage
+          // Back Button - Professional navigation
           IconButton(
             icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
             onPressed: () {
-              // Navigate to homepage, clearing the stack
-              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+              // If category filter is active, clear it first
+              if (_selectedCategoryId != null) {
+                setState(() {
+                  _selectedCategoryId = null;
+                  _selectedCategoryName = null;
+                  _selectedCategorySlug = null;
+                });
+                _loadInitialData();
+              } else {
+                // Otherwise, navigate back normally
+                Navigator.pop(context);
+              }
             },
           ),
           
@@ -659,7 +684,17 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                     ),
                   )
                 : GestureDetector(
-                    onTap: () => Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false),
+                    onTap: () {
+                      // Clear category filter when clicking logo
+                      if (_selectedCategoryId != null) {
+                        setState(() {
+                          _selectedCategoryId = null;
+                          _selectedCategoryName = null;
+                          _selectedCategorySlug = null;
+                        });
+                        _loadInitialData();
+                      }
+                    },
                     child: _eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty
                         ? Image.network(
                             _eshopLogoUrl!,
@@ -1102,20 +1137,71 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
     return Column(
       children: [
-        // All Products Title
+        // All Products Title with Category Filter Indicator
         Padding(
           padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
           child: Row(
             children: [
               Icon(Icons.inventory_2_rounded, size: 20, color: Colors.grey.shade600),
               const SizedBox(width: 8),
-              Text(
-                _selectedCategoryName ?? 'All Products',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade800,
-                  letterSpacing: -0.2,
+              Expanded(
+                child: Row(
+                  children: [
+                    Text(
+                      _selectedCategoryName ?? 'All Products',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade800,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    // Show clear filter chip if category is selected
+                    if (_selectedCategoryId != null) ...[
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            _selectedCategoryId = null;
+                            _selectedCategoryName = null;
+                            _selectedCategorySlug = null;
+                          });
+                          _loadInitialData();
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.pink.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.pink.shade200,
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Clear',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.pink.shade700,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.close_rounded,
+                                size: 14,
+                                color: Colors.pink.shade700,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],

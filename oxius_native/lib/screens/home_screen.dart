@@ -156,11 +156,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _fetchRecentPosts() async {
-    if (_isLoadingPosts) return;
+  Future<void> _fetchRecentPosts({bool forceRefresh = false}) async {
+    if (_isLoadingPosts && !forceRefresh) return;
 
     print('🔍 HomeScreen: Fetching recent posts...');
-    setState(() => _isLoadingPosts = true);
+    
+    if (mounted && !_disposed) {
+      setState(() => _isLoadingPosts = true);
+    }
 
     try {
       final posts = await _postService.fetchRecentPosts(limit: 10);
@@ -188,8 +191,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _handleRefresh() async {
     print('🔄 HomeScreen: Pull to refresh triggered');
     
-    // Refresh recent posts
-    await _fetchRecentPosts();
+    // Force refresh recent posts (bypass loading check)
+    await _fetchRecentPosts(forceRefresh: true);
     
     // Refresh unread message count if authenticated
     if (AuthService.isAuthenticated) {

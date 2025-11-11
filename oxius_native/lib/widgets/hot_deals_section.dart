@@ -175,27 +175,6 @@ class _HotDealsSectionState extends State<HotDealsSection> {
               ],
             ),
           ),
-          
-          // Scroll indicator
-          Positioned(
-            right: 8,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.chevron_right,
-                  color: Colors.white,
-                  size: 16,
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

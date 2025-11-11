@@ -176,7 +176,7 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
                                                   operatorIcon,
                                                   width: 38,
                                                   height: 24,
-                                                  fit: BoxFit.cover,
+                                                  fit: BoxFit.contain,
                                                   errorBuilder: (context, error, stackTrace) {
                                                     // Fallback to text badge if image fails
                                                     return Center(
