@@ -213,7 +213,14 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       
       if (mounted) {
         setState(() {
-          _descriptionPosts = results;
+          // Filter out posts that are already in main results (title matches)
+          final mainPostIds = _posts.map((p) => p.id).toSet();
+          _descriptionPosts = results.where((post) {
+            // Only show if not already in main results AND actually matches in description
+            final notInMain = !mainPostIds.contains(post.id);
+            final matchesDesc = post.instructions?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false;
+            return notInMain && matchesDesc;
+          }).toList();
           _isDescriptionLoading = false;
         });
       }
