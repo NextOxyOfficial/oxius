@@ -204,18 +204,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadDivisions() async {
+    print('📍 Settings: Starting to load divisions...');
     setState(() => _isLoadingDivisions = true);
     try {
+      print('📍 Settings: Calling _geoService.fetchRegions()...');
       final divisions = await _geoService.fetchRegions();
-      print('📍 Loaded ${divisions.length} divisions');
+      print('📍 Settings: Loaded ${divisions.length} divisions');
+      for (var division in divisions) {
+        print('📍 Settings: Division - ID: ${division.id}, Name: ${division.nameEng}');
+      }
       if (mounted) {
         setState(() {
           _divisions = divisions;
           _isLoadingDivisions = false;
         });
+        print('📍 Settings: State updated with ${_divisions.length} divisions');
       }
     } catch (e) {
-      print('❌ Error loading divisions: $e');
+      print('❌ Settings: Error loading divisions: $e');
       if (mounted) {
         setState(() => _isLoadingDivisions = false);
       }
@@ -223,6 +229,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadCities(String divisionName) async {
+    print('🏙️ Settings: Starting to load cities for division: $divisionName');
     setState(() {
       _isLoadingCities = true;
       _cities = [];
@@ -232,15 +239,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
     
     try {
+      print('🏙️ Settings: Calling _geoService.fetchCities(regionName: $divisionName)...');
       final cities = await _geoService.fetchCities(regionName: divisionName);
+      print('🏙️ Settings: Loaded ${cities.length} cities');
+      for (var city in cities) {
+        print('🏙️ Settings: City - ID: ${city.id}, Name: ${city.nameEng}');
+      }
       if (mounted) {
         setState(() {
           _cities = cities;
           _isLoadingCities = false;
         });
+        print('🏙️ Settings: State updated with ${_cities.length} cities');
       }
     } catch (e) {
-      print('Error loading cities: $e');
+      print('❌ Settings: Error loading cities: $e');
       if (mounted) {
         setState(() => _isLoadingCities = false);
       }
@@ -248,6 +261,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadUpazilas(String cityName) async {
+    print('🏘️ Settings: Starting to load upazilas for city: $cityName');
     setState(() {
       _isLoadingUpazilas = true;
       _upazilas = [];
@@ -255,15 +269,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
     
     try {
+      print('🏘️ Settings: Calling _geoService.fetchUpazilas(cityName: $cityName)...');
       final upazilas = await _geoService.fetchUpazilas(cityName: cityName);
+      print('🏘️ Settings: Loaded ${upazilas.length} upazilas');
+      for (var upazila in upazilas) {
+        print('🏘️ Settings: Upazila - ID: ${upazila.id}, Name: ${upazila.nameEng}');
+      }
       if (mounted) {
         setState(() {
           _upazilas = upazilas;
           _isLoadingUpazilas = false;
         });
+        print('🏘️ Settings: State updated with ${_upazilas.length} upazilas');
       }
     } catch (e) {
-      print('Error loading upazilas: $e');
+      print('❌ Settings: Error loading upazilas: $e');
       if (mounted) {
         setState(() => _isLoadingUpazilas = false);
       }
