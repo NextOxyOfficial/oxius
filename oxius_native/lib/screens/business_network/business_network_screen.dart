@@ -88,9 +88,11 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   int _calculateTotalItems() {
     int total = _posts.length + 1; // +1 for gold sponsors at top
     
-    // Add user suggestions cards (every 10th post)
-    final suggestionsCount = (_posts.length / 10).floor();
-    total += suggestionsCount;
+    // Add user suggestions cards (every 10th post) - only for logged in users
+    if (AuthService.isAuthenticated) {
+      final suggestionsCount = (_posts.length / 10).floor();
+      total += suggestionsCount;
+    }
     
     // Add sponsored product cards (every 5th post)
     final productsCount = (_posts.length / 5).floor();
@@ -350,8 +352,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     int currentIndex = 1; // Start after gold sponsors
     
     for (int i = 0; i < _posts.length; i++) {
-      // Check if we should inject user suggestions (every 10th post)
-      if (i > 0 && i % 10 == 0) {
+      // Check if we should inject user suggestions (every 10th post) - only for logged in users
+      if (i > 0 && i % 10 == 0 && AuthService.isAuthenticated) {
         if (currentIndex == index) {
           return const UserSuggestionsCard();
         }
