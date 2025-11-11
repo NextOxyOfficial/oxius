@@ -14,6 +14,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   final SubscriptionService _subscriptionService = SubscriptionService();
 
   bool _isSubscribing = false;
+  bool _isLoadingBalance = true;
   int _selectedMonths = 1;
   final int _monthlyPrice = 149;
   final int _yearlyDiscount = 289;
@@ -21,6 +22,20 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   int get _totalPrice => _selectedMonths == 1 
       ? _monthlyPrice 
       : (_monthlyPrice * _selectedMonths) - _yearlyDiscount;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshBalance();
+  }
+
+  Future<void> _refreshBalance() async {
+    setState(() => _isLoadingBalance = true);
+    await _userState.refreshUser();
+    if (mounted) {
+      setState(() => _isLoadingBalance = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -235,6 +250,76 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                     ),
                   ),
                 ],
+                // Current Balance Display
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.account_balance_wallet,
+                              size: 16,
+                              color: Color(0xFF10B981),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
+                            'Your Balance',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      ),
+                      _isLoadingBalance
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                              ),
+                            )
+                          : Row(
+                              children: [
+                                Text(
+                                  '৳${_userState.balance.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF1F2937),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                GestureDetector(
+                                  onTap: _refreshBalance,
+                                  child: const Icon(
+                                    Icons.refresh_rounded,
+                                    size: 18,
+                                    color: Color(0xFF3B82F6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -499,7 +584,29 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Insufficient Funds'),
-        content: Text('You need ৳$_totalPrice. Current balance: ৳${_userState.balance.toStringAsFixed(2)}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('You need ৳$_totalPrice to upgrade.'),
+            const SizedBox(height: 8),
+            Text(
+              'Current balance: ৳${_userState.balance.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Please add ৳${(_totalPrice - _userState.balance).toStringAsFixed(2)} more.',
+              style: const TextStyle(
+                color: Color(0xFFEF4444),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -510,6 +617,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/deposit-withdraw');
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+            ),
             child: const Text('Add Funds'),
           ),
         ],
