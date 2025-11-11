@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_html/flutter_html.dart';
 import '../models/classified_post.dart';
 import '../models/geo_location.dart';
 import '../services/classified_post_service.dart';
@@ -1563,18 +1564,29 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                     
                     const SizedBox(height: 3),
                     
-                    // Matched snippet with highlighting - small text
-                    RichText(
-                      text: TextSpan(
-                        style: const TextStyle(
-                          fontSize: 10,
-                          height: 1.4,
-                          color: Color(0xFF6B7280),
-                        ),
-                        children: _buildHighlightedText(snippet, _searchQuery),
+                    // Matched snippet with HTML parsing - small text
+                    Container(
+                      constraints: const BoxConstraints(maxHeight: 28), // Limit height to ~2 lines
+                      child: Html(
+                        data: snippet,
+                        style: {
+                          "body": Style(
+                            fontSize: FontSize(10),
+                            lineHeight: LineHeight(1.4),
+                            color: const Color(0xFF6B7280),
+                            margin: Margins.zero,
+                            padding: HtmlPaddings.zero,
+                          ),
+                          "p": Style(
+                            margin: Margins.zero,
+                            padding: HtmlPaddings.zero,
+                          ),
+                          "div": Style(
+                            margin: Margins.zero,
+                            padding: HtmlPaddings.zero,
+                          ),
+                        },
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     
                     const SizedBox(height: 3),
@@ -1630,67 +1642,26 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       return '';
     }
 
-    final lowerDesc = description.toLowerCase();
+    // Strip HTML tags for search matching but keep original HTML for display
+    final strippedDesc = description.replaceAll(RegExp(r'<[^>]*>'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+    final lowerStripped = strippedDesc.toLowerCase();
     final lowerQuery = query.toLowerCase();
-    final index = lowerDesc.indexOf(lowerQuery);
+    final index = lowerStripped.indexOf(lowerQuery);
 
     if (index == -1) return '';
 
-    // Extract context around the match (40 chars before and after for compact display)
-    final start = (index - 40).clamp(0, description.length);
-    final end = (index + query.length + 40).clamp(0, description.length);
+    // Extract context around the match (60 chars before and after for better context)
+    final start = (index - 60).clamp(0, strippedDesc.length);
+    final end = (index + query.length + 60).clamp(0, strippedDesc.length);
     
-    String snippet = description.substring(start, end);
+    String snippet = strippedDesc.substring(start, end);
     
     // Add ellipsis if truncated
     if (start > 0) snippet = '...$snippet';
-    if (end < description.length) snippet = '$snippet...';
+    if (end < strippedDesc.length) snippet = '$snippet...';
     
-    return snippet;
+    // Wrap in a paragraph tag for proper HTML rendering
+    return '<p>$snippet</p>';
   }
 
-  /// Build highlighted text with matched keyword
-  List<TextSpan> _buildHighlightedText(String text, String query) {
-    if (query.isEmpty) {
-      return [TextSpan(text: text)];
-    }
-
-    final List<TextSpan> spans = [];
-    final lowerText = text.toLowerCase();
-    final lowerQuery = query.toLowerCase();
-    
-    int currentIndex = 0;
-    int matchIndex = lowerText.indexOf(lowerQuery, currentIndex);
-
-    while (matchIndex != -1) {
-      // Add text before match
-      if (matchIndex > currentIndex) {
-        spans.add(TextSpan(
-          text: text.substring(currentIndex, matchIndex),
-        ));
-      }
-
-      // Add highlighted match
-      spans.add(TextSpan(
-        text: text.substring(matchIndex, matchIndex + query.length),
-        style: const TextStyle(
-          color: Color(0xFF92400E),
-          fontWeight: FontWeight.w700,
-          backgroundColor: Color(0xFFFEF3C7),
-        ),
-      ));
-
-      currentIndex = matchIndex + query.length;
-      matchIndex = lowerText.indexOf(lowerQuery, currentIndex);
-    }
-
-    // Add remaining text
-    if (currentIndex < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(currentIndex),
-      ));
-    }
-
-    return spans;
-  }
 }
