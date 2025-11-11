@@ -634,6 +634,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
             ],
           ),
         ),
+          ),
       ),
     );
   }

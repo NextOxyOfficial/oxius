@@ -23,6 +23,8 @@ class UserProfile {
   final int diamondBalance;
   final bool isPro;
   final bool isVerified;
+  final bool? emailPublic;
+  final bool? phonePublic;
 
   UserProfile({
     this.id,
@@ -49,6 +51,8 @@ class UserProfile {
     this.diamondBalance = 0,
     this.isPro = false,
     this.isVerified = false,
+    this.emailPublic,
+    this.phonePublic,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -77,6 +81,8 @@ class UserProfile {
       diamondBalance: int.tryParse(json['diamond_balance']?.toString() ?? '0') ?? 0,
       isPro: json['is_pro'] ?? false,
       isVerified: json['kyc'] ?? false,
+      emailPublic: json['email_public'],
+      phonePublic: json['phone_public'],
     );
   }
 
@@ -106,6 +112,8 @@ class UserProfile {
       'diamond_balance': diamondBalance,
       'is_pro': isPro,
       'is_verified': isVerified,
+      if (emailPublic != null) 'email_public': emailPublic,
+      if (phonePublic != null) 'phone_public': phonePublic,
       'name': '${firstName ?? ''} ${lastName ?? ''}'.trim(),
     };
   }
@@ -135,6 +143,8 @@ class UserProfile {
     int? diamondBalance,
     bool? isPro,
     bool? isVerified,
+    bool? emailPublic,
+    bool? phonePublic,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -161,6 +171,8 @@ class UserProfile {
       diamondBalance: diamondBalance ?? this.diamondBalance,
       isPro: isPro ?? this.isPro,
       isVerified: isVerified ?? this.isVerified,
+      emailPublic: emailPublic ?? this.emailPublic,
+      phonePublic: phonePublic ?? this.phonePublic,
     );
   }
 }

@@ -741,6 +741,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'company': _companyController.text.trim(),
         'website': _websiteController.text.trim(),
         'about': _aboutController.text.trim(),
+        'email_public': _userProfile?.emailPublic ?? false,
+        'phone_public': _userProfile?.phonePublic ?? false,
       };
 
       print('📝 Saving profile data: $profileData');
@@ -1050,6 +1052,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               // Personal Information
               _buildPersonalInfoSection(),
+              const SizedBox(height: 16),
+
+              // Privacy Settings
+              _buildPrivacySection(),
               const SizedBox(height: 16),
 
               // Address Information
@@ -1563,6 +1569,122 @@ class _SettingsScreenState extends State<SettingsScreen> {
             );
           },
         ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrivacySection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.privacy_tip_rounded, size: 20, color: Colors.amber.shade700),
+              const SizedBox(width: 8),
+              Text(
+                'Privacy Settings',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.amber.shade900,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Control who can see your contact information in Business Network',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.amber.shade800,
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // Email Privacy Toggle
+          _buildPrivacyToggle(
+            'Email Address',
+            'Show email in your Business Network profile',
+            _userProfile?.emailPublic ?? false,
+            (value) {
+              setState(() {
+                _userProfile = _userProfile?.copyWith(emailPublic: value);
+                _formDirty = true;
+              });
+            },
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Phone Privacy Toggle
+          _buildPrivacyToggle(
+            'Phone Number',
+            'Show phone number in your Business Network profile',
+            _userProfile?.phonePublic ?? false,
+            (value) {
+              setState(() {
+                _userProfile = _userProfile?.copyWith(phonePublic: value);
+                _formDirty = true;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrivacyToggle(
+    String title,
+    String description,
+    bool value,
+    Function(bool) onChanged,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: const Color(0xFF10B981),
+          ),
         ],
       ),
     );

@@ -52,6 +52,41 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     Tab(text: 'Saved'),
   ];
 
+  /// Mask phone number based on privacy setting
+  String _maskPhoneNumber(String phone, bool? isPublic) {
+    if (isPublic == true) return phone;
+    
+    // Show first 3 digits and last 2 digits, mask the rest
+    if (phone.length <= 5) return phone;
+    
+    final first = phone.substring(0, 3);
+    final last = phone.substring(phone.length - 2);
+    final masked = 'X' * (phone.length - 5);
+    
+    return '$first$masked$last';
+  }
+  
+  /// Mask email based on privacy setting
+  String _maskEmail(String email, bool? isPublic) {
+    if (isPublic == true) return email;
+    
+    final parts = email.split('@');
+    if (parts.length != 2) return email;
+    
+    final username = parts[0];
+    final domain = parts[1];
+    
+    // Show first 2 characters of username, mask the rest
+    if (username.length <= 2) {
+      return '${username}XXX@$domain';
+    }
+    
+    final visiblePart = username.substring(0, 2);
+    final masked = 'X' * (username.length - 2);
+    
+    return '$visiblePart$masked@$domain';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1472,19 +1507,19 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             Colors.purple.shade500,
           ),
         
-        // Email (always visible if available)
+        // Email (with privacy masking)
         if (_userData?['email'] != null && _userData!['email'].toString().trim().isNotEmpty)
           _buildContactItem(
             Icons.email,
-            _userData!['email'],
+            _maskEmail(_userData!['email'], _userData?['email_public']),
             Colors.orange.shade600,
           ),
         
-        // Phone (always visible if available)
+        // Phone (with privacy masking)
         if (_userData?['phone'] != null && _userData!['phone'].toString().trim().isNotEmpty)
           _buildContactItem(
             Icons.phone,
-            _userData!['phone'],
+            _maskPhoneNumber(_userData!['phone'], _userData?['phone_public']),
             Colors.red.shade500,
           ),
         

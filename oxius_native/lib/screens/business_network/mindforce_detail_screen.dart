@@ -809,12 +809,13 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
           ),
           const SizedBox(height: 8),
           Text(comment.content, style: TextStyle(fontSize: 14, color: Colors.grey.shade800, height: 1.4)),
-          if (comment.images.isNotEmpty) ...[
+          if (comment.media.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: comment.images.map((image) {
+              children: comment.media.map((mediaItem) {
+                final image = mediaItem.image;
                 final imageUrl = AppConfig.getAbsoluteUrl(image);
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(8),
