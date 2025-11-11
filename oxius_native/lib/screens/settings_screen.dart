@@ -3,7 +3,10 @@ import '../services/auth_service.dart';
 import '../services/settings_service.dart';
 import '../services/translation_service.dart';
 import '../services/user_state_service.dart';
+import '../services/geo_location_service.dart';
 import '../models/user_profile.dart';
+import '../models/geo_location.dart';
+import '../config/app_config.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
@@ -54,12 +57,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _websiteController = TextEditingController();
   final _aboutController = TextEditingController();
   
+  // Geo location
+  late final GeoLocationService _geoService;
+  List<Region> _divisions = [];
+  List<City> _cities = [];
+  List<Upazila> _upazilas = [];
+  String? _selectedDivision;
+  String? _selectedCity;
+  String? _selectedUpazila;
+  bool _isLoadingDivisions = false;
+  bool _isLoadingCities = false;
+  bool _isLoadingUpazilas = false;
+  
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _geoService = GeoLocationService(baseUrl: '${AppConfig.mediaBaseUrl}/api');
     _loadUserProfile();
+    _loadDivisions();
     _scrollController.addListener(_handleScroll);
   }
 
@@ -172,6 +189,85 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _companyController.text = _userProfile!.company ?? '';
     _websiteController.text = _userProfile!.website ?? '';
     _aboutController.text = _userProfile!.about ?? '';
+    
+    // Set selected geo location values
+    _selectedDivision = _userProfile!.state;
+    _selectedCity = _userProfile!.city;
+    
+    // Load cities and upazilas if division/city are set
+    if (_selectedDivision != null && _selectedDivision!.isNotEmpty) {
+      _loadCities(_selectedDivision!);
+    }
+    if (_selectedCity != null && _selectedCity!.isNotEmpty) {
+      _loadUpazilas(_selectedCity!);
+    }
+  }
+
+  Future<void> _loadDivisions() async {
+    setState(() => _isLoadingDivisions = true);
+    try {
+      final divisions = await _geoService.fetchRegions();
+      print('📍 Loaded ${divisions.length} divisions');
+      if (mounted) {
+        setState(() {
+          _divisions = divisions;
+          _isLoadingDivisions = false;
+        });
+      }
+    } catch (e) {
+      print('❌ Error loading divisions: $e');
+      if (mounted) {
+        setState(() => _isLoadingDivisions = false);
+      }
+    }
+  }
+
+  Future<void> _loadCities(String divisionName) async {
+    setState(() {
+      _isLoadingCities = true;
+      _cities = [];
+      _upazilas = [];
+      _selectedCity = null;
+      _selectedUpazila = null;
+    });
+    
+    try {
+      final cities = await _geoService.fetchCities(regionName: divisionName);
+      if (mounted) {
+        setState(() {
+          _cities = cities;
+          _isLoadingCities = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading cities: $e');
+      if (mounted) {
+        setState(() => _isLoadingCities = false);
+      }
+    }
+  }
+
+  Future<void> _loadUpazilas(String cityName) async {
+    setState(() {
+      _isLoadingUpazilas = true;
+      _upazilas = [];
+      _selectedUpazila = null;
+    });
+    
+    try {
+      final upazilas = await _geoService.fetchUpazilas(cityName: cityName);
+      if (mounted) {
+        setState(() {
+          _upazilas = upazilas;
+          _isLoadingUpazilas = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading upazilas: $e');
+      if (mounted) {
+        setState(() => _isLoadingUpazilas = false);
+      }
+    }
   }
 
   void _showSnackBar(String message, {bool isError = false}) {
@@ -342,16 +438,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
           
           // Address Info
-          _buildCompactSection(
-            'Address',
-            Icons.location_on_outlined,
-            [
-              _buildCompactField('Address', _addressController, Icons.home_rounded),
-              _buildCompactField('City', _cityController, Icons.location_city_rounded),
-              _buildCompactField('State', _stateController, Icons.map_rounded),
-              _buildCompactField('ZIP', _zipController, Icons.pin_drop_rounded),
-            ],
-          ),
+          _buildCompactGeoSection(),
           const SizedBox(height: 8),
           
           // Social Media
@@ -714,6 +801,224 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildCompactGeoSection() {
+    final bool isKycVerified = _userProfile?.kyc ?? false;
+    
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.location_on_outlined, size: 16, color: const Color(0xFF10B981)),
+              const SizedBox(width: 6),
+              const Text(
+                'Address',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          
+          // Address Line
+          _buildCompactField('Address', _addressController, Icons.home_rounded),
+          
+          // Division Dropdown
+          _buildCompactGeoDropdown(
+            label: 'Division',
+            value: _selectedDivision,
+            items: _divisions.map((d) => d.nameEng).toList(),
+            isLoading: _isLoadingDivisions,
+            enabled: !isKycVerified,
+            icon: Icons.map_rounded,
+            onChanged: (value) {
+              setState(() {
+                _selectedDivision = value;
+                _formDirty = true;
+              });
+              if (value != null) {
+                _loadCities(value);
+              }
+            },
+          ),
+          
+          // City Dropdown
+          _buildCompactGeoDropdown(
+            label: 'City',
+            value: _selectedCity,
+            items: _cities.map((c) => c.nameEng).toList(),
+            isLoading: _isLoadingCities,
+            enabled: !isKycVerified && _selectedDivision != null,
+            icon: Icons.location_city_rounded,
+            onChanged: (value) {
+              setState(() {
+                _selectedCity = value;
+                _formDirty = true;
+              });
+              if (value != null) {
+                _loadUpazilas(value);
+              }
+            },
+          ),
+          
+          // Upazila Dropdown
+          _buildCompactGeoDropdown(
+            label: 'Upazila/Area',
+            value: _selectedUpazila,
+            items: _upazilas.map((u) => u.nameEng).toList(),
+            isLoading: _isLoadingUpazilas,
+            enabled: !isKycVerified && _selectedCity != null,
+            icon: Icons.place_rounded,
+            onChanged: (value) {
+              setState(() {
+                _selectedUpazila = value;
+                _formDirty = true;
+              });
+            },
+          ),
+          
+          // ZIP Code
+          _buildCompactField('ZIP', _zipController, Icons.pin_drop_rounded),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactGeoDropdown({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required bool isLoading,
+    required bool enabled,
+    required IconData icon,
+    required void Function(String?) onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 6),
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF374151),
+                letterSpacing: -0.1,
+              ),
+            ),
+          ),
+          Container(
+            height: 48,
+            decoration: BoxDecoration(
+              color: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: enabled ? Colors.grey.shade300 : Colors.grey.shade200,
+                width: 1,
+              ),
+            ),
+            child: isLoading
+                ? Center(
+                    child: SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.grey.shade400,
+                        ),
+                      ),
+                    ),
+                  )
+                : DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: (value != null && items.contains(value)) ? value : null,
+                      isExpanded: true,
+                      isDense: false,
+                      hint: Row(
+                        children: [
+                          Icon(icon, size: 18, color: Colors.grey.shade400),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Select $label',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade500,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      icon: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 22,
+                        color: enabled ? Colors.grey.shade600 : Colors.grey.shade400,
+                      ),
+                      selectedItemBuilder: (BuildContext context) {
+                        return items.map<Widget>((String item) {
+                          return Row(
+                            children: [
+                              Icon(icon, size: 18, color: const Color(0xFF10B981)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  item,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF111827),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList();
+                      },
+                      items: items.isEmpty
+                          ? null
+                          : items.map((item) {
+                              return DropdownMenuItem<String>(
+                                value: item,
+                                child: Text(
+                                  item,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF111827),
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            }).toList(),
+                      onChanged: enabled ? onChanged : null,
+                      dropdownColor: Colors.white,
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(8),
+                      menuMaxHeight: 300,
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _saveProfile() async {
     if (_userProfile == null) return;
     
@@ -731,9 +1036,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'last_name': _lastNameController.text.trim(),
         'phone': _phoneController.text.trim(),
         'address': _addressController.text.trim(),
-        'city': _cityController.text.trim(),
-        'state': _stateController.text.trim(),
+        'city': _selectedCity ?? _cityController.text.trim(),
+        'state': _selectedDivision ?? _stateController.text.trim(),
         'zip': _zipController.text.trim(),
+        'upazila': _selectedUpazila,
         'face_link': _facebookController.text.trim(),
         'instagram_link': _instagramController.text.trim(),
         'whatsapp_link': _whatsappController.text.trim(),
@@ -1734,18 +2040,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (isMobile) {
               return Column(
                 children: [
-                  _buildTextField(
-                    label: 'City',
-                    controller: _cityController,
+                  _buildGeoDropdown(
+                    label: 'Division',
+                    value: _selectedDivision,
+                    items: _divisions.map((d) => d.nameEng).toList(),
+                    isLoading: _isLoadingDivisions,
                     enabled: !isKycVerified,
-                    onChanged: (_) => _checkFormChanges(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedDivision = value;
+                        _formDirty = true;
+                      });
+                      if (value != null) {
+                        _loadCities(value);
+                      }
+                    },
                   ),
                   const SizedBox(height: 16),
-                  _buildTextField(
-                    label: 'State',
-                    controller: _stateController,
-                    enabled: !isKycVerified,
-                    onChanged: (_) => _checkFormChanges(),
+                  _buildGeoDropdown(
+                    label: 'City',
+                    value: _selectedCity,
+                    items: _cities.map((c) => c.nameEng).toList(),
+                    isLoading: _isLoadingCities,
+                    enabled: !isKycVerified && _selectedDivision != null,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCity = value;
+                        _formDirty = true;
+                      });
+                      if (value != null) {
+                        _loadUpazilas(value);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildGeoDropdown(
+                    label: 'Upazila/Area',
+                    value: _selectedUpazila,
+                    items: _upazilas.map((u) => u.nameEng).toList(),
+                    isLoading: _isLoadingUpazilas,
+                    enabled: !isKycVerified && _selectedCity != null,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedUpazila = value;
+                        _formDirty = true;
+                      });
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildTextField(
@@ -1758,33 +2098,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             }
             
-            return Row(
+            return Column(
               children: [
-                Expanded(
-                  child: _buildTextField(
-                    label: 'City',
-                    controller: _cityController,
-                    enabled: !isKycVerified,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildGeoDropdown(
+                        label: 'Division',
+                        value: _selectedDivision,
+                        items: _divisions.map((d) => d.nameEng).toList(),
+                        isLoading: _isLoadingDivisions,
+                        enabled: !isKycVerified,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedDivision = value;
+                            _formDirty = true;
+                          });
+                          if (value != null) {
+                            _loadCities(value);
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildGeoDropdown(
+                        label: 'City',
+                        value: _selectedCity,
+                        items: _cities.map((c) => c.nameEng).toList(),
+                        isLoading: _isLoadingCities,
+                        enabled: !isKycVerified && _selectedDivision != null,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCity = value;
+                            _formDirty = true;
+                          });
+                          if (value != null) {
+                            _loadUpazilas(value);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    label: 'State',
-                    controller: _stateController,
-                    enabled: !isKycVerified,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    label: 'Zip',
-                    controller: _zipController,
-                    enabled: !isKycVerified,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildGeoDropdown(
+                        label: 'Upazila/Area',
+                        value: _selectedUpazila,
+                        items: _upazilas.map((u) => u.nameEng).toList(),
+                        isLoading: _isLoadingUpazilas,
+                        enabled: !isKycVerified && _selectedCity != null,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedUpazila = value;
+                            _formDirty = true;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildTextField(
+                        label: 'Zip',
+                        controller: _zipController,
+                        enabled: !isKycVerified,
+                        onChanged: (_) => _checkFormChanges(),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             );
@@ -2078,6 +2462,113 @@ class _SettingsScreenState extends State<SettingsScreen> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           ),
           onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGeoDropdown({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required bool isLoading,
+    required bool enabled,
+    required void Function(String?) onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF374151),
+            letterSpacing: -0.1,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 50,
+          decoration: BoxDecoration(
+            color: enabled ? Colors.white : const Color(0xFFF9FAFB),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: const Color(0xFFE5E7EB),
+              width: 1.5,
+            ),
+          ),
+          child: isLoading
+              ? Center(
+                  child: SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Colors.grey.shade400,
+                      ),
+                    ),
+                  ),
+                )
+              : DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: (value != null && items.contains(value)) ? value : null,
+                    isExpanded: true,
+                    isDense: false,
+                    hint: Text(
+                      'Select $label',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade500,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 24,
+                      color: enabled ? Colors.grey.shade600 : Colors.grey.shade400,
+                    ),
+                    selectedItemBuilder: (BuildContext context) {
+                      return items.map<Widget>((String item) {
+                        return Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            item,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF111827),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList();
+                    },
+                    items: items.isEmpty
+                        ? null
+                        : items.map((item) {
+                            return DropdownMenuItem<String>(
+                              value: item,
+                              child: Text(
+                                item,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF111827),
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          }).toList(),
+                    onChanged: enabled ? onChanged : null,
+                    dropdownColor: Colors.white,
+                    elevation: 8,
+                    borderRadius: BorderRadius.circular(10),
+                    menuMaxHeight: 350,
+                  ),
+                ),
         ),
       ],
     );
