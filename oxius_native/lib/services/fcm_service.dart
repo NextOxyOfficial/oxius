@@ -280,41 +280,52 @@ class FCMService {
       }
     }
     // Support Tickets
-    else if (type == 'support_ticket' || type == 'ticket') {
+    else if (type == 'support_ticket' || type == 'ticket' || type == 'ticket_reply' || type == 'ticket_status_update') {
       final ticketId = data['ticket_id']?.toString();
       
       if (ticketId != null) {
         print('   → Navigating to support ticket: $ticketId');
         Navigator.pushNamed(
           context,
-          '/support-ticket-detail',
-          arguments: {'ticketId': ticketId},
-        );
+          '/inbox',
+        ).then((_) {
+          // Navigate to support tab and open ticket detail
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (context.mounted) {
+              Navigator.pushNamed(
+                context,
+                '/support-ticket-detail',
+                arguments: {'ticketId': ticketId},
+              );
+            }
+          });
+        });
       } else {
-        print('   ⚠️ Ticket ID is null, navigating to support list');
-        Navigator.pushNamed(context, '/support');
+        print('   ⚠️ Ticket ID is null, navigating to inbox support tab');
+        Navigator.pushNamed(context, '/inbox');
       }
     }
-    // Orders
-    else if (type == 'order' || type == 'order_received' || type == 'order_status') {
-      final orderId = data['order_id']?.toString();
-      
-      if (orderId != null) {
-        print('   → Navigating to order detail: $orderId');
-        Navigator.pushNamed(
-          context,
-          '/order-detail',
-          arguments: {'orderId': orderId},
-        );
-      } else {
-        print('   → Navigating to orders list');
-        Navigator.pushNamed(context, '/orders');
-      }
+    // Orders - Navigate to inbox updates tab
+    else if (type == 'order' || type == 'order_received' || type == 'order_status' || type == 'order_placed') {
+      print('   → Navigating to inbox updates tab for order: $type');
+      Navigator.pushNamed(context, '/inbox');
     }
-    // Wallet/Transactions
-    else if (type == 'wallet' || type == 'withdraw_successful' || type == 'mobile_recharge_successful' || type == 'deposit') {
-      print('   → Navigating to wallet');
-      Navigator.pushNamed(context, '/deposit-withdraw');
+    // Wallet/Transactions - Navigate to inbox updates tab
+    else if (type == 'wallet' || type == 'withdraw_successful' || type == 'mobile_recharge_successful' || 
+             type == 'deposit' || type == 'deposit_successful' || type == 'transfer_sent' || 
+             type == 'transfer_received') {
+      print('   → Navigating to inbox updates tab for: $type');
+      Navigator.pushNamed(context, '/inbox');
+    }
+    // Pro Subscription Updates
+    else if (type == 'pro_subscribed' || type == 'pro_expiring' || type == 'pro_expired') {
+      print('   → Navigating to inbox updates tab for Pro: $type');
+      Navigator.pushNamed(context, '/inbox');
+    }
+    // Gig Updates
+    else if (type == 'gig_posted' || type == 'gig_approved' || type == 'gig_rejected') {
+      print('   → Navigating to inbox updates tab for gig: $type');
+      Navigator.pushNamed(context, '/inbox');
     }
     // Classified Posts
     else if (type == 'classified_post' || type == 'classified') {
@@ -327,9 +338,15 @@ class FCMService {
         );
       }
     }
-    // General/Admin Notices
-    else if (type == 'general' || type == 'admin_notice' || type == 'system') {
-      print('   → General notification, navigating to inbox');
+    // General/Admin Notices - Navigate to inbox updates tab
+    else if (type == 'general' || type == 'admin_notice' || type == 'system' || type == 'announcement') {
+      print('   → General notification, navigating to inbox updates tab');
+      Navigator.pushNamed(context, '/inbox');
+    }
+    // Admin/System Updates
+    else if (type == 'kyc_approved' || type == 'kyc_rejected' || type == 'account_warning' || 
+             type == 'account_suspended' || type == 'account_activated') {
+      print('   → Account notification, navigating to inbox updates tab');
       Navigator.pushNamed(context, '/inbox');
     }
     // Default
