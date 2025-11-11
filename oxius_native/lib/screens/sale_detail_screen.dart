@@ -1465,88 +1465,90 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     final post = _post!;
     final user = post.user;
     
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          if (user?.phone != null)
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  final post = _post;
-                  if (post?.user?.phone != null) {
-                    final phoneUrl = 'tel:${post!.user!.phone}';
-                    try {
-                      await launchUrl(Uri.parse(phoneUrl), mode: LaunchMode.externalApplication);
-                    } catch (e) {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            if (user?.phone != null)
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final post = _post;
+                    if (post?.user?.phone != null) {
+                      final phoneUrl = 'tel:${post!.user!.phone}';
+                      try {
+                        await launchUrl(Uri.parse(phoneUrl), mode: LaunchMode.externalApplication);
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Could not open phone dialer')),
+                          );
+                        }
+                      }
+                    } else {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Could not open phone dialer')),
+                          const SnackBar(content: Text('Phone number not available')),
                         );
                       }
                     }
-                  } else {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Phone number not available')),
-                      );
-                    }
+                  },
+                  icon: const Icon(Icons.phone_rounded, size: 18),
+                  label: const Text('Call', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            if (user?.phone != null) const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  if (!AuthService.isAuthenticated) {
+                    _showLoginRequiredDialog();
+                    return;
+                  }
+                  
+                  final user = _post?.user;
+                  if (user != null) {
+                    await _openChatWithSeller(user);
                   }
                 },
-                icon: const Icon(Icons.phone_rounded, size: 18),
-                label: const Text('Call', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                icon: Image.asset(
+                  'assets/images/chat_icon.png',
+                  width: 18,
+                  height: 18,
+                  color: Colors.white,
+                ),
+                label: const Text(
+                  'Chat',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
               ),
             ),
-          if (user?.phone != null) const SizedBox(width: 8),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                if (!AuthService.isAuthenticated) {
-                  _showLoginRequiredDialog();
-                  return;
-                }
-                
-                final user = _post?.user;
-                if (user != null) {
-                  await _openChatWithSeller(user);
-                }
-              },
-              icon: Image.asset(
-                'assets/images/chat_icon.png',
-                width: 18,
-                height: 18,
-                color: Colors.white,
-              ),
-              label: const Text(
-                'Chat',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

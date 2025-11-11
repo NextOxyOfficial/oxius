@@ -1009,70 +1009,72 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
   }
 
   Widget _buildContactBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 6,
-            offset: const Offset(0, -1),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: _contactProvider,
-              icon: const Icon(Icons.phone_rounded, size: 18),
-              label: const Text('Call Now', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+    return SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 6,
+              offset: const Offset(0, -1),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: _contactProvider,
+                icon: const Icon(Icons.phone_rounded, size: 18),
+                label: const Text('Call Now', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 0,
                 ),
-                elevation: 0,
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton(
-              onPressed: _openChatWithSeller,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF10B981),
-                side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Image.asset(
-                    'assets/images/chat_icon.png',
-                    width: 18,
-                    height: 18,
-                    color: const Color(0xFF10B981),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _openChatWithSeller,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF10B981),
+                  side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Chat',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/chat_icon.png',
+                      width: 18,
+                      height: 18,
+                      color: const Color(0xFF10B981),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Chat',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

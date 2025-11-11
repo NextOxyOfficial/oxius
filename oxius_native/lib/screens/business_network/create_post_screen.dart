@@ -763,7 +763,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 ],
               ),
 
-            const SizedBox(height: 80),
+            // Safe area bottom padding for devices with gesture navigation
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 80),
           ],
         ),
       ),

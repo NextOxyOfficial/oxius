@@ -61,6 +61,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
         padding: const EdgeInsets.all(4),
         child: Column(
           children: [
+            const SizedBox(height: 8),
             // Hero Section
             _buildHeroSection(),
             const SizedBox(height: 4),
@@ -75,7 +76,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
             
             // CTA Button
             _buildCTAButton(),
-            const SizedBox(height: 8),
+            
+            // Safe area bottom padding for devices with gesture navigation
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
           ],
         ),
       ),

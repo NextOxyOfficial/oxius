@@ -489,7 +489,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             // Submit Button
             _buildSubmitButton(),
             
-            const SizedBox(height: 20),
+            // Safe area bottom padding for devices with gesture navigation
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
           ],
         ),
       ),
