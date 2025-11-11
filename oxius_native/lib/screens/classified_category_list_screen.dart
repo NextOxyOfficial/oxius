@@ -33,9 +33,11 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   
   List<ClassifiedPost> _posts = [];
   List<ClassifiedPost> _nearbyPosts = [];
+  List<ClassifiedPost> _descriptionPosts = [];
   
   bool _isLoading = false;
   bool _isNearbyLoading = false;
+  bool _isDescriptionLoading = false;
   bool _searchError = false;
   
   int _currentPage = 1;
@@ -193,7 +195,33 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       _loadCategoryDetails(),
       _filterSearch(page: 1),
       _fetchNearbyAds(),
+      if (_searchQuery.isNotEmpty) _fetchDescriptionResults(),
     ]);
+  }
+
+  Future<void> _fetchDescriptionResults() async {
+    if (_location == null || _searchQuery.isEmpty) return;
+    
+    setState(() => _isDescriptionLoading = true);
+    
+    try {
+      final results = await _postService.searchByDescription(
+        categoryId: widget.categoryId,
+        searchQuery: _searchQuery,
+        location: _location!,
+      );
+      
+      if (mounted) {
+        setState(() {
+          _descriptionPosts = results;
+          _isDescriptionLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDescriptionLoading = false);
+      }
+    }
   }
 
   @override
@@ -204,8 +232,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
         title: Text(
           _categoryDetails?.title ?? 'Classified Ads',
           style: const TextStyle(
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
           ),
         ),
         backgroundColor: const Color(0xFF10B981),
@@ -220,13 +249,14 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 if (!_isSearchActive) {
                   _searchController.clear();
                   _searchQuery = '';
+                  _descriptionPosts = [];
                   _filterSearch();
                 }
               });
             },
             icon: Icon(
               _isSearchActive ? Icons.close_rounded : Icons.search_rounded,
-              size: 24,
+              size: 22,
             ),
           ),
           const SizedBox(width: 4),
@@ -302,6 +332,22 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                           ],
                         ],
                         
+                        // Description Matches Section
+                        if (_searchQuery.isNotEmpty && _descriptionPosts.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          _buildDescriptionMatchesSection(),
+                        ] else if (_searchQuery.isNotEmpty && _isDescriptionLoading) ...[
+                          const SizedBox(height: 16),
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+                              ),
+                            ),
+                          ),
+                        ],
+                        
                         // AdsyAI Bot Section
                         if (_location != null && ((_location!.city != null && _location!.city!.isNotEmpty) || _location!.allOverBangladesh)) ...[
                           const SizedBox(height: 24),
@@ -370,16 +416,17 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   
   Widget _buildResultsCount() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       color: Colors.white,
       child: Row(
         children: [
           Text(
             '$_totalCount results',
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               color: Color(0xFF6B7280),
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.1,
             ),
           ),
         ],
@@ -389,7 +436,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
 
   Widget _buildLocationBreadcrumb() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xFFECFDF5),
         border: Border(
@@ -402,34 +449,35 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       child: Row(
         children: [
           const Icon(
-            Icons.location_on,
+            Icons.location_on_rounded,
             color: Color(0xFF10B981),
-            size: 18,
+            size: 16,
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 5),
           Expanded(
             child: Text(
               _location!.displayLocation,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Color(0xFF065F46),
+                letterSpacing: -0.1,
               ),
             ),
           ),
           InkWell(
             onTap: _showLocationSelector,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.edit, size: 16, color: Color(0xFF10B981)),
-                  SizedBox(width: 4),
+                  Icon(Icons.edit_rounded, size: 14, color: Color(0xFF10B981)),
+                  SizedBox(width: 3),
                   Text(
                     'Change',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF10B981),
                     ),
@@ -499,12 +547,14 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                   _debounce = Timer(const Duration(milliseconds: 500), () {
                     if (mounted) {
                       _filterSearch();
+                      _fetchDescriptionResults();
                     }
                   });
                 },
                 onSubmitted: (_) {
                   _debounce?.cancel();
                   _filterSearch();
+                  _fetchDescriptionResults();
                 },
               ),
             ),
@@ -578,7 +628,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -586,8 +636,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               ClipRRect(
                 borderRadius: BorderRadius.circular(6),
                 child: Container(
-                  width: 85,
-                  height: 85,
+                  width: 75,
+                  height: 75,
                   color: const Color(0xFFF3F4F6),
                   child: post.medias != null && post.medias!.isNotEmpty
                       ? Builder(
@@ -599,35 +649,18 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                           fit: BoxFit.cover,
                           placeholder: (context, url) => const Center(
                             child: SizedBox(
-                              width: 20,
-                              height: 20,
+                              width: 16,
+                              height: 16,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
                               ),
                             ),
                           ),
-                          errorWidget: (context, url, error) => Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.image_not_supported_outlined,
-                                  color: Colors.grey[400],
-                                  size: 24,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'No photo\nuploaded',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    color: Colors.grey[500],
-                                    height: 1.2,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.image_outlined,
+                            color: Color(0xFF9CA3AF),
+                            size: 28,
                           ),
                             );
                           },
@@ -684,7 +717,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 ),
               ),
               
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               
               // Content
               Expanded(
@@ -695,16 +728,17 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                     Text(
                       post.title,
                       style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
                         color: Color(0xFF111827),
                         height: 1.3,
+                        letterSpacing: -0.1,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     
                     // Price and Time Row
                     Row(
@@ -716,7 +750,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                           child: Text(
                             post.displayPrice,
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF10B981),
                               letterSpacing: -0.3,
@@ -725,13 +759,13 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                           ),
                         ),
                         
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         
                         // Time
                         Text(
                           post.getRelativeTime(),
                           style: const TextStyle(
-                            fontSize: 11,
+                            fontSize: 10,
                             color: Color(0xFF9CA3AF),
                             fontWeight: FontWeight.w500,
                           ),
@@ -739,26 +773,27 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                       ],
                     ),
                     
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 4),
                     
                     // Location
                     Row(
                       children: [
                         const Icon(
-                          Icons.location_on_outlined,
-                          size: 13,
+                          Icons.location_on_rounded,
+                          size: 12,
                           color: Color(0xFF6B7280),
                         ),
-                        const SizedBox(width: 3),
+                        const SizedBox(width: 2),
                         Expanded(
                           child: Text(
                             [post.upazila, post.city, post.state]
                                 .where((e) => e != null && e.isNotEmpty)
                                 .join(', '),
                             style: const TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               color: Color(0xFF6B7280),
-                              fontWeight: FontWeight.w400,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: -0.1,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -1320,5 +1355,335 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       _aiSearchDeclined = true;
       _aiResults = [];
     });
+  }
+
+  /// Build professional description matches section
+  Widget _buildDescriptionMatchesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with gradient
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFFFEF3C7),
+                const Color(0xFFFDE68A),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF59E0B).withOpacity(0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.description_rounded,
+                  size: 20,
+                  color: Color(0xFFF59E0B),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Found in posts',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF92400E),
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    Text(
+                      'Showing ${_descriptionPosts.length} result${_descriptionPosts.length > 1 ? 's' : ''}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF92400E),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Results container
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFBEB),
+            border: Border.all(
+              color: const Color(0xFFFDE68A),
+              width: 1,
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(12),
+              bottomRight: Radius.circular(12),
+            ),
+          ),
+          padding: const EdgeInsets.all(8),
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _descriptionPosts.length,
+            separatorBuilder: (context, index) => const Divider(
+              height: 16,
+              thickness: 1,
+              color: Color(0xFFFDE68A),
+            ),
+            itemBuilder: (context, index) {
+              final post = _descriptionPosts[index];
+              return _buildDescriptionMatchCard(post);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Build individual description match card
+  Widget _buildDescriptionMatchCard(ClassifiedPost post) {
+    final snippet = _extractMatchedSnippet(post.instructions, _searchQuery);
+    
+    // Skip if no match found in description
+    if (snippet.isEmpty) return const SizedBox.shrink();
+    
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ClassifiedPostDetailsScreen(
+                postId: post.id,
+                postSlug: post.slug ?? post.id,
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: const Color(0xFFFEF3C7),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Compact Image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  width: 55,
+                  height: 55,
+                  color: const Color(0xFFFEF3C7),
+                  child: post.medias != null && post.medias!.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: post.medias!.first.image ?? '',
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const Center(
+                            child: SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.image_outlined,
+                            color: Color(0xFF92400E),
+                            size: 20,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.image_outlined,
+                          color: Color(0xFF92400E),
+                          size: 20,
+                        ),
+                ),
+              ),
+              
+              const SizedBox(width: 8),
+              
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title - small size
+                    Text(
+                      post.title,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                        height: 1.3,
+                        letterSpacing: -0.1,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    
+                    const SizedBox(height: 3),
+                    
+                    // Matched snippet with highlighting - small text
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontSize: 10,
+                          height: 1.4,
+                          color: Color(0xFF6B7280),
+                        ),
+                        children: _buildHighlightedText(snippet, _searchQuery),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    
+                    const SizedBox(height: 3),
+                    
+                    // Price and Location - small size
+                    Row(
+                      children: [
+                        Text(
+                          post.displayPrice,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFF59E0B),
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Icon(
+                          Icons.location_on_rounded,
+                          size: 10,
+                          color: Color(0xFF92400E),
+                        ),
+                        const SizedBox(width: 2),
+                        Expanded(
+                          child: Text(
+                            [post.city, post.state]
+                                .where((e) => e != null && e.isNotEmpty)
+                                .join(', '),
+                            style: const TextStyle(
+                              fontSize: 9,
+                              color: Color(0xFF92400E),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Extract matched text snippet from description
+  String _extractMatchedSnippet(String? description, String query) {
+    if (description == null || description.isEmpty || query.isEmpty) {
+      return '';
+    }
+
+    final lowerDesc = description.toLowerCase();
+    final lowerQuery = query.toLowerCase();
+    final index = lowerDesc.indexOf(lowerQuery);
+
+    if (index == -1) return '';
+
+    // Extract context around the match (40 chars before and after for compact display)
+    final start = (index - 40).clamp(0, description.length);
+    final end = (index + query.length + 40).clamp(0, description.length);
+    
+    String snippet = description.substring(start, end);
+    
+    // Add ellipsis if truncated
+    if (start > 0) snippet = '...$snippet';
+    if (end < description.length) snippet = '$snippet...';
+    
+    return snippet;
+  }
+
+  /// Build highlighted text with matched keyword
+  List<TextSpan> _buildHighlightedText(String text, String query) {
+    if (query.isEmpty) {
+      return [TextSpan(text: text)];
+    }
+
+    final List<TextSpan> spans = [];
+    final lowerText = text.toLowerCase();
+    final lowerQuery = query.toLowerCase();
+    
+    int currentIndex = 0;
+    int matchIndex = lowerText.indexOf(lowerQuery, currentIndex);
+
+    while (matchIndex != -1) {
+      // Add text before match
+      if (matchIndex > currentIndex) {
+        spans.add(TextSpan(
+          text: text.substring(currentIndex, matchIndex),
+        ));
+      }
+
+      // Add highlighted match
+      spans.add(TextSpan(
+        text: text.substring(matchIndex, matchIndex + query.length),
+        style: const TextStyle(
+          color: Color(0xFF92400E),
+          fontWeight: FontWeight.w700,
+          backgroundColor: Color(0xFFFEF3C7),
+        ),
+      ));
+
+      currentIndex = matchIndex + query.length;
+      matchIndex = lowerText.indexOf(lowerQuery, currentIndex);
+    }
+
+    // Add remaining text
+    if (currentIndex < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(currentIndex),
+      ));
+    }
+
+    return spans;
   }
 }

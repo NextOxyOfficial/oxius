@@ -243,6 +243,65 @@ class ClassifiedPostService {
     }
   }
 
+  /// Search posts by description (instructions field)
+  Future<List<ClassifiedPost>> searchByDescription({
+    required String categoryId,
+    required String searchQuery,
+    required GeoLocation location,
+    int pageSize = 20,
+  }) async {
+    try {
+      final queryParams = <String, String>{
+        'category': categoryId,
+        'instructions': searchQuery,
+        'page_size': pageSize.toString(),
+        'country': location.country,
+      };
+
+      // Only add state, city, and upazila if not showing all over Bangladesh
+      if (!location.allOverBangladesh) {
+        if (location.state != null) queryParams['state'] = location.state!;
+        if (location.city != null) queryParams['city'] = location.city!;
+        if (location.upazila != null) queryParams['upazila'] = location.upazila!;
+      }
+
+      final uri = Uri.parse('$baseUrl/classified-posts/filter/').replace(
+        queryParameters: queryParams,
+      );
+
+      final response = await client.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        // Handle both paginated and non-paginated responses
+        if (data is Map && data.containsKey('results')) {
+          final results = (data['results'] as List)
+              .map((item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
+              .where((post) => post.serviceStatus.toLowerCase() == 'approved' && post.activeService)
+              .toList();
+          
+          return results;
+        } else if (data is List) {
+          final results = data
+              .map((item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
+              .where((post) => post.serviceStatus.toLowerCase() == 'approved' && post.activeService)
+              .toList();
+          
+          return results;
+        }
+      }
+      
+      return [];
+    } catch (e) {
+      print('Error searching by description: $e');
+      return [];
+    }
+  }
+
   /// Fetch category details
   Future<CategoryDetails?> fetchCategoryDetails(String idOrSlug) async {
     try {
