@@ -623,4 +623,83 @@ class EshopManagerService {
       };
     }
   }
+
+  /// Check store username availability
+  static Future<Map<String, dynamic>> checkStoreUsername(String username) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/check-store-username/?username=${Uri.encodeComponent(username)}'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('📦 Check username response: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'available': data['available'] ?? false,
+          'suggestions': data['suggestions'] ?? [],
+        };
+      } else {
+        return {
+          'available': false,
+          'suggestions': [],
+        };
+      }
+    } catch (e) {
+      print('❌ Error checking username: $e');
+      return {
+        'available': false,
+        'suggestions': [],
+      };
+    }
+  }
+
+  /// Create store
+  static Future<void> createStore({
+    required String storeName,
+    required String storeUsername,
+  }) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) throw Exception('Not authenticated');
+
+      final user = AuthService.currentUser;
+      if (user == null) throw Exception('User not found');
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/persons/update/${user.email}/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'store_name': storeName,
+          'store_username': storeUsername.toLowerCase(),
+        }),
+      );
+
+      print('📦 Create store response: ${response.statusCode}');
+      print('📦 Response body: ${response.body}');
+
+      if (response.statusCode != 200) {
+        final errorBody = response.body;
+        try {
+          final error = json.decode(errorBody);
+          throw Exception(error['error'] ?? error['message'] ?? error['detail'] ?? 'Failed to create store');
+        } catch (e) {
+          throw Exception(errorBody.isNotEmpty ? errorBody : 'Failed to create store');
+        }
+      }
+    } catch (e) {
+      print('❌ Error creating store: $e');
+      rethrow;
+    }
+  }
 }

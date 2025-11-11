@@ -8,6 +8,7 @@ import 'widgets/store_details_card.dart';
 import 'widgets/my_orders_tab.dart';
 import 'widgets/my_products_tab.dart';
 import 'widgets/add_product_tab.dart';
+import 'create_store_screen.dart';
 
 class EshopManagerScreen extends StatefulWidget {
   const EshopManagerScreen({super.key});
@@ -535,112 +536,11 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
       return _buildManagerContent(MediaQuery.of(context).size.width < 768);
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
-      child: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 500),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Icon
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.store_rounded,
-                  size: 48,
-                  color: Color(0xFF10B981),
-                ),
-              ),
-              const SizedBox(height: 20),
-              
-              // Title
-              const Text(
-                'Create Your Store',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF111827),
-                  letterSpacing: -0.3,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              
-              // Description
-              Text(
-                'Set up your online store to start selling products and managing orders.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              
-              // Check Status Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    setState(() => _isLoading = true);
-                    await Future.wait([
-                      _loadProducts(),
-                      _loadOrders(),
-                    ]);
-                    setState(() {
-                      _isLoading = false;
-                      _hasStore = _products.isNotEmpty || _orders.isNotEmpty;
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.refresh_rounded, size: 18),
-                      SizedBox(width: 8),
-                      Text(
-                        'Check Store Status',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return CreateStoreScreen(
+      onStoreCreated: () async {
+        // Refresh user status after store creation
+        await _checkUserStatus();
+      },
     );
   }
 
