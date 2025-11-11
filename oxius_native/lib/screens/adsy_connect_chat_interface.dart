@@ -1863,7 +1863,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   Widget _buildVoiceMessageContent(Map<String, dynamic> message, bool isMe) {
-    final duration = message['voiceDuration'] as int? ?? 0;
+    // Check both camelCase and snake_case for voice duration (backend uses snake_case)
+    final duration = (message['voiceDuration'] as int?) ?? 
+                     (message['voice_duration'] as int?) ?? 
+                     0;
     final messageId = message['id']?.toString() ?? '';
     final mediaUrl = message['mediaUrl'] as String?;
     final isPlaying = _playingVoiceMessageId == messageId;
