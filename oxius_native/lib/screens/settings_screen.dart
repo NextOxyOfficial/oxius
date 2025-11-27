@@ -161,8 +161,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         setState(() {
           _userProfile = profile;
           _originalProfile = UserProfile.fromJson(json.decode(json.encode(profile.toJson())));
-          _populateControllers();
         });
+        await _populateControllers();
       }
     } catch (e) {
       _showSnackBar('Error loading profile', isError: true);
@@ -171,7 +171,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _populateControllers() {
+  Future<void> _populateControllers() async {
     if (_userProfile == null) return;
     
     _emailController.text = _userProfile!.email ?? '';
@@ -193,13 +193,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     // Set selected geo location values
     _selectedDivision = _userProfile!.state;
     _selectedCity = _userProfile!.city;
+    _selectedUpazila = _userProfile!.upazila;
     
     // Load cities and upazilas if division/city are set
     if (_selectedDivision != null && _selectedDivision!.isNotEmpty) {
-      _loadCities(_selectedDivision!);
+      await _loadCities(_selectedDivision!);
     }
     if (_selectedCity != null && _selectedCity!.isNotEmpty) {
-      _loadUpazilas(_selectedCity!);
+      await _loadUpazilas(_selectedCity!);
     }
   }
 
@@ -1080,8 +1081,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (result['success'] == true) {
         _showSnackBar('Profile updated successfully');
         
-        // Update local user data
+        // Update local user data and notify all listeners
         await AuthService.refreshUserData();
+        await UserStateService().refreshUserData();
         
         // Reload profile
         await _loadUserProfile();
@@ -1154,11 +1156,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           child: ClipOval(
-            child: _userProfile!.image != null
-                ? Image.network(
-                    _userProfile!.image!,
+            child: _userProfile!.image != null && _userProfile!.image!.isNotEmpty
+                ? CachedNetworkImage(
+                    key: ValueKey(_userProfile!.image!),
+                    imageUrl: _userProfile!.image!,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => _buildPlaceholderAvatar(),
+                    placeholder: (context, url) => Container(
+                      color: const Color(0xFFF3F4F6),
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => _buildPlaceholderAvatar(),
                   )
                 : _buildPlaceholderAvatar(),
           ),
@@ -1432,42 +1441,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 14),
           Row(
             children: [
-              // Current image or placeholder
-              if (_userProfile?.image != null && _userProfile!.image!.isNotEmpty)
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 88,
-                      height: 88,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: Image.network(
-                          _userProfile!.image!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
+              // Current image or placeholder - Always show
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 88,
+                    height: 88,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: (_userProfile?.image != null && _userProfile!.image!.isNotEmpty)
+                          ? CachedNetworkImage(
+                              key: ValueKey(_userProfile!.image!),
+                              imageUrl: _userProfile!.image!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: const Color(0xFFF3F4F6),
+                                child: const Center(
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) {
+                                return Container(
+                                  color: const Color(0xFFF3F4F6),
+                                  child: const Icon(
+                                    Icons.person_outline,
+                                    size: 40,
+                                    color: Color(0xFF9CA3AF),
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
                               color: const Color(0xFFF3F4F6),
                               child: const Icon(
                                 Icons.person_outline,
                                 size: 40,
                                 color: Color(0xFF9CA3AF),
                               ),
-                            );
-                          },
-                        ),
-                      ),
+                            ),
                     ),
+                  ),
                     Positioned(
                       top: 0,
                       right: 0,
@@ -1500,21 +1524,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                   ],
-                )
-              else
-                Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.person_outline,
-                    size: 40,
-                    color: Color(0xFF9CA3AF),
-                  ),
                 ),
               const SizedBox(width: 16),
 
@@ -2946,21 +2955,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       print('Upload result: ${result['success']}');
 
       if (result['success'] == true) {
-        // Clear image cache for the new profile image
-        if (_userProfile?.image != null) {
-          await CachedNetworkImage.evictFromCache(_userProfile!.image!);
-        }
-        
         setState(() {
           _userProfile = UserProfile.fromJson(result['data']);
           _originalProfile = UserProfile.fromJson(json.decode(json.encode(result['data'])));
         });
         
-        // Force rebuild after a short delay to ensure cache is cleared
-        await Future.delayed(const Duration(milliseconds: 100));
-        if (mounted) {
-          setState(() {});
-        }
+        // Update global user state
+        await AuthService.refreshUserData();
+        await UserStateService().refreshUserData();
         
         _showSnackBar('Profile image uploaded successfully');
       } else {
@@ -3048,6 +3050,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _userProfile = UserProfile.fromJson(result['data']);
           _originalProfile = UserProfile.fromJson(json.decode(json.encode(result['data'])));
         });
+        
+        // Update AuthService and UserStateService to reflect changes across the app
+        await AuthService.refreshUserData();
+        await UserStateService().refreshUserData();
         
         // Force rebuild after a short delay to ensure cache is cleared
         await Future.delayed(const Duration(milliseconds: 100));
@@ -3148,6 +3154,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _userProfile = _userProfile?.copyWith(image: '');
           _checkFormChanges();
         });
+        
+        // Update AuthService and UserStateService to reflect changes across the app
+        await AuthService.refreshUserData();
+        await UserStateService().refreshUserData();
+        
         _showSnackBar('Image removed successfully');
       } else {
         _showSnackBar('Failed to remove image', isError: true);
@@ -3167,6 +3178,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _userProfile = _userProfile?.copyWith(storeBanner: '');
         _checkFormChanges();
       });
+      
+      // Update AuthService and UserStateService to reflect changes across the app
+      await AuthService.refreshUserData();
+      await UserStateService().refreshUserData();
+      
       _showSnackBar('Banner removed successfully');
     } catch (e) {
       _showSnackBar('Error removing banner', isError: true);

@@ -324,6 +324,65 @@ class SalePostViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+    @action(detail=True, methods=["post"], url_path="report", permission_classes=[permissions.IsAuthenticated])
+    def report(self, request, slug=None):
+        """Report a sale post for review"""
+        logger.info(f"=== REPORT POST ACTION CALLED ===")
+        logger.info(f"Slug: {slug}")
+        logger.info(f"Request user: {request.user}")
+        logger.info(f"Request data: {request.data}")
+        
+        try:
+            post = self.get_object()
+            reason = request.data.get('reason')
+            details = request.data.get('details', '')
+            
+            if not reason:
+                return Response(
+                    {"detail": "Reason is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Check if user already reported this post
+            existing_report = SalePostReport.objects.filter(
+                post=post, 
+                reported_by=request.user
+            ).first()
+            
+            if existing_report:
+                return Response(
+                    {"detail": "You have already reported this listing."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Create the report
+            report = SalePostReport.objects.create(
+                post=post,
+                reported_by=request.user,
+                reason=reason,
+                details=details if details else None
+            )
+            
+            logger.info(f"✓ Report created with ID {report.id}")
+            logger.info(f"Post {post.id} reported by user {request.user.id}")
+            logger.info(f"Reason: {reason}, Details: {details}")
+            
+            # TODO: You can add email notification to admins here
+            # send_mail_to_admins(post, reason, details, request.user)
+            
+            return Response(
+                {"detail": "Report submitted successfully. We will review this listing."},
+                status=status.HTTP_201_CREATED
+            )
+            
+        except Exception as e:
+            logger.error(f"✗ Error in report: {str(e)}")
+            logger.exception(e)
+            return Response(
+                {"detail": f"Error: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
     @action(detail=False, methods=["get"])
     def search(self, request):
         """Search endpoint for live search dropdown results"""

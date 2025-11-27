@@ -7,6 +7,7 @@ class UserProfile {
   final String? address;
   final String? city;
   final String? state;
+  final String? upazila;
   final String? zip;
   final String? image;
   final String? storeBanner;
@@ -35,6 +36,7 @@ class UserProfile {
     this.address,
     this.city,
     this.state,
+    this.upazila,
     this.zip,
     this.image,
     this.storeBanner,
@@ -65,6 +67,7 @@ class UserProfile {
       address: json['address'],
       city: json['city'],
       state: json['state'],
+      upazila: json['upazila'],
       zip: json['zip'],
       image: json['image'],
       storeBanner: json['store_banner'],
@@ -96,6 +99,7 @@ class UserProfile {
       if (address != null) 'address': address,
       if (city != null) 'city': city,
       if (state != null) 'state': state,
+      if (upazila != null) 'upazila': upazila,
       if (zip != null) 'zip': zip,
       if (image != null) 'image': image,
       if (storeBanner != null) 'store_banner': storeBanner,
@@ -127,6 +131,7 @@ class UserProfile {
     String? address,
     String? city,
     String? state,
+    String? upazila,
     String? zip,
     String? image,
     String? storeBanner,
@@ -155,6 +160,7 @@ class UserProfile {
       address: address ?? this.address,
       city: city ?? this.city,
       state: state ?? this.state,
+      upazila: upazila ?? this.upazila,
       zip: zip ?? this.zip,
       image: image ?? this.image,
       storeBanner: storeBanner ?? this.storeBanner,

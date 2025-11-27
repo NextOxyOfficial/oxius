@@ -417,4 +417,38 @@ class SalePostService {
       rethrow;
     }
   }
+
+  /// Report a sale post
+  Future<bool> reportPost(String slug, String reason, {String? details}) async {
+    try {
+      print('Reporting sale post: $slug with reason: $reason');
+      
+      final uri = Uri.parse('$baseUrl/sale/posts/$slug/report/');
+      
+      final body = {
+        'reason': reason,
+        if (details != null && details.isNotEmpty) 'details': details,
+      };
+      
+      final response = await client.post(
+        uri,
+        headers: await _getHeaders(needsAuth: true),
+        body: json.encode(body),
+      );
+
+      print('Report post response status: ${response.statusCode}');
+      print('Report post response body: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        print('✅ Sale post reported successfully');
+        return true;
+      }
+      
+      print('❌ Failed to report post. Status: ${response.statusCode}');
+      return false;
+    } catch (e) {
+      print('❌ Error reporting sale post: $e');
+      return false;
+    }
+  }
 }

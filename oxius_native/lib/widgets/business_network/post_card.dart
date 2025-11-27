@@ -7,6 +7,7 @@ import '../../services/auth_service.dart';
 import '../../config/app_config.dart';
 import '../../screens/business_network/post_detail_screen.dart';
 import '../../screens/business_network/search_screen.dart';
+import '../../utils/network_error_handler.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
 import 'post_actions.dart';
@@ -342,11 +343,17 @@ class _PostCardState extends State<PostCard> {
     }
     
     // Make API call
-    final success = await BusinessNetworkService.toggleLike(_post.id, originalIsLiked);
-    
-    _isLiking = false;
-    
-    if (!success) {
+    try {
+      await BusinessNetworkService.toggleLike(_post.id, originalIsLiked);
+      _isLiking = false;
+      
+      // Trigger callback if provided
+      if (widget.onLikeToggle != null) {
+        widget.onLikeToggle!();
+      }
+    } catch (e) {
+      _isLiking = false;
+      
       // Failed - rollback to original state
       if (mounted) {
         setState(() {
@@ -356,12 +363,11 @@ class _PostCardState extends State<PostCard> {
           );
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to ${originalIsLiked ? 'unlike' : 'like'} post'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
+        // Show professional error message
+        NetworkErrorHandler.showErrorSnackbar(
+          context,
+          e,
+          onRetry: _handleLike,
         );
       }
     }

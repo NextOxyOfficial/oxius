@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io' if (dart.library.html) 'dart:html' as io;
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'auth_service.dart';
 import 'api_service.dart';
 import 'active_chat_tracker.dart';
+import '../utils/network_error_handler.dart';
 
 class AdsyConnectService {
   static String get baseUrl => '${ApiService.baseUrl}/adsyconnect';
@@ -160,14 +162,27 @@ class AdsyConnectService {
           'message_type': 'text',
           'content': content,
         }),
-      );
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 201) {
         return jsonDecode(response.body);
+      } else if (response.statusCode == 401) {
+        throw Exception('Session expired');
+      } else if (response.statusCode == 403) {
+        throw Exception('Permission denied');
       } else {
         throw Exception('Failed to send message: ${response.statusCode}');
       }
+    } on http.ClientException {
+      throw Exception('Connection error');
+    } on TimeoutException {
+      throw Exception('Request timeout');
     } catch (e) {
+      // Check if it's a network-related error
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('socket') || errorStr.contains('network')) {
+        throw Exception('No internet connection');
+      }
       print('Error sending message: $e');
       rethrow;
     }
@@ -230,15 +245,30 @@ class AdsyConnectService {
         );
       }
 
-      final streamedResponse = await request.send();
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 201) {
         return jsonDecode(response.body);
+      } else if (response.statusCode == 401) {
+        throw Exception('Session expired');
+      } else if (response.statusCode == 403) {
+        throw Exception('Permission denied');
+      } else if (response.statusCode == 413) {
+        throw Exception('File too large');
       } else {
-        throw Exception('Failed to send media: ${response.statusCode} - ${response.body}');
+        throw Exception('Failed to send media: ${response.statusCode}');
       }
+    } on http.ClientException {
+      throw Exception('Connection error');
+    } on TimeoutException {
+      throw Exception('Upload timeout - file may be too large');
     } catch (e) {
+      // Check if it's a network-related error
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('socket') || errorStr.contains('network')) {
+        throw Exception('No internet connection');
+      }
       print('Error sending media: $e');
       rethrow;
     }

@@ -107,25 +107,36 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Future<void> _loadTransactions() async {
+    if (!mounted) return;
+    
     setState(() {
       _isLoadingTransactions = true;
       _sentPage = 1;
       _receivedPage = 1;
-      _sentTransactions = [];
-      _receivedTransactions = [];
     });
     
-    final sent = await WalletService.getTransactions(page: _sentPage);
-    final received = await WalletService.getReceivedTransfers(page: _receivedPage);
-    
-    if (mounted) {
-      setState(() {
-        _sentTransactions = sent;
-        _receivedTransactions = received;
-        _hasMoreSent = sent.length >= 10; // Assume 10 items per page
-        _hasMoreReceived = received.length >= 10;
-        _isLoadingTransactions = false;
-      });
+    try {
+      final sent = await WalletService.getTransactions(page: _sentPage);
+      final received = await WalletService.getReceivedTransfers(page: _receivedPage);
+      
+      if (mounted) {
+        setState(() {
+          _sentTransactions = sent;
+          _receivedTransactions = received;
+          _hasMoreSent = sent.length >= 10; // Assume 10 items per page
+          _hasMoreReceived = received.length >= 10;
+          _isLoadingTransactions = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading transactions: $e');
+      if (mounted) {
+        setState(() {
+          _sentTransactions = [];
+          _receivedTransactions = [];
+          _isLoadingTransactions = false;
+        });
+      }
     }
   }
   
@@ -267,25 +278,25 @@ class _WalletScreenState extends State<WalletScreen> {
               child: _currentTab == 0
                   ? DepositTab(
                       balance: _balance?.balance ?? 0.0,
-                      onDepositSuccess: () {
-                        _loadBalance();
-                        _loadTransactions();
+                      onDepositSuccess: () async {
+                        await _loadBalance();
+                        await _loadTransactions();
                       },
                     )
                   : _currentTab == 1
                       ? WithdrawTab(
                           balance: _balance?.balance ?? 0.0,
-                          onWithdrawSuccess: () {
-                            _loadBalance();
-                            _loadTransactions();
+                          onWithdrawSuccess: () async {
+                            await _loadBalance();
+                            await _loadTransactions();
                           },
                         )
                       : TransferTab(
                           balance: _balance?.balance ?? 0.0,
                           userPhone: _userState.userEmail,
-                          onTransferSuccess: () {
-                            _loadBalance();
-                            _loadTransactions();
+                          onTransferSuccess: () async {
+                            await _loadBalance();
+                            await _loadTransactions();
                           },
                         ),
             ),
@@ -589,6 +600,7 @@ class _WalletScreenState extends State<WalletScreen> {
     final isLoadingMore = _transactionTab == 'sent' ? _isLoadingMoreSent : _isLoadingMoreReceived;
     
     return ListView.builder(
+      key: ValueKey('${_transactionTab}_${transactions.length}'),
       controller: _transactionScrollController,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),

@@ -12,6 +12,7 @@ import 'dart:convert';
 import '../services/adsyconnect_service.dart';
 import '../services/active_chat_tracker.dart';
 import '../utils/image_compressor.dart';
+import '../utils/network_error_handler.dart';
 import '../widgets/chat_video_player.dart';
 import '../widgets/skeleton_loader.dart';
 
@@ -22,6 +23,8 @@ class AdsyConnectChatInterface extends StatefulWidget {
   final String? userAvatar;
   final String? profession;
   final bool isOnline;
+  final bool isVerified;
+  final bool isPro;
 
   const AdsyConnectChatInterface({
     super.key,
@@ -31,6 +34,8 @@ class AdsyConnectChatInterface extends StatefulWidget {
     this.userAvatar,
     this.profession,
     this.isOnline = false,
+    this.isVerified = false,
+    this.isPro = false,
   });
 
   @override
@@ -46,6 +51,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   final ImagePicker _imagePicker = ImagePicker();
   bool _isTyping = false;
   bool _isLoadingMessages = true;
+  bool _isLoadingMoreMessages = false;
   bool _isSendingMessage = false;
   bool _isUploadingAttachment = false;
   bool _isRecording = false;
@@ -70,7 +76,59 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     ActiveChatTracker.setActiveChat(widget.chatroomId);
     _loadMessages();
     _messageController.addListener(_onTypingChanged);
+    _scrollController.addListener(_onScroll);
     _startMessagePolling();
+  }
+
+  void _onScroll() {
+    // Load more messages when scrolled to top (older messages)
+    if (_scrollController.position.pixels <= 100 &&
+        !_isLoadingMoreMessages &&
+        _hasMoreMessages) {
+      _loadOlderMessages();
+    }
+  }
+
+  Future<void> _loadOlderMessages() async {
+    if (_isLoadingMoreMessages || !_hasMoreMessages) return;
+    
+    setState(() {
+      _isLoadingMoreMessages = true;
+    });
+
+    try {
+      final nextPage = _currentPage + 1;
+      print('🔵 Loading older messages, page: $nextPage');
+      
+      final messages = await AdsyConnectService.getMessages(
+        widget.chatroomId,
+        page: nextPage,
+      );
+      
+      print('🟢 Loaded ${messages.length} older messages');
+      
+      if (mounted && messages.isNotEmpty) {
+        // Backend returns newest first, so reverse for oldest-to-newest display
+        final parsedMessages = _parseMessages(messages.reversed.toList());
+        setState(() {
+          // Insert older messages at the beginning
+          _messages.insertAll(0, parsedMessages);
+          _currentPage = nextPage;
+          _hasMoreMessages = messages.length >= 20;
+          _isLoadingMoreMessages = false;
+        });
+      } else {
+        setState(() {
+          _hasMoreMessages = false;
+          _isLoadingMoreMessages = false;
+        });
+      }
+    } catch (e) {
+      print('🔴 Error loading older messages: $e');
+      if (mounted) {
+        setState(() => _isLoadingMoreMessages = false);
+      }
+    }
   }
 
   @override
@@ -249,7 +307,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       print('🟢 Loaded ${messages.length} messages');
       
       if (mounted) {
-        final parsedMessages = _parseMessages(messages);
+        // Backend returns newest first, so reverse for oldest-to-newest display
+        final parsedMessages = _parseMessages(messages.reversed.toList());
         setState(() {
           if (loadMore) {
             _messages.insertAll(0, parsedMessages);
@@ -421,14 +480,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       print('🔴 Error sending message: $e');
       if (mounted) {
         setState(() => _isSendingMessage = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to send message: $e'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+        
         // Restore the message text
         _messageController.text = messageText;
+        
+        // Show professional error message
+        NetworkErrorHandler.showErrorSnackbar(
+          context,
+          e,
+          onRetry: _sendMessage,
+        );
       }
     }
   }
@@ -1138,11 +1199,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           _isSendingMessage = false;
           _isUploadingAttachment = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to send $type: $e'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
+        
+        // Show professional error message
+        NetworkErrorHandler.showErrorSnackbar(
+          context,
+          e,
+          customMessage: 'Failed to send ${type == "image" ? "image" : type == "video" ? "video" : "file"}',
+          onRetry: () => _sendMediaMessage(filePath, type, fileName: fileName),
         );
       }
     }
@@ -1184,11 +1247,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           _isSendingMessage = false;
           _isUploadingAttachment = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to send $type: $e'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
+        
+        // Show professional error message
+        NetworkErrorHandler.showErrorSnackbar(
+          context,
+          e,
+          customMessage: 'Failed to send ${type == "image" ? "image" : type == "video" ? "video" : "file"}',
+          onRetry: () => _sendMediaMessageWeb(bytes, type, fileName: fileName),
         );
       }
     }
@@ -1412,11 +1477,72 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                     : ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                        itemCount: _messages.length,
+                        itemCount: _messages.length + (_isLoadingMoreMessages || !_hasMoreMessages ? 1 : 0),
                         itemBuilder: (context, index) {
-                          final message = _messages[index];
-                          final showAvatar = index == 0 ||
-                              _messages[index - 1]['isMe'] != message['isMe'];
+                          // Show loading indicator or "no more messages" at top
+                          if (index == 0) {
+                            if (_isLoadingMoreMessages) {
+                              return Container(
+                                padding: const EdgeInsets.all(16),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          const Color(0xFF10B981),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'Loading older messages...',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            } else if (!_hasMoreMessages && _messages.length >= 20) {
+                              return Container(
+                                padding: const EdgeInsets.all(12),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle_rounded,
+                                      size: 14,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'No more messages',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey.shade500,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                          }
+                          
+                          final messageIndex = (_isLoadingMoreMessages || !_hasMoreMessages) ? index - 1 : index;
+                          if (messageIndex < 0 || messageIndex >= _messages.length) {
+                            return const SizedBox.shrink();
+                          }
+                          final message = _messages[messageIndex];
+                          final showAvatar = messageIndex == 0 ||
+                              _messages[messageIndex - 1]['isMe'] != message['isMe'];
                           return _buildMessageBubble(message, showAvatar);
                         },
                       ),
@@ -1551,22 +1677,70 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    widget.userName,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: -0.3,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black26,
-                          offset: Offset(0, 1),
-                          blurRadius: 2,
+                  // Name with badges
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          widget.userName,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.3,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black26,
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      // Verified badge
+                      if (widget.isVerified) ...[
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.verified,
+                          size: 15,
+                          color: Color(0xFF3B82F6),
                         ),
                       ],
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                      // Pro badge
+                      if (widget.isPro) ...[
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFFFBBF24), // amber-400
+                                Color(0xFFF59E0B), // amber-500
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFF59E0B).withOpacity(0.3),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: const Text(
+                            'PRO',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   // Only show profession if it exists and is not empty
                   if (widget.profession != null && widget.profession!.isNotEmpty)

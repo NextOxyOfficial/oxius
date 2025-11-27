@@ -1148,10 +1148,11 @@ class _CheckoutScreenState extends State<CheckoutScreen>
       child: SafeArea(
         top: false,
         child: ElevatedButton(
-          onPressed: _isLoading ? null : _processCheckout,
+          onPressed: (_isLoading || _showSuccessModal) ? null : _processCheckout,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF10B981),
             foregroundColor: Colors.white,
+            disabledBackgroundColor: const Color(0xFF9CA3AF),
             padding: const EdgeInsets.symmetric(vertical: 14),
             elevation: 0,
             shape: RoundedRectangleBorder(
@@ -1348,19 +1349,19 @@ class _CheckoutScreenState extends State<CheckoutScreen>
 
   Widget _buildSuccessModal() {
     return Container(
-      color: Colors.black54,
+      color: Colors.black.withOpacity(0.6),
       child: Center(
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-          constraints: const BoxConstraints(maxWidth: 400),
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          constraints: const BoxConstraints(maxWidth: 360),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -1368,71 +1369,79 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             children: [
               // Close button
               Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton(
-                  onPressed: _resetForm,
-                  icon: const Icon(Icons.close, size: 20),
-                  color: Colors.grey.shade600,
-                  padding: const EdgeInsets.all(8),
-                  constraints: const BoxConstraints(),
-                  splashRadius: 20,
+                top: 6,
+                right: 6,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _resetForm,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
                 ),
               ),
               // Content
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Success icon
                     Container(
-                      width: 64,
-                      height: 64,
+                      width: 56,
+                      height: 56,
                       decoration: BoxDecoration(
-                        color: Colors.green.shade50,
+                        color: const Color(0xFF10B981).withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
-                        Icons.check_circle,
-                        color: Colors.green.shade600,
-                        size: 40,
+                      child: const Icon(
+                        Icons.check_circle_rounded,
+                        color: Color(0xFF10B981),
+                        size: 32,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     
                     // Title
-                    const Text(
+                    Text(
                       'Order Successful!',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                      style: GoogleFonts.roboto(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1F2937),
+                        letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     
                     // Description
                     Text(
                       'Thank you for your purchase! Your order #$_orderNumber has been successfully placed.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
+                      style: GoogleFonts.roboto(
+                        fontSize: 12,
+                        color: const Color(0xFF6B7280),
                         height: 1.4,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     
                     // Order details card
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFF10B981).withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Colors.green.shade200,
-                          width: 1.5,
+                          color: const Color(0xFF10B981).withOpacity(0.2),
+                          width: 1,
                         ),
                       ),
                       child: Column(
@@ -1443,43 +1452,46 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                             children: [
                               Text(
                                 'Order Total:',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade700,
+                                style: GoogleFonts.roboto(
+                                  fontSize: 12,
+                                  color: const Color(0xFF4B5563),
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                               Text(
-                                '৳${_total.toStringAsFixed(2)}',
-                                style: const TextStyle(
+                                '৳${_total.toStringAsFixed(0)}',
+                                style: GoogleFonts.roboto(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF1F2937),
+                                  letterSpacing: -0.2,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           
-                          // Estimated delivery - with wrapping
+                          // Estimated delivery
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Estimated Delivery:',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade700,
+                                style: GoogleFonts.roboto(
+                                  fontSize: 12,
+                                  color: const Color(0xFF4B5563),
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
                                   _estimatedDelivery,
                                   textAlign: TextAlign.right,
-                                  style: const TextStyle(
-                                    fontSize: 14,
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
+                                    color: const Color(0xFF1F2937),
                                     height: 1.3,
                                   ),
                                   maxLines: 2,
@@ -1491,27 +1503,28 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     
                     // Continue shopping button
                     SizedBox(
                       width: double.infinity,
-                      height: 48,
                       child: ElevatedButton(
                         onPressed: _resetForm,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade600,
+                          backgroundColor: const Color(0xFF10B981),
                           foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Continue Shopping',
-                          style: TextStyle(
-                            fontSize: 16,
+                          style: GoogleFonts.roboto(
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
                           ),
                         ),
                       ),

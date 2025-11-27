@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q, Max, Count, Case, When, IntegerField
 from django.contrib.auth import get_user_model
 from .models import ChatRoom, Message, MessageReport, OnlineStatus, TypingStatus
@@ -9,6 +10,13 @@ from .serializers import (
     ChatRoomSerializer, MessageSerializer, MessageReportSerializer,
     OnlineStatusSerializer, TypingStatusSerializer
 )
+
+
+class MessagePagination(PageNumberPagination):
+    """Custom pagination for messages - 20 messages per page"""
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 User = get_user_model()
 
@@ -123,15 +131,18 @@ class MessageViewSet(viewsets.ModelViewSet):
     """
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = MessagePagination
 
     def get_queryset(self):
-        """Get messages for a specific chat room"""
+        """Get messages for a specific chat room, ordered newest first for pagination"""
         chatroom_id = self.request.query_params.get('chatroom')
         
         if chatroom_id:
+            # Order by -created_at (newest first) for proper pagination
+            # Frontend will reverse the order for display
             return Message.objects.filter(
                 chatroom_id=chatroom_id
-            ).select_related('sender', 'receiver').order_by('created_at')
+            ).select_related('sender', 'receiver').order_by('-created_at')
         
         return Message.objects.none()
 

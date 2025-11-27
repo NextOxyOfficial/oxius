@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import '../models/business_network_models.dart';
 import 'api_service.dart';
+import '../utils/network_error_handler.dart';
 
 class BusinessNetworkService {
   static String get _baseUrl => '${ApiService.baseUrl}/bn';
@@ -164,11 +166,21 @@ class BusinessNetworkService {
       final response = await http.post(
         Uri.parse('$_baseUrl/posts/$postId/like/'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
       
-      return response.statusCode == 200 || response.statusCode == 201;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        throw Exception('Failed to like post: ${response.statusCode}');
+      }
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on http.ClientException {
+      throw Exception('Connection error');
+    } on TimeoutException {
+      throw Exception('Request timeout');
     } catch (e) {
-      return false;
+      rethrow;
     }
   }
 
@@ -180,14 +192,24 @@ class BusinessNetworkService {
       final response = await http.delete(
         Uri.parse('$_baseUrl/posts/$postId/unlike/'),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
       
       // 200/204 = success, 404 = already unliked (treat as success)
-      return response.statusCode == 200 || 
-             response.statusCode == 204 || 
-             response.statusCode == 404;
+      if (response.statusCode == 200 || 
+          response.statusCode == 204 || 
+          response.statusCode == 404) {
+        return true;
+      } else {
+        throw Exception('Failed to unlike post: ${response.statusCode}');
+      }
+    } on SocketException {
+      throw Exception('No internet connection');
+    } on http.ClientException {
+      throw Exception('Connection error');
+    } on TimeoutException {
+      throw Exception('Request timeout');
     } catch (e) {
-      return false;
+      rethrow;
     }
   }
 

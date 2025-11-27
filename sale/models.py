@@ -264,3 +264,37 @@ class SaleSponsoredVertical(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class SalePostReport(models.Model):
+    """Model to store reports about sale posts"""
+    REASON_CHOICES = [
+        ('spam', 'Spam or misleading'),
+        ('inappropriate', 'Inappropriate content'),
+        ('duplicate', 'Duplicate listing'),
+        ('fraud', 'Fraudulent'),
+        ('other', 'Other'),
+    ]
+    
+    id = models.BigIntegerField(
+        primary_key=True, default=generate_unique_id, editable=False)
+    post = models.ForeignKey(
+        'SalePost', on_delete=models.CASCADE, related_name='reports')
+    reported_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='sale_reports')
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES)
+    details = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed = models.BooleanField(default=False)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_sale_reports')
+    
+    class Meta:
+        verbose_name = 'Sale Post Report'
+        verbose_name_plural = 'Sale Post Reports'
+        ordering = ['-created_at']
+        unique_together = ['post', 'reported_by']  # One report per user per post
+    
+    def __str__(self):
+        return f"Report by {self.reported_by.email} on {self.post.title}"

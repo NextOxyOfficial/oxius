@@ -737,10 +737,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                         const SizedBox(width: 12),
                         ElevatedButton(
                           onPressed: () {
-                            // TODO: Navigate to contact page
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Contact feature coming soon!')),
-                            );
+                            Navigator.pushNamed(context, '/contact-us');
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
@@ -1764,33 +1761,83 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                             _reportDetails = '';
                           }),
                           style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF6B7280),
+                            side: const BorderSide(color: Color(0xFFD1D5DB), width: 1),
                             padding: const EdgeInsets.symmetric(vertical: 12),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                          child: const Text('Cancel', style: TextStyle(fontSize: 13)),
+                          child: const Text('Cancel', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: _reportReason.isEmpty ? null : () {
-                            // TODO: Implement report submission
+                          onPressed: _reportReason.isEmpty ? null : () async {
+                            if (_post?.slug == null) return;
+                            
+                            // Show loading
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Text('Submitting report...'),
+                                  ],
+                                ),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                            
+                            // Submit report to backend
+                            final success = await _postService.reportPost(
+                              _post!.slug,
+                              _reportReason,
+                              details: _reportReason == 'other' ? _reportDetails : null,
+                            );
+                            
                             setState(() {
                               _showReportDialog = false;
                               _reportReason = '';
                               _reportDetails = '';
                             });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Thank you for reporting. We will review this listing.'),
-                                backgroundColor: Color(0xFF10B981),
-                              ),
-                            );
+                            
+                            // Show result
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    success 
+                                      ? 'Thank you for reporting. We will review this listing.'
+                                      : 'Failed to submit report. Please try again.',
+                                  ),
+                                  backgroundColor: success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                ),
+                              );
+                            }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFEF4444),
+                            backgroundColor: const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: const Color(0xFFD1D5DB),
+                            disabledForegroundColor: const Color(0xFF9CA3AF),
                             padding: const EdgeInsets.symmetric(vertical: 12),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                          child: const Text('Submit', style: TextStyle(fontSize: 13)),
+                          child: const Text('Submit', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ],
@@ -1808,8 +1855,14 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     return RadioListTile<String>(
       title: Text(label, style: const TextStyle(fontSize: 13)),
       value: value,
-      groupValue: null,
+      groupValue: _reportReason,
+      onChanged: (String? newValue) {
+        setState(() {
+          _reportReason = newValue ?? '';
+        });
+      },
       dense: true,
+      activeColor: const Color(0xFF10B981),
     );
   }
 
