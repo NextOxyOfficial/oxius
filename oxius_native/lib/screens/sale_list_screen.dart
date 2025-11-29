@@ -12,6 +12,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
 import '../widgets/sale_skeleton_loader.dart';
+import '../widgets/sale_list_skeleton_loader.dart';
 import 'package:intl/intl.dart';
 
 /// Sale Listing Screen - Browse sale posts with filters and search
@@ -327,9 +328,14 @@ class _SaleListScreenState extends State<SaleListScreen> {
     _fetchPosts(refresh: true);
   }
 
-  String _formatPrice(double price) {
+  String _formatPrice(SalePost post) {
+    // If negotiable, show 'Negotiable' text instead of price
+    if (post.negotiable) {
+      return 'Negotiable';
+    }
+    // Otherwise show formatted price
     final formatter = NumberFormat('#,##,###');
-    return '৳${formatter.format(price)}';
+    return '৳${formatter.format(post.price)}';
   }
 
   String _formatDate(DateTime? date) {
@@ -645,7 +651,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
         ],
       ),
       body: _isLoading && !_initialLoadComplete
-          ? const SaleSkeletonLoader(itemCount: 6)
+          ? _isListView 
+            ? const SaleListSkeletonLoader(itemCount: 6)
+            : const SaleSkeletonLoader(itemCount: 6)
           : RefreshIndicator(
               color: const Color(0xFF10B981),
               onRefresh: _handleRefresh,
@@ -1001,26 +1009,27 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   itemBuilder: (context, index) => _buildPostCard(_posts[index]),
                 ),
           if (_isLoadingMore)
-            const SaleSkeletonLoader(itemCount: 4),
+            _isListView 
+              ? const SaleListSkeletonLoader(itemCount: 4)
+              : const SaleSkeletonLoader(itemCount: 4),
           // See More Button
           if (!_isLoadingMore && _posts.length < _totalCount)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               child: Center(
-                child: TextButton.icon(
+                child: OutlinedButton.icon(
                   onPressed: _loadMore,
-                  icon: const Icon(Icons.expand_more, size: 20),
-                  label: Text(
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                  label: const Text(
                     'Load More',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
-                  style: TextButton.styleFrom(
+                  style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF10B981),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    backgroundColor: const Color(0xFF10B981).withOpacity(0.1),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    side: BorderSide(color: const Color(0xFF10B981).withOpacity(0.4), width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(color: const Color(0xFF10B981).withOpacity(0.3)),
                     ),
                   ),
                 ),
@@ -1078,7 +1087,6 @@ class _SaleListScreenState extends State<SaleListScreen> {
         );
       },
       child: Container(
-        height: 120, // Fixed height to prevent blank page
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -1102,8 +1110,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 bottomLeft: Radius.circular(10),
               ),
               child: SizedBox(
-                width: 120,
-                height: 120,
+                width: 90,
+                height: 90,
                 child: hasImage
                     ? CachedNetworkImage(
                         imageUrl: getImageUrl(),
@@ -1122,7 +1130,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           child: Icon(
                             Icons.image_not_supported_rounded,
                             color: Colors.grey.shade400,
-                            size: 40,
+                            size: 32,
                           ),
                         ),
                       )
@@ -1131,7 +1139,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         child: Icon(
                           Icons.image_outlined,
                           color: Colors.grey.shade400,
-                          size: 40,
+                          size: 32,
                         ),
                       ),
               ),
@@ -1140,102 +1148,71 @@ class _SaleListScreenState extends State<SaleListScreen> {
             // Content
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Top section (Title + Badge + Location)
-                    Flexible(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Title
-                          Text(
-                            post.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF111827),
-                              height: 1.2,
-                              letterSpacing: -0.1,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          
-                          // Condition Badge
-                          if (post.condition != null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              margin: const EdgeInsets.only(bottom: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                  color: const Color(0xFF10B981).withOpacity(0.3),
-                                ),
-                              ),
-                              child: Text(
-                                post.condition!.toUpperCase(),
-                                style: const TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF10B981),
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            ),
-                          
-                          // Location
-                          if (_formatLocation(post).isNotEmpty)
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.location_on_rounded,
-                                  size: 11,
-                                  color: Colors.grey.shade500,
-                                ),
-                                const SizedBox(width: 3),
-                                Expanded(
-                                  child: Text(
-                                    _formatLocation(post),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
+                    // Title
+                    Text(
+                      post.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                        height: 1.2,
+                        letterSpacing: -0.1,
                       ),
                     ),
+                    const SizedBox(height: 5),
                     
-                    // Bottom section (Price and Date)
+                    // Price and Condition Badge Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Flexible(
-                          child: Text(
-                            _formatPrice(post.price),
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF10B981),
-                              letterSpacing: -0.3,
+                        // Left side: Price and Condition
+                        Row(
+                          children: [
+                            // Price
+                            Text(
+                              _formatPrice(post),
+                              style: TextStyle(
+                                fontSize: post.negotiable ? 12 : 14,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF10B981),
+                                letterSpacing: -0.2,
+                              ),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                            const SizedBox(width: 8),
+                            
+                            // Condition Badge
+                            if (post.condition != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: const Color(0xFF10B981).withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Text(
+                                  post.condition!.toUpperCase(),
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF10B981),
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                        if (post.createdAt != null) ...[
-                          const SizedBox(width: 8),
+                        
+                        // Right side: Time ago
+                        if (post.createdAt != null)
                           Text(
                             _formatDate(post.createdAt),
                             style: TextStyle(
@@ -1244,9 +1221,33 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                        ],
                       ],
                     ),
+                    const SizedBox(height: 3),
+                    
+                    // Location
+                    if (_formatLocation(post).isNotEmpty)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on_rounded,
+                            size: 11,
+                            color: Colors.grey.shade500,
+                          ),
+                          const SizedBox(width: 3),
+                          Expanded(
+                            child: Text(
+                              _formatLocation(post),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -1407,7 +1408,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           Expanded(
                             child: Text(
                               _formatLocation(post),
-                              maxLines: 2,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 10,
@@ -1420,26 +1421,23 @@ class _SaleListScreenState extends State<SaleListScreen> {
                       ),
                     ),
                   
-                  // Price and Date Row
+                  // Price and Time Row (compact)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: Text(
-                          _formatPrice(post.price),
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF10B981),
-                            letterSpacing: -0.2,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      // Price
+                      Text(
+                        _formatPrice(post),
+                        style: TextStyle(
+                          fontSize: post.negotiable ? 11 : 13,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF10B981),
+                          letterSpacing: -0.2,
                         ),
                       ),
-                      if (post.createdAt != null) ...[
-                        const SizedBox(width: 4),
+                      // Time ago
+                      if (post.createdAt != null)
                         Text(
                           _formatDate(post.createdAt),
                           style: TextStyle(
@@ -1448,7 +1446,6 @@ class _SaleListScreenState extends State<SaleListScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ],
                     ],
                   ),
                 ],
@@ -1571,17 +1568,17 @@ class _SaleListScreenState extends State<SaleListScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.access_time, color: Colors.amber.shade700, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.access_time_rounded, color: Colors.amber.shade700, size: 18),
+              const SizedBox(width: 6),
               Text(
                 'Recent Listings',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.amber.shade700),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.amber.shade700, letterSpacing: -0.2),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           SizedBox(
-            height: 160,
+            height: 140,
             child: ListView.builder(
               controller: _recentScrollController,
               scrollDirection: Axis.horizontal,
@@ -1616,17 +1613,17 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     );
                   },
                   child: Container(
-                    width: 240,
-                    margin: const EdgeInsets.only(right: 12),
+                    width: 200,
+                    margin: const EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.amber.shade100),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey.shade200),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
                         ),
                       ],
                     ),
@@ -1635,73 +1632,53 @@ class _SaleListScreenState extends State<SaleListScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         ClipRRect(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
                           child: Stack(
                             children: [
                               hasImage
                                   ? CachedNetworkImage(
                                       imageUrl: getImageUrl(),
-                                      height: 110,
+                                      height: 78,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
                                       placeholder: (context, url) => Container(
-                                        height: 110,
+                                        height: 85,
                                         color: Colors.grey.shade100,
                                         child: const Center(
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            color: Color(0xFFF59E0B),
+                                            color: Color(0xFF10B981),
                                           ),
                                         ),
                                       ),
                                       errorWidget: (context, url, error) => Container(
-                                        height: 110,
+                                        height: 85,
                                         color: Colors.grey.shade100,
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.image_not_supported_rounded, color: Colors.grey.shade400, size: 32),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              'No Image',
-                                              style: TextStyle(color: Colors.grey.shade500, fontSize: 9),
-                                            ),
-                                          ],
-                                        ),
+                                        child: Icon(Icons.image_not_supported_rounded, color: Colors.grey.shade400, size: 28),
                                       ),
                                     )
                                   : Container(
-                                      height: 110,
+                                      height: 78,
                                       width: double.infinity,
                                       color: Colors.grey.shade100,
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Icons.image_outlined, color: Colors.grey.shade400, size: 32),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'No Image',
-                                            style: TextStyle(color: Colors.grey.shade500, fontSize: 9),
-                                          ),
-                                        ],
-                                      ),
+                                      child: Icon(Icons.image_outlined, color: Colors.grey.shade400, size: 28),
                                     ),
                               if (_getCategoryName(listing.categoryId) != null)
                                 Positioned(
-                                  top: 8,
-                                  right: 8,
+                                  top: 6,
+                                  right: 6,
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.9),
-                                      borderRadius: BorderRadius.circular(12),
+                                      color: Colors.white.withOpacity(0.95),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
                                       _getCategoryName(listing.categoryId) ?? '',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.amber.shade700,
-                                        fontWeight: FontWeight.w600,
+                                      style: const TextStyle(
+                                        fontSize: 9,
+                                        color: Color(0xFF10B981),
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                   ),
@@ -1710,7 +1687,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                           ),
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(6),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
@@ -1719,39 +1696,44 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 listing.title,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF1F2937), height: 1.2),
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF1F2937), height: 1.2, letterSpacing: -0.1),
                               ),
-                              const SizedBox(height: 3),
+                              const SizedBox(height: 2),
                               Row(
                                 children: [
-                                  Icon(Icons.location_on_outlined, size: 10, color: Colors.grey.shade600),
-                                  const SizedBox(width: 3),
+                                  Icon(Icons.location_on_rounded, size: 9, color: Colors.grey.shade500),
+                                  const SizedBox(width: 2),
                                   Expanded(
                                     child: Text(
                                       _formatLocation(listing),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                                      style: TextStyle(fontSize: 8, color: Colors.grey.shade600),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 3),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      _formatPrice(listing.price),
-                                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.amber.shade700),
+                                      _formatPrice(listing),
+                                      style: TextStyle(
+                                        fontSize: listing.negotiable ? 9 : 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xFF10B981),
+                                        letterSpacing: -0.1
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  const SizedBox(width: 4),
+                                  const SizedBox(width: 3),
                                   if (listing.createdAt != null)
                                     Text(
                                       _formatDate(listing.createdAt),
-                                      style: TextStyle(fontSize: 9, color: Colors.grey.shade600),
+                                      style: TextStyle(fontSize: 7, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
                                     ),
                                 ],
                               ),

@@ -811,4 +811,46 @@ class BusinessNetworkService {
       return false;
     }
   }
+
+  /// Get trending hashtags
+  static Future<List<Map<String, dynamic>>> getTrendingTags({int limit = 7}) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/trending-tags/?limit=$limit'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          return List<Map<String, dynamic>>.from(data);
+        }
+      }
+      
+      return [];
+    } catch (e) {
+      print('Error fetching trending tags: $e');
+      return [];
+    }
+  }
+
+  /// Get top 100 hashtags
+  static Future<List<Map<String, dynamic>>> getTopTags() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/top-tags/'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          return List<Map<String, dynamic>>.from(data);
+        }
+      }
+      
+      return [];
+    } catch (e) {
+      print('Error fetching top tags: $e');
+      return [];
+    }
+  }
 }

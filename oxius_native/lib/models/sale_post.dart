@@ -4,6 +4,7 @@ class SalePost {
   final String slug;
   final String? description;
   final double price;
+  final bool negotiable;
   final String condition; // new, like_new, good, fair, poor
   final String country;
   final String? state;
@@ -31,6 +32,7 @@ class SalePost {
     required this.slug,
     this.description,
     required this.price,
+    this.negotiable = false,
     required this.condition,
     required this.country,
     this.state,
@@ -63,6 +65,7 @@ class SalePost {
       slug: json['slug'] as String? ?? '',
       description: json['description'] as String?,
       price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+      negotiable: json['negotiable'] == true || json['negotiable'] == 'true',
       condition: json['condition'] as String? ?? 'good',
       country: json['country'] as String? ?? 'Bangladesh',
       state: json['state'] as String?,
@@ -103,6 +106,7 @@ class SalePost {
       'slug': slug,
       'description': description,
       'price': price,
+      'negotiable': negotiable,
       'condition': condition,
       'country': country,
       'state': state,
