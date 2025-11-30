@@ -86,18 +86,23 @@
 
                 <div>
                   <label for="gig-price" class="block text-sm font-medium text-gray-700 mb-2">
-                    Starting Price ($) *
+                    <span class="inline-flex items-center">Starting Price (<UIcon name="i-mdi:currency-bdt" />) *</span>
                   </label>
-                  <input
-                    id="gig-price"
-                    v-model="newGig.price"
-                    type="number"
-                    min="5"
-                    placeholder="25"
-                    class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-                    required
-                  />
-                  <p class="text-xs text-gray-500 mt-1">Minimum $5</p>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <UIcon name="i-mdi:currency-bdt" class="text-gray-400" />
+                    </div>
+                    <input
+                      id="gig-price"
+                      v-model="newGig.price"
+                      type="number"
+                      min="5"
+                      placeholder="25"
+                      class="w-full pl-8 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                      required
+                    />
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1 inline-flex items-center">Minimum <UIcon name="i-mdi:currency-bdt" class="mx-0.5" />5</p>
                 </div>
               </div>
 

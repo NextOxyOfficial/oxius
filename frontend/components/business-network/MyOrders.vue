@@ -102,7 +102,7 @@
           <div class="grid grid-cols-3 gap-2 sm:gap-4 py-3 border-t border-gray-100">
             <div class="text-center sm:text-left">
               <p class="text-xs text-gray-500 mb-0.5">Amount</p>
-              <p class="text-sm sm:text-base font-semibold text-gray-900">${{ order.amount }}</p>
+              <p class="text-sm sm:text-base font-semibold text-gray-900 inline-flex items-center justify-center sm:justify-start"><UIcon name="i-mdi:currency-bdt" />{{ order.amount }}</p>
             </div>
             <div class="text-center sm:text-left">
               <p class="text-xs text-gray-500 mb-0.5">Delivery</p>

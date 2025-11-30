@@ -1,154 +1,127 @@
 <template>
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
-    <!-- Loading State -->
-    <div v-if="isLoading" class="animate-pulse">
-      <!-- Breadcrumb skeleton -->
-      <div class="flex items-center space-x-2 mb-6">
-        <div class="h-4 w-20 bg-gray-200 rounded"></div>
-        <div class="h-4 w-4 bg-gray-200 rounded"></div>
-        <div class="h-4 w-32 bg-gray-200 rounded"></div>
-      </div>
-
-      <!-- Main content skeleton -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="p-6 lg:p-8">
-          <!-- Hero Image skeleton -->
-          <div class="relative mb-8">
-            <div class="aspect-video rounded-lg bg-gray-200 mb-4"></div>
-            <!-- Gallery thumbnails skeleton -->
-            <div class="flex space-x-2">
-              <div v-for="i in 4" :key="i" class="w-16 h-16 rounded-md bg-gray-200"></div>
-            </div>
-          </div>
-
-          <!-- Title skeleton -->
-          <div class="mb-8">
-            <div class="h-8 w-3/4 bg-gray-200 rounded mb-4"></div>
-            
-            <!-- Seller info skeleton -->
-            <div class="flex items-center mb-6 p-4 bg-gray-50 rounded-lg">
-              <div class="h-12 w-12 rounded-full bg-gray-200 mr-4"></div>
-              <div class="flex-1">
-                <div class="h-5 w-32 bg-gray-200 rounded mb-2"></div>
-                <div class="h-4 w-24 bg-gray-200 rounded"></div>
+    <!-- Header Section -->
+    <div class="mb-2">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-2 py-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 flex items-center">
+              <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                <Star class="h-5 w-5 text-white" />
               </div>
-              <div class="h-10 w-24 bg-gray-200 rounded"></div>
-            </div>
-
-            <!-- Description skeleton -->
-            <div class="space-y-4 mb-8">
-              <div class="h-6 w-40 bg-gray-200 rounded"></div>
-              <div class="space-y-2">
-                <div class="h-4 w-full bg-gray-200 rounded"></div>
-                <div class="h-4 w-5/6 bg-gray-200 rounded"></div>
-                <div class="h-4 w-4/5 bg-gray-200 rounded"></div>
-              </div>
-              
-              <div class="h-5 w-32 bg-gray-200 rounded mt-6"></div>
-              <div class="space-y-2">
-                <div v-for="i in 5" :key="i" class="flex items-center">
-                  <div class="h-4 w-4 bg-gray-200 rounded mr-2"></div>
-                  <div class="h-4 w-48 bg-gray-200 rounded"></div>
-                </div>
-              </div>
-
-              <div class="h-5 w-40 bg-gray-200 rounded mt-6"></div>
-              <div class="flex flex-wrap gap-2">
-                <div v-for="i in 5" :key="i" class="h-8 w-20 bg-gray-200 rounded-full"></div>
-              </div>
-            </div>
-
-            <!-- Pricing skeleton -->
-            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <!-- Price skeleton -->
-                <div class="text-center md:text-left">
-                  <div class="h-12 w-24 bg-gray-200 rounded mb-2"></div>
-                  <div class="h-4 w-20 bg-gray-200 rounded"></div>
-                </div>
-                <!-- Package details skeleton -->
-                <div class="space-y-3">
-                  <div v-for="i in 3" :key="i" class="flex justify-between items-center">
-                    <div class="h-4 w-20 bg-gray-200 rounded"></div>
-                    <div class="h-4 w-16 bg-gray-200 rounded"></div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Action buttons skeleton -->
-              <div class="flex flex-col sm:flex-row gap-3 mb-6">
-                <div class="flex-1 h-12 bg-gray-200 rounded-lg"></div>
-                <div class="flex-1 h-12 bg-gray-200 rounded-lg"></div>
-              </div>
-              
-              <!-- Trust indicators skeleton -->
-              <div class="pt-6 border-t border-gray-200">
-                <div class="flex items-center justify-center space-x-6">
-                  <div class="h-4 w-16 bg-gray-200 rounded"></div>
-                  <div class="h-4 w-20 bg-gray-200 rounded"></div>
-                  <div class="h-4 w-12 bg-gray-200 rounded"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Reviews skeleton -->
-          <div class="border-t pt-8">
-            <div class="flex items-center justify-between mb-6">
-              <div class="h-6 w-32 bg-gray-200 rounded"></div>
-              <div class="h-6 w-24 bg-gray-200 rounded"></div>
-            </div>
-            
-            <!-- Sample review skeleton -->
-            <div class="p-4 bg-gray-50 rounded-lg">
-              <div class="flex items-start mb-3">
-                <div class="h-8 w-8 rounded-full bg-gray-200 mr-3"></div>
-                <div>
-                  <div class="h-4 w-24 bg-gray-200 rounded mb-1"></div>
-                  <div class="h-3 w-20 bg-gray-200 rounded"></div>
-                </div>
-              </div>
-              <div class="space-y-2">
-                <div class="h-3 w-full bg-gray-200 rounded"></div>
-                <div class="h-3 w-3/4 bg-gray-200 rounded"></div>
-              </div>
-            </div>
+              Workspaces
+            </h1>
+            <p class="mt-1 text-gray-600 text-sm sm:text-base">Browse gigs, manage orders, and offer your services</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Gig Not Found -->
-    <div v-else-if="!gig" class="text-center py-16">
-      <div class="mx-auto h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-        <AlertTriangle class="h-12 w-12 text-gray-400" />
+    <!-- Main Content -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+      <!-- Tab Navigation -->
+      <div class="border-b border-gray-100">
+        <!-- Desktop View -->
+        <nav class="hidden sm:flex space-x-8 px-6" aria-label="Tabs">
+          <button
+            v-for="tab in tabs"
+            :key="tab.id"
+            @click="navigateToTab(tab.id)"
+            :class="[
+              'py-4 px-1 border-b-2 font-medium text-sm transition-colors flex items-center',
+              tab.id === 'all-gigs'
+                ? 'border-purple-500 text-purple-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            ]"
+          >
+            <component :is="tab.icon" class="h-4 w-4 mr-2" />
+            {{ tab.name }}
+          </button>
+        </nav>
+
+        <!-- Mobile View - 2x2 Grid -->
+        <div class="sm:hidden px-4 py-3">
+          <div class="grid grid-cols-2 gap-1">
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              @click="navigateToTab(tab.id)"
+              :class="[
+                'py-3 px-2 rounded-lg border-2 font-medium text-xs transition-colors',
+                tab.id === 'all-gigs'
+                  ? 'border-purple-500 text-purple-600 bg-purple-50'
+                  : 'border-gray-200 text-gray-600 hover:text-gray-800 hover:border-gray-300'
+              ]"
+            >
+              <div class="flex items-center justify-center space-x-1">
+                <component :is="tab.icon" class="h-4 w-4" />
+                <span class="leading-tight">{{ tab.name }}</span>
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
-      <h3 class="text-xl font-medium text-gray-900 mb-2">Workspace Not Found</h3>
-      <p class="text-gray-600 mb-6">The workspace you're looking for doesn't exist or has been removed.</p>
-      <NuxtLink 
-        to="/business-network/workspaces"
-        class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-      >
-        <ArrowLeft class="w-4 h-4 mr-2" />
-        Back to Workspaces
-      </NuxtLink>
-    </div>
 
-    <!-- Gig Details -->
-    <div v-else>
-      <!-- Breadcrumb -->
-      <nav class="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-        <NuxtLink to="/business-network/workspaces" class="hover:text-purple-600 transition-colors">
-          Workspaces
-        </NuxtLink>
-        <ChevronRight class="h-4 w-4" />
-        <span class="text-gray-900 font-medium">{{ gig.title }}</span>
-      </nav>
+      <!-- Tab Content - Gig Details -->
+      <div class="sm:px-6 p-2">
+        <!-- Loading State -->
+        <div v-if="isLoading" class="animate-pulse py-6">
+          <!-- Breadcrumb skeleton -->
+          <div class="flex items-center space-x-2 mb-6">
+            <div class="h-4 w-20 bg-gray-200 rounded"></div>
+            <div class="h-4 w-4 bg-gray-200 rounded"></div>
+            <div class="h-4 w-32 bg-gray-200 rounded"></div>
+          </div>
 
-      <!-- Main Content -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="sm:p-5 p-2">
-          <!-- Hero Image -->
+          <!-- Main content skeleton -->
+          <div class="aspect-video rounded-lg bg-gray-200 mb-4"></div>
+          <div class="h-8 w-3/4 bg-gray-200 rounded mb-4"></div>
+          <div class="flex items-center mb-6 p-4 bg-gray-50 rounded-lg">
+            <div class="h-12 w-12 rounded-full bg-gray-200 mr-4"></div>
+            <div class="flex-1">
+              <div class="h-5 w-32 bg-gray-200 rounded mb-2"></div>
+              <div class="h-4 w-24 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+          <div class="space-y-2 mb-6">
+            <div class="h-4 w-full bg-gray-200 rounded"></div>
+            <div class="h-4 w-5/6 bg-gray-200 rounded"></div>
+            <div class="h-4 w-4/5 bg-gray-200 rounded"></div>
+          </div>
+          <div class="h-12 w-32 bg-gray-200 rounded"></div>
+        </div>
+
+        <!-- Gig Not Found -->
+        <div v-else-if="!gig" class="text-center py-16">
+          <div class="mx-auto h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <AlertTriangle class="h-12 w-12 text-gray-400" />
+          </div>
+          <h3 class="text-xl font-medium text-gray-900 mb-2">Workspace Not Found</h3>
+          <p class="text-gray-600 mb-6">The workspace you're looking for doesn't exist or has been removed.</p>
+          <NuxtLink 
+            to="/business-network/workspaces"
+            class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+          >
+            <ArrowLeft class="w-4 h-4 mr-2" />
+            Back to Workspaces
+          </NuxtLink>
+        </div>
+
+        <!-- Gig Details -->
+        <div v-else>
+          <!-- Breadcrumb -->
+          <nav class="flex items-center space-x-2 text-sm text-gray-600 pt-1 pb-3">
+            <NuxtLink to="/business-network/workspaces" class="hover:text-purple-600 transition-colors">
+              Workspaces
+            </NuxtLink>
+            <ChevronRight class="h-4 w-4" />
+            <span class="text-gray-900 font-medium">{{ gig.title }}</span>
+          </nav>
+
+          <!-- Main Content -->
+          <div class="bg-white rounded-xl overflow-hidden">
+            <div class="p-2">
+              <!-- Hero Image -->
             <div class="relative mb-8">
               <div class="aspect-video rounded-lg overflow-hidden bg-gray-100">
                 <img
@@ -179,22 +152,44 @@
               
               <!-- Seller Info -->
               <div class="flex items-center mb-6 p-4 bg-gray-50 rounded-lg">
-                <img
-                  :src="gig.user.avatar"
-                  :alt="gig.user.name"
-                  class="h-12 w-12 rounded-full object-cover mr-4 cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
-                  @click="navigateToProfile(gig.user.id)"
-                />
-                <div class="flex-1">
-                  <h3 
-                    class="font-semibold text-gray-900 cursor-pointer hover:text-purple-600 transition-colors"
-                    @click="navigateToProfile(gig.user.id)"
+                <!-- Avatar with Pro ring -->
+                <div class="relative mr-4">
+                  <div 
+                    v-if="gig.user.is_pro"
+                    class="absolute inset-0 rounded-full border-2 border-transparent bg-gradient-to-r from-amber-400 to-orange-500 p-[2px]"
                   >
-                    {{ gig.user.name }}
-                  </h3>
+                    <div class="w-full h-full rounded-full bg-gray-50"></div>
+                  </div>
+                  <img
+                    :src="gig.user.avatar"
+                    :alt="gig.user.name"
+                    class="relative h-12 w-12 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
+                    @click="navigateToProfile(gig.user.id)"
+                  />
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <h3 
+                      class="font-semibold text-gray-900 cursor-pointer hover:text-purple-600 transition-colors"
+                      @click="navigateToProfile(gig.user.id)"
+                    >
+                      {{ gig.user.name }}
+                    </h3>
+                    <!-- Verified Badge -->
+                    <UIcon v-if="gig.user.kyc" name="i-heroicons-check-badge-solid" class="w-5 h-5 text-blue-500" title="Verified" />
+                    <!-- Pro Badge -->
+                    <span v-if="gig.user.is_pro" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                      PRO
+                    </span>
+                  </div>
                   <div class="flex items-center mt-1">
                     <div class="flex items-center">
-                      <Star v-for="i in 5" :key="i" class="h-4 w-4 text-yellow-400 fill-current" />
+                      <Star 
+                        v-for="i in 5" 
+                        :key="i" 
+                        class="h-4 w-4"
+                        :class="i <= Math.round(gig.rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'"
+                      />
                     </div>
                     <span class="text-sm text-gray-600 ml-2">
                       {{ gig.rating }} 
@@ -244,7 +239,9 @@
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <!-- Left: Price -->
                     <div class="text-center md:text-left">
-                      <div class="text-3xl font-bold text-gray-900 mb-2">${{ gig.price }}</div>
+                      <div class="text-3xl font-bold text-gray-900 mb-2 inline-flex items-center">
+                        <UIcon name="i-mdi:currency-bdt" class="text-3xl" />{{ gig.price }}
+                      </div>
                       <p class="text-gray-600 text-sm">Starting price</p>
                     </div>
 
@@ -271,7 +268,7 @@
                       @click="handleOrder"
                       class="flex-1 bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors"
                     >
-                      Order (${{ gig.price }})
+                      <span class="inline-flex items-center">Order (<UIcon name="i-mdi:currency-bdt" />{{ gig.price }})</span>
                     </button>
                     <button
                       @click="handleContact"
@@ -347,12 +344,20 @@
                         class="h-6 w-6 rounded-full mr-2 cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
                         @click.stop="navigateToProfile(relatedGig.user.id)"
                       />
-                      <span 
-                        class="text-sm text-gray-600 cursor-pointer hover:text-purple-600 transition-colors"
-                        @click.stop="navigateToProfile(relatedGig.user.id)"
-                      >
-                        {{ relatedGig.user.name }}
-                      </span>
+                      <div class="flex items-center gap-1 flex-1 min-w-0">
+                        <span 
+                          class="text-sm text-gray-600 cursor-pointer hover:text-purple-600 transition-colors truncate"
+                          @click.stop="navigateToProfile(relatedGig.user.id)"
+                        >
+                          {{ relatedGig.user.name }}
+                        </span>
+                        <!-- Verified Badge -->
+                        <UIcon v-if="relatedGig.user.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        <!-- Pro Badge -->
+                        <span v-if="relatedGig.user.is_pro" class="flex-shrink-0 inline-flex items-center px-1 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                          PRO
+                        </span>
+                      </div>
                     </div>
                     
                     <!-- Rating and Price -->
@@ -362,8 +367,8 @@
                         <span class="text-sm font-medium text-gray-900">{{ relatedGig.rating }}</span>
                         <span class="text-sm text-gray-500 ml-1">({{ relatedGig.reviews }})</span>
                       </div>
-                      <div class="text-lg font-bold text-gray-900">
-                        ${{ relatedGig.price }}
+                      <div class="text-lg font-bold text-gray-900 inline-flex items-center">
+                        <UIcon name="i-mdi:currency-bdt" class="text-lg" />{{ relatedGig.price }}
                       </div>
                     </div>
                   </div>
@@ -374,7 +379,7 @@
             <!-- Reviews Section -->
             <div id="reviews-section" class="border-t pt-8">
               <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-gray-900">Reviews ({{ gig.reviews }})</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Reviews ({{ totalReviewsCount }})</h3>
                 <div class="flex items-center">
                   <Star class="h-5 w-5 text-yellow-400 fill-current mr-1" />
                   <span class="font-semibold text-gray-900">{{ gig.rating }}</span>
@@ -382,24 +387,113 @@
                 </div>
               </div>
 
-              <!-- Reviews List - Will be populated from API -->
-              <div v-if="gig.reviews > 0" class="space-y-4">
-                <p class="text-gray-500 text-sm">Reviews will be loaded from the database.</p>
+              <!-- Reviews Loading (Initial) -->
+              <div v-if="isLoadingReviews && reviews.length === 0" class="space-y-4">
+                <div v-for="i in 3" :key="i" class="bg-gray-50 rounded-lg p-4 animate-pulse">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-gray-200"></div>
+                    <div class="flex-1 space-y-2">
+                      <div class="h-4 bg-gray-200 rounded w-1/4"></div>
+                      <div class="h-3 bg-gray-200 rounded w-1/6"></div>
+                      <div class="h-3 bg-gray-200 rounded w-full mt-2"></div>
+                      <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div v-else class="text-center py-6">
+
+              <!-- Reviews List -->
+              <div v-else-if="reviews.length > 0" class="space-y-4">
+                <!-- Showing count -->
+                <p class="text-sm text-gray-500 mb-4">
+                  Showing {{ reviews.length }} of {{ totalReviewsCount }} reviews
+                </p>
+                
+                <div 
+                  v-for="review in reviews" 
+                  :key="review.id"
+                  class="bg-gray-50 rounded-lg p-4"
+                >
+                  <div class="flex items-start space-x-3">
+                    <!-- Reviewer Avatar -->
+                    <img 
+                      :src="review.user.avatar || '/images/default-avatar.png'" 
+                      :alt="review.user.name"
+                      class="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div class="flex-1">
+                      <!-- Reviewer Info -->
+                      <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center gap-2">
+                          <span class="font-medium text-gray-900">{{ review.user.name }}</span>
+                          <!-- Verified Badge -->
+                          <UIcon v-if="review.user.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500" />
+                          <!-- Pro Badge -->
+                          <span v-if="review.user.is_pro" class="inline-flex items-center px-1 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                            PRO
+                          </span>
+                        </div>
+                        <span class="text-xs text-gray-500">{{ formatReviewDate(review.created_at) }}</span>
+                      </div>
+                      
+                      <!-- Rating Stars -->
+                      <div class="flex items-center mb-2">
+                        <div class="flex">
+                          <Star 
+                            v-for="star in 5" 
+                            :key="star"
+                            class="h-4 w-4"
+                            :class="star <= review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'"
+                          />
+                        </div>
+                        <span class="text-sm text-gray-600 ml-2">{{ review.rating }}/5</span>
+                      </div>
+                      
+                      <!-- Review Comment -->
+                      <p class="text-gray-700 text-sm">{{ review.comment }}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Load More Button -->
+                <div v-if="hasMoreReviews" class="text-center pt-4">
+                  <button
+                    @click="loadMoreReviews"
+                    :disabled="isLoadingMoreReviews"
+                    class="inline-flex items-center px-6 py-2.5 border border-purple-300 text-purple-600 rounded-lg hover:bg-purple-50 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span v-if="isLoadingMoreReviews" class="inline-flex items-center">
+                      <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Loading...
+                    </span>
+                    <span v-else>
+                      See More Reviews ({{ totalReviewsCount - reviews.length }} remaining)
+                    </span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- No Reviews -->
+              <div v-else-if="!isLoadingReviews" class="text-center py-8 bg-gray-50 rounded-lg">
+                <Star class="h-12 w-12 text-gray-300 mx-auto mb-3" />
                 <p class="text-gray-500 text-sm">No reviews yet. Be the first to review!</p>
               </div>
             </div>
           </div>
         </div>
+        </div>
       </div>
     </div>
+  </div>
 </template>
 
 <script setup>
 import { 
   Star, Eye, Clock, Check, Heart, Share2, ChevronRight, ArrowLeft, 
-  AlertTriangle
+  AlertTriangle, User, ShoppingCart, Package, Plus
 } from 'lucide-vue-next';
 
 // Page meta
@@ -407,6 +501,23 @@ definePageMeta({
   layout: "adsy-business-network",
   title: "Workspace Details - Business Network",
 });
+
+// Router
+const router = useRouter();
+
+// Tab Configuration
+const tabs = [
+  { id: 'all-gigs', name: 'All Gigs', icon: Star },
+  { id: 'my-gigs', name: 'My Gigs', icon: User },
+  { id: 'my-orders', name: 'Order Received', icon: ShoppingCart },
+  { id: 'gig-ordered', name: 'Gig Ordered', icon: Package },
+  { id: 'create-gig', name: 'Post A Gig', icon: Plus }
+];
+
+// Navigate to tab
+const navigateToTab = (tabId) => {
+  router.push({ path: '/business-network/workspaces', query: { tab: tabId } });
+};
 
 // Composables
 const route = useRoute();
@@ -418,6 +529,13 @@ const { get } = useApi();
 const isLoading = ref(true);
 const gig = ref(null);
 const relatedGigsData = ref([]);
+const reviews = ref([]);
+const isLoadingReviews = ref(false);
+const isLoadingMoreReviews = ref(false);
+const reviewsPage = ref(1);
+const reviewsPerPage = 10;
+const totalReviewsCount = ref(0);
+const hasMoreReviews = computed(() => reviews.value.length < totalReviewsCount.value);
 
 // Helper functions
 const getCategoryLabel = (category) => {
@@ -512,6 +630,99 @@ const scrollToReviews = () => {
     reviewsSection.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
+    });
+  }
+};
+
+// Fetch reviews from API with pagination
+const fetchReviews = async (gigId, page = 1, append = false) => {
+  if (page === 1) {
+    isLoadingReviews.value = true;
+  } else {
+    isLoadingMoreReviews.value = true;
+  }
+  
+  try {
+    const { data, error } = await get(`/workspace/gigs/${gigId}/reviews/?page=${page}&page_size=${reviewsPerPage}`);
+    
+    if (error) {
+      console.error('Error fetching reviews:', error);
+      if (!append) {
+        reviews.value = [];
+        totalReviewsCount.value = 0;
+      }
+      return;
+    }
+    
+    // Get total count from API response
+    const total = data?.count || data?.results?.length || (Array.isArray(data) ? data.length : 0);
+    totalReviewsCount.value = total;
+    
+    const results = data?.results || data || [];
+    const mappedReviews = results.map(review => ({
+      id: review.id,
+      rating: review.rating,
+      comment: review.comment,
+      created_at: review.created_at,
+      user: {
+        id: review.user?.id,
+        name: review.user?.name || 'Anonymous',
+        avatar: review.user?.avatar || '/images/default-avatar.png',
+        is_pro: review.user?.is_pro || false,
+        kyc: review.user?.kyc || false,
+      }
+    }));
+    
+    if (append) {
+      reviews.value = [...reviews.value, ...mappedReviews];
+    } else {
+      reviews.value = mappedReviews;
+    }
+    
+    reviewsPage.value = page;
+  } catch (err) {
+    console.error('Error fetching reviews:', err);
+    if (!append) {
+      reviews.value = [];
+      totalReviewsCount.value = 0;
+    }
+  } finally {
+    isLoadingReviews.value = false;
+    isLoadingMoreReviews.value = false;
+  }
+};
+
+// Load more reviews
+const loadMoreReviews = async () => {
+  if (gig.value?.id && hasMoreReviews.value && !isLoadingMoreReviews.value) {
+    await fetchReviews(gig.value.id, reviewsPage.value + 1, true);
+  }
+};
+
+// Format review date
+const formatReviewDate = (dateString) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now - date);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) {
+    return 'Today';
+  } else if (diffDays === 1) {
+    return 'Yesterday';
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago`;
+  } else if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${weeks} week${weeks > 1 ? 's' : ''} ago`;
+  } else if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return `${months} month${months > 1 ? 's' : ''} ago`;
+  } else {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
     });
   }
 };
@@ -638,6 +849,12 @@ const fetchGig = async () => {
     // Fetch related gigs
     await fetchRelatedGigs(gig.value.category, gigId);
     
+    // Reset reviews pagination and fetch first page
+    reviews.value = [];
+    reviewsPage.value = 1;
+    totalReviewsCount.value = 0;
+    await fetchReviews(gigId, 1, false);
+    
   } catch (err) {
     console.error('Error fetching gig:', err);
     gig.value = null;
@@ -669,6 +886,8 @@ const fetchRelatedGigs = async (category, currentGigId) => {
           id: g.user?.id,
           name: g.user?.name || 'Unknown User',
           avatar: g.user?.avatar || '/images/default-avatar.png',
+          is_pro: g.user?.is_pro || false,
+          kyc: g.user?.kyc || false,
         },
         rating: g.rating || 0,
         reviews: g.reviews || 0,

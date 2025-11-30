@@ -1,37 +1,65 @@
 <template>
   <div class="space-y-4 sm:space-y-6">
-    <!-- Status Filter Tabs - Responsive -->
-    <div class="border-b border-gray-200">
-      <!-- Mobile: Horizontal scroll -->
-      <div class="flex overflow-x-auto scrollbar-hide -mx-1 sm:mx-0">
-        <nav class="flex min-w-full sm:min-w-0" aria-label="Tabs">
+    <!-- Status Filter Dropdown -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Status Dropdown -->
+        <div class="relative">
           <button
-            v-for="status in statusTabs"
-            :key="status.id"
-            @click="activeStatus = status.id"
-            :class="[
-              'flex-shrink-0 py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors flex items-center whitespace-nowrap',
-              activeStatus === status.id
-                ? 'border-purple-500 text-purple-600 bg-purple-50/50'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            ]"
+            @click="showStatusDropdown = !showStatusDropdown"
+            class="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
           >
-            {{ status.name }}
-            <span
-              v-if="status.count > 0"
+            <span class="text-gray-700">{{ getActiveStatusLabel() }}</span>
+            <span 
+              v-if="getActiveStatusCount() > 0"
+              class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-medium bg-purple-100 text-purple-600"
+            >
+              {{ getActiveStatusCount() }}
+            </span>
+            <ChevronDown class="h-4 w-4 text-gray-400" />
+          </button>
+          
+          <!-- Dropdown Menu -->
+          <div 
+            v-if="showStatusDropdown"
+            class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1"
+          >
+            <button
+              v-for="status in statusTabs"
+              :key="status.id"
+              @click="selectStatus(status.id)"
               :class="[
-                'ml-1.5 sm:ml-2 inline-flex items-center justify-center min-w-[18px] sm:min-w-[20px] h-4 sm:h-5 px-1 rounded-full text-xs font-medium',
+                'w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors',
                 activeStatus === status.id
-                  ? 'bg-purple-100 text-purple-600'
-                  : 'bg-gray-100 text-gray-500'
+                  ? 'bg-purple-50 text-purple-600'
+                  : 'text-gray-700 hover:bg-gray-50'
               ]"
             >
-              {{ status.count }}
-            </span>
-          </button>
-        </nav>
+              <span>{{ status.name }}</span>
+              <span
+                v-if="status.count > 0"
+                :class="[
+                  'inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-medium',
+                  activeStatus === status.id
+                    ? 'bg-purple-100 text-purple-600'
+                    : 'bg-gray-100 text-gray-500'
+                ]"
+              >
+                {{ status.count }}
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
+      
+      <!-- Results count -->
+      <p class="text-sm text-gray-500">
+        {{ filteredOrders.length }} order{{ filteredOrders.length !== 1 ? 's' : '' }}
+      </p>
     </div>
+    
+    <!-- Click outside to close dropdown -->
+    <div v-if="showStatusDropdown" class="fixed inset-0 z-40" @click="showStatusDropdown = false"></div>
 
     <!-- Orders List -->
     <div class="space-y-4">
@@ -116,7 +144,7 @@
                 <div class="grid grid-cols-3 sm:flex sm:items-center gap-2 sm:gap-6 text-xs sm:text-sm">
                   <div class="text-center sm:text-left">
                     <span class="text-gray-500 block sm:inline">Price</span>
-                    <span class="font-semibold text-gray-900 sm:ml-1">${{ order.amount }}</span>
+                    <span class="font-semibold text-gray-900 sm:ml-1 inline-flex items-center"><UIcon name="i-mdi:currency-bdt" />{{ order.amount }}</span>
                   </div>
                   <div v-if="order.deliveryDate" class="text-center sm:text-left">
                     <span class="text-gray-500 block sm:inline">Delivery</span>
@@ -225,7 +253,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { Star, MessageCircle, ShoppingCart } from 'lucide-vue-next';
+import { Star, MessageCircle, ShoppingCart, ChevronDown } from 'lucide-vue-next';
 
 // Emit events
 const emit = defineEmits(['switchTab']);
@@ -235,6 +263,7 @@ const activeStatus = ref('all');
 const isLoading = ref(true);
 const showCancelModal = ref(false);
 const orderToCancel = ref(null);
+const showStatusDropdown = ref(false);
 
 // Status tabs configuration
 const statusTabs = ref([
@@ -322,6 +351,22 @@ const updateStatusCounts = () => {
       tab.count = orders.value.filter(order => order.status === tab.id).length;
     }
   });
+};
+
+// Dropdown helper methods
+const getActiveStatusLabel = () => {
+  const activeTab = statusTabs.value.find(tab => tab.id === activeStatus.value);
+  return activeTab ? activeTab.name : 'All Orders';
+};
+
+const getActiveStatusCount = () => {
+  const activeTab = statusTabs.value.find(tab => tab.id === activeStatus.value);
+  return activeTab ? activeTab.count : 0;
+};
+
+const selectStatus = (statusId) => {
+  activeStatus.value = statusId;
+  showStatusDropdown.value = false;
 };
 
 // Utility functions

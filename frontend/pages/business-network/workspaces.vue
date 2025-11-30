@@ -244,13 +244,21 @@
                     class="h-8 w-8 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
                     @click.stop="navigateToProfile(gig.user.id)"
                   />
-                  <div class="ml-2">
-                    <p 
-                      class="text-sm font-medium text-gray-900 cursor-pointer hover:text-purple-600 transition-colors"
-                      @click.stop="navigateToProfile(gig.user.id)"
-                    >
-                      {{ gig.user.name }}
-                    </p>
+                  <div class="ml-2 flex-1 min-w-0">
+                    <div class="flex items-center gap-1">
+                      <p 
+                        class="text-sm font-medium text-gray-900 cursor-pointer hover:text-purple-600 transition-colors truncate"
+                        @click.stop="navigateToProfile(gig.user.id)"
+                      >
+                        {{ gig.user.name }}
+                      </p>
+                      <!-- Verified Badge -->
+                      <UIcon v-if="gig.user.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <!-- Pro Badge -->
+                      <span v-if="gig.user.is_pro" class="flex-shrink-0 inline-flex items-center px-1 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                        PRO
+                      </span>
+                    </div>
                     <div class="flex items-center">
                       <Star class="h-3 w-3 text-yellow-400 fill-current" />
                       <span class="text-xs text-gray-600 ml-1">{{ gig.rating }} ({{ gig.reviews }})</span>
@@ -271,8 +279,8 @@
                   <div class="flex items-center space-x-2">
                     <span class="text-xs text-gray-500">Starting at</span>
                   </div>
-                  <div class="text-lg font-bold text-gray-900">
-                    ${{ gig.price }}
+                  <div class="text-lg font-bold text-gray-900 inline-flex items-center">
+                    <UIcon name="i-mdi:currency-bdt" class="text-lg" />{{ gig.price }}
                   </div>
                 </div>
               </div>
@@ -333,15 +341,21 @@
                         class="h-6 w-6 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
                         @click.stop="navigateToProfile(gig.user.id)"
                       />
-                      <div class="ml-2 flex items-center">
+                      <div class="ml-2 flex items-center flex-wrap gap-1">
                         <p 
-                          class="text-xs font-medium text-gray-900 mr-2 cursor-pointer hover:text-purple-600 transition-colors"
+                          class="text-xs font-medium text-gray-900 cursor-pointer hover:text-purple-600 transition-colors"
                           @click.stop="navigateToProfile(gig.user.id)"
                         >
                           {{ gig.user.name }}
                         </p>
-                        <Star class="h-3 w-3 text-yellow-400 fill-current" />
-                        <span class="text-xs text-gray-600 ml-1">{{ gig.rating }} ({{ gig.reviews }})</span>
+                        <!-- Verified Badge -->
+                        <UIcon v-if="gig.user.kyc" name="i-heroicons-check-badge-solid" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                        <!-- Pro Badge -->
+                        <span v-if="gig.user.is_pro" class="flex-shrink-0 inline-flex items-center px-1 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                          PRO
+                        </span>
+                        <Star class="h-3 w-3 text-yellow-400 fill-current ml-1" />
+                        <span class="text-xs text-gray-600">{{ gig.rating }} ({{ gig.reviews }})</span>
                       </div>
                     </div>
                   </div>
@@ -352,7 +366,7 @@
                       <span class="flex items-center"><Eye class="h-3 w-3 mr-1" />{{ gig.views_count || 0 }}</span>
                       <span class="flex items-center"><ShoppingCart class="h-3 w-3 mr-1" />{{ gig.orders_count || 0 }}</span>
                     </div>
-                    <div class="text-lg font-bold text-gray-900">${{ gig.price }}</div>
+                    <div class="text-lg font-bold text-gray-900 inline-flex items-center"><UIcon name="i-mdi:currency-bdt" class="text-lg" />{{ gig.price }}</div>
                   </div>
                 </div>
               </div>

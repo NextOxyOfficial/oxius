@@ -209,8 +209,16 @@
               :alt="gig.user.name"
               class="h-8 w-8 rounded-full object-cover"
             />
-            <div class="ml-2">
-              <p class="text-sm font-medium text-gray-900">{{ gig.user.name }}</p>
+            <div class="ml-2 flex-1 min-w-0">
+              <div class="flex items-center gap-1">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ gig.user.name }}</p>
+                <!-- Verified Badge -->
+                <UIcon v-if="gig.user.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                <!-- Pro Badge -->
+                <span v-if="gig.user.is_pro" class="flex-shrink-0 inline-flex items-center px-1 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                  PRO
+                </span>
+              </div>
               <div class="flex items-center">
                 <Star class="h-3 w-3 text-yellow-400 fill-current" />
                 <span class="text-xs text-gray-600 ml-1">{{ gig.rating }} ({{ gig.reviews }})</span>
@@ -234,7 +242,9 @@
           <!-- Price -->
           <div class="flex justify-between items-center">
             <span class="text-xs text-gray-500">Starting at</span>
-            <div class="text-lg font-bold text-gray-900">${{ gig.price }}</div>
+            <div class="text-lg font-bold text-gray-900 inline-flex items-center">
+              <UIcon name="i-mdi:currency-bdt" class="text-lg" />{{ gig.price }}
+            </div>
           </div>
         </div>
       </div>
@@ -295,10 +305,16 @@
                   :alt="gig.user.name"
                   class="h-6 w-6 rounded-full object-cover"
                 />
-                <div class="ml-2 flex items-center">
-                  <p class="text-xs font-medium text-gray-900 mr-2">{{ gig.user.name }}</p>
-                  <Star class="h-3 w-3 text-yellow-400 fill-current" />
-                  <span class="text-xs text-gray-600 ml-1">{{ gig.rating }} ({{ gig.reviews }})</span>
+                <div class="ml-2 flex items-center flex-wrap gap-1">
+                  <p class="text-xs font-medium text-gray-900">{{ gig.user.name }}</p>
+                  <!-- Verified Badge -->
+                  <UIcon v-if="gig.user.kyc" name="i-heroicons-check-badge-solid" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                  <!-- Pro Badge -->
+                  <span v-if="gig.user.is_pro" class="flex-shrink-0 inline-flex items-center px-1 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                    PRO
+                  </span>
+                  <Star class="h-3 w-3 text-yellow-400 fill-current ml-1" />
+                  <span class="text-xs text-gray-600">{{ gig.rating }} ({{ gig.reviews }})</span>
                 </div>
               </div>
             </div>
@@ -309,7 +325,7 @@
                 <span class="flex items-center"><Eye class="h-3 w-3 mr-1" />{{ gig.views_count || 0 }} views</span>
                 <span class="flex items-center"><ShoppingCart class="h-3 w-3 mr-1" />{{ gig.orders_count || 0 }} orders</span>
               </div>
-              <div class="text-lg font-bold text-gray-900">${{ gig.price }}</div>
+              <div class="text-lg font-bold text-gray-900 inline-flex items-center"><UIcon name="i-mdi:currency-bdt" class="text-lg" />{{ gig.price }}</div>
             </div>
           </div>
         </div>
@@ -411,6 +427,8 @@ async function fetchMyGigs() {
         id: gig.user?.id,
         name: gig.user?.name || 'Unknown User',
         avatar: gig.user?.avatar || '/images/default-avatar.png',
+        is_pro: gig.user?.is_pro || false,
+        kyc: gig.user?.kyc || false,
       },
       rating: gig.rating || 0,
       reviews: gig.reviews || 0,

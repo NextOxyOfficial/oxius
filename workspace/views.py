@@ -181,14 +181,21 @@ class MyFavoritesView(generics.ListAPIView):
         ).select_related('gig', 'gig__user')
 
 
+class ReviewPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
+
 class GigReviewListView(generics.ListAPIView):
-    """List reviews for a gig"""
+    """List reviews for a gig with pagination"""
     serializer_class = GigReviewSerializer
     permission_classes = [AllowAny]
+    pagination_class = ReviewPagination
     
     def get_queryset(self):
         gig_id = self.kwargs.get('gig_id')
-        return GigReview.objects.filter(gig_id=gig_id).select_related('user')
+        return GigReview.objects.filter(gig_id=gig_id).select_related('user').order_by('-created_at')
 
 
 @api_view(['POST'])
