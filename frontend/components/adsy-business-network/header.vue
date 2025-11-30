@@ -153,7 +153,7 @@
                   class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm hover:bg-gray-100"
                 >
                   <img 
-                    :src="chatIconPath" 
+                    src="/static/frontend/images/chat_icon.png" 
                     alt="Inbox"
                     class="size-6"
                   />
