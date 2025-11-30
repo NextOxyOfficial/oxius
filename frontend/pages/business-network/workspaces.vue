@@ -107,13 +107,35 @@
                   <option value="price-high">Price: High to Low</option>
                   <option value="rating">Highest Rated</option>
                 </select>
+                
+                <!-- View Toggle -->
+                <div class="flex items-center space-x-1 border border-gray-200 rounded-md p-1">
+                  <button
+                    @click="viewMode = 'grid'"
+                    :class="[
+                      'p-1.5 rounded transition-colors',
+                      viewMode === 'grid' ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:text-gray-600'
+                    ]"
+                  >
+                    <LayoutGrid class="h-4 w-4" />
+                  </button>
+                  <button
+                    @click="viewMode = 'list'"
+                    :class="[
+                      'p-1.5 rounded transition-colors',
+                      viewMode === 'list' ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:text-gray-600'
+                    ]"
+                  >
+                    <List class="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
 
             <!-- Mobile Layout -->
             <div class="sm:hidden space-y-3">
               <!-- Filter Buttons First -->
-              <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-2">
                 <select 
                   v-model="selectedCategory"
                   class="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
@@ -136,6 +158,28 @@
                   <option value="price-high">Price: High to Low</option>
                   <option value="rating">Highest Rated</option>
                 </select>
+                
+                <!-- View Toggle Mobile -->
+                <div class="flex items-center border border-gray-200 rounded-md p-1">
+                  <button
+                    @click="viewMode = 'grid'"
+                    :class="[
+                      'p-1 rounded transition-colors',
+                      viewMode === 'grid' ? 'bg-purple-100 text-purple-600' : 'text-gray-400'
+                    ]"
+                  >
+                    <LayoutGrid class="h-4 w-4" />
+                  </button>
+                  <button
+                    @click="viewMode = 'list'"
+                    :class="[
+                      'p-1 rounded transition-colors',
+                      viewMode === 'list' ? 'bg-purple-100 text-purple-600' : 'text-gray-400'
+                    ]"
+                  >
+                    <List class="h-4 w-4" />
+                  </button>
+                </div>
               </div>
               
               <!-- Search Bar Below -->
@@ -151,8 +195,34 @@
             </div>
           </div>
 
-          <!-- Gigs Grid -->
-          <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+          <!-- Loading Skeleton -->
+          <div v-if="isLoading" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
+            <div
+              v-for="n in 8"
+              :key="n"
+              class="bg-white border border-gray-100 rounded-lg overflow-hidden animate-pulse"
+            >
+              <div class="h-48 bg-gray-200"></div>
+              <div class="p-4">
+                <div class="flex items-center mb-3">
+                  <div class="h-8 w-8 rounded-full bg-gray-200"></div>
+                  <div class="ml-2 space-y-1">
+                    <div class="h-3 w-20 bg-gray-200 rounded"></div>
+                    <div class="h-2 w-16 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+                <div class="h-4 bg-gray-200 rounded mb-2"></div>
+                <div class="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
+                <div class="flex justify-between">
+                  <div class="h-3 w-16 bg-gray-200 rounded"></div>
+                  <div class="h-5 w-12 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gigs Grid View -->
+          <div v-if="!isLoading && viewMode === 'grid'" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
             <div
               v-for="gig in filteredGigs"
               :key="gig.id"
@@ -192,10 +262,16 @@
                   <img
                     :src="gig.user.avatar"
                     :alt="gig.user.name"
-                    class="h-8 w-8 rounded-full object-cover"
+                    class="h-8 w-8 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
+                    @click.stop="navigateToProfile(gig.user.id)"
                   />
                   <div class="ml-2">
-                    <p class="text-sm font-medium text-gray-900">{{ gig.user.name }}</p>
+                    <p 
+                      class="text-sm font-medium text-gray-900 cursor-pointer hover:text-purple-600 transition-colors"
+                      @click.stop="navigateToProfile(gig.user.id)"
+                    >
+                      {{ gig.user.name }}
+                    </p>
                     <div class="flex items-center">
                       <Star class="h-3 w-3 text-yellow-400 fill-current" />
                       <span class="text-xs text-gray-600 ml-1">{{ gig.rating }} ({{ gig.reviews }})</span>
@@ -218,6 +294,86 @@
                   </div>
                   <div class="text-lg font-bold text-gray-900">
                     ${{ gig.price }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gigs List View -->
+          <div v-if="!isLoading && viewMode === 'list'" class="space-y-3">
+            <div
+              v-for="gig in filteredGigs"
+              :key="gig.id"
+              class="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-sm transition-all duration-200 cursor-pointer group"
+              @click="openGigDetails(gig)"
+            >
+              <div class="flex">
+                <!-- Gig Image -->
+                <div class="relative w-40 h-32 sm:w-48 sm:h-36 flex-shrink-0 overflow-hidden">
+                  <img
+                    :src="gig.image"
+                    :alt="gig.title"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
+                  <!-- Favorite Button -->
+                  <button
+                    class="absolute top-2 left-2 p-1.5 rounded-full bg-white/80 hover:bg-white transition-colors"
+                    @click.stop="toggleFavorite(gig.id)"
+                  >
+                    <Heart
+                      class="h-4 w-4 text-gray-600"
+                      :class="{ 'fill-red-500 text-red-500': gig.isFavorited }"
+                    />
+                  </button>
+                </div>
+                
+                <!-- Gig Content -->
+                <div class="flex-1 p-4 flex flex-col justify-between">
+                  <div>
+                    <!-- Category Badge -->
+                    <div class="flex items-center justify-between mb-2">
+                      <span
+                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                        :class="getCategoryBadgeClass(gig.category)"
+                      >
+                        {{ getCategoryLabel(gig.category) }}
+                      </span>
+                    </div>
+                    
+                    <!-- Gig Title -->
+                    <h3 class="text-sm sm:text-base font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
+                      {{ gig.title }}
+                    </h3>
+                    
+                    <!-- User Info -->
+                    <div class="flex items-center mb-2">
+                      <img
+                        :src="gig.user.avatar"
+                        :alt="gig.user.name"
+                        class="h-6 w-6 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
+                        @click.stop="navigateToProfile(gig.user.id)"
+                      />
+                      <div class="ml-2 flex items-center">
+                        <p 
+                          class="text-xs font-medium text-gray-900 mr-2 cursor-pointer hover:text-purple-600 transition-colors"
+                          @click.stop="navigateToProfile(gig.user.id)"
+                        >
+                          {{ gig.user.name }}
+                        </p>
+                        <Star class="h-3 w-3 text-yellow-400 fill-current" />
+                        <span class="text-xs text-gray-600 ml-1">{{ gig.rating }} ({{ gig.reviews }})</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Bottom Row: Stats and Price -->
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4 text-xs text-gray-500">
+                      <span class="flex items-center"><Eye class="h-3 w-3 mr-1" />{{ gig.views_count || 0 }}</span>
+                      <span class="flex items-center"><ShoppingCart class="h-3 w-3 mr-1" />{{ gig.orders_count || 0 }}</span>
+                    </div>
+                    <div class="text-lg font-bold text-gray-900">${{ gig.price }}</div>
                   </div>
                 </div>
               </div>
@@ -249,7 +405,7 @@
 
         <!-- My Gigs Tab -->
         <div v-else-if="activeTab === 'my-gigs'">
-          <MyGigs :gigs="dummyGigs" @switchTab="activeTab = $event" />
+          <MyGigs :gigs="gigs" @switchTab="activeTab = $event" />
         </div>
 
         <!-- Order Received Tab -->
@@ -272,7 +428,8 @@
 </template>
 
 <script setup>
-import { Star, Plus, Search, Heart, Briefcase, ShoppingCart, User, Package } from "lucide-vue-next";
+import { ref, computed, onMounted, watch } from "vue";
+import { Star, Plus, Search, Heart, Briefcase, ShoppingCart, User, Package, LayoutGrid, List, Eye } from "lucide-vue-next";
 import MyOrders from "~/components/business-network/MyOrders.vue";
 import CreateGig from "~/components/business-network/CreateGig.vue";
 import MyGigs from "~/components/business-network/MyGigs.vue";
@@ -296,6 +453,7 @@ definePageMeta({
 
 // Composables
 const { user } = useAuth();
+const { get, post } = useApi();
 const toast = useToast();
 
 // Tab State
@@ -340,185 +498,99 @@ const isLoading = ref(true);
 const searchQuery = ref("");
 const selectedCategory = ref("");
 const sortBy = ref("newest");
+const viewMode = ref("grid");
 
-// Dummy gigs data
-const dummyGigs = ref([
-  {
-    id: 1,
-    title: "I will design a modern and professional logo for your business",
-    price: 25,
-    category: "design",
-    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop",
-    sellerId: 1, // This gig belongs to current user for demo
-    user: {
-      name: "Sarah Johnson",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b789?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.9,
-    reviews: 127,
-    isFavorited: false,
-    views: 1234,
-    orders: 15,
-    impressions: 2890,
-    features: [
-      "Custom logo design in multiple formats",
-      "3 initial concepts to choose from",
-      "Unlimited revisions until you're satisfied",
-      "High-resolution files (PNG, SVG, PDF)",
-      "Commercial usage rights included"
-    ],
-    deliveryTime: "3",
-    revisions: "unlimited"
-  },
-  {
-    id: 2,
-    title: "I will develop a responsive React web application for your startup",
-    price: 150,
-    category: "development",
-    image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=300&fit=crop",
-    user: {
-      name: "Mike Chen",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 5.0,
-    reviews: 89,
-    isFavorited: true,
-    features: [
-      "Fully responsive web application",
-      "Modern React with hooks and context",
-      "API integration and state management",
-      "Cross-browser compatibility testing",
-      "2 weeks of post-launch support"
-    ],
-    deliveryTime: "14",
-    revisions: "3"
-  },
-  {
-    id: 3,
-    title: "I will write compelling copy for your marketing campaigns",
-    price: 45,
-    category: "writing",
-    image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop",
-    sellerId: 1, // This gig also belongs to current user for demo
-    user: {
-      name: "Emma Davis",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.8,
-    reviews: 203,
-    isFavorited: false,
-    views: 987,
-    orders: 8,
-    impressions: 1456,
-  },
-  {
-    id: 4,
-    title: "I will create engaging social media content and strategy",
-    price: 75,
-    category: "marketing",
-    image: "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=400&h=300&fit=crop",
-    user: {
-      name: "Alex Rodriguez",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.7,
-    reviews: 156,
-    isFavorited: false,
-  },
-  {
-    id: 5,
-    title: "I will provide business consultation and strategic planning",
-    price: 200,
-    category: "business",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop",
-    user: {
-      name: "David Wilson",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.9,
-    reviews: 74,
-    isFavorited: false,
-  },
-  {
-    id: 6,
-    title: "I will create stunning UI/UX designs for mobile applications",
-    price: 120,
-    category: "design",
-    image: "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=400&h=300&fit=crop",
-    user: {
-      name: "Lisa Park",
-      avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.8,
-    reviews: 91,
-    isFavorited: true,
-  },
-  {
-    id: 7,
-    title: "I will build a custom WordPress website with e-commerce functionality",
-    price: 300,
-    category: "development",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop",
-    user: {
-      name: "James Thompson",
-      avatar: "https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.9,
-    reviews: 67,
-    isFavorited: false,
-  },
-  {
-    id: 8,
-    title: "I will translate your content to multiple languages professionally",
-    price: 35,
-    category: "writing",
-    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&h=300&fit=crop",
-    user: {
-      name: "Maria Garcia",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.6,
-    reviews: 134,
-    isFavorited: false,
-  },
-]);
+// Gigs data from API
+const gigs = ref([]);
 
-// Computed properties
+// Fetch gigs from API
+async function fetchGigs() {
+  isLoading.value = true;
+  try {
+    const params = new URLSearchParams();
+    if (selectedCategory.value) {
+      params.append('category', selectedCategory.value);
+    }
+    if (searchQuery.value) {
+      params.append('search', searchQuery.value);
+    }
+    
+    // Map sort options to API ordering
+    const orderingMap = {
+      'newest': '-created_at',
+      'oldest': 'created_at',
+      'price-low': 'price',
+      'price-high': '-price',
+      'rating': '-views_count'
+    };
+    params.append('ordering', orderingMap[sortBy.value] || '-created_at');
+    
+    console.log('Fetching gigs from API...');
+    const { data, error } = await get(`/workspace/gigs/?${params.toString()}`);
+    console.log('API Response:', { data, error });
+    
+    if (error) {
+      console.error('Error fetching gigs:', error);
+      toast.add({
+        title: 'Error',
+        description: 'Failed to load gigs. Please try again.',
+        color: 'red',
+      });
+      return;
+    }
+    
+    // Transform API data to match frontend format
+    const results = data?.results || data || [];
+    console.log('Gigs results:', results.length, 'gigs found');
+    
+    gigs.value = results.map((gig) => ({
+      id: gig.id,
+      title: gig.title,
+      price: parseFloat(gig.price),
+      category: gig.category,
+      image: gig.image_url || gig.image || '/images/placeholder-gig.png',
+      user: {
+        id: gig.user?.id,
+        name: gig.user?.name || 'Unknown User',
+        avatar: gig.user?.avatar || '/images/default-avatar.png',
+        is_pro: gig.user?.is_pro,
+        kyc: gig.user?.kyc,
+      },
+      rating: gig.rating || 0,
+      reviews: gig.reviews || 0,
+      isFavorited: gig.is_favorited || false,
+      delivery_time: gig.delivery_time,
+      revisions: gig.revisions,
+      views_count: gig.views_count,
+      orders_count: gig.orders_count,
+    }));
+    
+    console.log('Gigs loaded:', gigs.value.length);
+    
+  } catch (err) {
+    console.error('Error fetching gigs:', err);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// Watch for filter changes
+watch([selectedCategory, sortBy], () => {
+  fetchGigs();
+});
+
+// Debounced search
+let searchTimeout = null;
+watch(searchQuery, () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchGigs();
+  }, 300);
+});
+
+// Computed properties - now just returns gigs since filtering is done on API
 const filteredGigs = computed(() => {
-  let filtered = [...dummyGigs.value];
-
-  // Filter by search query
-  if (searchQuery.value.trim()) {
-    const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(gig => 
-      gig.title.toLowerCase().includes(query) ||
-      gig.user.name.toLowerCase().includes(query)
-    );
-  }
-
-  // Filter by category
-  if (selectedCategory.value) {
-    filtered = filtered.filter(gig => gig.category === selectedCategory.value);
-  }
-
-  // Sort
-  switch (sortBy.value) {
-    case 'popular':
-      filtered.sort((a, b) => (b.rating * b.reviews) - (a.rating * a.reviews));
-      break;
-    case 'price-low':
-      filtered.sort((a, b) => a.price - b.price);
-      break;
-    case 'price-high':
-      filtered.sort((a, b) => b.price - a.price);
-      break;
-    case 'newest':
-    default:
-      // Keep original order (newest first)
-      break;
-  }
-
-  return filtered;
+  return gigs.value;
 });
 
 // My gigs computed property - filter by current user
@@ -526,10 +598,8 @@ const myGigs = computed(() => {
   if (!user.value?.user) return [];
   
   // Filter gigs created by current user
-  return dummyGigs.value.filter(gig => 
-    gig.user.name === user.value.user.username || 
-    gig.user.name === user.value.user.first_name + ' ' + user.value.user.last_name ||
-    gig.sellerId === user.value.user.id
+  return gigs.value.filter(gig => 
+    gig.user?.id === user.value.user.id
   );
 });
 
@@ -564,7 +634,7 @@ const getCategoryBadgeClass = (category) => {
   return classes[category] || 'bg-gray-100 text-gray-800';
 };
 
-const toggleFavorite = (gigId) => {
+const toggleFavorite = async (gigId) => {
   if (!user.value?.user) {
     toast.add({
       title: "Authentication Required",
@@ -574,14 +644,30 @@ const toggleFavorite = (gigId) => {
     return;
   }
 
-  const gig = dummyGigs.value.find(g => g.id === gigId);
-  if (gig) {
-    gig.isFavorited = !gig.isFavorited;
-    toast.add({
-      title: gig.isFavorited ? "Added to Favorites" : "Removed from Favorites",
-      description: `"${gig.title}" has been ${gig.isFavorited ? 'added to' : 'removed from'} your favorites`,
-      color: gig.isFavorited ? "green" : "gray",
-    });
+  try {
+    const { data, error } = await post(`/workspace/gigs/${gigId}/favorite/`);
+    
+    if (error) {
+      toast.add({
+        title: "Error",
+        description: "Failed to update favorite status",
+        color: "red",
+      });
+      return;
+    }
+    
+    // Update local state
+    const gig = gigs.value.find(g => g.id === gigId);
+    if (gig) {
+      gig.isFavorited = data.is_favorited;
+      toast.add({
+        title: data.is_favorited ? "Added to Favorites" : "Removed from Favorites",
+        description: `"${gig.title}" has been ${data.is_favorited ? 'added to' : 'removed from'} your favorites`,
+        color: data.is_favorited ? "green" : "gray",
+      });
+    }
+  } catch (err) {
+    console.error('Error toggling favorite:', err);
   }
 };
 
@@ -598,40 +684,42 @@ const openGigDetails = (gig) => {
   }
 };
 
+const navigateToProfile = (userId) => {
+  if (!userId) return;
+  
+  try {
+    navigateTo(`/business-network/profile/${userId}`);
+  } catch (error) {
+    console.error('Navigation error:', error);
+    window.location.href = `/business-network/profile/${userId}`;
+  }
+};
+
 const clearFilters = () => {
   searchQuery.value = "";
   selectedCategory.value = "";
   sortBy.value = "newest";
+  fetchGigs();
 };
 
 // Gig Creation Handler
 const handleGigCreated = (gigData) => {
-  // Create the new gig object
-  const newGigData = {
-    id: dummyGigs.value.length + 1,
-    title: gigData.title,
-    price: gigData.price,
-    category: gigData.category,
-    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop",
-    user: gigData.user,
-    rating: 0,
-    reviews: 0,
-    isFavorited: false,
-  };
-
-  // Add to gigs list
-  dummyGigs.value.unshift(newGigData);
+  // Refresh gigs list to include the new gig
+  fetchGigs();
   
   // Switch to all gigs tab to show the new gig
   activeTab.value = 'all-gigs';
+  
+  toast.add({
+    title: "Gig Created",
+    description: "Your gig has been created successfully!",
+    color: "green",
+  });
 };
 
-// Simulate loading state
+// Fetch gigs on mount
 onMounted(() => {
-  isLoading.value = true;
-  setTimeout(() => {
-    isLoading.value = false;
-  }, 1200);
+  fetchGigs();
 });
 </script>
 

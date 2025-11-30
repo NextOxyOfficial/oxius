@@ -178,15 +178,19 @@
 
 <script setup>
 import { ShoppingCart, MessageCircle } from 'lucide-vue-next';
+import { ref, computed, onMounted } from 'vue';
 
 // Emit events to parent component
 const emit = defineEmits(['switchTab']);
 
 // Composables
 const toast = useToast();
+const { get } = useApi();
 
 // Reactive data
 const activeFilter = ref('pending');
+const isLoading = ref(true);
+const orders = ref([]);
 
 // Order filters
 const orderFilters = [
@@ -196,189 +200,62 @@ const orderFilters = [
   { label: 'Cancelled', value: 'cancelled' }
 ];
 
-// Sample orders data (replace with API call)
-const orders = ref([
-  {
-    id: 'ORD-2024-001',
-    status: 'in_progress',
-    amount: 150,
-    progress: 65,
-    revisions: 2,
-    unreadMessages: 3,
-    createdAt: new Date('2024-08-25'),
-    deliveryDate: new Date('2024-09-05'),
-    gig: {
-      id: 1,
-      title: 'I will develop a responsive React web application for your startup',
-      image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=300&fit=crop'
-    },
-    buyer: {
-      id: 2,
-      name: 'Mike Chen',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
+// Fetch orders from API
+async function fetchOrders() {
+  isLoading.value = true;
+  try {
+    const { data, error } = await get('/workspace/orders/seller/');
+    
+    if (error) {
+      console.error('Error fetching orders:', error);
+      orders.value = [];
+      return;
     }
-  },
-  {
-    id: 'ORD-2024-002',
-    status: 'delivered',
-    amount: 75,
-    progress: 100,
-    revisions: 'Unlimited',
-    unreadMessages: 0,
-    createdAt: new Date('2024-08-20'),
-    deliveryDate: new Date('2024-08-30'),
-    gig: {
-      id: 3,
-      title: 'I will write compelling copy for your marketing campaigns',
-      image: 'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop'
-    },
-    buyer: {
-      id: 3,
-      name: 'Emma Davis',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
-    }
-  },
-  {
-    id: 'ORD-2024-003',
-    status: 'pending',
-    amount: 25,
-    progress: 0,
-    revisions: 3,
-    unreadMessages: 12,
-    createdAt: new Date('2024-08-29'),
-    deliveryDate: new Date('2024-09-02'),
-    gig: {
-      id: 4,
-      title: 'I will design a modern and professional logo for your business',
-      image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop'
-    },
-    buyer: {
-      id: 4,
-      name: 'Sarah Johnson',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b789?w=100&h=100&fit=crop&crop=face'
-    }
-  },
-  {
-    id: 'ORD-2024-004',
-    status: 'completed',
-    amount: 200,
-    progress: 100,
-    revisions: 1,
-    unreadMessages: 1,
-    createdAt: new Date('2024-08-15'),
-    deliveryDate: new Date('2024-08-25'),
-    gig: {
-      id: 5,
-      title: 'I will create a comprehensive digital marketing strategy',
-      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop'
-    },
-    buyer: {
-      id: 5,
-      name: 'Alex Rivera',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
-    }
-  },
-  {
-    id: 'ORD-2024-005',
-    status: 'in_progress',
-    amount: 120,
-    progress: 45,
-    revisions: 2,
-    unreadMessages: 5,
-    createdAt: new Date('2024-08-28'),
-    deliveryDate: new Date('2024-09-08'),
-    gig: {
-      id: 6,
-      title: 'I will design a modern mobile app UI/UX with Figma',
-      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop'
-    },
-    buyer: {
-      id: 6,
-      name: 'Jessica Wong',
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face'
-    }
-  },
-  {
-    id: 'ORD-2024-006',
-    status: 'pending',
-    amount: 50,
-    progress: 0,
-    revisions: 3,
-    unreadMessages: 2,
-    createdAt: new Date('2024-08-30'),
-    deliveryDate: new Date('2024-09-10'),
-    gig: {
-      id: 7,
-      title: 'I will create engaging social media content for your brand',
-      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop'
-    },
-    buyer: {
-      id: 7,
-      name: 'David Kim',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
-    }
-  },
-  {
-    id: 'ORD-2024-007',
-    status: 'in_progress',
-    amount: 300,
-    progress: 80,
-    revisions: 1,
-    unreadMessages: 0,
-    createdAt: new Date('2024-08-22'),
-    deliveryDate: new Date('2024-09-03'),
-    gig: {
-      id: 8,
-      title: 'I will build a complete e-commerce website with admin panel',
-      image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop'
-    },
-    buyer: {
-      id: 8,
-      name: 'Maria Rodriguez',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
-    }
-  },
-  {
-    id: 'ORD-2024-008',
-    status: 'cancelled',
-    amount: 80,
-    progress: 0,
-    revisions: 0,
-    unreadMessages: 0,
-    createdAt: new Date('2024-08-26'),
-    deliveryDate: new Date('2024-09-06'),
-    gig: {
-      id: 9,
-      title: 'I will write professional blog posts for your website',
-      image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&h=300&fit=crop'
-    },
-    buyer: {
-      id: 9,
-      name: 'Thomas Brown',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
-    }
-  },
-  {
-    id: 'ORD-2024-009',
-    status: 'in_progress',
-    amount: 150,
-    progress: 25,
-    revisions: 5,
-    unreadMessages: 8,
-    createdAt: new Date('2024-08-27'),
-    deliveryDate: new Date('2024-09-07'),
-    gig: {
-      id: 10,
-      title: 'I will create a brand identity package with logo and guidelines',
-      image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop'
-    },
-    buyer: {
-      id: 10,
-      name: 'Lisa Chen',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b789?w=100&h=100&fit=crop&crop=face'
-    }
+    
+    const results = data?.results || data || [];
+    orders.value = results.map(order => ({
+      id: order.id,
+      status: order.status,
+      amount: parseFloat(order.price),
+      progress: getProgressFromStatus(order.status),
+      revisions: order.gig?.revisions || 0,
+      unreadMessages: 0,
+      createdAt: new Date(order.created_at),
+      deliveryDate: order.delivery_date ? new Date(order.delivery_date) : new Date(),
+      gig: {
+        id: order.gig?.id,
+        title: order.gig?.title || 'Unknown Gig',
+        image: order.gig?.image_url || order.gig?.image || '/images/placeholder-gig.png'
+      },
+      buyer: {
+        id: order.buyer?.id,
+        name: order.buyer?.name || 'Unknown Buyer',
+        avatar: order.buyer?.avatar || '/images/default-avatar.png'
+      }
+    }));
+  } catch (err) {
+    console.error('Error fetching orders:', err);
+    orders.value = [];
+  } finally {
+    isLoading.value = false;
   }
-]);
+}
+
+const getProgressFromStatus = (status) => {
+  const progressMap = {
+    'pending': 0,
+    'in_progress': 50,
+    'delivered': 100,
+    'completed': 100,
+    'cancelled': 0,
+    'revision': 75
+  };
+  return progressMap[status] || 0;
+};
+
+onMounted(() => {
+  fetchOrders();
+});
 
 // Computed
 const filteredOrders = computed(() => {

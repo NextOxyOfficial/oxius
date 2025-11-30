@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "support",  # Support ticket system
     "reviews",  # Reviews system
     "adsyconnect",  # AdsyConnect chat system
+    "workspace",  # Workspace gigs system
     "django_filters",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",

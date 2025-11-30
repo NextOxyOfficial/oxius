@@ -47,6 +47,8 @@ urlpatterns = urlpatterns + [
     path("api/global-popup/", include("global_popup.urls")),
     # AdsyConnect chat system URLs
     path("api/adsyconnect/", include("adsyconnect.urls")),
+    # Workspace gigs system URLs
+    path("api/workspace/", include("workspace.urls")),
     # for frontend
     path("", index, name="index"),
     path("<str:param>", index, name="index2"),

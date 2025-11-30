@@ -250,97 +250,80 @@ const statusTabs = ref([
   { id: 'cancelled', name: 'Cancelled', count: 0 }
 ]);
 
-// Dummy orders data (from buyer perspective)
-const dummyOrders = ref([
-  {
-    id: 1,
-    orderNumber: 'ORD-2024-001',
-    status: 'in_progress',
-    orderDate: new Date('2024-01-15'),
-    deliveryDate: new Date('2024-01-20'),
-    amount: 25,
-    timeRemaining: '2 days',
-    unreadMessages: 2,
-    gig: {
-      id: 1,
-      title: 'I will design a modern and professional logo for your business',
-      image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop'
-    },
-    seller: {
-      name: 'Sarah Johnson',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b789?w=100&h=100&fit=crop&crop=face'
+// Orders data from API
+const orders = ref([]);
+const { get } = useApi();
+
+// Fetch orders from API
+async function fetchOrders() {
+  isLoading.value = true;
+  try {
+    const { data, error } = await get('/workspace/orders/');
+    
+    if (error) {
+      console.error('Error fetching orders:', error);
+      orders.value = [];
+      return;
     }
-  },
-  {
-    id: 2,
-    orderNumber: 'ORD-2024-002',
-    status: 'delivered',
-    orderDate: new Date('2024-01-10'),
-    deliveryDate: new Date('2024-01-15'),
-    amount: 50,
-    unreadMessages: 0,
-    gig: {
-      id: 2,
-      title: 'I will develop a responsive website using modern technologies',
-      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop'
-    },
-    seller: {
-      name: 'Mike Chen',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
-    }
-  },
-  {
-    id: 3,
-    orderNumber: 'ORD-2024-003',
-    status: 'pending',
-    orderDate: new Date('2024-01-18'),
-    amount: 35,
-    unreadMessages: 1,
-    gig: {
-      id: 3,
-      title: 'I will write engaging content for your social media platforms',
-      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop'
-    },
-    seller: {
-      name: 'Emma Davis',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
-    }
-  },
-  {
-    id: 4,
-    orderNumber: 'ORD-2024-004',
-    status: 'completed',
-    orderDate: new Date('2024-01-05'),
-    deliveryDate: new Date('2024-01-10'),
-    amount: 75,
-    unreadMessages: 0,
-    gig: {
-      id: 4,
-      title: 'I will create professional animations for your brand',
-      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop'
-    },
-    seller: {
-      name: 'Alex Rodriguez',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
-    }
+    
+    const results = data?.results || data || [];
+    orders.value = results.map(order => ({
+      id: order.id,
+      orderNumber: `ORD-${String(order.id).slice(0, 8).toUpperCase()}`,
+      status: order.status,
+      orderDate: new Date(order.created_at),
+      deliveryDate: order.delivery_date ? new Date(order.delivery_date) : null,
+      amount: parseFloat(order.price),
+      timeRemaining: calculateTimeRemaining(order.delivery_date),
+      unreadMessages: 0,
+      gig: {
+        id: order.gig?.id,
+        title: order.gig?.title || 'Unknown Gig',
+        image: order.gig?.image_url || order.gig?.image || '/images/placeholder-gig.png'
+      },
+      seller: {
+        name: order.seller?.name || 'Unknown Seller',
+        avatar: order.seller?.avatar || '/images/default-avatar.png'
+      }
+    }));
+    
+    updateStatusCounts();
+  } catch (err) {
+    console.error('Error fetching orders:', err);
+    orders.value = [];
+  } finally {
+    isLoading.value = false;
   }
-]);
+}
+
+const calculateTimeRemaining = (deliveryDate) => {
+  if (!deliveryDate) return null;
+  const now = new Date();
+  const delivery = new Date(deliveryDate);
+  const diffTime = delivery.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) return 'Overdue';
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return '1 day';
+  return `${diffDays} days`;
+};
 
 // Computed properties
 const filteredOrders = computed(() => {
   if (activeStatus.value === 'all') {
-    return dummyOrders.value;
+    return orders.value;
   }
-  return dummyOrders.value.filter(order => order.status === activeStatus.value);
+  return orders.value.filter(order => order.status === activeStatus.value);
 });
 
 // Update status counts
 const updateStatusCounts = () => {
   statusTabs.value.forEach(tab => {
     if (tab.id === 'all') {
-      tab.count = dummyOrders.value.length;
+      tab.count = orders.value.length;
     } else {
-      tab.count = dummyOrders.value.filter(order => order.status === tab.id).length;
+      tab.count = orders.value.filter(order => order.status === tab.id).length;
     }
   });
 };
@@ -433,12 +416,7 @@ const confirmCancelOrder = () => {
 
 // Lifecycle
 onMounted(() => {
-  // Simulate loading
-  isLoading.value = true;
-  setTimeout(() => {
-    updateStatusCounts();
-    isLoading.value = false;
-  }, 1000);
+  fetchOrders();
 });
 </script>
 

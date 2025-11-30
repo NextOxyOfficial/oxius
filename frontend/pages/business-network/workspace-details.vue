@@ -182,10 +182,16 @@
                 <img
                   :src="gig.user.avatar"
                   :alt="gig.user.name"
-                  class="h-12 w-12 rounded-full object-cover mr-4"
+                  class="h-12 w-12 rounded-full object-cover mr-4 cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
+                  @click="navigateToProfile(gig.user.id)"
                 />
                 <div class="flex-1">
-                  <h3 class="font-semibold text-gray-900">{{ gig.user.name }}</h3>
+                  <h3 
+                    class="font-semibold text-gray-900 cursor-pointer hover:text-purple-600 transition-colors"
+                    @click="navigateToProfile(gig.user.id)"
+                  >
+                    {{ gig.user.name }}
+                  </h3>
                   <div class="flex items-center mt-1">
                     <div class="flex items-center">
                       <Star v-for="i in 5" :key="i" class="h-4 w-4 text-yellow-400 fill-current" />
@@ -199,7 +205,10 @@
                     </span>
                   </div>
                 </div>
-                <button class="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                <button 
+                  @click="navigateToProfile(gig.user.id)"
+                  class="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
                   Visit Profile
                 </button>
               </div>
@@ -335,9 +344,15 @@
                       <img
                         :src="relatedGig.user.avatar"
                         :alt="relatedGig.user.name"
-                        class="h-6 w-6 rounded-full mr-2"
+                        class="h-6 w-6 rounded-full mr-2 cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
+                        @click.stop="navigateToProfile(relatedGig.user.id)"
                       />
-                      <span class="text-sm text-gray-600">{{ relatedGig.user.name }}</span>
+                      <span 
+                        class="text-sm text-gray-600 cursor-pointer hover:text-purple-600 transition-colors"
+                        @click.stop="navigateToProfile(relatedGig.user.id)"
+                      >
+                        {{ relatedGig.user.name }}
+                      </span>
                     </div>
                     
                     <!-- Rating and Price -->
@@ -367,29 +382,12 @@
                 </div>
               </div>
 
-              <!-- Sample Review -->
-              <div class="space-y-4">
-                <div class="p-4 bg-gray-50 rounded-lg">
-                  <div class="flex items-start justify-between mb-3">
-                    <div class="flex items-center">
-                      <img
-                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face"
-                        alt="Reviewer"
-                        class="h-8 w-8 rounded-full object-cover mr-3"
-                      />
-                      <div>
-                        <h4 class="font-medium text-gray-900">John Smith</h4>
-                        <div class="flex items-center">
-                          <Star v-for="i in 5" :key="i" class="h-3 w-3 text-yellow-400 fill-current" />
-                          <span class="text-xs text-gray-500 ml-1">2 days ago</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <p class="text-gray-600 text-sm">
-                    Excellent work! The delivery was on time and exceeded my expectations. Highly recommended!
-                  </p>
-                </div>
+              <!-- Reviews List - Will be populated from API -->
+              <div v-if="gig.reviews > 0" class="space-y-4">
+                <p class="text-gray-500 text-sm">Reviews will be loaded from the database.</p>
+              </div>
+              <div v-else class="text-center py-6">
+                <p class="text-gray-500 text-sm">No reviews yet. Be the first to review!</p>
               </div>
             </div>
           </div>
@@ -414,119 +412,12 @@ definePageMeta({
 const route = useRoute();
 const toast = useToast();
 const { user } = useAuth();
+const { get } = useApi();
 
 // State
 const isLoading = ref(true);
 const gig = ref(null);
-
-// Dummy data for the workspaces (matching the parent page)
-const dummyGigs = [
-  {
-    id: 1,
-    title: "I will design a modern and professional logo for your business",
-    price: 25,
-    category: "design",
-    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&h=600&fit=crop",
-    user: {
-      id: 1,
-      name: "Sarah Johnson",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b789?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.9,
-    reviews: 127,
-    isFavorited: false,
-  },
-  {
-    id: 2,
-    title: "I will develop a responsive React web application for your startup",
-    price: 150,
-    category: "development",
-    image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=600&fit=crop",
-    user: {
-      id: 2,
-      name: "Mike Chen",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 5.0,
-    reviews: 89,
-    isFavorited: true,
-  },
-  {
-    id: 3,
-    title: "I will write compelling copy for your marketing campaigns",
-    price: 45,
-    category: "writing",
-    image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=800&h=600&fit=crop",
-    user: {
-      id: 3,
-      name: "Emma Davis",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.8,
-    reviews: 203,
-    isFavorited: false,
-  },
-  {
-    id: 4,
-    title: "I will create engaging social media content and strategy",
-    price: 75,
-    category: "marketing",
-    image: "https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=800&h=600&fit=crop",
-    user: {
-      id: 4,
-      name: "Alex Rodriguez",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.7,
-    reviews: 156,
-    isFavorited: false,
-  },
-  {
-    id: 5,
-    title: "I will provide business consultation and strategic planning",
-    price: 200,
-    category: "business",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop",
-    user: {
-      id: 5,
-      name: "David Wilson",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.9,
-    reviews: 74,
-    isFavorited: false,
-  },
-  {
-    id: 6,
-    title: "I will create stunning UI/UX designs for mobile applications",
-    price: 120,
-    category: "design",
-    image: "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=800&h=600&fit=crop",
-    user: {
-      id: 6,
-      name: "Lisa Park",
-      avatar: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.8,
-    reviews: 91,
-    isFavorited: true,
-  },
-  {
-    id: 7,
-    title: "I will design eye-catching social media graphics and banners",
-    price: 35,
-    category: "design",
-    image: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=600&fit=crop",
-    user: {
-      id: 7,
-      name: "Carlos Martinez",
-      avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face",
-    },
-    rating: 4.7,
-    reviews: 156,
-    isFavorited: false,
-  }
-];
+const relatedGigsData = ref([]);
 
 // Helper functions
 const getCategoryLabel = (category) => {
@@ -611,12 +502,7 @@ const getGigSkills = (gig) => {
 
 // Computed properties
 const relatedGigs = computed(() => {
-  if (!gig.value) return [];
-  
-  // Get gigs from the same category, excluding the current gig
-  return dummyGigs
-    .filter(g => g.category === gig.value.category && g.id !== gig.value.id)
-    .slice(0, 3); // Show 3 for desktop, responsive grid will handle mobile (2 items)
+  return relatedGigsData.value;
 });
 
 // Methods
@@ -681,38 +567,121 @@ const handleShare = () => {
   }
 };
 
-const fetchGig = () => {
-  const gigId = parseInt(route.query.id);
+const navigateToProfile = (userId) => {
+  if (!userId) return;
+  
+  try {
+    navigateTo(`/business-network/profile/${userId}`);
+  } catch (error) {
+    console.error('Navigation error:', error);
+    window.location.href = `/business-network/profile/${userId}`;
+  }
+};
+
+const fetchGig = async () => {
+  const gigId = route.query.id;
   if (!gigId) {
     gig.value = null;
+    isLoading.value = false;
     return;
   }
 
-  const foundGig = dummyGigs.find(g => g.id === gigId);
-  if (foundGig) {
-    gig.value = foundGig;
+  isLoading.value = true;
+  
+  try {
+    // Fetch gig details from API
+    const { data, error } = await get(`/workspace/gigs/${gigId}/`);
+    
+    if (error || !data) {
+      console.error('Error fetching gig:', error);
+      gig.value = null;
+      toast.add({
+        title: 'Error',
+        description: 'Failed to load gig details.',
+        color: 'red',
+      });
+      return;
+    }
+    
+    // Transform API data
+    gig.value = {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      price: parseFloat(data.price),
+      category: data.category,
+      image: data.image_url || data.image || '/images/placeholder-gig.png',
+      user: {
+        id: data.user?.id,
+        name: data.user?.name || 'Unknown User',
+        avatar: data.user?.avatar || '/images/default-avatar.png',
+        is_pro: data.user?.is_pro,
+        kyc: data.user?.kyc,
+      },
+      rating: data.rating || 0,
+      reviews: data.reviews || 0,
+      isFavorited: data.is_favorited || false,
+      delivery_time: data.delivery_time || 3,
+      revisions: data.revisions || 2,
+      views_count: data.views_count || 0,
+      orders_count: data.orders_count || 0,
+    };
     
     // Update page title
     useHead({
-      title: `${foundGig.title} - Business Network`,
+      title: `${gig.value.title} - Business Network`,
       meta: [
-        { name: 'description', content: getGigDescription(foundGig) }
+        { name: 'description', content: data.description || getGigDescription(gig.value) }
       ]
     });
-  } else {
+    
+    // Fetch related gigs
+    await fetchRelatedGigs(gig.value.category, gigId);
+    
+  } catch (err) {
+    console.error('Error fetching gig:', err);
     gig.value = null;
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const fetchRelatedGigs = async (category, currentGigId) => {
+  try {
+    const { data, error } = await get(`/workspace/gigs/?category=${category}`);
+    
+    if (error || !data) {
+      relatedGigsData.value = [];
+      return;
+    }
+    
+    const results = data?.results || data || [];
+    relatedGigsData.value = results
+      .filter(g => g.id !== currentGigId)
+      .slice(0, 3)
+      .map(g => ({
+        id: g.id,
+        title: g.title,
+        price: parseFloat(g.price),
+        category: g.category,
+        image: g.image_url || g.image || '/images/placeholder-gig.png',
+        user: {
+          id: g.user?.id,
+          name: g.user?.name || 'Unknown User',
+          avatar: g.user?.avatar || '/images/default-avatar.png',
+        },
+        rating: g.rating || 0,
+        reviews: g.reviews || 0,
+      }));
+  } catch (err) {
+    console.error('Error fetching related gigs:', err);
+    relatedGigsData.value = [];
   }
 };
 
 // Lifecycle
 onMounted(() => {
-  isLoading.value = true;
-  
-  // Simulate API call
-  setTimeout(() => {
-    fetchGig();
-    isLoading.value = false;
-  }, 800);
+  fetchGig();
 });
 
 // Watch for route changes

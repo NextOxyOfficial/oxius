@@ -237,13 +237,18 @@
 </template>
 <script setup>
 import { Plus } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
 
 // Props and emits
 const emit = defineEmits(['gigCreated', 'switchTab']);
 
 // Composables
 const { user } = useAuth();
+const { post } = useApi();
 const toast = useToast();
+
+// Loading state
+const isSubmitting = ref(false);
 
 // Form state
 const newGig = ref({
@@ -293,7 +298,7 @@ const updateFeature = (index) => {
 };
 
 // Methods
-const submitGig = () => {
+const submitGig = async () => {
   if (!isFormValid.value) {
     toast.add({
       title: "Form Error",
@@ -303,41 +308,52 @@ const submitGig = () => {
     return;
   }
 
-  // Filter out empty features
-  const validFeatures = newGig.value.features
-    .filter(f => f.text.trim())
-    .map(f => f.text.trim());
+  isSubmitting.value = true;
 
-  // Create gig data
-  const gigData = {
-    id: Date.now(), // Simple ID generation
-    title: newGig.value.title,
-    category: newGig.value.category,
-    price: parseInt(newGig.value.price),
-    description: newGig.value.description,
-    deliveryTime: newGig.value.deliveryTime,
-    revisions: newGig.value.revisions,
-    features: validFeatures,
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&h=300&fit=crop",
-    rating: 5.0,
-    reviews: 0,
-    user: {
-      name: user.value?.user?.username || "You",
-      avatar: user.value?.user?.avatar || "https://images.unsplash.com/photo-1494790108755-2616b612b789?w=100&h=100&fit=crop&crop=face",
+  try {
+    // Create gig data for API
+    const gigPayload = {
+      title: newGig.value.title,
+      category: newGig.value.category,
+      price: parseFloat(newGig.value.price),
+      description: newGig.value.description,
+      delivery_time: parseInt(newGig.value.deliveryTime),
+      revisions: parseInt(newGig.value.revisions),
+    };
+
+    const { data, error } = await post('/workspace/gigs/create/', gigPayload);
+
+    if (error) {
+      console.error('Error creating gig:', error);
+      toast.add({
+        title: "Error",
+        description: "Failed to create gig. Please try again.",
+        color: "red",
+      });
+      return;
     }
-  };
 
-  // Emit the gig creation event to parent
-  emit('gigCreated', gigData);
-  
-  // Reset form
-  resetForm();
+    // Emit the gig creation event to parent
+    emit('gigCreated', data);
+    
+    // Reset form
+    resetForm();
 
-  toast.add({
-    title: "Gig Created!",
-    description: `"${gigData.title}" has been created successfully`,
-    color: "green",
-  });
+    toast.add({
+      title: "Gig Created!",
+      description: `"${newGig.value.title}" has been created successfully`,
+      color: "green",
+    });
+  } catch (err) {
+    console.error('Error creating gig:', err);
+    toast.add({
+      title: "Error",
+      description: "An unexpected error occurred.",
+      color: "red",
+    });
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 
 const resetForm = () => {
