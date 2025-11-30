@@ -96,28 +96,37 @@
             
             <!-- Messages List -->
             <div v-else class="space-y-1.5">
-              <div
-                v-for="message in messages"
-                :key="message.id"
-                class="flex items-end gap-1.5"
-                :class="isMyMessage(message) ? 'justify-end' : 'justify-start'"
-              >
-                <!-- Avatar for received messages -->
-                <div v-if="!isMyMessage(message)" class="flex-shrink-0 mb-0.5">
-                  <img
-                    :src="otherUser?.avatar || '/images/placeholder.jpg'"
-                    :alt="otherUser?.name"
-                    class="w-6 h-6 rounded-full object-cover"
-                  />
+              <template v-for="message in messages" :key="message.id">
+                <!-- System Message -->
+                <div v-if="isSystemMessage(message)" class="flex justify-center my-3">
+                  <div class="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2 rounded-full text-xs text-center max-w-[90%]">
+                    <span class="whitespace-pre-wrap">{{ message.content }}</span>
+                    <span class="text-amber-500 ml-2 text-[10px]">{{ formatTimeAgo(message.created_at) }}</span>
+                  </div>
                 </div>
                 
-                <!-- Message Content -->
+                <!-- Regular Message -->
                 <div
-                  class="max-w-[78%] rounded-xl overflow-hidden"
-                  :class="isMyMessage(message) 
-                    ? 'bg-purple-500 text-white rounded-br-sm' 
-                    : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'"
+                  v-else
+                  class="flex items-end gap-1.5"
+                  :class="isMyMessage(message) ? 'justify-end' : 'justify-start'"
                 >
+                  <!-- Avatar for received messages -->
+                  <div v-if="!isMyMessage(message)" class="flex-shrink-0 mb-0.5">
+                    <img
+                      :src="otherUser?.avatar || '/images/placeholder.jpg'"
+                      :alt="otherUser?.name"
+                      class="w-6 h-6 rounded-full object-cover"
+                    />
+                  </div>
+                  
+                  <!-- Message Content -->
+                  <div
+                    class="max-w-[78%] rounded-xl overflow-hidden"
+                    :class="isMyMessage(message) 
+                      ? 'bg-purple-500 text-white rounded-br-sm' 
+                      : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'"
+                  >
                   <!-- Image Message -->
                   <div v-if="message.media_url && message.message_type === 'image'" class="relative group">
                     <img
@@ -177,7 +186,8 @@
                     />
                   </div>
                 </div>
-              </div>
+                </div>
+              </template>
             </div>
           </div>
           
@@ -394,8 +404,16 @@ const emit = defineEmits(['update:isOpen', 'close']);
 // Router for navigation
 const router = useRouter();
 
+// Check if message is a system message (no sender)
+const isSystemMessage = (message) => {
+  return !message?.sender && !message?.sender_id;
+};
+
 // Check if message is from current user
 const isMyMessage = (message) => {
+  // System messages are not from current user
+  if (isSystemMessage(message)) return false;
+  
   if (!props.currentUserId) return false;
   
   // Handle both cases: sender as object with id, or sender as direct id

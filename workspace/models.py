@@ -108,6 +108,7 @@ class Gig(models.Model):
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='design')
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to=gig_image_path, blank=True, null=True)
+    gallery = models.JSONField(default=list, blank=True, help_text="List of additional image URLs")
     delivery_time = models.PositiveIntegerField(default=3, help_text="Delivery time in days")
     revisions = models.PositiveIntegerField(default=2, help_text="Number of revisions included")
     skills = models.JSONField(default=list, blank=True, help_text="List of skills/expertise tags")
@@ -208,6 +209,40 @@ class GigOrder(models.Model):
         return f"Order #{str(self.id)[:8]} - {self.gig.title}"
 
 
+class GigOrderTransaction(models.Model):
+    """Model for tracking order payment transactions"""
+    TRANSACTION_TYPE_CHOICES = [
+        ('payment', 'Payment'),           # Buyer pays for order
+        ('refund', 'Refund'),             # Refund to buyer
+        ('release', 'Release'),           # Release payment to seller
+        ('hold', 'Hold'),                 # Hold payment in escrow
+    ]
+    
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(GigOrder, on_delete=models.CASCADE, related_name='transactions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workspace_transactions')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPE_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    description = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Order Transaction"
+        verbose_name_plural = "Order Transactions"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.transaction_type} - ৳{self.amount} for Order #{str(self.order.id)[:8]}"
+
+
 class OrderMessage(models.Model):
     """Model for order chat messages"""
     MESSAGE_TYPE_CHOICES = [
@@ -219,7 +254,7 @@ class OrderMessage(models.Model):
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order = models.ForeignKey(GigOrder, on_delete=models.CASCADE, related_name='messages')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workspace_order_messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workspace_order_messages', null=True, blank=True)
     content = models.TextField(blank=True, default='')
     message_type = models.CharField(max_length=20, choices=MESSAGE_TYPE_CHOICES, default='text')
     media = models.FileField(upload_to='order_messages/', blank=True, null=True)

@@ -81,8 +81,14 @@ class GigCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     
     def create(self, request, *args, **kwargs):
+        print(f"GigCreateView: Received data: {request.data}")
+        print(f"GigCreateView: User: {request.user}")
+        
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            print(f"GigCreateView: Validation errors: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
         gig = serializer.save()
         
         # Return full gig data
@@ -256,7 +262,10 @@ class MySellerOrdersView(generics.ListAPIView):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_order(request, gig_id):
-    """Create an order for a gig"""
+    """Create an order for a gig with payment from balance"""
+    from django.db import transaction as db_transaction
+    from .models import GigOrderTransaction
+    
     try:
         gig = Gig.objects.get(id=gig_id, status='active')
     except Gig.DoesNotExist:
@@ -266,26 +275,228 @@ def create_order(request, gig_id):
     if gig.user == request.user:
         return Response({'error': 'You cannot order your own gig'}, status=status.HTTP_400_BAD_REQUEST)
     
+    buyer = request.user
+    price = gig.price
+    
+    # Check if buyer has sufficient balance
+    if buyer.balance < price:
+        return Response({
+            'error': 'Insufficient balance',
+            'message': f'Your balance is ৳{buyer.balance}. You need ৳{price} to place this order.',
+            'required': float(price),
+            'available': float(buyer.balance),
+            'shortfall': float(price - buyer.balance)
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
     requirements = request.data.get('requirements', '')
     
     # Calculate delivery date
     delivery_date = timezone.now() + timezone.timedelta(days=gig.delivery_time)
     
-    order = GigOrder.objects.create(
-        gig=gig,
-        buyer=request.user,
-        seller=gig.user,
-        price=gig.price,
-        requirements=requirements,
-        delivery_date=delivery_date
-    )
-    
-    # Increment gig orders count
-    gig.orders_count += 1
-    gig.save(update_fields=['orders_count'])
+    try:
+        with db_transaction.atomic():
+            # Deduct from buyer's balance
+            buyer.balance -= price
+            buyer.save(update_fields=['balance'])
+            
+            # Create the order
+            order = GigOrder.objects.create(
+                gig=gig,
+                buyer=buyer,
+                seller=gig.user,
+                price=price,
+                requirements=requirements,
+                delivery_date=delivery_date,
+                status='pending'
+            )
+            
+            # Create payment transaction record
+            GigOrderTransaction.objects.create(
+                order=order,
+                user=buyer,
+                amount=price,
+                transaction_type='payment',
+                status='completed',
+                description=f'Payment for order #{str(order.id)[:8]} - {gig.title}'
+            )
+            
+            # Create hold transaction (money in escrow)
+            GigOrderTransaction.objects.create(
+                order=order,
+                user=gig.user,  # Seller
+                amount=price,
+                transaction_type='hold',
+                status='pending',
+                description=f'Payment held in escrow for order #{str(order.id)[:8]}'
+            )
+            
+            # Create system message for order placement
+            OrderMessage.objects.create(
+                order=order,
+                sender=None,  # System message
+                content=f'🎉 Order placed successfully! Payment of ৳{price} has been received and held in escrow. The seller has been notified.',
+                message_type='text'
+            )
+            
+            # Increment gig orders count
+            gig.orders_count += 1
+            gig.save(update_fields=['orders_count'])
+            
+    except Exception as e:
+        return Response({
+            'error': 'Payment failed',
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     serializer = GigOrderSerializer(order, context={'request': request})
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response({
+        'order': serializer.data,
+        'message': 'Order placed successfully!',
+        'payment': {
+            'amount': float(price),
+            'new_balance': float(buyer.balance),
+            'status': 'completed'
+        }
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def complete_order_payment(request, order_id):
+    """Release payment to seller when order is completed"""
+    from django.db import transaction as db_transaction
+    from .models import GigOrderTransaction
+    
+    try:
+        order = GigOrder.objects.get(id=order_id)
+    except GigOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Only buyer can complete the order
+    if order.buyer != request.user:
+        return Response({'error': 'Only the buyer can complete this order'}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Order must be delivered
+    if order.status != 'delivered':
+        return Response({'error': 'Order must be delivered before completion'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        with db_transaction.atomic():
+            # Update order status
+            order.status = 'completed'
+            order.completed_at = timezone.now()
+            order.save(update_fields=['status', 'completed_at'])
+            
+            # Release payment to seller
+            seller = order.seller
+            seller.balance += order.price
+            seller.save(update_fields=['balance'])
+            
+            # Update hold transaction to completed
+            GigOrderTransaction.objects.filter(
+                order=order,
+                transaction_type='hold',
+                status='pending'
+            ).update(status='completed')
+            
+            # Create release transaction
+            GigOrderTransaction.objects.create(
+                order=order,
+                user=seller,
+                amount=order.price,
+                transaction_type='release',
+                status='completed',
+                description=f'Payment released for completed order #{str(order.id)[:8]}'
+            )
+            
+            # Create system message
+            OrderMessage.objects.create(
+                order=order,
+                sender=None,
+                content=f'✅ Order completed! Payment of ৳{order.price} has been released to the seller.',
+                message_type='text'
+            )
+            
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    serializer = GigOrderSerializer(order, context={'request': request})
+    return Response({
+        'order': serializer.data,
+        'message': 'Order completed and payment released!'
+    })
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def cancel_order(request, order_id):
+    """Cancel order and refund buyer"""
+    from django.db import transaction as db_transaction
+    from .models import GigOrderTransaction
+    
+    try:
+        order = GigOrder.objects.get(id=order_id)
+    except GigOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Only buyer or seller can cancel
+    if order.buyer != request.user and order.seller != request.user:
+        return Response({'error': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Can only cancel pending or in_progress orders
+    if order.status not in ['pending', 'in_progress']:
+        return Response({'error': 'Cannot cancel order in current status'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    canceller = 'buyer' if request.user == order.buyer else 'seller'
+    
+    try:
+        with db_transaction.atomic():
+            # Refund buyer
+            buyer = order.buyer
+            buyer.balance += order.price
+            buyer.save(update_fields=['balance'])
+            
+            # Update order status
+            order.status = 'cancelled'
+            order.save(update_fields=['status'])
+            
+            # Update hold transaction
+            GigOrderTransaction.objects.filter(
+                order=order,
+                transaction_type='hold',
+                status='pending'
+            ).update(status='refunded')
+            
+            # Create refund transaction
+            GigOrderTransaction.objects.create(
+                order=order,
+                user=buyer,
+                amount=order.price,
+                transaction_type='refund',
+                status='completed',
+                description=f'Refund for cancelled order #{str(order.id)[:8]} (cancelled by {canceller})'
+            )
+            
+            # Create system message
+            OrderMessage.objects.create(
+                order=order,
+                sender=None,
+                content=f'❌ Order cancelled by {canceller}. ৳{order.price} has been refunded to the buyer.',
+                message_type='text'
+            )
+            
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    serializer = GigOrderSerializer(order, context={'request': request})
+    return Response({
+        'order': serializer.data,
+        'message': 'Order cancelled and refunded!',
+        'refund': {
+            'amount': float(order.price),
+            'new_balance': float(buyer.balance)
+        }
+    })
 
 
 @api_view(['GET'])

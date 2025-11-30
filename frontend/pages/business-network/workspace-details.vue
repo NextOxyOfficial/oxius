@@ -285,10 +285,10 @@
                     </div>
                   </div>
 
-                  <!-- Action Buttons -->
-                  <div class="flex flex-col sm:flex-row gap-3 mb-6">
+                  <!-- Order Section (hidden for own gig) -->
+                  <div v-if="!showOrderFlow && !isOwnGig" class="flex flex-col sm:flex-row gap-3 mb-6">
                     <button
-                      @click="handleOrder"
+                      @click="startOrder"
                       class="flex-1 bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors"
                     >
                       <span class="inline-flex items-center">Order (<UIcon name="i-mdi:currency-bdt" />{{ gig.price }})</span>
@@ -300,6 +300,247 @@
                       <img src="/images/chat_icon.png" alt="AdsyConnect" class="w-5 h-5" />
                       Contact Seller
                     </button>
+                  </div>
+                  
+                  <!-- Own Gig Notice -->
+                  <div v-if="isOwnGig && !showOrderFlow" class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-center gap-3">
+                      <UIcon name="i-heroicons-information-circle" class="w-5 h-5 text-purple-500" />
+                      <p class="text-sm text-purple-700">This is your gig. You can manage it from the <NuxtLink to="/business-network/workspaces?tab=my-gigs" class="font-medium underline">My Gigs</NuxtLink> section.</p>
+                    </div>
+                  </div>
+
+                  <!-- Order Flow Steps -->
+                  <div v-if="showOrderFlow" class="mb-6">
+                    <!-- Progress Steps -->
+                    <div class="flex items-center justify-between mb-6 px-2">
+                      <div 
+                        v-for="(step, index) in orderSteps" 
+                        :key="index"
+                        class="flex items-center"
+                      >
+                        <div 
+                          :class="[
+                            'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all',
+                            orderStep > index + 1 ? 'bg-green-500 text-white' :
+                            orderStep === index + 1 ? 'bg-purple-600 text-white' :
+                            'bg-gray-200 text-gray-500'
+                          ]"
+                        >
+                          <UIcon v-if="orderStep > index + 1" name="i-heroicons-check" class="w-4 h-4" />
+                          <span v-else>{{ index + 1 }}</span>
+                        </div>
+                        <span 
+                          :class="[
+                            'ml-2 text-xs sm:text-sm hidden sm:block',
+                            orderStep >= index + 1 ? 'text-gray-900 font-medium' : 'text-gray-400'
+                          ]"
+                        >
+                          {{ step }}
+                        </span>
+                        <div 
+                          v-if="index < orderSteps.length - 1" 
+                          :class="[
+                            'w-6 sm:w-10 h-0.5 mx-2',
+                            orderStep > index + 1 ? 'bg-green-500' : 'bg-gray-200'
+                          ]"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Step 1: Review -->
+                    <div v-if="orderStep === 1" class="space-y-4">
+                      <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-900 mb-3">Order Summary</h4>
+                        <div class="space-y-2 text-sm">
+                          <div class="flex justify-between">
+                            <span class="text-gray-600">Gig</span>
+                            <span class="font-medium text-gray-900">{{ gig.title.slice(0, 30) }}...</span>
+                          </div>
+                          <div class="flex justify-between">
+                            <span class="text-gray-600">Delivery Time</span>
+                            <span class="font-medium">{{ gig.delivery_time }} days</span>
+                          </div>
+                          <div class="flex justify-between">
+                            <span class="text-gray-600">Revisions</span>
+                            <span class="font-medium">{{ gig.revisions }} included</span>
+                          </div>
+                          <div class="flex justify-between pt-2 border-t">
+                            <span class="font-medium text-gray-900">Total</span>
+                            <span class="font-bold text-lg flex items-center">
+                              <UIcon name="i-mdi:currency-bdt" />{{ gig.price }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                          Requirements (Optional)
+                        </label>
+                        <textarea
+                          v-model="orderRequirements"
+                          placeholder="Describe your requirements..."
+                          rows="3"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                        ></textarea>
+                      </div>
+
+                      <div class="flex gap-3">
+                        <button
+                          @click="cancelOrder"
+                          class="flex-1 border border-gray-300 text-gray-700 py-2.5 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          @click="orderStep = 2"
+                          class="flex-1 bg-purple-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors"
+                        >
+                          Continue to Payment
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Step 2: Payment -->
+                    <div v-if="orderStep === 2" class="space-y-4">
+                      <!-- Balance Card -->
+                      <div class="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-4 text-white">
+                        <div class="flex items-center justify-between">
+                          <div>
+                            <p class="text-sm opacity-90">Your Balance</p>
+                            <p class="text-2xl font-bold flex items-center mt-1">
+                              <UIcon name="i-mdi:currency-bdt" class="text-2xl" />{{ userBalance }}
+                            </p>
+                          </div>
+                          <button
+                            @click="refreshBalance"
+                            :disabled="isRefreshingBalance"
+                            class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all"
+                            title="Refresh balance"
+                          >
+                            <UIcon 
+                              name="i-heroicons-arrow-path" 
+                              :class="['w-5 h-5', isRefreshingBalance ? 'animate-spin' : '']" 
+                            />
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Payment Summary -->
+                      <div class="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">Order Amount</span>
+                          <span class="font-medium flex items-center">
+                            <UIcon name="i-mdi:currency-bdt" />{{ gig.price }}
+                          </span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">Service Fee</span>
+                          <span class="font-medium text-green-600">Free</span>
+                        </div>
+                        <div class="border-t pt-2 flex justify-between">
+                          <span class="font-medium text-gray-900">Total to Pay</span>
+                          <span class="font-bold text-lg flex items-center">
+                            <UIcon name="i-mdi:currency-bdt" />{{ gig.price }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Insufficient Balance Warning -->
+                      <div v-if="!hasSufficientBalance" class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div class="flex items-start gap-3">
+                          <AlertTriangle class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p class="font-medium text-red-800">Insufficient Balance</p>
+                            <p class="text-sm text-red-600 mt-1">
+                              You need ৳{{ balanceShortfall }} more to place this order.
+                            </p>
+                            <button
+                              @click="goToDeposit"
+                              class="mt-2 text-sm bg-red-100 text-red-700 px-3 py-1.5 rounded-lg font-medium hover:bg-red-200 transition-colors"
+                            >
+                              Deposit Now
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Balance After Payment -->
+                      <div v-else class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div class="flex items-center gap-2 text-sm text-blue-800">
+                          <UIcon name="i-heroicons-information-circle" class="w-5 h-5 text-blue-500" />
+                          <span>After payment, your balance will be <strong>৳{{ balanceAfterPayment }}</strong></span>
+                        </div>
+                      </div>
+
+                      <!-- Escrow Notice -->
+                      <div class="flex items-start gap-2 text-xs text-gray-500">
+                        <UIcon name="i-heroicons-shield-check" class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                        <span>Payment held securely in escrow until order completion.</span>
+                      </div>
+
+                      <div class="flex gap-3">
+                        <button
+                          @click="orderStep = 1"
+                          class="flex-1 border border-gray-300 text-gray-700 py-2.5 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          Back
+                        </button>
+                        <button
+                          @click="submitOrder"
+                          :disabled="!hasSufficientBalance || isPlacingOrder"
+                          :class="[
+                            'flex-1 py-2.5 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2',
+                            hasSufficientBalance && !isPlacingOrder
+                              ? 'bg-purple-600 text-white hover:bg-purple-700'
+                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          ]"
+                        >
+                          <span v-if="isPlacingOrder" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                          <span>Pay ৳{{ gig.price }}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Step 3: Success -->
+                    <div v-if="orderStep === 3" class="text-center py-4">
+                      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Check class="w-8 h-8 text-green-500" />
+                      </div>
+                      <h4 class="text-xl font-bold text-gray-900 mb-2">Order Placed!</h4>
+                      <p class="text-gray-600 text-sm mb-4">
+                        Payment of ৳{{ orderResult?.payment?.amount }} successful. Seller has been notified.
+                      </p>
+                      
+                      <div class="bg-gray-50 rounded-lg p-4 text-left space-y-2 text-sm mb-4">
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">Order ID</span>
+                          <span class="font-mono font-medium">{{ orderResult?.order?.id?.slice(0, 8).toUpperCase() }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">New Balance</span>
+                          <span class="font-medium flex items-center">
+                            <UIcon name="i-mdi:currency-bdt" />{{ orderResult?.payment?.new_balance }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="flex gap-3">
+                        <button
+                          @click="resetOrderFlow"
+                          class="flex-1 border border-gray-300 text-gray-700 py-2.5 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                        >
+                          Close
+                        </button>
+                        <button
+                          @click="viewMyOrders"
+                          class="flex-1 bg-purple-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors"
+                        >
+                          View Order
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- Trust Indicators and Share -->
@@ -575,6 +816,15 @@ const hasMoreRelatedGigs = ref(true);
 // Image slider state
 const currentImageIndex = ref(0);
 
+// Order flow state
+const showOrderFlow = ref(false);
+const orderStep = ref(1);
+const orderSteps = ['Review', 'Payment', 'Complete'];
+const orderRequirements = ref('');
+const isPlacingOrder = ref(false);
+const orderResult = ref(null);
+const isRefreshingBalance = ref(false);
+
 // Computed: Get all gig images (main + gallery if available)
 const gigImages = computed(() => {
   if (!gig.value) return [];
@@ -615,6 +865,37 @@ const prevImage = () => {
     currentImageIndex.value = gigImages.value.length - 1; // Loop to last
   }
 };
+
+// Order flow computed properties
+const userBalance = computed(() => {
+  // Try multiple paths to find balance (user.user.balance or user.balance)
+  const balance = user.value?.user?.balance ?? user.value?.balance ?? 0;
+  return parseFloat(balance).toFixed(2);
+});
+
+const hasSufficientBalance = computed(() => {
+  if (!gig.value) return false;
+  return parseFloat(userBalance.value) >= parseFloat(gig.value.price || 0);
+});
+
+const balanceShortfall = computed(() => {
+  if (!gig.value) return 0;
+  const diff = parseFloat(gig.value.price || 0) - parseFloat(userBalance.value);
+  return diff > 0 ? diff.toFixed(2) : 0;
+});
+
+const balanceAfterPayment = computed(() => {
+  if (!gig.value) return 0;
+  const after = parseFloat(userBalance.value) - parseFloat(gig.value.price || 0);
+  return after.toFixed(2);
+});
+
+// Check if viewing own gig
+const isOwnGig = computed(() => {
+  if (!gig.value || !user.value) return false;
+  const userId = user.value?.user?.id || user.value?.id;
+  return gig.value.user?.id === userId;
+});
 
 // Helper functions
 const getCategoryLabel = (category) => {
@@ -835,7 +1116,8 @@ const formatReviewDate = (dateString) => {
   }
 };
 
-const handleOrder = () => {
+// Order flow methods
+const startOrder = () => {
   if (!user.value) {
     toast.add({
       title: "Login Required",
@@ -845,11 +1127,147 @@ const handleOrder = () => {
     return;
   }
 
-  toast.add({
-    title: "Order Process",
-    description: `Proceeding to order "${gig.value.title}" for $${gig.value.price}`,
-    color: "blue",
-  });
+  // Can't order own gig
+  if (gig.value.user.id === user.value?.user?.id) {
+    toast.add({
+      title: "Cannot Order",
+      description: "You cannot order your own gig.",
+      color: "red",
+    });
+    return;
+  }
+
+  showOrderFlow.value = true;
+  orderStep.value = 1;
+};
+
+const cancelOrder = () => {
+  showOrderFlow.value = false;
+  orderStep.value = 1;
+  orderRequirements.value = '';
+  orderResult.value = null;
+};
+
+const resetOrderFlow = () => {
+  showOrderFlow.value = false;
+  orderStep.value = 1;
+  orderRequirements.value = '';
+  orderResult.value = null;
+};
+
+const goToDeposit = () => {
+  router.push('/deposit');
+};
+
+const viewMyOrders = () => {
+  router.push('/business-network/workspaces?tab=gig-ordered');
+};
+
+const refreshBalance = async () => {
+  if (isRefreshingBalance.value) return;
+  
+  isRefreshingBalance.value = true;
+  
+  try {
+    // Get user ID from auth state
+    const userId = user.value?.user?.id || user.value?.id;
+    if (!userId) {
+      toast.add({
+        title: 'Error',
+        description: 'Please login to refresh balance',
+        color: 'red',
+      });
+      return;
+    }
+    
+    const { data, error } = await get(`/user/${userId}/`);
+    
+    if (!error && data) {
+      // Update user balance in auth state - create new object to trigger reactivity
+      if (user.value?.user) {
+        user.value = {
+          ...user.value,
+          user: {
+            ...user.value.user,
+            balance: data.balance
+          }
+        };
+      } else if (user.value) {
+        user.value = {
+          ...user.value,
+          balance: data.balance
+        };
+      }
+      
+      // Also update localStorage to persist
+      if (typeof window !== 'undefined') {
+        const storedUser = localStorage.getItem('adsyclub_user');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            parsedUser.balance = data.balance;
+            localStorage.setItem('adsyclub_user', JSON.stringify(parsedUser));
+          } catch (e) {}
+        }
+      }
+      
+      toast.add({
+        title: 'Balance Updated',
+        description: `Your current balance is ৳${parseFloat(data.balance).toFixed(2)}`,
+        color: 'green',
+      });
+    }
+  } catch (err) {
+    console.error('Error refreshing balance:', err);
+    toast.add({
+      title: 'Error',
+      description: 'Failed to refresh balance',
+      color: 'red',
+    });
+  } finally {
+    isRefreshingBalance.value = false;
+  }
+};
+
+const submitOrder = async () => {
+  if (!hasSufficientBalance.value || isPlacingOrder.value) return;
+
+  isPlacingOrder.value = true;
+
+  try {
+    const { post } = useApi();
+    const { data, error } = await post(`/workspace/gigs/${gig.value.id}/order/`, {
+      requirements: orderRequirements.value
+    });
+
+    if (error) {
+      toast.add({
+        title: "Order Failed",
+        description: error.message || error.error || "Failed to place order",
+        color: "red",
+      });
+      return;
+    }
+
+    orderResult.value = data;
+    orderStep.value = 3;
+
+    toast.add({
+      title: "Order Placed!",
+      description: "Your order has been placed successfully.",
+      color: "green",
+    });
+
+  } catch (err) {
+    console.error('Order error:', err);
+    toast.add({
+      title: "Error",
+      description: err.message || "An unexpected error occurred",
+      color: "red",
+    });
+  } finally {
+    isPlacingOrder.value = false;
+  }
 };
 
 const handleContact = () => {

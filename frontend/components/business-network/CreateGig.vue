@@ -15,48 +15,72 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <div class="sm:p-8 p-2">
         <form @submit.prevent="submitGig" class="space-y-8">
-          <!-- Gig Image Upload Section -->
+          <!-- Gig Images Upload Section -->
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Gig Image</h3>
-            <div class="space-y-4">
-              <!-- Main Image Upload -->
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Gig Images</h3>
+            <p class="text-sm text-gray-500 mb-4">Upload up to 5 images. The first image will be your main gig image.</p>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              <!-- Uploaded Images -->
               <div 
-                @click="triggerImageUpload"
-                class="aspect-video rounded-lg border-2 border-dashed border-gray-300 hover:border-purple-400 transition-colors bg-gray-50 flex items-center justify-center cursor-pointer overflow-hidden relative"
+                v-for="(image, index) in imagePreviews" 
+                :key="index"
+                class="aspect-square rounded-lg border-2 border-gray-200 overflow-hidden relative group"
               >
-                <!-- Image Preview -->
                 <img 
-                  v-if="imagePreview" 
-                  :src="imagePreview" 
+                  :src="image" 
                   alt="Gig preview" 
                   class="w-full h-full object-cover"
                 />
-                <!-- Upload Placeholder -->
-                <div v-else class="text-center">
-                  <div class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Plus class="h-6 w-6 text-gray-400" />
-                  </div>
-                  <p class="text-sm text-gray-600 mb-1">Upload main gig image</p>
-                  <p class="text-xs text-gray-500">Recommended: 1280x720px</p>
-                </div>
+                <!-- Main Badge -->
+                <span 
+                  v-if="index === 0"
+                  class="absolute top-1 left-1 px-1.5 py-0.5 bg-purple-500 text-white text-[10px] font-medium rounded"
+                >
+                  Main
+                </span>
                 <!-- Remove Button -->
                 <button 
-                  v-if="imagePreview"
-                  @click.stop="removeImage"
+                  @click.stop="removeImage(index)"
                   type="button"
-                  class="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                  class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
                 >
-                  <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+                  <UIcon name="i-heroicons-x-mark" class="w-3 h-3" />
                 </button>
+                <!-- Reorder hint -->
+                <div 
+                  v-if="index > 0"
+                  @click="setAsMain(index)"
+                  class="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] text-center py-1 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  Set as main
+                </div>
               </div>
-              <input 
-                ref="imageInput"
-                type="file" 
-                accept="image/*" 
-                class="hidden" 
-                @change="handleImageUpload"
-              />
+              
+              <!-- Add Image Button -->
+              <div 
+                v-if="imagePreviews.length < 5"
+                @click="triggerImageUpload"
+                class="aspect-square rounded-lg border-2 border-dashed border-gray-300 hover:border-purple-400 transition-colors bg-gray-50 flex items-center justify-center cursor-pointer"
+              >
+                <div class="text-center">
+                  <div class="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Plus class="h-5 w-5 text-gray-400" />
+                  </div>
+                  <p class="text-xs text-gray-500">Add Image</p>
+                </div>
+              </div>
             </div>
+            
+            <input 
+              ref="imageInput"
+              type="file" 
+              accept="image/*" 
+              multiple
+              class="hidden" 
+              @change="handleImageUpload"
+            />
+            <p class="text-xs text-gray-500 mt-2">Recommended: 1280x720px • Max 5 images</p>
           </div>
 
           <!-- Gig Details Section -->
@@ -96,7 +120,7 @@
                     <option 
                       v-for="category in gigOptions.categories" 
                       :key="category.id" 
-                      :value="category.id"
+                      :value="category.slug"
                     >
                       {{ category.name }}
                     </option>
@@ -367,10 +391,10 @@ const gigOptions = ref({
   revision_options: []
 });
 
-// Image handling
+// Image handling - multiple images
 const imageInput = ref(null);
-const selectedImage = ref(null);
-const imagePreview = ref(null);
+const selectedImages = ref([]);
+const imagePreviews = ref([]);
 
 // Form state
 const newGig = ref({
@@ -397,39 +421,62 @@ const triggerImageUpload = () => {
 };
 
 const handleImageUpload = (event) => {
-  const file = event.target.files[0];
-  if (file) {
+  const files = Array.from(event.target.files);
+  
+  for (const file of files) {
+    // Check max limit
+    if (selectedImages.value.length >= 5) {
+      toast.add({
+        title: 'Limit Reached',
+        description: 'You can upload up to 5 images',
+        color: 'orange'
+      });
+      break;
+    }
+    
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast.add({
         title: 'Invalid File',
-        description: 'Please upload an image file',
+        description: `${file.name} is not an image file`,
         color: 'red'
       });
-      return;
+      continue;
     }
     
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.add({
         title: 'File Too Large',
-        description: 'Image must be less than 5MB',
+        description: `${file.name} must be less than 5MB`,
         color: 'red'
       });
-      return;
+      continue;
     }
     
-    selectedImage.value = file;
-    imagePreview.value = URL.createObjectURL(file);
+    selectedImages.value.push(file);
+    imagePreviews.value.push(URL.createObjectURL(file));
   }
-};
-
-const removeImage = () => {
-  selectedImage.value = null;
-  imagePreview.value = null;
+  
+  // Reset input to allow selecting same file again
   if (imageInput.value) {
     imageInput.value.value = '';
   }
+};
+
+const removeImage = (index) => {
+  // Revoke object URL to prevent memory leak
+  URL.revokeObjectURL(imagePreviews.value[index]);
+  selectedImages.value.splice(index, 1);
+  imagePreviews.value.splice(index, 1);
+};
+
+const setAsMain = (index) => {
+  // Move the selected image to the first position
+  const image = selectedImages.value.splice(index, 1)[0];
+  const preview = imagePreviews.value.splice(index, 1)[0];
+  selectedImages.value.unshift(image);
+  imagePreviews.value.unshift(preview);
 };
 
 // Fetch gig options from API
@@ -460,9 +507,9 @@ const suggestedSkills = computed(() => {
     // Show all skills if no category selected
     return gigOptions.value.skills.slice(0, 8).map(skill => skill.name);
   }
-  // Filter skills by selected category
+  // Filter skills by selected category (using category_slug to match the slug value)
   const categorySkills = gigOptions.value.skills
-    .filter(skill => skill.category === newGig.value.category)
+    .filter(skill => skill.category_slug === newGig.value.category)
     .map(skill => skill.name);
   
   // If no skills for this category, show some general skills
@@ -558,9 +605,16 @@ const submitGig = async () => {
       .filter(f => f);
     formData.append('features', JSON.stringify(features));
     
-    // Add image if selected
-    if (selectedImage.value) {
-      formData.append('image', selectedImage.value);
+    // Add main image (first image)
+    if (selectedImages.value.length > 0) {
+      formData.append('image', selectedImages.value[0]);
+    }
+    
+    // Add gallery images (remaining images)
+    if (selectedImages.value.length > 1) {
+      for (let i = 1; i < selectedImages.value.length; i++) {
+        formData.append('gallery', selectedImages.value[i]);
+      }
     }
 
     const { data, error } = await post('/workspace/gigs/create/', formData);
@@ -621,9 +675,10 @@ const resetForm = () => {
   };
   skillInput.value = '';
   
-  // Clear image
-  selectedImage.value = null;
-  imagePreview.value = null;
+  // Clear all images
+  imagePreviews.value.forEach(preview => URL.revokeObjectURL(preview));
+  selectedImages.value = [];
+  imagePreviews.value = [];
   if (imageInput.value) {
     imageInput.value.value = '';
   }

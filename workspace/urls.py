@@ -4,6 +4,7 @@ from .views import (
     MyGigsView, toggle_favorite, MyFavoritesView,
     GigReviewListView, create_review,
     MyOrdersView, MySellerOrdersView, create_order, update_order_status,
+    complete_order_payment, cancel_order,
     gig_categories,
     OrderMessageListView, create_order_message, get_unread_message_counts,
     get_gig_options, get_skills_by_category
@@ -35,10 +36,14 @@ urlpatterns = [
     path('gigs/<uuid:gig_id>/order/', create_order, name='create-order'),
     path('orders/', MyOrdersView.as_view(), name='my-orders'),
     path('orders/seller/', MySellerOrdersView.as_view(), name='seller-orders'),
-    path('orders/<uuid:order_id>/<str:action>/', update_order_status, name='update-order-status'),
+    path('orders/unread-counts/', get_unread_message_counts, name='unread-message-counts'),
     
-    # Order message endpoints
+    # Order message endpoints (must be before the action pattern)
     path('orders/<uuid:order_id>/messages/', OrderMessageListView.as_view(), name='order-messages'),
     path('orders/<uuid:order_id>/messages/create/', create_order_message, name='create-order-message'),
-    path('orders/unread-counts/', get_unread_message_counts, name='unread-message-counts'),
+    
+    # Order action endpoints (must be last as it catches any string)
+    path('orders/<uuid:order_id>/complete/', complete_order_payment, name='complete-order'),
+    path('orders/<uuid:order_id>/cancel/', cancel_order, name='cancel-order'),
+    path('orders/<uuid:order_id>/<str:action>/', update_order_status, name='update-order-status'),
 ]

@@ -20,10 +20,11 @@ class GigCategorySerializer(serializers.ModelSerializer):
 class GigSkillSerializer(serializers.ModelSerializer):
     """Serializer for gig skills"""
     category_name = serializers.CharField(source='category.name', read_only=True)
+    category_slug = serializers.CharField(source='category.slug', read_only=True)
     
     class Meta:
         model = GigSkill
-        fields = ('id', 'name', 'slug', 'category', 'category_name')
+        fields = ('id', 'name', 'slug', 'category', 'category_name', 'category_slug')
 
 
 class GigDeliveryTimeSerializer(serializers.ModelSerializer):
@@ -98,7 +99,7 @@ class GigSerializer(serializers.ModelSerializer):
         model = Gig
         fields = (
             'id', 'title', 'description', 'category', 'category_display',
-            'price', 'image', 'image_url', 'delivery_time', 'revisions',
+            'price', 'image', 'image_url', 'gallery', 'delivery_time', 'revisions',
             'skills', 'features', 'status', 'is_featured', 'views_count', 'orders_count',
             'user', 'rating', 'reviews', 'is_favorited',
             'created_at', 'updated_at'
@@ -133,6 +134,7 @@ class GigCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating gigs"""
     skills = serializers.JSONField(required=False, default=list)
     features = serializers.JSONField(required=False, default=list)
+    # Don't include gallery in fields - we handle it manually in create()
     
     class Meta:
         model = Gig
@@ -144,26 +146,90 @@ class GigCreateSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         # Handle JSON strings from FormData
         import json
-        mutable_data = data.copy() if hasattr(data, 'copy') else dict(data)
+        from django.http import QueryDict
+        
+        # Convert QueryDict to regular dict
+        if isinstance(data, QueryDict):
+            mutable_data = {}
+            for key in data.keys():
+                values = data.getlist(key)
+                mutable_data[key] = values[0] if len(values) == 1 else values
+        else:
+            mutable_data = data.copy() if hasattr(data, 'copy') else dict(data)
+        
+        print(f"GigCreateSerializer: Processing data: {mutable_data}")
         
         # Parse skills if it's a JSON string
-        if 'skills' in mutable_data and isinstance(mutable_data['skills'], str):
-            try:
-                mutable_data['skills'] = json.loads(mutable_data['skills'])
-            except (json.JSONDecodeError, TypeError):
-                mutable_data['skills'] = []
+        if 'skills' in mutable_data:
+            skills_val = mutable_data['skills']
+            if isinstance(skills_val, str):
+                try:
+                    mutable_data['skills'] = json.loads(skills_val)
+                except (json.JSONDecodeError, TypeError):
+                    mutable_data['skills'] = []
         
         # Parse features if it's a JSON string
-        if 'features' in mutable_data and isinstance(mutable_data['features'], str):
-            try:
-                mutable_data['features'] = json.loads(mutable_data['features'])
-            except (json.JSONDecodeError, TypeError):
-                mutable_data['features'] = []
+        if 'features' in mutable_data:
+            features_val = mutable_data['features']
+            if isinstance(features_val, str):
+                try:
+                    mutable_data['features'] = json.loads(features_val)
+                except (json.JSONDecodeError, TypeError):
+                    mutable_data['features'] = []
         
+        # Handle price as string from FormData
+        if 'price' in mutable_data:
+            price_val = mutable_data['price']
+            if isinstance(price_val, str):
+                try:
+                    mutable_data['price'] = float(price_val)
+                except (ValueError, TypeError):
+                    pass  # Let validation handle invalid price
+        
+        # Handle delivery_time as string from FormData
+        if 'delivery_time' in mutable_data:
+            dt_val = mutable_data['delivery_time']
+            if isinstance(dt_val, str):
+                try:
+                    mutable_data['delivery_time'] = int(dt_val)
+                except (ValueError, TypeError):
+                    pass
+        
+        # Handle revisions as string from FormData
+        if 'revisions' in mutable_data:
+            rev_val = mutable_data['revisions']
+            if isinstance(rev_val, str):
+                try:
+                    mutable_data['revisions'] = int(rev_val)
+                except (ValueError, TypeError):
+                    pass
+        
+        print(f"GigCreateSerializer: After processing: {mutable_data}")
         return super().to_internal_value(mutable_data)
     
     def create(self, validated_data):
+        from django.core.files.storage import default_storage
+        import os
+        
         validated_data['user'] = self.context['request'].user
+        
+        # Handle gallery images from request.FILES
+        request = self.context.get('request')
+        gallery_urls = []
+        
+        if request and hasattr(request, 'FILES'):
+            gallery_files = request.FILES.getlist('gallery')
+            for gallery_file in gallery_files:
+                # Save each gallery image
+                file_path = f"gigs/gallery/{validated_data['user'].id}/{gallery_file.name}"
+                saved_path = default_storage.save(file_path, gallery_file)
+                # Build full URL
+                if request:
+                    gallery_urls.append(request.build_absolute_uri(default_storage.url(saved_path)))
+                else:
+                    gallery_urls.append(default_storage.url(saved_path))
+        
+        validated_data['gallery'] = gallery_urls
         return super().create(validated_data)
 
 

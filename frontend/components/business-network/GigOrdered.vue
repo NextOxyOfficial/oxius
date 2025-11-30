@@ -119,10 +119,16 @@
                     />
                     <NuxtLink 
                       :to="`/business-network/profile/${order.seller.id}`"
-                      class="text-xs sm:text-sm text-gray-600 truncate hover:text-purple-600 transition-colors"
+                      class="text-xs sm:text-sm text-gray-600 truncate hover:text-purple-600 transition-colors flex items-center gap-1"
                       @click.stop
                     >
                       by <span class="font-medium hover:underline">{{ order.seller.name }}</span>
+                      <!-- Verified Badge -->
+                      <UIcon v-if="order.seller.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <!-- Pro Badge -->
+                      <span v-if="order.seller.is_pro" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                        PRO
+                      </span>
                     </NuxtLink>
                   </div>
                   
@@ -235,25 +241,31 @@
     <div
       v-if="showCancelModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      @click.self="showCancelModal = false"
+      @click.self="!isCancelling && (showCancelModal = false)"
     >
       <div class="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Cancel Order</h3>
-        <p class="text-gray-600 mb-6">
-          Are you sure you want to cancel this order? This action cannot be undone and you may be charged a cancellation fee.
+        <p class="text-gray-600 mb-2">
+          Are you sure you want to cancel this order?
+        </p>
+        <p class="text-sm text-green-600 mb-6">
+          ৳{{ orderToCancel?.amount }} will be refunded to your balance.
         </p>
         <div class="flex space-x-3">
           <button
             @click="showCancelModal = false"
-            class="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            :disabled="isCancelling"
+            class="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             Keep Order
           </button>
           <button
             @click="confirmCancelOrder"
-            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            :disabled="isCancelling"
+            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            Cancel Order
+            <span v-if="isCancelling" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+            <span>{{ isCancelling ? 'Cancelling...' : 'Cancel Order' }}</span>
           </button>
         </div>
       </div>
@@ -299,8 +311,9 @@ const statusTabs = ref([
 
 // Orders data from API
 const orders = ref([]);
-const { get } = useApi();
+const { get, post } = useApi();
 const { user } = useAuth();
+const toast = useToast();
 
 // Fetch orders from API
 async function fetchOrders() {
@@ -346,7 +359,9 @@ async function fetchOrders() {
       seller: {
         id: order.seller?.id,
         name: order.seller?.name || 'Unknown Seller',
-        avatar: order.seller?.avatar || '/images/default-avatar.png'
+        avatar: order.seller?.avatar || '/images/default-avatar.png',
+        kyc: order.seller?.kyc || false,
+        is_pro: order.seller?.is_pro || false
       }
     }));
     
@@ -496,19 +511,51 @@ const cancelOrder = (order) => {
   showCancelModal.value = true;
 };
 
-const confirmCancelOrder = () => {
-  if (orderToCancel.value) {
-    // Update order status
+const isCancelling = ref(false);
+
+const confirmCancelOrder = async () => {
+  if (!orderToCancel.value || isCancelling.value) return;
+  
+  isCancelling.value = true;
+  
+  try {
+    const { data, error } = await post(`/workspace/orders/${orderToCancel.value.id}/cancel/`);
+    
+    if (error) {
+      toast.add({
+        title: 'Cancel Failed',
+        description: error.message || error.error || 'Failed to cancel order',
+        color: 'red',
+      });
+      return;
+    }
+    
+    // Update order status locally
     orderToCancel.value.status = 'cancelled';
     
     // Update counts
     updateStatusCounts();
     
-    console.log('Order cancelled:', orderToCancel.value.orderNumber);
+    toast.add({
+      title: 'Order Cancelled',
+      description: `৳${data.refund?.amount || orderToCancel.value.amount} has been refunded to your balance.`,
+      color: 'green',
+    });
+    
+    console.log('Order cancelled:', orderToCancel.value.orderNumber, 'Refund:', data.refund);
+    
+  } catch (err) {
+    console.error('Cancel error:', err);
+    toast.add({
+      title: 'Error',
+      description: 'An unexpected error occurred',
+      color: 'red',
+    });
+  } finally {
+    isCancelling.value = false;
+    showCancelModal.value = false;
+    orderToCancel.value = null;
   }
-  
-  showCancelModal.value = false;
-  orderToCancel.value = null;
 };
 
 // Lifecycle

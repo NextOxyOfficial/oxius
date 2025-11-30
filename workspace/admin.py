@@ -3,7 +3,7 @@ from django.utils.html import format_html, mark_safe
 from django.urls import reverse
 from django.utils import timezone
 from .models import (
-    Gig, GigReview, GigFavorite, GigOrder, OrderMessage,
+    Gig, GigReview, GigFavorite, GigOrder, OrderMessage, GigOrderTransaction,
     GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption
 )
 
@@ -373,3 +373,80 @@ class GigOrderAdmin(admin.ModelAdmin):
 
 # Note: OrderMessage is intentionally not registered as a separate admin model.
 # All messages are viewed through the GigOrder detail page for better context.
+
+
+@admin.register(GigOrderTransaction)
+class GigOrderTransactionAdmin(admin.ModelAdmin):
+    list_display = ('transaction_id', 'order_link', 'user_info', 'amount_display', 'transaction_type_badge', 'status_badge', 'created_at')
+    list_filter = ('transaction_type', 'status', 'created_at')
+    search_fields = ('id', 'order__id', 'user__first_name', 'user__last_name', 'user__email', 'description')
+    readonly_fields = ('id', 'created_at')
+    ordering = ('-created_at',)
+    list_per_page = 50
+    
+    def transaction_id(self, obj):
+        return format_html(
+            '<code style="background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 11px;">{}</code>',
+            str(obj.id)[:8].upper()
+        )
+    transaction_id.short_description = 'ID'
+    
+    def order_link(self, obj):
+        url = reverse('admin:workspace_gigorder_change', args=[obj.order.id])
+        return format_html(
+            '<a href="{}" style="color: #1976d2;">Order #{}</a>',
+            url, str(obj.order.id)[:8].upper()
+        )
+    order_link.short_description = 'Order'
+    
+    def user_info(self, obj):
+        return format_html(
+            '<div><strong>{}</strong><br><small style="color: #666;">{}</small></div>',
+            f"{obj.user.first_name} {obj.user.last_name}",
+            obj.user.email
+        )
+    user_info.short_description = 'User'
+    
+    def amount_display(self, obj):
+        color = '#4caf50' if obj.transaction_type in ['release', 'refund'] else '#333'
+        prefix = '+' if obj.transaction_type in ['release', 'refund'] else '-' if obj.transaction_type == 'payment' else ''
+        return format_html(
+            '<span style="font-weight: bold; color: {};">{}৳{}</span>',
+            color, prefix, obj.amount
+        )
+    amount_display.short_description = 'Amount'
+    
+    def transaction_type_badge(self, obj):
+        colors = {
+            'payment': '#2196f3',
+            'refund': '#ff9800',
+            'release': '#4caf50',
+            'hold': '#9c27b0',
+        }
+        icons = {
+            'payment': '💳',
+            'refund': '↩️',
+            'release': '✅',
+            'hold': '🔒',
+        }
+        color = colors.get(obj.transaction_type, '#666')
+        icon = icons.get(obj.transaction_type, '')
+        return format_html(
+            '<span style="background: {}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">{} {}</span>',
+            color, icon, obj.transaction_type.upper()
+        )
+    transaction_type_badge.short_description = 'Type'
+    
+    def status_badge(self, obj):
+        colors = {
+            'pending': '#ff9800',
+            'completed': '#4caf50',
+            'failed': '#f44336',
+            'refunded': '#9c27b0',
+        }
+        color = colors.get(obj.status, '#666')
+        return format_html(
+            '<span style="background: {}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">{}</span>',
+            color, obj.status.upper()
+        )
+    status_badge.short_description = 'Status'

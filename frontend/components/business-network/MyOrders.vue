@@ -121,10 +121,16 @@
                 <div class="flex items-center justify-between gap-2 mt-1">
                   <NuxtLink 
                     :to="`/business-network/profile/${order.buyer.id}`"
-                    class="text-xs sm:text-sm text-gray-600 hover:text-purple-600 transition-colors"
+                    class="text-xs sm:text-sm text-gray-600 hover:text-purple-600 transition-colors flex items-center gap-1"
                     @click.stop
                   >
                     from <span class="font-medium hover:underline">{{ order.buyer.name }}</span>
+                    <!-- Verified Badge -->
+                    <UIcon v-if="order.buyer.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                    <!-- Pro Badge -->
+                    <span v-if="order.buyer.is_pro" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                      PRO
+                    </span>
                   </NuxtLink>
                   <!-- Status Badge -->
                   <div :class="getStatusClass(order.status)" class="flex-shrink-0 px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium whitespace-nowrap">
@@ -572,7 +578,9 @@ async function fetchOrders() {
       buyer: {
         id: order.buyer?.id,
         name: order.buyer?.name || 'Unknown Buyer',
-        avatar: order.buyer?.avatar || '/images/default-avatar.png'
+        avatar: order.buyer?.avatar || '/images/default-avatar.png',
+        kyc: order.buyer?.kyc || false,
+        is_pro: order.buyer?.is_pro || false
       }
     }));
     
