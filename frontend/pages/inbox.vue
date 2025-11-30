@@ -772,9 +772,7 @@
                                 @click="pickDocument"
                                 class="flex flex-col items-center p-3 rounded-lg hover:bg-green-50 transition-colors group"
                               >
-                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-2 group-hover:bg-green-200">
-                                  <UIcon name="i-heroicons-document" class="w-6 h-6 text-green-600" />
-                                </div>
+                                
                                 <span class="text-xs font-medium text-gray-700">Files</span>
                               </button>
                             </div>
