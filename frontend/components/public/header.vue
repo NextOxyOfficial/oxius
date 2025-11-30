@@ -659,7 +659,7 @@
                 class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm"
               >
                 <img 
-                  src="/images/chat_icon.png" 
+                  :src="chatIconPath" 
                   alt="Inbox"
                   class="size-6"
                 />
@@ -830,6 +830,7 @@ const { user, logout } = useAuth();
 const { get } = useApi();
 const { unreadTicketCount, totalUnreadCount, fetchUnreadCount } = useTickets();
 const { isScrollingDown, isScrollingUp } = useScrollDirection();
+const { chatIconPath } = useStaticAssets();
 const toast = useToast();
 const badgeCount = ref(0);
 const openMenu = ref(false);

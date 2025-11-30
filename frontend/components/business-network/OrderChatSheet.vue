@@ -86,7 +86,7 @@
             <!-- Empty State -->
             <div v-else-if="messages.length === 0" class="flex flex-col justify-center items-center h-full text-center py-8">
               <img 
-                src="/images/chat_icon.png" 
+                :src="chatIconPath" 
                 alt="Chat"
                 class="w-16 h-16 opacity-30 mb-4"
               />
@@ -403,6 +403,7 @@ const emit = defineEmits(['update:isOpen', 'close', 'messages-read', 'new-messag
 
 // Router for navigation
 const router = useRouter();
+const { chatIconPath } = useStaticAssets();
 
 // Check if message is a system message (no sender)
 const isSystemMessage = (message) => {

@@ -549,7 +549,7 @@
                   ></div>
                   <template v-else>
                     <img 
-                      src="/images/chat_icon.png" 
+                      :src="chatIconPath" 
                       alt="Chat"
                       class="w-5 h-5 mr-3 opacity-90 group-hover:opacity-100 transition-opacity"
                     />
@@ -890,6 +890,7 @@ const toast = useToast();
 
 // Import authentication composable
 const { user, isAuthenticated } = useAuth();
+const { chatIconPath } = useStaticAssets();
 
 const { params } = useRoute();
 const { get } = useApi();

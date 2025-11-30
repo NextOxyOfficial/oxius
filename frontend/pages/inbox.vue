@@ -3,12 +3,12 @@
     <UContainer class="py-0 sm:py-8">
       
       <!-- Simple Header -->
-      <div class="bg-white border-b border-gray-200 mb-6">
+      <div class="bg-white border-b border-gray-200 sm:mb-6 mb-2">
         <div class="px-6 py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
               <img 
-                src="/images/chat_icon.png" 
+                :src="chatIconPath" 
                 alt="AdsyConnect"
                 class="w-8 h-8"
                 @error="handleImageError"
@@ -56,7 +56,7 @@
               ]"
             >
               <img 
-                src="/images/chat_icon.png" 
+                :src="chatIconPath" 
                 alt="AdsyConnect"
                 class="w-4 h-4"
               />
@@ -110,7 +110,7 @@
         </div>
       </div>      
       <!-- Content Area -->
-      <div class="px-6">
+      <div class="sm:px-6">
         <!-- Filters -->
         <div v-if="activeTab === 'support'" class="mb-4">
           <div class="flex flex-wrap gap-2">
@@ -365,11 +365,11 @@
           </div>
           
           <!-- AdsyConnect Content -->
-          <div v-if="activeTab === 'adsyconnect'" class="p-4">
+          <div v-if="activeTab === 'adsyconnect'" class="p-2">
             <!-- Embedded AdsyConnect Chat Interface -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <!-- Chat List Sidebar -->
-              <div class="lg:col-span-1">
+              <!-- Chat List Sidebar - Hidden on mobile when chat is active -->
+              <div class="lg:col-span-1" :class="{ 'hidden lg:block': activeAdsyChat && isMobileChatView }">
                 <div class="bg-white rounded-lg shadow-sm overflow-hidden">
                   <!-- Search Header -->
                   <div class="p-3 bg-gradient-to-r from-blue-50 to-indigo-50">
@@ -431,7 +431,7 @@
                       <div
                         v-for="chat in filteredAdsyChatRooms"
                         :key="chat.id"
-                        @click="selectAdsyChat(chat)"
+                        @click="selectAdsyChat(chat); isMobileChatView = true"
                         class="p-3 hover:bg-blue-50/30 cursor-pointer transition-all duration-200"
                         :class="{ 'bg-gradient-to-r from-blue-50 to-indigo-50 border-l-3 border-blue-500': activeAdsyChat?.id === chat.id }"
                       >
@@ -483,9 +483,9 @@
                       class="w-full flex items-center justify-center space-x-2 py-3 hover:bg-blue-50/50 rounded-lg transition-colors duration-200"
                     >
                       <img 
-                        src="/images/chat_icon.png" 
+                        :src="chatIconPath" 
                         alt="Chat"
-                        class="w-5 h-5"
+                        class="size-7"
                       />
                       <span class="font-semibold text-gray-700">New Chat</span>
                     </button>
@@ -493,9 +493,9 @@
                 </div>
               </div>
 
-              <!-- Chat Window -->
-              <div class="lg:col-span-2">
-                <div v-if="!activeAdsyChat" class="bg-white rounded-lg shadow-sm h-[500px] flex items-center justify-center">
+              <!-- Chat Window - Show on mobile only when chat is active -->
+              <div class="lg:col-span-2" :class="{ 'hidden lg:block': !activeAdsyChat || !isMobileChatView, 'block': activeAdsyChat && isMobileChatView }">
+                <div v-if="!activeAdsyChat" class="bg-white rounded-lg shadow-sm h-[500px] lg:h-[500px] hidden lg:flex items-center justify-center">
                   <div class="text-center">
                     <UIcon name="i-heroicons-chat-bubble-left-right" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
                     <h3 class="text-lg font-medium text-gray-900 mb-2">Select a conversation</h3>
@@ -503,11 +503,18 @@
                   </div>
                 </div>
 
-                <div v-else class="bg-white rounded-lg shadow-sm h-[500px] flex flex-col">
+                <div v-else class="bg-white rounded-lg shadow-sm h-[calc(100vh-180px)] lg:h-[500px] flex flex-col">
                   <!-- Chat Header -->
                   <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center space-x-3">
+                        <!-- Back Button - Mobile Only -->
+                        <button 
+                          @click="goBackToChatList"
+                          class="lg:hidden p-2 -ml-2 rounded-full hover:bg-white/50 transition-colors"
+                        >
+                          <UIcon name="i-heroicons-arrow-left" class="w-5 h-5 text-gray-600" />
+                        </button>
                         <img
                           :src="activeAdsyChat.other_user?.avatar || '/images/placeholder.jpg'"
                           :alt="activeAdsyChat.other_user?.username"
@@ -1632,7 +1639,7 @@
                     <div class="flex items-center space-x-3 mb-4">
                       <div class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                         <img 
-                          src="/images/chat_icon.png" 
+                          :src="chatIconPath" 
                           alt="Chat"
                           class="w-6 h-6 brightness-0 invert"
                         />
@@ -1870,6 +1877,9 @@ const {
 } = useTickets();
 const toast = useToast();
 
+// Static assets helper for environment-aware paths
+const { chatIconPath } = useStaticAssets();
+
 // State variables
 const messages = ref([]);
 const expandedMessages = ref({});
@@ -1948,6 +1958,9 @@ const adsySearchQuery = ref('');
 const showAttachmentOptions = ref(false);
 const isUploadingAttachment = ref(false);
 const currentUserId = computed(() => user.value?.user?.id);
+
+// Mobile chat view state
+const isMobileChatView = ref(false);
 
 // Search User Modal state
 const showSearchUserModal = ref(false);
@@ -2171,12 +2184,13 @@ function setActiveTab(tab) {
 // Initialize chat
 onMounted(async () => {
   await loadChatRooms();
-  
-  // Auto-select the latest chat if available
-  if (adsyChatRooms.value.length > 0 && !activeAdsyChat.value) {
-    await selectAdsyChatWithTab(adsyChatRooms.value[0]);
-  }
+  // Don't auto-select a chat - let user tap to open
 });
+
+// Go back to chat list (mobile only)
+function goBackToChatList() {
+  isMobileChatView.value = false;
+}
 
 // Enhanced selectAdsyChat to switch tab
 async function selectAdsyChatWithTab(chat) {
@@ -2202,6 +2216,9 @@ async function selectAdsyChatWithTab(chat) {
   
   // Select the chat
   await selectAdsyChat(chat);
+  
+  // Enable mobile chat view
+  isMobileChatView.value = true;
   
   console.log('Chat selected, active chat:', activeAdsyChat.value);
   

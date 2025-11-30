@@ -41,9 +41,9 @@
         v-if="isLoading"
         class="flex py-3 gap-3 px-2 overflow-hidden justify-between"
       >
-        <!-- Mobile Skeletons (4) -->
+        <!-- Mobile Skeletons (3) -->
         <div
-          v-for="i in 4"
+          v-for="i in 3"
           :key="i"
           class="flex-shrink-0 animate-pulse md:hidden"
         >
@@ -101,9 +101,9 @@
         v-else
         class="flex gap-1.5 justify-between md:justify-between overflow-hidden"
       >
-        <!-- Mobile View (4 sponsors) -->
+        <!-- Mobile View (3 sponsors) -->
         <div
-          v-for="(sponsor, index) in sponsors.slice(0, 4)"
+          v-for="(sponsor, index) in sponsors.slice(0, 3)"
           :key="'mobile-' + index"
           class="sponsor-item md:hidden"
           :data-sponsor-id="sponsor.id"

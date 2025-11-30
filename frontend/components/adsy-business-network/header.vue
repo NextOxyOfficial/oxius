@@ -153,7 +153,7 @@
                   class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm hover:bg-gray-100"
                 >
                   <img 
-                    src="/images/chat_icon.png" 
+                    :src="chatIconPath" 
                     alt="Inbox"
                     class="size-6"
                   />
@@ -311,6 +311,7 @@ const { get } = useApi();
 const { user, logout } = useAuth();
 const { isScrollingDown, isScrollingUp } = useScrollDirection();
 const { totalUnreadCount, fetchUnreadCount } = useTickets();
+const { chatIconPath } = useStaticAssets();
 const logo = ref([]);
 const cart = useStoreCart();
 const showQr = ref(false);

@@ -171,7 +171,7 @@
                 order.status === 'pending' || order.status === 'in_progress' ? 'flex-1 sm:flex-none' : 'flex-none'
               ]"
             >
-              <img src="/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
+              <img :src="chatIconPath" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Chat</span>
               <span
                 v-if="order.unreadMessages && order.unreadMessages > 0"
@@ -515,6 +515,7 @@ const toast = useToast();
 const { get, post } = useApi();
 const { user: currentUser } = useAuth();
 const { clearWorkspaceOrderCount } = useNotifications();
+const { chatIconPath } = useStaticAssets();
 
 // Reactive data
 const activeFilter = ref('all');
