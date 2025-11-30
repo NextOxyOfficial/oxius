@@ -19,7 +19,7 @@
               </div>
             </div>
             
-            <div class="flex items-center space-x-3">
+            <div class="hidden sm:flex items-center space-x-3">
               <UButton
                 v-if="hasUnreadMessages"
                 color="blue"
@@ -44,12 +44,12 @@
         </div>
 
         <!-- Simple Tab Navigation -->
-        <div class="px-6" v-show="!isRefreshingAdsyConnect">
-          <div class="flex space-x-8 border-b border-gray-200">
+        <div class="px-4 sm:px-6" v-show="!isRefreshingAdsyConnect">
+          <div class="flex space-x-6 sm:space-x-8 border-b border-gray-200 overflow-x-auto scrollbar-hide">
             <button
               @click="activeTab = 'adsyconnect'"
               :class="[
-                'flex items-center space-x-2 py-3 border-b-2 text-sm font-medium transition-colors',
+                'flex items-center space-x-2 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0',
                 activeTab === 'adsyconnect'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -72,7 +72,7 @@
             <button
               @click="activeTab = 'updates'"
               :class="[
-                'flex items-center space-x-2 py-3 border-b-2 text-sm font-medium transition-colors',
+                'flex items-center space-x-2 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0',
                 activeTab === 'updates'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -91,7 +91,7 @@
             <button
               @click="activeTab = 'support'"
               :class="[
-                'flex items-center space-x-2 py-3 border-b-2 text-sm font-medium transition-colors',
+                'flex items-center space-x-2 py-3 border-b-2 text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0',
                 activeTab === 'support'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -112,10 +112,11 @@
       <!-- Content Area -->
       <div class="sm:px-6">
         <!-- Filters -->
-        <div v-if="activeTab === 'support'" class="mb-4">
-          <div class="flex flex-wrap gap-2">
+        <div v-if="activeTab === 'support'" class="mb-4 px-4 sm:px-0">
+          <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
             <UButton
               variant="soft"
+              class="flex-shrink-0"
               :class="{ active: ticketStatusFilter === 'all' }"
               @click="setTicketStatusFilter('all')"
               label="All Tickets"
@@ -123,6 +124,7 @@
             <UButton
               variant="soft"
               color="amber"
+              class="flex-shrink-0"
               :class="{ active: ticketStatusFilter === 'open' }"
               @click="setTicketStatusFilter('open')"
               label="Open"
@@ -130,6 +132,7 @@
             <UButton
               variant="soft"
               color="blue"
+              class="flex-shrink-0"
               :class="{ active: ticketStatusFilter === 'in_progress' }"
               @click="setTicketStatusFilter('in_progress')"
               label="In Progress"
@@ -137,6 +140,7 @@
             <UButton
               variant="soft"
               color="green"
+              class="flex-shrink-0"
               :class="{ active: ticketStatusFilter === 'resolved' }"
               @click="setTicketStatusFilter('resolved')"
               label="Resolved"
@@ -144,6 +148,7 @@
             <UButton
               variant="soft"
               color="gray"
+              class="flex-shrink-0"
               :class="{ active: ticketStatusFilter === 'closed' }"
               @click="setTicketStatusFilter('closed')"
               label="Closed"
@@ -151,10 +156,11 @@
           </div>
         </div>
         
-        <div v-if="activeTab === 'updates'" class="mb-4">
-          <div class="flex flex-wrap gap-2">
+        <div v-if="activeTab === 'updates'" class="mb-4 px-4 sm:px-0">
+          <div class="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
             <UButton
               variant="soft"
+              class="flex-shrink-0"
               :class="{ active: updatesFilter === 'all' }"
               @click="setUpdatesFilter('all')"
               label="All Updates"
@@ -162,6 +168,7 @@
             <UButton
               variant="soft"
               color="green"
+              class="flex-shrink-0"
               :class="{ active: updatesFilter === 'order_received' }"
               @click="setUpdatesFilter('order_received')"
               label="Orders"
@@ -169,6 +176,7 @@
             <UButton
               variant="soft"
               color="blue"
+              class="flex-shrink-0"
               :class="{ active: updatesFilter === 'withdraw_successful' }"
               @click="setUpdatesFilter('withdraw_successful')"
               label="Withdrawals"
@@ -176,6 +184,7 @@
             <UButton
               variant="soft"
               color="orange"
+              class="flex-shrink-0"
               :class="{ active: updatesFilter === 'mobile_recharge_successful' }"
               @click="setUpdatesFilter('mobile_recharge_successful')"
               label="Recharges"
@@ -183,6 +192,7 @@
             <UButton
               variant="soft"
               color="purple"
+              class="flex-shrink-0"
               :class="{ active: updatesFilter === 'pro_subscribed' }"
               @click="setUpdatesFilter('pro_subscribed')"
               label="Pro"
@@ -190,6 +200,7 @@
             <UButton
               variant="soft"
               color="amber"
+              class="flex-shrink-0"
               :class="{ active: updatesFilter === 'pro_expiring' }"
               @click="setUpdatesFilter('pro_expiring')"
               label="Expiring"
@@ -197,6 +208,7 @@
             <UButton
               variant="soft"
               color="gray"
+              class="flex-shrink-0"
               :class="{ active: updatesFilter === 'gig_posted' }"
               @click="setUpdatesFilter('gig_posted')"
               label="Gigs"
@@ -204,6 +216,7 @@
             <UButton
               variant="soft"
               color="cyan"
+              class="flex-shrink-0"
               :class="{ active: updatesFilter === 'transfer_sent' }"
               @click="setUpdatesFilter('transfer_sent')"
               label="Transfers Sent"
@@ -211,6 +224,7 @@
             <UButton
               variant="soft"
               color="emerald"
+              class="flex-shrink-0"
               :class="{ active: updatesFilter === 'transfer_received' }"
               @click="setUpdatesFilter('transfer_received')"
               label="Transfers Received"
@@ -218,6 +232,7 @@
             <UButton
               variant="soft"
               color="teal"
+              class="flex-shrink-0"
               :class="{ active: updatesFilter === 'deposit_successful' }"
               @click="setUpdatesFilter('deposit_successful')"
               label="Deposits"
@@ -3609,6 +3624,15 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Background pattern */
 .bg-pattern {
   background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
