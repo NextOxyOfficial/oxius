@@ -124,6 +124,57 @@
     <!-- Click outside to close dropdown -->
     <div v-if="showFilterDropdown" class="fixed inset-0 z-40" @click="showFilterDropdown = false"></div>
 
+    <!-- Gig Settings Dropdown -->
+    <Teleport to="body">
+      <div v-if="showGigSettingsDropdown" class="fixed inset-0 z-50" @click="closeGigSettings"></div>
+      <div 
+        v-if="showGigSettingsDropdown && selectedGigForSettings"
+        class="fixed z-50 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1"
+        :style="{ top: settingsDropdownPosition.top + 'px', left: settingsDropdownPosition.left + 'px' }"
+      >
+        <div class="px-3 py-2 border-b border-gray-100">
+          <p class="text-xs font-semibold text-gray-500 truncate">{{ selectedGigForSettings.title }}</p>
+        </div>
+        
+        <button
+          @click="editGig"
+          class="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          <UIcon name="i-heroicons-pencil-square" class="w-4 h-4 text-gray-400" />
+          <span>Edit Gig</span>
+        </button>
+        
+        <button
+          @click="toggleGigStatus"
+          class="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          <UIcon 
+            :name="selectedGigForSettings.status === 'active' ? 'i-heroicons-pause-circle' : 'i-heroicons-play-circle'" 
+            class="w-4 h-4 text-gray-400" 
+          />
+          <span>{{ selectedGigForSettings.status === 'active' ? 'Pause Gig' : 'Activate Gig' }}</span>
+        </button>
+        
+        <button
+          @click="openGigDetails(selectedGigForSettings)"
+          class="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          <UIcon name="i-heroicons-eye" class="w-4 h-4 text-gray-400" />
+          <span>View Details</span>
+        </button>
+        
+        <div class="border-t border-gray-100 mt-1 pt-1">
+          <button
+            @click="deleteGig"
+            class="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+            <span>Delete Gig</span>
+          </button>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- Loading Skeleton -->
     <div v-if="isLoading" class="grid grid-cols-2 gap-2">
       <div
@@ -194,7 +245,7 @@
           <!-- Settings Button -->
           <button
             class="absolute bottom-3 right-3 p-1.5 rounded-full bg-white/80 hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
-            @click.stop="openSettings(gig)"
+            @click.stop="openSettings(gig, $event)"
           >
             <Settings class="h-4 w-4 text-gray-600" />
           </button>
@@ -287,7 +338,7 @@
                 </span>
                 <button
                   class="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
-                  @click.stop="openSettings(gig)"
+                  @click.stop="openSettings(gig, $event)"
                 >
                   <Settings class="h-4 w-4 text-gray-400 hover:text-gray-600" />
                 </button>
@@ -361,7 +412,7 @@ defineEmits(['switchTab']);
 
 // Composables
 const { user } = useAuth();
-const { get } = useApi();
+const { get, post } = useApi();
 const toast = useToast();
 
 // State
@@ -373,6 +424,11 @@ const sortBy = ref('newest');
 const showFilterDropdown = ref(false);
 const isLoading = ref(true);
 const myGigs = ref([]);
+
+// Gig settings state
+const showGigSettingsDropdown = ref(false);
+const selectedGigForSettings = ref(null);
+const settingsDropdownPosition = ref({ top: 0, left: 0 });
 
 // Fetch my gigs from API
 async function fetchMyGigs() {
@@ -485,13 +541,101 @@ const openGigDetails = (gig) => {
   navigateTo(`/business-network/workspace-details?id=${gig.id}`);
 };
 
-const openSettings = (gig) => {
-  toast.add({
-    title: "Gig Settings",
-    description: `Opening settings for "${gig.title}"`,
-    color: "blue",
-  });
-  // TODO: Open settings modal or navigate to edit page
+const openSettings = (gig, event) => {
+  selectedGigForSettings.value = gig;
+  showGigSettingsDropdown.value = true;
+  
+  // Position dropdown near the click
+  if (event) {
+    const rect = event.target.getBoundingClientRect();
+    settingsDropdownPosition.value = {
+      top: rect.bottom + window.scrollY + 5,
+      left: Math.min(rect.left + window.scrollX, window.innerWidth - 200)
+    };
+  }
+};
+
+const closeGigSettings = () => {
+  showGigSettingsDropdown.value = false;
+  selectedGigForSettings.value = null;
+};
+
+const editGig = () => {
+  if (selectedGigForSettings.value) {
+    navigateTo(`/business-network/workspace-details?id=${selectedGigForSettings.value.id}&edit=true`);
+  }
+  closeGigSettings();
+};
+
+const toggleGigStatus = async () => {
+  if (!selectedGigForSettings.value) return;
+  
+  const gig = selectedGigForSettings.value;
+  const newStatus = gig.status === 'active' ? 'paused' : 'active';
+  
+  try {
+    const { data, error } = await post(`/workspace/gigs/${gig.id}/update/`, { status: newStatus });
+    
+    if (!error) {
+      // Update local state
+      const index = myGigs.value.findIndex(g => g.id === gig.id);
+      if (index !== -1) {
+        myGigs.value[index].status = newStatus;
+      }
+      
+      toast.add({
+        title: 'Status Updated',
+        description: `Gig is now ${newStatus === 'active' ? 'Active' : 'Paused'}`,
+        color: 'green',
+      });
+    } else {
+      toast.add({
+        title: 'Error',
+        description: 'Failed to update gig status',
+        color: 'red',
+      });
+    }
+  } catch (err) {
+    console.error('Error updating gig status:', err);
+  }
+  
+  closeGigSettings();
+};
+
+const deleteGig = async () => {
+  if (!selectedGigForSettings.value) return;
+  
+  const gig = selectedGigForSettings.value;
+  
+  if (!confirm(`Are you sure you want to delete "${gig.title}"? This action cannot be undone.`)) {
+    closeGigSettings();
+    return;
+  }
+  
+  try {
+    const { error } = await post(`/workspace/gigs/${gig.id}/delete/`);
+    
+    if (!error) {
+      // Remove from local state
+      myGigs.value = myGigs.value.filter(g => g.id !== gig.id);
+      
+      toast.add({
+        title: 'Gig Deleted',
+        description: 'Your gig has been deleted',
+        color: 'green',
+      });
+    } else {
+      toast.add({
+        title: 'Error',
+        description: 'Failed to delete gig',
+        color: 'red',
+      });
+    }
+  } catch (err) {
+    console.error('Error deleting gig:', err);
+  }
+  
+  closeGigSettings();
 };
 
 const clearFilters = () => {

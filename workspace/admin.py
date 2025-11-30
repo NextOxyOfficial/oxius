@@ -4,7 +4,8 @@ from django.urls import reverse
 from django.utils import timezone
 from .models import (
     Gig, GigReview, GigFavorite, GigOrder, OrderMessage, GigOrderTransaction,
-    GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption
+    GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption,
+    WorkspaceBanner
 )
 
 
@@ -450,3 +451,62 @@ class GigOrderTransactionAdmin(admin.ModelAdmin):
             color, obj.status.upper()
         )
     status_badge.short_description = 'Status'
+
+
+@admin.register(WorkspaceBanner)
+class WorkspaceBannerAdmin(admin.ModelAdmin):
+    list_display = ('banner_preview', 'title', 'link_type', 'status_badge', 'order', 'schedule_info', 'created_at')
+    list_filter = ('is_active', 'link_type')
+    search_fields = ('title', 'link', 'internal_path')
+    list_editable = ('order',)
+    ordering = ('order', '-created_at')
+    
+    fieldsets = (
+        ('Banner Info', {
+            'fields': ('title', 'image')
+        }),
+        ('Link Settings', {
+            'fields': ('link_type', 'link', 'internal_path'),
+            'description': 'Configure where the banner navigates to when clicked'
+        }),
+        ('Display Settings', {
+            'fields': ('is_active', 'order')
+        }),
+        ('Schedule', {
+            'fields': ('starts_at', 'ends_at'),
+            'classes': ('collapse',),
+            'description': 'Leave empty to show always'
+        }),
+    )
+    
+    def banner_preview(self, obj):
+        if obj.image:
+            return format_html(
+                '<img src="{}" style="height: 50px; width: auto; border-radius: 4px; object-fit: cover;" />',
+                obj.image.url
+            )
+        return '-'
+    banner_preview.short_description = 'Preview'
+    
+    def status_badge(self, obj):
+        if obj.is_currently_active:
+            return format_html(
+                '<span style="background: #4caf50; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">Active</span>'
+            )
+        elif not obj.is_active:
+            return format_html(
+                '<span style="background: #9e9e9e; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">Disabled</span>'
+            )
+        else:
+            return format_html(
+                '<span style="background: #ff9800; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">Scheduled</span>'
+            )
+    status_badge.short_description = 'Status'
+    
+    def schedule_info(self, obj):
+        if obj.starts_at or obj.ends_at:
+            start = obj.starts_at.strftime('%b %d, %Y') if obj.starts_at else 'Now'
+            end = obj.ends_at.strftime('%b %d, %Y') if obj.ends_at else 'Forever'
+            return f"{start} → {end}"
+        return 'Always'
+    schedule_info.short_description = 'Schedule'

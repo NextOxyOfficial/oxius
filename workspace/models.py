@@ -276,3 +276,55 @@ class OrderMessage(models.Model):
         if self.media:
             return self.media.url
         return None
+
+
+def workspace_banner_path(instance, filename):
+    """Generate path for workspace banner images"""
+    ext = filename.split('.')[-1]
+    filename = f"banner_{uuid.uuid4()}.{ext}"
+    return os.path.join('workspace/banners', filename)
+
+
+class WorkspaceBanner(models.Model):
+    """Model for workspace promotional banners"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=100, help_text="Banner title (for admin reference)")
+    image = models.ImageField(upload_to=workspace_banner_path)
+    link = models.URLField(blank=True, null=True, help_text="URL to navigate when banner is clicked")
+    link_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('external', 'External URL'),
+            ('internal', 'Internal Page'),
+            ('gig', 'Gig Detail'),
+            ('category', 'Category Filter'),
+        ],
+        default='external'
+    )
+    internal_path = models.CharField(max_length=255, blank=True, help_text="Internal path (e.g., /business-network/workspaces?category=design)")
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0, help_text="Display order (lower = first)")
+    starts_at = models.DateTimeField(null=True, blank=True, help_text="When to start showing the banner")
+    ends_at = models.DateTimeField(null=True, blank=True, help_text="When to stop showing the banner")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Workspace Banner"
+        verbose_name_plural = "Workspace Banners"
+        ordering = ['order', '-created_at']
+    
+    def __str__(self):
+        return self.title
+    
+    @property
+    def is_currently_active(self):
+        """Check if banner should be displayed based on dates"""
+        now = timezone.now()
+        if not self.is_active:
+            return False
+        if self.starts_at and now < self.starts_at:
+            return False
+        if self.ends_at and now > self.ends_at:
+            return False
+        return True

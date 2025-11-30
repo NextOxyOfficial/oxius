@@ -1,9 +1,56 @@
 <template>
   <div class="mx-auto sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
-    <!-- Header Section -->
+    <!-- Header Section with Banner -->
     <div class="mb-6">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-2 py-4">
-        <div class="flex items-center justify-between">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <!-- Banner Slider Inside Header -->
+        <div 
+          v-if="banners.length > 0" 
+          class="relative group"
+          @mouseenter="stopBannerAutoplay"
+          @mouseleave="startBannerAutoplay"
+        >
+          <div class="overflow-hidden">
+            <div 
+              class="flex transition-transform duration-500 ease-out"
+              :style="{ transform: `translateX(-${currentBannerIndex * 100}%)` }"
+            >
+              <div 
+                v-for="banner in banners" 
+                :key="banner.id"
+                class="w-full flex-shrink-0 cursor-pointer"
+                @click="handleBannerClick(banner)"
+              >
+                <img 
+                  :src="banner.image_url" 
+                  :alt="banner.title"
+                  class="w-full h-24 sm:h-32 md:h-40 object-cover"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <!-- Progress Bar Indicator -->
+          <div v-if="banners.length > 1" class="absolute bottom-0 left-0 right-0 flex gap-1 px-3 pb-2">
+            <div
+              v-for="(banner, index) in banners"
+              :key="banner.id"
+              @click="currentBannerIndex = index"
+              class="flex-1 h-1 rounded-full cursor-pointer overflow-hidden bg-white/30"
+            >
+              <div 
+                :class="[
+                  'h-full rounded-full transition-all duration-300',
+                  currentBannerIndex === index ? 'bg-white' : 'bg-transparent'
+                ]"
+                :style="currentBannerIndex === index ? { width: '100%' } : { width: '0%' }"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Header Content -->
+        <div class="px-4 py-4">
           <div>
             <h1 class="text-2xl font-bold text-gray-900 flex items-center">
               <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
@@ -376,22 +423,62 @@
           <!-- Empty state -->
           <div
             v-if="!isLoading && filteredGigs.length === 0"
-            class="flex flex-col items-center justify-center py-16 bg-gray-50/50 rounded-lg border border-dashed border-gray-200"
+            class="flex flex-col items-center justify-center py-12 sm:py-16"
           >
-            <div class="text-center">
-              <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Briefcase class="h-8 w-8 text-purple-600" />
+            <div class="text-center max-w-md mx-auto px-4">
+              <!-- Illustration -->
+              <div class="relative mb-6">
+                <div class="w-24 h-24 bg-gradient-to-br from-purple-100 to-purple-50 rounded-full flex items-center justify-center mx-auto">
+                  <Search class="h-10 w-10 text-purple-400" />
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center border-4 border-white" style="right: calc(50% - 48px);">
+                  <UIcon name="i-heroicons-x-mark" class="w-4 h-4 text-gray-400" />
+                </div>
               </div>
-              <h3 class="text-lg font-semibold text-gray-900 mb-2">No gigs found</h3>
-              <p class="text-gray-600 mb-4">
-                Try adjusting your search criteria or browse different categories
+              
+              <!-- Text Content -->
+              <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                {{ searchQuery ? `No results for "${searchQuery}"` : 'No gigs found' }}
+              </h3>
+              <p class="text-gray-500 text-sm mb-6 leading-relaxed">
+                {{ searchQuery 
+                  ? 'We couldn\'t find any gigs matching your search. Try different keywords or browse our categories.'
+                  : 'There are no gigs available in this category yet. Be the first to post one!'
+                }}
               </p>
-              <button
-                @click="clearFilters"
-                class="inline-flex items-center px-4 py-2 rounded-lg bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
-              >
-                Clear Filters
-              </button>
+              
+              <!-- Action Buttons -->
+              <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  @click="clearFilters"
+                  class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-purple-600 text-white font-medium hover:bg-purple-700 transition-colors"
+                >
+                  <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
+                  Clear Search
+                </button>
+                <button
+                  @click="activeTab = 'create-gig'"
+                  class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  <Plus class="w-4 h-4" />
+                  Post a Gig
+                </button>
+              </div>
+              
+              <!-- Suggestions -->
+              <div class="mt-8 pt-6 border-t border-gray-100">
+                <p class="text-xs text-gray-400 uppercase tracking-wide mb-3">Popular Categories</p>
+                <div class="flex flex-wrap gap-2 justify-center">
+                  <button 
+                    v-for="cat in ['design', 'development', 'marketing', 'writing']" 
+                    :key="cat"
+                    @click="selectedCategory = cat; searchQuery = ''"
+                    class="px-3 py-1.5 text-sm bg-gray-100 text-gray-600 rounded-full hover:bg-purple-100 hover:text-purple-700 transition-colors"
+                  >
+                    {{ cat.charAt(0).toUpperCase() + cat.slice(1) }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -421,7 +508,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { Star, Plus, Search, Heart, Briefcase, ShoppingCart, User, Package, LayoutGrid, List, Eye, Filter as FilterIcon, ChevronDown } from "lucide-vue-next";
 import MyOrders from "~/components/business-network/MyOrders.vue";
 import CreateGig from "~/components/business-network/CreateGig.vue";
@@ -493,6 +580,44 @@ const selectedCategory = ref("");
 const sortBy = ref("newest");
 const viewMode = ref("grid");
 const showFilterDropdown = ref(false);
+
+// Banner state
+const banners = ref([]);
+const currentBannerIndex = ref(0);
+let bannerInterval = null;
+
+// Settings & Status state
+const showSettingsDropdown = ref(false);
+const showCustomStatusModal = ref(false);
+const currentUserStatus = ref(null);
+
+// Predefined statuses
+const userStatuses = [
+  { id: 'available', label: 'Available', color: 'bg-green-500' },
+  { id: 'busy', label: 'Busy', color: 'bg-red-500' },
+  { id: 'away', label: 'Away', color: 'bg-yellow-500' },
+  { id: 'dnd', label: 'Do Not Disturb', color: 'bg-red-600' },
+  { id: 'invisible', label: 'Invisible', color: 'bg-gray-400' },
+];
+
+// Status colors for custom status
+const statusColors = [
+  { id: 'green', class: 'bg-green-500' },
+  { id: 'blue', class: 'bg-blue-500' },
+  { id: 'yellow', class: 'bg-yellow-500' },
+  { id: 'red', class: 'bg-red-500' },
+  { id: 'purple', class: 'bg-purple-500' },
+  { id: 'pink', class: 'bg-pink-500' },
+  { id: 'orange', class: 'bg-orange-500' },
+  { id: 'gray', class: 'bg-gray-500' },
+];
+
+// Custom status form
+const customStatus = ref({
+  label: '',
+  message: '',
+  color: 'bg-green-500'
+});
 
 // Gigs data from API
 const gigs = ref([]);
@@ -723,9 +848,149 @@ const handleGigCreated = (gigData) => {
   });
 };
 
-// Fetch gigs on mount
+// Banner methods
+const fetchBanners = async () => {
+  try {
+    const { data, error } = await get('/workspace/banners/');
+    if (!error && data) {
+      banners.value = data;
+      startBannerAutoplay();
+    }
+  } catch (err) {
+    console.error('Error fetching banners:', err);
+  }
+};
+
+const startBannerAutoplay = () => {
+  if (banners.value.length > 1) {
+    bannerInterval = setInterval(() => {
+      currentBannerIndex.value = (currentBannerIndex.value + 1) % banners.value.length;
+    }, 5000); // Change slide every 5 seconds
+  }
+};
+
+const stopBannerAutoplay = () => {
+  if (bannerInterval) {
+    clearInterval(bannerInterval);
+    bannerInterval = null;
+  }
+};
+
+const nextBanner = () => {
+  currentBannerIndex.value = (currentBannerIndex.value + 1) % banners.value.length;
+  // Reset autoplay timer
+  stopBannerAutoplay();
+  startBannerAutoplay();
+};
+
+const prevBanner = () => {
+  currentBannerIndex.value = currentBannerIndex.value === 0 
+    ? banners.value.length - 1 
+    : currentBannerIndex.value - 1;
+  // Reset autoplay timer
+  stopBannerAutoplay();
+  startBannerAutoplay();
+};
+
+const router = useRouter();
+
+const handleBannerClick = (banner) => {
+  if (banner.link_type === 'external' && banner.link) {
+    window.open(banner.link, '_blank');
+  } else if (banner.link_type === 'internal' && banner.internal_path) {
+    router.push(banner.internal_path);
+  } else if (banner.link_type === 'gig' && banner.internal_path) {
+    router.push(banner.internal_path);
+  } else if (banner.link_type === 'category' && banner.internal_path) {
+    // Set category filter
+    const categorySlug = banner.internal_path.split('category=')[1];
+    if (categorySlug) {
+      selectedCategory.value = categorySlug;
+      activeTab.value = 'all-gigs';
+    }
+  }
+};
+
+// Status methods
+const setUserStatus = (status) => {
+  currentUserStatus.value = { ...status };
+  showSettingsDropdown.value = false;
+  
+  // Save to localStorage
+  localStorage.setItem('workspace_status', JSON.stringify(currentUserStatus.value));
+  
+  toast.add({
+    title: 'Status Updated',
+    description: `Your status is now "${status.label}"`,
+    color: 'green',
+  });
+};
+
+const clearUserStatus = () => {
+  currentUserStatus.value = null;
+  showSettingsDropdown.value = false;
+  localStorage.removeItem('workspace_status');
+  
+  toast.add({
+    title: 'Status Cleared',
+    description: 'Your status has been cleared',
+    color: 'gray',
+  });
+};
+
+const openCustomStatusModal = () => {
+  showSettingsDropdown.value = false;
+  customStatus.value = {
+    label: '',
+    message: '',
+    color: 'bg-green-500'
+  };
+  showCustomStatusModal.value = true;
+};
+
+const saveCustomStatus = () => {
+  if (!customStatus.value.label) return;
+  
+  currentUserStatus.value = {
+    id: 'custom',
+    label: customStatus.value.label,
+    message: customStatus.value.message,
+    color: customStatus.value.color
+  };
+  
+  // Save to localStorage
+  localStorage.setItem('workspace_status', JSON.stringify(currentUserStatus.value));
+  
+  showCustomStatusModal.value = false;
+  
+  toast.add({
+    title: 'Status Set',
+    description: `Your status is now "${customStatus.value.label}"`,
+    color: 'green',
+  });
+};
+
+const loadSavedStatus = () => {
+  const savedStatus = localStorage.getItem('workspace_status');
+  if (savedStatus) {
+    try {
+      currentUserStatus.value = JSON.parse(savedStatus);
+    } catch (e) {
+      console.error('Error loading saved status:', e);
+    }
+  }
+};
+
+// Fetch gigs and banners on mount
 onMounted(() => {
   fetchGigs();
+  fetchBanners();
+  loadSavedStatus();
+});
+
+// Cleanup on unmount
+onUnmounted(() => {
+  stopBannerAutoplay();
 });
 </script>
 

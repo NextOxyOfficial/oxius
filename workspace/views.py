@@ -8,12 +8,14 @@ from django.utils import timezone
 
 from .models import (
     Gig, GigReview, GigFavorite, GigOrder, OrderMessage,
-    GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption
+    GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption,
+    WorkspaceBanner
 )
 from .serializers import (
     GigSerializer, GigCreateSerializer, GigReviewSerializer,
     GigOrderSerializer, GigFavoriteSerializer, OrderMessageSerializer,
-    GigCategorySerializer, GigSkillSerializer, GigDeliveryTimeSerializer, GigRevisionOptionSerializer
+    GigCategorySerializer, GigSkillSerializer, GigDeliveryTimeSerializer, GigRevisionOptionSerializer,
+    WorkspaceBannerSerializer
 )
 
 
@@ -741,3 +743,21 @@ def update_order_status(request, order_id, action):
         'message': f'Order {action}ed successfully',
         'order': serializer.data
     })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_workspace_banners(request):
+    """Get active workspace banners"""
+    now = timezone.now()
+    
+    banners = WorkspaceBanner.objects.filter(
+        is_active=True
+    ).filter(
+        Q(starts_at__isnull=True) | Q(starts_at__lte=now)
+    ).filter(
+        Q(ends_at__isnull=True) | Q(ends_at__gte=now)
+    ).order_by('order', '-created_at')
+    
+    serializer = WorkspaceBannerSerializer(banners, many=True, context={'request': request})
+    return Response(serializer.data)

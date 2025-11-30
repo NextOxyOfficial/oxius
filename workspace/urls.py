@@ -7,10 +7,14 @@ from .views import (
     complete_order_payment, cancel_order,
     gig_categories,
     OrderMessageListView, create_order_message, get_unread_message_counts,
-    get_gig_options, get_skills_by_category
+    get_gig_options, get_skills_by_category,
+    get_workspace_banners
 )
 
 urlpatterns = [
+    # Workspace banners
+    path('banners/', get_workspace_banners, name='workspace-banners'),
+    
     # Gig options endpoints (for Post a Gig form)
     path('gig-options/', get_gig_options, name='gig-options'),
     path('gig-options/skills/<uuid:category_id>/', get_skills_by_category, name='skills-by-category'),

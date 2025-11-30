@@ -1,9 +1,31 @@
 from rest_framework import serializers
 from .models import (
     Gig, GigReview, GigFavorite, GigOrder, OrderMessage,
-    GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption
+    GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption,
+    WorkspaceBanner
 )
 from base.models import User
+
+
+# ============================================
+# Workspace Banner Serializer
+# ============================================
+
+class WorkspaceBannerSerializer(serializers.ModelSerializer):
+    """Serializer for workspace banners"""
+    image_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = WorkspaceBanner
+        fields = ('id', 'title', 'image', 'image_url', 'link', 'link_type', 'internal_path', 'order')
+    
+    def get_image_url(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
 
 
 # ============================================
