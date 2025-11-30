@@ -658,10 +658,11 @@
               <div
                 class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm"
               >
-                <img 
+                <NuxtImg 
                   src="/static/frontend/images/chat_icon.png" 
                   alt="Inbox"
                   class="size-6"
+                  loading="lazy"
                 />
 
                 <!-- Notification Badge with animation -->
