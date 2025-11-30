@@ -465,7 +465,7 @@
                       product.user_details?.image ||
                       '/static/frontend/images/placeholder.jpg'
                     "
-                    :alt="product.user_details?.name"
+                    :alt="`${product.user_details?.first_name} ${product.user_details?.last_name}`"
                     class="h-full w-full object-cover"
                   />
                 </div>
@@ -475,7 +475,7 @@
                       :to="`/sale/user-profile/${product.user_details?.id}`"
                       class="font-semibold text-gray-800 hover:text-emerald-600 transition-colors duration-200 cursor-pointer"
                     >
-                      {{ product.user_details?.name }}
+                      {{ product.user_details?.first_name }} {{ product.user_details?.last_name }}
                     </NuxtLink>
                     <div class="flex items-center space-x-1 ml-2">
                       <UIcon
@@ -540,6 +540,34 @@
                   </div>
                 </div>
               </div>
+              
+              <!-- Chat with Seller Link -->
+              <div
+                v-if="isAuthenticated && user?.user?.id !== product.user_details?.id"
+                class="mt-4 pt-4 border-t border-gray-100"
+              >
+                <button
+                  class="w-full flex items-center justify-center text-blue-600 hover:text-blue-700 transition-all duration-200 text-base font-semibold cursor-pointer group py-2 px-4 hover:bg-blue-50 rounded-lg"
+                  @click="
+                    handleButtonClick('chat_seller');
+                    startChatWithSeller();
+                  "
+                >
+                  <div
+                    v-if="loadingButtons.has('chat_seller')"
+                    class="dotted-spinner blue mr-3"
+                  ></div>
+                  <template v-else>
+                    <img 
+                      src="/images/chat_icon.png" 
+                      alt="Chat"
+                      class="w-5 h-5 mr-3 opacity-90 group-hover:opacity-100 transition-opacity"
+                    />
+                    Chat with Seller
+                  </template>
+                </button>
+              </div>
+              
               <button
                 class="w-full mt-4 text-sm border border-gray-200 rounded-md py-2 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-800"
                 @click="
@@ -1017,6 +1045,51 @@ const downloadImage = () => {
 // Toggle phone visibility
 const toggleShowPhone = () => {
   showPhone.value = !showPhone.value;
+};
+
+// Chat with seller functionality
+const startChatWithSeller = async () => {
+  try {
+    if (!isAuthenticated.value) {
+      toast.add({
+        title: 'Authentication Required',
+        description: 'Please log in to start a chat with the seller.',
+        color: 'red',
+        timeout: 3000,
+      });
+      return;
+    }
+
+    if (!product.value?.user_details?.id) {
+      toast.add({
+        title: 'Error',
+        description: 'Seller information not available.',
+        color: 'red',
+        timeout: 3000,
+      });
+      return;
+    }
+
+    // Navigate to inbox with seller chat
+    await navigateTo(`/inbox?chat_with=${product.value.user_details.id}`);
+    
+    toast.add({
+      title: 'Chat Started',
+      description: `Opening chat with ${product.value.user_details.first_name} ${product.value.user_details.last_name}`,
+      color: 'green',
+      timeout: 2000,
+    });
+  } catch (error) {
+    console.error('Error starting chat:', error);
+    toast.add({
+      title: 'Error',
+      description: 'Failed to start chat. Please try again.',
+      color: 'red',
+      timeout: 3000,
+    });
+  } finally {
+    loadingButtons.value.delete('chat_seller');
+  }
 };
 
 // Share functionality

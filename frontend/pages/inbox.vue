@@ -44,7 +44,7 @@
         </div>
 
         <!-- Simple Tab Navigation -->
-        <div class="px-6">
+        <div class="px-6" v-show="!isRefreshingAdsyConnect">
           <div class="flex space-x-8 border-b border-gray-200">
             <button
               @click="activeTab = 'adsyconnect'"
@@ -225,8 +225,17 @@
           </div>
         </div>
 
+        <!-- AdsyConnect Refresh Loading State -->
+        <div v-if="isRefreshingAdsyConnect" class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+          <div class="flex flex-col items-center justify-center py-16 px-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Loading your messages...</h3>
+            <p class="text-sm text-gray-600 text-center">Please wait while we refresh your conversations</p>
+          </div>
+        </div>
+
         <!-- Content List -->
-        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">          
+        <div v-show="!isRefreshingAdsyConnect" class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">          
           <!-- Support Tickets Content -->
           <div v-if="activeTab === 'support'">
             <div v-if="allSupportTickets && allSupportTickets.length > 0">
@@ -1851,6 +1860,7 @@
 const { t } = useI18n();
 const { user } = useAuth();
 const { get, post, put } = useApi();
+const route = useRoute();
 const { useAdsyChat } = await import('~/composables/useAdsyChat.js');
 const { formatDate } = useUtils();
 const { 
@@ -1877,6 +1887,9 @@ const updatesFilter = ref('all');
 // Chat Image Viewer state
 const showChatImageViewer = ref(false);
 const chatImageViewerUrl = ref('');
+
+// AdsyConnect refresh loading state
+const isRefreshingAdsyConnect = ref(false);
 
 // Pagination state
 const currentPage = ref(1);
@@ -1956,10 +1969,35 @@ const searchInput = ref(null);
 
 // Filtered AdsyConnect chat rooms
 const filteredAdsyChatRooms = computed(() => {
-  if (!adsySearchQuery.value) return adsyChatRooms.value;
+  // Filter out empty chats, but keep newly created chats and currently active chat
+  const chatsWithMessages = adsyChatRooms.value.filter(chat => {
+    // Always show the currently active chat
+    if (activeAdsyChat.value && chat.id === activeAdsyChat.value.id) {
+      return true;
+    }
+    
+    // Show chats that have messages with content
+    if (chat.last_message && chat.last_message.content && chat.last_message.content.trim() !== '') {
+      return true;
+    }
+    
+    // Show newly created chats (created within last 5 minutes) even without messages
+    if (chat.created_at) {
+      const chatCreatedTime = new Date(chat.created_at);
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      if (chatCreatedTime > fiveMinutesAgo) {
+        return true;
+      }
+    }
+    
+    return false;
+  });
+  
+  // Then apply search filter if there's a search query
+  if (!adsySearchQuery.value) return chatsWithMessages;
   
   const query = adsySearchQuery.value.toLowerCase();
-  return adsyChatRooms.value.filter(chat => {
+  return chatsWithMessages.filter(chat => {
     const userName = `${chat.other_user?.first_name} ${chat.other_user?.last_name}`.toLowerCase();
     const lastMessage = chat.last_message?.content?.toLowerCase() || '';
     return userName.includes(query) || lastMessage.includes(query);
@@ -2478,6 +2516,9 @@ async function startChatWithUser(searchUser) {
       // Reload chat rooms to get the new one
       await loadChatRooms();
       
+      // Add a small delay to ensure the UI updates
+      await nextTick();
+      
       // Find and select the new chat
       const newChat = adsyChatRooms.value.find(
         chat => chat.other_user?.id === searchUser.id
@@ -2485,16 +2526,27 @@ async function startChatWithUser(searchUser) {
       
       if (newChat) {
         await selectAdsyChatWithTab(newChat);
+        
+        toast.add({
+          title: 'Chat Started',
+          description: `Started new chat with ${searchUser.first_name} ${searchUser.last_name}`,
+          color: 'green',
+          timeout: 2000,
+        });
+      } else {
+        // If chat not found immediately, try again after a short delay
+        setTimeout(async () => {
+          await loadChatRooms();
+          const retryChat = adsyChatRooms.value.find(
+            chat => chat.other_user?.id === searchUser.id
+          );
+          if (retryChat) {
+            await selectAdsyChatWithTab(retryChat);
+          }
+        }, 500);
       }
       
       closeSearchModal();
-      
-      toast.add({
-        title: 'Chat Started',
-        description: `Started new chat with ${searchUser.first_name} ${searchUser.last_name}`,
-        color: 'green',
-        timeout: 2000,
-      });
     }
   } catch (error) {
     console.error('Error starting chat:', error);
@@ -2512,6 +2564,78 @@ async function startChatWithUser(searchUser) {
       description: errorMessage,
       color: 'red',
       timeout: 5000,
+    });
+  }
+}
+
+// Handle chat with user from URL parameter
+async function handleChatWithUser(userId) {
+  try {
+    // Check if chat already exists
+    const existingChat = adsyChatRooms.value.find(
+      chat => chat.other_user?.id === parseInt(userId)
+    );
+    
+    if (existingChat) {
+      // Select existing chat
+      await selectAdsyChatWithTab(existingChat);
+      toast.add({
+        title: 'Chat Opened',
+        description: `Opened chat with ${existingChat.other_user?.first_name} ${existingChat.other_user?.last_name}`,
+        color: 'blue',
+        timeout: 2000,
+      });
+    } else {
+      // Create new chat
+      const { data: response, error: apiError } = await post('/adsyconnect/chatrooms/get_or_create/', {
+        user_id: String(userId)
+      });
+
+      if (apiError) {
+        throw new Error(apiError.message || 'Failed to create chat');
+      }
+
+      if (response) {
+        // Reload chat rooms to get the new one
+        await loadChatRooms();
+        
+        // Add a small delay to ensure the UI updates
+        await nextTick();
+        
+        // Find and select the new chat
+        const newChat = adsyChatRooms.value.find(
+          chat => chat.other_user?.id === parseInt(userId)
+        );
+        
+        if (newChat) {
+          await selectAdsyChatWithTab(newChat);
+          toast.add({
+            title: 'Chat Started',
+            description: `Started new chat with ${newChat.other_user?.first_name} ${newChat.other_user?.last_name}`,
+            color: 'green',
+            timeout: 2000,
+          });
+        } else {
+          // If chat not found immediately, try again after a short delay
+          setTimeout(async () => {
+            await loadChatRooms();
+            const retryChat = adsyChatRooms.value.find(
+              chat => chat.other_user?.id === parseInt(userId)
+            );
+            if (retryChat) {
+              await selectAdsyChatWithTab(retryChat);
+            }
+          }, 500);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error handling chat with user:', error);
+    toast.add({
+      title: 'Error',
+      description: 'Failed to start chat. Please try again.',
+      color: 'red',
+      timeout: 3000,
     });
   }
 }
@@ -3175,7 +3299,22 @@ async function getMessages(preserveState = false) {
 }
 
 async function refreshMessages() {
-  await getMessages(true); // Preserve UI state when refreshing
+  // If we're on AdsyConnect tab, show special loading state
+  if (activeTab.value === 'adsyconnect') {
+    isRefreshingAdsyConnect.value = true;
+    try {
+      // Refresh AdsyConnect chat rooms
+      await loadChatRooms();
+      // Small delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } finally {
+      isRefreshingAdsyConnect.value = false;
+    }
+  } else {
+    // Regular refresh for other tabs
+    await getMessages(true); // Preserve UI state when refreshing
+  }
+  
   // Also refresh the global unread count to keep header/balance in sync
   await fetchUnreadCount();
 }
@@ -3316,6 +3455,21 @@ onMounted(async () => {
   // Load AdsyConnect chat rooms since it's the default tab
   if (activeTab.value === 'adsyconnect') {
     await loadChatRooms();
+  }
+
+  // Handle chat_with query parameter
+  const chatWithUserId = route.query.chat_with;
+  if (chatWithUserId && user.value?.user?.id) {
+    // Switch to AdsyConnect tab
+    activeTab.value = 'adsyconnect';
+    
+    // Load chat rooms if not already loaded
+    if (adsyChatRooms.value.length === 0) {
+      await loadChatRooms();
+    }
+    
+    // Try to find existing chat or create new one
+    await handleChatWithUser(chatWithUserId);
   }
 
   // Auto-refresh disabled - users can manually refresh by pulling down
