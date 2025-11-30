@@ -4,7 +4,8 @@ from .views import (
     MyGigsView, toggle_favorite, MyFavoritesView,
     GigReviewListView, create_review,
     MyOrdersView, MySellerOrdersView, create_order,
-    gig_categories
+    gig_categories,
+    OrderMessageListView, create_order_message
 )
 
 urlpatterns = [
@@ -29,4 +30,8 @@ urlpatterns = [
     path('gigs/<uuid:gig_id>/order/', create_order, name='create-order'),
     path('orders/', MyOrdersView.as_view(), name='my-orders'),
     path('orders/seller/', MySellerOrdersView.as_view(), name='seller-orders'),
+    
+    # Order message endpoints
+    path('orders/<uuid:order_id>/messages/', OrderMessageListView.as_view(), name='order-messages'),
+    path('orders/<uuid:order_id>/messages/create/', create_order_message, name='create-order-message'),
 ]

@@ -1,35 +1,69 @@
 <template>
   <div class="space-y-4 sm:space-y-6">
-    <!-- Filter Tabs - Responsive Horizontal Scroll -->
-    <div class="border-b border-gray-200">
-      <div class="flex overflow-x-auto scrollbar-hide -mx-1 sm:mx-0">
-        <nav class="flex min-w-full sm:min-w-0">
+    <!-- Filter Dropdown -->
+    <div class="flex items-center justify-between">
+      <div class="relative">
+        <button
+          @click="showFilterDropdown = !showFilterDropdown"
+          class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+        >
+          <span class="text-sm font-medium text-gray-700">{{ getFilterLabel(activeFilter) }}</span>
+          <span 
+            v-if="getFilterCount(activeFilter) > 0"
+            class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-600"
+          >
+            {{ getFilterCount(activeFilter) }}
+          </span>
+          <UIcon 
+            name="i-heroicons-chevron-down" 
+            class="w-4 h-4 text-gray-500 transition-transform"
+            :class="{ 'rotate-180': showFilterDropdown }"
+          />
+        </button>
+        
+        <!-- Dropdown Backdrop -->
+        <div 
+          v-if="showFilterDropdown" 
+          class="fixed inset-0 z-10" 
+          @click="showFilterDropdown = false"
+        ></div>
+        
+        <!-- Dropdown Menu -->
+        <div
+          v-if="showFilterDropdown"
+          class="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden"
+        >
           <button
             v-for="filter in orderFilters"
             :key="filter.value"
-            @click="activeFilter = filter.value"
+            @click="selectFilter(filter.value)"
             :class="[
-              'flex-shrink-0 px-3 sm:px-5 py-3 text-xs sm:text-sm font-medium transition-colors border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2',
+              'w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors',
               activeFilter === filter.value
-                ? 'text-purple-600 border-purple-600 bg-purple-50/50'
-                : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                ? 'bg-purple-50 text-purple-700 font-medium'
+                : 'text-gray-700 hover:bg-gray-50'
             ]"
           >
             <span>{{ filter.label }}</span>
             <span 
-              v-if="getFilterCount(filter.value) > 0" 
+              v-if="getFilterCount(filter.value) > 0"
               :class="[
-                'inline-flex items-center justify-center min-w-[18px] sm:min-w-[20px] h-4 sm:h-5 px-1 text-xs font-medium rounded-full',
+                'inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-semibold rounded-full',
                 activeFilter === filter.value
-                  ? 'bg-purple-100 text-purple-600'
+                  ? 'bg-purple-200 text-purple-700'
                   : 'bg-gray-100 text-gray-600'
               ]"
             >
               {{ getFilterCount(filter.value) }}
             </span>
           </button>
-        </nav>
+        </div>
       </div>
+      
+      <!-- Total Orders Count -->
+      <span class="text-sm text-gray-500">
+        {{ filteredOrders.length }} order{{ filteredOrders.length !== 1 ? 's' : '' }}
+      </span>
     </div>
 
     <!-- Loading State -->
@@ -123,7 +157,7 @@
                 order.status === 'pending' || order.status === 'in_progress' ? 'flex-1' : 'flex-none'
               ]"
             >
-              <MessageCircle class="h-3.5 w-3.5" />
+              <img src="/images/chat_icon.png" alt="Chat" class="h-4 w-4" />
               <span class="hidden xs:inline">Chat</span>
               <span
                 v-if="order.unreadMessages && order.unreadMessages > 0"
@@ -184,10 +218,170 @@
     </div>
 
   </div>
+
+  <!-- Chat Bottom Sheet -->
+  <BusinessNetworkOrderChatSheet
+    v-model:isOpen="showChatSheet"
+    :orderId="selectedOrder?.id"
+    :orderNumber="'ORD-' + String(selectedOrder?.id || '').slice(0, 8).toUpperCase()"
+    :otherUser="selectedOrder?.buyer"
+    :currentUserId="currentUser?.id"
+    @close="selectedOrder = null"
+  />
+
+  <!-- Deliver Order Confirmation Modal -->
+  <Teleport to="body">
+    <Transition name="fade">
+      <div v-if="showDeliverModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" @click="showDeliverModal = false">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden" @click.stop>
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <UIcon name="i-heroicons-truck" class="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">Deliver Order</h3>
+                <p class="text-blue-100 text-sm">Order #{{ orderToAction?.id?.slice(0, 8).toUpperCase() }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Content -->
+          <div class="p-6">
+            <p class="text-gray-600 mb-4">
+              You're about to mark this order as delivered. Please ensure:
+            </p>
+            <ul class="space-y-2 mb-6">
+              <li class="flex items-start gap-2">
+                <UIcon name="i-heroicons-check-circle" class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                <span class="text-sm text-gray-700">All deliverables are complete and attached</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <UIcon name="i-heroicons-check-circle" class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                <span class="text-sm text-gray-700">Work meets the requirements specified</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <UIcon name="i-heroicons-check-circle" class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                <span class="text-sm text-gray-700">Files are properly formatted and accessible</span>
+              </li>
+            </ul>
+            
+            <!-- Delivery Note -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Note (Optional)</label>
+              <textarea
+                v-model="deliveryNote"
+                placeholder="Add a message for the buyer..."
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
+              ></textarea>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="px-6 py-4 bg-gray-50 flex gap-3">
+            <button
+              @click="showDeliverModal = false"
+              class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmDeliverOrder"
+              :disabled="isProcessing"
+              class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <UIcon v-if="isProcessing" name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
+              <span>{{ isProcessing ? 'Delivering...' : 'Confirm Delivery' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
+
+  <!-- Decline Order Confirmation Modal -->
+  <Teleport to="body">
+    <Transition name="fade">
+      <div v-if="showDeclineModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" @click="showDeclineModal = false">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden" @click.stop>
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <UIcon name="i-heroicons-x-circle" class="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">Decline Order</h3>
+                <p class="text-red-100 text-sm">Order #{{ orderToAction?.id?.slice(0, 8).toUpperCase() }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Content -->
+          <div class="p-6">
+            <div class="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg mb-4">
+              <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+              <p class="text-sm text-amber-800">
+                Declining orders may affect your seller rating. Please only decline if you cannot fulfill this order.
+              </p>
+            </div>
+            
+            <!-- Decline Reason -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Declining <span class="text-red-500">*</span></label>
+              <select
+                v-model="declineReason"
+                class="w-full px-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
+              >
+                <option value="">Select a reason</option>
+                <option value="busy">Too busy / Overbooked</option>
+                <option value="scope">Project scope unclear</option>
+                <option value="budget">Budget too low</option>
+                <option value="timeline">Timeline too short</option>
+                <option value="expertise">Outside my expertise</option>
+                <option value="other">Other reason</option>
+              </select>
+            </div>
+            
+            <!-- Additional Notes -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes (Optional)</label>
+              <textarea
+                v-model="declineNote"
+                placeholder="Provide more details to the buyer..."
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm resize-none"
+              ></textarea>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="px-6 py-4 bg-gray-50 flex gap-3">
+            <button
+              @click="showDeclineModal = false"
+              class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmDeclineOrder"
+              :disabled="!declineReason || isProcessing"
+              class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <UIcon v-if="isProcessing" name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
+              <span>{{ isProcessing ? 'Declining...' : 'Decline Order' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-import { ShoppingCart, MessageCircle } from 'lucide-vue-next';
+import { ShoppingCart } from 'lucide-vue-next';
 import { ref, computed, onMounted } from 'vue';
 
 // Emit events to parent component
@@ -196,14 +390,34 @@ const emit = defineEmits(['switchTab']);
 // Composables
 const toast = useToast();
 const { get } = useApi();
+const { user: currentUser } = useAuth();
 
 // Reactive data
-const activeFilter = ref('pending');
+const activeFilter = ref('all');
 const isLoading = ref(true);
 const orders = ref([]);
+const showChatSheet = ref(false);
+const selectedOrder = ref(null);
+const showFilterDropdown = ref(false);
+
+// Modal states
+const showDeliverModal = ref(false);
+const showDeclineModal = ref(false);
+const orderToAction = ref(null);
+const isProcessing = ref(false);
+const deliveryNote = ref('');
+const declineReason = ref('');
+const declineNote = ref('');
+
+// Select filter and close dropdown
+const selectFilter = (value) => {
+  activeFilter.value = value;
+  showFilterDropdown.value = false;
+};
 
 // Order filters
 const orderFilters = [
+  { label: 'All Orders', value: 'all' },
   { label: 'Pending', value: 'pending' },
   { label: 'In Progress', value: 'in_progress' },
   { label: 'Completed', value: 'completed' },
@@ -272,11 +486,17 @@ onMounted(() => {
 
 // Computed
 const filteredOrders = computed(() => {
+  if (activeFilter.value === 'all') {
+    return orders.value;
+  }
   return orders.value.filter(order => order.status === activeFilter.value);
 });
 
 // Methods
 const getFilterCount = (filterValue) => {
+  if (filterValue === 'all') {
+    return orders.value.length;
+  }
   return orders.value.filter(order => order.status === filterValue).length;
 };
 
@@ -333,13 +553,8 @@ const formatDeliveryDate = (date) => {
 
 // Action methods
 const openChat = (order) => {
-  toast.add({
-    title: 'Opening Chat',
-    description: `Starting conversation with ${order.buyer.name} for order #${order.id}`,
-    color: 'blue'
-  });
-  // Here you would typically navigate to chat or open chat modal
-  // Example: navigateTo(`/chat/${order.buyer.id}?order=${order.id}`)
+  selectedOrder.value = order;
+  showChatSheet.value = true;
 };
 
 const acceptOrder = (order) => {
@@ -352,21 +567,82 @@ const acceptOrder = (order) => {
 };
 
 const declineOrder = (order) => {
-  order.status = 'cancelled';
-  toast.add({
-    title: 'Order Declined',
-    description: `Order #${order.id} has been declined`,
-    color: 'red'
-  });
+  orderToAction.value = order;
+  declineReason.value = '';
+  declineNote.value = '';
+  showDeclineModal.value = true;
 };
 
 const deliverOrder = (order) => {
-  order.status = 'delivered';
-  toast.add({
-    title: 'Order Delivered',
-    description: `Order #${order.id} has been marked as delivered`,
-    color: 'green'
-  });
+  orderToAction.value = order;
+  deliveryNote.value = '';
+  showDeliverModal.value = true;
+};
+
+const confirmDeliverOrder = async () => {
+  if (!orderToAction.value) return;
+  
+  isProcessing.value = true;
+  try {
+    // TODO: API call to deliver order
+    // await post(`/workspace/orders/${orderToAction.value.id}/deliver/`, { note: deliveryNote.value });
+    
+    // Update local state
+    orderToAction.value.status = 'delivered';
+    
+    toast.add({
+      title: 'Order Delivered! 🎉',
+      description: `Order #${orderToAction.value.id.slice(0, 8).toUpperCase()} has been marked as delivered. The buyer will be notified.`,
+      color: 'green'
+    });
+    
+    showDeliverModal.value = false;
+    orderToAction.value = null;
+    deliveryNote.value = '';
+  } catch (error) {
+    toast.add({
+      title: 'Error',
+      description: 'Failed to deliver order. Please try again.',
+      color: 'red'
+    });
+  } finally {
+    isProcessing.value = false;
+  }
+};
+
+const confirmDeclineOrder = async () => {
+  if (!orderToAction.value || !declineReason.value) return;
+  
+  isProcessing.value = true;
+  try {
+    // TODO: API call to decline order
+    // await post(`/workspace/orders/${orderToAction.value.id}/decline/`, { 
+    //   reason: declineReason.value, 
+    //   note: declineNote.value 
+    // });
+    
+    // Update local state
+    orderToAction.value.status = 'cancelled';
+    
+    toast.add({
+      title: 'Order Declined',
+      description: `Order #${orderToAction.value.id.slice(0, 8).toUpperCase()} has been declined. The buyer will be notified.`,
+      color: 'orange'
+    });
+    
+    showDeclineModal.value = false;
+    orderToAction.value = null;
+    declineReason.value = '';
+    declineNote.value = '';
+  } catch (error) {
+    toast.add({
+      title: 'Error',
+      description: 'Failed to decline order. Please try again.',
+      color: 'red'
+    });
+  } finally {
+    isProcessing.value = false;
+  }
 };
 </script>
 
@@ -386,5 +662,16 @@ const deliverOrder = (order) => {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Modal transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

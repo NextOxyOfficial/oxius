@@ -162,7 +162,7 @@
                     @click="openChat(order)"
                     class="relative flex-1 sm:flex-none px-3 sm:px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
                   >
-                    <MessageCircle class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <img src="/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
                     <span>Chat</span>
                     <span
                       v-if="order.unreadMessages && order.unreadMessages > 0"
@@ -249,11 +249,21 @@
       </div>
     </div>
   </div>
+
+  <!-- Chat Bottom Sheet -->
+  <BusinessNetworkOrderChatSheet
+    v-model:isOpen="showChatSheet"
+    :orderId="selectedOrder?.id"
+    :orderNumber="selectedOrder?.orderNumber"
+    :otherUser="selectedOrder?.seller"
+    :currentUserId="user?.id"
+    @close="selectedOrder = null"
+  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { Star, MessageCircle, ShoppingCart, ChevronDown } from 'lucide-vue-next';
+import { Star, ShoppingCart, ChevronDown } from 'lucide-vue-next';
 
 // Emit events
 const emit = defineEmits(['switchTab']);
@@ -264,6 +274,8 @@ const isLoading = ref(true);
 const showCancelModal = ref(false);
 const orderToCancel = ref(null);
 const showStatusDropdown = ref(false);
+const showChatSheet = ref(false);
+const selectedOrder = ref(null);
 
 // Status tabs configuration
 const statusTabs = ref([
@@ -441,8 +453,8 @@ const getEmptyStateDescription = () => {
 
 // Methods
 const openChat = (order) => {
-  console.log('Opening chat for order:', order.orderNumber);
-  // Here you would implement the chat functionality
+  selectedOrder.value = order;
+  showChatSheet.value = true;
 };
 
 const leaveReview = (order) => {

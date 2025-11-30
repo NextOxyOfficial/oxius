@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Gig, GigReview, GigFavorite, GigOrder
+from .models import Gig, GigReview, GigFavorite, GigOrder, OrderMessage
 from base.models import User
 
 
@@ -123,3 +123,22 @@ class GigFavoriteSerializer(serializers.ModelSerializer):
         model = GigFavorite
         fields = ('id', 'gig', 'created_at')
         read_only_fields = ('id', 'created_at')
+
+
+class OrderMessageSerializer(serializers.ModelSerializer):
+    """Serializer for order messages"""
+    sender = GigUserSerializer(read_only=True)
+    media_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = OrderMessage
+        fields = ('id', 'sender', 'content', 'message_type', 'media_url', 'file_name', 'file_size', 'is_read', 'created_at')
+        read_only_fields = ('id', 'sender', 'is_read', 'created_at')
+    
+    def get_media_url(self, obj):
+        if obj.media:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.media.url)
+            return obj.media.url
+        return None

@@ -133,3 +133,38 @@ class GigOrder(models.Model):
     
     def __str__(self):
         return f"Order #{str(self.id)[:8]} - {self.gig.title}"
+
+
+class OrderMessage(models.Model):
+    """Model for order chat messages"""
+    MESSAGE_TYPE_CHOICES = [
+        ('text', 'Text'),
+        ('image', 'Image'),
+        ('video', 'Video'),
+        ('document', 'Document'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(GigOrder, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workspace_order_messages')
+    content = models.TextField(blank=True, default='')
+    message_type = models.CharField(max_length=20, choices=MESSAGE_TYPE_CHOICES, default='text')
+    media = models.FileField(upload_to='order_messages/', blank=True, null=True)
+    file_name = models.CharField(max_length=255, blank=True, null=True)
+    file_size = models.PositiveIntegerField(blank=True, null=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Order Message"
+        verbose_name_plural = "Order Messages"
+        ordering = ['created_at']
+    
+    def __str__(self):
+        return f"Message from {self.sender.first_name} on Order #{str(self.order.id)[:8]}"
+    
+    @property
+    def media_url(self):
+        if self.media:
+            return self.media.url
+        return None

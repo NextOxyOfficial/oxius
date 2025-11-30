@@ -6,10 +6,10 @@ from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import Gig, GigReview, GigFavorite, GigOrder
+from .models import Gig, GigReview, GigFavorite, GigOrder, OrderMessage
 from .serializers import (
     GigSerializer, GigCreateSerializer, GigReviewSerializer,
-    GigOrderSerializer, GigFavoriteSerializer
+    GigOrderSerializer, GigFavoriteSerializer, OrderMessageSerializer
 )
 
 
@@ -296,3 +296,63 @@ def gig_categories(request):
         {'value': 'business', 'label': 'Business & Consulting'},
     ]
     return Response(categories)
+
+
+class OrderMessageListView(generics.ListAPIView):
+    """List messages for an order"""
+    serializer_class = OrderMessageSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        order_id = self.kwargs.get('order_id')
+        user = self.request.user
+        
+        # Only allow buyer or seller to view messages
+        try:
+            order = GigOrder.objects.get(id=order_id)
+            if order.buyer != user and order.seller != user:
+                return OrderMessage.objects.none()
+            
+            # Mark messages as read
+            OrderMessage.objects.filter(
+                order=order
+            ).exclude(sender=user).update(is_read=True)
+            
+            return OrderMessage.objects.filter(order_id=order_id).select_related('sender')
+        except GigOrder.DoesNotExist:
+            return OrderMessage.objects.none()
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_order_message(request, order_id):
+    """Create a message for an order"""
+    try:
+        order = GigOrder.objects.get(id=order_id)
+    except GigOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Only buyer or seller can send messages
+    if order.buyer != request.user and order.seller != request.user:
+        return Response({'error': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
+    
+    content = request.data.get('content', '').strip()
+    media = request.FILES.get('media')
+    message_type = request.data.get('message_type', 'text')
+    
+    # Require either content or media
+    if not content and not media:
+        return Response({'error': 'Message content or media is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    message = OrderMessage.objects.create(
+        order=order,
+        sender=request.user,
+        content=content,
+        message_type=message_type if media else 'text',
+        media=media,
+        file_name=media.name if media else None,
+        file_size=media.size if media else None
+    )
+    
+    serializer = OrderMessageSerializer(message, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
