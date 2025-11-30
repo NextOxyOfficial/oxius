@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
+  <div class="mx-auto sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
     <!-- Header Section -->
     <div class="mb-6">
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-2 py-4">
@@ -63,7 +63,7 @@
       </div>
 
       <!-- Tab Content -->
-      <div class="sm:px-6 p-2">
+      <div class="sm:px-6 pt-4 px-1">
         <!-- All Gigs Tab -->
         <div v-if="activeTab === 'all-gigs'">
           <!-- Filters and Search Bar -->

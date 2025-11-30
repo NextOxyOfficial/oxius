@@ -30,18 +30,18 @@
           <!-- Header -->
           <div class="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-indigo-50 sm:rounded-t-2xl">
             <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-3 cursor-pointer" @click="navigateToProfile">
                 <div class="relative">
                   <img
                     :src="otherUser?.avatar || '/images/placeholder.jpg'"
                     :alt="otherUser?.name"
-                    class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm"
+                    class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow-sm hover:ring-purple-300 transition-all"
                   />
                   <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
                 </div>
                 <div>
                   <div class="flex items-center gap-1.5">
-                    <h3 class="text-base font-semibold text-gray-900">
+                    <h3 class="text-base font-semibold text-gray-900 hover:text-purple-600 transition-colors">
                       {{ otherUser?.name || 'Chat' }}
                     </h3>
                     <!-- Pro Badge -->
@@ -95,104 +95,85 @@
             </div>
             
             <!-- Messages List -->
-            <div v-else class="space-y-3">
+            <div v-else class="space-y-1.5">
               <div
                 v-for="message in messages"
                 :key="message.id"
-                class="flex items-end gap-2"
-                :class="message.sender?.id === currentUserId ? 'justify-end' : 'justify-start'"
+                class="flex items-end gap-1.5"
+                :class="isMyMessage(message) ? 'justify-end' : 'justify-start'"
               >
                 <!-- Avatar for received messages -->
-                <div v-if="message.sender?.id !== currentUserId" class="flex-shrink-0 mb-1">
+                <div v-if="!isMyMessage(message)" class="flex-shrink-0 mb-0.5">
                   <img
                     :src="otherUser?.avatar || '/images/placeholder.jpg'"
                     :alt="otherUser?.name"
-                    class="w-7 h-7 rounded-full object-cover ring-2 ring-white shadow-sm"
+                    class="w-6 h-6 rounded-full object-cover"
                   />
                 </div>
                 
                 <!-- Message Content -->
                 <div
-                  class="max-w-[75%] rounded-2xl shadow-sm overflow-hidden"
-                  :class="message.sender?.id === currentUserId 
-                    ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-br-sm' 
-                    : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm'"
+                  class="max-w-[78%] rounded-xl overflow-hidden"
+                  :class="isMyMessage(message) 
+                    ? 'bg-purple-500 text-white rounded-br-sm' 
+                    : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'"
                 >
                   <!-- Image Message -->
                   <div v-if="message.media_url && message.message_type === 'image'" class="relative group">
                     <img
                       :src="message.media_url"
                       :alt="message.file_name || 'Image'"
-                      class="w-full h-auto max-h-48 object-cover cursor-pointer transition-transform duration-300 group-hover:scale-105"
+                      class="w-full h-auto max-h-40 object-cover cursor-pointer"
                       @click.stop="openImageViewer(message.media_url)"
                     />
-                    <!-- Hover overlay with zoom icon -->
-                    <div 
-                      class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center cursor-pointer"
-                      @click.stop="openImageViewer(message.media_url)"
-                    >
-                      <div class="opacity-0 flex group-hover:opacity-100 transition-opacity duration-300 p-2 bg-black/50 rounded-full">
-                        <UIcon name="i-heroicons-magnifying-glass-plus" class="w-5 h-5 text-white" />
-                      </div>
-                    </div>
                   </div>
                   
                   <!-- Video Message -->
                   <div v-else-if="message.media_url && message.message_type === 'video'" class="relative">
                     <video
                       :src="message.media_url"
-                      class="w-full h-auto max-h-48 object-cover"
+                      class="w-full h-auto max-h-40 object-cover"
                       controls
                       preload="metadata"
-                    >
-                      Your browser does not support the video tag.
-                    </video>
+                    ></video>
                   </div>
                   
                   <!-- Document Message -->
-                  <div v-else-if="message.media_url && message.message_type === 'document'" class="px-3 py-2.5">
-                    <div class="flex items-center gap-3">
-                      <div 
-                        class="flex-shrink-0 p-2 rounded-lg"
-                        :class="message.sender?.id === currentUserId ? 'bg-white/20' : 'bg-gray-100'"
-                      >
-                        <UIcon name="i-heroicons-document-text" class="w-6 h-6" :class="message.sender?.id === currentUserId ? 'text-white' : 'text-gray-600'" />
-                      </div>
+                  <div v-else-if="message.media_url && message.message_type === 'document'" class="px-2.5 py-2">
+                    <a
+                      :href="message.media_url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="flex items-center gap-2"
+                      @click.stop
+                    >
+                      <UIcon name="i-heroicons-document-text" class="w-5 h-5 flex-shrink-0" :class="isMyMessage(message) ? 'text-white/80' : 'text-gray-500'" />
                       <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium truncate">{{ message.file_name || 'Document' }}</p>
-                        <p class="text-[10px] opacity-60">{{ formatFileSize(message.file_size) }}</p>
+                        <p class="text-xs font-medium truncate">{{ message.file_name || 'Document' }}</p>
+                        <p class="text-[9px] opacity-60">{{ formatFileSize(message.file_size) }}</p>
                       </div>
-                      <a
-                        :href="message.media_url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="flex-shrink-0 p-2 rounded-full transition-colors"
-                        :class="message.sender?.id === currentUserId ? 'hover:bg-white/20' : 'hover:bg-gray-100'"
-                        @click.stop
-                      >
-                        <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
-                      </a>
-                    </div>
+                      <UIcon name="i-heroicons-arrow-down-tray" class="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
+                    </a>
                   </div>
                   
                   <!-- Text Content -->
-                  <div v-if="message.content" class="px-4 py-2.5">
-                    <p class="text-sm whitespace-pre-wrap">{{ message.content }}</p>
+                  <div v-if="message.content" class="px-3 py-1.5">
+                    <p class="text-[13px] leading-snug whitespace-pre-wrap">{{ message.content }}</p>
                   </div>
                   
                   <!-- Time & Read Status -->
-                  <div class="px-4 pb-2 flex items-center justify-end gap-1">
+                  <div class="px-3 pb-1 flex items-center justify-end gap-1">
                     <span 
-                      class="text-[10px]"
-                      :class="message.sender?.id === currentUserId ? 'text-white/70' : 'text-gray-400'"
+                      class="text-[9px]"
+                      :class="isMyMessage(message) ? 'text-white/60' : 'text-gray-400'"
                     >
-                      {{ formatTime(message.created_at) }}
+                      {{ formatTimeAgo(message.created_at) }}
                     </span>
                     <UIcon 
-                      v-if="message.sender?.id === currentUserId"
+                      v-if="isMyMessage(message)"
                       :name="message.is_read ? 'i-heroicons-check-circle-solid' : 'i-heroicons-check'"
-                      class="w-3 h-3"
-                      :class="message.is_read ? 'text-blue-300' : 'text-white/50'"
+                      class="w-2.5 h-2.5"
+                      :class="message.is_read ? 'text-blue-300' : 'text-white/40'"
                     />
                   </div>
                 </div>
@@ -410,6 +391,29 @@ const props = defineProps({
 
 const emit = defineEmits(['update:isOpen', 'close']);
 
+// Router for navigation
+const router = useRouter();
+
+// Check if message is from current user
+const isMyMessage = (message) => {
+  if (!props.currentUserId) return false;
+  
+  // Handle both cases: sender as object with id, or sender as direct id
+  const senderId = message?.sender?.id || message?.sender;
+  if (!senderId) return false;
+  
+  // Compare as strings to handle UUID comparison
+  return String(senderId) === String(props.currentUserId);
+};
+
+// Navigate to user's business network profile
+const navigateToProfile = () => {
+  if (props.otherUser?.id) {
+    closeSheet();
+    router.push(`/business-network/profile/${props.otherUser.id}`);
+  }
+};
+
 // State
 const messages = ref([]);
 const newMessage = ref('');
@@ -574,12 +578,41 @@ const formatTime = (dateString) => {
   });
 };
 
+// Format time ago
+const formatTimeAgo = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  
+  if (diffSecs < 60) return 'now';
+  if (diffMins < 60) return `${diffMins}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays < 7) return `${diffDays}d`;
+  
+  // For older messages, show date
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 // Scroll to bottom
-const scrollToBottom = () => {
+const scrollToBottom = (smooth = false) => {
   nextTick(() => {
-    if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-    }
+    setTimeout(() => {
+      if (messagesContainer.value) {
+        if (smooth) {
+          messagesContainer.value.scrollTo({
+            top: messagesContainer.value.scrollHeight,
+            behavior: 'smooth'
+          });
+        } else {
+          messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+        }
+      }
+    }, 100);
   });
 };
 
@@ -715,6 +748,8 @@ const stopPolling = () => {
 watch(() => props.isOpen, async (isOpen) => {
   if (isOpen) {
     await loadMessages();
+    // Ensure scroll to bottom after messages are rendered
+    scrollToBottom();
     startPolling();
   } else {
     stopPolling();

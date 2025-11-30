@@ -12,6 +12,78 @@ def gig_image_path(instance, filename):
     return os.path.join('workspace/gigs', filename)
 
 
+class GigCategory(models.Model):
+    """Model for gig categories managed from admin"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, unique=True)
+    icon = models.CharField(max_length=50, blank=True, help_text="Icon class name (e.g., i-heroicons-paint-brush)")
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Gig Category"
+        verbose_name_plural = "Gig Categories"
+        ordering = ['order', 'name']
+    
+    def __str__(self):
+        return self.name
+
+
+class GigSkill(models.Model):
+    """Model for skills/expertise tags managed from admin"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, unique=True)
+    category = models.ForeignKey(GigCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='skills')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Gig Skill"
+        verbose_name_plural = "Gig Skills"
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
+
+class GigDeliveryTime(models.Model):
+    """Model for delivery time options managed from admin"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    label = models.CharField(max_length=50, help_text="Display label (e.g., '1 Day', '3 Days')")
+    days = models.PositiveIntegerField(help_text="Number of days")
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        verbose_name = "Delivery Time Option"
+        verbose_name_plural = "Delivery Time Options"
+        ordering = ['order', 'days']
+    
+    def __str__(self):
+        return self.label
+
+
+class GigRevisionOption(models.Model):
+    """Model for revision options managed from admin"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    label = models.CharField(max_length=50, help_text="Display label (e.g., '1 Revision', 'Unlimited')")
+    count = models.PositiveIntegerField(help_text="Number of revisions (use 999 for unlimited)")
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        verbose_name = "Revision Option"
+        verbose_name_plural = "Revision Options"
+        ordering = ['order', 'count']
+    
+    def __str__(self):
+        return self.label
+
+
 class Gig(models.Model):
     """Model for workspace gigs/services"""
     
@@ -39,6 +111,7 @@ class Gig(models.Model):
     delivery_time = models.PositiveIntegerField(default=3, help_text="Delivery time in days")
     revisions = models.PositiveIntegerField(default=2, help_text="Number of revisions included")
     skills = models.JSONField(default=list, blank=True, help_text="List of skills/expertise tags")
+    features = models.JSONField(default=list, blank=True, help_text="List of what buyers will get")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     is_featured = models.BooleanField(default=False)
     views_count = models.PositiveIntegerField(default=0)

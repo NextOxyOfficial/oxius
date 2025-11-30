@@ -365,7 +365,7 @@ const { get } = useApi();
 const toast = useToast();
 
 // State
-const viewMode = ref('grid');
+const viewMode = ref('list');
 const searchQuery = ref('');
 const selectedCategory = ref('');
 const selectedStatus = ref('');

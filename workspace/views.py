@@ -6,10 +6,14 @@ from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import Gig, GigReview, GigFavorite, GigOrder, OrderMessage
+from .models import (
+    Gig, GigReview, GigFavorite, GigOrder, OrderMessage,
+    GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption
+)
 from .serializers import (
     GigSerializer, GigCreateSerializer, GigReviewSerializer,
-    GigOrderSerializer, GigFavoriteSerializer, OrderMessageSerializer
+    GigOrderSerializer, GigFavoriteSerializer, OrderMessageSerializer,
+    GigCategorySerializer, GigSkillSerializer, GigDeliveryTimeSerializer, GigRevisionOptionSerializer
 )
 
 
@@ -356,3 +360,173 @@ def create_order_message(request, order_id):
     
     serializer = OrderMessageSerializer(message, context={'request': request})
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# ============================================
+# Gig Options API
+# ============================================
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_gig_options(request):
+    """Get all gig options (categories, skills, delivery times, revisions)"""
+    categories = GigCategory.objects.filter(is_active=True)
+    skills = GigSkill.objects.filter(is_active=True)
+    delivery_times = GigDeliveryTime.objects.filter(is_active=True)
+    revision_options = GigRevisionOption.objects.filter(is_active=True)
+    
+    # Optional: Filter skills by category
+    category_id = request.query_params.get('category')
+    if category_id:
+        skills = skills.filter(category_id=category_id)
+    
+    return Response({
+        'categories': GigCategorySerializer(categories, many=True).data,
+        'skills': GigSkillSerializer(skills, many=True).data,
+        'delivery_times': GigDeliveryTimeSerializer(delivery_times, many=True).data,
+        'revision_options': GigRevisionOptionSerializer(revision_options, many=True).data
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_skills_by_category(request, category_id):
+    """Get skills filtered by category"""
+    skills = GigSkill.objects.filter(is_active=True, category_id=category_id)
+    return Response(GigSkillSerializer(skills, many=True).data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_unread_message_counts(request):
+    """Get unread message counts for all user's orders"""
+    user = request.user
+    
+    # Get orders where user is buyer or seller
+    from django.db.models import Count, Q
+    
+    # Get unread counts for orders as buyer
+    buyer_orders = GigOrder.objects.filter(buyer=user).annotate(
+        unread_count=Count(
+            'messages',
+            filter=Q(messages__is_read=False) & ~Q(messages__sender=user)
+        )
+    ).values('id', 'unread_count')
+    
+    # Get unread counts for orders as seller
+    seller_orders = GigOrder.objects.filter(seller=user).annotate(
+        unread_count=Count(
+            'messages',
+            filter=Q(messages__is_read=False) & ~Q(messages__sender=user)
+        )
+    ).values('id', 'unread_count')
+    
+    # Combine into a dict
+    unread_counts = {}
+    total_unread = 0
+    
+    for order in buyer_orders:
+        unread_counts[str(order['id'])] = order['unread_count']
+        total_unread += order['unread_count']
+    
+    for order in seller_orders:
+        unread_counts[str(order['id'])] = order['unread_count']
+        total_unread += order['unread_count']
+    
+    return Response({
+        'counts': unread_counts,
+        'total': total_unread
+    })
+
+
+# ============================================
+# Order Status Management API
+# ============================================
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_order_status(request, order_id, action):
+    """Update order status (accept, decline, deliver, complete, cancel)"""
+    try:
+        order = GigOrder.objects.get(id=order_id)
+    except GigOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    user = request.user
+    note = request.data.get('note', '')
+    
+    # Define valid transitions and who can perform them
+    valid_actions = {
+        'accept': {
+            'allowed_by': 'seller',
+            'from_status': ['pending'],
+            'to_status': 'in_progress'
+        },
+        'decline': {
+            'allowed_by': 'seller',
+            'from_status': ['pending'],
+            'to_status': 'cancelled'
+        },
+        'deliver': {
+            'allowed_by': 'seller',
+            'from_status': ['in_progress'],
+            'to_status': 'delivered'
+        },
+        'complete': {
+            'allowed_by': 'buyer',
+            'from_status': ['delivered'],
+            'to_status': 'completed'
+        },
+        'cancel': {
+            'allowed_by': 'buyer',
+            'from_status': ['pending'],
+            'to_status': 'cancelled'
+        }
+    }
+    
+    if action not in valid_actions:
+        return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    action_config = valid_actions[action]
+    
+    # Check authorization
+    if action_config['allowed_by'] == 'seller' and order.seller != user:
+        return Response({'error': 'Only the seller can perform this action'}, status=status.HTTP_403_FORBIDDEN)
+    if action_config['allowed_by'] == 'buyer' and order.buyer != user:
+        return Response({'error': 'Only the buyer can perform this action'}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Check current status
+    if order.status not in action_config['from_status']:
+        return Response({
+            'error': f'Cannot {action} order with status "{order.status}"'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Update status
+    order.status = action_config['to_status']
+    order.save(update_fields=['status', 'updated_at'])
+    
+    # Create a system message in the order chat
+    action_messages = {
+        'accept': f'Order accepted by seller.',
+        'decline': f'Order declined by seller. Reason: {note}' if note else 'Order declined by seller.',
+        'deliver': f'Order marked as delivered.',
+        'complete': f'Order completed by buyer.',
+        'cancel': f'Order cancelled by buyer.'
+    }
+    
+    if note and action == 'accept':
+        action_messages['accept'] = f'Order accepted! Message from seller: {note}'
+    
+    # Optionally create a message for the action
+    OrderMessage.objects.create(
+        order=order,
+        sender=user,
+        content=action_messages[action],
+        message_type='text'
+    )
+    
+    serializer = GigOrderSerializer(order, context={'request': request})
+    return Response({
+        'message': f'Order {action}ed successfully',
+        'order': serializer.data
+    })

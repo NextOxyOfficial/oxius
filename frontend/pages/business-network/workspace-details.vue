@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
+  <div class="mx-auto sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
     <!-- Header Section -->
     <div class="mb-2">
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-2 py-4">
@@ -63,7 +63,7 @@
       </div>
 
       <!-- Tab Content - Gig Details -->
-      <div class="sm:px-6 p-2">
+      <div class="sm:px-6 pt-4 px-1">
         <!-- Loading State -->
         <div v-if="isLoading" class="animate-pulse py-6">
           <!-- Breadcrumb skeleton -->
@@ -121,30 +121,59 @@
           <!-- Main Content -->
           <div class="bg-white rounded-xl overflow-hidden">
             <div class="p-2">
-              <!-- Hero Image -->
-            <div class="relative mb-8">
-              <div class="aspect-video rounded-lg overflow-hidden bg-gray-100">
-                <img
-                  :src="gig.image"
-                  :alt="gig.title"
-                  class="w-full h-full object-cover"
-                />
-              </div>
-              <!-- Gallery thumbnails -->
-              <div class="flex space-x-2 mt-4">
-                <div
-                  v-for="i in 4"
-                  :key="i"
-                  class="w-16 h-16 rounded-md overflow-hidden bg-gray-100 cursor-pointer border-2 border-transparent hover:border-purple-500 transition-colors"
-                >
-                  <img
-                    :src="gig.image"
-                    :alt="`${gig.title} view ${i}`"
-                    class="w-full h-full object-cover"
+              <!-- Hero Image Slider -->
+              <div class="relative mb-8">
+                <div class="aspect-video rounded-lg overflow-hidden bg-gray-100 relative">
+                  <!-- Slider Container -->
+                  <div 
+                    class="flex transition-transform duration-300 ease-in-out h-full"
+                    :style="{ transform: `translateX(-${currentImageIndex * 100}%)` }"
+                  >
+                    <div 
+                      v-for="(image, index) in gigImages" 
+                      :key="index"
+                      class="w-full h-full flex-shrink-0"
+                    >
+                      <img
+                        :src="image"
+                        :alt="`${gig.title} - Image ${index + 1}`"
+                        class="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                  
+                  <!-- Navigation Arrows -->
+                  <button 
+                    v-if="gigImages.length > 1"
+                    @click="prevImage"
+                    class="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all"
+                  >
+                    <ChevronLeft class="w-6 h-6 text-gray-700" />
+                  </button>
+                  <button 
+                    v-if="gigImages.length > 1"
+                    @click="nextImage"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-md transition-all"
+                  >
+                    <ChevronRight class="w-6 h-6 text-gray-700" />
+                  </button>
+                </div>
+                
+                <!-- Dots Indicator -->
+                <div v-if="gigImages.length > 1" class="flex justify-center gap-2 mt-4">
+                  <button
+                    v-for="(_, index) in gigImages"
+                    :key="index"
+                    @click="currentImageIndex = index"
+                    :class="[
+                      'w-2.5 h-2.5 rounded-full transition-all',
+                      currentImageIndex === index 
+                        ? 'bg-purple-600 w-6' 
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    ]"
                   />
                 </div>
               </div>
-            </div>
 
             <!-- Title and Description -->
             <div class="mb-8">
@@ -200,12 +229,6 @@
                     </span>
                   </div>
                 </div>
-                <button 
-                  @click="navigateToProfile(gig.user.id)"
-                  class="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Visit Profile
-                </button>
               </div>
 
               <!-- Description -->
@@ -235,8 +258,8 @@
                 </div>
 
                 <!-- Pricing and Package Details -->
-                <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white rounded-lg border border-gray-200 p-3 mb-8">
+                  <div class="grid grid-cols-1 md:grid-cols-2 mb-6">
                     <!-- Left: Price -->
                     <div class="text-center md:text-left">
                       <div class="text-3xl font-bold text-gray-900 mb-2 inline-flex items-center">
@@ -272,8 +295,9 @@
                     </button>
                     <button
                       @click="handleContact"
-                      class="flex-1 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                      class="flex-1 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors inline-flex items-center justify-center gap-2"
                     >
+                      <img src="/images/chat_icon.png" alt="AdsyConnect" class="w-5 h-5" />
                       Contact Seller
                     </button>
                   </div>
@@ -283,11 +307,11 @@
                     <div class="flex items-center justify-center space-x-6 text-sm text-gray-600">
                       <div class="flex items-center">
                         <Eye class="h-4 w-4 mr-1" />
-                        <span>{{ Math.floor(Math.random() * 500) + 100 }} views</span>
+                        <span>{{ formatViewCount(gig.views_count || 0) }} views</span>
                       </div>
                       <div class="flex items-center">
                         <Clock class="h-4 w-4 mr-1" />
-                        <span>Active now</span>
+                        <span>{{ getActiveStatus(gig.updated_at) }}</span>
                       </div>
                       <button
                         @click="handleShare"
@@ -314,9 +338,13 @@
                 </NuxtLink>
               </div>
               
-              <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <!-- Mobile: 1 gig, Desktop: 2 gigs grid -->
+              <div 
+                ref="relatedGigsContainer"
+                class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              >
                 <div 
-                  v-for="relatedGig in relatedGigs" 
+                  v-for="relatedGig in relatedGigs.slice(0, 2)" 
                   :key="relatedGig.id"
                   class="bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all hover:shadow-sm cursor-pointer"
                   @click="navigateTo(`/business-network/workspace-details?id=${relatedGig.id}`)"
@@ -492,7 +520,7 @@
 
 <script setup>
 import { 
-  Star, Eye, Clock, Check, Heart, Share2, ChevronRight, ArrowLeft, 
+  Star, Eye, Clock, Check, Heart, Share2, ChevronRight, ChevronLeft, ArrowLeft, 
   AlertTriangle, User, ShoppingCart, Package, Plus
 } from 'lucide-vue-next';
 
@@ -537,6 +565,57 @@ const reviewsPerPage = 10;
 const totalReviewsCount = ref(0);
 const hasMoreReviews = computed(() => reviews.value.length < totalReviewsCount.value);
 
+// Related gigs infinite scroll state
+const relatedGigsContainer = ref(null);
+const currentRelatedIndex = ref(0);
+const isLoadingMoreRelated = ref(false);
+const relatedGigsPage = ref(1);
+const hasMoreRelatedGigs = ref(true);
+
+// Image slider state
+const currentImageIndex = ref(0);
+
+// Computed: Get all gig images (main + gallery if available)
+const gigImages = computed(() => {
+  if (!gig.value) return [];
+  
+  const images = [];
+  
+  // Add main image
+  if (gig.value.image) {
+    images.push(gig.value.image);
+  }
+  
+  // Add gallery images if available
+  if (gig.value.gallery && Array.isArray(gig.value.gallery)) {
+    images.push(...gig.value.gallery);
+  }
+  
+  // If no images, return placeholder
+  if (images.length === 0) {
+    return ['/images/placeholder-gig.png'];
+  }
+  
+  return images;
+});
+
+// Slider navigation methods
+const nextImage = () => {
+  if (currentImageIndex.value < gigImages.value.length - 1) {
+    currentImageIndex.value++;
+  } else {
+    currentImageIndex.value = 0; // Loop back to first
+  }
+};
+
+const prevImage = () => {
+  if (currentImageIndex.value > 0) {
+    currentImageIndex.value--;
+  } else {
+    currentImageIndex.value = gigImages.value.length - 1; // Loop to last
+  }
+};
+
 // Helper functions
 const getCategoryLabel = (category) => {
   const labels = {
@@ -547,6 +626,35 @@ const getCategoryLabel = (category) => {
     business: 'Business & Consulting',
   };
   return labels[category] || 'Other';
+};
+
+// Format view count (e.g., 1.2K, 5.3M)
+const formatViewCount = (count) => {
+  if (count >= 1000000) {
+    return (count / 1000000).toFixed(1) + 'M';
+  }
+  if (count >= 1000) {
+    return (count / 1000).toFixed(1) + 'K';
+  }
+  return count.toString();
+};
+
+// Get active status based on last update
+const getActiveStatus = (updatedAt) => {
+  if (!updatedAt) return 'Active';
+  
+  const now = new Date();
+  const updated = new Date(updatedAt);
+  const diffMs = now - updated;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 5) return 'Active now';
+  if (diffMins < 60) return `Active ${diffMins}m ago`;
+  if (diffHours < 24) return `Active ${diffHours}h ago`;
+  if (diffDays < 7) return `Active ${diffDays}d ago`;
+  return 'Active this week';
 };
 
 const getGigDescription = (gig) => {
@@ -754,24 +862,50 @@ const handleContact = () => {
     return;
   }
 
-  toast.add({
-    title: "Contact Seller",
-    description: `Opening chat with ${gig.value.user.name}`,
-    color: "green",
+  // Navigate to AdsyConnect inbox with seller's user ID to open chat
+  const sellerId = gig.value.user.id;
+  router.push({
+    path: '/inbox',
+    query: { chat_with: sellerId }
   });
 };
 
-const handleShare = () => {
-  if (navigator.share) {
-    navigator.share({
-      title: gig.value.title,
-      text: `Check out this amazing gig: ${gig.value.title}`,
-      url: window.location.href,
-    });
-  } else {
-    navigator.clipboard.writeText(window.location.href);
+const handleShare = async () => {
+  const shareData = {
+    title: gig.value?.title || 'Check out this gig',
+    text: `Check out this amazing gig: ${gig.value?.title}`,
+    url: window.location.href,
+  };
+  
+  // Try native share first (mobile)
+  if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    try {
+      await navigator.share(shareData);
+      return;
+    } catch (err) {
+      // User cancelled or share failed, fall through to clipboard
+      if (err.name === 'AbortError') return;
+    }
+  }
+  
+  // Fallback to clipboard
+  try {
+    await navigator.clipboard.writeText(window.location.href);
     toast.add({
-      title: "Link Copied",
+      title: "Link Copied!",
+      description: "Gig link copied to clipboard",
+      color: "green",
+    });
+  } catch (err) {
+    // Final fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = window.location.href;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    toast.add({
+      title: "Link Copied!",
       description: "Gig link copied to clipboard",
       color: "green",
     });
@@ -798,6 +932,7 @@ const fetchGig = async () => {
   }
 
   isLoading.value = true;
+  currentImageIndex.value = 0; // Reset slider when loading new gig
   
   try {
     // Fetch gig details from API
@@ -863,19 +998,27 @@ const fetchGig = async () => {
   }
 };
 
-const fetchRelatedGigs = async (category, currentGigId) => {
+const fetchRelatedGigs = async (category, currentGigId, append = false) => {
+  if (isLoadingMoreRelated.value) return;
+  
   try {
-    const { data, error } = await get(`/workspace/gigs/?category=${category}`);
+    if (!append) {
+      relatedGigsPage.value = 1;
+      hasMoreRelatedGigs.value = true;
+    }
+    
+    isLoadingMoreRelated.value = true;
+    const { data, error } = await get(`/workspace/gigs/?category=${category}&page=${relatedGigsPage.value}&page_size=6`);
     
     if (error || !data) {
-      relatedGigsData.value = [];
+      if (!append) relatedGigsData.value = [];
+      hasMoreRelatedGigs.value = false;
       return;
     }
     
     const results = data?.results || data || [];
-    relatedGigsData.value = results
+    const filteredResults = results
       .filter(g => g.id !== currentGigId)
-      .slice(0, 3)
       .map(g => ({
         id: g.id,
         title: g.title,
@@ -892,9 +1035,40 @@ const fetchRelatedGigs = async (category, currentGigId) => {
         rating: g.rating || 0,
         reviews: g.reviews || 0,
       }));
+    
+    if (append) {
+      // Filter out duplicates
+      const existingIds = new Set(relatedGigsData.value.map(g => g.id));
+      const newGigs = filteredResults.filter(g => !existingIds.has(g.id));
+      relatedGigsData.value = [...relatedGigsData.value, ...newGigs];
+    } else {
+      relatedGigsData.value = filteredResults;
+    }
+    
+    // Check if there are more gigs
+    hasMoreRelatedGigs.value = results.length >= 6;
   } catch (err) {
     console.error('Error fetching related gigs:', err);
-    relatedGigsData.value = [];
+    if (!append) relatedGigsData.value = [];
+  } finally {
+    isLoadingMoreRelated.value = false;
+  }
+};
+
+// Handle scroll for infinite loading on mobile
+const handleRelatedGigsScroll = (event) => {
+  const container = event.target;
+  const cardWidth = container.querySelector('div[class*="flex-shrink-0"]')?.offsetWidth || 300;
+  
+  // Update current index for dots
+  currentRelatedIndex.value = Math.round(container.scrollLeft / (cardWidth + 12)); // 12 is gap
+  
+  // Check if scrolled near the end (within 100px)
+  const isNearEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 100;
+  
+  if (isNearEnd && hasMoreRelatedGigs.value && !isLoadingMoreRelated.value && gig.value) {
+    relatedGigsPage.value++;
+    fetchRelatedGigs(gig.value.category, gig.value.id, true);
   }
 };
 
@@ -946,5 +1120,14 @@ watch(() => route.query.id, () => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>

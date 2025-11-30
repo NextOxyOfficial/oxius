@@ -3,12 +3,17 @@ from .views import (
     GigListView, GigDetailView, GigCreateView, GigUpdateView, GigDeleteView,
     MyGigsView, toggle_favorite, MyFavoritesView,
     GigReviewListView, create_review,
-    MyOrdersView, MySellerOrdersView, create_order,
+    MyOrdersView, MySellerOrdersView, create_order, update_order_status,
     gig_categories,
-    OrderMessageListView, create_order_message
+    OrderMessageListView, create_order_message, get_unread_message_counts,
+    get_gig_options, get_skills_by_category
 )
 
 urlpatterns = [
+    # Gig options endpoints (for Post a Gig form)
+    path('gig-options/', get_gig_options, name='gig-options'),
+    path('gig-options/skills/<uuid:category_id>/', get_skills_by_category, name='skills-by-category'),
+    
     # Gig endpoints
     path('gigs/', GigListView.as_view(), name='gig-list'),
     path('gigs/create/', GigCreateView.as_view(), name='gig-create'),
@@ -30,8 +35,10 @@ urlpatterns = [
     path('gigs/<uuid:gig_id>/order/', create_order, name='create-order'),
     path('orders/', MyOrdersView.as_view(), name='my-orders'),
     path('orders/seller/', MySellerOrdersView.as_view(), name='seller-orders'),
+    path('orders/<uuid:order_id>/<str:action>/', update_order_status, name='update-order-status'),
     
     # Order message endpoints
     path('orders/<uuid:order_id>/messages/', OrderMessageListView.as_view(), name='order-messages'),
     path('orders/<uuid:order_id>/messages/create/', create_order_message, name='create-order-message'),
+    path('orders/unread-counts/', get_unread_message_counts, name='unread-message-counts'),
 ]

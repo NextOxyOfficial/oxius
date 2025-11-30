@@ -1,7 +1,7 @@
 <template>
   <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-4xl">
     <!-- Header Section -->
-    <div class="mb-6">
+    <div class="px-2 mb-6">
       <h1 class="text-2xl font-bold text-gray-900 flex items-center mb-2">
         <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center mr-3">
           <Plus class="h-5 w-5 text-white" />
@@ -13,33 +13,49 @@
 
     <!-- Main Content -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div class="sm:p-8 p-4">
+      <div class="sm:p-8 p-2">
         <form @submit.prevent="submitGig" class="space-y-8">
           <!-- Gig Image Upload Section -->
           <div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Gig Gallery</h3>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Gig Image</h3>
             <div class="space-y-4">
               <!-- Main Image Upload -->
-              <div class="aspect-video rounded-lg border-2 border-dashed border-gray-300 hover:border-purple-400 transition-colors bg-gray-50 flex items-center justify-center cursor-pointer">
-                <div class="text-center">
+              <div 
+                @click="triggerImageUpload"
+                class="aspect-video rounded-lg border-2 border-dashed border-gray-300 hover:border-purple-400 transition-colors bg-gray-50 flex items-center justify-center cursor-pointer overflow-hidden relative"
+              >
+                <!-- Image Preview -->
+                <img 
+                  v-if="imagePreview" 
+                  :src="imagePreview" 
+                  alt="Gig preview" 
+                  class="w-full h-full object-cover"
+                />
+                <!-- Upload Placeholder -->
+                <div v-else class="text-center">
                   <div class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <Plus class="h-6 w-6 text-gray-400" />
                   </div>
                   <p class="text-sm text-gray-600 mb-1">Upload main gig image</p>
                   <p class="text-xs text-gray-500">Recommended: 1280x720px</p>
                 </div>
-              </div>
-              
-              <!-- Additional Images -->
-              <div class="flex space-x-2">
-                <div
-                  v-for="i in 4"
-                  :key="i"
-                  class="w-16 h-16 rounded-md border-2 border-dashed border-gray-300 hover:border-purple-400 transition-colors bg-gray-50 flex items-center justify-center cursor-pointer"
+                <!-- Remove Button -->
+                <button 
+                  v-if="imagePreview"
+                  @click.stop="removeImage"
+                  type="button"
+                  class="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                 >
-                  <Plus class="h-4 w-4 text-gray-400" />
-                </div>
+                  <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+                </button>
               </div>
+              <input 
+                ref="imageInput"
+                type="file" 
+                accept="image/*" 
+                class="hidden" 
+                @change="handleImageUpload"
+              />
             </div>
           </div>
 
@@ -74,13 +90,16 @@
                     v-model="newGig.category"
                     class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                     required
+                    :disabled="isLoadingOptions"
                   >
-                    <option value="">Select a category</option>
-                    <option value="design">Design & Creative</option>
-                    <option value="development">Programming & Tech</option>
-                    <option value="writing">Writing & Translation</option>
-                    <option value="marketing">Digital Marketing</option>
-                    <option value="business">Business & Consulting</option>
+                    <option value="">{{ isLoadingOptions ? 'Loading...' : 'Select a category' }}</option>
+                    <option 
+                      v-for="category in gigOptions.categories" 
+                      :key="category.id" 
+                      :value="category.id"
+                    >
+                      {{ category.name }}
+                    </option>
                   </select>
                 </div>
 
@@ -207,12 +226,16 @@
                     id="delivery-time"
                     v-model="newGig.deliveryTime"
                     class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                    :disabled="isLoadingOptions"
                   >
-                    <option value="1">1 Day</option>
-                    <option value="3">3 Days</option>
-                    <option value="7">1 Week</option>
-                    <option value="14">2 Weeks</option>
-                    <option value="30">1 Month</option>
+                    <option value="" disabled>{{ isLoadingOptions ? 'Loading...' : 'Select delivery time' }}</option>
+                    <option 
+                      v-for="time in gigOptions.delivery_times" 
+                      :key="time.id" 
+                      :value="String(time.days)"
+                    >
+                      {{ time.label }}
+                    </option>
                   </select>
                 </div>
 
@@ -224,11 +247,16 @@
                     id="revisions"
                     v-model="newGig.revisions"
                     class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                    :disabled="isLoadingOptions"
                   >
-                    <option value="1">1 Revision</option>
-                    <option value="2">2 Revisions</option>
-                    <option value="3">3 Revisions</option>
-                    <option value="unlimited">Unlimited</option>
+                    <option value="" disabled>{{ isLoadingOptions ? 'Loading...' : 'Select revisions' }}</option>
+                    <option 
+                      v-for="revision in gigOptions.revision_options" 
+                      :key="revision.id" 
+                      :value="String(revision.count)"
+                    >
+                      {{ revision.label }}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -317,18 +345,32 @@
 </template>
 <script setup>
 import { Plus } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 
 // Props and emits
 const emit = defineEmits(['gigCreated', 'switchTab']);
 
 // Composables
 const { user } = useAuth();
-const { post } = useApi();
+const { get, post } = useApi();
 const toast = useToast();
 
 // Loading state
 const isSubmitting = ref(false);
+const isLoadingOptions = ref(true);
+
+// Dynamic options from API
+const gigOptions = ref({
+  categories: [],
+  skills: [],
+  delivery_times: [],
+  revision_options: []
+});
+
+// Image handling
+const imageInput = ref(null);
+const selectedImage = ref(null);
+const imagePreview = ref(null);
 
 // Form state
 const newGig = ref({
@@ -336,8 +378,8 @@ const newGig = ref({
   category: '',
   price: '',
   description: '',
-  deliveryTime: '7',
-  revisions: '2',
+  deliveryTime: '',
+  revisions: '',
   skills: [],
   features: [
     { text: '' },
@@ -349,19 +391,90 @@ const newGig = ref({
 // Skills input
 const skillInput = ref('');
 
-// Suggested skills based on category
-const skillSuggestions = {
-  design: ['Logo Design', 'Photoshop', 'Illustrator', 'Figma', 'UI/UX Design', 'Branding', 'Typography', 'Canva'],
-  development: ['JavaScript', 'Python', 'React', 'Vue.js', 'Node.js', 'PHP', 'Laravel', 'WordPress', 'API Development'],
-  writing: ['Content Writing', 'Copywriting', 'SEO Writing', 'Blog Writing', 'Proofreading', 'Translation', 'Technical Writing'],
-  marketing: ['SEO', 'Social Media Marketing', 'Google Ads', 'Facebook Ads', 'Email Marketing', 'Content Strategy', 'Analytics'],
-  business: ['Business Plan', 'Financial Analysis', 'Market Research', 'Consulting', 'Project Management', 'Data Analysis']
+// Image methods
+const triggerImageUpload = () => {
+  imageInput.value?.click();
+};
+
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.add({
+        title: 'Invalid File',
+        description: 'Please upload an image file',
+        color: 'red'
+      });
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.add({
+        title: 'File Too Large',
+        description: 'Image must be less than 5MB',
+        color: 'red'
+      });
+      return;
+    }
+    
+    selectedImage.value = file;
+    imagePreview.value = URL.createObjectURL(file);
+  }
+};
+
+const removeImage = () => {
+  selectedImage.value = null;
+  imagePreview.value = null;
+  if (imageInput.value) {
+    imageInput.value.value = '';
+  }
+};
+
+// Fetch gig options from API
+const fetchGigOptions = async () => {
+  isLoadingOptions.value = true;
+  try {
+    const { data, error } = await get('/workspace/gig-options/');
+    if (data && !error) {
+      gigOptions.value = data;
+      // Set default values if available
+      if (data.delivery_times?.length > 0) {
+        newGig.value.deliveryTime = String(data.delivery_times[0].days);
+      }
+      if (data.revision_options?.length > 0) {
+        newGig.value.revisions = String(data.revision_options[0].count);
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching gig options:', err);
+  } finally {
+    isLoadingOptions.value = false;
+  }
 };
 
 // Computed suggested skills based on selected category
 const suggestedSkills = computed(() => {
-  if (!newGig.value.category) return [];
-  return skillSuggestions[newGig.value.category] || [];
+  if (!newGig.value.category) {
+    // Show all skills if no category selected
+    return gigOptions.value.skills.slice(0, 8).map(skill => skill.name);
+  }
+  // Filter skills by selected category
+  const categorySkills = gigOptions.value.skills
+    .filter(skill => skill.category === newGig.value.category)
+    .map(skill => skill.name);
+  
+  // If no skills for this category, show some general skills
+  if (categorySkills.length === 0) {
+    return gigOptions.value.skills.slice(0, 8).map(skill => skill.name);
+  }
+  return categorySkills;
+});
+
+// Fetch options on mount
+onMounted(() => {
+  fetchGigOptions();
 });
 
 // Computed
@@ -429,29 +542,42 @@ const submitGig = async () => {
   isSubmitting.value = true;
 
   try {
-    // Create gig data for API
-    const gigPayload = {
-      title: newGig.value.title,
-      category: newGig.value.category,
-      price: parseFloat(newGig.value.price),
-      description: newGig.value.description,
-      delivery_time: parseInt(newGig.value.deliveryTime),
-      revisions: parseInt(newGig.value.revisions),
-      skills: newGig.value.skills,
-    };
+    // Create FormData for multipart upload
+    const formData = new FormData();
+    formData.append('title', newGig.value.title);
+    formData.append('category', newGig.value.category);
+    formData.append('price', parseFloat(newGig.value.price));
+    formData.append('description', newGig.value.description);
+    formData.append('delivery_time', parseInt(newGig.value.deliveryTime));
+    formData.append('revisions', parseInt(newGig.value.revisions));
+    formData.append('skills', JSON.stringify(newGig.value.skills));
+    
+    // Add features (filter out empty ones)
+    const features = newGig.value.features
+      .map(f => f.text.trim())
+      .filter(f => f);
+    formData.append('features', JSON.stringify(features));
+    
+    // Add image if selected
+    if (selectedImage.value) {
+      formData.append('image', selectedImage.value);
+    }
 
-    const { data, error } = await post('/workspace/gigs/create/', gigPayload);
+    const { data, error } = await post('/workspace/gigs/create/', formData);
 
     if (error) {
       console.error('Error creating gig:', error);
       toast.add({
         title: "Error",
-        description: "Failed to create gig. Please try again.",
+        description: error.message || "Failed to create gig. Please try again.",
         color: "red",
       });
       return;
     }
 
+    // Store title before reset
+    const gigTitle = newGig.value.title;
+    
     // Emit the gig creation event to parent
     emit('gigCreated', data);
     
@@ -459,10 +585,13 @@ const submitGig = async () => {
     resetForm();
 
     toast.add({
-      title: "Gig Created!",
-      description: `"${newGig.value.title}" has been created successfully`,
+      title: "Gig Created! 🎉",
+      description: `"${gigTitle}" has been created successfully`,
       color: "green",
     });
+    
+    // Switch to My Gigs tab
+    emit('switchTab', 'my-gigs');
   } catch (err) {
     console.error('Error creating gig:', err);
     toast.add({
@@ -481,8 +610,8 @@ const resetForm = () => {
     category: '',
     price: '',
     description: '',
-    deliveryTime: '7',
-    revisions: '2',
+    deliveryTime: gigOptions.value.delivery_times?.[0]?.days?.toString() || '7',
+    revisions: gigOptions.value.revision_options?.[0]?.count?.toString() || '2',
     skills: [],
     features: [
       { text: '' },
@@ -491,5 +620,12 @@ const resetForm = () => {
     ]
   };
   skillInput.value = '';
+  
+  // Clear image
+  selectedImage.value = null;
+  imagePreview.value = null;
+  if (imageInput.value) {
+    imageInput.value.value = '';
+  }
 };
 </script>

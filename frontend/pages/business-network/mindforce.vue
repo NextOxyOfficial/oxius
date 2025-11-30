@@ -1,4 +1,4 @@
-<template>  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
+<template>  <div class="mx-auto sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
     <!-- Header Component -->
     <MindForceHeader :is-creating="isCreating" @create="openCreateModal" />
 

@@ -103,9 +103,13 @@
                 
                 <!-- Order Info -->
                 <div class="flex-1 min-w-0">
-                  <h3 class="text-sm sm:text-base font-semibold text-gray-900 mb-1 sm:mb-2 line-clamp-2">
+                  <NuxtLink 
+                    :to="`/business-network/workspace-details?id=${order.gig.id}`"
+                    class="text-sm sm:text-base font-semibold text-gray-900 mb-1 sm:mb-2 line-clamp-2 hover:text-purple-600 transition-colors block"
+                    @click.stop
+                  >
                     {{ order.gig.title }}
-                  </h3>
+                  </NuxtLink>
                   
                   <div class="flex items-center space-x-2 mb-1 sm:mb-2">
                     <img
@@ -113,7 +117,13 @@
                       :alt="order.seller.name"
                       class="h-5 w-5 sm:h-6 sm:w-6 rounded-full object-cover"
                     />
-                    <span class="text-xs sm:text-sm text-gray-600 truncate">by {{ order.seller.name }}</span>
+                    <NuxtLink 
+                      :to="`/business-network/profile/${order.seller.id}`"
+                      class="text-xs sm:text-sm text-gray-600 truncate hover:text-purple-600 transition-colors"
+                      @click.stop
+                    >
+                      by <span class="font-medium hover:underline">{{ order.seller.name }}</span>
+                    </NuxtLink>
                   </div>
                   
                   <div class="flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-500">
@@ -256,7 +266,7 @@
     :orderId="selectedOrder?.id"
     :orderNumber="selectedOrder?.orderNumber"
     :otherUser="selectedOrder?.seller"
-    :currentUserId="user?.id"
+    :currentUserId="user?.user?.id || user?.id"
     @close="selectedOrder = null"
   />
 </template>
@@ -334,17 +344,36 @@ async function fetchOrders() {
         image: order.gig?.image_url || order.gig?.image || '/images/placeholder-gig.png'
       },
       seller: {
+        id: order.seller?.id,
         name: order.seller?.name || 'Unknown Seller',
         avatar: order.seller?.avatar || '/images/default-avatar.png'
       }
     }));
     
     updateStatusCounts();
+    
+    // Fetch unread message counts
+    await fetchUnreadCounts();
   } catch (err) {
     console.error('Error fetching orders:', err);
     orders.value = [];
   } finally {
     isLoading.value = false;
+  }
+}
+
+// Fetch unread message counts
+async function fetchUnreadCounts() {
+  try {
+    const { data, error } = await get('/workspace/orders/unread-counts/');
+    if (data && !error && data.counts) {
+      // Update unread counts for each order
+      orders.value.forEach(order => {
+        order.unreadMessages = data.counts[order.id] || 0;
+      });
+    }
+  } catch (err) {
+    console.error('Error fetching unread counts:', err);
   }
 }
 

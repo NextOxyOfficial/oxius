@@ -111,18 +111,26 @@
               
               <!-- Order Info -->
               <div class="flex-1 min-w-0">
-                <div class="flex items-start justify-between gap-2">
-                  <h3 class="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2">
-                    {{ order.gig.title }}
-                  </h3>
-                  <!-- Status Badge - Mobile inline -->
+                <NuxtLink 
+                  :to="`/business-network/workspace-details?id=${order.gig.id}`"
+                  class="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2 hover:text-purple-600 transition-colors block"
+                  @click.stop
+                >
+                  {{ order.gig.title }}
+                </NuxtLink>
+                <div class="flex items-center justify-between gap-2 mt-1">
+                  <NuxtLink 
+                    :to="`/business-network/profile/${order.buyer.id}`"
+                    class="text-xs sm:text-sm text-gray-600 hover:text-purple-600 transition-colors"
+                    @click.stop
+                  >
+                    from <span class="font-medium hover:underline">{{ order.buyer.name }}</span>
+                  </NuxtLink>
+                  <!-- Status Badge -->
                   <div :class="getStatusClass(order.status)" class="flex-shrink-0 px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium whitespace-nowrap">
                     {{ getStatusLabel(order.status) }}
                   </div>
                 </div>
-                <p class="text-xs sm:text-sm text-gray-600 mt-1">
-                  from {{ order.buyer.name }}
-                </p>
                 <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-500 mt-1">
                   <span>Order #{{ String(order.id).slice(0, 8) }}</span>
                   <span class="hidden sm:inline">•</span>
@@ -153,15 +161,15 @@
             <button
               @click="openChat(order)"
               :class="[
-                'relative px-3 sm:px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs font-medium flex items-center justify-center gap-1',
-                order.status === 'pending' || order.status === 'in_progress' ? 'flex-1' : 'flex-none'
+                'relative px-3 sm:px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2',
+                order.status === 'pending' || order.status === 'in_progress' ? 'flex-1 sm:flex-none' : 'flex-none'
               ]"
             >
-              <img src="/images/chat_icon.png" alt="Chat" class="h-4 w-4" />
-              <span class="hidden xs:inline">Chat</span>
+              <img src="/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Chat</span>
               <span
                 v-if="order.unreadMessages && order.unreadMessages > 0"
-                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center"
+                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center"
               >
                 {{ order.unreadMessages > 9 ? '9+' : order.unreadMessages }}
               </span>
@@ -170,25 +178,28 @@
             <button
               v-if="order.status === 'pending'"
               @click="acceptOrder(order)"
-              class="flex-1 px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs font-medium"
+              class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
             >
-              Accept Order
+              <UIcon name="i-heroicons-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Accept</span>
             </button>
             
             <button
               v-if="order.status === 'pending'"
               @click="declineOrder(order)"
-              class="flex-1 px-2 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-xs font-medium"
+              class="flex-1 sm:flex-none px-3 sm:px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
             >
-              Decline
+              <UIcon name="i-heroicons-x-mark" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Decline</span>
             </button>
             
             <button
               v-if="order.status === 'in_progress'"
               @click="deliverOrder(order)"
-              class="flex-1 px-2 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium"
+              class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
             >
-              Deliver Order
+              <UIcon name="i-heroicons-truck" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Deliver</span>
             </button>
           </div>
         </div>
@@ -225,7 +236,7 @@
     :orderId="selectedOrder?.id"
     :orderNumber="'ORD-' + String(selectedOrder?.id || '').slice(0, 8).toUpperCase()"
     :otherUser="selectedOrder?.buyer"
-    :currentUserId="currentUser?.id"
+    :currentUserId="currentUser?.user?.id || currentUser?.id"
     @close="selectedOrder = null"
   />
 
@@ -378,6 +389,108 @@
       </div>
     </Transition>
   </Teleport>
+
+  <!-- Accept Order Confirmation Modal -->
+  <Teleport to="body">
+    <Transition name="fade">
+      <div v-if="showAcceptModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" @click="showAcceptModal = false">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden" @click.stop>
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <UIcon name="i-heroicons-check-circle" class="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-white">Accept Order</h3>
+                <p class="text-green-100 text-sm">Order #{{ orderToAction?.id?.slice(0, 8).toUpperCase() }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Order Summary -->
+          <div class="p-6">
+            <!-- Order Details Card -->
+            <div class="bg-gray-50 rounded-xl p-4 mb-4">
+              <div class="flex items-start gap-3">
+                <img 
+                  :src="orderToAction?.gig?.image || '/images/placeholder-gig.png'" 
+                  :alt="orderToAction?.gig?.title"
+                  class="w-16 h-16 rounded-lg object-cover"
+                />
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-medium text-gray-900 text-sm line-clamp-2">{{ orderToAction?.gig?.title }}</h4>
+                  <p class="text-xs text-gray-500 mt-1">Buyer: {{ orderToAction?.buyer?.name }}</p>
+                  <p class="text-sm font-semibold text-green-600 mt-1 flex items-center">
+                    <UIcon name="i-mdi:currency-bdt" class="w-4 h-4" />
+                    {{ orderToAction?.amount }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Commitment Checklist -->
+            <p class="text-sm font-medium text-gray-700 mb-3">By accepting this order, you commit to:</p>
+            <ul class="space-y-2 mb-4">
+              <li class="flex items-start gap-2">
+                <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <UIcon name="i-heroicons-clock" class="w-3 h-3 text-green-600" />
+                </div>
+                <span class="text-sm text-gray-600">Deliver within <strong>{{ formatDeliveryDays(orderToAction?.deliveryDate) }}</strong></span>
+              </li>
+              <li class="flex items-start gap-2">
+                <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <UIcon name="i-heroicons-chat-bubble-left-right" class="w-3 h-3 text-green-600" />
+                </div>
+                <span class="text-sm text-gray-600">Respond to buyer messages promptly</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <UIcon name="i-heroicons-arrow-path" class="w-3 h-3 text-green-600" />
+                </div>
+                <span class="text-sm text-gray-600">Provide <strong>{{ orderToAction?.revisions || 'agreed' }}</strong> revision(s) if needed</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mt-0.5 flex-shrink-0">
+                  <UIcon name="i-heroicons-star" class="w-3 h-3 text-green-600" />
+                </div>
+                <span class="text-sm text-gray-600">Deliver high-quality work as described</span>
+              </li>
+            </ul>
+            
+            <!-- Welcome Message -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Welcome Message (Optional)</label>
+              <textarea
+                v-model="acceptNote"
+                placeholder="Send a welcome message to the buyer..."
+                rows="2"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm resize-none"
+              ></textarea>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="px-6 py-4 bg-gray-50 flex gap-3">
+            <button
+              @click="showAcceptModal = false"
+              class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmAcceptOrder"
+              :disabled="isProcessing"
+              class="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <UIcon v-if="isProcessing" name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
+              <span>{{ isProcessing ? 'Accepting...' : 'Accept Order' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
@@ -389,7 +502,7 @@ const emit = defineEmits(['switchTab']);
 
 // Composables
 const toast = useToast();
-const { get } = useApi();
+const { get, post } = useApi();
 const { user: currentUser } = useAuth();
 
 // Reactive data
@@ -403,11 +516,13 @@ const showFilterDropdown = ref(false);
 // Modal states
 const showDeliverModal = ref(false);
 const showDeclineModal = ref(false);
+const showAcceptModal = ref(false);
 const orderToAction = ref(null);
 const isProcessing = ref(false);
 const deliveryNote = ref('');
 const declineReason = ref('');
 const declineNote = ref('');
+const acceptNote = ref('');
 
 // Select filter and close dropdown
 const selectFilter = (value) => {
@@ -460,11 +575,29 @@ async function fetchOrders() {
         avatar: order.buyer?.avatar || '/images/default-avatar.png'
       }
     }));
+    
+    // Fetch unread message counts
+    await fetchUnreadCounts();
   } catch (err) {
     console.error('Error fetching orders:', err);
     orders.value = [];
   } finally {
     isLoading.value = false;
+  }
+}
+
+// Fetch unread message counts
+async function fetchUnreadCounts() {
+  try {
+    const { data, error } = await get('/workspace/orders/unread-counts/');
+    if (data && !error && data.counts) {
+      // Update unread counts for each order
+      orders.value.forEach(order => {
+        order.unreadMessages = data.counts[order.id] || 0;
+      });
+    }
+  } catch (err) {
+    console.error('Error fetching unread counts:', err);
   }
 }
 
@@ -551,6 +684,23 @@ const formatDeliveryDate = (date) => {
   }
 };
 
+const formatDeliveryDays = (date) => {
+  if (!date) return 'the agreed timeframe';
+  const now = new Date();
+  const diffTime = date.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays <= 1) {
+    return '1 day';
+  } else if (diffDays <= 7) {
+    return `${diffDays} days`;
+  } else if (diffDays <= 14) {
+    return '2 weeks';
+  } else {
+    return `${diffDays} days`;
+  }
+};
+
 // Action methods
 const openChat = (order) => {
   selectedOrder.value = order;
@@ -558,12 +708,52 @@ const openChat = (order) => {
 };
 
 const acceptOrder = (order) => {
-  order.status = 'in_progress';
-  toast.add({
-    title: 'Order Accepted',
-    description: `Order #${order.id} has been accepted and is now in progress`,
-    color: 'green'
-  });
+  orderToAction.value = order;
+  acceptNote.value = '';
+  showAcceptModal.value = true;
+};
+
+const confirmAcceptOrder = async () => {
+  if (!orderToAction.value) return;
+  
+  isProcessing.value = true;
+  try {
+    const { data, error } = await post(`/workspace/orders/${orderToAction.value.id}/accept/`, { 
+      note: acceptNote.value 
+    });
+    
+    if (error) {
+      throw new Error(error.message || 'Failed to accept order');
+    }
+    
+    // Update local state with response data
+    if (data?.order) {
+      const orderIndex = orders.value.findIndex(o => o.id === orderToAction.value.id);
+      if (orderIndex !== -1) {
+        orders.value[orderIndex].status = data.order.status;
+      }
+    } else {
+      orderToAction.value.status = 'in_progress';
+    }
+    
+    toast.add({
+      title: 'Order Accepted! 🎉',
+      description: `Order #${orderToAction.value.id.slice(0, 8).toUpperCase()} is now in progress. Good luck!`,
+      color: 'green'
+    });
+    
+    showAcceptModal.value = false;
+    orderToAction.value = null;
+    acceptNote.value = '';
+  } catch (error) {
+    toast.add({
+      title: 'Error',
+      description: error.message || 'Failed to accept order. Please try again.',
+      color: 'red'
+    });
+  } finally {
+    isProcessing.value = false;
+  }
 };
 
 const declineOrder = (order) => {
@@ -584,11 +774,23 @@ const confirmDeliverOrder = async () => {
   
   isProcessing.value = true;
   try {
-    // TODO: API call to deliver order
-    // await post(`/workspace/orders/${orderToAction.value.id}/deliver/`, { note: deliveryNote.value });
+    const { data, error } = await post(`/workspace/orders/${orderToAction.value.id}/deliver/`, { 
+      note: deliveryNote.value 
+    });
     
-    // Update local state
-    orderToAction.value.status = 'delivered';
+    if (error) {
+      throw new Error(error.message || 'Failed to deliver order');
+    }
+    
+    // Update local state with response data
+    if (data?.order) {
+      const orderIndex = orders.value.findIndex(o => o.id === orderToAction.value.id);
+      if (orderIndex !== -1) {
+        orders.value[orderIndex].status = data.order.status;
+      }
+    } else {
+      orderToAction.value.status = 'delivered';
+    }
     
     toast.add({
       title: 'Order Delivered! 🎉',
@@ -602,7 +804,7 @@ const confirmDeliverOrder = async () => {
   } catch (error) {
     toast.add({
       title: 'Error',
-      description: 'Failed to deliver order. Please try again.',
+      description: error.message || 'Failed to deliver order. Please try again.',
       color: 'red'
     });
   } finally {
@@ -615,14 +817,24 @@ const confirmDeclineOrder = async () => {
   
   isProcessing.value = true;
   try {
-    // TODO: API call to decline order
-    // await post(`/workspace/orders/${orderToAction.value.id}/decline/`, { 
-    //   reason: declineReason.value, 
-    //   note: declineNote.value 
-    // });
+    const { data, error } = await post(`/workspace/orders/${orderToAction.value.id}/decline/`, { 
+      reason: declineReason.value, 
+      note: declineNote.value 
+    });
     
-    // Update local state
-    orderToAction.value.status = 'cancelled';
+    if (error) {
+      throw new Error(error.message || 'Failed to decline order');
+    }
+    
+    // Update local state with response data
+    if (data?.order) {
+      const orderIndex = orders.value.findIndex(o => o.id === orderToAction.value.id);
+      if (orderIndex !== -1) {
+        orders.value[orderIndex].status = data.order.status;
+      }
+    } else {
+      orderToAction.value.status = 'cancelled';
+    }
     
     toast.add({
       title: 'Order Declined',
@@ -637,7 +849,7 @@ const confirmDeclineOrder = async () => {
   } catch (error) {
     toast.add({
       title: 'Error',
-      description: 'Failed to decline order. Please try again.',
+      description: error.message || 'Failed to decline order. Please try again.',
       color: 'red'
     });
   } finally {
