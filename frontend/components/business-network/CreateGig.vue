@@ -122,6 +122,81 @@
                 <p class="text-xs text-gray-500 mt-1">Be specific about what you'll deliver</p>
               </div>
 
+              <!-- Skills & Expertise Section -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Skills & Expertise
+                </label>
+                <div class="space-y-3">
+                  <!-- Skill Input -->
+                  <div class="flex items-center space-x-2">
+                    <input
+                      v-model="skillInput"
+                      type="text"
+                      placeholder="e.g., Logo Design, Photoshop, Illustrator"
+                      class="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                      @keydown.enter.prevent="addSkill"
+                    />
+                    <button
+                      type="button"
+                      @click="addSkill"
+                      :disabled="!skillInput.trim() || newGig.skills.length >= 10"
+                      :class="[
+                        'px-4 py-3 rounded-lg font-medium transition-colors',
+                        skillInput.trim() && newGig.skills.length < 10
+                          ? 'bg-purple-600 text-white hover:bg-purple-700'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      ]"
+                    >
+                      <Plus class="w-5 h-5" />
+                    </button>
+                  </div>
+                  
+                  <!-- Skills Tags -->
+                  <div v-if="newGig.skills.length > 0" class="flex flex-wrap gap-2">
+                    <span
+                      v-for="(skill, index) in newGig.skills"
+                      :key="index"
+                      class="inline-flex items-center px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium"
+                    >
+                      {{ skill }}
+                      <button
+                        type="button"
+                        @click="removeSkill(index)"
+                        class="ml-2 text-purple-500 hover:text-purple-700 transition-colors"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                      </button>
+                    </span>
+                  </div>
+                  
+                  <!-- Suggested Skills -->
+                  <div v-if="suggestedSkills.length > 0" class="pt-2">
+                    <p class="text-xs text-gray-500 mb-2">Suggested skills:</p>
+                    <div class="flex flex-wrap gap-2">
+                      <button
+                        v-for="skill in suggestedSkills"
+                        :key="skill"
+                        type="button"
+                        @click="addSuggestedSkill(skill)"
+                        :disabled="newGig.skills.includes(skill) || newGig.skills.length >= 10"
+                        :class="[
+                          'px-3 py-1 rounded-full text-xs font-medium transition-colors',
+                          newGig.skills.includes(skill)
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-700'
+                        ]"
+                      >
+                        + {{ skill }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Add up to 10 skills that describe your expertise (press Enter to add)</p>
+              </div>
+
               <!-- Delivery Time and Revisions Row -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -263,11 +338,30 @@ const newGig = ref({
   description: '',
   deliveryTime: '7',
   revisions: '2',
+  skills: [],
   features: [
     { text: '' },
     { text: '' },
     { text: '' }
   ]
+});
+
+// Skills input
+const skillInput = ref('');
+
+// Suggested skills based on category
+const skillSuggestions = {
+  design: ['Logo Design', 'Photoshop', 'Illustrator', 'Figma', 'UI/UX Design', 'Branding', 'Typography', 'Canva'],
+  development: ['JavaScript', 'Python', 'React', 'Vue.js', 'Node.js', 'PHP', 'Laravel', 'WordPress', 'API Development'],
+  writing: ['Content Writing', 'Copywriting', 'SEO Writing', 'Blog Writing', 'Proofreading', 'Translation', 'Technical Writing'],
+  marketing: ['SEO', 'Social Media Marketing', 'Google Ads', 'Facebook Ads', 'Email Marketing', 'Content Strategy', 'Analytics'],
+  business: ['Business Plan', 'Financial Analysis', 'Market Research', 'Consulting', 'Project Management', 'Data Analysis']
+};
+
+// Computed suggested skills based on selected category
+const suggestedSkills = computed(() => {
+  if (!newGig.value.category) return [];
+  return skillSuggestions[newGig.value.category] || [];
 });
 
 // Computed
@@ -302,6 +396,25 @@ const updateFeature = (index) => {
   }
 };
 
+// Skills methods
+const addSkill = () => {
+  const skill = skillInput.value.trim();
+  if (skill && !newGig.value.skills.includes(skill) && newGig.value.skills.length < 10) {
+    newGig.value.skills.push(skill);
+    skillInput.value = '';
+  }
+};
+
+const removeSkill = (index) => {
+  newGig.value.skills.splice(index, 1);
+};
+
+const addSuggestedSkill = (skill) => {
+  if (!newGig.value.skills.includes(skill) && newGig.value.skills.length < 10) {
+    newGig.value.skills.push(skill);
+  }
+};
+
 // Methods
 const submitGig = async () => {
   if (!isFormValid.value) {
@@ -324,6 +437,7 @@ const submitGig = async () => {
       description: newGig.value.description,
       delivery_time: parseInt(newGig.value.deliveryTime),
       revisions: parseInt(newGig.value.revisions),
+      skills: newGig.value.skills,
     };
 
     const { data, error } = await post('/workspace/gigs/create/', gigPayload);
@@ -369,11 +483,13 @@ const resetForm = () => {
     description: '',
     deliveryTime: '7',
     revisions: '2',
+    skills: [],
     features: [
       { text: '' },
       { text: '' },
       { text: '' }
     ]
   };
+  skillInput.value = '';
 };
 </script>

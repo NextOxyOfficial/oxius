@@ -50,7 +50,7 @@ class GigSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'title', 'description', 'category', 'category_display',
             'price', 'image', 'image_url', 'delivery_time', 'revisions',
-            'status', 'is_featured', 'views_count', 'orders_count',
+            'skills', 'status', 'is_featured', 'views_count', 'orders_count',
             'user', 'rating', 'reviews', 'is_favorited',
             'created_at', 'updated_at'
         )
@@ -87,7 +87,7 @@ class GigCreateSerializer(serializers.ModelSerializer):
         model = Gig
         fields = (
             'title', 'description', 'category', 'price',
-            'image', 'delivery_time', 'revisions'
+            'image', 'delivery_time', 'revisions', 'skills'
         )
     
     def create(self, validated_data):

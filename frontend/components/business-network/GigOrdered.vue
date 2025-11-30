@@ -252,7 +252,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { Star, MessageCircle, ShoppingCart, ChevronDown } from 'lucide-vue-next';
 
 // Emit events
@@ -278,20 +278,35 @@ const statusTabs = ref([
 // Orders data from API
 const orders = ref([]);
 const { get } = useApi();
+const { user } = useAuth();
 
 // Fetch orders from API
 async function fetchOrders() {
   isLoading.value = true;
+  
+  console.log('GigOrdered: Current user:', user.value?.email);
+  
+  if (!user.value) {
+    console.log('GigOrdered: No user logged in, skipping fetch');
+    isLoading.value = false;
+    return;
+  }
+  
   try {
     const { data, error } = await get('/workspace/orders/');
     
+    console.log('GigOrdered API response:', { data, error });
+    
     if (error) {
       console.error('Error fetching orders:', error);
+      console.error('Error status:', error?.response?.status || error?.status);
+      console.error('Error message:', error?.message || error?.data?.detail);
       orders.value = [];
       return;
     }
     
     const results = data?.results || data || [];
+    console.log('GigOrdered parsed results count:', results.length);
     orders.value = results.map(order => ({
       id: order.id,
       orderNumber: `ORD-${String(order.id).slice(0, 8).toUpperCase()}`,
@@ -459,6 +474,14 @@ const confirmCancelOrder = () => {
 onMounted(() => {
   fetchOrders();
 });
+
+// Watch for user changes
+watch(() => user.value, (newUser) => {
+  if (newUser) {
+    console.log('GigOrdered: User changed, refetching orders');
+    fetchOrders();
+  }
+}, { immediate: false });
 </script>
 
 <style scoped>

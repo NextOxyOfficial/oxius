@@ -38,6 +38,7 @@ class Gig(models.Model):
     image = models.ImageField(upload_to=gig_image_path, blank=True, null=True)
     delivery_time = models.PositiveIntegerField(default=3, help_text="Delivery time in days")
     revisions = models.PositiveIntegerField(default=2, help_text="Number of revisions included")
+    skills = models.JSONField(default=list, blank=True, help_text="List of skills/expertise tags")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     is_featured = models.BooleanField(default=False)
     views_count = models.PositiveIntegerField(default=0)
