@@ -16,7 +16,7 @@ class UserBasicSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'avatar', 
-                  'is_online', 'profession']
+                  'is_online', 'profession', 'is_pro', 'kyc']
     
     def get_avatar(self, obj):
         if hasattr(obj, 'image') and obj.image:

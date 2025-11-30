@@ -2,165 +2,123 @@
   <PublicSection>
     <UContainer class="py-0 sm:py-8">
       
-      <div
-        class="inbox-header relative overflow-hidden rounded-xl mb-3 sm:mb-8"
-      >
-        <!-- Simple gradient background -->
-        <div
-          class="absolute inset-0 bg-gradient-to-br from-gray-50 to-primary-50"
-        ></div>
-
-        <!-- Subtle animated dots pattern -->
-        <div class="absolute inset-0 dot-pattern opacity-10"></div>
-
-        <!-- Minimal glass effect -->
-        <div class="absolute inset-0 backdrop-blur-[1px] opacity-40 bg-green-300"></div>
-
-        <!-- Content -->
-        <div class="relative z-10 p-6 sm:p-8">
-          <div
-            class="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-          >
-            <div class="flex items-center">
-              <!-- Clean icon with subtle animation -->
-              <div class="inbox-icon mr-4">
-                <div
-                  class="flex items-center justify-center h-12 w-12 rounded-xl bg-white bg-opacity-80 shadow-sm"
-                >
-                  <UIcon
-                    name="i-heroicons-inbox"
-                    class="text-primary-600 text-xl inbox-icon-anim"
+      <!-- Compact AdsyConnect Header -->
+      <div class="relative overflow-hidden rounded-lg mb-4 bg-white shadow-sm">
+        <div class="px-4 py-3 sm:px-6 sm:py-4">
+          <div class="flex items-center justify-between">
+            <!-- Left: Icon and Title -->
+            <div class="flex items-center space-x-3">
+              <!-- Chat Icon -->
+              <div class="flex-shrink-0">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-green-50 flex items-center justify-center">
+                  <img 
+                    src="/images/chat_icon.png" 
+                    alt="AdsyConnect"
+                    class="w-5 h-5 sm:w-6 sm:h-6"
+                    @error="handleImageError"
                   />
                 </div>
               </div>
-
-              <!-- Clean typography -->
-              <div>
-                <h1 class="text-xl sm:text-2xl font-semibold text-gray-800">
-                  {{ $t("message_center") }}
+              
+              <!-- Title and Subtitle -->
+              <div class="flex flex-col">
+                <h1 class="text-gray-900 text-base sm:text-lg font-bold tracking-tight">
+                  AdsyConnect
                 </h1>
-                <p class="text-gray-600 text-sm mt-1">
-                  {{ $t("message_center_text") }}
-                </p>
+                <div class="flex items-center mt-0.5">
+                  <div class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></div>
+                  <p class="text-gray-600 text-xs sm:text-sm font-medium">
+                    Chats, Notifications & Support
+                  </p>
+                </div>
               </div>
             </div>
 
-            <!-- Simple message counter -->
-            <div v-if="messages.length" class="counter-badge">
-              <span>{{ messages.length }}</span>
-              <span class="text-sm ml-1">{{
-                messages.length === 1 ? "message" : "messages"
-              }}</span>
+            <!-- Right: Unread Count Badge -->
+            <div v-if="adsyConnectCount > 0" class="flex-shrink-0">
+              <div class="px-3 py-1.5 bg-green-100 rounded-full">
+                <span class="text-green-700 text-sm font-bold">
+                  {{ adsyConnectCount }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Notification banner for new messages -->
-      <transition name="scale-fade">
-        <div
-          v-if="newMessageCount > 0"
-          class="notification-banner mb-6 p-4 rounded-lg flex items-center justify-between"
-          :class="{ 'bg-primary-50 border border-primary-200': true }"
-        >
-          <div class="flex items-center gap-3">
-            <div
-              class="notification-icon flex items-center justify-center h-10 w-10 rounded-full bg-primary-100"
-            >
-              <UIcon name="i-heroicons-bell" class="text-primary-600" />
-            </div>
-            <div>
-              <h3 class="font-medium text-gray-800">
-                {{ newMessageCount }} New
-                {{ newMessageCount === 1 ? "Message" : "Messages" }}
-              </h3>
-              <p class="text-sm text-gray-600">
-                {{
-                  newTicketCount > 0
-                    ? `Including ${newTicketCount} support ${
-                        newTicketCount === 1 ? "ticket" : "tickets"
-                      }`
-                    : "Check your inbox for details"
-                }}
-              </p>
-            </div>
-          </div>
-          <UButton
-            color="primary"
-            variant="soft"
-            size="sm"
-            label="Dismiss"
-            @click="clearNotifications"
-          />
-        </div>
-      </transition>      
-      <!-- Open Ticket and Mark All Read buttons -->
-      <div class="flex flex-row justify-between items-center gap-3 mb-4 px-4">
-        <UButton
-          color="primary"
-          label="Open Ticket"
-          icon="i-heroicons-plus"
-          @click="openNewTicketModal"
-          class="flex-shrink-0"
-        />
-        <UButton
-          color="gray"
-          variant="soft"
-          icon="i-heroicons-check-circle"
-          :disabled="!hasUnreadMessages"
-          @click="markAllAsRead"
-          :title="`Mark all unread ${activeTab === 'support' ? 'tickets' : 'updates'} in this tab as read`"
-          class="mark-all-read-btn flex-shrink-0"
-          size="sm"
-        >
-          <span class="hidden sm:inline">Mark All Read</span>
-          <span class="sm:hidden">Mark All Read</span>
-        </UButton>
       </div>
 
       <!-- Tabbed Navigation -->
       <div class="mb-2 border-b border-gray-200">
-        <nav class="flex space-x-8 px-4">
-          <button
-            @click="setActiveTab('updates')"
-            :class="[
-              'py-2 px-1 border-b-2 font-medium text-sm transition-colors',
-              activeTab === 'updates'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            ]"
-          >
-            <UIcon name="i-heroicons-bell" class="mr-2" />
-            Updates            <span
-              v-if="updatesCount > 0"
-              class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800"
+        <div class="flex items-center justify-between px-4">
+          <nav class="flex space-x-8 overflow-x-auto">
+            <button
+              @click="setActiveTab('adsyconnect')"
+              :class="[
+                'py-2 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap',
+                activeTab === 'adsyconnect'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ]"
             >
-              {{ updatesCount }}
-            </span>
-          </button>
-          <button
-            @click="setActiveTab('support')"
-            :class="[
-              'py-2 px-1 border-b-2 font-medium text-sm transition-colors',
-              activeTab === 'support'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            ]"
-          >
-            <UIcon name="i-heroicons-chat-bubble-left-right" class="mr-2" />
-            Support Tickets            <span
-              v-if="supportTicketsCount > 0"
-              class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800"
+              <UIcon name="i-heroicons-chat-bubble-left-right" class="mr-2" />
+              AdsyConnect            <span
+                v-if="adsyConnectCount > 0"
+                class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-200 text-green-800"
+              >
+                {{ adsyConnectCount }}
+              </span>
+            </button>
+            <button
+              @click="setActiveTab('updates')"
+              :class="[
+                'py-2 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap',
+                activeTab === 'updates'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ]"
             >
-              {{ supportTicketsCount }}
-            </span>
-          </button>
-        </nav>
+              <UIcon name="i-heroicons-bell" class="mr-2" />
+              Updates            <span
+                v-if="updatesCount > 0"
+                class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800"
+              >
+                {{ updatesCount }}
+              </span>
+            </button>
+            <button
+              @click="setActiveTab('support')"
+              :class="[
+                'py-2 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap',
+                activeTab === 'support'
+                  ? 'border-primary-500 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ]"
+            >
+              <UIcon name="i-heroicons-lifebuoy" class="mr-2" />
+              Support Tickets            <span
+                v-if="supportTicketsCount > 0"
+                class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800"
+              >
+                {{ supportTicketsCount }}
+              </span>
+            </button>
+          </nav>
+          
+          <!-- Refresh button -->
+          <UButton
+            color="gray"
+            variant="ghost"
+            icon="i-heroicons-arrow-path"
+            :loading="isLoading"
+            @click="refreshMessages"
+            size="sm"
+            class="flex-shrink-0"
+          />
+        </div>
       </div>      
       <!-- Unified Content Area with Filtering -->
       <div class="sm:px-4">
         <!-- Unified Filtering Bar -->
-        <div class="flex flex-wrap gap-2 mb-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
+        <div>
           <!-- Tab specific filters -->
           <div v-if="activeTab === 'support'" class="flex flex-wrap gap-2 flex-1">
             <UButton
@@ -267,16 +225,7 @@
               @click="setUpdatesFilter('deposit_successful')"
               label="Deposits"
             />
-          </div>            
-          <!-- Refresh button (always visible) -->
-          <UButton
-            color="gray"
-            variant="soft"
-            icon="i-heroicons-arrow-path"
-            :loading="isLoading"
-            @click="refreshMessages"
-            :title="`Refresh ${activeTab === 'support' ? 'tickets' : 'updates'}`"
-          />
+          </div>
         </div>
 
         <!-- Unified Content List with Stripe Design -->
@@ -407,7 +356,431 @@
                 Open Your First Ticket
               </UButton>
             </div>
-          </div><!-- Updates Content -->
+          </div>
+          
+          <!-- AdsyConnect Content -->
+          <div v-if="activeTab === 'adsyconnect'" class="p-4">
+            <!-- Embedded AdsyConnect Chat Interface -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <!-- Chat List Sidebar -->
+              <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <!-- Search Header -->
+                  <div class="p-3 border-b border-gray-200 bg-green-50">
+                    <div class="relative">
+                      <UIcon name="i-heroicons-magnifying-glass" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        v-model="adsySearchQuery"
+                        type="text"
+                        placeholder="Search conversations..."
+                        class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Chat List -->
+                  <div class="max-h-[500px] overflow-y-auto">
+                    <div v-if="adsyConnectLoading" class="p-4">
+                      <div class="animate-pulse space-y-3">
+                        <div v-for="i in 3" :key="i" class="flex items-center space-x-3">
+                          <div class="w-10 h-10 bg-gray-200 rounded-full"></div>
+                          <div class="flex-1 space-y-2">
+                            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div v-else-if="adsyChatRooms.length === 0" class="p-8 text-center">
+                      <div class="flex flex-col items-center justify-center space-y-4">
+                        <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
+                          <img 
+                            src="/images/chat_icon.png" 
+                            alt="Chat"
+                            class="w-8 h-8"
+                          />
+                        </div>
+                        <div>
+                          <h3 class="text-base font-semibold text-gray-900 mb-2">No conversations yet</h3>
+                          <p class="text-sm text-gray-600 mb-4">Start chatting with other users from their profiles or posts</p>
+                        </div>
+                        <div class="text-xs text-gray-500 bg-gray-50 rounded-lg p-3 max-w-sm">
+                          <p class="font-medium mb-1">💡 How to start a conversation:</p>
+                          <ul class="text-left space-y-1">
+                            <li>• Visit user profiles in Business Network</li>
+                            <li>• Click "Message" on posts or profiles</li>
+                            <li>• Your conversations will appear here</li>
+                          </ul>
+                        </div>
+                        
+                      </div>
+                    </div>
+
+                    <div v-else class="divide-y divide-gray-100">
+                      <div
+                        v-for="chat in filteredAdsyChatRooms"
+                        :key="chat.id"
+                        @click="selectAdsyChat(chat)"
+                        class="p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                        :class="{ 'bg-green-50 border-r-2 border-green-500': activeAdsyChat?.id === chat.id }"
+                      >
+                        <div class="flex items-center space-x-3">
+                          <!-- Avatar -->
+                          <div class="relative">
+                            <img
+                              :src="chat.other_user?.avatar || '/images/placeholder.jpg'"
+                              :alt="chat.other_user?.username"
+                              class="w-10 h-10 rounded-full object-cover bg-gray-200"
+                            />
+                            <div
+                              v-if="chat.other_user?.is_online"
+                              class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"
+                            ></div>
+                          </div>
+
+                          <!-- Chat Info -->
+                          <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                              <div class="flex items-center gap-1.5 min-w-0">
+                                <NuxtLink 
+                                  :to="`/bn/profile/${chat.other_user?.id}`"
+                                  class="text-sm font-medium text-gray-900 hover:text-green-600 transition-colors truncate"
+                                  @click.stop
+                                >
+                                  {{ chat.other_user?.first_name }} {{ chat.other_user?.last_name }}
+                                </NuxtLink>
+                                <!-- Verified Badge (left) -->
+                                <UIcon v-if="chat.other_user?.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                <!-- Pro Badge (right) -->
+                                <span v-if="chat.other_user?.is_pro" class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                                  PRO
+                                </span>
+                              </div>
+                              <span v-if="chat.unread_count > 0" class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-green-600 rounded-full flex-shrink-0">
+                                {{ chat.unread_count }}
+                              </span>
+                            </div>
+                            <p class="text-xs text-gray-500 truncate mt-1">
+                              {{ chat.last_message?.content || 'No messages yet' }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Chat Window -->
+              <div class="lg:col-span-2">
+                <div v-if="!activeAdsyChat" class="bg-white rounded-lg border border-gray-200 h-[500px] flex items-center justify-center">
+                  <div class="text-center">
+                    <UIcon name="i-heroicons-chat-bubble-left-right" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Select a conversation</h3>
+                    <p class="text-sm text-gray-500">Choose a chat from the list to start messaging</p>
+                  </div>
+                </div>
+
+                <div v-else class="bg-white rounded-lg border border-gray-200 h-[500px] flex flex-col">
+                  <!-- Chat Header -->
+                  <div class="p-4 border-b border-gray-200 bg-green-50">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center space-x-3">
+                        <img
+                          :src="activeAdsyChat.other_user?.avatar || '/images/placeholder.jpg'"
+                          :alt="activeAdsyChat.other_user?.username"
+                          class="w-10 h-10 rounded-full object-cover bg-gray-200"
+                        />
+                        <div>
+                          <div class="flex items-center gap-1.5">
+                            <NuxtLink 
+                              :to="`/bn/profile/${activeAdsyChat.other_user?.id}`"
+                              class="text-sm font-semibold text-gray-900 hover:text-green-600 transition-colors cursor-pointer"
+                            >
+                              {{ activeAdsyChat.other_user?.first_name }} {{ activeAdsyChat.other_user?.last_name }}
+                            </NuxtLink>
+                            <!-- Verified Badge (left) -->
+                            <UIcon v-if="activeAdsyChat.other_user?.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500" />
+                            <!-- Pro Badge (right) -->
+                            <span v-if="activeAdsyChat.other_user?.is_pro" class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                              PRO
+                            </span>
+                          </div>
+                          <p class="text-xs text-gray-500">
+                            {{ activeAdsyChat.other_user?.is_online ? 'Online' : 'Offline' }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Messages Area -->
+                  <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+                    <div v-if="adsyMessagesLoading" class="flex justify-center items-center h-full">
+                      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                    </div>
+                    <div v-else-if="adsyMessages.length === 0" class="flex justify-center items-center h-full">
+                      <p class="text-gray-400 text-sm">No messages yet. Start the conversation!</p>
+                    </div>
+                    <div v-else>
+                      <div
+                        v-for="message in adsyMessages"
+                        :key="message.id"
+                        class="flex"
+                        :class="message.sender?.id === currentUserId ? 'justify-end' : 'justify-start'"
+                      >
+                        <div
+                          class="max-w-xs lg:max-w-md rounded-lg overflow-hidden"
+                          :class="message.sender?.id === currentUserId ? 'bg-green-600 text-white' : 'bg-white text-gray-900 border border-gray-200'"
+                        >
+                          <!-- Media Content -->
+                          <div v-if="message.message_type === 'image' && message.media_url" class="relative">
+                            <img
+                              :src="message.media_url"
+                              :alt="message.file_name || 'Image'"
+                              class="w-full h-auto max-h-64 object-cover cursor-pointer"
+                              @click="openImageModal(message.media_url)"
+                            />
+                            <!-- Time and Status for Images -->
+                            <div v-if="message.time_display" class="px-4 py-2">
+                              <div class="flex items-center justify-end space-x-1">
+                                <span class="text-xs opacity-70">{{ message.time_display }}</span>
+                                <!-- Seen/Unseen Status for Sent Messages -->
+                                <div v-if="message.sender?.id === currentUserId" class="flex items-center">
+                                  <UIcon 
+                                    :name="message.is_read ? 'i-heroicons-check-check' : 'i-heroicons-check'"
+                                    class="w-3 h-3 ml-1"
+                                    :class="message.is_read ? 'text-blue-500' : 'text-gray-400'"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div v-else-if="message.message_type === 'video' && message.media_url" class="relative">
+                            <video
+                              :src="message.media_url"
+                              class="w-full h-auto max-h-64 object-cover"
+                              controls
+                              preload="metadata"
+                            >
+                              Your browser does not support the video tag.
+                            </video>
+                            <!-- Time and Status for Videos -->
+                            <div v-if="message.time_display" class="px-4 py-2">
+                              <div class="flex items-center justify-end space-x-1">
+                                <span class="text-xs opacity-70">{{ message.time_display }}</span>
+                                <!-- Seen/Unseen Status for Sent Messages -->
+                                <div v-if="message.sender?.id === currentUserId" class="flex items-center">
+                                  <UIcon 
+                                    :name="message.is_read ? 'i-heroicons-check-check' : 'i-heroicons-check'"
+                                    class="w-3 h-3 ml-1"
+                                    :class="message.is_read ? 'text-blue-500' : 'text-gray-400'"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div v-else-if="message.message_type === 'document' && message.media_url" class="px-4 py-3">
+                            <div class="flex items-center space-x-3">
+                              <div class="flex-shrink-0">
+                                <UIcon name="i-heroicons-document" class="w-8 h-8" :class="message.sender?.id === currentUserId ? 'text-white' : 'text-gray-600'" />
+                              </div>
+                              <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium truncate">{{ message.file_name || 'Document' }}</p>
+                                <p class="text-xs opacity-70">{{ formatFileSize(message.file_size) }}</p>
+                              </div>
+                              <a
+                                :href="message.media_url"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="flex-shrink-0 p-1 rounded hover:bg-black hover:bg-opacity-10"
+                              >
+                                <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5" />
+                              </a>
+                            </div>
+                            <!-- Time and Status for Documents -->
+                            <div v-if="message.time_display" class="mt-2 flex items-center justify-end space-x-1">
+                              <span class="text-xs opacity-70">{{ message.time_display }}</span>
+                              <!-- Seen/Unseen Status for Sent Messages -->
+                              <div v-if="message.sender?.id === currentUserId" class="flex items-center">
+                                <UIcon 
+                                  :name="message.is_read ? 'i-heroicons-check-check' : 'i-heroicons-check'"
+                                  class="w-3 h-3 ml-1"
+                                  :class="message.is_read ? 'text-blue-500' : 'text-gray-400'"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <!-- Text Content -->
+                          <div v-else class="px-4 py-2">
+                            <p class="text-sm">{{ message.content || message.display_content }}</p>
+                            <!-- Time and Status for Text Messages -->
+                            <div v-if="message.time_display" class="mt-1 flex items-center justify-end space-x-1">
+                              <span class="text-xs opacity-70">{{ message.time_display }}</span>
+                              <!-- Seen/Unseen Status for Sent Messages -->
+                              <div v-if="message.sender?.id === currentUserId" class="flex items-center">
+                                <UIcon 
+                                  :name="message.is_read ? 'i-heroicons-check-check' : 'i-heroicons-check'"
+                                  class="w-3 h-3 ml-1"
+                                  :class="message.is_read ? 'text-blue-500' : 'text-gray-400'"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Message Input -->
+                  <div class="p-4 border-t border-gray-200 bg-white">
+                    <!-- Upload Progress Indicator -->
+                    <div v-if="isUploadingAttachment" class="mb-3 px-4 py-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div class="flex items-center space-x-3">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                        <div class="flex-1">
+                          <p class="text-sm font-medium text-blue-900">Uploading attachment...</p>
+                          <p class="text-xs text-blue-600">Please wait while we process your file</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                      <!-- Attachment Button -->
+                      <div class="relative">
+                        <UButton
+                          color="blue"
+                          variant="soft"
+                          icon="i-heroicons-paper-clip"
+                          size="sm"
+                          @click="showAttachmentOptions = !showAttachmentOptions"
+                          :disabled="isUploadingAttachment"
+                        />
+                        
+                        <!-- Attachment Options Dropdown -->
+                        <div
+                          v-if="showAttachmentOptions"
+                          class="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                        >
+                          <div class="p-4">
+                            <div class="flex items-center justify-between mb-3">
+                              <h3 class="text-sm font-semibold text-gray-900">Send Attachment</h3>
+                              <UButton
+                                color="gray"
+                                variant="ghost"
+                                icon="i-heroicons-x-mark"
+                                size="xs"
+                                @click="showAttachmentOptions = false"
+                              />
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3">
+                              <!-- Photos Option -->
+                              <button
+                                @click="pickImageFromGallery"
+                                class="flex flex-col items-center p-3 rounded-lg hover:bg-purple-50 transition-colors group"
+                              >
+                                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-2 group-hover:bg-purple-200">
+                                  <UIcon name="i-heroicons-photo" class="w-6 h-6 text-purple-600" />
+                                </div>
+                                <span class="text-xs font-medium text-gray-700">Photos</span>
+                              </button>
+                              
+                              <!-- Camera Option -->
+                              <button
+                                @click="pickImageFromCamera"
+                                class="flex flex-col items-center p-3 rounded-lg hover:bg-blue-50 transition-colors group"
+                              >
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-2 group-hover:bg-blue-200">
+                                  <UIcon name="i-heroicons-camera" class="w-6 h-6 text-blue-600" />
+                                </div>
+                                <span class="text-xs font-medium text-gray-700">Camera</span>
+                              </button>
+                              
+                              <!-- Video Option -->
+                              <button
+                                @click="pickVideo"
+                                class="flex flex-col items-center p-3 rounded-lg hover:bg-red-50 transition-colors group"
+                              >
+                                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-2 group-hover:bg-red-200">
+                                  <UIcon name="i-heroicons-video-camera" class="w-6 h-6 text-red-600" />
+                                </div>
+                                <span class="text-xs font-medium text-gray-700">Video</span>
+                              </button>
+                              
+                              <!-- Files Option -->
+                              <button
+                                @click="pickDocument"
+                                class="flex flex-col items-center p-3 rounded-lg hover:bg-green-50 transition-colors group"
+                              >
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-2 group-hover:bg-green-200">
+                                  <UIcon name="i-heroicons-document" class="w-6 h-6 text-green-600" />
+                                </div>
+                                <span class="text-xs font-medium text-gray-700">Files</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <input
+                        v-model="adsyNewMessage"
+                        type="text"
+                        placeholder="Type a message..."
+                        class="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        @keypress.enter="sendAdsyMessage"
+                        :disabled="isUploadingAttachment"
+                      />
+                      <UButton
+                        color="green"
+                        icon="i-heroicons-paper-airplane"
+                        :disabled="!adsyNewMessage.trim() || isUploadingAttachment"
+                        @click="sendAdsyMessage"
+                      />
+                    </div>
+
+                    <!-- Hidden File Inputs -->
+                    <input
+                      ref="imageInput"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      class="hidden"
+                      @change="handleImageSelect"
+                    />
+                    <input
+                      ref="cameraInput"
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      class="hidden"
+                      @change="handleCameraCapture"
+                    />
+                    <input
+                      ref="videoInput"
+                      type="file"
+                      accept="video/*"
+                      class="hidden"
+                      @change="handleVideoSelect"
+                    />
+                    <input
+                      ref="documentInput"
+                      type="file"
+                      accept=".pdf,.doc,.docx,.txt,.zip,.rar"
+                      class="hidden"
+                      @change="handleDocumentSelect"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Updates Content -->
           <div v-if="activeTab === 'updates'">
             <div v-if="updates && updates.length">
               <TransitionGroup name="message-list" tag="div">
@@ -1194,7 +1567,7 @@ const newTicketCount = ref(0);
 const isTicketDetailModalOpen = ref(false);
 
 // Tab state
-const activeTab = ref('updates');
+const activeTab = ref('adsyconnect');
 const updatesFilter = ref('all');
 
 // Pagination state
@@ -1228,6 +1601,46 @@ const updatesCount = computed(() => {
 
 const supportTicketsCount = computed(() => {
   return allSupportTickets.value.filter(ticket => !readMessages.value[ticket.id]).length;
+});
+
+const adsyConnectCount = computed(() => {
+  // Get unread count from AdsyConnect composable if available
+  try {
+    const { unreadCount } = useAdsyConnect();
+    return unreadCount.value || 0;
+  } catch {
+    return 0;
+  }
+});
+
+// AdsyConnect state
+const adsySearchQuery = ref('');
+const adsyChatRooms = ref([]);
+const activeAdsyChat = ref(null);
+const adsyMessages = ref([]);
+const adsyNewMessage = ref('');
+const adsyConnectLoading = ref(false);
+const adsyMessagesLoading = ref(false);
+const showAttachmentOptions = ref(false);
+const isUploadingAttachment = ref(false);
+const currentUserId = computed(() => user.value?.user?.id);
+
+// File input refs
+const imageInput = ref(null);
+const cameraInput = ref(null);
+const videoInput = ref(null);
+const documentInput = ref(null);
+
+// Filtered AdsyConnect chat rooms
+const filteredAdsyChatRooms = computed(() => {
+  if (!adsySearchQuery.value) return adsyChatRooms.value;
+  
+  const query = adsySearchQuery.value.toLowerCase();
+  return adsyChatRooms.value.filter(chat => {
+    const userName = `${chat.other_user?.first_name} ${chat.other_user?.last_name}`.toLowerCase();
+    const lastMessage = chat.last_message?.content?.toLowerCase() || '';
+    return userName.includes(query) || lastMessage.includes(query);
+  });
 });
 
 const filteredUpdates = computed(() => {
@@ -1393,6 +1806,283 @@ function setActiveTab(tab) {
   // Reset pagination when switching tabs
   currentPage.value = 1;
 }
+
+// AdsyConnect functions
+async function loadAdsyChatRooms() {
+  adsyConnectLoading.value = true;
+  try {
+    const { user } = useAuth();
+    
+    if (!user.value) {
+      return;
+    }
+    
+    const api = useApi();
+    
+    if (!api || !api.get) {
+      throw new Error('API service not available');
+    }
+    
+    const response = await api.get('/adsyconnect/chatrooms/');
+    
+    if (response.error) {
+      throw new Error(response.error.message || 'API Error');
+    }
+    
+    const chatRooms = response.data?.results || response.data || [];
+    adsyChatRooms.value = chatRooms;
+    
+    // Auto-select the latest chat (first in the list) if no chat is currently selected
+    if (chatRooms.length > 0 && !activeAdsyChat.value) {
+      await selectAdsyChat(chatRooms[0]);
+    }
+    
+  } catch (error) {
+    console.error('Error loading chat rooms:', error);
+    toast.add({
+      title: 'Error',
+      description: `Failed to load chat rooms: ${error.message}`,
+      color: 'red',
+      timeout: 3000,
+    });
+  } finally {
+    adsyConnectLoading.value = false;
+  }
+}
+
+async function selectAdsyChat(chat) {
+  activeAdsyChat.value = chat;
+  await loadAdsyMessages(chat.id);
+}
+
+async function loadAdsyMessages(chatRoomId) {
+  adsyMessagesLoading.value = true;
+  try {
+    const api = useApi();
+    const response = await api.get(`/adsyconnect/messages/?chatroom=${chatRoomId}`);
+    adsyMessages.value = response.data.results || response.data || [];
+  } catch (error) {
+    console.error('Error loading messages:', error);
+    toast.add({
+      title: 'Error',
+      description: 'Failed to load messages',
+      color: 'red',
+      timeout: 3000,
+    });
+  } finally {
+    adsyMessagesLoading.value = false;
+  }
+}
+
+async function sendAdsyMessage() {
+  if (!adsyNewMessage.value.trim() || !activeAdsyChat.value) return;
+  
+  try {
+    const api = useApi();
+    const response = await api.post('/adsyconnect/messages/', {
+      chatroom: activeAdsyChat.value.id,
+      receiver: activeAdsyChat.value.other_user.id,
+      message_type: 'text',
+      content: adsyNewMessage.value.trim(),
+    });
+    
+    adsyMessages.value.push(response.data);
+    adsyNewMessage.value = '';
+    
+    // Scroll to bottom
+    await nextTick();
+    const messagesContainer = document.querySelector('.overflow-y-auto.p-4.space-y-3');
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  } catch (error) {
+    console.error('Error sending message:', error);
+    toast.add({
+      title: 'Error',
+      description: 'Failed to send message',
+      color: 'red',
+      timeout: 3000,
+    });
+  }
+}
+
+function formatMessageTime(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+  
+  if (diffInSeconds < 60) return 'Just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+  
+  return date.toLocaleDateString();
+}
+
+function formatFileSize(bytes) {
+  if (!bytes) return '';
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  if (bytes === 0) return '0 Bytes';
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+function openImageModal(imageUrl) {
+  // Simple image modal - open in new tab for now
+  window.open(imageUrl, '_blank');
+}
+
+function handleImageError(event) {
+  // Fallback to icon if image fails to load
+  event.target.style.display = 'none';
+  const parent = event.target.parentElement;
+  const icon = document.createElement('div');
+  icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-green-600"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.20-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>';
+  parent.appendChild(icon.firstChild);
+}
+
+// Attachment functions
+function pickImageFromGallery() {
+  showAttachmentOptions.value = false;
+  imageInput.value?.click();
+}
+
+function pickImageFromCamera() {
+  showAttachmentOptions.value = false;
+  cameraInput.value?.click();
+}
+
+function pickVideo() {
+  showAttachmentOptions.value = false;
+  videoInput.value?.click();
+}
+
+function pickDocument() {
+  showAttachmentOptions.value = false;
+  documentInput.value?.click();
+}
+
+async function handleImageSelect(event) {
+  const files = event.target.files;
+  if (files && files.length > 0) {
+    // Check file limit (max 8 images like Flutter)
+    if (files.length > 8) {
+      toast.add({
+        title: 'Too Many Files',
+        description: 'Maximum 8 photos allowed',
+        color: 'red',
+        timeout: 3000,
+      });
+      return;
+    }
+    
+    for (const file of files) {
+      await sendMediaMessage(file, 'image');
+    }
+  }
+  // Reset input
+  event.target.value = '';
+}
+
+async function handleCameraCapture(event) {
+  const file = event.target.files?.[0];
+  if (file) {
+    await sendMediaMessage(file, 'image');
+  }
+  // Reset input
+  event.target.value = '';
+}
+
+async function handleVideoSelect(event) {
+  const file = event.target.files?.[0];
+  if (file) {
+    // Check file size (max 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      toast.add({
+        title: 'File Too Large',
+        description: 'Video files must be less than 50MB',
+        color: 'red',
+        timeout: 3000,
+      });
+      return;
+    }
+    await sendMediaMessage(file, 'video');
+  }
+  // Reset input
+  event.target.value = '';
+}
+
+async function handleDocumentSelect(event) {
+  const file = event.target.files?.[0];
+  if (file) {
+    // Check file size (max 10MB for documents)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.add({
+        title: 'File Too Large',
+        description: 'Document files must be less than 10MB',
+        color: 'red',
+        timeout: 3000,
+      });
+      return;
+    }
+    await sendMediaMessage(file, 'document');
+  }
+  // Reset input
+  event.target.value = '';
+}
+
+async function sendMediaMessage(file, messageType) {
+  if (!activeAdsyChat.value) return;
+  
+  isUploadingAttachment.value = true;
+  
+  try {
+    const api = useApi();
+    const formData = new FormData();
+    
+    formData.append('chatroom', activeAdsyChat.value.id);
+    formData.append('receiver', activeAdsyChat.value.other_user.id);
+    formData.append('message_type', messageType);
+    formData.append('media_file', file);
+    formData.append('file_name', file.name);
+    
+    const response = await api.post('/adsyconnect/messages/', formData);
+    
+    if (response.error) {
+      throw new Error(response.error.message || 'Upload failed');
+    }
+    
+    // Add message to chat
+    adsyMessages.value.push(response.data);
+    
+    // Scroll to bottom
+    await nextTick();
+    const messagesContainer = document.querySelector('.overflow-y-auto.p-4.space-y-3');
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    toast.add({
+      title: 'Success',
+      description: `${messageType === 'image' ? 'Image' : messageType === 'video' ? 'Video' : 'File'} sent successfully`,
+      color: 'green',
+      timeout: 3000,
+    });
+    
+  } catch (error) {
+    console.error('Error sending media:', error);
+    toast.add({
+      title: 'Upload Failed',
+      description: `Failed to send ${messageType === 'image' ? 'image' : messageType === 'video' ? 'video' : 'file'}`,
+      color: 'red',
+      timeout: 3000,
+    });
+  } finally {
+    isUploadingAttachment.value = false;
+  }
+}
+
 
 // Updates filter functions
 function setUpdatesFilter(filter) {
@@ -2161,11 +2851,23 @@ onMounted(async () => {
   await getMessages();
   // Refresh the global unread count to keep header/balance in sync
   await fetchUnreadCount();
+  
+  // Load AdsyConnect chat rooms since it's the default tab
+  if (activeTab.value === 'adsyconnect') {
+    await loadAdsyChatRooms();
+  }
 
   // Auto-refresh disabled - users can manually refresh by pulling down
   // autoRefreshInterval = setInterval(async () => {
   //   await getMessages(true);
   // }, 30000);
+});
+
+// Watch for tab changes to load AdsyConnect data
+watch(activeTab, async (newTab) => {
+  if (newTab === 'adsyconnect' && adsyChatRooms.value.length === 0) {
+    await loadAdsyChatRooms();
+  }
 });
 
 onBeforeUnmount(() => {

@@ -658,9 +658,10 @@
               <div
                 class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm"
               >
-                <UIcon
-                  name="i-material-symbols:mark-email-unread-outline"
-                  class="size-6 text-blue-600 dark:text-blue-400"
+                <img 
+                  src="/images/chat_icon.png" 
+                  alt="Inbox"
+                  class="size-6"
                 />
 
                 <!-- Notification Badge with animation -->
